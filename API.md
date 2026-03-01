@@ -5,7 +5,7 @@
 ## Installation
 
 ```bash
-cd implementation && pip install -e ".[smt]"
+pip install -e ".[smt]"
 ```
 
 ---

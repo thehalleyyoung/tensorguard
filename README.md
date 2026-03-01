@@ -6,7 +6,7 @@
 
 ```bash
 git clone <repo-url> && cd refinement-type-inference-dynamic-lang
-cd implementation && pip install -e ".[smt]"
+pip install -e ".[smt]"
 ```
 
 ```python
@@ -61,7 +61,6 @@ CounterexampleTrace(BuggyMLP)
 Requires Python ≥ 3.9.
 
 ```bash
-cd implementation
 pip install -e ".[smt]"
 ```
 
@@ -193,7 +192,7 @@ python -m src.cli.main ci-check model.py -s x=batch,3,224,224
 ## Architecture
 
 ```
-implementation/src/
+src/
   model_checker.py              Core verify_model()—AST → computation graph → Z3 constraints
   graph_compiler.py             Multi-strategy compiler for arbitrary computation graphs
   composition_soundness.py      Formal 5-theory composition soundness verification
@@ -213,8 +212,14 @@ implementation/src/
   stdlib/
     modern_ops.py               Extended operator registry
   cli/                          CLI entry point
+tests/                          6,054 tests
+experiments/                    Benchmarks and evaluation scripts
 lean/
   TheoryCombination.lean        Lean 4 mechanization (zero sorry)
+docs/
+  paper/                        LaTeX paper and supporting materials
+  reviews/                      Expert reviews
+  proposals/                    Framing and specification documents
 ```
 
 ## Limitations

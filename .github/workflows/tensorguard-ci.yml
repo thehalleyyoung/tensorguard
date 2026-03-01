@@ -24,10 +24,8 @@ jobs:
 
       - name: Run TensorGuard verification
         run: |
-          cd implementation
           python -c "
           import sys, json, glob, ast, os
-          sys.path.insert(0, '.')
           from src.model_checker import verify_model
 
           # Find all changed .py files with nn.Module classes
@@ -75,11 +73,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tensorguard-report
-          path: implementation/verification_report.json
+          path: verification_report.json
 
       - name: Run benchmark suite
         run: |
-          cd implementation
           python experiments/run_expanded_eval.py 2>/dev/null
           echo "✅ Benchmark evaluation complete"
 
@@ -89,5 +86,5 @@ jobs:
         with:
           name: tensorguard-certificates
           path: |
-            implementation/experiments/expanded_eval_results.json
-            implementation/experiments/scalability_results.json
+            experiments/expanded_eval_results.json
+            experiments/scalability_results.json
