@@ -1,0 +1,69 @@
+{
+  "total": 10,
+  "correct": 10,
+  "accuracy": 1.0,
+  "results": {
+    "resnet_basic": {
+      "safe": true,
+      "expected": true,
+      "correct": true,
+      "time_ms": 125.1
+    },
+    "transformer_block": {
+      "safe": true,
+      "expected": true,
+      "correct": true,
+      "time_ms": 34.4
+    },
+    "conv_with_loss": {
+      "safe": true,
+      "expected": true,
+      "correct": true,
+      "time_ms": 30.4
+    },
+    "glu_network": {
+      "safe": true,
+      "expected": true,
+      "correct": true,
+      "time_ms": 20.6
+    },
+    "bilinear_model": {
+      "safe": true,
+      "expected": true,
+      "correct": true,
+      "time_ms": 26.9
+    },
+    "embedding_bag_model": {
+      "safe": true,
+      "expected": true,
+      "correct": true,
+      "time_ms": 22.5
+    },
+    "padding_model": {
+      "safe": false,
+      "expected": false,
+      "correct": true,
+      "time_ms": 36.5
+    },
+    "shape_bug_glu": {
+      "safe": false,
+      "expected": false,
+      "correct": true,
+      "time_ms": 20.0
+    },
+    "shape_bug_bilinear": {
+      "safe": false,
+      "expected": false,
+      "correct": true,
+      "time_ms": 27.8
+    },
+    "deep_conv_pool": {
+      "safe": true,
+      "expected": true,
+      "correct": true,
+      "time_ms": 136.2
+    }
+  },
+  "total_operators": 145,
+  "note": "padding_model correctly identified as unsafe: flatten(batch,32,22)->(batch,704) but Linear expects 32"
+}

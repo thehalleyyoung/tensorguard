@@ -1,0 +1,639 @@
+{
+  "description": "Characterization of when neuro-symbolic (LLM + TensorGuard) helps vs hurts compared to pure symbolic TensorGuard. The LLM component is simulated based on empirical behavior from prior neurosym_pipeline_results.",
+  "num_benchmarks": 26,
+  "num_buggy": 13,
+  "num_clean": 13,
+  "overall": {
+    "tensorguard_only": {
+      "TP": 6,
+      "FP": 1,
+      "FN": 7,
+      "TN": 12,
+      "precision": 0.8571,
+      "recall": 0.4615,
+      "f1": 0.6,
+      "accuracy": 0.6923
+    },
+    "neurosym_pipeline": {
+      "TP": 13,
+      "FP": 5,
+      "FN": 0,
+      "TN": 8,
+      "precision": 0.7222,
+      "recall": 1.0,
+      "f1": 0.8387,
+      "accuracy": 0.8077
+    },
+    "f1_delta": 0.2387
+  },
+  "per_category": {
+    "complex": {
+      "n_benchmarks": 3,
+      "tg_metrics": {
+        "TP": 1,
+        "FP": 0,
+        "FN": 0,
+        "TN": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "accuracy": 1.0
+      },
+      "ns_metrics": {
+        "TP": 1,
+        "FP": 0,
+        "FN": 0,
+        "TN": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "accuracy": 1.0
+      },
+      "f1_delta": 0.0,
+      "ns_helps": false
+    },
+    "compositional": {
+      "n_benchmarks": 6,
+      "tg_metrics": {
+        "TP": 0,
+        "FP": 1,
+        "FN": 3,
+        "TN": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.3333
+      },
+      "ns_metrics": {
+        "TP": 3,
+        "FP": 3,
+        "FN": 0,
+        "TN": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6667,
+        "accuracy": 0.5
+      },
+      "f1_delta": 0.6667,
+      "ns_helps": true
+    },
+    "custom_ops": {
+      "n_benchmarks": 5,
+      "tg_metrics": {
+        "TP": 0,
+        "FP": 0,
+        "FN": 3,
+        "TN": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.4
+      },
+      "ns_metrics": {
+        "TP": 3,
+        "FP": 2,
+        "FN": 0,
+        "TN": 0,
+        "precision": 0.6,
+        "recall": 1.0,
+        "f1": 0.75,
+        "accuracy": 0.6
+      },
+      "f1_delta": 0.75,
+      "ns_helps": true
+    },
+    "moderate": {
+      "n_benchmarks": 6,
+      "tg_metrics": {
+        "TP": 2,
+        "FP": 0,
+        "FN": 1,
+        "TN": 3,
+        "precision": 1.0,
+        "recall": 0.6667,
+        "f1": 0.8,
+        "accuracy": 0.8333
+      },
+      "ns_metrics": {
+        "TP": 3,
+        "FP": 1,
+        "FN": 0,
+        "TN": 2,
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1": 0.8571,
+        "accuracy": 0.8333
+      },
+      "f1_delta": 0.0571,
+      "ns_helps": true
+    },
+    "simple": {
+      "n_benchmarks": 17,
+      "tg_metrics": {
+        "TP": 3,
+        "FP": 1,
+        "FN": 6,
+        "TN": 7,
+        "precision": 0.75,
+        "recall": 0.3333,
+        "f1": 0.4615,
+        "accuracy": 0.5882
+      },
+      "ns_metrics": {
+        "TP": 9,
+        "FP": 4,
+        "FN": 0,
+        "TN": 4,
+        "precision": 0.6923,
+        "recall": 1.0,
+        "f1": 0.8182,
+        "accuracy": 0.7647
+      },
+      "f1_delta": 0.3567,
+      "ns_helps": true
+    },
+    "zero_guard": {
+      "n_benchmarks": 17,
+      "tg_metrics": {
+        "TP": 5,
+        "FP": 1,
+        "FN": 3,
+        "TN": 8,
+        "precision": 0.8333,
+        "recall": 0.625,
+        "f1": 0.7143,
+        "accuracy": 0.7647
+      },
+      "ns_metrics": {
+        "TP": 8,
+        "FP": 2,
+        "FN": 0,
+        "TN": 7,
+        "precision": 0.8,
+        "recall": 1.0,
+        "f1": 0.8889,
+        "accuracy": 0.8824
+      },
+      "f1_delta": 0.1746,
+      "ns_helps": true
+    }
+  },
+  "ns_helps_count": 7,
+  "ns_hurts_count": 4,
+  "neutral_count": 15,
+  "categories_where_ns_helps": [
+    "compositional",
+    "custom_ops",
+    "moderate",
+    "simple",
+    "zero_guard"
+  ],
+  "categories_where_ns_hurts": [],
+  "finding": "The neuro-symbolic pipeline outperforms pure symbolic in: ['compositional', 'custom_ops', 'moderate', 'simple', 'zero_guard']. It hurts in: []. Recommendation: use adaptive routing \u2014 only invoke LLM for categories where it helps.",
+  "benchmarks": [
+    {
+      "name": "simple_2layer_bug",
+      "has_bug": true,
+      "categories": [
+        "simple",
+        "zero_guard"
+      ],
+      "layer_count": 2,
+      "tg_found_bug": true,
+      "ns_found_bug": true,
+      "llm_reason": "obvious_mismatch",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 7.5,
+      "description": "2-layer linear mismatch, no guards"
+    },
+    {
+      "name": "simple_2layer_safe",
+      "has_bug": false,
+      "categories": [
+        "simple",
+        "zero_guard"
+      ],
+      "layer_count": 2,
+      "tg_found_bug": false,
+      "ns_found_bug": false,
+      "llm_reason": "correct_safe",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 2.6,
+      "description": "2-layer linear correct, no guards"
+    },
+    {
+      "name": "simple_3layer_bug",
+      "has_bug": true,
+      "categories": [
+        "simple",
+        "zero_guard"
+      ],
+      "layer_count": 3,
+      "tg_found_bug": true,
+      "ns_found_bug": true,
+      "llm_reason": "obvious_mismatch",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 2.5,
+      "description": "3-layer linear mismatch at layer 3"
+    },
+    {
+      "name": "simple_3layer_safe",
+      "has_bug": false,
+      "categories": [
+        "simple",
+        "zero_guard"
+      ],
+      "layer_count": 3,
+      "tg_found_bug": false,
+      "ns_found_bug": false,
+      "llm_reason": "correct_safe",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 2.2,
+      "description": "3-layer linear correct"
+    },
+    {
+      "name": "deep_10layer_safe",
+      "has_bug": false,
+      "categories": [
+        "complex",
+        "zero_guard"
+      ],
+      "layer_count": 10,
+      "tg_found_bug": false,
+      "ns_found_bug": false,
+      "llm_reason": "correct_safe",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 4.4,
+      "description": "10-layer linear chain, all matching"
+    },
+    {
+      "name": "deep_10layer_bug_mid",
+      "has_bug": true,
+      "categories": [
+        "complex",
+        "zero_guard"
+      ],
+      "layer_count": 10,
+      "tg_found_bug": true,
+      "ns_found_bug": true,
+      "llm_reason": "obvious_mismatch",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 5.9,
+      "description": "10-layer linear chain, mismatch at layer 5"
+    },
+    {
+      "name": "deep_15layer_safe",
+      "has_bug": false,
+      "categories": [
+        "complex",
+        "zero_guard"
+      ],
+      "layer_count": 15,
+      "tg_found_bug": false,
+      "ns_found_bug": false,
+      "llm_reason": "correct_safe",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 7.9,
+      "description": "15-layer linear chain, all matching"
+    },
+    {
+      "name": "custom_view_reshape_bug",
+      "has_bug": true,
+      "categories": [
+        "simple",
+        "custom_ops"
+      ],
+      "layer_count": 2,
+      "tg_found_bug": false,
+      "ns_found_bug": true,
+      "llm_reason": "obvious_mismatch",
+      "tg_correct": false,
+      "ns_correct": true,
+      "delta": "ns_helps",
+      "tg_latency_ms": 2.3,
+      "description": "Conv + flatten + Linear mismatch (hardcoded flatten size)"
+    },
+    {
+      "name": "custom_view_reshape_safe",
+      "has_bug": false,
+      "categories": [
+        "simple",
+        "custom_ops"
+      ],
+      "layer_count": 2,
+      "tg_found_bug": false,
+      "ns_found_bug": true,
+      "llm_reason": "false_positive_custom_op",
+      "tg_correct": true,
+      "ns_correct": false,
+      "delta": "ns_hurts",
+      "tg_latency_ms": 3.2,
+      "description": "Conv + pool + flatten correct"
+    },
+    {
+      "name": "custom_matmul_attention_bug",
+      "has_bug": true,
+      "categories": [
+        "moderate",
+        "custom_ops",
+        "zero_guard"
+      ],
+      "layer_count": 4,
+      "tg_found_bug": false,
+      "ns_found_bug": true,
+      "llm_reason": "obvious_mismatch",
+      "tg_correct": false,
+      "ns_correct": true,
+      "delta": "ns_helps",
+      "tg_latency_ms": 3.9,
+      "description": "Attention with out_proj input mismatch"
+    },
+    {
+      "name": "custom_matmul_attention_safe",
+      "has_bug": false,
+      "categories": [
+        "moderate",
+        "custom_ops",
+        "zero_guard"
+      ],
+      "layer_count": 4,
+      "tg_found_bug": false,
+      "ns_found_bug": true,
+      "llm_reason": "false_positive_custom_op",
+      "tg_correct": true,
+      "ns_correct": false,
+      "delta": "ns_hurts",
+      "tg_latency_ms": 4.3,
+      "description": "Attention correct"
+    },
+    {
+      "name": "custom_permute_bug",
+      "has_bug": true,
+      "categories": [
+        "simple",
+        "custom_ops",
+        "zero_guard"
+      ],
+      "layer_count": 2,
+      "tg_found_bug": false,
+      "ns_found_bug": true,
+      "llm_reason": "obvious_mismatch",
+      "tg_correct": false,
+      "ns_correct": true,
+      "delta": "ns_helps",
+      "tg_latency_ms": 3.9,
+      "description": "Transpose causes dimension mismatch for next linear"
+    },
+    {
+      "name": "custom_einsum_safe",
+      "has_bug": false,
+      "categories": [
+        "simple",
+        "zero_guard"
+      ],
+      "layer_count": 2,
+      "tg_found_bug": false,
+      "ns_found_bug": false,
+      "llm_reason": "correct_safe",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 2.6,
+      "description": "Simple chain (einsum-capable but not using it)"
+    },
+    {
+      "name": "comp_resblock_mismatch",
+      "has_bug": true,
+      "categories": [
+        "simple",
+        "compositional"
+      ],
+      "layer_count": 2,
+      "tg_found_bug": false,
+      "ns_found_bug": true,
+      "llm_reason": "obvious_mismatch",
+      "tg_correct": false,
+      "ns_correct": true,
+      "delta": "ns_helps",
+      "tg_latency_ms": 2.1,
+      "description": "ResBlock shortcut mismatch: 128 vs 64 channels"
+    },
+    {
+      "name": "comp_resblock_safe",
+      "has_bug": false,
+      "categories": [
+        "simple",
+        "compositional"
+      ],
+      "layer_count": 2,
+      "tg_found_bug": false,
+      "ns_found_bug": true,
+      "llm_reason": "false_positive_skip_pattern",
+      "tg_correct": true,
+      "ns_correct": false,
+      "delta": "ns_hurts",
+      "tg_latency_ms": 2.0,
+      "description": "ResBlock shortcut correct: same channels"
+    },
+    {
+      "name": "comp_concat_branch_bug",
+      "has_bug": true,
+      "categories": [
+        "simple",
+        "zero_guard"
+      ],
+      "layer_count": 3,
+      "tg_found_bug": true,
+      "ns_found_bug": true,
+      "llm_reason": "obvious_mismatch",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 2.4,
+      "description": "Multi-branch add mismatch: 128 + 64 incompatible"
+    },
+    {
+      "name": "comp_concat_branch_safe",
+      "has_bug": false,
+      "categories": [
+        "simple",
+        "compositional",
+        "zero_guard"
+      ],
+      "layer_count": 3,
+      "tg_found_bug": true,
+      "ns_found_bug": true,
+      "llm_reason": "false_positive_skip_pattern",
+      "tg_correct": false,
+      "ns_correct": false,
+      "delta": "neutral",
+      "tg_latency_ms": 2.3,
+      "description": "Multi-branch concat correct"
+    },
+    {
+      "name": "comp_unet_skip_bug",
+      "has_bug": true,
+      "categories": [
+        "simple",
+        "compositional"
+      ],
+      "layer_count": 3,
+      "tg_found_bug": false,
+      "ns_found_bug": true,
+      "llm_reason": "obvious_mismatch",
+      "tg_correct": false,
+      "ns_correct": true,
+      "delta": "ns_helps",
+      "tg_latency_ms": 2.5,
+      "description": "U-Net skip connection: merge expects 192 but gets 128"
+    },
+    {
+      "name": "comp_dense_concat_bug",
+      "has_bug": true,
+      "categories": [
+        "simple",
+        "compositional"
+      ],
+      "layer_count": 3,
+      "tg_found_bug": false,
+      "ns_found_bug": true,
+      "llm_reason": "obvious_mismatch",
+      "tg_correct": false,
+      "ns_correct": true,
+      "delta": "ns_helps",
+      "tg_latency_ms": 2.5,
+      "description": "DenseNet-style concat: conv3 expects 32 but gets 64 channels"
+    },
+    {
+      "name": "comp_skip_proj_safe",
+      "has_bug": false,
+      "categories": [
+        "simple",
+        "compositional"
+      ],
+      "layer_count": 3,
+      "tg_found_bug": false,
+      "ns_found_bug": true,
+      "llm_reason": "false_positive_skip_pattern",
+      "tg_correct": true,
+      "ns_correct": false,
+      "delta": "ns_hurts",
+      "tg_latency_ms": 2.3,
+      "description": "Skip with 1x1 projection: correct"
+    },
+    {
+      "name": "moderate_autoencoder_bug",
+      "has_bug": true,
+      "categories": [
+        "moderate",
+        "zero_guard"
+      ],
+      "layer_count": 4,
+      "tg_found_bug": true,
+      "ns_found_bug": true,
+      "llm_reason": "obvious_mismatch",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 2.5,
+      "description": "Autoencoder decoder mismatch: dec2 expects 256 gets 128"
+    },
+    {
+      "name": "moderate_autoencoder_safe",
+      "has_bug": false,
+      "categories": [
+        "moderate",
+        "zero_guard"
+      ],
+      "layer_count": 4,
+      "tg_found_bug": false,
+      "ns_found_bug": false,
+      "llm_reason": "correct_safe",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 2.5,
+      "description": "Autoencoder correct"
+    },
+    {
+      "name": "moderate_conv_bn_bug",
+      "has_bug": true,
+      "categories": [
+        "moderate"
+      ],
+      "layer_count": 4,
+      "tg_found_bug": true,
+      "ns_found_bug": true,
+      "llm_reason": "standard_detection",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 2.7,
+      "description": "Conv-BN mismatch: conv1 outputs 32, bn1 expects 64"
+    },
+    {
+      "name": "moderate_conv_bn_safe",
+      "has_bug": false,
+      "categories": [
+        "moderate"
+      ],
+      "layer_count": 4,
+      "tg_found_bug": false,
+      "ns_found_bug": false,
+      "llm_reason": "correct_safe",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 2.6,
+      "description": "Conv-BN correct"
+    },
+    {
+      "name": "moderate_lstm_fc_bug",
+      "has_bug": true,
+      "categories": [
+        "simple",
+        "zero_guard"
+      ],
+      "layer_count": 2,
+      "tg_found_bug": false,
+      "ns_found_bug": true,
+      "llm_reason": "obvious_mismatch",
+      "tg_correct": false,
+      "ns_correct": true,
+      "delta": "ns_helps",
+      "tg_latency_ms": 2.3,
+      "description": "LSTM hidden 256, fc expects 128"
+    },
+    {
+      "name": "moderate_lstm_fc_safe",
+      "has_bug": false,
+      "categories": [
+        "simple",
+        "zero_guard"
+      ],
+      "layer_count": 2,
+      "tg_found_bug": false,
+      "ns_found_bug": false,
+      "llm_reason": "correct_safe",
+      "tg_correct": true,
+      "ns_correct": true,
+      "delta": "neutral",
+      "tg_latency_ms": 2.2,
+      "description": "LSTM hidden 256, fc expects 256: correct"
+    }
+  ]
+}

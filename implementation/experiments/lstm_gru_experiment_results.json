@@ -1,0 +1,232 @@
+{
+  "lstm_gru_experiment": {
+    "total_benchmarks": 16,
+    "correct": 16,
+    "accuracy": 1.0,
+    "tp": 8,
+    "fp": 0,
+    "tn": 8,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "lstm_benchmarks": 10,
+    "gru_benchmarks": 6,
+    "certificates_issued": 8,
+    "counterexamples_issued": 8,
+    "results": [
+      {
+        "name": "lstm_basic_safe",
+        "category": "lstm",
+        "expected_safe": true,
+        "predicted_safe": true,
+        "correct": true,
+        "time_ms": 68.7,
+        "has_certificate": true,
+        "has_counterexample": false
+      },
+      {
+        "name": "bilstm_safe",
+        "category": "lstm",
+        "expected_safe": true,
+        "predicted_safe": true,
+        "correct": true,
+        "time_ms": 13.1,
+        "has_certificate": true,
+        "has_counterexample": false
+      },
+      {
+        "name": "gru_basic_safe",
+        "category": "gru",
+        "expected_safe": true,
+        "predicted_safe": true,
+        "correct": true,
+        "time_ms": 12.9,
+        "has_certificate": true,
+        "has_counterexample": false
+      },
+      {
+        "name": "bigru_safe",
+        "category": "gru",
+        "expected_safe": true,
+        "predicted_safe": true,
+        "correct": true,
+        "time_ms": 13.2,
+        "has_certificate": true,
+        "has_counterexample": false
+      },
+      {
+        "name": "emb_lstm_safe",
+        "category": "lstm",
+        "expected_safe": true,
+        "predicted_safe": true,
+        "correct": true,
+        "time_ms": 67.9,
+        "has_certificate": true,
+        "has_counterexample": false
+      },
+      {
+        "name": "stacked_lstm_safe",
+        "category": "lstm",
+        "expected_safe": true,
+        "predicted_safe": true,
+        "correct": true,
+        "time_ms": 16.7,
+        "has_certificate": true,
+        "has_counterexample": false
+      },
+      {
+        "name": "emb_gru_safe",
+        "category": "gru",
+        "expected_safe": true,
+        "predicted_safe": true,
+        "correct": true,
+        "time_ms": 57.2,
+        "has_certificate": true,
+        "has_counterexample": false
+      },
+      {
+        "name": "multilayer_lstm_safe",
+        "category": "lstm",
+        "expected_safe": true,
+        "predicted_safe": true,
+        "correct": true,
+        "time_ms": 23.7,
+        "has_certificate": true,
+        "has_counterexample": false
+      },
+      {
+        "name": "lstm_input_mismatch_bug",
+        "category": "lstm",
+        "expected_safe": false,
+        "predicted_safe": false,
+        "correct": true,
+        "time_ms": 12.3,
+        "has_certificate": false,
+        "has_counterexample": true
+      },
+      {
+        "name": "lstm_linear_mismatch_bug",
+        "category": "lstm",
+        "expected_safe": false,
+        "predicted_safe": false,
+        "correct": true,
+        "time_ms": 15.6,
+        "has_certificate": false,
+        "has_counterexample": true
+      },
+      {
+        "name": "bilstm_mismatch_bug",
+        "category": "lstm",
+        "expected_safe": false,
+        "predicted_safe": false,
+        "correct": true,
+        "time_ms": 15.7,
+        "has_certificate": false,
+        "has_counterexample": true
+      },
+      {
+        "name": "gru_input_mismatch_bug",
+        "category": "gru",
+        "expected_safe": false,
+        "predicted_safe": false,
+        "correct": true,
+        "time_ms": 11.9,
+        "has_certificate": false,
+        "has_counterexample": true
+      },
+      {
+        "name": "gru_linear_mismatch_bug",
+        "category": "gru",
+        "expected_safe": false,
+        "predicted_safe": false,
+        "correct": true,
+        "time_ms": 14.8,
+        "has_certificate": false,
+        "has_counterexample": true
+      },
+      {
+        "name": "bigru_mismatch_bug",
+        "category": "gru",
+        "expected_safe": false,
+        "predicted_safe": false,
+        "correct": true,
+        "time_ms": 65.6,
+        "has_certificate": false,
+        "has_counterexample": true
+      },
+      {
+        "name": "emb_lstm_mismatch_bug",
+        "category": "lstm",
+        "expected_safe": false,
+        "predicted_safe": false,
+        "correct": true,
+        "time_ms": 16.4,
+        "has_certificate": false,
+        "has_counterexample": true
+      },
+      {
+        "name": "stacked_lstm_mismatch_bug",
+        "category": "lstm",
+        "expected_safe": false,
+        "predicted_safe": false,
+        "correct": true,
+        "time_ms": 17.1,
+        "has_certificate": false,
+        "has_counterexample": true
+      }
+    ]
+  },
+  "lstm_deep_composition": {
+    "total": 5,
+    "correct": 5,
+    "accuracy": 1.0,
+    "results": [
+      {
+        "name": "lstm-linear-chain-bug",
+        "category": "lstm-chain",
+        "description": "5-layer LSTM chain with hidden size mismatch at layer 4",
+        "expected_safe": false,
+        "predicted_safe": false,
+        "correct": true,
+        "time_ms": 77.7
+      },
+      {
+        "name": "emb-bilstm-linear-safe",
+        "category": "lstm-embedding",
+        "description": "Embedding \u2192 BiLSTM \u2192 Linear with correct dimensions",
+        "expected_safe": true,
+        "predicted_safe": true,
+        "correct": true,
+        "time_ms": 18.5
+      },
+      {
+        "name": "emb-bilstm-linear-bug",
+        "category": "lstm-embedding",
+        "description": "Embedding \u2192 BiLSTM \u2192 Linear with forgotten bidirectional doubling",
+        "expected_safe": false,
+        "predicted_safe": false,
+        "correct": true,
+        "time_ms": 21.4
+      },
+      {
+        "name": "gru-seq2seq-safe",
+        "category": "gru-seq2seq",
+        "description": "GRU encoder-decoder with matching hidden sizes",
+        "expected_safe": true,
+        "predicted_safe": true,
+        "correct": true,
+        "time_ms": 28.7
+      },
+      {
+        "name": "gru-seq2seq-hidden-bug",
+        "category": "gru-seq2seq",
+        "description": "GRU encoder-decoder with hidden size mismatch",
+        "expected_safe": false,
+        "predicted_safe": false,
+        "correct": true,
+        "time_ms": 81.3
+      }
+    ]
+  }
+}

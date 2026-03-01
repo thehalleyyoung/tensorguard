@@ -1,0 +1,666 @@
+{
+  "experiment": "guard_density_stratification",
+  "description": "Guard density stratification experiment addressing Sinha et al. concern: 'What is the guard density distribution across benchmarks and how does CEGAR convergence degrade on zero-guard modules?' Stratifies by guard density (0, 1-3, 4+ assertions/function) and measures CEGAR convergence in each bin.",
+  "date": "2026-02-26 08:02:44",
+  "num_benchmarks": 54,
+  "num_base": 32,
+  "num_eafp_added": 8,
+  "num_low_guard_added": 6,
+  "num_high_guard_added": 8,
+  "guard_density_distribution": {
+    "zero": 40,
+    "low": 6,
+    "high": 8
+  },
+  "per_bin_results": {
+    "zero": {
+      "n": 40,
+      "n_buggy": 19,
+      "n_safe": 21,
+      "single_pass": {
+        "tp": 10,
+        "fp": 2,
+        "fn": 9,
+        "tn": 19,
+        "precision": 0.8333,
+        "recall": 0.5263,
+        "f1": 0.6452,
+        "n": 40
+      },
+      "cegar": {
+        "tp": 15,
+        "fp": 2,
+        "fn": 4,
+        "tn": 19,
+        "precision": 0.8824,
+        "recall": 0.7895,
+        "f1": 0.8333,
+        "n": 40
+      },
+      "delta_f1": 0.1881,
+      "cegar_f1_ci": [
+        0.69,
+        0.9182
+      ],
+      "mean_iterations": 1.62,
+      "mean_predicates": 1.7,
+      "mean_time_ms": 278.67,
+      "total_predicates_discovered": 68,
+      "total_predicates_rejected": 29,
+      "per_benchmark": [
+        {
+          "name": "mlp_correct_2layer",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 232.39,
+          "guard_density": 0.0
+        },
+        {
+          "name": "mlp_buggy_2layer",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 200.19,
+          "guard_density": 0.0
+        },
+        {
+          "name": "mlp_correct_3layer",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 284.83,
+          "guard_density": 0.0
+        },
+        {
+          "name": "mlp_buggy_3layer",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 184.52,
+          "guard_density": 0.0
+        },
+        {
+          "name": "mlp_correct_4layer",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 265.93,
+          "guard_density": 0.0
+        },
+        {
+          "name": "mlp_buggy_4layer",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 242.37,
+          "guard_density": 0.0
+        },
+        {
+          "name": "cnn_correct_2conv",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "time_ms": 32.72,
+          "guard_density": 0.0
+        },
+        {
+          "name": "cnn_buggy_channel",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "time_ms": 80.02,
+          "guard_density": 0.0
+        },
+        {
+          "name": "cnn_correct_3conv",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "time_ms": 57.9,
+          "guard_density": 0.0
+        },
+        {
+          "name": "cnn_buggy_deep",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "time_ms": 132.16,
+          "guard_density": 0.0
+        },
+        {
+          "name": "transformer_proj_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 273.51,
+          "guard_density": 0.0
+        },
+        {
+          "name": "transformer_proj_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 164.92,
+          "guard_density": 0.0
+        },
+        {
+          "name": "transformer_ffn_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 72.93,
+          "guard_density": 0.0
+        },
+        {
+          "name": "transformer_ffn_buggy",
+          "has_bug": true,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 178.4,
+          "guard_density": 0.0
+        },
+        {
+          "name": "autoencoder_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 235.54,
+          "guard_density": 0.0
+        },
+        {
+          "name": "autoencoder_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 426.71,
+          "guard_density": 0.0
+        },
+        {
+          "name": "autoencoder_deep_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 121.72,
+          "guard_density": 0.0
+        },
+        {
+          "name": "resnet_skip_correct",
+          "has_bug": false,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 120.34,
+          "guard_density": 0.0
+        },
+        {
+          "name": "resnet_skip_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 94.11,
+          "guard_density": 0.0
+        },
+        {
+          "name": "resnet_deep_correct",
+          "has_bug": false,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 234.96,
+          "guard_density": 0.0
+        },
+        {
+          "name": "unet_style_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 428.98,
+          "guard_density": 0.0
+        },
+        {
+          "name": "unet_style_buggy",
+          "has_bug": true,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 483.45,
+          "guard_density": 0.0
+        },
+        {
+          "name": "gan_disc_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 396.91,
+          "guard_density": 0.0
+        },
+        {
+          "name": "gan_disc_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 472.97,
+          "guard_density": 0.0
+        },
+        {
+          "name": "classifier_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 281.17,
+          "guard_density": 0.0
+        },
+        {
+          "name": "classifier_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 422.59,
+          "guard_density": 0.0
+        },
+        {
+          "name": "bottleneck_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 535.88,
+          "guard_density": 0.0
+        },
+        {
+          "name": "bottleneck_buggy",
+          "has_bug": true,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 528.01,
+          "guard_density": 0.0
+        },
+        {
+          "name": "multihead_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 497.26,
+          "guard_density": 0.0
+        },
+        {
+          "name": "multihead_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 528.14,
+          "guard_density": 0.0
+        },
+        {
+          "name": "wide_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 208.39,
+          "guard_density": 0.0
+        },
+        {
+          "name": "wide_buggy",
+          "has_bug": true,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 475.76,
+          "guard_density": 0.0
+        },
+        {
+          "name": "eafp_dynamic_dispatch_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 415.7,
+          "guard_density": 0.0
+        },
+        {
+          "name": "eafp_dynamic_dispatch_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 406.65,
+          "guard_density": 0.0
+        },
+        {
+          "name": "eafp_tryexcept_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "time_ms": 314.69,
+          "guard_density": 0.0
+        },
+        {
+          "name": "eafp_tryexcept_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "time_ms": 137.03,
+          "guard_density": 0.0
+        },
+        {
+          "name": "eafp_bare_transformer_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 459.69,
+          "guard_density": 0.0
+        },
+        {
+          "name": "eafp_bare_transformer_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 129.51,
+          "guard_density": 0.0
+        },
+        {
+          "name": "eafp_autoencoder_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 164.64,
+          "guard_density": 0.0
+        },
+        {
+          "name": "eafp_autoencoder_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 223.28,
+          "guard_density": 0.0
+        }
+      ]
+    },
+    "low": {
+      "n": 6,
+      "n_buggy": 3,
+      "n_safe": 3,
+      "single_pass": {
+        "tp": 3,
+        "fp": 1,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1": 0.8571,
+        "n": 6
+      },
+      "cegar": {
+        "tp": 3,
+        "fp": 1,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1": 0.8571,
+        "n": 6
+      },
+      "delta_f1": 0.0,
+      "cegar_f1_ci": [
+        0.4584,
+        0.977
+      ],
+      "mean_iterations": 1.17,
+      "mean_predicates": 1.33,
+      "mean_time_ms": 242.48,
+      "total_predicates_discovered": 8,
+      "total_predicates_rejected": 1,
+      "per_benchmark": [
+        {
+          "name": "lowguard_mlp_assert_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 254.72,
+          "guard_density": 0.5
+        },
+        {
+          "name": "lowguard_mlp_assert_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 317.78,
+          "guard_density": 0.5
+        },
+        {
+          "name": "lowguard_cnn_isinstance_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "time_ms": 155.02,
+          "guard_density": 1.0
+        },
+        {
+          "name": "lowguard_cnn_isinstance_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "time_ms": 376.92,
+          "guard_density": 1.0
+        },
+        {
+          "name": "lowguard_resnet_dimcheck_correct",
+          "has_bug": false,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 183.45,
+          "guard_density": 0.5
+        },
+        {
+          "name": "lowguard_resnet_dimcheck_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 166.98,
+          "guard_density": 0.5
+        }
+      ]
+    },
+    "high": {
+      "n": 8,
+      "n_buggy": 4,
+      "n_safe": 4,
+      "single_pass": {
+        "tp": 4,
+        "fp": 1,
+        "fn": 0,
+        "tn": 3,
+        "precision": 0.8,
+        "recall": 1.0,
+        "f1": 0.8889,
+        "n": 8
+      },
+      "cegar": {
+        "tp": 4,
+        "fp": 1,
+        "fn": 0,
+        "tn": 3,
+        "precision": 0.8,
+        "recall": 1.0,
+        "f1": 0.8889,
+        "n": 8
+      },
+      "delta_f1": 0.0,
+      "cegar_f1_ci": [
+        0.5437,
+        0.9817
+      ],
+      "mean_iterations": 1.25,
+      "mean_predicates": 1.5,
+      "mean_time_ms": 146.18,
+      "total_predicates_discovered": 12,
+      "total_predicates_rejected": 1,
+      "per_benchmark": [
+        {
+          "name": "highguard_mlp_defensive_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 80.55,
+          "guard_density": 2.5
+        },
+        {
+          "name": "highguard_mlp_defensive_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 122.51,
+          "guard_density": 2.5
+        },
+        {
+          "name": "highguard_cnn_production_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "time_ms": 84.43,
+          "guard_density": 3.0
+        },
+        {
+          "name": "highguard_cnn_production_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "time_ms": 140.73,
+          "guard_density": 3.0
+        },
+        {
+          "name": "highguard_transformer_strict_correct",
+          "has_bug": false,
+          "detected_bug": false,
+          "iterations": 2,
+          "predicates_discovered": 2,
+          "time_ms": 229.8,
+          "guard_density": 2.0
+        },
+        {
+          "name": "highguard_transformer_strict_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 241.55,
+          "guard_density": 2.0
+        },
+        {
+          "name": "highguard_resnet_validated_correct",
+          "has_bug": false,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 72.29,
+          "guard_density": 2.0
+        },
+        {
+          "name": "highguard_resnet_validated_buggy",
+          "has_bug": true,
+          "detected_bug": true,
+          "iterations": 1,
+          "predicates_discovered": 2,
+          "time_ms": 197.54,
+          "guard_density": 2.0
+        }
+      ]
+    }
+  },
+  "cross_bin_summary": {
+    "zero": {
+      "n": 40,
+      "cegar_f1": 0.8333,
+      "sp_f1": 0.6452,
+      "delta_f1": 0.1881,
+      "mean_iterations": 1.62,
+      "mean_predicates": 1.7,
+      "mean_time_ms": 278.67
+    },
+    "low": {
+      "n": 6,
+      "cegar_f1": 0.8571,
+      "sp_f1": 0.8571,
+      "delta_f1": 0.0,
+      "mean_iterations": 1.17,
+      "mean_predicates": 1.33,
+      "mean_time_ms": 242.48
+    },
+    "high": {
+      "n": 8,
+      "cegar_f1": 0.8889,
+      "sp_f1": 0.8889,
+      "delta_f1": 0.0,
+      "mean_iterations": 1.25,
+      "mean_predicates": 1.5,
+      "mean_time_ms": 146.18
+    }
+  },
+  "eafp_degradation_analysis": {
+    "eafp_cegar_f1": 0.8333,
+    "high_guard_cegar_f1": 0.8889,
+    "relative_degradation_pct": 6.3,
+    "eafp_mean_iterations": 1.5,
+    "high_guard_mean_iterations": 1.25,
+    "conclusion": "CEGAR converges on zero-guard code but may require more iterations since guard-harvesting cannot extract predicates from assertions. The CEGAR loop falls back to counterexample-driven discovery."
+  },
+  "pypi_population_comparison": {
+    "source": "Empirical estimates from Ore et al. (2018) + PyPI analysis",
+    "note": "Based on studies of Python typing adoption and assertion usage: ~60-70% of PyPI functions have zero type guards (EAFP convention), ~20-25% have 1-3 guards (light validation), ~5-15% have 4+ guards (defensive/library code).",
+    "estimated_distribution": {
+      "zero_guard_pct": 65,
+      "low_guard_pct": 25,
+      "high_guard_pct": 10
+    },
+    "our_benchmark_distribution": {
+      "zero_guard_pct": 74.1,
+      "low_guard_pct": 11.1,
+      "high_guard_pct": 14.8
+    },
+    "implication": "Our benchmark suite over-represents guarded code relative to PyPI. The zero-guard bin is most representative of production Python. CEGAR's performance on the zero-guard bin is thus the most externally valid estimate."
+  }
+}

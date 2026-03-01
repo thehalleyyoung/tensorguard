@@ -1,0 +1,158 @@
+{
+  "experiment": "agm_belief_revision",
+  "reference": "G\u00e4rdenfors 1988, Knowledge in Flux",
+  "description": "Evaluates AGM belief revision (contraction + Levi identity) for preventing stale predicate accumulation under schema drift.",
+  "phases": [
+    "v1_initial",
+    "v2_wider",
+    "v3_more_classes",
+    "v4_dropout",
+    "v5_narrow"
+  ],
+  "baseline_results": [
+    {
+      "phase": "v1_initial",
+      "phase_index": 0,
+      "hidden": 64,
+      "num_classes": 10,
+      "use_dropout": false,
+      "ground_truth_count": 7,
+      "stored_count": 7,
+      "precision": 1.0,
+      "recall": 1.0,
+      "valid_count": 7,
+      "invalid_count": 0
+    },
+    {
+      "phase": "v2_wider",
+      "phase_index": 1,
+      "hidden": 128,
+      "num_classes": 10,
+      "use_dropout": false,
+      "ground_truth_count": 7,
+      "stored_count": 10,
+      "precision": 0.7,
+      "recall": 1.0,
+      "valid_count": 7,
+      "invalid_count": 3
+    },
+    {
+      "phase": "v3_more_classes",
+      "phase_index": 2,
+      "hidden": 128,
+      "num_classes": 100,
+      "use_dropout": false,
+      "ground_truth_count": 7,
+      "stored_count": 12,
+      "precision": 0.5833,
+      "recall": 1.0,
+      "valid_count": 7,
+      "invalid_count": 5
+    },
+    {
+      "phase": "v4_dropout",
+      "phase_index": 3,
+      "hidden": 128,
+      "num_classes": 100,
+      "use_dropout": true,
+      "ground_truth_count": 8,
+      "stored_count": 13,
+      "precision": 0.6154,
+      "recall": 1.0,
+      "valid_count": 8,
+      "invalid_count": 5
+    },
+    {
+      "phase": "v5_narrow",
+      "phase_index": 4,
+      "hidden": 32,
+      "num_classes": 100,
+      "use_dropout": true,
+      "ground_truth_count": 8,
+      "stored_count": 16,
+      "precision": 0.5,
+      "recall": 1.0,
+      "valid_count": 8,
+      "invalid_count": 8
+    }
+  ],
+  "revision_results": [
+    {
+      "phase": "v1_initial",
+      "phase_index": 0,
+      "hidden": 64,
+      "num_classes": 10,
+      "use_dropout": false,
+      "ground_truth_count": 7,
+      "stored_count": 7,
+      "precision": 1.0,
+      "recall": 1.0,
+      "valid_count": 7,
+      "invalid_count": 0
+    },
+    {
+      "phase": "v2_wider",
+      "phase_index": 1,
+      "hidden": 128,
+      "num_classes": 10,
+      "use_dropout": false,
+      "ground_truth_count": 7,
+      "stored_count": 7,
+      "precision": 1.0,
+      "recall": 1.0,
+      "valid_count": 7,
+      "invalid_count": 0
+    },
+    {
+      "phase": "v3_more_classes",
+      "phase_index": 2,
+      "hidden": 128,
+      "num_classes": 100,
+      "use_dropout": false,
+      "ground_truth_count": 7,
+      "stored_count": 7,
+      "precision": 1.0,
+      "recall": 1.0,
+      "valid_count": 7,
+      "invalid_count": 0
+    },
+    {
+      "phase": "v4_dropout",
+      "phase_index": 3,
+      "hidden": 128,
+      "num_classes": 100,
+      "use_dropout": true,
+      "ground_truth_count": 8,
+      "stored_count": 8,
+      "precision": 1.0,
+      "recall": 1.0,
+      "valid_count": 8,
+      "invalid_count": 0
+    },
+    {
+      "phase": "v5_narrow",
+      "phase_index": 4,
+      "hidden": 32,
+      "num_classes": 100,
+      "use_dropout": true,
+      "ground_truth_count": 8,
+      "stored_count": 8,
+      "precision": 1.0,
+      "recall": 1.0,
+      "valid_count": 8,
+      "invalid_count": 0
+    }
+  ],
+  "summary": {
+    "avg_precision_baseline": 0.6797,
+    "avg_precision_revision": 1.0,
+    "precision_improvement": 0.3203,
+    "final_phase_baseline_precision": 0.5,
+    "final_phase_revision_precision": 1.0,
+    "final_phase_baseline_stored": 16,
+    "final_phase_revision_stored": 8,
+    "final_phase_baseline_invalid": 8,
+    "final_phase_revision_invalid": 0,
+    "num_phases": 5
+  }
+}

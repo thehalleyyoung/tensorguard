@@ -1,0 +1,3272 @@
+{
+  "experiment": "architecture_brier_decomposition",
+  "description": "Architecture-conditional Brier decomposition to test whether zero resolution is Simpson's paradox. Groups benchmarks by architecture family (GAN, CNN, Transformer, etc.) and computes REL/RES/UNC per family and verification mode.",
+  "n_benchmarks": 32,
+  "architecture_families": {
+    "Autoencoder": {
+      "stratum": "Autoencoder",
+      "n_predictions": 3,
+      "brier_decomposition": {
+        "REL": 0.16,
+        "RES": 0.0,
+        "UNC": 0.0,
+        "brier": 0.16,
+        "brier_reconstructed": 0.16,
+        "decomposition_error": 0.0
+      },
+      "classification_metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 3,
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 2
+      },
+      "confidence_distribution": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6,
+        "n_distinct": 1
+      },
+      "ece": 0.4,
+      "reliability_diagram": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 1.0,
+          "count": 3,
+          "gap": 0.4
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        }
+      ]
+    },
+    "Bottleneck": {
+      "stratum": "Bottleneck",
+      "n_predictions": 2,
+      "brier_decomposition": {
+        "REL": 0.01,
+        "RES": 0.0,
+        "UNC": 0.25,
+        "brier": 0.26,
+        "brier_reconstructed": 0.26,
+        "decomposition_error": 0.0
+      },
+      "classification_metrics": {
+        "accuracy": 0.5,
+        "precision": 1.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "n": 2,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "tn": 1
+      },
+      "confidence_distribution": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6,
+        "n_distinct": 1
+      },
+      "ece": 0.1,
+      "reliability_diagram": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 0.5,
+          "count": 2,
+          "gap": 0.1
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        }
+      ]
+    },
+    "CNN": {
+      "stratum": "CNN",
+      "n_predictions": 4,
+      "brier_decomposition": {
+        "REL": 0.16,
+        "RES": 0.0,
+        "UNC": 0.0,
+        "brier": 0.16,
+        "brier_reconstructed": 0.16,
+        "decomposition_error": 0.0
+      },
+      "classification_metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 4,
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "tn": 2
+      },
+      "confidence_distribution": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6,
+        "n_distinct": 1
+      },
+      "ece": 0.4,
+      "reliability_diagram": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 1.0,
+          "count": 4,
+          "gap": 0.4
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        }
+      ]
+    },
+    "Classifier": {
+      "stratum": "Classifier",
+      "n_predictions": 2,
+      "brier_decomposition": {
+        "REL": 0.16,
+        "RES": 0.0,
+        "UNC": 0.0,
+        "brier": 0.16,
+        "brier_reconstructed": 0.16,
+        "decomposition_error": 0.0
+      },
+      "classification_metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 2,
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1
+      },
+      "confidence_distribution": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6,
+        "n_distinct": 1
+      },
+      "ece": 0.4,
+      "reliability_diagram": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 1.0,
+          "count": 2,
+          "gap": 0.4
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        }
+      ]
+    },
+    "GAN": {
+      "stratum": "GAN",
+      "n_predictions": 2,
+      "brier_decomposition": {
+        "REL": 0.16,
+        "RES": 0.0,
+        "UNC": 0.0,
+        "brier": 0.16,
+        "brier_reconstructed": 0.16,
+        "decomposition_error": 0.0
+      },
+      "classification_metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 2,
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1
+      },
+      "confidence_distribution": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6,
+        "n_distinct": 1
+      },
+      "ece": 0.4,
+      "reliability_diagram": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 1.0,
+          "count": 2,
+          "gap": 0.4
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        }
+      ]
+    },
+    "MLP": {
+      "stratum": "MLP",
+      "n_predictions": 6,
+      "brier_decomposition": {
+        "REL": 0.16,
+        "RES": 0.0,
+        "UNC": 0.0,
+        "brier": 0.16,
+        "brier_reconstructed": 0.16,
+        "decomposition_error": 0.0
+      },
+      "classification_metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 6,
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "tn": 3
+      },
+      "confidence_distribution": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6,
+        "n_distinct": 1
+      },
+      "ece": 0.4,
+      "reliability_diagram": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 1.0,
+          "count": 6,
+          "gap": 0.4
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        }
+      ]
+    },
+    "ResNet": {
+      "stratum": "ResNet",
+      "n_predictions": 3,
+      "brier_decomposition": {
+        "REL": 0.071111,
+        "RES": 0.0,
+        "UNC": 0.222222,
+        "brier": 0.293333,
+        "brier_reconstructed": 0.293333,
+        "decomposition_error": 0.0
+      },
+      "classification_metrics": {
+        "accuracy": 0.3333,
+        "precision": 0.3333,
+        "recall": 1.0,
+        "f1": 0.5,
+        "n": 3,
+        "tp": 1,
+        "fp": 2,
+        "fn": 0,
+        "tn": 0
+      },
+      "confidence_distribution": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6,
+        "n_distinct": 1
+      },
+      "ece": 0.266667,
+      "reliability_diagram": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 0.3333,
+          "count": 3,
+          "gap": 0.2667
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        }
+      ]
+    },
+    "Transformer": {
+      "stratum": "Transformer",
+      "n_predictions": 6,
+      "brier_decomposition": {
+        "REL": 0.054444,
+        "RES": 0.0,
+        "UNC": 0.138889,
+        "brier": 0.193333,
+        "brier_reconstructed": 0.193333,
+        "decomposition_error": 0.0
+      },
+      "classification_metrics": {
+        "accuracy": 0.8333,
+        "precision": 1.0,
+        "recall": 0.6667,
+        "f1": 0.8,
+        "n": 6,
+        "tp": 2,
+        "fp": 0,
+        "fn": 1,
+        "tn": 3
+      },
+      "confidence_distribution": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6,
+        "n_distinct": 1
+      },
+      "ece": 0.233333,
+      "reliability_diagram": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 0.8333,
+          "count": 6,
+          "gap": 0.2333
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        }
+      ]
+    },
+    "U-Net": {
+      "stratum": "U-Net",
+      "n_predictions": 2,
+      "brier_decomposition": {
+        "REL": 0.01,
+        "RES": 0.0,
+        "UNC": 0.25,
+        "brier": 0.26,
+        "brier_reconstructed": 0.26,
+        "decomposition_error": 0.0
+      },
+      "classification_metrics": {
+        "accuracy": 0.5,
+        "precision": 1.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "n": 2,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "tn": 1
+      },
+      "confidence_distribution": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6,
+        "n_distinct": 1
+      },
+      "ece": 0.1,
+      "reliability_diagram": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 0.5,
+          "count": 2,
+          "gap": 0.1
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        }
+      ]
+    },
+    "Wide": {
+      "stratum": "Wide",
+      "n_predictions": 2,
+      "brier_decomposition": {
+        "REL": 0.01,
+        "RES": 0.0,
+        "UNC": 0.25,
+        "brier": 0.26,
+        "brier_reconstructed": 0.26,
+        "decomposition_error": 0.0
+      },
+      "classification_metrics": {
+        "accuracy": 0.5,
+        "precision": 1.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "n": 2,
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "tn": 1
+      },
+      "confidence_distribution": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6,
+        "n_distinct": 1
+      },
+      "ece": 0.1,
+      "reliability_diagram": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 0.5,
+          "count": 2,
+          "gap": 0.1
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        }
+      ]
+    }
+  },
+  "verification_modes": {
+    "BMC": {
+      "stratum": "BMC",
+      "n_predictions": 32,
+      "brier_decomposition": {
+        "REL": 0.007656,
+        "RES": 0.0,
+        "UNC": 0.214844,
+        "brier": 0.2225,
+        "brier_reconstructed": 0.2225,
+        "decomposition_error": 0.0
+      },
+      "classification_metrics": {
+        "accuracy": 0.6875,
+        "precision": 0.7778,
+        "recall": 0.4667,
+        "f1": 0.5833,
+        "n": 32,
+        "tp": 7,
+        "fp": 2,
+        "fn": 8,
+        "tn": 15
+      },
+      "confidence_distribution": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6,
+        "n_distinct": 1
+      },
+      "ece": 0.0875,
+      "reliability_diagram": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 0.6875,
+          "count": 32,
+          "gap": 0.0875
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        }
+      ]
+    },
+    "IC3": {
+      "stratum": "IC3",
+      "n_predictions": 32,
+      "brier_decomposition": {
+        "REL": 0.045156,
+        "RES": 0.0,
+        "UNC": 0.152344,
+        "brier": 0.1975,
+        "brier_reconstructed": 0.1975,
+        "decomposition_error": 0.0
+      },
+      "classification_metrics": {
+        "accuracy": 0.8125,
+        "precision": 0.8462,
+        "recall": 0.7333,
+        "f1": 0.7857,
+        "n": 32,
+        "tp": 11,
+        "fp": 2,
+        "fn": 4,
+        "tn": 15
+      },
+      "confidence_distribution": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6,
+        "n_distinct": 1
+      },
+      "ece": 0.2125,
+      "reliability_diagram": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 0.8125,
+          "count": 32,
+          "gap": 0.2125
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        }
+      ]
+    },
+    "CEGAR": {
+      "stratum": "CEGAR",
+      "n_predictions": 32,
+      "brier_decomposition": {
+        "REL": 0.045156,
+        "RES": 0.0,
+        "UNC": 0.152344,
+        "brier": 0.1975,
+        "brier_reconstructed": 0.1975,
+        "decomposition_error": 0.0
+      },
+      "classification_metrics": {
+        "accuracy": 0.8125,
+        "precision": 0.8462,
+        "recall": 0.7333,
+        "f1": 0.7857,
+        "n": 32,
+        "tp": 11,
+        "fp": 2,
+        "fn": 4,
+        "tn": 15
+      },
+      "confidence_distribution": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6,
+        "n_distinct": 1
+      },
+      "ece": 0.2125,
+      "reliability_diagram": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 0.8125,
+          "count": 32,
+          "gap": 0.2125
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        }
+      ]
+    }
+  },
+  "simpsons_paradox_analysis": {
+    "is_simpsons_paradox": false,
+    "marginal_RES": 0.0,
+    "weighted_conditional_RES": 0.0,
+    "positive_resolution_strata": [],
+    "n_positive_res_strata": 0,
+    "base_rates_by_family": {
+      "Autoencoder": 0.0,
+      "Bottleneck": 0.25,
+      "CNN": 0.0,
+      "Classifier": 0.0,
+      "GAN": 0.0,
+      "MLP": 0.0,
+      "ResNet": 0.2222,
+      "Transformer": 0.1389,
+      "U-Net": 0.25,
+      "Wide": 0.25
+    },
+    "base_rate_range": 0.1111,
+    "explanation": "Simpson's paradox NOT detected: zero resolution appears genuine across architecture families, not an aggregation artifact. The deterministic SMT confidence assignment produces uniform predictions within each stratum."
+  },
+  "cross_stratification": {
+    "mode_BMC": {
+      "Autoencoder": {
+        "stratum": "Autoencoder_BMC",
+        "n_predictions": 3,
+        "brier_decomposition": {
+          "REL": 0.004444,
+          "RES": 0.0,
+          "UNC": 0.222222,
+          "brier": 0.226667,
+          "brier_reconstructed": 0.226667,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.6667,
+          "precision": 1.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "n": 3,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 2
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.066667,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.6667,
+            "count": 3,
+            "gap": 0.0667
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "Bottleneck": {
+        "stratum": "Bottleneck_BMC",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.01,
+          "RES": 0.0,
+          "UNC": 0.25,
+          "brier": 0.26,
+          "brier_reconstructed": 0.26,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.5,
+          "precision": 1.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "n": 2,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.1,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.5,
+            "count": 2,
+            "gap": 0.1
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "CNN": {
+        "stratum": "CNN_BMC",
+        "n_predictions": 4,
+        "brier_decomposition": {
+          "REL": 0.16,
+          "RES": 0.0,
+          "UNC": 0.0,
+          "brier": 0.16,
+          "brier_reconstructed": 0.16,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "n": 4,
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.4,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 1.0,
+            "count": 4,
+            "gap": 0.4
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "Classifier": {
+        "stratum": "Classifier_BMC",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.01,
+          "RES": 0.0,
+          "UNC": 0.25,
+          "brier": 0.26,
+          "brier_reconstructed": 0.26,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.5,
+          "precision": 1.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "n": 2,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.1,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.5,
+            "count": 2,
+            "gap": 0.1
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "GAN": {
+        "stratum": "GAN_BMC",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.01,
+          "RES": 0.0,
+          "UNC": 0.25,
+          "brier": 0.26,
+          "brier_reconstructed": 0.26,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.5,
+          "precision": 1.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "n": 2,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.1,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.5,
+            "count": 2,
+            "gap": 0.1
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "MLP": {
+        "stratum": "MLP_BMC",
+        "n_predictions": 6,
+        "brier_decomposition": {
+          "REL": 0.054444,
+          "RES": 0.0,
+          "UNC": 0.138889,
+          "brier": 0.193333,
+          "brier_reconstructed": 0.193333,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.8333,
+          "precision": 1.0,
+          "recall": 0.6667,
+          "f1": 0.8,
+          "n": 6,
+          "tp": 2,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.233333,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.8333,
+            "count": 6,
+            "gap": 0.2333
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "ResNet": {
+        "stratum": "ResNet_BMC",
+        "n_predictions": 3,
+        "brier_decomposition": {
+          "REL": 0.071111,
+          "RES": 0.0,
+          "UNC": 0.222222,
+          "brier": 0.293333,
+          "brier_reconstructed": 0.293333,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.3333,
+          "precision": 0.3333,
+          "recall": 1.0,
+          "f1": 0.5,
+          "n": 3,
+          "tp": 1,
+          "fp": 2,
+          "fn": 0,
+          "tn": 0
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.266667,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.3333,
+            "count": 3,
+            "gap": 0.2667
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "Transformer": {
+        "stratum": "Transformer_BMC",
+        "n_predictions": 6,
+        "brier_decomposition": {
+          "REL": 0.054444,
+          "RES": 0.0,
+          "UNC": 0.138889,
+          "brier": 0.193333,
+          "brier_reconstructed": 0.193333,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.8333,
+          "precision": 1.0,
+          "recall": 0.6667,
+          "f1": 0.8,
+          "n": 6,
+          "tp": 2,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.233333,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.8333,
+            "count": 6,
+            "gap": 0.2333
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "U-Net": {
+        "stratum": "U-Net_BMC",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.01,
+          "RES": 0.0,
+          "UNC": 0.25,
+          "brier": 0.26,
+          "brier_reconstructed": 0.26,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.5,
+          "precision": 1.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "n": 2,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.1,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.5,
+            "count": 2,
+            "gap": 0.1
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "Wide": {
+        "stratum": "Wide_BMC",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.01,
+          "RES": 0.0,
+          "UNC": 0.25,
+          "brier": 0.26,
+          "brier_reconstructed": 0.26,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.5,
+          "precision": 1.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "n": 2,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.1,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.5,
+            "count": 2,
+            "gap": 0.1
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      }
+    },
+    "mode_IC3": {
+      "Autoencoder": {
+        "stratum": "Autoencoder_IC3",
+        "n_predictions": 3,
+        "brier_decomposition": {
+          "REL": 0.16,
+          "RES": 0.0,
+          "UNC": 0.0,
+          "brier": 0.16,
+          "brier_reconstructed": 0.16,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "n": 3,
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.4,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 1.0,
+            "count": 3,
+            "gap": 0.4
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "Bottleneck": {
+        "stratum": "Bottleneck_IC3",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.01,
+          "RES": 0.0,
+          "UNC": 0.25,
+          "brier": 0.26,
+          "brier_reconstructed": 0.26,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.5,
+          "precision": 1.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "n": 2,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.1,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.5,
+            "count": 2,
+            "gap": 0.1
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "CNN": {
+        "stratum": "CNN_IC3",
+        "n_predictions": 4,
+        "brier_decomposition": {
+          "REL": 0.16,
+          "RES": 0.0,
+          "UNC": 0.0,
+          "brier": 0.16,
+          "brier_reconstructed": 0.16,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "n": 4,
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.4,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 1.0,
+            "count": 4,
+            "gap": 0.4
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "Classifier": {
+        "stratum": "Classifier_IC3",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.16,
+          "RES": 0.0,
+          "UNC": 0.0,
+          "brier": 0.16,
+          "brier_reconstructed": 0.16,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "n": 2,
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.4,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 1.0,
+            "count": 2,
+            "gap": 0.4
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "GAN": {
+        "stratum": "GAN_IC3",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.16,
+          "RES": 0.0,
+          "UNC": 0.0,
+          "brier": 0.16,
+          "brier_reconstructed": 0.16,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "n": 2,
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.4,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 1.0,
+            "count": 2,
+            "gap": 0.4
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "MLP": {
+        "stratum": "MLP_IC3",
+        "n_predictions": 6,
+        "brier_decomposition": {
+          "REL": 0.16,
+          "RES": 0.0,
+          "UNC": 0.0,
+          "brier": 0.16,
+          "brier_reconstructed": 0.16,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "n": 6,
+          "tp": 3,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.4,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 1.0,
+            "count": 6,
+            "gap": 0.4
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "ResNet": {
+        "stratum": "ResNet_IC3",
+        "n_predictions": 3,
+        "brier_decomposition": {
+          "REL": 0.071111,
+          "RES": 0.0,
+          "UNC": 0.222222,
+          "brier": 0.293333,
+          "brier_reconstructed": 0.293333,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.3333,
+          "precision": 0.3333,
+          "recall": 1.0,
+          "f1": 0.5,
+          "n": 3,
+          "tp": 1,
+          "fp": 2,
+          "fn": 0,
+          "tn": 0
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.266667,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.3333,
+            "count": 3,
+            "gap": 0.2667
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "Transformer": {
+        "stratum": "Transformer_IC3",
+        "n_predictions": 6,
+        "brier_decomposition": {
+          "REL": 0.054444,
+          "RES": 0.0,
+          "UNC": 0.138889,
+          "brier": 0.193333,
+          "brier_reconstructed": 0.193333,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.8333,
+          "precision": 1.0,
+          "recall": 0.6667,
+          "f1": 0.8,
+          "n": 6,
+          "tp": 2,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.233333,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.8333,
+            "count": 6,
+            "gap": 0.2333
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "U-Net": {
+        "stratum": "U-Net_IC3",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.01,
+          "RES": 0.0,
+          "UNC": 0.25,
+          "brier": 0.26,
+          "brier_reconstructed": 0.26,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.5,
+          "precision": 1.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "n": 2,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.1,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.5,
+            "count": 2,
+            "gap": 0.1
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "Wide": {
+        "stratum": "Wide_IC3",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.01,
+          "RES": 0.0,
+          "UNC": 0.25,
+          "brier": 0.26,
+          "brier_reconstructed": 0.26,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.5,
+          "precision": 1.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "n": 2,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.1,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.5,
+            "count": 2,
+            "gap": 0.1
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      }
+    },
+    "mode_CEGAR": {
+      "Autoencoder": {
+        "stratum": "Autoencoder_CEGAR",
+        "n_predictions": 3,
+        "brier_decomposition": {
+          "REL": 0.16,
+          "RES": 0.0,
+          "UNC": 0.0,
+          "brier": 0.16,
+          "brier_reconstructed": 0.16,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "n": 3,
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.4,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 1.0,
+            "count": 3,
+            "gap": 0.4
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "Bottleneck": {
+        "stratum": "Bottleneck_CEGAR",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.01,
+          "RES": 0.0,
+          "UNC": 0.25,
+          "brier": 0.26,
+          "brier_reconstructed": 0.26,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.5,
+          "precision": 1.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "n": 2,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.1,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.5,
+            "count": 2,
+            "gap": 0.1
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "CNN": {
+        "stratum": "CNN_CEGAR",
+        "n_predictions": 4,
+        "brier_decomposition": {
+          "REL": 0.16,
+          "RES": 0.0,
+          "UNC": 0.0,
+          "brier": 0.16,
+          "brier_reconstructed": 0.16,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "n": 4,
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.4,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 1.0,
+            "count": 4,
+            "gap": 0.4
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "Classifier": {
+        "stratum": "Classifier_CEGAR",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.16,
+          "RES": 0.0,
+          "UNC": 0.0,
+          "brier": 0.16,
+          "brier_reconstructed": 0.16,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "n": 2,
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.4,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 1.0,
+            "count": 2,
+            "gap": 0.4
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "GAN": {
+        "stratum": "GAN_CEGAR",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.16,
+          "RES": 0.0,
+          "UNC": 0.0,
+          "brier": 0.16,
+          "brier_reconstructed": 0.16,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "n": 2,
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.4,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 1.0,
+            "count": 2,
+            "gap": 0.4
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "MLP": {
+        "stratum": "MLP_CEGAR",
+        "n_predictions": 6,
+        "brier_decomposition": {
+          "REL": 0.16,
+          "RES": 0.0,
+          "UNC": 0.0,
+          "brier": 0.16,
+          "brier_reconstructed": 0.16,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "n": 6,
+          "tp": 3,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.4,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 1.0,
+            "count": 6,
+            "gap": 0.4
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "ResNet": {
+        "stratum": "ResNet_CEGAR",
+        "n_predictions": 3,
+        "brier_decomposition": {
+          "REL": 0.071111,
+          "RES": 0.0,
+          "UNC": 0.222222,
+          "brier": 0.293333,
+          "brier_reconstructed": 0.293333,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.3333,
+          "precision": 0.3333,
+          "recall": 1.0,
+          "f1": 0.5,
+          "n": 3,
+          "tp": 1,
+          "fp": 2,
+          "fn": 0,
+          "tn": 0
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.266667,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.3333,
+            "count": 3,
+            "gap": 0.2667
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "Transformer": {
+        "stratum": "Transformer_CEGAR",
+        "n_predictions": 6,
+        "brier_decomposition": {
+          "REL": 0.054444,
+          "RES": 0.0,
+          "UNC": 0.138889,
+          "brier": 0.193333,
+          "brier_reconstructed": 0.193333,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.8333,
+          "precision": 1.0,
+          "recall": 0.6667,
+          "f1": 0.8,
+          "n": 6,
+          "tp": 2,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.233333,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.8333,
+            "count": 6,
+            "gap": 0.2333
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "U-Net": {
+        "stratum": "U-Net_CEGAR",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.01,
+          "RES": 0.0,
+          "UNC": 0.25,
+          "brier": 0.26,
+          "brier_reconstructed": 0.26,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.5,
+          "precision": 1.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "n": 2,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.1,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.5,
+            "count": 2,
+            "gap": 0.1
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      },
+      "Wide": {
+        "stratum": "Wide_CEGAR",
+        "n_predictions": 2,
+        "brier_decomposition": {
+          "REL": 0.01,
+          "RES": 0.0,
+          "UNC": 0.25,
+          "brier": 0.26,
+          "brier_reconstructed": 0.26,
+          "decomposition_error": 0.0
+        },
+        "classification_metrics": {
+          "accuracy": 0.5,
+          "precision": 1.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "n": 2,
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 1
+        },
+        "confidence_distribution": {
+          "mean": 0.6,
+          "std": 0.0,
+          "min": 0.6,
+          "max": 0.6,
+          "n_distinct": 1
+        },
+        "ece": 0.1,
+        "reliability_diagram": [
+          {
+            "bin_lower": 0.0,
+            "bin_upper": 0.2,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.2,
+            "bin_upper": 0.4,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.4,
+            "bin_upper": 0.6,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          },
+          {
+            "bin_lower": 0.6,
+            "bin_upper": 0.8,
+            "avg_confidence": 0.6,
+            "avg_accuracy": 0.5,
+            "count": 2,
+            "gap": 0.1
+          },
+          {
+            "bin_lower": 0.8,
+            "bin_upper": 1.0,
+            "avg_confidence": 0.0,
+            "avg_accuracy": 0.0,
+            "count": 0,
+            "gap": 0.0
+          }
+        ]
+      }
+    }
+  },
+  "marginal_overall": {
+    "stratum": "marginal_all",
+    "n_predictions": 32,
+    "brier_decomposition": {
+      "REL": 0.045156,
+      "RES": 0.0,
+      "UNC": 0.152344,
+      "brier": 0.1975,
+      "brier_reconstructed": 0.1975,
+      "decomposition_error": 0.0
+    },
+    "classification_metrics": {
+      "accuracy": 0.8125,
+      "precision": 0.8462,
+      "recall": 0.7333,
+      "f1": 0.7857,
+      "n": 32,
+      "tp": 11,
+      "fp": 2,
+      "fn": 4,
+      "tn": 15
+    },
+    "confidence_distribution": {
+      "mean": 0.6,
+      "std": 0.0,
+      "min": 0.6,
+      "max": 0.6,
+      "n_distinct": 1
+    },
+    "ece": 0.2125,
+    "reliability_diagram": [
+      {
+        "bin_lower": 0.0,
+        "bin_upper": 0.2,
+        "avg_confidence": 0.0,
+        "avg_accuracy": 0.0,
+        "count": 0,
+        "gap": 0.0
+      },
+      {
+        "bin_lower": 0.2,
+        "bin_upper": 0.4,
+        "avg_confidence": 0.0,
+        "avg_accuracy": 0.0,
+        "count": 0,
+        "gap": 0.0
+      },
+      {
+        "bin_lower": 0.4,
+        "bin_upper": 0.6,
+        "avg_confidence": 0.0,
+        "avg_accuracy": 0.0,
+        "count": 0,
+        "gap": 0.0
+      },
+      {
+        "bin_lower": 0.6,
+        "bin_upper": 0.8,
+        "avg_confidence": 0.6,
+        "avg_accuracy": 0.8125,
+        "count": 32,
+        "gap": 0.2125
+      },
+      {
+        "bin_lower": 0.8,
+        "bin_upper": 1.0,
+        "avg_confidence": 0.0,
+        "avg_accuracy": 0.0,
+        "count": 0,
+        "gap": 0.0
+      }
+    ]
+  },
+  "summary": {
+    "marginal_brier": 0.1975,
+    "marginal_RES": 0.0,
+    "max_conditional_RES": 0.0,
+    "mean_conditional_RES": 0.0,
+    "is_simpsons_paradox": false,
+    "architecture_with_max_RES": "Autoencoder",
+    "per_architecture_RES": {
+      "Autoencoder": 0.0,
+      "Bottleneck": 0.0,
+      "CNN": 0.0,
+      "Classifier": 0.0,
+      "GAN": 0.0,
+      "MLP": 0.0,
+      "ResNet": 0.0,
+      "Transformer": 0.0,
+      "U-Net": 0.0,
+      "Wide": 0.0
+    },
+    "decision_theoretic_verdict": "Zero resolution is GENUINE across architecture families \u2014 not Simpson's paradox. This reflects the deterministic nature of SMT-based verification: confidence levels are structurally uniform within each architecture stratum. The confidence hierarchy is decision-theoretically informative for calibration (REL) but not for discrimination (RES), which is expected for a formal verification tool."
+  },
+  "elapsed_seconds": 23.23
+}

@@ -1,0 +1,513 @@
+{
+  "experiment": "pytea_vs_tensorguard_comparison",
+  "description": "Quantitative comparison of TensorGuard (architecture-level verification) vs PyTea (operation-level symbolic shape analysis, Seo et al. ECOOP 2023). PyTea results are analytically derived from its published methodology.",
+  "benchmarks": [
+    {
+      "name": "simple_mlp_correct",
+      "category": "shared_success",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "is_safe": true,
+        "has_certificate": true,
+        "has_counterexample": false,
+        "errors": [],
+        "time_ms": 313.88283299747854,
+        "ic3_safe": true,
+        "ic3_frames": 3,
+        "ic3_time_ms": 8.804666009382345,
+        "ic3_invariant": "sh_x_v0_d0 == batch_size \u2227 batch_size > 0 \u2227 sh_x_v0_d1 == 784 \u2227 sh_x_v1_d0 == sh_x_v0_d0 \u2227 256 == sh_x_v1_d1 \u2227 sh___ret_1_v1_d0 == sh_x_v1_d0 \u2227 10 == sh___ret_1_v1_d1 \u2227 784 == sh_x_v0_d1 \u2227 256 == sh_x_v1_d1"
+      },
+      "pytea_analytical": {
+        "would_detect_bug": null,
+        "rationale": "No bug. PyTea verifies each Linear op independently: fc1 receives (batch,784) matching in_features=784, outputs (batch,256); fc2 receives (batch,256) matching in_features=256. Both pass.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "single_conv2d_correct",
+      "category": "shared_success",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "is_safe": true,
+        "has_certificate": true,
+        "has_counterexample": false,
+        "errors": [],
+        "time_ms": 227.74166699673515,
+        "ic3_safe": true,
+        "ic3_frames": 3,
+        "ic3_time_ms": 20.318958995630965,
+        "ic3_invariant": "sh_x_v0_d0 == batch_size \u2227 batch_size > 0 \u2227 sh_x_v0_d1 == 3 \u2227 sh_x_v0_d2 == 32 \u2227 sh_x_v0_d3 == 32 \u2227 sh___ret_1_v1_d0 == sh_x_v0_d0 \u2227 16 == sh___ret_1_v1_d1 \u2227 sh___ret_1_v1_d2 == sh_x_v0_d2 + 2 - 3 + 1 \u2227 sh___ret_1_v1_d3 == sh_x_v0_d3 + 2 - 3 + 1 \u2227 3 == sh_x_v0_d1 \u2227 sh_x_v0_d2 + 2 >= 3 \u2227 sh_x_v0_d3 + 2 >= 3"
+      },
+      "pytea_analytical": {
+        "would_detect_bug": null,
+        "rationale": "No bug. PyTea checks Conv2d: input channels=3 matches in_channels=3. Single operation, shape is valid.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "single_linear_mismatch",
+      "category": "shared_success",
+      "has_bug": true,
+      "bug_description": "Input dim 64 != Linear in_features 100",
+      "tensorguard": {
+        "detected_bug": true,
+        "is_safe": false,
+        "has_certificate": false,
+        "has_counterexample": true,
+        "errors": [],
+        "time_ms": 277.7198340045288,
+        "ic3_safe": false,
+        "ic3_frames": 1,
+        "ic3_time_ms": 4.13558300351724,
+        "ic3_invariant": null
+      },
+      "pytea_analytical": {
+        "would_detect_bug": true,
+        "rationale": "PyTea detects this: single Linear op receives (batch,64) but expects in_features=100. Direct shape mismatch at one operation.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "conv2d_channel_mismatch",
+      "category": "shared_success",
+      "has_bug": true,
+      "bug_description": "Input has 1 channel but Conv2d expects 3 channels",
+      "tensorguard": {
+        "detected_bug": true,
+        "is_safe": false,
+        "has_certificate": false,
+        "has_counterexample": true,
+        "errors": [],
+        "time_ms": 133.25791600800585,
+        "ic3_safe": false,
+        "ic3_frames": 1,
+        "ic3_time_ms": 3.3140000014100224,
+        "ic3_invariant": null
+      },
+      "pytea_analytical": {
+        "would_detect_bug": true,
+        "rationale": "PyTea detects this: Conv2d expects in_channels=3 but receives tensor with 1 channel. Single-op shape check catches it.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "simple_mlp_bug",
+      "category": "shared_success",
+      "has_bug": true,
+      "bug_description": "fc1 outputs 256 but fc2 expects 128",
+      "tensorguard": {
+        "detected_bug": true,
+        "is_safe": false,
+        "has_certificate": false,
+        "has_counterexample": true,
+        "errors": [],
+        "time_ms": 186.39724999957252,
+        "ic3_safe": false,
+        "ic3_frames": 1,
+        "ic3_time_ms": 3.099667010246776,
+        "ic3_invariant": null
+      },
+      "pytea_analytical": {
+        "would_detect_bug": true,
+        "rationale": "PyTea would detect this IF it propagates the output shape of fc1 to fc2. Since fc1 and fc2 are both standard Linear ops and PyTea tracks per-op output shapes, it would see (batch,256) fed into Linear(128,10) and flag the mismatch. This is within PyTea's scope for sequential op-by-op analysis.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "deep_chain_bug_at_layer12",
+      "category": "compositional_bug",
+      "has_bug": true,
+      "bug_description": "fc12 expects 128 but receives 256 from fc11; requires 12-hop compositional reasoning",
+      "tensorguard": {
+        "detected_bug": true,
+        "is_safe": false,
+        "has_certificate": false,
+        "has_counterexample": true,
+        "errors": [],
+        "time_ms": 842.3331670055632,
+        "ic3_safe": false,
+        "ic3_frames": 1,
+        "ic3_time_ms": 5.400292007834651,
+        "ic3_invariant": null
+      },
+      "pytea_analytical": {
+        "would_detect_bug": false,
+        "rationale": "PyTea checks operations individually. Each Linear op's shape signature is locally valid (in_features, out_features are consistent for that layer). The bug is that fc11 outputs 256 but fc12 expects 128 \u2014 detecting this requires propagating shapes through 12 layers of the forward() computation graph, which is outside PyTea's per-operation scope.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "conv_fc_flatten_mismatch",
+      "category": "compositional_bug",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "is_safe": true,
+        "has_certificate": true,
+        "has_counterexample": false,
+        "errors": [],
+        "time_ms": 451.20841699826997,
+        "ic3_safe": false,
+        "ic3_frames": 1,
+        "ic3_time_ms": 16.222250007558614,
+        "ic3_invariant": null
+      },
+      "pytea_analytical": {
+        "would_detect_bug": null,
+        "rationale": "No bug. Conv1: (batch,3,32,32)->(batch,32,32,32), pool->(batch,32,16,16). Conv2: (batch,32,16,16)->(batch,64,16,16), pool->(batch,64,8,8). Flatten: 64*8*8=4096 matches fc in_features. PyTea would check each op independently but cannot verify the flatten->fc dimension chain.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "conv_fc_flatten_bug",
+      "category": "compositional_bug",
+      "has_bug": true,
+      "bug_description": "After two pools, spatial dims are 8x8 giving 64*8*8=4096, but fc expects 64*16*16=16384. Requires computing output shapes through conv+pool chain.",
+      "tensorguard": {
+        "detected_bug": true,
+        "is_safe": false,
+        "has_certificate": false,
+        "has_counterexample": true,
+        "errors": [],
+        "time_ms": 335.4502500005765,
+        "ic3_safe": false,
+        "ic3_frames": 1,
+        "ic3_time_ms": 4.547167001874186,
+        "ic3_invariant": null
+      },
+      "pytea_analytical": {
+        "would_detect_bug": false,
+        "rationale": "Each individual op (Conv2d, MaxPool2d, Linear) has valid shape signatures in isolation. The bug is a mismatch between the composed output of the conv/pool chain (4096) and the fc input (16384). PyTea doesn't compose across forward() to detect this.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "residual_branch_mismatch",
+      "category": "compositional_bug",
+      "has_bug": true,
+      "bug_description": "Residual add: conv2 outputs (batch,128,16,16) but residual is (batch,64,16,16). Channel mismatch in element-wise add requires tracking both branches through forward().",
+      "tensorguard": {
+        "detected_bug": true,
+        "is_safe": false,
+        "has_certificate": false,
+        "has_counterexample": true,
+        "errors": [],
+        "time_ms": 400.16499999910593,
+        "ic3_safe": false,
+        "ic3_frames": 1,
+        "ic3_time_ms": 5.736875013099052,
+        "ic3_invariant": null
+      },
+      "pytea_analytical": {
+        "would_detect_bug": false,
+        "rationale": "conv1 and conv2 are individually valid. The bug is in the element-wise addition x + residual, which requires knowing that x has shape (batch,128,16,16) from the conv chain while residual has (batch,64,16,16). PyTea checks each op independently and does not compose the full forward() data flow to detect branch mismatches.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "attention_head_mismatch",
+      "category": "compositional_bug",
+      "has_bug": true,
+      "bug_description": "Query has 8 heads but Key has 6 heads. matmul(q, k^T) fails because head dimensions don't match. Requires composing Linear->view->transpose->matmul across the forward() pass.",
+      "tensorguard": {
+        "detected_bug": false,
+        "is_safe": true,
+        "has_certificate": true,
+        "has_counterexample": false,
+        "errors": [],
+        "time_ms": 2378.401291993214,
+        "ic3_safe": false,
+        "ic3_frames": 1,
+        "ic3_time_ms": 15.493333004997112,
+        "ic3_invariant": null
+      },
+      "pytea_analytical": {
+        "would_detect_bug": false,
+        "rationale": "Each Linear, view, transpose is individually shape-valid. The bug manifests at matmul where composed shapes from different branches are incompatible. PyTea's per-operation analysis doesn't propagate through the multi-branch computation graph.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "encoder_decoder_mismatch",
+      "category": "compositional_bug",
+      "has_bug": true,
+      "bug_description": "Encoder outputs 32-dim but decoder expects 16-dim. Bug is at the encoder-decoder boundary, requiring end-to-end shape composition.",
+      "tensorguard": {
+        "detected_bug": true,
+        "is_safe": false,
+        "has_certificate": false,
+        "has_counterexample": true,
+        "errors": [],
+        "time_ms": 458.1842080078786,
+        "ic3_safe": true,
+        "ic3_frames": 3,
+        "ic3_time_ms": 33.44541700789705,
+        "ic3_invariant": "sh_x_v0_d0 == batch_size \u2227 batch_size > 0 \u2227 sh_x_v0_d1 == 100 \u2227 sh_z_v1_d0 == sh_x_v0_d0 \u2227 sh_z_v1_d1 == sh_x_v0_d1 \u2227 sh___ret_1_v1_d0 == sh_z_v1_d0 \u2227 sh___ret_1_v1_d1 == sh_z_v1_d1"
+      },
+      "pytea_analytical": {
+        "would_detect_bug": false,
+        "rationale": "Each Linear within encoder and decoder is internally consistent. The mismatch occurs at the boundary between the two nn.Sequential modules. PyTea checks individual operations and does not track the composed output of encoder feeding into decoder.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "parametric_mlp_safe",
+      "category": "parametric",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "is_safe": true,
+        "has_certificate": true,
+        "has_counterexample": false,
+        "errors": [],
+        "time_ms": 403.14520899846684,
+        "ic3_safe": true,
+        "ic3_frames": 3,
+        "ic3_time_ms": 5.579042001045309,
+        "ic3_invariant": "sh_x_v0_d0 == batch_size \u2227 batch_size > 0 \u2227 sh_x_v0_d1 == 128 \u2227 sh_x_v1_d0 == sh_x_v0_d0 \u2227 64 == sh_x_v1_d1 \u2227 sh___ret_1_v1_d0 == sh_x_v1_d0 \u2227 10 == sh___ret_1_v1_d1 \u2227 128 == sh_x_v0_d1 \u2227 64 == sh_x_v1_d1"
+      },
+      "pytea_analytical": {
+        "would_detect_bug": null,
+        "rationale": "No bug. PyTea could verify each op for a given concrete batch size. However, PyTea cannot prove safety for ALL batch sizes \u2014 it tests specific concrete values, not symbolic universality.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "parametric_conv_safe",
+      "category": "parametric",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "is_safe": true,
+        "has_certificate": true,
+        "has_counterexample": false,
+        "errors": [],
+        "time_ms": 119.80245800805278,
+        "ic3_safe": true,
+        "ic3_frames": 3,
+        "ic3_time_ms": 6.047374990885146,
+        "ic3_invariant": "sh_x_v0_d0 == batch_size \u2227 batch_size > 0 \u2227 sh_x_v0_d1 == 3 \u2227 sh_x_v0_d2 == 32 \u2227 sh_x_v0_d3 == 32 \u2227 sh___inner_2_v1_d0 == sh_x_v0_d0 \u2227 16 == sh___inner_2_v1_d1 \u2227 sh___inner_2_v1_d2 == sh_x_v0_d2 + 2 - 3 + 1 \u2227 sh___inner_2_v1_d3 == sh_x_v0_d3 + 2 - 3 + 1 \u2227 sh___ret_1_v1_d0 == sh___inner_2_v1_d0 \u2227 sh___ret_1_v1_d1 == sh___inner_2_v1_d1 \u2227 sh___ret_1_v1_d2 == sh___inner_2_v1_d2 \u2227 sh___ret_1_v1_d3 == sh___inner_2_v1_d3 \u2227 3 == sh_x_v0_d1 \u2227 sh_x_v0_d2 + 2 >= 3 \u2227 sh_x_v0_d3 + 2 >= 3"
+      },
+      "pytea_analytical": {
+        "would_detect_bug": null,
+        "rationale": "No bug for any batch size. PyTea can check specific batch sizes but cannot provide the universal guarantee that IC3/PDR gives \u2014 safety for ALL positive batch_size values.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "parametric_seq_model",
+      "category": "parametric",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "is_safe": true,
+        "has_certificate": true,
+        "has_counterexample": false,
+        "errors": [],
+        "time_ms": 163.90833299374208,
+        "ic3_safe": true,
+        "ic3_frames": 3,
+        "ic3_time_ms": 5.289916996844113,
+        "ic3_invariant": "sh_x_v0_d0 == batch_size \u2227 batch_size > 0 \u2227 sh_x_v0_d1 == seq_len \u2227 seq_len > 0 \u2227 sh_x_v0_d2 == 300 \u2227 sh_x_v1_d0 == sh_x_v0_d0 \u2227 sh_x_v1_d1 == sh_x_v0_d1 \u2227 128 == sh_x_v1_d2 \u2227 sh___ret_1_v1_d0 == sh_x_v1_d0 \u2227 sh___ret_1_v1_d1 == sh_x_v1_d1 \u2227 50 == sh___ret_1_v1_d2 \u2227 300 == sh_x_v0_d2 \u2227 128 == sh_x_v1_d2"
+      },
+      "pytea_analytical": {
+        "would_detect_bug": null,
+        "rationale": "No bug. Linear operates on last dim regardless of batch/seq_len. PyTea could verify a specific seq_len but cannot prove safety for all seq_len values simultaneously.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "certified_3layer_mlp",
+      "category": "certificate",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "is_safe": true,
+        "has_certificate": true,
+        "has_counterexample": false,
+        "errors": [],
+        "time_ms": 116.69308299315162,
+        "ic3_safe": true,
+        "ic3_frames": 3,
+        "ic3_time_ms": 5.661167000653222,
+        "ic3_invariant": "sh_x_v0_d0 == batch_size \u2227 batch_size > 0 \u2227 sh_x_v0_d1 == 784 \u2227 sh_x_v1_d0 == sh_x_v0_d0 \u2227 512 == sh_x_v1_d1 \u2227 sh_x_v2_d0 == sh_x_v1_d0 \u2227 256 == sh_x_v2_d1 \u2227 sh___ret_1_v1_d0 == sh_x_v2_d0 \u2227 10 == sh___ret_1_v1_d1 \u2227 784 == sh_x_v0_d1 \u2227 512 == sh_x_v1_d1 \u2227 256 == sh_x_v2_d1"
+      },
+      "pytea_analytical": {
+        "would_detect_bug": null,
+        "rationale": "No bug. PyTea checks each Linear. But it cannot produce a machine-checkable proof certificate (Z3 inference chain) that serves as an independently verifiable safety artifact.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "certified_cnn_pipeline",
+      "category": "certificate",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "is_safe": true,
+        "has_certificate": true,
+        "has_counterexample": false,
+        "errors": [],
+        "time_ms": 100.45370800071396,
+        "ic3_safe": false,
+        "ic3_frames": 1,
+        "ic3_time_ms": 3.9269590051844716,
+        "ic3_invariant": null
+      },
+      "pytea_analytical": {
+        "would_detect_bug": null,
+        "rationale": "No bug. PyTea verifies each op but cannot produce a certificate proving end-to-end shape safety through the full features->flatten->classifier pipeline. No proof artifact.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "certified_autoencoder",
+      "category": "certificate",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "is_safe": true,
+        "has_certificate": true,
+        "has_counterexample": false,
+        "errors": [],
+        "time_ms": 75.97274999716319,
+        "ic3_safe": true,
+        "ic3_frames": 3,
+        "ic3_time_ms": 2.0989159966120496,
+        "ic3_invariant": "sh_x_v0_d0 == batch_size \u2227 batch_size > 0 \u2227 sh_x_v0_d1 == 784 \u2227 sh_z_v1_d0 == sh_x_v0_d0 \u2227 sh_z_v1_d1 == sh_x_v0_d1 \u2227 sh___ret_1_v1_d0 == sh_z_v1_d0 \u2227 sh___ret_1_v1_d1 == sh_z_v1_d1"
+      },
+      "pytea_analytical": {
+        "would_detect_bug": null,
+        "rationale": "No bug. PyTea can verify each Linear independently. But it cannot emit a proof certificate covering the full encoder->decoder composition, which TensorGuard produces as a Z3 inference chain.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "three_branch_merge_bug",
+      "category": "compositional_bug",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "is_safe": true,
+        "has_certificate": true,
+        "has_counterexample": false,
+        "errors": [],
+        "time_ms": 287.20920901105274,
+        "ic3_safe": false,
+        "ic3_frames": 1,
+        "ic3_time_ms": 2.9687079950235784,
+        "ic3_invariant": null
+      },
+      "pytea_analytical": {
+        "would_detect_bug": null,
+        "rationale": "No bug (64+32+64=160 matches merge input). Each Linear is individually valid. The correctness of the cat->merge chain requires composing three branches. PyTea checks each op but cannot verify the concatenation's output shape feeds correctly into merge.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    },
+    {
+      "name": "three_branch_merge_actual_bug",
+      "category": "compositional_bug",
+      "has_bug": true,
+      "bug_description": "cat([64, 48, 64]) = 176 but merge expects 160. Requires composing three branches and verifying the concat output dimension.",
+      "tensorguard": {
+        "detected_bug": true,
+        "is_safe": false,
+        "has_certificate": false,
+        "has_counterexample": true,
+        "errors": [],
+        "time_ms": 273.8637500006007,
+        "ic3_safe": false,
+        "ic3_frames": 1,
+        "ic3_time_ms": 3.3201249898411334,
+        "ic3_invariant": null
+      },
+      "pytea_analytical": {
+        "would_detect_bug": false,
+        "rationale": "Each Linear and the cat op are individually shape-valid. The mismatch is between the concatenated output (176) and merge's in_features (160). Detecting this requires tracking outputs of all three branches through cat into merge \u2014 cross-layer composition.",
+        "scope": "per_operation",
+        "produces_certificate": false,
+        "parametric_verification": false
+      }
+    }
+  ],
+  "summary": {
+    "total_benchmarks": 19,
+    "benchmarks_with_bugs": 9,
+    "benchmarks_without_bugs": 10,
+    "both_tools_agree": 13,
+    "tensorguard_catches_pytea_misses": 5,
+    "tensorguard_provides_certificates_pytea_cannot": 11,
+    "tensorguard_provides_parametric_pytea_cannot": 19,
+    "category_breakdown": {
+      "shared_success": {
+        "total": 5,
+        "tg_correct": 5,
+        "pytea_correct": 5
+      },
+      "compositional_bug": {
+        "total": 8,
+        "tg_correct": 7,
+        "pytea_correct": 2
+      },
+      "parametric": {
+        "total": 3,
+        "tg_correct": 3,
+        "pytea_correct": 3
+      },
+      "certificate": {
+        "total": 3,
+        "tg_correct": 3,
+        "pytea_correct": 3
+      }
+    },
+    "architectural_difference": "PyTea performs per-operation symbolic shape analysis: each PyTorch operation is checked independently for shape compatibility. TensorGuard performs architecture-level verification: it builds a full computation graph from the nn.Module and uses Z3 to verify shape safety compositionally across the entire forward() pass, producing proof certificates and supporting unbounded parametric verification via IC3/PDR."
+  }
+}

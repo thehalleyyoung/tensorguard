@@ -1,0 +1,338 @@
+{
+  "experiment": "QF_NIA Decidability Fragment Characterization",
+  "source_module": "src/decidability.py",
+  "decidable_fragment_of_T_Pi": {
+    "summary": "T_\u03a0 = T_shape \u00d7 T_device \u00d7 T_phase combined via Tinelli-Zarba arrangement enumeration. The decidable fragment depends on which shape operations appear in the verification query.",
+    "fragments": {
+      "QF_LIA_linear": {
+        "operations": [
+          "LAYER_CALL",
+          "MATMUL",
+          "ADD",
+          "CAT",
+          "TRANSPOSE",
+          "PERMUTE",
+          "SQUEEZE",
+          "UNSQUEEZE",
+          "ACTIVATION",
+          "DROPOUT",
+          "SOFTMAX"
+        ],
+        "complexity": "P",
+        "decidable": true,
+        "description": "Linear arithmetic over positive integers. Dim equalities, inequalities, broadcasting (element-wise max), matmul inner-dim matching. Reduces to QF_LIA (Presburger arithmetic)."
+      },
+      "QF_NIA_concrete_symbolic": {
+        "operations": [
+          "RESHAPE (one concrete factor)",
+          "FLATTEN (known static dims)"
+        ],
+        "complexity": "P (reducible to QF_LIA)",
+        "decidable": true,
+        "description": "Reshape with one concrete factor: e.g. 8 * head_dim. Substitute concrete value \u2192 linear constraint. Decidable in polynomial time."
+      },
+      "QF_NIA_bounded_symbolic": {
+        "operations": [
+          "RESHAPE (bounded symbolic factors)"
+        ],
+        "complexity": "NP-hard",
+        "decidable": true,
+        "description": "Reshape with bounded symbolic factors: e.g. heads * head_dim where 1 \u2264 heads \u2264 128. Decidable via bit-blasting to SAT. NP-hard via SUBSET-PRODUCT reduction (proven in Lean)."
+      },
+      "QF_NIA_unbounded_symbolic": {
+        "operations": [
+          "RESHAPE (unbounded symbolic factors)"
+        ],
+        "complexity": "Undecidable",
+        "decidable": false,
+        "description": "Reshape with unbounded symbolic factors. Enters full QF_NIA, which is undecidable by Matiyasevich (1970) / Hilbert 10th problem. TensorGuard mitigates via timeout and concrete fallback."
+      }
+    },
+    "T_device": {
+      "domain_size": 5,
+      "elements": [
+        "CPU",
+        "CUDA:0",
+        "CUDA:1",
+        "CUDA:2",
+        "CUDA:3"
+      ],
+      "complexity": "O(1)",
+      "decidable": true
+    },
+    "T_phase": {
+      "domain_size": 2,
+      "elements": [
+        "TRAIN",
+        "EVAL"
+      ],
+      "complexity": "O(1)",
+      "decidable": true
+    },
+    "combination_method": {
+      "method": "Tinelli-Zarba arrangement enumeration (JAR 2005)",
+      "reason": "T_device and T_phase are finite-domain, hence not stably infinite. Nelson-Oppen requires stable infinity, so Tinelli-Zarba extension is used. Arrangement count bounded by Stirling S(k, min(k,n)), polynomial for small k (shared vars) and n (domain size)."
+    }
+  },
+  "qf_nia_interaction_from_reshape": {
+    "summary": "Reshape multiplication d1\u00b7d2\u00b7...\u00b7dk = d1'\u00b7d2'\u00b7...\u00b7dk' introduces QF_NIA constraints. The decidability depends on whether factors are concrete, bounded-symbolic, or unbounded-symbolic.",
+    "z3_analysis": [
+      {
+        "name": "concrete_symbolic_reshape",
+        "description": "Reshape with one concrete factor (8 * head_dim)",
+        "z3_status": "sat",
+        "z3_time_s": 0.005577,
+        "timed_out": false,
+        "model": {
+          "total": 512,
+          "head_dim": 64
+        }
+      },
+      {
+        "name": "bounded_symbolic_reshape",
+        "description": "Reshape with bounded symbolic factors (heads * head_dim)",
+        "z3_status": "sat",
+        "z3_time_s": 0.020404,
+        "timed_out": false,
+        "model": {
+          "embed_dim": 67,
+          "heads": 67,
+          "head_dim": 1
+        }
+      },
+      {
+        "name": "product_equality_reshape",
+        "description": "Reshape product equality h*w*c = h*w*c",
+        "z3_status": "sat",
+        "z3_time_s": 0.018741,
+        "timed_out": false,
+        "model": {
+          "total_src": 65536,
+          "h": 4,
+          "w": 64,
+          "c": 256,
+          "total_dst": 65536
+        }
+      },
+      {
+        "name": "mismatched_product_reshape",
+        "description": "Reshape mismatch a*b != c*d (UNSAT expected)",
+        "z3_status": "sat",
+        "z3_time_s": 0.186646,
+        "timed_out": false,
+        "model": {
+          "src_total": 4,
+          "a": 4,
+          "b": 1,
+          "dst_total": 4,
+          "c": 2,
+          "d": 2
+        }
+      }
+    ]
+  },
+  "cegar_termination_bound": {
+    "description": "The CEGAR loop in TensorGuard refines abstract shape predicates. The termination bound |E| is the number of distinct error categories (shape mismatches, device mismatches, phase errors). Each CEGAR iteration eliminates at least one spurious counterexample class.",
+    "relationship_to_decidability": {
+      "P_fragment": "Without reshape: combined theory is in P. CEGAR loop terminates in at most |E| iterations where |E| = number of distinct constraint violation types. Each iteration adds one predicate to the abstraction. Since |E| is bounded by O(ops * rank), termination is guaranteed.",
+      "NP_hard_fragment": "With reshape: individual Z3 queries are NP-hard (SUBSET-PRODUCT). However, CEGAR |E| bound still applies for loop termination \u2014 the number of refinement steps is bounded by the finite number of predicate candidates. Each Z3 call may take exponential time in the worst case, but the number of calls is polynomial in |E|.",
+      "undecidable_fragment": "With unbounded symbolic multiplication: individual Z3 queries may not terminate. TensorGuard mitigates this by: (1) timeout-based fallback to concrete evaluation, (2) restricting symbolic dims to bounded ranges in practice, (3) CEGAR loop still terminates if Z3 returns a definitive answer within the timeout."
+    },
+    "termination_guarantee": "CEGAR terminates in \u2264 |E| iterations for the decidable fragments. For the NP-hard fragment (bounded reshape), each iteration is NP-hard but the number of iterations is polynomial. Total worst-case: O(|E| \u00d7 2^(b\u00b7log(b))) where b = max bit-width of bounded dims."
+  },
+  "test_case_results": [
+    {
+      "case": "linear_chain",
+      "operations": [
+        "LAYER_CALL"
+      ],
+      "theory_fragments": [
+        "T_SHAPE_LINEAR"
+      ],
+      "complexity": "P",
+      "decidable": true,
+      "constraint_classifications": [
+        {
+          "expression": "out_d0 = batch_size",
+          "fragment": "linear",
+          "decidable": true,
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        },
+        {
+          "expression": "out_d1 = 128",
+          "fragment": "linear",
+          "decidable": true,
+          "reason": "Concrete integer assignment \u2014 trivially linear."
+        }
+      ],
+      "explanation": "T_shape uses only linear arithmetic (QF_LIA), decidable in P."
+    },
+    {
+      "case": "matmul_inner_dim",
+      "operations": [
+        "MATMUL"
+      ],
+      "theory_fragments": [
+        "T_SHAPE_LINEAR",
+        "T_SHAPE_MATMUL"
+      ],
+      "complexity": "P",
+      "decidable": true,
+      "constraint_classifications": [
+        {
+          "expression": "out_d0 = batch_size",
+          "fragment": "linear",
+          "decidable": true,
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        },
+        {
+          "expression": "out_d1 = 512",
+          "fragment": "linear",
+          "decidable": true,
+          "reason": "Concrete integer assignment \u2014 trivially linear."
+        },
+        {
+          "expression": "inner = 256",
+          "fragment": "linear",
+          "decidable": true,
+          "reason": "Concrete integer assignment \u2014 trivially linear."
+        }
+      ],
+      "explanation": "T_shape uses only linear arithmetic (QF_LIA), decidable in P."
+    },
+    {
+      "case": "reshape_concrete_symbolic",
+      "operations": [
+        "RESHAPE"
+      ],
+      "theory_fragments": [
+        "T_SHAPE_LINEAR",
+        "T_SHAPE_RESHAPE"
+      ],
+      "complexity": "NP-hard",
+      "decidable": true,
+      "constraint_classifications": [
+        {
+          "expression": "total = 8 * head_dim",
+          "fragment": "linear",
+          "decidable": true,
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        }
+      ],
+      "explanation": "T_shape includes reshape (product-equality), making this fragment NP-hard (SUBSET-PRODUCT reduction)."
+    },
+    {
+      "case": "reshape_bounded_symbolic",
+      "operations": [
+        "RESHAPE"
+      ],
+      "theory_fragments": [
+        "T_SHAPE_LINEAR",
+        "T_SHAPE_RESHAPE"
+      ],
+      "complexity": "NP-hard",
+      "decidable": true,
+      "constraint_classifications": [
+        {
+          "expression": "embed_dim = heads * head_dim",
+          "fragment": "bounded_symbolic_mul",
+          "decidable": true,
+          "reason": "Both factors symbolic but bounded; decidable via bit-blasting (encode as fixed-width BV)."
+        }
+      ],
+      "explanation": "T_shape includes reshape (product-equality), making this fragment NP-hard (SUBSET-PRODUCT reduction)."
+    },
+    {
+      "case": "reshape_unbounded_symbolic",
+      "operations": [
+        "RESHAPE"
+      ],
+      "theory_fragments": [
+        "T_SHAPE_LINEAR",
+        "T_SHAPE_RESHAPE"
+      ],
+      "complexity": "NP-hard",
+      "decidable": false,
+      "constraint_classifications": [
+        {
+          "expression": "total = factor_a * factor_b",
+          "fragment": "unbounded_symbolic_mul",
+          "decidable": false,
+          "reason": "Unbounded symbolic factors (factor_a, factor_b); enters undecidable QF_NIA fragment (Matiyasevich, 1970)."
+        }
+      ],
+      "explanation": "T_shape includes reshape (product-equality), making this fragment NP-hard (SUBSET-PRODUCT reduction)."
+    },
+    {
+      "case": "broadcast_add",
+      "operations": [
+        "ADD"
+      ],
+      "theory_fragments": [
+        "T_SHAPE_BROADCAST",
+        "T_SHAPE_LINEAR"
+      ],
+      "complexity": "P",
+      "decidable": true,
+      "constraint_classifications": [
+        {
+          "expression": "out_d0 = batch_size",
+          "fragment": "linear",
+          "decidable": true,
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        },
+        {
+          "expression": "out_d1 = 64",
+          "fragment": "linear",
+          "decidable": true,
+          "reason": "Concrete integer assignment \u2014 trivially linear."
+        }
+      ],
+      "explanation": "T_shape uses only linear arithmetic (QF_LIA), decidable in P."
+    },
+    {
+      "case": "device_check",
+      "operations": [
+        "LAYER_CALL",
+        "TO_DEVICE"
+      ],
+      "theory_fragments": [
+        "T_SHAPE_LINEAR",
+        "T_DEVICE"
+      ],
+      "complexity": "P",
+      "decidable": true,
+      "constraint_classifications": [
+        {
+          "expression": "out_d0 = batch_size",
+          "fragment": "linear",
+          "decidable": true,
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        }
+      ],
+      "explanation": "T_shape uses only linear arithmetic (QF_LIA), decidable in P. T_device: finite domain (5 elements), trivially decidable. Combined via Tinelli-Zarba arrangement enumeration (polynomial in shared variables for finite domains)."
+    },
+    {
+      "case": "phase_sensitive",
+      "operations": [
+        "CONDITIONAL",
+        "DROPOUT"
+      ],
+      "theory_fragments": [
+        "T_SHAPE_LINEAR",
+        "T_PHASE"
+      ],
+      "complexity": "P",
+      "decidable": true,
+      "constraint_classifications": [
+        {
+          "expression": "out_d0 = batch_size",
+          "fragment": "linear",
+          "decidable": true,
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        }
+      ],
+      "explanation": "T_shape uses only linear arithmetic (QF_LIA), decidable in P. T_phase: finite domain (2 elements), trivially decidable. Combined via Tinelli-Zarba arrangement enumeration (polynomial in shared variables for finite domains)."
+    }
+  ]
+}

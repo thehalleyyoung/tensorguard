@@ -1,0 +1,640 @@
+{
+  "experiment": "nonseq_ag_benchmark",
+  "strategy": "BRANCH_MERGE",
+  "summary": {
+    "total_architectures": 5,
+    "dag_successes": 5,
+    "dag_failures": 0,
+    "agreement_mono_dag": 4,
+    "disagreement_mono_dag": 1,
+    "topologies_detected": [
+      "residual",
+      "sequential",
+      "general_dag",
+      "general_dag",
+      "encoder_decoder"
+    ]
+  },
+  "results": [
+    {
+      "name": "ResNet-50 Bottleneck Block",
+      "arch_type": "residual",
+      "description": "3-layer bottleneck with residual skip connection",
+      "monolithic": {
+        "safe": true,
+        "time_ms": 190.76,
+        "num_errors": 0
+      },
+      "sequential_compositional": {
+        "safe": false,
+        "time_ms": 36.77,
+        "num_submodules": 5,
+        "strategy": "auto"
+      },
+      "dag_compositional": {
+        "safe": false,
+        "time_ms": 60.91,
+        "strategy": "branch_merge",
+        "num_submodules": 3,
+        "num_edges": 3,
+        "topology": "residual",
+        "topological_order": [
+          0,
+          1,
+          2
+        ],
+        "edges": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "interface_contracts": [
+          {
+            "module": "dag_block_0",
+            "input_contract": "InterfaceContract(dag_block_0_input)\n  Inputs:  {'x': ('batch', 256, 16, 16)}",
+            "output_contract": "InterfaceContract(dag_block_0_output)\n  Outputs: {'identity': ('*',)}\n  Constraint: identity: shape preserved (op=CONTIGUOUS)\n  Constraint: identity: output shape unconstrained",
+            "step_range": [
+              0,
+              1
+            ]
+          },
+          {
+            "module": "dag_block_1",
+            "input_contract": "InterfaceContract(dag_block_1_input)\n  Inputs:  {'x': ('batch', 256, 16, 16)}",
+            "output_contract": "InterfaceContract(dag_block_1_output)\n  Outputs: {'out': ('batch', 256, 'H', 'W')}\n  Constraint: out guaranteed by bn3 (BATCHNORM2D) output semantics",
+            "step_range": [
+              1,
+              9
+            ]
+          },
+          {
+            "module": "dag_block_2",
+            "input_contract": "InterfaceContract(dag_block_2_input)\n  Inputs:  {'identity': ('*',)}\n  Constraint: identity: shape unconstrained (no layer info)",
+            "output_contract": "InterfaceContract(dag_block_2_output)\n  Outputs: {'out': ('*',)}\n  Constraint: out: output shape unconstrained",
+            "step_range": [
+              9,
+              12
+            ]
+          }
+        ],
+        "interface_checks": [
+          {
+            "producer": "dag_block_0",
+            "consumer": "dag_block_2",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "dag_block_1",
+            "consumer": "dag_block_2",
+            "compatible": true,
+            "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+          },
+          {
+            "producer": "dag_block_0",
+            "consumer": "dag_block_1",
+            "compatible": true,
+            "message": "no direct tensor flow (independent sub-modules)"
+          }
+        ],
+        "all_interfaces_ok": true,
+        "proof_rule": "DAG Composition Proof Rule (topology=residual):\n  Nodes: ['dag_block_0', 'dag_block_1', 'dag_block_2']\n  Edges: [(0, 2), (1, 2), (0, 1)]\n  {dag_block_0_input} dag_block_0 {dag_block_0_output}\n  {dag_block_0_output} dag_block_1 {dag_block_1_output}\n  {dag_block_0_output, dag_block_1_output} dag_block_2 {dag_block_2_output}\n  Interface: dag_block_0_output \u27f9 pre(dag_block_2)\n  Interface: dag_block_1_output \u27f9 pre(dag_block_2)\n  Interface: dag_block_0_output \u27f9 pre(dag_block_1)\n  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  \u2234 DAG(dag_block_0, dag_block_1, dag_block_2) safe"
+      },
+      "agreement": {
+        "mono_vs_seq": false,
+        "mono_vs_dag": false,
+        "seq_vs_dag": true
+      },
+      "speedup_monolithic_over_dag": 3.132
+    },
+    {
+      "name": "U-Net Encoder-Decoder",
+      "arch_type": "encoder_decoder",
+      "description": "Encoder-decoder with skip connections",
+      "monolithic": {
+        "safe": true,
+        "time_ms": 275.87,
+        "num_errors": 0
+      },
+      "sequential_compositional": {
+        "safe": true,
+        "time_ms": 97.27,
+        "num_submodules": 8,
+        "strategy": "auto"
+      },
+      "dag_compositional": {
+        "safe": true,
+        "time_ms": 139.33,
+        "strategy": "branch_merge",
+        "num_submodules": 8,
+        "num_edges": 7,
+        "topology": "sequential",
+        "topological_order": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "edges": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ]
+        ],
+        "interface_contracts": [
+          {
+            "module": "block_0",
+            "input_contract": "InterfaceContract(block_0_input)\n  Inputs:  {'x': ('batch', 3, 128, 128)}",
+            "output_contract": "InterfaceContract(block_0_output)\n  Outputs: {'__inner_1': ('batch', 64, 'H', 'W')}\n  Constraint: __inner_1 guaranteed by bn_e1 (BATCHNORM2D) output semantics",
+            "step_range": [
+              0,
+              2
+            ]
+          },
+          {
+            "module": "block_1",
+            "input_contract": "InterfaceContract(block_1_input)\n  Inputs:  {'__inner_1': ('*',)}\n  Constraint: __inner_1: shape unconstrained (no layer info)",
+            "output_contract": "InterfaceContract(block_1_output)\n  Outputs: {'__inner_4': ('batch', 128, 'H_out', 'W_out')}\n  Constraint: __inner_4 guaranteed by enc2 (CONV2D) output semantics",
+            "step_range": [
+              2,
+              4
+            ]
+          },
+          {
+            "module": "block_2",
+            "input_contract": "InterfaceContract(block_2_input)\n  Inputs:  {'__inner_4': ('batch', 128, 'H', 'W')}\n  Constraint: __inner_4 must match bn_e2 (BATCHNORM2D) input requirements",
+            "output_contract": "InterfaceContract(block_2_output)\n  Outputs: {'e2': ('*',)}\n  Constraint: e2: output shape unconstrained",
+            "step_range": [
+              4,
+              6
+            ]
+          },
+          {
+            "module": "block_3",
+            "input_contract": "InterfaceContract(block_3_input)\n  Inputs:  {'e2': ('batch', 128, 'H', 'W')}\n  Constraint: e2 must match enc3 (CONV2D) input requirements",
+            "output_contract": "InterfaceContract(block_3_output)\n  Outputs: {'__inner_5': ('batch', 256, 'H', 'W')}\n  Constraint: __inner_5 guaranteed by bn_e3 (BATCHNORM2D) output semantics",
+            "step_range": [
+              6,
+              8
+            ]
+          },
+          {
+            "module": "block_4",
+            "input_contract": "InterfaceContract(block_4_input)\n  Inputs:  {'__inner_5': ('*',)}\n  Constraint: __inner_5: shape unconstrained (no layer info)",
+            "output_contract": "InterfaceContract(block_4_output)\n  Outputs: {'__inner_8': ('batch', 128, 'H_out', 'W_out')}\n  Constraint: __inner_8 guaranteed by dec1 (CONV2D) output semantics",
+            "step_range": [
+              8,
+              10
+            ]
+          },
+          {
+            "module": "block_5",
+            "input_contract": "InterfaceContract(block_5_input)\n  Inputs:  {'__inner_8': ('batch', 128, 'H', 'W')}\n  Constraint: __inner_8 must match bn_d1 (BATCHNORM2D) input requirements",
+            "output_contract": "InterfaceContract(block_5_output)\n  Outputs: {'d1': ('*',)}\n  Constraint: d1: output shape unconstrained",
+            "step_range": [
+              10,
+              12
+            ]
+          },
+          {
+            "module": "block_6",
+            "input_contract": "InterfaceContract(block_6_input)\n  Inputs:  {'d1': ('batch', 128, 'H', 'W')}\n  Constraint: d1 must match dec2 (CONV2D) input requirements",
+            "output_contract": "InterfaceContract(block_6_output)\n  Outputs: {'__inner_9': ('batch', 64, 'H', 'W')}\n  Constraint: __inner_9 guaranteed by bn_d2 (BATCHNORM2D) output semantics",
+            "step_range": [
+              12,
+              14
+            ]
+          },
+          {
+            "module": "block_7",
+            "input_contract": "InterfaceContract(block_7_input)\n  Inputs:  {'__inner_9': ('*',)}\n  Constraint: __inner_9: shape unconstrained (no layer info)",
+            "output_contract": "InterfaceContract(block_7_output)\n  Outputs: {'d3': ('*',)}\n  Constraint: d3: output shape unconstrained",
+            "step_range": [
+              14,
+              17
+            ]
+          }
+        ],
+        "interface_checks": [
+          {
+            "producer": "block_0",
+            "consumer": "block_1",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "block_1",
+            "consumer": "block_2",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "block_2",
+            "consumer": "block_3",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "block_3",
+            "consumer": "block_4",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "block_4",
+            "consumer": "block_5",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "block_5",
+            "consumer": "block_6",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "block_6",
+            "consumer": "block_7",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          }
+        ],
+        "all_interfaces_ok": true,
+        "proof_rule": "DAG Composition Proof Rule (topology=sequential):\n  Nodes: ['block_0', 'block_1', 'block_2', 'block_3', 'block_4', 'block_5', 'block_6', 'block_7']\n  Edges: [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (6, 7)]\n  {block_0_input} block_0 {block_0_output}\n  {block_0_output} block_1 {block_1_output}\n  {block_1_output} block_2 {block_2_output}\n  {block_2_output} block_3 {block_3_output}\n  {block_3_output} block_4 {block_4_output}\n  {block_4_output} block_5 {block_5_output}\n  {block_5_output} block_6 {block_6_output}\n  {block_6_output} block_7 {block_7_output}\n  Interface: block_0_output \u27f9 pre(block_1)\n  Interface: block_1_output \u27f9 pre(block_2)\n  Interface: block_2_output \u27f9 pre(block_3)\n  Interface: block_3_output \u27f9 pre(block_4)\n  Interface: block_4_output \u27f9 pre(block_5)\n  Interface: block_5_output \u27f9 pre(block_6)\n  Interface: block_6_output \u27f9 pre(block_7)\n  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  \u2234 DAG(block_0, block_1, block_2, block_3, block_4, block_5, block_6, block_7) safe"
+      },
+      "agreement": {
+        "mono_vs_seq": true,
+        "mono_vs_dag": true,
+        "seq_vs_dag": true
+      },
+      "speedup_monolithic_over_dag": 1.98
+    },
+    {
+      "name": "Transformer Cross-Attention",
+      "arch_type": "cross_attention",
+      "description": "Encoder output feeds key/value into decoder cross-attention",
+      "monolithic": {
+        "safe": true,
+        "time_ms": 257.96,
+        "num_errors": 0
+      },
+      "sequential_compositional": {
+        "safe": true,
+        "time_ms": 91.52,
+        "num_submodules": 5,
+        "strategy": "auto"
+      },
+      "dag_compositional": {
+        "safe": true,
+        "time_ms": 61.84,
+        "strategy": "branch_merge",
+        "num_submodules": 3,
+        "num_edges": 3,
+        "topology": "general_dag",
+        "topological_order": [
+          0,
+          1,
+          2
+        ],
+        "edges": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "interface_contracts": [
+          {
+            "module": "dag_block_0",
+            "input_contract": "InterfaceContract(dag_block_0_input)\n  Inputs:  {'x': ('batch', 16, 512)}",
+            "output_contract": "InterfaceContract(dag_block_0_output)\n  Outputs: {'enc': ('*',)}\n  Constraint: enc: output shape unconstrained",
+            "step_range": [
+              0,
+              2
+            ]
+          },
+          {
+            "module": "dag_block_1",
+            "input_contract": "InterfaceContract(dag_block_1_input)\n  Inputs:  {'x': ('batch', 16, 512)}",
+            "output_contract": "InterfaceContract(dag_block_1_output)\n  Outputs: {'q': ('batch', 512)}\n  Constraint: q guaranteed by cross_q (LINEAR) output semantics",
+            "step_range": [
+              2,
+              5
+            ]
+          },
+          {
+            "module": "dag_block_2",
+            "input_contract": "InterfaceContract(dag_block_2_input)\n  Inputs:  {'enc': ('batch', 512), 'q': ('batch', 512)}\n  Constraint: enc must match cross_k (LINEAR) input requirements\n  Constraint: q must match fc_out (LINEAR) input requirements",
+            "output_contract": "InterfaceContract(dag_block_2_output)\n  Outputs: {'out': ('*',)}\n  Constraint: out: output shape unconstrained",
+            "step_range": [
+              5,
+              10
+            ]
+          }
+        ],
+        "interface_checks": [
+          {
+            "producer": "dag_block_0",
+            "consumer": "dag_block_2",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "dag_block_1",
+            "consumer": "dag_block_2",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "dag_block_0",
+            "consumer": "dag_block_1",
+            "compatible": true,
+            "message": "no direct tensor flow (independent sub-modules)"
+          }
+        ],
+        "all_interfaces_ok": true,
+        "proof_rule": "DAG Composition Proof Rule (topology=general_dag):\n  Nodes: ['dag_block_0', 'dag_block_1', 'dag_block_2']\n  Edges: [(0, 2), (1, 2), (0, 1)]\n  {dag_block_0_input} dag_block_0 {dag_block_0_output}\n  {dag_block_0_output} dag_block_1 {dag_block_1_output}\n  {dag_block_0_output, dag_block_1_output} dag_block_2 {dag_block_2_output}\n  Interface: dag_block_0_output \u27f9 pre(dag_block_2)\n  Interface: dag_block_1_output \u27f9 pre(dag_block_2)\n  Interface: dag_block_0_output \u27f9 pre(dag_block_1)\n  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  \u2234 DAG(dag_block_0, dag_block_1, dag_block_2) safe"
+      },
+      "agreement": {
+        "mono_vs_seq": true,
+        "mono_vs_dag": true,
+        "seq_vs_dag": true
+      },
+      "speedup_monolithic_over_dag": 4.171
+    },
+    {
+      "name": "FPN Lateral Connections",
+      "arch_type": "feature_pyramid",
+      "description": "Bottom-up backbone with lateral 1x1 conv connections",
+      "monolithic": {
+        "safe": true,
+        "time_ms": 343.11,
+        "num_errors": 0
+      },
+      "sequential_compositional": {
+        "safe": true,
+        "time_ms": 272.55,
+        "num_submodules": 5,
+        "strategy": "auto"
+      },
+      "dag_compositional": {
+        "safe": true,
+        "time_ms": 240.72,
+        "strategy": "branch_merge",
+        "num_submodules": 4,
+        "num_edges": 5,
+        "topology": "general_dag",
+        "topological_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "edges": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "interface_contracts": [
+          {
+            "module": "dag_block_0",
+            "input_contract": "InterfaceContract(dag_block_0_input)\n  Inputs:  {'x': ('batch', 3, 64, 64)}",
+            "output_contract": "InterfaceContract(dag_block_0_output)\n  Outputs: {'c1': ('*',)}\n  Constraint: c1: output shape unconstrained",
+            "step_range": [
+              0,
+              3
+            ]
+          },
+          {
+            "module": "dag_block_1",
+            "input_contract": "InterfaceContract(dag_block_1_input)\n  Inputs:  {'c1': ('batch', 64, 'H', 'W')}\n  Constraint: c1 must match c2 (CONV2D) input requirements",
+            "output_contract": "InterfaceContract(dag_block_1_output)\n  Outputs: {'c2': ('*',)}\n  Constraint: c2: output shape unconstrained",
+            "step_range": [
+              3,
+              6
+            ]
+          },
+          {
+            "module": "dag_block_2",
+            "input_contract": "InterfaceContract(dag_block_2_input)\n  Inputs:  {'c2': ('batch', 128, 'H', 'W')}\n  Constraint: c2 must match c3 (CONV2D) input requirements",
+            "output_contract": "InterfaceContract(dag_block_2_output)\n  Outputs: {'c3': ('*',)}\n  Constraint: c3: output shape unconstrained",
+            "step_range": [
+              6,
+              9
+            ]
+          },
+          {
+            "module": "dag_block_3",
+            "input_contract": "InterfaceContract(dag_block_3_input)\n  Inputs:  {'c1': ('batch', 64, 'H', 'W'), 'c2': ('batch', 128, 'H', 'W'), 'c3': ('batch', 256, 'H', 'W')}\n  Constraint: c1 must match lat1 (CONV2D) input requirements\n  Constraint: c2 must match lat2 (CONV2D) input requirements\n  Constraint: c3 must match smooth (CONV2D) input requirements",
+            "output_contract": "InterfaceContract(dag_block_3_output)\n  Outputs: {'out': ('*',)}\n  Constraint: out: output shape unconstrained",
+            "step_range": [
+              9,
+              15
+            ]
+          }
+        ],
+        "interface_checks": [
+          {
+            "producer": "dag_block_0",
+            "consumer": "dag_block_1",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "dag_block_1",
+            "consumer": "dag_block_2",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "dag_block_0",
+            "consumer": "dag_block_3",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "dag_block_1",
+            "consumer": "dag_block_3",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "dag_block_2",
+            "consumer": "dag_block_3",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          }
+        ],
+        "all_interfaces_ok": true,
+        "proof_rule": "DAG Composition Proof Rule (topology=general_dag):\n  Nodes: ['dag_block_0', 'dag_block_1', 'dag_block_2', 'dag_block_3']\n  Edges: [(0, 1), (1, 2), (0, 3), (1, 3), (2, 3)]\n  {dag_block_0_input} dag_block_0 {dag_block_0_output}\n  {dag_block_0_output} dag_block_1 {dag_block_1_output}\n  {dag_block_1_output} dag_block_2 {dag_block_2_output}\n  {dag_block_0_output, dag_block_1_output, dag_block_2_output} dag_block_3 {dag_block_3_output}\n  Interface: dag_block_0_output \u27f9 pre(dag_block_1)\n  Interface: dag_block_1_output \u27f9 pre(dag_block_2)\n  Interface: dag_block_0_output \u27f9 pre(dag_block_3)\n  Interface: dag_block_1_output \u27f9 pre(dag_block_3)\n  Interface: dag_block_2_output \u27f9 pre(dag_block_3)\n  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  \u2234 DAG(dag_block_0, dag_block_1, dag_block_2, dag_block_3) safe"
+      },
+      "agreement": {
+        "mono_vs_seq": true,
+        "mono_vs_dag": true,
+        "seq_vs_dag": true
+      },
+      "speedup_monolithic_over_dag": 1.425
+    },
+    {
+      "name": "DenseNet Dense Block",
+      "arch_type": "dense",
+      "description": "Dense skip connections via channel concatenation",
+      "monolithic": {
+        "safe": true,
+        "time_ms": 171.54,
+        "num_errors": 0
+      },
+      "sequential_compositional": {
+        "safe": true,
+        "time_ms": 131.29,
+        "num_submodules": 3,
+        "strategy": "auto"
+      },
+      "dag_compositional": {
+        "safe": true,
+        "time_ms": 93.08,
+        "strategy": "branch_merge",
+        "num_submodules": 3,
+        "num_edges": 3,
+        "topology": "encoder_decoder",
+        "topological_order": [
+          0,
+          1,
+          2
+        ],
+        "edges": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "interface_contracts": [
+          {
+            "module": "dag_block_0",
+            "input_contract": "InterfaceContract(dag_block_0_input)\n  Inputs:  {'x': ('batch', 64, 32, 32)}",
+            "output_contract": "InterfaceContract(dag_block_0_output)\n  Outputs: {'out1': ('*',)}\n  Constraint: out1: output shape unconstrained",
+            "step_range": [
+              0,
+              3
+            ]
+          },
+          {
+            "module": "dag_block_1",
+            "input_contract": "InterfaceContract(dag_block_1_input)\n  Inputs:  {'out1': ('*',), 'x': ('batch', 64, 32, 32)}\n  Constraint: out1: shape unconstrained (no layer info)",
+            "output_contract": "InterfaceContract(dag_block_1_output)\n  Outputs: {'out2': ('*',)}\n  Constraint: out2: output shape unconstrained",
+            "step_range": [
+              3,
+              7
+            ]
+          },
+          {
+            "module": "dag_block_2",
+            "input_contract": "InterfaceContract(dag_block_2_input)\n  Inputs:  {'out1': ('*',), 'out2': ('*',), 'x': ('batch', 64, 32, 32)}\n  Constraint: out1: shape unconstrained (no layer info)\n  Constraint: out2: shape unconstrained (no layer info)",
+            "output_contract": "InterfaceContract(dag_block_2_output)\n  Outputs: {'out3': ('*',)}\n  Constraint: out3: output shape unconstrained",
+            "step_range": [
+              7,
+              12
+            ]
+          }
+        ],
+        "interface_checks": [
+          {
+            "producer": "dag_block_0",
+            "consumer": "dag_block_1",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "dag_block_0",
+            "consumer": "dag_block_2",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          },
+          {
+            "producer": "dag_block_1",
+            "consumer": "dag_block_2",
+            "compatible": true,
+            "message": "1 shared tensor(s) \u2014 all shapes compatible"
+          }
+        ],
+        "all_interfaces_ok": true,
+        "proof_rule": "DAG Composition Proof Rule (topology=encoder_decoder):\n  Nodes: ['dag_block_0', 'dag_block_1', 'dag_block_2']\n  Edges: [(0, 1), (0, 2), (1, 2)]\n  {dag_block_0_input} dag_block_0 {dag_block_0_output}\n  {dag_block_0_output} dag_block_1 {dag_block_1_output}\n  {dag_block_0_output, dag_block_1_output} dag_block_2 {dag_block_2_output}\n  Interface: dag_block_0_output \u27f9 pre(dag_block_1)\n  Interface: dag_block_0_output \u27f9 pre(dag_block_2)\n  Interface: dag_block_1_output \u27f9 pre(dag_block_2)\n  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  \u2234 DAG(dag_block_0, dag_block_1, dag_block_2) safe"
+      },
+      "agreement": {
+        "mono_vs_seq": true,
+        "mono_vs_dag": true,
+        "seq_vs_dag": true
+      },
+      "speedup_monolithic_over_dag": 1.843
+    }
+  ]
+}

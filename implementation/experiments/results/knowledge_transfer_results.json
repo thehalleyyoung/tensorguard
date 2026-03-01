@@ -1,0 +1,266 @@
+{
+  "benchmark": "knowledge_transfer",
+  "family": "ResNet",
+  "models": [
+    "ResNet18",
+    "ResNet34",
+    "ResNet50",
+    "ResNet101",
+    "ResNet152"
+  ],
+  "cold_results": [
+    {
+      "name": "ResNet18",
+      "verdict": "SAFE",
+      "iterations": 2,
+      "z3_queries": 0,
+      "time_ms": 2361.24,
+      "predicates_discovered": 1,
+      "predicate_strings": [
+        "x.shape[-1] == 64"
+      ],
+      "total_time_ms": 2361.15,
+      "pass": "cold",
+      "arch_hash": "ca80dc23328c7e65c746c01f534235ec96b6efe39f6e35c6ea80208b353e9392"
+    },
+    {
+      "name": "ResNet34",
+      "verdict": "SAFE",
+      "iterations": 2,
+      "z3_queries": 0,
+      "time_ms": 6284.0,
+      "predicates_discovered": 1,
+      "predicate_strings": [
+        "x.shape[-1] == 64"
+      ],
+      "total_time_ms": 6283.87,
+      "pass": "cold",
+      "arch_hash": "223ab4bf0ef13665f7070a2eaca9ec9b0109b330db1134cc4d3003738b0eed27"
+    },
+    {
+      "name": "ResNet50",
+      "verdict": "SAFE",
+      "iterations": 2,
+      "z3_queries": 0,
+      "time_ms": 7200.62,
+      "predicates_discovered": 1,
+      "predicate_strings": [
+        "x.shape[-1] == 64"
+      ],
+      "total_time_ms": 7200.49,
+      "pass": "cold",
+      "arch_hash": "223ab4bf0ef13665f7070a2eaca9ec9b0109b330db1134cc4d3003738b0eed27"
+    },
+    {
+      "name": "ResNet101",
+      "verdict": "SAFE",
+      "iterations": 2,
+      "z3_queries": 0,
+      "time_ms": 22008.05,
+      "predicates_discovered": 1,
+      "predicate_strings": [
+        "x.shape[-1] == 64"
+      ],
+      "total_time_ms": 22007.86,
+      "pass": "cold",
+      "arch_hash": "f694212dea38d5a6d1e59098520aa6fcbc93a52e0c70df6691fd40dff1f5ee0d"
+    },
+    {
+      "name": "ResNet152",
+      "verdict": "SAFE",
+      "iterations": 2,
+      "z3_queries": 0,
+      "time_ms": 46254.55,
+      "predicates_discovered": 1,
+      "predicate_strings": [
+        "x.shape[-1] == 64"
+      ],
+      "total_time_ms": 46254.23,
+      "pass": "cold",
+      "arch_hash": "b632e14c47b7de1d2cf523c912608d6612f9b0c9ccb3bbe8bfe3b7f3b885d51d"
+    }
+  ],
+  "warm_results": [
+    {
+      "name": "ResNet18",
+      "verdict": "SAFE",
+      "iterations": 1,
+      "z3_queries": 0,
+      "time_ms": 1725.6,
+      "predicates_discovered": 1,
+      "predicate_strings": [
+        "x.shape[-1] == 64"
+      ],
+      "total_time_ms": 1723.35,
+      "pass": "warm",
+      "arch_hash": "ca80dc23328c7e65c746c01f534235ec96b6efe39f6e35c6ea80208b353e9392",
+      "predicates_transferred": 1
+    },
+    {
+      "name": "ResNet34",
+      "verdict": "SAFE",
+      "iterations": 1,
+      "z3_queries": 0,
+      "time_ms": 3967.27,
+      "predicates_discovered": 1,
+      "predicate_strings": [
+        "x.shape[-1] == 64"
+      ],
+      "total_time_ms": 3963.8,
+      "pass": "warm",
+      "arch_hash": "223ab4bf0ef13665f7070a2eaca9ec9b0109b330db1134cc4d3003738b0eed27",
+      "predicates_transferred": 1
+    },
+    {
+      "name": "ResNet50",
+      "verdict": "SAFE",
+      "iterations": 1,
+      "z3_queries": 0,
+      "time_ms": 3309.73,
+      "predicates_discovered": 1,
+      "predicate_strings": [
+        "x.shape[-1] == 64"
+      ],
+      "total_time_ms": 3306.36,
+      "pass": "warm",
+      "arch_hash": "223ab4bf0ef13665f7070a2eaca9ec9b0109b330db1134cc4d3003738b0eed27",
+      "predicates_transferred": 1
+    },
+    {
+      "name": "ResNet101",
+      "verdict": "SAFE",
+      "iterations": 1,
+      "z3_queries": 0,
+      "time_ms": 11514.11,
+      "predicates_discovered": 1,
+      "predicate_strings": [
+        "x.shape[-1] == 64"
+      ],
+      "total_time_ms": 11503.84,
+      "pass": "warm",
+      "arch_hash": "f694212dea38d5a6d1e59098520aa6fcbc93a52e0c70df6691fd40dff1f5ee0d",
+      "predicates_transferred": 1
+    },
+    {
+      "name": "ResNet152",
+      "verdict": "SAFE",
+      "iterations": 1,
+      "z3_queries": 0,
+      "time_ms": 27796.53,
+      "predicates_discovered": 1,
+      "predicate_strings": [
+        "x.shape[-1] == 64"
+      ],
+      "total_time_ms": 27785.13,
+      "pass": "warm",
+      "arch_hash": "b632e14c47b7de1d2cf523c912608d6612f9b0c9ccb3bbe8bfe3b7f3b885d51d",
+      "predicates_transferred": 1
+    }
+  ],
+  "speedups": {
+    "per_model": [
+      {
+        "name": "ResNet18",
+        "iterations_cold": 2,
+        "iterations_warm": 1,
+        "iterations_speedup": 2.0,
+        "iterations_reduction_pct": 50.0,
+        "z3_queries_cold": 0,
+        "z3_queries_warm": 0,
+        "z3_queries_speedup": 1.0,
+        "z3_queries_reduction_pct": 0.0,
+        "time_ms_cold": 2361.24,
+        "time_ms_warm": 1725.6,
+        "time_ms_speedup": 1.37,
+        "time_ms_reduction_pct": 26.9
+      },
+      {
+        "name": "ResNet34",
+        "iterations_cold": 2,
+        "iterations_warm": 1,
+        "iterations_speedup": 2.0,
+        "iterations_reduction_pct": 50.0,
+        "z3_queries_cold": 0,
+        "z3_queries_warm": 0,
+        "z3_queries_speedup": 1.0,
+        "z3_queries_reduction_pct": 0.0,
+        "time_ms_cold": 6284.0,
+        "time_ms_warm": 3967.27,
+        "time_ms_speedup": 1.58,
+        "time_ms_reduction_pct": 36.9
+      },
+      {
+        "name": "ResNet50",
+        "iterations_cold": 2,
+        "iterations_warm": 1,
+        "iterations_speedup": 2.0,
+        "iterations_reduction_pct": 50.0,
+        "z3_queries_cold": 0,
+        "z3_queries_warm": 0,
+        "z3_queries_speedup": 1.0,
+        "z3_queries_reduction_pct": 0.0,
+        "time_ms_cold": 7200.62,
+        "time_ms_warm": 3309.73,
+        "time_ms_speedup": 2.18,
+        "time_ms_reduction_pct": 54.0
+      },
+      {
+        "name": "ResNet101",
+        "iterations_cold": 2,
+        "iterations_warm": 1,
+        "iterations_speedup": 2.0,
+        "iterations_reduction_pct": 50.0,
+        "z3_queries_cold": 0,
+        "z3_queries_warm": 0,
+        "z3_queries_speedup": 1.0,
+        "z3_queries_reduction_pct": 0.0,
+        "time_ms_cold": 22008.05,
+        "time_ms_warm": 11514.11,
+        "time_ms_speedup": 1.91,
+        "time_ms_reduction_pct": 47.7
+      },
+      {
+        "name": "ResNet152",
+        "iterations_cold": 2,
+        "iterations_warm": 1,
+        "iterations_speedup": 2.0,
+        "iterations_reduction_pct": 50.0,
+        "z3_queries_cold": 0,
+        "z3_queries_warm": 0,
+        "z3_queries_speedup": 1.0,
+        "z3_queries_reduction_pct": 0.0,
+        "time_ms_cold": 46254.55,
+        "time_ms_warm": 27796.53,
+        "time_ms_speedup": 1.66,
+        "time_ms_reduction_pct": 39.9
+      }
+    ],
+    "aggregate": {
+      "iterations_total_cold": 10,
+      "iterations_total_warm": 5,
+      "iterations_speedup": 2.0,
+      "iterations_reduction_pct": 50.0,
+      "z3_queries_total_cold": 0,
+      "z3_queries_total_warm": 0,
+      "z3_queries_speedup": 1.0,
+      "z3_queries_reduction_pct": 0.0,
+      "time_ms_total_cold": 84108.46,
+      "time_ms_total_warm": 48313.24,
+      "time_ms_speedup": 1.74,
+      "time_ms_reduction_pct": 42.6
+    }
+  },
+  "kb_stats": {
+    "family_count": 4,
+    "total_predicates": 4,
+    "kb_path": "/Users/halleyyoung/Documents/div/mathdivergence/best2/refinement-type-inference-dynamic-lang/implementation/experiments/.benchmarks/knowledge_transfer_kb.json"
+  },
+  "architectural_hashes": {
+    "ResNet18": "ca80dc23328c7e65c746c01f534235ec96b6efe39f6e35c6ea80208b353e9392",
+    "ResNet34": "223ab4bf0ef13665f7070a2eaca9ec9b0109b330db1134cc4d3003738b0eed27",
+    "ResNet50": "223ab4bf0ef13665f7070a2eaca9ec9b0109b330db1134cc4d3003738b0eed27",
+    "ResNet101": "f694212dea38d5a6d1e59098520aa6fcbc93a52e0c70df6691fd40dff1f5ee0d",
+    "ResNet152": "b632e14c47b7de1d2cf523c912608d6612f9b0c9ccb3bbe8bfe3b7f3b885d51d"
+  },
+  "unique_hash_count": 4
+}

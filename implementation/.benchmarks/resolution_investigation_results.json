@@ -1,0 +1,86 @@
+{
+  "res_values_across_analyses": {
+    "verification_mode/CEGAR": 0.005593,
+    "perm_theory/uses_perm": 0.005683,
+    "stratified_overall": 0.005892,
+    "verification_mode/BMC": 0.007433,
+    "perm_theory/no_perm": 0.008458,
+    "architecture/CNN": 0.009119,
+    "architecture/RNN": 0.010198,
+    "architecture/Transformer": 0.017948,
+    "verification_mode/IC3": 0.026552,
+    "integrated/neurosym_pipeline": 0.028988,
+    "architecture/Other": 0.036905,
+    "architecture/MLP": 0.038961,
+    "architecture/GAN": 0.049587,
+    "integrated/_combined": 0.095053,
+    "integrated/fx_torchvision": 0.122449,
+    "integrated/external_bug": 0.148246,
+    "integrated/deep_composition": 0.2176,
+    "integrated/cegar_ablation": 0.21951
+  },
+  "confidence_distribution": {
+    "HIGH": {
+      "count": 45,
+      "percentage": 100.0
+    },
+    "MEDIUM": {
+      "count": 0,
+      "percentage": 0.0
+    },
+    "LOW": {
+      "count": 0,
+      "percentage": 0.0
+    },
+    "UNKNOWN": {
+      "count": 0,
+      "percentage": 0.0
+    }
+  },
+  "actual_brier_decomposition": {
+    "reliability": 0.007143,
+    "resolution": 0.18739,
+    "uncertainty": 0.246914,
+    "brier": 0.066667,
+    "base_rate": 0.4444,
+    "n_predictions": 45,
+    "n_bins_used": 2,
+    "bin_details": [
+      {
+        "bin": 0,
+        "count": 28,
+        "mean_predicted": 0.0,
+        "mean_observed": 0.1071
+      },
+      {
+        "bin": 9,
+        "count": 17,
+        "mean_predicted": 1.0,
+        "mean_observed": 1.0
+      }
+    ]
+  },
+  "conditional_brier_non_trivial": {
+    "note": "All predictions are near 0 or 1 \u2014 no non-trivial subset"
+  },
+  "root_cause_analysis": {
+    "all_predictions_binary": true,
+    "confidence_is_near_constant": true,
+    "base_rate": 0.4444,
+    "n_predict_negative": 28,
+    "n_predict_positive": 17,
+    "event_rate_in_negatives": 0.1071,
+    "event_rate_in_positives": 1.0,
+    "separation": 0.8929
+  },
+  "explanation": "RES is low but non-zero. The verifier outputs binary predictions (detected/not-detected) with high separation (0.893). The near-zero RES in some stratified analyses is an artifact of small bin counts: with only two occupied bins, the RES formula produces small values when both bins have moderate event rates. This is NOT a calibration failure \u2014 the verifier discriminates well between buggy and correct models. RES \u2248 0 reflects the binary nature of the prediction, not poor discrimination.",
+  "summary": {
+    "n_res_values_collected": 18,
+    "min_res": 0.005593,
+    "max_res": 0.21951,
+    "mean_res": 0.058565,
+    "n_near_zero": 6,
+    "n_nontrivial": 12,
+    "verdict": "genuine_artifact"
+  }
+}

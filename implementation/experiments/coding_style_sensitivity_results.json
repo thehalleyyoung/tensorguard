@@ -1,0 +1,466 @@
+{
+  "experiment": "coding_style_sensitivity",
+  "description": "Evaluates guard-harvesting sensitivity to coding style by analyzing 5 PyTorch models each written in 3 styles (defensive, minimal, functional). Measures predicate count, utilization rate, false predicate rate, and verification correctness to quantify how coding conventions affect predicate quality.",
+  "aggregate_metrics": {
+    "cross_style_agreement_rate": 1.0,
+    "models_with_agreement": 5,
+    "total_models": 5,
+    "mean_predicate_count_cv": 1.4142,
+    "overall_worst_case_style": "minimal",
+    "worst_case_style_frequency": {
+      "minimal": 5
+    }
+  },
+  "per_style_summary": {
+    "defensive": {
+      "mean_predicate_count": 2.4,
+      "mean_utilization_rate": 0.5667,
+      "mean_false_predicate_rate": 0.4333,
+      "total_predicates": 12
+    },
+    "minimal": {
+      "mean_predicate_count": 0.0,
+      "mean_utilization_rate": 0.0,
+      "mean_false_predicate_rate": 0.0,
+      "total_predicates": 0
+    },
+    "functional": {
+      "mean_predicate_count": 0.0,
+      "mean_utilization_rate": 0.0,
+      "mean_false_predicate_rate": 0.0,
+      "total_predicates": 0
+    }
+  },
+  "per_model_sensitivity": [
+    {
+      "model": "SimpleClassifier",
+      "has_bug": false,
+      "cross_style_agreement": true,
+      "normalized_verdicts": [
+        "SAFE",
+        "SAFE",
+        "SAFE"
+      ],
+      "predicate_counts": {
+        "defensive": 2,
+        "minimal": 0,
+        "functional": 0
+      },
+      "predicate_count_cv": 1.4142,
+      "utilization_rates": {
+        "defensive": 0.5,
+        "minimal": 0.0,
+        "functional": 0.0
+      },
+      "false_predicate_rates": {
+        "defensive": 0.5,
+        "minimal": 0.0,
+        "functional": 0.0
+      },
+      "worst_case_style": "minimal",
+      "worst_case_utilized": 0
+    },
+    {
+      "model": "Autoencoder",
+      "has_bug": false,
+      "cross_style_agreement": true,
+      "normalized_verdicts": [
+        "SAFE",
+        "SAFE",
+        "SAFE"
+      ],
+      "predicate_counts": {
+        "defensive": 3,
+        "minimal": 0,
+        "functional": 0
+      },
+      "predicate_count_cv": 1.4142,
+      "utilization_rates": {
+        "defensive": 0.6667,
+        "minimal": 0.0,
+        "functional": 0.0
+      },
+      "false_predicate_rates": {
+        "defensive": 0.3333,
+        "minimal": 0.0,
+        "functional": 0.0
+      },
+      "worst_case_style": "minimal",
+      "worst_case_utilized": 0
+    },
+    {
+      "model": "ResidualMLP",
+      "has_bug": false,
+      "cross_style_agreement": true,
+      "normalized_verdicts": [
+        "SAFE",
+        "SAFE",
+        "SAFE"
+      ],
+      "predicate_counts": {
+        "defensive": 2,
+        "minimal": 0,
+        "functional": 0
+      },
+      "predicate_count_cv": 1.4142,
+      "utilization_rates": {
+        "defensive": 0.5,
+        "minimal": 0.0,
+        "functional": 0.0
+      },
+      "false_predicate_rates": {
+        "defensive": 0.5,
+        "minimal": 0.0,
+        "functional": 0.0
+      },
+      "worst_case_style": "minimal",
+      "worst_case_utilized": 0
+    },
+    {
+      "model": "DimMismatchBug",
+      "has_bug": true,
+      "cross_style_agreement": true,
+      "normalized_verdicts": [
+        "REAL_BUG_FOUND",
+        "REAL_BUG_FOUND",
+        "REAL_BUG_FOUND"
+      ],
+      "predicate_counts": {
+        "defensive": 2,
+        "minimal": 0,
+        "functional": 0
+      },
+      "predicate_count_cv": 1.4142,
+      "utilization_rates": {
+        "defensive": 0.5,
+        "minimal": 0.0,
+        "functional": 0.0
+      },
+      "false_predicate_rates": {
+        "defensive": 0.5,
+        "minimal": 0.0,
+        "functional": 0.0
+      },
+      "worst_case_style": "minimal",
+      "worst_case_utilized": 0
+    },
+    {
+      "model": "TransformerFFN",
+      "has_bug": false,
+      "cross_style_agreement": true,
+      "normalized_verdicts": [
+        "SAFE",
+        "SAFE",
+        "SAFE"
+      ],
+      "predicate_counts": {
+        "defensive": 3,
+        "minimal": 0,
+        "functional": 0
+      },
+      "predicate_count_cv": 1.4142,
+      "utilization_rates": {
+        "defensive": 0.6667,
+        "minimal": 0.0,
+        "functional": 0.0
+      },
+      "false_predicate_rates": {
+        "defensive": 0.3333,
+        "minimal": 0.0,
+        "functional": 0.0
+      },
+      "worst_case_style": "minimal",
+      "worst_case_utilized": 0
+    }
+  ],
+  "per_variant_details": [
+    {
+      "model": "SimpleClassifier",
+      "style": "defensive",
+      "has_bug": false,
+      "guard_count": 2,
+      "graph_ok": true,
+      "predicate_count": 2,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 2,
+      "guard_shape_relevant": 1,
+      "utilized_count": 1,
+      "false_predicate_count": 1,
+      "utilization_rate": 0.5,
+      "false_predicate_rate": 0.5,
+      "verification_status": "SAFE",
+      "cegar_iterations": 1,
+      "time_ms": 83.88,
+      "verification_correct": true
+    },
+    {
+      "model": "SimpleClassifier",
+      "style": "minimal",
+      "has_bug": false,
+      "guard_count": 0,
+      "graph_ok": true,
+      "predicate_count": 0,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 0,
+      "guard_shape_relevant": 0,
+      "utilized_count": 0,
+      "false_predicate_count": 0,
+      "utilization_rate": 0.0,
+      "false_predicate_rate": 0.0,
+      "verification_status": "SAFE",
+      "cegar_iterations": 1,
+      "time_ms": 57.73,
+      "verification_correct": true
+    },
+    {
+      "model": "SimpleClassifier",
+      "style": "functional",
+      "has_bug": false,
+      "guard_count": 0,
+      "graph_ok": true,
+      "predicate_count": 0,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 0,
+      "guard_shape_relevant": 0,
+      "utilized_count": 0,
+      "false_predicate_count": 0,
+      "utilization_rate": 0.0,
+      "false_predicate_rate": 0.0,
+      "verification_status": "SAFE",
+      "cegar_iterations": 1,
+      "time_ms": 53.53,
+      "verification_correct": true
+    },
+    {
+      "model": "Autoencoder",
+      "style": "defensive",
+      "has_bug": false,
+      "guard_count": 3,
+      "graph_ok": true,
+      "predicate_count": 3,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 3,
+      "guard_shape_relevant": 2,
+      "utilized_count": 2,
+      "false_predicate_count": 1,
+      "utilization_rate": 0.6667,
+      "false_predicate_rate": 0.3333,
+      "verification_status": "SAFE",
+      "cegar_iterations": 1,
+      "time_ms": 66.96,
+      "verification_correct": true
+    },
+    {
+      "model": "Autoencoder",
+      "style": "minimal",
+      "has_bug": false,
+      "guard_count": 0,
+      "graph_ok": true,
+      "predicate_count": 0,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 0,
+      "guard_shape_relevant": 0,
+      "utilized_count": 0,
+      "false_predicate_count": 0,
+      "utilization_rate": 0.0,
+      "false_predicate_rate": 0.0,
+      "verification_status": "SAFE",
+      "cegar_iterations": 1,
+      "time_ms": 99.01,
+      "verification_correct": true
+    },
+    {
+      "model": "Autoencoder",
+      "style": "functional",
+      "has_bug": false,
+      "guard_count": 0,
+      "graph_ok": true,
+      "predicate_count": 0,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 0,
+      "guard_shape_relevant": 0,
+      "utilized_count": 0,
+      "false_predicate_count": 0,
+      "utilization_rate": 0.0,
+      "false_predicate_rate": 0.0,
+      "verification_status": "SAFE",
+      "cegar_iterations": 1,
+      "time_ms": 139.35,
+      "verification_correct": true
+    },
+    {
+      "model": "ResidualMLP",
+      "style": "defensive",
+      "has_bug": false,
+      "guard_count": 2,
+      "graph_ok": true,
+      "predicate_count": 2,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 2,
+      "guard_shape_relevant": 1,
+      "utilized_count": 1,
+      "false_predicate_count": 1,
+      "utilization_rate": 0.5,
+      "false_predicate_rate": 0.5,
+      "verification_status": "SAFE",
+      "cegar_iterations": 1,
+      "time_ms": 132.53,
+      "verification_correct": true
+    },
+    {
+      "model": "ResidualMLP",
+      "style": "minimal",
+      "has_bug": false,
+      "guard_count": 0,
+      "graph_ok": true,
+      "predicate_count": 0,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 0,
+      "guard_shape_relevant": 0,
+      "utilized_count": 0,
+      "false_predicate_count": 0,
+      "utilization_rate": 0.0,
+      "false_predicate_rate": 0.0,
+      "verification_status": "SAFE",
+      "cegar_iterations": 1,
+      "time_ms": 205.0,
+      "verification_correct": true
+    },
+    {
+      "model": "ResidualMLP",
+      "style": "functional",
+      "has_bug": false,
+      "guard_count": 0,
+      "graph_ok": true,
+      "predicate_count": 0,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 0,
+      "guard_shape_relevant": 0,
+      "utilized_count": 0,
+      "false_predicate_count": 0,
+      "utilization_rate": 0.0,
+      "false_predicate_rate": 0.0,
+      "verification_status": "SAFE",
+      "cegar_iterations": 1,
+      "time_ms": 327.81,
+      "verification_correct": true
+    },
+    {
+      "model": "DimMismatchBug",
+      "style": "defensive",
+      "has_bug": true,
+      "guard_count": 2,
+      "graph_ok": true,
+      "predicate_count": 2,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 2,
+      "guard_shape_relevant": 1,
+      "utilized_count": 1,
+      "false_predicate_count": 1,
+      "utilization_rate": 0.5,
+      "false_predicate_rate": 0.5,
+      "verification_status": "REAL_BUG_FOUND",
+      "cegar_iterations": 1,
+      "time_ms": 45.87,
+      "verification_correct": true
+    },
+    {
+      "model": "DimMismatchBug",
+      "style": "minimal",
+      "has_bug": true,
+      "guard_count": 0,
+      "graph_ok": true,
+      "predicate_count": 0,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 0,
+      "guard_shape_relevant": 0,
+      "utilized_count": 0,
+      "false_predicate_count": 0,
+      "utilization_rate": 0.0,
+      "false_predicate_rate": 0.0,
+      "verification_status": "REAL_BUG_FOUND",
+      "cegar_iterations": 1,
+      "time_ms": 89.54,
+      "verification_correct": true
+    },
+    {
+      "model": "DimMismatchBug",
+      "style": "functional",
+      "has_bug": true,
+      "guard_count": 0,
+      "graph_ok": true,
+      "predicate_count": 0,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 0,
+      "guard_shape_relevant": 0,
+      "utilized_count": 0,
+      "false_predicate_count": 0,
+      "utilization_rate": 0.0,
+      "false_predicate_rate": 0.0,
+      "verification_status": "REAL_BUG_FOUND",
+      "cegar_iterations": 1,
+      "time_ms": 70.81,
+      "verification_correct": true
+    },
+    {
+      "model": "TransformerFFN",
+      "style": "defensive",
+      "has_bug": false,
+      "guard_count": 3,
+      "graph_ok": true,
+      "predicate_count": 3,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 3,
+      "guard_shape_relevant": 2,
+      "utilized_count": 2,
+      "false_predicate_count": 1,
+      "utilization_rate": 0.6667,
+      "false_predicate_rate": 0.3333,
+      "verification_status": "SAFE",
+      "cegar_iterations": 1,
+      "time_ms": 271.77,
+      "verification_correct": true
+    },
+    {
+      "model": "TransformerFFN",
+      "style": "minimal",
+      "has_bug": false,
+      "guard_count": 0,
+      "graph_ok": true,
+      "predicate_count": 0,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 0,
+      "guard_shape_relevant": 0,
+      "utilized_count": 0,
+      "false_predicate_count": 0,
+      "utilization_rate": 0.0,
+      "false_predicate_rate": 0.0,
+      "verification_status": "SAFE",
+      "cegar_iterations": 1,
+      "time_ms": 97.48,
+      "verification_correct": true
+    },
+    {
+      "model": "TransformerFFN",
+      "style": "functional",
+      "has_bug": false,
+      "guard_count": 0,
+      "graph_ok": true,
+      "predicate_count": 0,
+      "cegar_predicate_count": 0,
+      "guard_predicate_count": 0,
+      "guard_shape_relevant": 0,
+      "utilized_count": 0,
+      "false_predicate_count": 0,
+      "utilization_rate": 0.0,
+      "false_predicate_rate": 0.0,
+      "verification_status": "SAFE",
+      "cegar_iterations": 1,
+      "time_ms": 97.83,
+      "verification_correct": true
+    }
+  ],
+  "key_finding": "Cross-style agreement rate: 100.0% (5/5 models produce consistent verdicts). Mean predicate count CV: 1.4142. Defensive style yields most predicates (mean 2.4), minimal yields fewest (mean 0.0). Worst-case style (fewest useful predicates): 'minimal' (5/5 models).",
+  "methodology": "For each of 5 models (4 correct, 1 buggy) \u00d7 3 coding styles, we run guard extraction (extract_guards) and shape contract discovery (run_shape_cegar) to harvest predicates. Style A ('defensive') adds explicit assert/isinstance guards. Style B ('minimal') uses bare-minimum code. Style C ('functional') uses torch.nn.functional with inline comments. Predicate utilization rate = fraction of shape-relevant predicates. False predicate rate = fraction of non-shape predicates. Cross-style agreement = same normalized verdict across all 3 styles. Predicate count CV = coefficient of variation across styles.",
+  "timestamp": "2026-02-25T02:40:26"
+}

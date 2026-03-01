@@ -1,0 +1,67 @@
+{
+  "analysis": "Comprehensive False Positive Root-Cause Analysis for Suite D (External Benchmark)",
+  "benchmark_run_date": "2025-07-18",
+  "benchmark_suite": "external_pytorch_benchmark (50 models, 18 architecture families)",
+  "overall_results": {
+    "tp": 22,
+    "fp": 1,
+    "tn": 24,
+    "fn": 3,
+    "precision": 0.9565,
+    "recall": 0.88,
+    "f1": 0.9167
+  },
+  "fp_count": 1,
+  "fp_cases": [
+    {
+      "benchmark": "wavenet_correct",
+      "category": "WaveNet",
+      "description": "WaveNet dilated block (van den Oord et al. 2016) – correct gated activation",
+      "benchmark_label": "correct (is_buggy=False)",
+      "tensorguard_verdict": "FP (flagged as buggy)",
+      "root_cause_classification": "(a) specification disagreement",
+      "severity": "benign",
+      "detail": "The benchmark uses nn.Conv1d(256, 256, kernel_size=2, dilation=1, padding=1). With input length L=16000, the output length is floor((16000 + 2*1 - 1*(2-1) - 1)/1 + 1) = 16001. The residual connection 'r = self.residual_conv(z) + x' then attempts to add tensors of shape (batch, 256, 16001) and (batch, 256, 16000), which is a genuine shape mismatch. Real WaveNet implementations use causal padding (padding=kernel_size-1) and then slice the output to maintain length, but this benchmark omits the slicing step.",
+      "pytorch_verification": "torch.nn.Conv1d(256, 256, kernel_size=2, padding=1) on input (1, 256, 16000) produces output (1, 256, 16001). The subsequent residual addition would raise RuntimeError in PyTorch unless the output is sliced.",
+      "tensorguard_correct": true,
+      "benchmark_labeling_issue": true,
+      "is_genuine_soundness_bug": false,
+      "is_api_stub_limitation": false,
+      "recommendation": "Reclassify benchmark as buggy, or fix the benchmark to include output slicing (h = h[:, :, :x.size(2)]) as done in canonical WaveNet implementations."
+    }
+  ],
+  "fn_cases": [
+    {
+      "benchmark": "bert_pooler_bug",
+      "category": "BERT",
+      "description": "BERT pooler BUG: pooler_dense expects 512 but cls_token is 768-dim from attention",
+      "missed_reason": "CLS token extraction via indexing (x[:, 0]) not tracked through the graph extractor"
+    },
+    {
+      "benchmark": "dcgan_generator_bug",
+      "category": "DCGAN",
+      "description": "DCGAN generator BUG: project outputs 256*4*4=4096 but view reshapes to 512*4*4=8192",
+      "missed_reason": "Dynamic reshape via view(x.size(0), 512, 4, 4) with symbolic product mismatch not fully tracked"
+    },
+    {
+      "benchmark": "mobilenetv2_dw_bug",
+      "category": "MobileNetV2",
+      "description": "MobileNetV2 BUG: depthwise groups=32 but channels=192 (groups should equal channels for DW conv)",
+      "missed_reason": "Semantic constraint (groups must equal in_channels for depthwise conv) not encoded in current Conv2d stub"
+    }
+  ],
+  "classification_summary": {
+    "total_fps": 1,
+    "by_category": {
+      "(a) specification disagreement": 1,
+      "(b) API stub limitation": 0,
+      "(c) genuine soundness bug": 0
+    },
+    "conclusion": "The single FP in Suite D is a specification disagreement where TensorGuard correctly identifies a real shape mismatch (Conv1d padding produces output length L+1, breaking the residual addition). The benchmark label is incorrect — the model would raise a RuntimeError in PyTorch. There are zero genuine soundness bugs in TensorGuard's verification. After accounting for this labeling issue, TensorGuard's effective precision on Suite D is 1.000 (0 true FPs)."
+  },
+  "comparison_with_prior_analysis": {
+    "phase_fp_root_cause_analysis": "The earlier phase_fp_root_cause_analysis.json found that all 5 FPs in the internal benchmark (Suite B/C) were also benchmark labeling errors. Combined with this Suite D analysis, TensorGuard has zero confirmed soundness bugs across all benchmark suites.",
+    "total_benchmark_labeling_errors_found": 6,
+    "total_genuine_soundness_bugs": 0
+  }
+}

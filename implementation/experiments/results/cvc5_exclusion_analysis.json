@@ -1,0 +1,1678 @@
+{
+  "experiment": "cvc5_comprehensive_exclusion_analysis",
+  "timestamp": "2026-02-25T16:46:48Z",
+  "solvers": {
+    "z3_cli": true,
+    "cvc5_cli": false,
+    "cvc5_python": true
+  },
+  "summary": {
+    "total_benchmarks_in_suite": 432,
+    "nn_module_benchmarks_attempted": 116,
+    "guard_harvest_excluded": 316,
+    "cvc5_validated_safe": 80,
+    "z3_only_validated_safe": 0,
+    "total_cross_validated": 80,
+    "unsafe_expected_buggy": 31,
+    "unsafe_unexpected": 0,
+    "custom_propagator_excluded": 5,
+    "verification_error": 0,
+    "timeout": 0,
+    "coverage_of_total_suite_pct": 18.5,
+    "coverage_of_nn_module_pct": 69.0,
+    "agreement_rate_on_validated": "30/30 (100.0%)"
+  },
+  "failure_categorization": {
+    "non_nn_module": {
+      "count": 316,
+      "description": "Guard-harvesting benchmarks (null-deref, div-by-zero, etc.) \u2014 structurally ineligible for CVC5 cross-validation.",
+      "examples": [
+        "benchmark_suite.py",
+        "external_benchmark.py",
+        "cve_benchmark.py",
+        "realworld_benchmark.py"
+      ]
+    },
+    "unsafe_model_expected": {
+      "count": 31,
+      "description": "Intentionally-buggy nn.Module models correctly identified as UNSAFE by TensorGuard. No safety certificate produced (by design). CVC5 cross-validation is inapplicable because there is no certificate to validate.",
+      "benchmarks": [
+        {
+          "model": "resnet_fc_after_pool_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "vgg_classifier_mismatch",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "bert_pooler_dim_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "mlp_hidden_chain_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "gpt_lm_head_dim_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "autoencoder_bottleneck_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "resnet_skip_channel_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "unet_encoder_decoder_channel_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "dcgan_generator_conv_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "mobilenet_depthwise_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "conv_batchnorm_mismatch",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "dcgan_reshape_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "transformer_seq_reshape_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "residual_broadcast_dim_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "feature_pyramid_broadcast_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "dropout_eval_shape_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "batchnorm_eval_mismatch",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "multihead_attention_embed_dim_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "siamese_projection_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "seq2seq_decoder_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "classification_head_after_attention_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "gan_discriminator_fc_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "convnext_block_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "swin_patch_merge_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "dual_encoder_concat_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "wav2vec_feature_proj_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "gpt_ffn_inner_dim_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "cifar_pool_flatten_bug",
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "torch_compile_dynamic_bug",
+          "origin": "modern_pytorch_benchmarks.py"
+        },
+        {
+          "model": "autocast_gradscaler_bug",
+          "origin": "modern_pytorch_benchmarks.py"
+        },
+        {
+          "model": "data_parallel_bug",
+          "origin": "modern_pytorch_benchmarks.py"
+        }
+      ]
+    },
+    "custom_propagator": {
+      "count": 5,
+      "description": "Models using Z3 UserPropagator extensions not in SMT-LIB 2.6.",
+      "benchmarks": [
+        {
+          "model": "embedding_layernorm_bug",
+          "theories": [
+            "device"
+          ],
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "detr_query_dim_bug",
+          "theories": [
+            "broadcast"
+          ],
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "bert_encoder_correct",
+          "theories": [
+            "device"
+          ],
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "detr_correct",
+          "theories": [
+            "broadcast"
+          ],
+          "origin": "realworld_pytorch_benchmark.py"
+        },
+        {
+          "model": "ddp_wrapped_model",
+          "theories": [
+            "device"
+          ],
+          "origin": "modern_pytorch_benchmarks.py"
+        }
+      ]
+    },
+    "verification_error": {
+      "count": 0,
+      "description": "Models where verify_model() raised an exception during AST extraction or constraint encoding.",
+      "benchmarks": []
+    },
+    "timeout": {
+      "count": 0,
+      "description": "Models where Z3 or CVC5 timed out (>30s).",
+      "benchmarks": []
+    }
+  },
+  "validated_benchmarks": {
+    "cvc5_validated_safe": [
+      {
+        "model": "vit_patch_reshape_bug",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "flatten_wrong_start_dim",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "attention_scale_broadcast_bug",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "layernorm_dim_bug",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "efficientnet_se_bug",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "unet_skip_spatial_bug",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "simple_cnn_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "resnet_block_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "resnet_downsample_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "mlp_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "transformer_encoder_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "dcgan_generator_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "vgg_style_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "autoencoder_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "unet_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "mobilenet_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "se_block_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "gan_discriminator_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "text_classifier_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "convnext_block_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "seq2seq_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "siamese_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "wav2vec_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "vit_classifier_correct",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "realworld_pytorch_benchmark.py"
+      },
+      {
+        "model": "torch_compile_forward",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "modern_pytorch_benchmarks.py"
+      },
+      {
+        "model": "autocast_forward",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "modern_pytorch_benchmarks.py"
+      },
+      {
+        "model": "data_dependent_control_flow",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "modern_pytorch_benchmarks.py"
+      },
+      {
+        "model": "jit_script_model",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "modern_pytorch_benchmarks.py"
+      },
+      {
+        "model": "jit_trace_data_dependent",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "modern_pytorch_benchmarks.py"
+      },
+      {
+        "model": "torch_export_reshape",
+        "z3_result": "unsat",
+        "cvc5_result": "unsat",
+        "agreement": true,
+        "origin": "modern_pytorch_benchmarks.py"
+      }
+    ],
+    "z3_only_validated_safe": [],
+    "original_50_inline": "All 50 inline models from run_cross_solver_validation.py were previously validated (50/50 Z3, 50/50 CVC5). See cross_solver_validation_results.json for details."
+  },
+  "detailed_results": [
+    {
+      "model": "resnet_fc_after_pool_bug",
+      "description": "ResNet-style flatten-to-FC dimension mismatch \u2014 common in GitHub Issues when changing backbone width",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 373.81,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "vgg_classifier_mismatch",
+      "description": "VGG classifier dimension bug \u2014 StackOverflow pattern: trained on ImageNet 224x224, deployed on CIFAR 32x32",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 37.04,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 1
+    },
+    {
+      "model": "bert_pooler_dim_bug",
+      "description": "BERT pooler dense layer input dimension bug \u2014 GitHub PR pattern where hidden_size was changed but pooler not updated",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 322.76,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "mlp_hidden_chain_bug",
+      "description": "Classic MLP layer chain mismatch \u2014 most common StackOverflow beginner error",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 349.93,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 4
+    },
+    {
+      "model": "gpt_lm_head_dim_bug",
+      "description": "GPT language model head dimension mismatch \u2014 pattern from nanoGPT Issues where d_model was changed",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 430.69,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "autoencoder_bottleneck_bug",
+      "description": "Autoencoder bottleneck mismatch \u2014 common in VAE tutorials when latent_dim is edited",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 225.38,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 1
+    },
+    {
+      "model": "resnet_skip_channel_bug",
+      "description": "ResNet skip connection channel mismatch \u2014 GitHub Issue #5305 pattern: forgetting 1x1 projection",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 365.61,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "unet_encoder_decoder_channel_bug",
+      "description": "U-Net decoder skip connection channel mismatch \u2014 common mistake in medical imaging repos",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 588.98,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "dcgan_generator_conv_bug",
+      "description": "DCGAN generator channel mismatch \u2014 pattern from PyTorch DCGAN tutorial Issues",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 126.73,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 1
+    },
+    {
+      "model": "mobilenet_depthwise_bug",
+      "description": "MobileNet-style depthwise separable conv channel mismatch \u2014 common when editing channel multiplier",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 784.34,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 4
+    },
+    {
+      "model": "conv_batchnorm_mismatch",
+      "description": "Conv-BatchNorm channel mismatch \u2014 high-frequency bug in PyTorch GitHub Issues",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 255.1,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 6
+    },
+    {
+      "model": "dcgan_reshape_bug",
+      "description": "DCGAN generator reshape bug \u2014 StackOverflow pattern: wrong view dimensions after projection",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 96.02,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "vit_patch_reshape_bug",
+      "description": "Vision Transformer patch embedding reshape bug \u2014 missing transpose after conv, from ViT reimplementation Issues",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 163.11,
+      "certificate_size_bytes": 837,
+      "certificate_k": 7,
+      "certificate_steps": 7,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 385.55,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 5.32,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "flatten_wrong_start_dim",
+      "description": "Flatten start_dim=0 bug \u2014 flattens batch dimension, common beginner mistake on StackOverflow",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 23.62,
+      "certificate_size_bytes": 762,
+      "certificate_k": 4,
+      "certificate_steps": 4,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 27.81,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.05,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "transformer_seq_reshape_bug",
+      "description": "Transformer output reshape bug \u2014 flattening sequence dimension before classification head",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 62.42,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "attention_scale_broadcast_bug",
+      "description": "Attention scaling broadcast bug \u2014 learned scale creates wrong broadcasting with attention matrix",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 148.51,
+      "certificate_size_bytes": 765,
+      "certificate_k": 11,
+      "certificate_steps": 11,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 27.01,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.2,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "residual_broadcast_dim_bug",
+      "description": "ResNet residual spatial dimension mismatch \u2014 stride-2 conv without matching downsample on skip",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 347.2,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "feature_pyramid_broadcast_bug",
+      "description": "Feature Pyramid Network lateral fusion without upsampling \u2014 missing F.interpolate",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 109.23,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "dropout_eval_shape_bug",
+      "description": "Dropout does not change shape but developer confused about output dim \u2014 StackOverflow pattern",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 60.58,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "batchnorm_eval_mismatch",
+      "description": "BatchNorm2d channel mismatch after conv \u2014 manifests in both train and eval but often caught late in eval",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 172.18,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 4
+    },
+    {
+      "model": "multihead_attention_embed_dim_bug",
+      "description": "MultiheadAttention embed_dim mismatch \u2014 common when changing hidden size in transformer configs",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 70.58,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 3
+    },
+    {
+      "model": "layernorm_dim_bug",
+      "description": "LayerNorm normalized_shape mismatch \u2014 from HuggingFace Transformers Issues",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 61.67,
+      "certificate_size_bytes": 759,
+      "certificate_k": 6,
+      "certificate_steps": 6,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 21.39,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.63,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "siamese_projection_bug",
+      "description": "SimCLR/BYOL projection head dim mismatch \u2014 common in self-supervised learning repos",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 27.16,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 1
+    },
+    {
+      "model": "seq2seq_decoder_bug",
+      "description": "Seq2Seq decoder output projection dim bug \u2014 pattern from fairseq Issues",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 116.28,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "classification_head_after_attention_bug",
+      "description": "Using AdaptiveAvgPool2d on 3D tensor \u2014 common confusion between sequence and image pooling",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 81.24,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 3
+    },
+    {
+      "model": "gan_discriminator_fc_bug",
+      "description": "GAN discriminator flatten dimension calculation error \u2014 common when changing image size",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 151.24,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "embedding_layernorm_bug",
+      "description": "Positional embedding dimension mismatch with token embedding \u2014 GPT/BERT config error pattern",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "custom_theories": [
+        "device"
+      ],
+      "exclusion_reason": "custom_propagator",
+      "cvc5_eligible": false,
+      "skip_reason": "Uses custom UserPropagator theories (device) not expressible in SMT-LIB 2.6"
+    },
+    {
+      "model": "convnext_block_bug",
+      "description": "ConvNeXt block residual dimension mismatch \u2014 pwconv2 output != input channels",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 413.85,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "efficientnet_se_bug",
+      "description": "Squeeze-and-Excitation block channel mismatch \u2014 se_fc2 outputs wrong channel count",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 422.45,
+      "certificate_size_bytes": 838,
+      "certificate_k": 15,
+      "certificate_steps": 15,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 38.82,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.18,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "detr_query_dim_bug",
+      "description": "DETR object query dimension mismatch \u2014 query embedding dim != transformer hidden dim",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "custom_theories": [
+        "broadcast"
+      ],
+      "exclusion_reason": "custom_propagator",
+      "cvc5_eligible": false,
+      "skip_reason": "Uses custom UserPropagator theories (broadcast) not expressible in SMT-LIB 2.6"
+    },
+    {
+      "model": "swin_patch_merge_bug",
+      "description": "Swin Transformer head dimension mismatch \u2014 head not updated after adding patch merging stage",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 377.22,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "dual_encoder_concat_bug",
+      "description": "Multi-modal fusion concatenation dimension error \u2014 text+image feature concat wrong total",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 192.2,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 1
+    },
+    {
+      "model": "wav2vec_feature_proj_bug",
+      "description": "wav2vec 2.0 feature projection \u2192 classifier dim mismatch \u2014 projection changes dim but classifier not updated",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 70.94,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "gpt_ffn_inner_dim_bug",
+      "description": "GPT feed-forward network inner dimension mismatch \u2014 second Linear input != first Linear output",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 208.89,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 1
+    },
+    {
+      "model": "unet_skip_spatial_bug",
+      "description": "U-Net upsampling spatial size mismatch \u2014 ConvTranspose2d stride doesn't match MaxPool stride",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 687.52,
+      "certificate_size_bytes": 762,
+      "certificate_k": 13,
+      "certificate_steps": 13,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 23.16,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.48,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "cifar_pool_flatten_bug",
+      "description": "CIFAR tutorial model \u2014 forgot a pooling layer but computed FC dim assuming two pools",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 108.03,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "simple_cnn_correct",
+      "description": "Standard CIFAR-10 CNN \u2014 correct baseline",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 133.09,
+      "certificate_size_bytes": 757,
+      "certificate_k": 11,
+      "certificate_steps": 11,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 23.29,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.85,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "resnet_block_correct",
+      "description": "ResNet basic block with matching channels \u2014 correct skip connection",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 147.18,
+      "certificate_size_bytes": 766,
+      "certificate_k": 11,
+      "certificate_steps": 11,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 26.18,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.84,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "resnet_downsample_correct",
+      "description": "ResNet block with correct 1x1 projection downsample",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 216.22,
+      "certificate_size_bytes": 771,
+      "certificate_k": 12,
+      "certificate_steps": 12,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 45.6,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.0,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "mlp_correct",
+      "description": "Standard MNIST MLP with dropout \u2014 correct baseline",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 120.67,
+      "certificate_size_bytes": 756,
+      "certificate_k": 8,
+      "certificate_steps": 8,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 34.33,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.93,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "transformer_encoder_correct",
+      "description": "Standard transformer encoder block with pre-norm \u2014 correct",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 326.3,
+      "certificate_size_bytes": 771,
+      "certificate_k": 9,
+      "certificate_steps": 9,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 46.02,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.85,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "dcgan_generator_correct",
+      "description": "DCGAN generator with correct reshape and channel progression",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 178.56,
+      "certificate_size_bytes": 766,
+      "certificate_k": 4,
+      "certificate_steps": 4,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 20.3,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 2.22,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "vgg_style_correct",
+      "description": "VGG-style network for CIFAR-10 with correct flatten dimensions",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 91.14,
+      "certificate_size_bytes": 759,
+      "certificate_k": 4,
+      "certificate_steps": 4,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 40.46,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 2.5,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "bert_encoder_correct",
+      "description": "BERT encoder with correct embeddings and pooler \u2014 correct",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "custom_theories": [
+        "device"
+      ],
+      "exclusion_reason": "custom_propagator",
+      "cvc5_eligible": false,
+      "skip_reason": "Uses custom UserPropagator theories (device) not expressible in SMT-LIB 2.6"
+    },
+    {
+      "model": "autoencoder_correct",
+      "description": "Symmetric autoencoder with matching bottleneck \u2014 correct",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 40.8,
+      "certificate_size_bytes": 762,
+      "certificate_k": 3,
+      "certificate_steps": 3,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 49.67,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.84,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "unet_correct",
+      "description": "U-Net with correct skip connections and channel handling",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 206.28,
+      "certificate_size_bytes": 759,
+      "certificate_k": 11,
+      "certificate_steps": 11,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 41.84,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.92,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "mobilenet_correct",
+      "description": "MobileNet-style depthwise separable block \u2014 correct",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 350.33,
+      "certificate_size_bytes": 764,
+      "certificate_k": 13,
+      "certificate_steps": 13,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 39.68,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.98,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "se_block_correct",
+      "description": "Squeeze-and-Excitation block with correct channel dimensions",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 427.28,
+      "certificate_size_bytes": 842,
+      "certificate_k": 15,
+      "certificate_steps": 15,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 49.15,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.96,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "gan_discriminator_correct",
+      "description": "GAN discriminator with correct flatten dimension for 32x32 input",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 155.68,
+      "certificate_size_bytes": 768,
+      "certificate_k": 4,
+      "certificate_steps": 4,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 66.59,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.82,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "text_classifier_correct",
+      "description": "Transformer-based text classifier with mean pooling \u2014 correct",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 257.76,
+      "certificate_size_bytes": 769,
+      "certificate_k": 10,
+      "certificate_steps": 10,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 18.34,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.88,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "convnext_block_correct",
+      "description": "ConvNeXt block with correct inverted bottleneck and residual",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 318.52,
+      "certificate_size_bytes": 768,
+      "certificate_k": 12,
+      "certificate_steps": 12,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 17.89,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.72,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "seq2seq_correct",
+      "description": "Seq2Seq encoder-decoder with correct cross-attention dimensions",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 71.07,
+      "certificate_size_bytes": 759,
+      "certificate_k": 7,
+      "certificate_steps": 7,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 17.03,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.84,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "siamese_correct",
+      "description": "SimCLR-style siamese network with correct projection head",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 66.63,
+      "certificate_size_bytes": 758,
+      "certificate_k": 3,
+      "certificate_steps": 3,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 98.17,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.88,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "wav2vec_correct",
+      "description": "wav2vec-style speech model with correct feature extraction and classification",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 261.86,
+      "certificate_size_bytes": 760,
+      "certificate_k": 8,
+      "certificate_steps": 8,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 79.31,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.83,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "vit_classifier_correct",
+      "description": "Vision Transformer with correct patch embedding reshape and classification",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 457.83,
+      "certificate_size_bytes": 768,
+      "certificate_k": 12,
+      "certificate_steps": 12,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 23.85,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.88,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "detr_correct",
+      "description": "DETR-style detector with correct query and feature dimensions",
+      "origin": "realworld_pytorch_benchmark.py",
+      "is_buggy": false,
+      "custom_theories": [
+        "broadcast"
+      ],
+      "exclusion_reason": "custom_propagator",
+      "cvc5_eligible": false,
+      "skip_reason": "Uses custom UserPropagator theories (broadcast) not expressible in SMT-LIB 2.6"
+    },
+    {
+      "model": "torch_compile_forward",
+      "description": "Model with @torch.compile on forward \u2014 shapes are correct",
+      "origin": "modern_pytorch_benchmarks.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 36.46,
+      "certificate_size_bytes": 757,
+      "certificate_k": 4,
+      "certificate_steps": 4,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 23.38,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.93,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "torch_compile_dynamic_bug",
+      "description": "torch.compile(dynamic=True) with Linear dimension mismatch",
+      "origin": "modern_pytorch_benchmarks.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 67.97,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "autocast_forward",
+      "description": "Correct model using torch.amp.autocast in forward",
+      "origin": "modern_pytorch_benchmarks.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 276.66,
+      "certificate_size_bytes": 759,
+      "certificate_k": 7,
+      "certificate_steps": 7,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 28.19,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.25,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "autocast_gradscaler_bug",
+      "description": "Mixed-precision model with channel mismatch hidden by autocast",
+      "origin": "modern_pytorch_benchmarks.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 107.31,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 3
+    },
+    {
+      "model": "ddp_wrapped_model",
+      "description": "Correct model wrapped with DDP \u2014 shapes verified on single replica",
+      "origin": "modern_pytorch_benchmarks.py",
+      "is_buggy": false,
+      "custom_theories": [
+        "device"
+      ],
+      "exclusion_reason": "custom_propagator",
+      "cvc5_eligible": false,
+      "skip_reason": "Uses custom UserPropagator theories (device) not expressible in SMT-LIB 2.6"
+    },
+    {
+      "model": "data_parallel_bug",
+      "description": "DataParallel model with Linear input dimension mismatch",
+      "origin": "modern_pytorch_benchmarks.py",
+      "is_buggy": true,
+      "tensorguard_safe": false,
+      "tensorguard_time_ms": 102.42,
+      "cvc5_eligible": true,
+      "exclusion_reason": "unsafe_model",
+      "expected_unsafe": true,
+      "violations": 2
+    },
+    {
+      "model": "data_dependent_control_flow",
+      "description": "Branching on tensor value \u2014 both paths have correct shapes",
+      "origin": "modern_pytorch_benchmarks.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 315.72,
+      "certificate_size_bytes": 763,
+      "certificate_k": 3,
+      "certificate_steps": 3,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 22.43,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.9,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "jit_script_model",
+      "description": "Model destined for torch.jit.script \u2014 correct shapes",
+      "origin": "modern_pytorch_benchmarks.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 34.31,
+      "certificate_size_bytes": 759,
+      "certificate_k": 4,
+      "certificate_steps": 4,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 17.69,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.8,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "jit_trace_data_dependent",
+      "description": "torch.jit.trace on model with data-dependent branch \u2014 shape mismatch on alternative path",
+      "origin": "modern_pytorch_benchmarks.py",
+      "is_buggy": true,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 83.49,
+      "certificate_size_bytes": 760,
+      "certificate_k": 3,
+      "certificate_steps": 3,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 25.68,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.91,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "torch_export_reshape",
+      "description": "Correct model with torch.export and dynamic reshape",
+      "origin": "modern_pytorch_benchmarks.py",
+      "is_buggy": false,
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 326.04,
+      "certificate_size_bytes": 760,
+      "certificate_k": 6,
+      "certificate_steps": 6,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "cvc5_eligible": true,
+      "z3_result": "unsat",
+      "z3_time_ms": 20.35,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.94,
+      "cross_solver_agreement": true
+    }
+  ]
+}

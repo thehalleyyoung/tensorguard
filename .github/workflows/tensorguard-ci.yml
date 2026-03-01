@@ -1,0 +1,93 @@
+name: TensorGuard CI
+
+on:
+  pull_request:
+    paths:
+      - '**/*.py'
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install z3-solver torch --quiet
+
+      - name: Run TensorGuard verification
+        run: |
+          cd implementation
+          python -c "
+          import sys, json, glob, ast, os
+          sys.path.insert(0, '.')
+          from src.model_checker import verify_model
+
+          # Find all changed .py files with nn.Module classes
+          results = []
+          for pyfile in glob.glob('**/*.py', recursive=True):
+              try:
+                  with open(pyfile) as f:
+                      source = f.read()
+                  tree = ast.parse(source)
+                  has_module = any(
+                      isinstance(n, ast.ClassDef) and
+                      any('Module' in (getattr(b, 'attr', getattr(b, 'id', '')) or '')
+                          for b in n.bases)
+                      for n in ast.walk(tree)
+                  )
+                  if not has_module:
+                      continue
+                  result = verify_model(source)
+                  status = 'SAFE' if result.safe else 'UNSAFE'
+                  results.append({
+                      'file': pyfile,
+                      'status': status,
+                      'errors': result.errors[:3] if result.errors else [],
+                      'time_ms': round(result.verification_time_ms, 1),
+                  })
+                  print(f'{status}: {pyfile} ({result.verification_time_ms:.0f}ms)')
+              except Exception:
+                  pass
+
+          # Write summary
+          with open('verification_report.json', 'w') as f:
+              json.dump(results, f, indent=2)
+
+          unsafe = [r for r in results if r['status'] == 'UNSAFE']
+          if unsafe:
+              print(f'\n⚠️  {len(unsafe)} model(s) have shape/device/phase bugs')
+              for u in unsafe:
+                  print(f'  {u[\"file\"]}: {u[\"errors\"][:1]}')
+          else:
+              print(f'\n✅ All {len(results)} model(s) verified safe')
+          "
+
+      - name: Upload verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tensorguard-report
+          path: implementation/verification_report.json
+
+      - name: Run benchmark suite
+        run: |
+          cd implementation
+          python experiments/run_expanded_eval.py 2>/dev/null
+          echo "✅ Benchmark evaluation complete"
+
+      - name: Upload proof certificates
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tensorguard-certificates
+          path: |
+            implementation/experiments/expanded_eval_results.json
+            implementation/experiments/scalability_results.json

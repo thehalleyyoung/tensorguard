@@ -1,0 +1,44 @@
+{
+  "total": 5,
+  "llm_correct": 4,
+  "llm_accuracy": 0.8,
+  "tg_correct": 5,
+  "tg_accuracy": 1.0,
+  "results": [
+    {
+      "name": "lstm-linear-chain-bug",
+      "expected_safe": false,
+      "llm_safe": false,
+      "correct": true,
+      "llm_response": "k:**\n\n- The code does not reshape or project the previous output before feeding into `lstm4`. The mismatch between previous output size (256) and `lstm4`'s `input_size=128` is a bug.\n\n**Verdict: BUG**"
+    },
+    {
+      "name": "emb-bilstm-linear-safe",
+      "expected_safe": true,
+      "llm_safe": false,
+      "correct": false,
+      "llm_response": "st=True)`\n- After LSTM, select the last time step or apply pooling to reduce `(seq_len, batch_size, 512)` to `(batch_size, 512)` before passing to `self.fc`.\n\n---\n\n**Final verdict:**\n\n**VERDICT: BUG**"
+    },
+    {
+      "name": "emb-bilstm-linear-bug",
+      "expected_safe": false,
+      "llm_safe": false,
+      "correct": true,
+      "llm_response": " code will produce a shape mismatch when passing `out` to `self.fc`.\n- The code does not handle the dimension mismatch between LSTM output and linear layer input.\n\n**Final verdict:**\n\n**VERDICT: BUG**"
+    },
+    {
+      "name": "gru-seq2seq-safe",
+      "expected_safe": true,
+      "llm_safe": true,
+      "correct": true,
+      "llm_response": "n, which is 512, matching `in_features=512`.\n\n**Conclusion:**\n- All tensor shapes are consistent throughout the forward pass.\n- No shape mismatches or dimension errors are apparent.\n\n**Verdict: SAFE**"
+    },
+    {
+      "name": "gru-seq2seq-hidden-bug",
+      "expected_safe": false,
+      "llm_safe": false,
+      "correct": true,
+      "llm_response": "eading to a shape mismatch.\n\n**Conclusion:**\n- The code will raise an error at runtime because the decoder's input size does not match the encoder's output shape.\n\n**Final verdict:**\n\n**VERDICT: BUG**"
+    }
+  ]
+}

@@ -1,0 +1,218 @@
+{
+  "summary": {
+    "total_mutants": 100,
+    "total_killed": 85,
+    "total_survived": 15,
+    "overall_kill_rate": 0.85,
+    "overall_wilson_95_ci": {
+      "lower": 0.7672,
+      "upper": 0.9069
+    },
+    "num_categories": 7,
+    "num_categories_with_mutants": 7,
+    "mean_category_kill_rate": 0.7469,
+    "std_dev_kill_rate": 0.321,
+    "uniformity_assessment": "concentrated_blind_spots"
+  },
+  "per_category": {
+    "spatial_reduction": {
+      "killed": 31,
+      "survived": 5,
+      "total": 36,
+      "kill_rate": 0.8611,
+      "wilson_95_ci": {
+        "lower": 0.7134,
+        "upper": 0.9392
+      }
+    },
+    "attention": {
+      "killed": 8,
+      "survived": 2,
+      "total": 10,
+      "kill_rate": 0.8,
+      "wilson_95_ci": {
+        "lower": 0.4902,
+        "upper": 0.9433
+      }
+    },
+    "normalization": {
+      "killed": 2,
+      "survived": 0,
+      "total": 2,
+      "kill_rate": 1.0,
+      "wilson_95_ci": {
+        "lower": 0.3424,
+        "upper": 1.0
+      }
+    },
+    "reshaping": {
+      "killed": 21,
+      "survived": 3,
+      "total": 24,
+      "kill_rate": 0.875,
+      "wilson_95_ci": {
+        "lower": 0.69,
+        "upper": 0.9566
+      }
+    },
+    "arithmetic": {
+      "killed": 14,
+      "survived": 0,
+      "total": 14,
+      "kill_rate": 1.0,
+      "wilson_95_ci": {
+        "lower": 0.7847,
+        "upper": 1.0
+      }
+    },
+    "convolution": {
+      "killed": 9,
+      "survived": 4,
+      "total": 13,
+      "kill_rate": 0.6923,
+      "wilson_95_ci": {
+        "lower": 0.4237,
+        "upper": 0.8732
+      }
+    },
+    "pooling": {
+      "killed": 0,
+      "survived": 1,
+      "total": 1,
+      "kill_rate": 0.0,
+      "wilson_95_ci": {
+        "lower": 0.0,
+        "upper": 0.7935
+      }
+    }
+  },
+  "survivor_distribution_by_category": {
+    "reshaping": 3,
+    "spatial_reduction": 5,
+    "convolution": 4,
+    "attention": 2,
+    "pooling": 1
+  },
+  "survivor_classification": {
+    "counts": {
+      "equivalent_mutant": 1,
+      "specification_gap": 1,
+      "expressiveness_limitation": 13
+    },
+    "details": [
+      {
+        "operator": "swap_layers",
+        "category": "reshaping",
+        "model": "ResBlock",
+        "classification": "expressiveness_limitation",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "wrong_out_features",
+        "category": "spatial_reduction",
+        "model": "ResNetSmall",
+        "classification": "expressiveness_limitation",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "wrong_kernel_size",
+        "category": "convolution",
+        "model": "ResNetSmall",
+        "classification": "expressiveness_limitation",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "remove_reshape",
+        "category": "reshaping",
+        "model": "Generator",
+        "classification": "equivalent_mutant",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "wrong_kernel_size",
+        "category": "convolution",
+        "model": "UNetBlock",
+        "classification": "expressiveness_limitation",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "wrong_channels",
+        "category": "attention",
+        "model": "UNetBlock",
+        "classification": "expressiveness_limitation",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "wrong_pool_size",
+        "category": "pooling",
+        "model": "UNetBlock",
+        "classification": "expressiveness_limitation",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "wrong_kernel_size",
+        "category": "convolution",
+        "model": "DepthwiseSeparable",
+        "classification": "expressiveness_limitation",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "wrong_kernel_size",
+        "category": "convolution",
+        "model": "DepthwiseSeparable",
+        "classification": "expressiveness_limitation",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "wrong_in_features",
+        "category": "spatial_reduction",
+        "model": "InceptionBlock",
+        "classification": "expressiveness_limitation",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "wrong_out_features",
+        "category": "spatial_reduction",
+        "model": "InceptionBlock",
+        "classification": "expressiveness_limitation",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "wrong_channels",
+        "category": "attention",
+        "model": "InceptionBlock",
+        "classification": "expressiveness_limitation",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "wrong_concat_dim",
+        "category": "reshaping",
+        "model": "InceptionBlock",
+        "classification": "specification_gap",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "wrong_out_features",
+        "category": "spatial_reduction",
+        "model": "PoolFlattenNet",
+        "classification": "expressiveness_limitation",
+        "reason": "inferred from operator type"
+      },
+      {
+        "operator": "wrong_out_features",
+        "category": "spatial_reduction",
+        "model": "TransposeNet",
+        "classification": "expressiveness_limitation",
+        "reason": "inferred from operator type"
+      }
+    ]
+  },
+  "blind_spots": [
+    "convolution",
+    "pooling"
+  ],
+  "perfect_detection_categories": [
+    "normalization",
+    "arithmetic"
+  ]
+}

@@ -1,0 +1,1519 @@
+{
+  "experiment": "cross_solver_certificate_validation",
+  "timestamp": "2026-02-25T09:46:02Z",
+  "solvers": {
+    "z3_cli": true,
+    "cvc5_cli": false,
+    "cvc5_python": true
+  },
+  "summary": {
+    "models_tested": 50,
+    "tensorguard_safe": 50,
+    "z3_subprocess_validated": 50,
+    "cvc5_validated": 50,
+    "secondary_validated": 50,
+    "cvc5_available": true
+  },
+  "results": [
+    {
+      "model": "simple_linear",
+      "description": "Single linear layer",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 23.34,
+      "certificate_size_bytes": 756,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 2,
+      "certificate_steps": 2,
+      "certificate_z3_queries": 28,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 81.35,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.04,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "two_layer_mlp",
+      "description": "Two-layer MLP",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 40.32,
+      "certificate_size_bytes": 755,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 3,
+      "certificate_steps": 3,
+      "certificate_z3_queries": 45,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 104.14,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.21,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "three_layer_mlp",
+      "description": "Three-layer MLP with ReLU",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 78.54,
+      "certificate_size_bytes": 757,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 6,
+      "certificate_steps": 6,
+      "certificate_z3_queries": 88,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 95.78,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.32,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "deep_mlp",
+      "description": "Five-layer deep MLP",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 158.96,
+      "certificate_size_bytes": 755,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 10,
+      "certificate_steps": 10,
+      "certificate_z3_queries": 148,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 42.32,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.91,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "residual_block",
+      "description": "Residual connection (skip connection)",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 106.3,
+      "certificate_size_bytes": 753,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 5,
+      "certificate_steps": 5,
+      "certificate_z3_queries": 73,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 33.56,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.84,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "layernorm_block",
+      "description": "LayerNorm + Linear",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 52.73,
+      "certificate_size_bytes": 820,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 3,
+      "certificate_steps": 3,
+      "certificate_z3_queries": 45,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 35.86,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.04,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "cnn_simple",
+      "description": "Simple Conv2d + Linear classifier",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 66.18,
+      "certificate_size_bytes": 753,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 5,
+      "certificate_steps": 5,
+      "certificate_z3_queries": 71,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 45.2,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.06,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "two_conv_cnn",
+      "description": "Two Conv2d layers + pooling + Linear",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 66.58,
+      "certificate_size_bytes": 754,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 6,
+      "certificate_steps": 6,
+      "certificate_z3_queries": 88,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 99.67,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.83,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "transformer_ffn",
+      "description": "Transformer feed-forward block",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 263.27,
+      "certificate_size_bytes": 821,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 6,
+      "certificate_steps": 6,
+      "certificate_z3_queries": 90,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 63.89,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.85,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "bottleneck_mlp",
+      "description": "Bottleneck MLP (wide -> narrow -> wide)",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 85.41,
+      "certificate_size_bytes": 757,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 4,
+      "certificate_steps": 4,
+      "certificate_z3_queries": 58,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 54.32,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.83,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "sequential_chain",
+      "description": "Long sequential chain of compatible layers",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 257.49,
+      "certificate_size_bytes": 760,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 6,
+      "certificate_steps": 6,
+      "certificate_z3_queries": 88,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 34.45,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.87,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "classifier_head",
+      "description": "Classifier head with dropout",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 37.73,
+      "certificate_size_bytes": 758,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 5,
+      "certificate_steps": 5,
+      "certificate_z3_queries": 73,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 54.82,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.86,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "conv2d_small_kernel",
+      "description": "Conv2d with small 1x1 and 3x3 kernels",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 98.28,
+      "certificate_size_bytes": 762,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 8,
+      "certificate_steps": 8,
+      "certificate_z3_queries": 114,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 36.3,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.41,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "conv2d_strided",
+      "description": "Conv2d with stride-2 downsampling",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 132.73,
+      "certificate_size_bytes": 759,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 8,
+      "certificate_steps": 8,
+      "certificate_z3_queries": 114,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 44.55,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.83,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "convtranspose2d_upsample",
+      "description": "ConvTranspose2d for upsampling",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 72.84,
+      "certificate_size_bytes": 761,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 6,
+      "certificate_steps": 6,
+      "certificate_z3_queries": 88,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 45.74,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.85,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "conv2d_deep",
+      "description": "Deep Conv2d with 4 layers",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 128.76,
+      "certificate_size_bytes": 758,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 12,
+      "certificate_steps": 12,
+      "certificate_z3_queries": 174,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 85.17,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.16,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "lstm_classifier",
+      "description": "LSTM for sequence classification",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 214.75,
+      "certificate_size_bytes": 821,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 3,
+      "certificate_steps": 3,
+      "certificate_z3_queries": 45,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 64.75,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.2,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "gru_classifier",
+      "description": "GRU for sequence classification",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 42.61,
+      "certificate_size_bytes": 819,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 3,
+      "certificate_steps": 3,
+      "certificate_z3_queries": 45,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 86.87,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.83,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "bilstm_classifier",
+      "description": "Bidirectional LSTM classifier",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 244.1,
+      "certificate_size_bytes": 823,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 3,
+      "certificate_steps": 3,
+      "certificate_z3_queries": 45,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 81.02,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.85,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "stacked_gru",
+      "description": "Stacked 2-layer GRU",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 39.46,
+      "certificate_size_bytes": 816,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 3,
+      "certificate_steps": 3,
+      "certificate_z3_queries": 45,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 26.62,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.88,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "multihead_attention_block",
+      "description": "MultiheadAttention with residual",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 72.85,
+      "certificate_size_bytes": 814,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 4,
+      "certificate_steps": 4,
+      "certificate_z3_queries": 60,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 132.95,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.87,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "transformer_encoder_layer_model",
+      "description": "TransformerEncoderLayer block",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 63.79,
+      "certificate_size_bytes": 823,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 2,
+      "certificate_steps": 2,
+      "certificate_z3_queries": 28,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 32.75,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.87,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "transformer_ffn_gelu",
+      "description": "Transformer FFN with GELU activation",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 52.27,
+      "certificate_size_bytes": 824,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 6,
+      "certificate_steps": 6,
+      "certificate_z3_queries": 90,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 32.97,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.95,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "pre_norm_transformer",
+      "description": "Pre-norm transformer block with two sub-layers",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 112.93,
+      "certificate_size_bytes": 826,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 9,
+      "certificate_steps": 9,
+      "certificate_z3_queries": 139,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 29.23,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.85,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "batchnorm1d_mlp",
+      "description": "MLP with BatchNorm1d",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 29.63,
+      "certificate_size_bytes": 751,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 5,
+      "certificate_steps": 5,
+      "certificate_z3_queries": 77,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 100.09,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.83,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "batchnorm2d_conv",
+      "description": "Conv2d with BatchNorm2d",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 129.14,
+      "certificate_size_bytes": 756,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 10,
+      "certificate_steps": 10,
+      "certificate_z3_queries": 152,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 25.41,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.83,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "groupnorm_conv",
+      "description": "Conv2d with GroupNorm",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 75.18,
+      "certificate_size_bytes": 760,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 10,
+      "certificate_steps": 10,
+      "certificate_z3_queries": 140,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 30.5,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.81,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "instancenorm2d_conv",
+      "description": "Conv2d with InstanceNorm2d",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 121.25,
+      "certificate_size_bytes": 764,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 10,
+      "certificate_steps": 10,
+      "certificate_z3_queries": 140,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 225.94,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.83,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "maxpool_conv",
+      "description": "Conv2d with MaxPool2d",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 130.88,
+      "certificate_size_bytes": 759,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 10,
+      "certificate_steps": 10,
+      "certificate_z3_queries": 140,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 98.65,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.8,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "avgpool_conv",
+      "description": "Conv2d with AvgPool2d",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 81.1,
+      "certificate_size_bytes": 756,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 9,
+      "certificate_steps": 9,
+      "certificate_z3_queries": 127,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 78.09,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.02,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "adaptive_avgpool_mlp",
+      "description": "AdaptiveAvgPool2d into MLP head",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 74.27,
+      "certificate_size_bytes": 760,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 8,
+      "certificate_steps": 8,
+      "certificate_z3_queries": 114,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 32.38,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.99,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "global_avgpool_classifier",
+      "description": "Global average pooling classifier",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 104.94,
+      "certificate_size_bytes": 771,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 10,
+      "certificate_steps": 10,
+      "certificate_z3_queries": 144,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 37.96,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.32,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "double_residual",
+      "description": "Two stacked residual blocks",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 408.89,
+      "certificate_size_bytes": 760,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 9,
+      "certificate_steps": 9,
+      "certificate_z3_queries": 135,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 56.46,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.86,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "conv_residual_block",
+      "description": "Conv2d residual block (same padding)",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 164.6,
+      "certificate_size_bytes": 758,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 8,
+      "certificate_steps": 8,
+      "certificate_z3_queries": 124,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 66.18,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.81,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "pre_activation_resblock",
+      "description": "Pre-activation residual block",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 130.77,
+      "certificate_size_bytes": 760,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 8,
+      "certificate_steps": 8,
+      "certificate_z3_queries": 123,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 44.2,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.04,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "residual_mlp_layernorm",
+      "description": "Residual MLP with LayerNorm",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 173.11,
+      "certificate_size_bytes": 768,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 10,
+      "certificate_steps": 10,
+      "certificate_z3_queries": 152,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 58.55,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.82,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "embedding_classifier",
+      "description": "Embedding + Linear for classification",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 64.16,
+      "certificate_size_bytes": 825,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 5,
+      "certificate_steps": 5,
+      "certificate_z3_queries": 75,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 22.8,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.91,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "embedding_with_layernorm",
+      "description": "Embedding + LayerNorm + MLP",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 51.4,
+      "certificate_size_bytes": 824,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 6,
+      "certificate_steps": 6,
+      "certificate_z3_queries": 92,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 23.38,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.56,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "embedding_large_vocab",
+      "description": "Large vocabulary embedding model",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 106.45,
+      "certificate_size_bytes": 823,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 7,
+      "certificate_steps": 7,
+      "certificate_z3_queries": 105,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 40.18,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.85,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "linear_autoencoder",
+      "description": "Linear autoencoder with bottleneck",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 86.79,
+      "certificate_size_bytes": 762,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 8,
+      "certificate_steps": 8,
+      "certificate_z3_queries": 118,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 33.77,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.93,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "deep_autoencoder",
+      "description": "Deep autoencoder with symmetric layers",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 166.0,
+      "certificate_size_bytes": 763,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 12,
+      "certificate_steps": 12,
+      "certificate_z3_queries": 178,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 38.49,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.9,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "conv_autoencoder",
+      "description": "Convolutional autoencoder",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 57.92,
+      "certificate_size_bytes": 760,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 8,
+      "certificate_steps": 8,
+      "certificate_z3_queries": 118,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 31.13,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.84,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "variational_encoder",
+      "description": "Encoder portion of a VAE",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 62.68,
+      "certificate_size_bytes": 754,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 4,
+      "certificate_steps": 4,
+      "certificate_z3_queries": 58,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 38.87,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.79,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "dual_branch_add",
+      "description": "Two branches merged by addition",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 78.37,
+      "certificate_size_bytes": 758,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 7,
+      "certificate_steps": 7,
+      "certificate_z3_queries": 103,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 93.3,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.83,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "dual_branch_concat",
+      "description": "Two branches merged by concatenation",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 78.5,
+      "certificate_size_bytes": 761,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 7,
+      "certificate_steps": 7,
+      "certificate_z3_queries": 103,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 35.69,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.85,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "triple_branch_add",
+      "description": "Three parallel branches merged by addition",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 301.73,
+      "certificate_size_bytes": 763,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 10,
+      "certificate_steps": 10,
+      "certificate_z3_queries": 148,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 75.42,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.83,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "wide_narrow_merge",
+      "description": "Wide and narrow paths merged by addition",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 65.21,
+      "certificate_size_bytes": 760,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 9,
+      "certificate_steps": 9,
+      "certificate_z3_queries": 133,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 32.31,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.85,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "mlp_with_softmax",
+      "description": "MLP ending with Softmax",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 24.35,
+      "certificate_size_bytes": 754,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 5,
+      "certificate_steps": 5,
+      "certificate_z3_queries": 71,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 33.48,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.03,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "identity_shortcut",
+      "description": "Identity layer with shortcut path",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 37.27,
+      "certificate_size_bytes": 760,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 6,
+      "certificate_steps": 6,
+      "certificate_z3_queries": 87,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 34.82,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 1.85,
+      "cross_solver_agreement": true
+    },
+    {
+      "model": "tanh_sigmoid_mlp",
+      "description": "MLP with Tanh and Sigmoid activations",
+      "tensorguard_safe": true,
+      "tensorguard_time_ms": 36.06,
+      "certificate_size_bytes": 759,
+      "certificate_properties": [
+        "shape_compatible",
+        "device_consistent",
+        "gradient_valid"
+      ],
+      "certificate_k": 7,
+      "certificate_steps": 7,
+      "certificate_z3_queries": 101,
+      "certificate_theories": [
+        "QF_LIA",
+        "QF_UF",
+        "QF_UFLIA",
+        "T_broadcast",
+        "T_stride",
+        "T_device",
+        "T_phase"
+      ],
+      "smtlib_syntax_valid": true,
+      "z3_subprocess_result": "unsat",
+      "z3_subprocess_time_ms": 126.05,
+      "cvc5_result": "unsat",
+      "cvc5_time_ms": 0.93,
+      "cross_solver_agreement": true
+    }
+  ]
+}

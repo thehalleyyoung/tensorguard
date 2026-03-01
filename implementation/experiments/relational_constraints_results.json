@@ -1,0 +1,53 @@
+{
+  "experiments": [
+    {
+      "name": "correct_mha_relational",
+      "status": "SAFE",
+      "expected": "SAFE",
+      "match": true,
+      "time_ms": 35.49,
+      "constraints": {
+        "embed_dim": "heads * head_dim",
+        "heads": "8",
+        "head_dim": "64"
+      },
+      "errors": []
+    },
+    {
+      "name": "buggy_mha_wrong_projection",
+      "status": "BUG FOUND",
+      "expected": "BUG FOUND",
+      "match": true,
+      "time_ms": 23.93,
+      "constraints": {
+        "embed_dim": "heads * head_dim",
+        "heads": "8"
+      },
+      "errors": []
+    },
+    {
+      "name": "encoder_decoder_shared_dim",
+      "status": "SAFE",
+      "expected": "SAFE",
+      "match": true,
+      "time_ms": 15.92,
+      "constraints": {
+        "embed_dim": "512"
+      },
+      "errors": []
+    },
+    {
+      "name": "incompatible_constraints",
+      "status": "BUG FOUND",
+      "expected": "BUG FOUND",
+      "match": true,
+      "time_ms": 31.52,
+      "constraints": {
+        "embed_dim": "512"
+      },
+      "errors": []
+    }
+  ],
+  "matched": 4,
+  "total": 4
+}

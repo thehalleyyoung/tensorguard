@@ -1,0 +1,188 @@
+{
+  "experiment": "hksj_adjusted_meta_analysis",
+  "timestamp": "2026-02-25T15:30:00Z",
+  "k": 4,
+  "total_n": 141,
+  "per_suite": [
+    {
+      "name": "Suite B (CEGAR ablation)",
+      "f1": 0.966,
+      "n": 32,
+      "se": 0.0396,
+      "ci_95": [
+        0.8385,
+        0.9936
+      ]
+    },
+    {
+      "name": "Suite C (external bugs)",
+      "f1": 0.875,
+      "n": 34,
+      "se": 0.0572,
+      "ci_95": [
+        0.7249,
+        0.949
+      ]
+    },
+    {
+      "name": "Suite D (standard)",
+      "f1": 0.917,
+      "n": 50,
+      "se": 0.0405,
+      "ci_95": [
+        0.8078,
+        0.9667
+      ]
+    },
+    {
+      "name": "Deep composition",
+      "f1": 1.0,
+      "n": 25,
+      "se": 0.034,
+      "ci_95": [
+        0.8668,
+        1
+      ]
+    }
+  ],
+  "heterogeneity": {
+    "cochrans_Q": 4.6671,
+    "Q_df": 3,
+    "Q_p_value": 0.1979,
+    "I_squared_pct": 35.7,
+    "I_squared_interpretation": "moderate",
+    "H_squared": 1.5557,
+    "tau_squared_DL": 0.000953,
+    "tau_DL": 0.0309
+  },
+  "dersimonian_laird": {
+    "pooled_f1": 0.9497,
+    "se": 0.0259,
+    "ci_95": [
+      0.899,
+      1
+    ]
+  },
+  "hksj_adjusted": {
+    "pooled_f1": 0.9497,
+    "se_hksj": 0.5033,
+    "t_critical": 3.1824,
+    "df": 3,
+    "ci_95": [
+      0,
+      1
+    ],
+    "note": "HKSJ uses t-distribution with k-1 df instead of normal, producing wider and more conservative CIs at small k"
+  },
+  "prediction_interval": {
+    "pi_95": [
+      0.7764,
+      1
+    ],
+    "interpretation": "Expected F1 range for a new, unobserved evaluation suite"
+  },
+  "leave_one_out_sensitivity": [
+    {
+      "excluded": "Suite B (CEGAR ablation)",
+      "pooled_f1": 0.9398,
+      "ci_lo": 0.8667,
+      "ci_hi": 1.0,
+      "tau2": 0.00232,
+      "I2_pct": 56.0
+    },
+    {
+      "excluded": "Suite C (external bugs)",
+      "pooled_f1": 0.9649,
+      "ci_lo": 0.9174,
+      "ci_hi": 1.0,
+      "tau2": 0.000332,
+      "I2_pct": 18.8
+    },
+    {
+      "excluded": "Suite D (standard)",
+      "pooled_f1": 0.9595,
+      "ci_lo": 0.896,
+      "ci_hi": 1.0,
+      "tau2": 0.00137,
+      "I2_pct": 43.4
+    },
+    {
+      "excluded": "Deep composition",
+      "pooled_f1": 0.9289,
+      "ci_lo": 0.8791,
+      "ci_hi": 0.9786,
+      "tau2": 0,
+      "I2_pct": 0
+    }
+  ],
+  "funnel_plot_data": [
+    {
+      "f1": 0.966,
+      "se": 0.03956969455212518,
+      "name": "Suite B (CEGAR ablation)"
+    },
+    {
+      "f1": 0.875,
+      "se": 0.05716286573606283,
+      "name": "Suite C (external bugs)"
+    },
+    {
+      "f1": 0.917,
+      "se": 0.04054681855825279,
+      "name": "Suite D (standard)"
+    },
+    {
+      "f1": 1.0,
+      "se": 0.033978697437035375,
+      "name": "Deep composition"
+    }
+  ],
+  "forest_plot_data": [
+    {
+      "label": "Suite B (CEGAR ablation)",
+      "estimate": 0.966,
+      "ci_lo": 0.8385,
+      "ci_hi": 0.9936,
+      "weight_pct": 26.6,
+      "n": 32
+    },
+    {
+      "label": "Suite C (external bugs)",
+      "estimate": 0.875,
+      "ci_lo": 0.7249,
+      "ci_hi": 0.949,
+      "weight_pct": 15.9,
+      "n": 34
+    },
+    {
+      "label": "Suite D (standard)",
+      "estimate": 0.917,
+      "ci_lo": 0.8078,
+      "ci_hi": 0.9667,
+      "weight_pct": 25.8,
+      "n": 50
+    },
+    {
+      "label": "Deep composition",
+      "estimate": 1.0,
+      "ci_lo": 0.8668,
+      "ci_hi": 1,
+      "weight_pct": 31.8,
+      "n": 25
+    },
+    {
+      "label": "Pooled (HKSJ)",
+      "estimate": 0.9497,
+      "ci_lo": 0,
+      "ci_hi": 1,
+      "weight_pct": 100.0,
+      "n": 141
+    }
+  ],
+  "comparison": {
+    "dl_ci_width": 0.1014,
+    "hksj_ci_width": 3.2033,
+    "hksj_wider": true,
+    "note": "HKSJ CI is expected to be wider than DL CI at small k, providing more honest uncertainty quantification"
+  }
+}

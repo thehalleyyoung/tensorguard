@@ -1,0 +1,49 @@
+{
+  "experiment": "log_linear_regression_timing",
+  "method": "OLS on log(time) ~ log(depth)",
+  "results": {
+    "mlp_correct": {
+      "slope": 1.316,
+      "intercept": 3.157,
+      "r_squared": 0.9944,
+      "predicted_200_layers_ms": 25019.6,
+      "scaling": "superlinear",
+      "n_points": 5,
+      "se_slope": 0.057
+    },
+    "cnn_correct": {
+      "slope": 1.757,
+      "intercept": 2.261,
+      "r_squared": 0.9957,
+      "predicted_200_layers_ms": 105694.5,
+      "scaling": "quadratic",
+      "n_points": 4,
+      "se_slope": 0.082
+    },
+    "transformer_correct": {
+      "slope": 0.019,
+      "intercept": 2.801,
+      "r_squared": 0.5546,
+      "predicted_200_layers_ms": 18.2,
+      "scaling": "linear",
+      "n_points": 5,
+      "se_slope": 0.01
+    },
+    "mlp_buggy": {
+      "slope": 1.59,
+      "intercept": 1.959,
+      "r_squared": 0.9929,
+      "predicted_200_layers_ms": 32245.9,
+      "scaling": "quadratic",
+      "n_points": 5,
+      "se_slope": 0.078
+    }
+  },
+  "model_types": [
+    "mlp_correct",
+    "cnn_correct",
+    "transformer_correct",
+    "mlp_buggy"
+  ],
+  "note": "Slope < 1.2 = linear scaling, 1.2-1.5 = superlinear, > 1.5 = quadratic"
+}

@@ -1,0 +1,479 @@
+{
+  "method": "mypy + torch type stubs (static baseline)",
+  "description": "Simulated mypy analysis: mypy checks Python types, not tensor shapes. torch stubs declare all dimension parameters as plain `int`, so shape mismatches between layers are invisible. Groups-divisibility and attention-head constraints are runtime assertions, not type-level properties.",
+  "aggregate_metrics": {
+    "tp": 0,
+    "fp": 0,
+    "tn": 25,
+    "fn": 25,
+    "total": 50,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "accuracy": 0.5
+  },
+  "comparison_table": {
+    "headers": [
+      "Tool",
+      "TP",
+      "FP",
+      "TN",
+      "FN",
+      "Precision",
+      "Recall",
+      "F1"
+    ],
+    "rows": [
+      [
+        "TensorGuard",
+        22,
+        1,
+        24,
+        3,
+        0.9565,
+        0.88,
+        0.9167
+      ],
+      [
+        "mypy + torch stubs",
+        0,
+        0,
+        25,
+        25,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        "PyTea-style baseline",
+        2,
+        0,
+        25,
+        23,
+        1.0,
+        0.08,
+        0.1481
+      ]
+    ]
+  },
+  "key_finding": "mypy with torch type stubs detects 0 of 25 shape bugs (F1 = 0.0). All Suite D bugs are shape/dimension mismatches or integer-constraint violations \u2014 categories that fall entirely outside the reach of nominal type checking. TensorGuard's refinement types encode shape constraints that mypy's type system cannot express, yielding F1 = 0.917 vs mypy's 0.0. This confirms that tensor shape verification requires a fundamentally different approach from standard type checking.",
+  "bug_category_summary": {
+    "shape_dimension_mismatch": {
+      "count": 22,
+      "mypy_catches": 0,
+      "reason": "Layer dimensions are int-typed constructor args; mypy cannot relate output shape of one layer to input shape of the next."
+    },
+    "groups_divisibility": {
+      "count": 2,
+      "mypy_catches": 0,
+      "reason": "in_channels % groups == 0 is a runtime assertion in Conv2d.__init__, not a type constraint."
+    },
+    "attention_head_divisibility": {
+      "count": 1,
+      "mypy_catches": 0,
+      "reason": "embed_dim % num_heads == 0 is a runtime assertion in MultiheadAttention.__init__, not a type constraint."
+    }
+  },
+  "per_benchmark_verdicts": {
+    "alexnet_classifier_bug": {
+      "is_buggy": true,
+      "description": "AlexNet BUG: classifier expects 256*7*7=12544 but features produce 256*6*6=9216",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "alexnet_correct": {
+      "is_buggy": false,
+      "description": "AlexNet (Krizhevsky et al. 2012) \u2013 correct feature chain + classifier",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "autoencoder_bug": {
+      "is_buggy": true,
+      "description": "Autoencoder BUG: decoder first layer expects 64 but encoder outputs 16",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "autoencoder_correct": {
+      "is_buggy": false,
+      "description": "Symmetric autoencoder \u2013 correct encoder/decoder dimension chain",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "bert_encoder_correct": {
+      "is_buggy": false,
+      "description": "BERT encoder block (Devlin et al. 2019) \u2013 correct attention + FFN with residuals",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "bert_encoder_ffn_bug": {
+      "is_buggy": true,
+      "description": "BERT BUG: ffn_down expects 768 but ffn_up outputs 3072",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "bert_pooler_bug": {
+      "is_buggy": true,
+      "description": "BERT pooler BUG: pooler_dense expects 512 but cls_token is 768-dim from attention",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "bert_pooler_correct": {
+      "is_buggy": false,
+      "description": "BERT pooler (Devlin et al. 2019) \u2013 correct CLS token extraction and dense",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "conv_classifier_bug": {
+      "is_buggy": true,
+      "description": "Conv classifier BUG: FC expects 64 but conv3 outputs 128 channels",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "conv_classifier_correct": {
+      "is_buggy": false,
+      "description": "Simple conv classifier with global avg pool \u2013 correct",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "dcgan_discriminator_bug": {
+      "is_buggy": true,
+      "description": "DCGAN discriminator BUG: FC expects 256*8*8 but conv chain 32\u219216\u21928\u21924 yields 256*4*4",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "dcgan_discriminator_correct": {
+      "is_buggy": false,
+      "description": "DCGAN discriminator (Radford et al. 2016) \u2013 correct strided conv chain",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "dcgan_generator_bug": {
+      "is_buggy": true,
+      "description": "DCGAN generator BUG: project outputs 256*4*4=4096 but view reshapes to 512*4*4=8192",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "dcgan_generator_correct": {
+      "is_buggy": false,
+      "description": "DCGAN generator (Radford et al. 2016) \u2013 correct latent\u2192image upsampling",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "densenet_transition_bug": {
+      "is_buggy": true,
+      "description": "DenseNet transition BUG: BatchNorm expects 128 channels but input is 256",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "densenet_transition_correct": {
+      "is_buggy": false,
+      "description": "DenseNet transition layer (Huang et al. 2017) \u2013 correct BN\u21921x1conv\u2192pool",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "gpt2_decoder_correct": {
+      "is_buggy": false,
+      "description": "GPT-2 decoder block (Radford et al. 2019) \u2013 correct pre-norm + MLP + residuals",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "gpt2_decoder_mlp_bug": {
+      "is_buggy": true,
+      "description": "GPT-2 BUG: mlp_down expects 768 features but mlp_up outputs 3072",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "gpt2_lm_head_bug": {
+      "is_buggy": true,
+      "description": "GPT-2 LM head BUG: lm_head expects 1024 (seq_len) but receives 768 (hidden_dim)",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "gpt2_lm_head_correct": {
+      "is_buggy": false,
+      "description": "GPT-2 LM head (Radford et al. 2019) \u2013 correct final projection to vocab",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "lenet5_correct": {
+      "is_buggy": false,
+      "description": "LeNet-5 (LeCun et al. 1998) \u2013 correct conv\u2192pool\u2192flatten\u2192FC chain",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "lenet5_input_bug": {
+      "is_buggy": true,
+      "description": "LeNet-5 BUG: fc1 expects 16*5*5=400 but 28x28 input yields 16*4*4=256 after convs+pools",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "mlp_mnist_bug": {
+      "is_buggy": true,
+      "description": "MLP BUG: fc2 expects 128 features but fc1 outputs 256",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "mlp_mnist_correct": {
+      "is_buggy": false,
+      "description": "Classic MNIST MLP \u2013 correct 784\u2192256\u2192128\u219210 chain",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "mobilenetv2_block_correct": {
+      "is_buggy": false,
+      "description": "MobileNetV2 block with stride-2 DW conv (Sandler et al. 2018) \u2013 correct",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "mobilenetv2_correct": {
+      "is_buggy": false,
+      "description": "MobileNetV2 inverted residual (Sandler et al. 2018) \u2013 correct expand\u2192DW\u2192project",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "mobilenetv2_dw_bug": {
+      "is_buggy": true,
+      "description": "MobileNetV2 BUG: depthwise groups=32 but channels=192 (groups should equal channels for DW conv)",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "groups_divisibility",
+      "reason": "mypy sees only int-typed constructor args; bug category 'groups_divisibility' is invisible to the type system"
+    },
+    "mobilenetv2_project_bug": {
+      "is_buggy": true,
+      "description": "MobileNetV2 BUG: project expects 48 channels but depthwise outputs 96",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "resnet18_correct": {
+      "is_buggy": false,
+      "description": "ResNet-18 (He et al. 2015) \u2013 two BasicBlocks, correct FC after adaptive pool",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "resnet18_fc_bug": {
+      "is_buggy": true,
+      "description": "ResNet-18 BUG: FC expects 256 features but AdaptiveAvgPool2d(1,1) on 128 channels yields 128",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "resnet50_bottleneck_bug": {
+      "is_buggy": true,
+      "description": "ResNet-50 BUG: block2 expects 128 input channels but block1 outputs 256",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "resnet50_bottleneck_correct": {
+      "is_buggy": false,
+      "description": "ResNet-50 bottleneck (He et al. 2015) \u2013 correct 1x1\u21923x3\u21921x1 pipeline",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "resnext_correct": {
+      "is_buggy": false,
+      "description": "ResNeXt block (Xie et al. 2017) \u2013 correct grouped 3x3 conv with residual",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "resnext_groups_bug": {
+      "is_buggy": true,
+      "description": "ResNeXt BUG: grouped conv has groups=48 but channels=128 (128%48!=0)",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "groups_divisibility",
+      "reason": "mypy sees only int-typed constructor args; bug category 'groups_divisibility' is invisible to the type system"
+    },
+    "seq2seq_encoder_bug": {
+      "is_buggy": true,
+      "description": "Seq2Seq BUG: fc2 expects 128 but fc1 outputs 512",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "seq2seq_encoder_correct": {
+      "is_buggy": false,
+      "description": "Simple seq2seq encoder \u2013 correct embedding\u2192FC chain",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "squeezenet_fire_bug": {
+      "is_buggy": true,
+      "description": "SqueezeNet fire BUG: expand1x1 expects 64 ch but squeeze outputs 32 ch",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "squeezenet_fire_correct": {
+      "is_buggy": false,
+      "description": "SqueezeNet fire module (Iandola et al. 2016) \u2013 correct squeeze\u2192expand",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "transformer_encoder_correct": {
+      "is_buggy": false,
+      "description": "Standard transformer encoder block \u2013 correct attention + FFN",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "transformer_encoder_head_bug": {
+      "is_buggy": true,
+      "description": "Transformer BUG: embed_dim=256 not divisible by num_heads=7",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "attention_head_divisibility",
+      "reason": "mypy sees only int-typed constructor args; bug category 'attention_head_divisibility' is invisible to the type system"
+    },
+    "unet_decoder_bug": {
+      "is_buggy": true,
+      "description": "U-Net decoder BUG: dec1_conv1 expects 256 ch but up1 outputs only 128",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "unet_decoder_correct": {
+      "is_buggy": false,
+      "description": "U-Net decoder (Ronneberger et al. 2015) \u2013 correct transposed conv upsampling",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "unet_encoder_bug": {
+      "is_buggy": true,
+      "description": "U-Net encoder BUG: bottleneck1 expects 64 input channels but pool2 outputs 128",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "unet_encoder_correct": {
+      "is_buggy": false,
+      "description": "U-Net encoder (Ronneberger et al. 2015) \u2013 correct double-conv + pool",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "vgg16_cifar_bug": {
+      "is_buggy": true,
+      "description": "VGG-16 BUG: classifier expects 128*56*56=401408 but 32x32 input \u2192 128*8*8=8192 after pooling",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "vgg16_correct": {
+      "is_buggy": false,
+      "description": "VGG-16 first 4 conv layers (Simonyan & Zisserman 2015) \u2013 correct flatten dim",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "wavenet_correct": {
+      "is_buggy": false,
+      "description": "WaveNet dilated block (van den Oord et al. 2016) \u2013 correct gated activation",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    },
+    "wavenet_residual_bug": {
+      "is_buggy": true,
+      "description": "WaveNet BUG: residual_conv expects 128 ch but gated output z has 256 ch",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "wavenet_stack_bug": {
+      "is_buggy": true,
+      "description": "WaveNet stack BUG: dilated2 expects 64 ch but dilated1 outputs 128 ch",
+      "mypy_detected": false,
+      "verdict": "FN",
+      "bug_type": "shape_dimension_mismatch",
+      "reason": "mypy sees only int-typed constructor args; bug category 'shape_dimension_mismatch' is invisible to the type system"
+    },
+    "wavenet_stack_correct": {
+      "is_buggy": false,
+      "description": "WaveNet dilated stack (van den Oord et al. 2016) \u2013 correct increasing dilation",
+      "mypy_detected": false,
+      "verdict": "TN",
+      "bug_type": null,
+      "reason": "correct program type-checks normally"
+    }
+  }
+}

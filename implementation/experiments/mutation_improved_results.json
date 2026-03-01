@@ -1,0 +1,352 @@
+{
+  "summary": {
+    "total_mutants": 168,
+    "killed": 142,
+    "survived": 26,
+    "equivalent": 0,
+    "errors": 0,
+    "mutation_score": 0.8452,
+    "false_negative_rate": 0.1548,
+    "wilson_95_ci": {
+      "lower": 0.7829,
+      "upper": 0.8921
+    },
+    "num_models": 21
+  },
+  "improvements": {
+    "previous_overall_score": 0.85,
+    "new_overall_score": 0.8452,
+    "previous_wrong_pool_size_kill_rate": 0.0,
+    "new_wrong_pool_size_kill_rate": 0.7777777777777778,
+    "previous_inception_block_score": 0.2,
+    "new_inception_block_score": 0.875,
+    "changes_made": [
+      "Fixed InceptionBlock benchmark to use fc layer in forward() (was dead code) and added pool+flatten before fc",
+      "Added PoolClassifier model with pool->flatten->FC chain for pool mutation testing",
+      "Increased mutations_per_model from 5 to 8 to ensure all operators are tested",
+      "Added pool output shape support to assume-guarantee contract derivation"
+    ]
+  },
+  "per_model_scores": {
+    "Autoencoder": {
+      "killed": 7,
+      "survived": 1,
+      "equivalent": 0,
+      "mutation_score": 0.875
+    },
+    "BottleneckBlock": {
+      "killed": 8,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "BottleneckMLP": {
+      "killed": 6,
+      "survived": 2,
+      "equivalent": 0,
+      "mutation_score": 0.75
+    },
+    "ConcatClassifier": {
+      "killed": 6,
+      "survived": 2,
+      "equivalent": 0,
+      "mutation_score": 0.75
+    },
+    "DeepMLP": {
+      "killed": 7,
+      "survived": 1,
+      "equivalent": 0,
+      "mutation_score": 0.875
+    },
+    "DepthwiseSeparable": {
+      "killed": 6,
+      "survived": 2,
+      "equivalent": 0,
+      "mutation_score": 0.75
+    },
+    "Generator": {
+      "killed": 6,
+      "survived": 2,
+      "equivalent": 0,
+      "mutation_score": 0.75
+    },
+    "InceptionBlock": {
+      "killed": 7,
+      "survived": 1,
+      "equivalent": 0,
+      "mutation_score": 0.875
+    },
+    "LeNetStyle": {
+      "killed": 8,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "MultiHeadSelfAttn": {
+      "killed": 8,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "PoolClassifier": {
+      "killed": 7,
+      "survived": 1,
+      "equivalent": 0,
+      "mutation_score": 0.875
+    },
+    "PoolFlattenNet": {
+      "killed": 7,
+      "survived": 1,
+      "equivalent": 0,
+      "mutation_score": 0.875
+    },
+    "RNNClassifier": {
+      "killed": 7,
+      "survived": 1,
+      "equivalent": 0,
+      "mutation_score": 0.875
+    },
+    "ResBlock": {
+      "killed": 6,
+      "survived": 2,
+      "equivalent": 0,
+      "mutation_score": 0.75
+    },
+    "ResNetSmall": {
+      "killed": 6,
+      "survived": 2,
+      "equivalent": 0,
+      "mutation_score": 0.75
+    },
+    "SimpleCNN": {
+      "killed": 7,
+      "survived": 1,
+      "equivalent": 0,
+      "mutation_score": 0.875
+    },
+    "SimpleMLP": {
+      "killed": 8,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "SimpleTransformerBlock": {
+      "killed": 8,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "TransposeNet": {
+      "killed": 6,
+      "survived": 2,
+      "equivalent": 0,
+      "mutation_score": 0.75
+    },
+    "UNetBlock": {
+      "killed": 4,
+      "survived": 4,
+      "equivalent": 0,
+      "mutation_score": 0.5
+    },
+    "VGGBlock": {
+      "killed": 7,
+      "survived": 1,
+      "equivalent": 0,
+      "mutation_score": 0.875
+    }
+  },
+  "per_operator_kill_rates": {
+    "add_dimension_mismatch": {
+      "killed": 27,
+      "survived": 0,
+      "kill_rate": 1.0,
+      "total_mutants": 27
+    },
+    "remove_reshape": {
+      "killed": 11,
+      "survived": 2,
+      "kill_rate": 0.8461538461538461,
+      "total_mutants": 13
+    },
+    "swap_layers": {
+      "killed": 26,
+      "survived": 2,
+      "kill_rate": 0.9285714285714286,
+      "total_mutants": 28
+    },
+    "transpose_missing": {
+      "killed": 4,
+      "survived": 0,
+      "kill_rate": 1.0,
+      "total_mutants": 4
+    },
+    "wrong_channels": {
+      "killed": 15,
+      "survived": 0,
+      "kill_rate": 1.0,
+      "total_mutants": 15
+    },
+    "wrong_concat_dim": {
+      "killed": 3,
+      "survived": 0,
+      "kill_rate": 1.0,
+      "total_mutants": 3
+    },
+    "wrong_in_features": {
+      "killed": 27,
+      "survived": 0,
+      "kill_rate": 1.0,
+      "total_mutants": 27
+    },
+    "wrong_kernel_size": {
+      "killed": 10,
+      "survived": 5,
+      "kill_rate": 0.6666666666666666,
+      "total_mutants": 15
+    },
+    "wrong_out_features": {
+      "killed": 12,
+      "survived": 15,
+      "kill_rate": 0.4444444444444444,
+      "total_mutants": 27
+    },
+    "wrong_pool_size": {
+      "killed": 7,
+      "survived": 2,
+      "kill_rate": 0.7777777777777778,
+      "total_mutants": 9
+    }
+  },
+  "surviving_mutants": [
+    {
+      "model": "DeepMLP",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 33"
+    },
+    {
+      "model": "BottleneckMLP",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 13"
+    },
+    {
+      "model": "BottleneckMLP",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 33"
+    },
+    {
+      "model": "SimpleCNN",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 13"
+    },
+    {
+      "model": "VGGBlock",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 13"
+    },
+    {
+      "model": "ResBlock",
+      "operator": "swap_layers",
+      "description": "Swapped forward lines 14 and 15"
+    },
+    {
+      "model": "ResBlock",
+      "operator": "swap_layers",
+      "description": "Swapped forward lines 14 and 15"
+    },
+    {
+      "model": "ResNetSmall",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 13"
+    },
+    {
+      "model": "ResNetSmall",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 3 -> 7"
+    },
+    {
+      "model": "Autoencoder",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 784 -> 807"
+    },
+    {
+      "model": "Generator",
+      "operator": "remove_reshape",
+      "description": "Removed reshape/view at line 17"
+    },
+    {
+      "model": "Generator",
+      "operator": "remove_reshape",
+      "description": "Removed reshape/view at line 17"
+    },
+    {
+      "model": "UNetBlock",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 3 -> 7"
+    },
+    {
+      "model": "UNetBlock",
+      "operator": "wrong_pool_size",
+      "description": "Pool kernel 2 -> 16"
+    },
+    {
+      "model": "UNetBlock",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 3 -> 7"
+    },
+    {
+      "model": "UNetBlock",
+      "operator": "wrong_pool_size",
+      "description": "Pool kernel 2 -> 16"
+    },
+    {
+      "model": "ConcatClassifier",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 33"
+    },
+    {
+      "model": "ConcatClassifier",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 33"
+    },
+    {
+      "model": "RNNClassifier",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 13"
+    },
+    {
+      "model": "DepthwiseSeparable",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 3 -> 7"
+    },
+    {
+      "model": "DepthwiseSeparable",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 3 -> 7"
+    },
+    {
+      "model": "InceptionBlock",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 13"
+    },
+    {
+      "model": "PoolFlattenNet",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 21"
+    },
+    {
+      "model": "TransposeNet",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 128 -> 123"
+    },
+    {
+      "model": "TransposeNet",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 5 -> 8"
+    },
+    {
+      "model": "PoolClassifier",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 5"
+    }
+  ]
+}

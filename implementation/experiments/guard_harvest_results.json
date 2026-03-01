@@ -1,0 +1,256 @@
+{
+  "benchmarks": [
+    {
+      "name": "mlp_2layer",
+      "total_predicates": 1,
+      "guard_harvest": 0,
+      "layer_param": 1,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 0,
+      "cegar_iterations": 2,
+      "cegar_status": "SAFE",
+      "predicates": [
+        {
+          "predicate": "x.shape[-1] == 768",
+          "kind": "DIM_EQ",
+          "source": "layer_param"
+        }
+      ]
+    },
+    {
+      "name": "mlp_3layer",
+      "total_predicates": 1,
+      "guard_harvest": 0,
+      "layer_param": 1,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 0,
+      "cegar_iterations": 2,
+      "cegar_status": "SAFE",
+      "predicates": [
+        {
+          "predicate": "x.shape[-1] == 512",
+          "kind": "DIM_EQ",
+          "source": "layer_param"
+        }
+      ]
+    },
+    {
+      "name": "conv_block",
+      "total_predicates": 1,
+      "guard_harvest": 0,
+      "layer_param": 1,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 0,
+      "cegar_iterations": 2,
+      "cegar_status": "SAFE",
+      "predicates": [
+        {
+          "predicate": "x.shape[1] == 3",
+          "kind": "DIM_EQ",
+          "source": "layer_param"
+        }
+      ]
+    },
+    {
+      "name": "encoder_block",
+      "total_predicates": 0,
+      "guard_harvest": 0,
+      "layer_param": 0,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 0,
+      "cegar_iterations": 1,
+      "cegar_status": "REAL_BUG_FOUND",
+      "predicates": []
+    },
+    {
+      "name": "residual_mlp",
+      "total_predicates": 1,
+      "guard_harvest": 0,
+      "layer_param": 1,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 0,
+      "cegar_iterations": 1,
+      "cegar_status": "REAL_BUG_FOUND",
+      "predicates": [
+        {
+          "predicate": "x.shape[-1] == 256",
+          "kind": "DIM_EQ",
+          "source": "layer_param"
+        }
+      ]
+    },
+    {
+      "name": "double_conv",
+      "total_predicates": 1,
+      "guard_harvest": 0,
+      "layer_param": 1,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 0,
+      "cegar_iterations": 2,
+      "cegar_status": "SAFE",
+      "predicates": [
+        {
+          "predicate": "x.shape[1] == 3",
+          "kind": "DIM_EQ",
+          "source": "layer_param"
+        }
+      ]
+    },
+    {
+      "name": "linear_chain_5",
+      "total_predicates": 1,
+      "guard_harvest": 0,
+      "layer_param": 1,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 0,
+      "cegar_iterations": 2,
+      "cegar_status": "SAFE",
+      "predicates": [
+        {
+          "predicate": "x.shape[-1] == 1024",
+          "kind": "DIM_EQ",
+          "source": "layer_param"
+        }
+      ]
+    },
+    {
+      "name": "embedding_classifier",
+      "total_predicates": 0,
+      "guard_harvest": 0,
+      "layer_param": 0,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 0,
+      "cegar_iterations": 1,
+      "cegar_status": "SAFE",
+      "predicates": []
+    },
+    {
+      "name": "conv_flatten_fc",
+      "total_predicates": 2,
+      "guard_harvest": 0,
+      "layer_param": 2,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 0,
+      "cegar_iterations": 2,
+      "cegar_status": "SAFE",
+      "predicates": [
+        {
+          "predicate": "x.shape[1] == 1",
+          "kind": "DIM_EQ",
+          "source": "layer_param"
+        },
+        {
+          "predicate": "x.shape[-1] == 32",
+          "kind": "DIM_EQ",
+          "source": "layer_param"
+        }
+      ]
+    },
+    {
+      "name": "norm_variations",
+      "total_predicates": 1,
+      "guard_harvest": 0,
+      "layer_param": 1,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 0,
+      "cegar_iterations": 2,
+      "cegar_status": "SAFE",
+      "predicates": [
+        {
+          "predicate": "x.shape[-1] == 256",
+          "kind": "DIM_EQ",
+          "source": "layer_param"
+        }
+      ]
+    },
+    {
+      "name": "projection_pair",
+      "total_predicates": 1,
+      "guard_harvest": 0,
+      "layer_param": 1,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 0,
+      "cegar_iterations": 2,
+      "cegar_status": "SAFE",
+      "predicates": [
+        {
+          "predicate": "x.shape[-1] == 512",
+          "kind": "DIM_EQ",
+          "source": "layer_param"
+        }
+      ]
+    },
+    {
+      "name": "deep_mlp_10",
+      "total_predicates": 1,
+      "guard_harvest": 0,
+      "layer_param": 1,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 1,
+      "cegar_iterations": 2,
+      "cegar_status": "SAFE",
+      "predicates": [
+        {
+          "predicate": "x.shape[-1] == 128",
+          "kind": "DIM_EQ",
+          "source": "layer_param"
+        }
+      ]
+    },
+    {
+      "name": "guarded_model",
+      "total_predicates": 1,
+      "guard_harvest": 0,
+      "layer_param": 1,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 1,
+      "cegar_iterations": 2,
+      "cegar_status": "SAFE",
+      "predicates": [
+        {
+          "predicate": "x.shape[-1] == 256",
+          "kind": "DIM_EQ",
+          "source": "layer_param"
+        }
+      ]
+    },
+    {
+      "name": "isinstance_guard",
+      "total_predicates": 0,
+      "guard_harvest": 0,
+      "layer_param": 0,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 1,
+      "cegar_iterations": 1,
+      "cegar_status": "SAFE",
+      "predicates": []
+    },
+    {
+      "name": "multi_guard",
+      "total_predicates": 1,
+      "guard_harvest": 0,
+      "layer_param": 1,
+      "cegar_unsat_core": 0,
+      "num_guards_in_source": 2,
+      "cegar_iterations": 2,
+      "cegar_status": "SAFE",
+      "predicates": [
+        {
+          "predicate": "x.shape[-1] == 512",
+          "kind": "DIM_EQ",
+          "source": "layer_param"
+        }
+      ]
+    }
+  ],
+  "aggregate": {
+    "total_predicates": 13,
+    "guard_harvest": 0,
+    "layer_param": 13,
+    "cegar_unsat_core": 0,
+    "guard_harvest_pct": 0.0,
+    "layer_param_pct": 100.0,
+    "cegar_unsat_core_pct": 0.0
+  },
+  "timestamp": "2026-02-24T15:28:15"
+}

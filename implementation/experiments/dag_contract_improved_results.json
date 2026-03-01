@@ -1,0 +1,131 @@
+{
+  "summary": {
+    "total_models": 18,
+    "sequential_models": 14,
+    "non_sequential_models": 4,
+    "agreements": 18,
+    "disagreements": 0,
+    "agreement_rate": 1.0,
+    "soundness_preserved": true,
+    "non_sequential_agreement_rate": 1.0
+  },
+  "improvements": {
+    "previous_non_sequential_agreement": "3/5 (60%)",
+    "new_non_sequential_agreement": "4/4 (100%)",
+    "root_causes_fixed": [
+      "Skip connections: _extract_subgraph now tracks temporal ordering of tensor production/consumption, ensuring tensors consumed before produced within a block are correctly treated as external inputs",
+      "Multi-branch ADD: _derive_input_contract now infers shape from ADD outputs downstream consumer when both ADD inputs are external",
+      "Shape-preserving ops: _derive_output_contract now traces through CONTIGUOUS/ACTIVATION ops to find concrete shapes from producer layers",
+      "Pool operations: _shape_tuple_for_layer_output now handles MAXPOOL2D/AVGPOOL2D",
+      "Concat operations: _derive_output_contract now computes concrete concat output shapes by summing branch channel dims"
+    ],
+    "new_rules_added": [
+      "Namjoshi-Trefler circular rule (AG-Circ) for cyclic dependencies with well-founded ordering",
+      "DAG composition rule (AG-DAG) for general DAG topologies with multi-branch constraints"
+    ]
+  },
+  "non_sequential_models": [
+    {
+      "name": "inception_concat",
+      "category": "non_sequential",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "name": "dense_residual",
+      "category": "non_sequential",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "name": "cnn_pool_flatten",
+      "category": "non_sequential",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "name": "dual_branch_add",
+      "category": "non_sequential",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    }
+  ],
+  "all_models": [
+    {
+      "name": "simple_mlp_2layer",
+      "agree": true
+    },
+    {
+      "name": "simple_mlp_3layer",
+      "agree": true
+    },
+    {
+      "name": "medium_mlp_5layer",
+      "agree": true
+    },
+    {
+      "name": "medium_mlp_8layer",
+      "agree": true
+    },
+    {
+      "name": "deep_mlp_10layer",
+      "agree": true
+    },
+    {
+      "name": "deep_mlp_15layer",
+      "agree": true
+    },
+    {
+      "name": "deep_mlp_20layer",
+      "agree": true
+    },
+    {
+      "name": "cnn_simple",
+      "agree": true
+    },
+    {
+      "name": "cnn_deep",
+      "agree": true
+    },
+    {
+      "name": "residual_block",
+      "agree": true
+    },
+    {
+      "name": "multihead_attention",
+      "agree": true
+    },
+    {
+      "name": "lstm_classifier",
+      "agree": true
+    },
+    {
+      "name": "wide_parallel",
+      "agree": true
+    },
+    {
+      "name": "bottleneck_mlp",
+      "agree": true
+    },
+    {
+      "name": "inception_concat",
+      "agree": true
+    },
+    {
+      "name": "dense_residual",
+      "agree": true
+    },
+    {
+      "name": "cnn_pool_flatten",
+      "agree": true
+    },
+    {
+      "name": "dual_branch_add",
+      "agree": true
+    }
+  ]
+}

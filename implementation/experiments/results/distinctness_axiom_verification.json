@@ -1,0 +1,324 @@
+{
+  "summary": {
+    "sorts_verified": 3,
+    "all_tight": true,
+    "simulation_pass": true,
+    "spurious_tests_pass": true,
+    "elapsed_seconds": 0.038
+  },
+  "axiom_sets": [
+    {
+      "sort_name": "T_device",
+      "sort_size": 5,
+      "constants": [
+        "cpu",
+        "cuda:0",
+        "cuda:1",
+        "cuda:2",
+        "cuda:3"
+      ],
+      "distinctness_axiom_count": 10,
+      "expected_distinctness_count": 10,
+      "totality_axiom_count": 1,
+      "distinctness_axioms": [
+        "T_device_cpu != T_device_cuda:0",
+        "T_device_cpu != T_device_cuda:1",
+        "T_device_cpu != T_device_cuda:2",
+        "T_device_cpu != T_device_cuda:3",
+        "T_device_cuda:0 != T_device_cuda:1",
+        "T_device_cuda:0 != T_device_cuda:2",
+        "T_device_cuda:0 != T_device_cuda:3",
+        "T_device_cuda:1 != T_device_cuda:2",
+        "T_device_cuda:1 != T_device_cuda:3",
+        "T_device_cuda:2 != T_device_cuda:3"
+      ],
+      "totality_axioms": [
+        "Or(_test_T_device == T_device_cpu,\n   _test_T_device == T_device_cuda:0,\n   _test_T_device == T_device_cuda:1,\n   _test_T_device == T_device_cuda:2,\n   _test_T_device == T_device_cuda:3)"
+      ]
+    },
+    {
+      "sort_name": "T_phase",
+      "sort_size": 2,
+      "constants": [
+        "TRAIN",
+        "EVAL"
+      ],
+      "distinctness_axiom_count": 1,
+      "expected_distinctness_count": 1,
+      "totality_axiom_count": 1,
+      "distinctness_axioms": [
+        "T_phase_TRAIN != T_phase_EVAL"
+      ],
+      "totality_axioms": [
+        "Or(_test_T_phase == T_phase_TRAIN,\n   _test_T_phase == T_phase_EVAL)"
+      ]
+    },
+    {
+      "sort_name": "T_perm",
+      "sort_size": 5,
+      "constants": [
+        "identity",
+        "transpose",
+        "reverse",
+        "rotate_left",
+        "rotate_right"
+      ],
+      "distinctness_axiom_count": 10,
+      "expected_distinctness_count": 10,
+      "totality_axiom_count": 1,
+      "distinctness_axioms": [
+        "T_perm_identity != T_perm_transpose",
+        "T_perm_identity != T_perm_reverse",
+        "T_perm_identity != T_perm_rotate_left",
+        "T_perm_identity != T_perm_rotate_right",
+        "T_perm_transpose != T_perm_reverse",
+        "T_perm_transpose != T_perm_rotate_left",
+        "T_perm_transpose != T_perm_rotate_right",
+        "T_perm_reverse != T_perm_rotate_left",
+        "T_perm_reverse != T_perm_rotate_right",
+        "T_perm_rotate_left != T_perm_rotate_right"
+      ],
+      "totality_axioms": [
+        "Or(_test_T_perm == T_perm_identity,\n   _test_T_perm == T_perm_transpose,\n   _test_T_perm == T_perm_reverse,\n   _test_T_perm == T_perm_rotate_left,\n   _test_T_perm == T_perm_rotate_right)"
+      ]
+    }
+  ],
+  "tightness": {
+    "T_device": {
+      "sort_name": "T_device",
+      "expected_size": 5,
+      "constants": [
+        "cpu",
+        "cuda:0",
+        "cuda:1",
+        "cuda:2",
+        "cuda:3"
+      ],
+      "distinctness_sat": true,
+      "no_extra_value": true,
+      "reachability": [
+        {
+          "constant": "cpu",
+          "reachable": true
+        },
+        {
+          "constant": "cuda:0",
+          "reachable": true
+        },
+        {
+          "constant": "cuda:1",
+          "reachable": true
+        },
+        {
+          "constant": "cuda:2",
+          "reachable": true
+        },
+        {
+          "constant": "cuda:3",
+          "reachable": true
+        }
+      ],
+      "all_reachable": true,
+      "tight": true
+    },
+    "T_phase": {
+      "sort_name": "T_phase",
+      "expected_size": 2,
+      "constants": [
+        "TRAIN",
+        "EVAL"
+      ],
+      "distinctness_sat": true,
+      "no_extra_value": true,
+      "reachability": [
+        {
+          "constant": "TRAIN",
+          "reachable": true
+        },
+        {
+          "constant": "EVAL",
+          "reachable": true
+        }
+      ],
+      "all_reachable": true,
+      "tight": true
+    },
+    "T_perm": {
+      "sort_name": "T_perm",
+      "expected_size": 5,
+      "constants": [
+        "identity",
+        "transpose",
+        "reverse",
+        "rotate_left",
+        "rotate_right"
+      ],
+      "distinctness_sat": true,
+      "no_extra_value": true,
+      "reachability": [
+        {
+          "constant": "identity",
+          "reachable": true
+        },
+        {
+          "constant": "transpose",
+          "reachable": true
+        },
+        {
+          "constant": "reverse",
+          "reachable": true
+        },
+        {
+          "constant": "rotate_left",
+          "reachable": true
+        },
+        {
+          "constant": "rotate_right",
+          "reachable": true
+        }
+      ],
+      "all_reachable": true,
+      "tight": true
+    }
+  },
+  "bidirectional_simulation": {
+    "tests": [
+      {
+        "sort": "T_device",
+        "forward_tests": [
+          {
+            "constant": "cpu",
+            "satisfiable": true
+          },
+          {
+            "constant": "cuda:0",
+            "satisfiable": true
+          },
+          {
+            "constant": "cuda:1",
+            "satisfiable": true
+          },
+          {
+            "constant": "cuda:2",
+            "satisfiable": true
+          },
+          {
+            "constant": "cuda:3",
+            "satisfiable": true
+          }
+        ],
+        "all_forward_pass": true,
+        "backward_no_extra": true,
+        "simulation_holds": true
+      },
+      {
+        "sort": "T_phase",
+        "forward_tests": [
+          {
+            "constant": "TRAIN",
+            "satisfiable": true
+          },
+          {
+            "constant": "EVAL",
+            "satisfiable": true
+          }
+        ],
+        "all_forward_pass": true,
+        "backward_no_extra": true,
+        "simulation_holds": true
+      },
+      {
+        "sort": "T_perm",
+        "forward_tests": [
+          {
+            "constant": "identity",
+            "satisfiable": true
+          },
+          {
+            "constant": "transpose",
+            "satisfiable": true
+          },
+          {
+            "constant": "reverse",
+            "satisfiable": true
+          },
+          {
+            "constant": "rotate_left",
+            "satisfiable": true
+          },
+          {
+            "constant": "rotate_right",
+            "satisfiable": true
+          }
+        ],
+        "all_forward_pass": true,
+        "backward_no_extra": true,
+        "simulation_holds": true
+      }
+    ],
+    "all_pass": true
+  },
+  "spurious_model_tests": {
+    "tests": [
+      {
+        "test": "naive_sort_allows_collapse",
+        "description": "Without distinctness, constants can be equal",
+        "expected": "sat",
+        "actual": "sat",
+        "pass": true
+      },
+      {
+        "test": "distinctness_blocks_collapse",
+        "description": "With distinctness, cpu != cuda:0",
+        "expected": "unsat",
+        "actual": "unsat",
+        "pass": true
+      },
+      {
+        "test": "phase_distinctness",
+        "description": "TRAIN != EVAL under axioms",
+        "expected": "unsat",
+        "actual": "unsat",
+        "pass": true
+      },
+      {
+        "test": "totality_prevents_extra_value",
+        "description": "Variable cannot take value outside sort",
+        "expected": "unsat",
+        "actual": "unsat",
+        "pass": true
+      },
+      {
+        "test": "two_distinct_vars_sat",
+        "description": "Two vars can take different values from sort",
+        "expected": "sat",
+        "actual": "sat",
+        "pass": true
+      },
+      {
+        "test": "all_device_pairs_distinct",
+        "description": "Every pair of device constants is distinct",
+        "expected": "all_unsat",
+        "actual": "all_unsat",
+        "pass": true
+      },
+      {
+        "test": "perm_identity_ne_transpose",
+        "description": "identity != transpose under axioms",
+        "expected": "unsat",
+        "actual": "unsat",
+        "pass": true
+      },
+      {
+        "test": "same_device_with_assignment",
+        "description": "a == b and a == cuda:1 implies b == cuda:1",
+        "expected": "sat",
+        "actual": "sat",
+        "pass": true
+      }
+    ],
+    "all_pass": true,
+    "pass_count": 8,
+    "total_count": 8
+  }
+}

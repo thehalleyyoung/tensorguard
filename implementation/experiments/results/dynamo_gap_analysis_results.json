@@ -1,0 +1,1005 @@
+{
+  "experiment": "dynamo_per_subgraph_safe_gap_analysis",
+  "timestamp": "2026-02-26T10:13:09Z",
+  "num_architectures": 7,
+  "architectures": {
+    "transformer_dynamic_attention": {
+      "description": "Transformer with dynamic attention mask causing graph break",
+      "backends": {
+        "ast": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "MONOLITHIC_SAFE",
+          "notes": "AST sees all syntactic branches but cannot resolve runtime-computed shapes or dynamic control flow. Dynamic patterns INVISIBLE to AST."
+        },
+        "fx": {
+          "traceable": false,
+          "safe": false,
+          "composition_semantics": null,
+          "errors": [
+            "torch.fx.symbolic_trace failed: graph break in transformer_dynamic_attention due to data-dependent control flow."
+          ],
+          "notes": "FX cannot handle graph breaks."
+        },
+        "dynamo": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "PER_SUBGRAPH_SAFE",
+          "num_subgraphs": 3,
+          "num_graph_breaks": 2,
+          "notes": "Captured 3 subgraph(s), 2 break(s). Composition: PER_SUBGRAPH_SAFE. Risk: MEDIUM."
+        }
+      },
+      "gap_analysis": {
+        "num_graph_breaks": 2,
+        "num_subgraphs": 3,
+        "cross_break_dependencies": [
+          {
+            "source_subgraph": 0,
+            "target_subgraph": 1,
+            "tensor_name": "_t1",
+            "dependency_type": "direct",
+            "description": "Tensor '_t1' flows directly from subgraph 0 to subgraph 1."
+          },
+          {
+            "source_subgraph": 0,
+            "target_subgraph": 1,
+            "tensor_name": "_t1",
+            "dependency_type": "direct",
+            "description": "Tensor '_t1' flows directly from subgraph 0 to subgraph 1."
+          },
+          {
+            "source_subgraph": 0,
+            "target_subgraph": 1,
+            "tensor_name": "_t1",
+            "dependency_type": "direct",
+            "description": "Tensor '_t1' flows directly from subgraph 0 to subgraph 1."
+          },
+          {
+            "source_subgraph": 1,
+            "target_subgraph": 2,
+            "tensor_name": "_t4",
+            "dependency_type": "direct",
+            "description": "Tensor '_t4' flows directly from subgraph 1 to subgraph 2."
+          }
+        ],
+        "missed_dependencies": [
+          {
+            "subgraph_index": 1,
+            "tensor_name": "_t4",
+            "reason": "Shape-altering op 'MATMUL' at end of subgraph 1 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "_t1",
+            "reason": "Shape-altering op 'MATMUL' at start of subgraph 1 \u2014 input shape assumptions may not match the previous subgraph's actual output shape.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 2,
+            "tensor_name": "_t7",
+            "reason": "Shape-altering op 'LAYER_CALL' at end of subgraph 2 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 2,
+            "tensor_name": "_t4",
+            "reason": "Shape-altering op 'LAYER_CALL' at start of subgraph 2 \u2014 input shape assumptions may not match the previous subgraph's actual output shape.",
+            "severity": "medium"
+          }
+        ],
+        "break_gaps": [
+          {
+            "break_index": 0,
+            "category": "conditional_reshape",
+            "lost_constraints": [
+              "Input shape assumption for MATMUL not validated against previous output"
+            ],
+            "false_negative_example": "Reshape at break boundary: output of subgraph 0 is reshaped before entering subgraph 1. If reshape target uses dynamic dims, constraint is lost.",
+            "risk": "MEDIUM"
+          },
+          {
+            "break_index": 1,
+            "category": "conditional_reshape",
+            "lost_constraints": [
+              "Output shape from MATMUL not propagated to next subgraph",
+              "Input shape assumption for LAYER_CALL not validated against previous output"
+            ],
+            "false_negative_example": "Reshape at break boundary: output of subgraph 1 is reshaped before entering subgraph 2. If reshape target uses dynamic dims, constraint is lost.",
+            "risk": "MEDIUM"
+          }
+        ],
+        "false_negative_scenarios": [
+          {
+            "name": "conditional_reshape_break_0",
+            "category": "conditional_reshape",
+            "description": "Conditional reshape at break 0.",
+            "subgraph_a_constraint": "output: [B, C*H*W]",
+            "subgraph_b_constraint": "input: [B, C, H, W]",
+            "combined_failure": "If C*H*W factorization is ambiguous (multiple valid (C,H,W)), per-subgraph verification picks one but runtime uses another.",
+            "is_non_monotonic": true
+          },
+          {
+            "name": "conditional_reshape_break_1",
+            "category": "conditional_reshape",
+            "description": "Conditional reshape at break 1.",
+            "subgraph_a_constraint": "output: [B, C*H*W]",
+            "subgraph_b_constraint": "input: [B, C, H, W]",
+            "combined_failure": "If C*H*W factorization is ambiguous (multiple valid (C,H,W)), per-subgraph verification picks one but runtime uses another.",
+            "is_non_monotonic": true
+          }
+        ],
+        "risk_assessment": "MEDIUM",
+        "composition_semantics": "PER_SUBGRAPH_SAFE",
+        "backend": "precomputed",
+        "details": {
+          "num_steps_per_subgraph": [
+            2,
+            3,
+            3
+          ],
+          "num_shape_altering_boundary_ops": 4,
+          "non_monotonic_breaks": 0
+        }
+      }
+    },
+    "moe_conditional_routing": {
+      "description": "Mixture of Experts with runtime router selection",
+      "backends": {
+        "ast": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "MONOLITHIC_SAFE",
+          "notes": "AST sees all syntactic branches but cannot resolve runtime-computed shapes or dynamic control flow. Dynamic patterns INVISIBLE to AST."
+        },
+        "fx": {
+          "traceable": false,
+          "safe": false,
+          "composition_semantics": null,
+          "errors": [
+            "torch.fx.symbolic_trace failed: graph break in moe_conditional_routing due to data-dependent control flow."
+          ],
+          "notes": "FX cannot handle graph breaks."
+        },
+        "dynamo": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "UNKNOWN",
+          "num_subgraphs": 3,
+          "num_graph_breaks": 2,
+          "notes": "Captured 3 subgraph(s), 2 break(s). Composition: UNKNOWN. Risk: HIGH."
+        }
+      },
+      "gap_analysis": {
+        "num_graph_breaks": 2,
+        "num_subgraphs": 3,
+        "cross_break_dependencies": [
+          {
+            "source_subgraph": 0,
+            "target_subgraph": 1,
+            "tensor_name": "_t0",
+            "dependency_type": "direct",
+            "description": "Tensor '_t0' flows directly from subgraph 0 to subgraph 1."
+          },
+          {
+            "source_subgraph": 0,
+            "target_subgraph": 1,
+            "tensor_name": "_t0",
+            "dependency_type": "direct",
+            "description": "Tensor '_t0' flows directly from subgraph 0 to subgraph 1."
+          },
+          {
+            "source_subgraph": 1,
+            "target_subgraph": 2,
+            "tensor_name": "_t2",
+            "dependency_type": "direct",
+            "description": "Tensor '_t2' flows directly from subgraph 1 to subgraph 2."
+          },
+          {
+            "source_subgraph": 1,
+            "target_subgraph": 2,
+            "tensor_name": "_t3",
+            "dependency_type": "direct",
+            "description": "Tensor '_t3' flows directly from subgraph 1 to subgraph 2."
+          },
+          {
+            "source_subgraph": -1,
+            "target_subgraph": 1,
+            "tensor_name": "gate_scores",
+            "dependency_type": "implicit",
+            "description": "Subgraph 1 input 'gate_scores' not found in any previous subgraph output \u2014 may come from intermediate Python code between graph breaks."
+          }
+        ],
+        "missed_dependencies": [
+          {
+            "subgraph_index": 0,
+            "tensor_name": "_t1",
+            "reason": "Shape-altering op 'LAYER_CALL' at end of subgraph 0 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "_t3",
+            "reason": "Shape-altering op 'LAYER_CALL' at end of subgraph 1 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "gate_scores",
+            "reason": "Shape-altering op 'LAYER_CALL' at start of subgraph 1 \u2014 input shape assumptions may not match the previous subgraph's actual output shape.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 2,
+            "tensor_name": "_t5",
+            "reason": "Shape-altering op 'LAYER_CALL' at end of subgraph 2 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 2,
+            "tensor_name": "_t2",
+            "reason": "Shape-altering op 'CAT' at start of subgraph 2 \u2014 input shape assumptions may not match the previous subgraph's actual output shape.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "gate_scores",
+            "reason": "Input 'gate_scores' of subgraph 1 does not come from the immediately preceding subgraph's outputs \u2014 shape may be modified by Python code between graph breaks.",
+            "severity": "high"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "_t0",
+            "reason": "Input '_t0' of subgraph 1 does not come from the immediately preceding subgraph's outputs \u2014 shape may be modified by Python code between graph breaks.",
+            "severity": "high"
+          },
+          {
+            "subgraph_index": 2,
+            "tensor_name": "_t2",
+            "reason": "Input '_t2' of subgraph 2 does not come from the immediately preceding subgraph's outputs \u2014 shape may be modified by Python code between graph breaks.",
+            "severity": "high"
+          }
+        ],
+        "break_gaps": [
+          {
+            "break_index": 0,
+            "category": "dynamic_routing",
+            "lost_constraints": [
+              "Output shape from LAYER_CALL not propagated to next subgraph",
+              "Input shape assumption for LAYER_CALL not validated against previous output",
+              "Implicit input 'gate_scores' from external code"
+            ],
+            "false_negative_example": "Subgraph 1 receives input from Python code between breaks \u2014 shape may depend on runtime values.",
+            "risk": "HIGH"
+          },
+          {
+            "break_index": 1,
+            "category": "conditional_reshape",
+            "lost_constraints": [
+              "Output shape from LAYER_CALL not propagated to next subgraph",
+              "Input shape assumption for CAT not validated against previous output"
+            ],
+            "false_negative_example": "Reshape at break boundary: output of subgraph 1 is reshaped before entering subgraph 2. If reshape target uses dynamic dims, constraint is lost.",
+            "risk": "MEDIUM"
+          }
+        ],
+        "false_negative_scenarios": [
+          {
+            "name": "dynamic_routing_break_0",
+            "category": "dynamic_routing",
+            "description": "Dynamic routing at break 0: expert/path selection in one subgraph determines tensor shapes in the next.",
+            "subgraph_a_constraint": "output: [B, D] routed to K experts",
+            "subgraph_b_constraint": "input: [B/K, D] per expert",
+            "combined_failure": "If K does not evenly divide B, the per-expert batch dimension is invalid \u2014 but each subgraph sees valid shapes independently.",
+            "is_non_monotonic": false
+          },
+          {
+            "name": "conditional_reshape_break_1",
+            "category": "conditional_reshape",
+            "description": "Conditional reshape at break 1.",
+            "subgraph_a_constraint": "output: [B, C*H*W]",
+            "subgraph_b_constraint": "input: [B, C, H, W]",
+            "combined_failure": "If C*H*W factorization is ambiguous (multiple valid (C,H,W)), per-subgraph verification picks one but runtime uses another.",
+            "is_non_monotonic": true
+          }
+        ],
+        "risk_assessment": "HIGH",
+        "composition_semantics": "UNKNOWN",
+        "backend": "precomputed",
+        "details": {
+          "num_steps_per_subgraph": [
+            2,
+            2,
+            2
+          ],
+          "num_shape_altering_boundary_ops": 5,
+          "non_monotonic_breaks": 0
+        }
+      }
+    },
+    "recurrent_dynamic_unroll": {
+      "description": "RNN with dynamic sequence length unrolling",
+      "backends": {
+        "ast": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "MONOLITHIC_SAFE",
+          "notes": "AST sees all syntactic branches but cannot resolve runtime-computed shapes or dynamic control flow. Dynamic patterns INVISIBLE to AST."
+        },
+        "fx": {
+          "traceable": false,
+          "safe": false,
+          "composition_semantics": null,
+          "errors": [
+            "torch.fx.symbolic_trace failed: graph break in recurrent_dynamic_unroll due to data-dependent control flow."
+          ],
+          "notes": "FX cannot handle graph breaks."
+        },
+        "dynamo": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "UNKNOWN",
+          "num_subgraphs": 3,
+          "num_graph_breaks": 2,
+          "notes": "Captured 3 subgraph(s), 2 break(s). Composition: UNKNOWN. Risk: HIGH."
+        }
+      },
+      "gap_analysis": {
+        "num_graph_breaks": 2,
+        "num_subgraphs": 3,
+        "cross_break_dependencies": [
+          {
+            "source_subgraph": 0,
+            "target_subgraph": 1,
+            "tensor_name": "_t0",
+            "dependency_type": "direct",
+            "description": "Tensor '_t0' flows directly from subgraph 0 to subgraph 1."
+          },
+          {
+            "source_subgraph": 1,
+            "target_subgraph": 2,
+            "tensor_name": "_t2",
+            "dependency_type": "direct",
+            "description": "Tensor '_t2' flows directly from subgraph 1 to subgraph 2."
+          },
+          {
+            "source_subgraph": -1,
+            "target_subgraph": 1,
+            "tensor_name": "h_prev",
+            "dependency_type": "implicit",
+            "description": "Subgraph 1 input 'h_prev' not found in any previous subgraph output \u2014 may come from intermediate Python code between graph breaks."
+          }
+        ],
+        "missed_dependencies": [
+          {
+            "subgraph_index": 0,
+            "tensor_name": "_t0",
+            "reason": "Shape-altering op 'LAYER_CALL' at end of subgraph 0 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "_t0",
+            "reason": "Shape-altering op 'LAYER_CALL' at start of subgraph 1 \u2014 input shape assumptions may not match the previous subgraph's actual output shape.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 2,
+            "tensor_name": "_t3",
+            "reason": "Shape-altering op 'LAYER_CALL' at end of subgraph 2 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 2,
+            "tensor_name": "_t2",
+            "reason": "Shape-altering op 'LAYER_CALL' at start of subgraph 2 \u2014 input shape assumptions may not match the previous subgraph's actual output shape.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "h_prev",
+            "reason": "Input 'h_prev' of subgraph 1 does not come from the immediately preceding subgraph's outputs \u2014 shape may be modified by Python code between graph breaks.",
+            "severity": "high"
+          }
+        ],
+        "break_gaps": [
+          {
+            "break_index": 0,
+            "category": "dynamic_routing",
+            "lost_constraints": [
+              "Output shape from LAYER_CALL not propagated to next subgraph",
+              "Input shape assumption for LAYER_CALL not validated against previous output",
+              "Implicit input 'h_prev' from external code"
+            ],
+            "false_negative_example": "Subgraph 1 receives input from Python code between breaks \u2014 shape may depend on runtime values.",
+            "risk": "HIGH"
+          },
+          {
+            "break_index": 1,
+            "category": "conditional_reshape",
+            "lost_constraints": [
+              "Input shape assumption for LAYER_CALL not validated against previous output"
+            ],
+            "false_negative_example": "Reshape at break boundary: output of subgraph 1 is reshaped before entering subgraph 2. If reshape target uses dynamic dims, constraint is lost.",
+            "risk": "MEDIUM"
+          }
+        ],
+        "false_negative_scenarios": [
+          {
+            "name": "dynamic_routing_break_0",
+            "category": "dynamic_routing",
+            "description": "Dynamic routing at break 0: expert/path selection in one subgraph determines tensor shapes in the next.",
+            "subgraph_a_constraint": "output: [B, D] routed to K experts",
+            "subgraph_b_constraint": "input: [B/K, D] per expert",
+            "combined_failure": "If K does not evenly divide B, the per-expert batch dimension is invalid \u2014 but each subgraph sees valid shapes independently.",
+            "is_non_monotonic": false
+          },
+          {
+            "name": "conditional_reshape_break_1",
+            "category": "conditional_reshape",
+            "description": "Conditional reshape at break 1.",
+            "subgraph_a_constraint": "output: [B, C*H*W]",
+            "subgraph_b_constraint": "input: [B, C, H, W]",
+            "combined_failure": "If C*H*W factorization is ambiguous (multiple valid (C,H,W)), per-subgraph verification picks one but runtime uses another.",
+            "is_non_monotonic": true
+          }
+        ],
+        "risk_assessment": "HIGH",
+        "composition_semantics": "UNKNOWN",
+        "backend": "precomputed",
+        "details": {
+          "num_steps_per_subgraph": [
+            1,
+            2,
+            1
+          ],
+          "num_shape_altering_boundary_ops": 4,
+          "non_monotonic_breaks": 0
+        }
+      }
+    },
+    "dynamic_conv": {
+      "description": "Conv net with input-dependent kernel selection",
+      "backends": {
+        "ast": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "MONOLITHIC_SAFE",
+          "notes": "AST sees all syntactic branches but cannot resolve runtime-computed shapes or dynamic control flow. Dynamic patterns INVISIBLE to AST."
+        },
+        "fx": {
+          "traceable": false,
+          "safe": false,
+          "composition_semantics": null,
+          "errors": [
+            "torch.fx.symbolic_trace failed: graph break in dynamic_conv due to data-dependent control flow."
+          ],
+          "notes": "FX cannot handle graph breaks."
+        },
+        "dynamo": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "PER_SUBGRAPH_SAFE",
+          "num_subgraphs": 2,
+          "num_graph_breaks": 1,
+          "notes": "Captured 2 subgraph(s), 1 break(s). Composition: PER_SUBGRAPH_SAFE. Risk: LOW."
+        }
+      },
+      "gap_analysis": {
+        "num_graph_breaks": 1,
+        "num_subgraphs": 2,
+        "cross_break_dependencies": [
+          {
+            "source_subgraph": 0,
+            "target_subgraph": 1,
+            "tensor_name": "_t1",
+            "dependency_type": "direct",
+            "description": "Tensor '_t1' flows directly from subgraph 0 to subgraph 1."
+          }
+        ],
+        "missed_dependencies": [
+          {
+            "subgraph_index": 1,
+            "tensor_name": "_t4",
+            "reason": "Shape-altering op 'LAYER_CALL' at end of subgraph 1 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "_t1",
+            "reason": "Shape-altering op 'LAYER_CALL' at start of subgraph 1 \u2014 input shape assumptions may not match the previous subgraph's actual output shape.",
+            "severity": "medium"
+          }
+        ],
+        "break_gaps": [
+          {
+            "break_index": 0,
+            "category": "conditional_reshape",
+            "lost_constraints": [
+              "Input shape assumption for LAYER_CALL not validated against previous output"
+            ],
+            "false_negative_example": "Reshape at break boundary: output of subgraph 0 is reshaped before entering subgraph 1. If reshape target uses dynamic dims, constraint is lost.",
+            "risk": "MEDIUM"
+          }
+        ],
+        "false_negative_scenarios": [
+          {
+            "name": "conditional_reshape_break_0",
+            "category": "conditional_reshape",
+            "description": "Conditional reshape at break 0.",
+            "subgraph_a_constraint": "output: [B, C*H*W]",
+            "subgraph_b_constraint": "input: [B, C, H, W]",
+            "combined_failure": "If C*H*W factorization is ambiguous (multiple valid (C,H,W)), per-subgraph verification picks one but runtime uses another.",
+            "is_non_monotonic": true
+          }
+        ],
+        "risk_assessment": "LOW",
+        "composition_semantics": "PER_SUBGRAPH_SAFE",
+        "backend": "precomputed",
+        "details": {
+          "num_steps_per_subgraph": [
+            2,
+            3
+          ],
+          "num_shape_altering_boundary_ops": 2,
+          "non_monotonic_breaks": 0
+        }
+      }
+    },
+    "reshape_chain": {
+      "description": "Flatten\u2192break\u2192reshape with potential dimension mismatch",
+      "backends": {
+        "ast": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "MONOLITHIC_SAFE",
+          "notes": "AST sees all syntactic branches but cannot resolve runtime-computed shapes or dynamic control flow. Dynamic patterns INVISIBLE to AST."
+        },
+        "fx": {
+          "traceable": false,
+          "safe": false,
+          "composition_semantics": null,
+          "errors": [
+            "torch.fx.symbolic_trace failed: graph break in reshape_chain due to data-dependent control flow."
+          ],
+          "notes": "FX cannot handle graph breaks."
+        },
+        "dynamo": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "PER_SUBGRAPH_SAFE",
+          "num_subgraphs": 2,
+          "num_graph_breaks": 1,
+          "notes": "Captured 2 subgraph(s), 1 break(s). Composition: PER_SUBGRAPH_SAFE. Risk: HIGH."
+        }
+      },
+      "gap_analysis": {
+        "num_graph_breaks": 1,
+        "num_subgraphs": 2,
+        "cross_break_dependencies": [
+          {
+            "source_subgraph": 0,
+            "target_subgraph": 1,
+            "tensor_name": "_t2",
+            "dependency_type": "direct",
+            "description": "Tensor '_t2' flows directly from subgraph 0 to subgraph 1."
+          }
+        ],
+        "missed_dependencies": [
+          {
+            "subgraph_index": 0,
+            "tensor_name": "_t2",
+            "reason": "Shape-altering op 'LAYER_CALL' at end of subgraph 0 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "_t4",
+            "reason": "Shape-altering op 'LAYER_CALL' at end of subgraph 1 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "_t2",
+            "reason": "Shape-altering op 'RESHAPE' at start of subgraph 1 \u2014 input shape assumptions may not match the previous subgraph's actual output shape.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "_t3",
+            "reason": "Reshape with symbolic dimensions ('B', 'C', 'H', 'W') in subgraph 1 \u2014 dimension values may depend on cross-break computation.",
+            "severity": "high"
+          }
+        ],
+        "break_gaps": [
+          {
+            "break_index": 0,
+            "category": "non_monotonic",
+            "lost_constraints": [
+              "Output shape from LAYER_CALL not propagated to next subgraph",
+              "Input shape assumption for RESHAPE not validated against previous output",
+              "Non-monotonic constraint pattern detected across break"
+            ],
+            "false_negative_example": "Non-monotonic pattern: subgraph 0 applies a constraint f(x) and subgraph 1 applies g(x) where g(f(x)) is not monotonic \u2014 per-subgraph analysis verifies f and g independently but misses the composition.",
+            "risk": "HIGH"
+          }
+        ],
+        "false_negative_scenarios": [
+          {
+            "name": "non_monotonic_break_0",
+            "category": "non_monotonic",
+            "description": "Non-monotonic constraint composition at break 0: subgraphs verify independently but composed constraint fails.",
+            "subgraph_a_constraint": "output shape [B, N*H] where N>0, H>0",
+            "subgraph_b_constraint": "input shape [B, M, H] where M>0, H>0",
+            "combined_failure": "If N*H != M*H (i.e. N != M due to intermediate padding/masking), reshape fails at runtime despite each subgraph being independently safe.",
+            "is_non_monotonic": true
+          }
+        ],
+        "risk_assessment": "HIGH",
+        "composition_semantics": "PER_SUBGRAPH_SAFE",
+        "backend": "precomputed",
+        "details": {
+          "num_steps_per_subgraph": [
+            3,
+            2
+          ],
+          "num_shape_altering_boundary_ops": 3,
+          "non_monotonic_breaks": 1
+        }
+      }
+    },
+    "skip_connection_cross_break": {
+      "description": "ResNet skip connection spanning graph break (transitive dep)",
+      "backends": {
+        "ast": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "MONOLITHIC_SAFE",
+          "notes": "AST sees all syntactic branches but cannot resolve runtime-computed shapes or dynamic control flow. Dynamic patterns INVISIBLE to AST."
+        },
+        "fx": {
+          "traceable": false,
+          "safe": false,
+          "composition_semantics": null,
+          "errors": [
+            "torch.fx.symbolic_trace failed: graph break in skip_connection_cross_break due to data-dependent control flow."
+          ],
+          "notes": "FX cannot handle graph breaks."
+        },
+        "dynamo": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "UNKNOWN",
+          "num_subgraphs": 3,
+          "num_graph_breaks": 2,
+          "notes": "Captured 3 subgraph(s), 2 break(s). Composition: UNKNOWN. Risk: HIGH."
+        }
+      },
+      "gap_analysis": {
+        "num_graph_breaks": 2,
+        "num_subgraphs": 3,
+        "cross_break_dependencies": [
+          {
+            "source_subgraph": 0,
+            "target_subgraph": 1,
+            "tensor_name": "_t0",
+            "dependency_type": "direct",
+            "description": "Tensor '_t0' flows directly from subgraph 0 to subgraph 1."
+          },
+          {
+            "source_subgraph": 1,
+            "target_subgraph": 2,
+            "tensor_name": "_t2",
+            "dependency_type": "direct",
+            "description": "Tensor '_t2' flows directly from subgraph 1 to subgraph 2."
+          },
+          {
+            "source_subgraph": 0,
+            "target_subgraph": 2,
+            "tensor_name": "_t0",
+            "dependency_type": "transitive",
+            "description": "Tensor '_t0' produced by subgraph 0 (LAYER_CALL) consumed by subgraph 2, skipping 1 intermediate subgraph(s)."
+          }
+        ],
+        "missed_dependencies": [
+          {
+            "subgraph_index": 0,
+            "tensor_name": "_t0",
+            "reason": "Shape-altering op 'LAYER_CALL' at end of subgraph 0 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "_t0",
+            "reason": "Shape-altering op 'LAYER_CALL' at start of subgraph 1 \u2014 input shape assumptions may not match the previous subgraph's actual output shape.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 2,
+            "tensor_name": "_t4",
+            "reason": "Shape-altering op 'LAYER_CALL' at end of subgraph 2 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 2,
+            "tensor_name": "_t0",
+            "reason": "Input '_t0' of subgraph 2 does not come from the immediately preceding subgraph's outputs \u2014 shape may be modified by Python code between graph breaks.",
+            "severity": "high"
+          }
+        ],
+        "break_gaps": [
+          {
+            "break_index": 0,
+            "category": "constraint_chain",
+            "lost_constraints": [
+              "Output shape from LAYER_CALL not propagated to next subgraph",
+              "Input shape assumption for LAYER_CALL not validated against previous output",
+              "Transitive dependency on '_t0' spans this break"
+            ],
+            "false_negative_example": "Subgraph 0 outputs shape [B, N] which constrains subgraph 1's input, but intermediate Python code may modify N \u2014 per-subgraph verification cannot detect this.",
+            "risk": "HIGH"
+          },
+          {
+            "break_index": 1,
+            "category": "constraint_chain",
+            "lost_constraints": [
+              "Transitive dependency on '_t0' spans this break"
+            ],
+            "false_negative_example": "Subgraph 1 outputs shape [B, N] which constrains subgraph 2's input, but intermediate Python code may modify N \u2014 per-subgraph verification cannot detect this.",
+            "risk": "HIGH"
+          }
+        ],
+        "false_negative_scenarios": [
+          {
+            "name": "constraint_chain_break_0",
+            "category": "constraint_chain",
+            "description": "Transitive constraint chain broken at break 0.",
+            "subgraph_a_constraint": "output: [B, seq_len, D]",
+            "subgraph_b_constraint": "input: [B, seq_len, D] (assumes same seq_len)",
+            "combined_failure": "Intermediate Python truncates/pads seq_len \u2014 each subgraph verifies with symbolic seq_len but the concrete values differ.",
+            "is_non_monotonic": false
+          },
+          {
+            "name": "constraint_chain_break_1",
+            "category": "constraint_chain",
+            "description": "Transitive constraint chain broken at break 1.",
+            "subgraph_a_constraint": "output: [B, seq_len, D]",
+            "subgraph_b_constraint": "input: [B, seq_len, D] (assumes same seq_len)",
+            "combined_failure": "Intermediate Python truncates/pads seq_len \u2014 each subgraph verifies with symbolic seq_len but the concrete values differ.",
+            "is_non_monotonic": false
+          }
+        ],
+        "risk_assessment": "HIGH",
+        "composition_semantics": "UNKNOWN",
+        "backend": "precomputed",
+        "details": {
+          "num_steps_per_subgraph": [
+            1,
+            2,
+            2
+          ],
+          "num_shape_altering_boundary_ops": 3,
+          "non_monotonic_breaks": 0
+        }
+      }
+    },
+    "multihead_dynamic_heads": {
+      "description": "Multi-head attention with dynamic head count",
+      "backends": {
+        "ast": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "MONOLITHIC_SAFE",
+          "notes": "AST sees all syntactic branches but cannot resolve runtime-computed shapes or dynamic control flow. Dynamic patterns INVISIBLE to AST."
+        },
+        "fx": {
+          "traceable": false,
+          "safe": false,
+          "composition_semantics": null,
+          "errors": [
+            "torch.fx.symbolic_trace failed: graph break in multihead_dynamic_heads due to data-dependent control flow."
+          ],
+          "notes": "FX cannot handle graph breaks."
+        },
+        "dynamo": {
+          "traceable": true,
+          "safe": true,
+          "composition_semantics": "PER_SUBGRAPH_SAFE",
+          "num_subgraphs": 3,
+          "num_graph_breaks": 2,
+          "notes": "Captured 3 subgraph(s), 2 break(s). Composition: PER_SUBGRAPH_SAFE. Risk: HIGH."
+        }
+      },
+      "gap_analysis": {
+        "num_graph_breaks": 2,
+        "num_subgraphs": 3,
+        "cross_break_dependencies": [
+          {
+            "source_subgraph": 0,
+            "target_subgraph": 1,
+            "tensor_name": "_t3",
+            "dependency_type": "direct",
+            "description": "Tensor '_t3' flows directly from subgraph 0 to subgraph 1."
+          },
+          {
+            "source_subgraph": 0,
+            "target_subgraph": 1,
+            "tensor_name": "_t1",
+            "dependency_type": "direct",
+            "description": "Tensor '_t1' flows directly from subgraph 0 to subgraph 1."
+          },
+          {
+            "source_subgraph": 0,
+            "target_subgraph": 1,
+            "tensor_name": "_t2",
+            "dependency_type": "direct",
+            "description": "Tensor '_t2' flows directly from subgraph 0 to subgraph 1."
+          },
+          {
+            "source_subgraph": 1,
+            "target_subgraph": 2,
+            "tensor_name": "_t6",
+            "dependency_type": "direct",
+            "description": "Tensor '_t6' flows directly from subgraph 1 to subgraph 2."
+          }
+        ],
+        "missed_dependencies": [
+          {
+            "subgraph_index": 0,
+            "tensor_name": "_t3",
+            "reason": "Shape-altering op 'RESHAPE' at end of subgraph 0 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "_t6",
+            "reason": "Shape-altering op 'MATMUL' at end of subgraph 1 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 1,
+            "tensor_name": "_t3",
+            "reason": "Shape-altering op 'MATMUL' at start of subgraph 1 \u2014 input shape assumptions may not match the previous subgraph's actual output shape.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 2,
+            "tensor_name": "_t8",
+            "reason": "Shape-altering op 'LAYER_CALL' at end of subgraph 2 \u2014 output shape may constrain subsequent subgraph inputs but is verified in isolation.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 2,
+            "tensor_name": "_t6",
+            "reason": "Shape-altering op 'RESHAPE' at start of subgraph 2 \u2014 input shape assumptions may not match the previous subgraph's actual output shape.",
+            "severity": "medium"
+          },
+          {
+            "subgraph_index": 0,
+            "tensor_name": "_t3",
+            "reason": "Reshape with symbolic dimensions ('B', 'N', 'H', 'D') in subgraph 0 \u2014 dimension values may depend on cross-break computation.",
+            "severity": "high"
+          },
+          {
+            "subgraph_index": 2,
+            "tensor_name": "_t7",
+            "reason": "Reshape with symbolic dimensions ('B', 'N', 'D_total') in subgraph 2 \u2014 dimension values may depend on cross-break computation.",
+            "severity": "high"
+          }
+        ],
+        "break_gaps": [
+          {
+            "break_index": 0,
+            "category": "conditional_reshape",
+            "lost_constraints": [
+              "Output shape from RESHAPE not propagated to next subgraph",
+              "Input shape assumption for MATMUL not validated against previous output"
+            ],
+            "false_negative_example": "Reshape at break boundary: output of subgraph 0 is reshaped before entering subgraph 1. If reshape target uses dynamic dims, constraint is lost.",
+            "risk": "MEDIUM"
+          },
+          {
+            "break_index": 1,
+            "category": "conditional_reshape",
+            "lost_constraints": [
+              "Output shape from MATMUL not propagated to next subgraph",
+              "Input shape assumption for RESHAPE not validated against previous output"
+            ],
+            "false_negative_example": "Reshape at break boundary: output of subgraph 1 is reshaped before entering subgraph 2. If reshape target uses dynamic dims, constraint is lost.",
+            "risk": "MEDIUM"
+          }
+        ],
+        "false_negative_scenarios": [
+          {
+            "name": "conditional_reshape_break_0",
+            "category": "conditional_reshape",
+            "description": "Conditional reshape at break 0.",
+            "subgraph_a_constraint": "output: [B, C*H*W]",
+            "subgraph_b_constraint": "input: [B, C, H, W]",
+            "combined_failure": "If C*H*W factorization is ambiguous (multiple valid (C,H,W)), per-subgraph verification picks one but runtime uses another.",
+            "is_non_monotonic": true
+          },
+          {
+            "name": "conditional_reshape_break_1",
+            "category": "conditional_reshape",
+            "description": "Conditional reshape at break 1.",
+            "subgraph_a_constraint": "output: [B, C*H*W]",
+            "subgraph_b_constraint": "input: [B, C, H, W]",
+            "combined_failure": "If C*H*W factorization is ambiguous (multiple valid (C,H,W)), per-subgraph verification picks one but runtime uses another.",
+            "is_non_monotonic": true
+          }
+        ],
+        "risk_assessment": "HIGH",
+        "composition_semantics": "PER_SUBGRAPH_SAFE",
+        "backend": "precomputed",
+        "details": {
+          "num_steps_per_subgraph": [
+            4,
+            3,
+            2
+          ],
+          "num_shape_altering_boundary_ops": 5,
+          "non_monotonic_breaks": 0
+        }
+      }
+    }
+  },
+  "failure_analysis": {
+    "total_test_cases": 20,
+    "successes": 18,
+    "failures": 2,
+    "accuracy": 0.9,
+    "failure_details": [
+      {
+        "arch_name": "reshape_chain",
+        "failure_type": "false_negative",
+        "is_non_monotonic": true,
+        "description": "PER_SUBGRAPH_SAFE reports safe but runtime failure possible. Risk: HIGH.",
+        "gap_category": "non_monotonic",
+        "root_cause": "Non-monotonic constraint composition: individual subgraph constraints are satisfiable but composed constraint fails when intermediate code modifies dimensions."
+      },
+      {
+        "arch_name": "moe_conditional_routing",
+        "failure_type": "false_negative",
+        "is_non_monotonic": true,
+        "description": "PER_SUBGRAPH_SAFE reports safe but runtime failure possible. Risk: HIGH.",
+        "gap_category": "dynamic_routing",
+        "root_cause": "Non-monotonic constraint composition: individual subgraph constraints are satisfiable but composed constraint fails when intermediate code modifies dimensions."
+      }
+    ],
+    "conclusion": "2/2 failures caused by non-monotonic constraint patterns. Non-monotonic patterns (where composed constraints g(f(x)) fail despite individual satisfaction) are the primary source of PER_SUBGRAPH_SAFE false negatives."
+  },
+  "backend_selection_algorithm": {
+    "algorithm": "coverage-first, then soundness",
+    "selection_order": [
+      {
+        "backend": "dynamo",
+        "condition": "TorchDynamo available and model traceable",
+        "maximizes": "coverage",
+        "soundness": "per-subgraph (sound within each subgraph)",
+        "completeness": "handles graph breaks, data-dependent control flow"
+      },
+      {
+        "backend": "fx",
+        "condition": "torch.fx.symbolic_trace succeeds",
+        "maximizes": "soundness",
+        "soundness": "monolithic (single trace, no breaks)",
+        "completeness": "no graph breaks; fails on dynamic control flow"
+      },
+      {
+        "backend": "ast",
+        "condition": "always available (no runtime needed)",
+        "maximizes": "availability",
+        "soundness": "sound for supported fragment",
+        "completeness": "limited to statically analyzable patterns"
+      }
+    ],
+    "soundness_relationships": {
+      "ast_vs_fx": "FX covers more operations (runtime tracing) but misses branches not taken. AST sees all branches but may not resolve dynamic shapes.",
+      "fx_vs_dynamo": "Dynamo subsumes FX: it uses FX internally for each subgraph but handles graph breaks that FX cannot. Dynamo's gap is cross-break dependencies.",
+      "ast_vs_dynamo": "AST and Dynamo are complementary: AST sees all source code branches; Dynamo captures actual runtime subgraphs. Neither is strictly stronger than the other."
+    }
+  },
+  "total_time_seconds": 0.002
+}

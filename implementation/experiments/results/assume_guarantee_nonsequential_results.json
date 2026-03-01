@@ -1,0 +1,3604 @@
+[
+  {
+    "model_name": "unet_skip",
+    "category": "encoder_decoder",
+    "description": "U-Net with skip connections between encoder and decoder paths",
+    "monolithic": {
+      "safe": true,
+      "time_ms": 274.943,
+      "num_steps": 9,
+      "errors": [],
+      "error": null
+    },
+    "branch_merge_decomposition": {
+      "num_steps": 9,
+      "num_submodules": 5,
+      "contracts": [
+        {
+          "submodule": "block_0",
+          "step_range": [
+            0,
+            1
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_0_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                3,
+                64,
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_0_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "e1": [
+                "batch",
+                16,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "e1 guaranteed by enc1 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_1",
+          "step_range": [
+            1,
+            2
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_1_input",
+            "input_shapes": {
+              "e1": [
+                "batch",
+                16,
+                "H",
+                "W"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "e1 must match enc2 (CONV2D) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "block_1_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "e2": [
+                "batch",
+                32,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "e2 guaranteed by enc2 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_2",
+          "step_range": [
+            2,
+            3
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_2_input",
+            "input_shapes": {
+              "e2": [
+                "batch",
+                32,
+                "H",
+                "W"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "e2 must match bottleneck (CONV2D) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "block_2_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "b": [
+                "batch",
+                64,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "b guaranteed by bottleneck (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_3",
+          "step_range": [
+            3,
+            5
+          ],
+          "num_steps": 2,
+          "input_contract": {
+            "name": "block_3_input",
+            "input_shapes": {
+              "b": [
+                "*"
+              ],
+              "e2": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "b: shape unconstrained (no layer info)",
+              "e2: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "block_3_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "d2": [
+                "batch",
+                32,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "d2 guaranteed by dec2 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_4",
+          "step_range": [
+            5,
+            9
+          ],
+          "num_steps": 4,
+          "input_contract": {
+            "name": "block_4_input",
+            "input_shapes": {
+              "d2": [
+                "*"
+              ],
+              "e1": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "d2: shape unconstrained (no layer info)",
+              "e1: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "block_4_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "__ret_3": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "__ret_3: output shape unconstrained"
+            ]
+          }
+        }
+      ]
+    },
+    "branch_merge_verification": {
+      "label": "branch_merge",
+      "strategy": "branch_merge",
+      "safe": true,
+      "num_submodules": 5,
+      "time_ms": 92.84,
+      "cache_hits": 0,
+      "interface_checks": [
+        {
+          "producer": "block_0",
+          "consumer": "block_1",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_1",
+          "consumer": "block_2",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_2",
+          "consumer": "block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_3",
+          "consumer": "block_4",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        }
+      ],
+      "submodule_results": {
+        "block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 4.659
+        },
+        "block_1": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 4.743
+        },
+        "block_2": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 44.783
+        },
+        "block_3": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 16.294
+        },
+        "block_4": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 12.765
+        }
+      },
+      "error": null
+    },
+    "layer_boundary_verification": {
+      "label": "layer_boundary",
+      "strategy": "layer_boundary",
+      "safe": true,
+      "num_submodules": 7,
+      "time_ms": 23.935,
+      "cache_hits": 4,
+      "interface_checks": [
+        {
+          "producer": "block_0",
+          "consumer": "block_1",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_1",
+          "consumer": "block_2",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_2",
+          "consumer": "block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_3",
+          "consumer": "block_4",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_4",
+          "consumer": "block_5",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_5",
+          "consumer": "block_6",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        }
+      ],
+      "submodule_results": {
+        "block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 4.659
+        },
+        "block_1": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 4.743
+        },
+        "block_2": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 44.783
+        },
+        "block_3": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 16.294
+        },
+        "block_4": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 13.155
+        },
+        "block_5": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 3.824
+        },
+        "block_6": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 0.929
+        }
+      },
+      "error": null
+    },
+    "dag_verification": {
+      "label": "dag_branch_merge",
+      "strategy": "dag_branch_merge",
+      "safe": true,
+      "num_submodules": 5,
+      "time_ms": 66.697,
+      "cache_hits": 0,
+      "interface_checks": [
+        {
+          "producer": "dag_block_0",
+          "consumer": "dag_block_1",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_1",
+          "consumer": "dag_block_2",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_1",
+          "consumer": "dag_block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_2",
+          "consumer": "dag_block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_0",
+          "consumer": "dag_block_4",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_3",
+          "consumer": "dag_block_4",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        }
+      ],
+      "submodule_results": {
+        "dag_block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 6.565
+        },
+        "dag_block_1": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 6.295
+        },
+        "dag_block_2": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 17.591
+        },
+        "dag_block_3": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 8.087
+        },
+        "dag_block_4": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 15.95
+        }
+      },
+      "error": null
+    },
+    "dag_decomposition": {
+      "topology": "dense",
+      "num_submodules": 5,
+      "dag_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "contracts": [
+        {
+          "submodule": "dag_block_0",
+          "step_range": [
+            0,
+            1
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "dag_block_0_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                3,
+                64,
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "dag_block_0_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "e1": [
+                "batch",
+                16,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "e1 guaranteed by enc1 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_1",
+          "step_range": [
+            1,
+            2
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "dag_block_1_input",
+            "input_shapes": {
+              "e1": [
+                "batch",
+                16,
+                "H",
+                "W"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "e1 must match enc2 (CONV2D) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_1_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "e2": [
+                "batch",
+                32,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "e2 guaranteed by enc2 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_2",
+          "step_range": [
+            2,
+            3
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "dag_block_2_input",
+            "input_shapes": {
+              "e2": [
+                "batch",
+                32,
+                "H",
+                "W"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "e2 must match bottleneck (CONV2D) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_2_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "b": [
+                "batch",
+                64,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "b guaranteed by bottleneck (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_3",
+          "step_range": [
+            3,
+            5
+          ],
+          "num_steps": 2,
+          "input_contract": {
+            "name": "dag_block_3_input",
+            "input_shapes": {
+              "b": [
+                "*"
+              ],
+              "e2": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "b: shape unconstrained (no layer info)",
+              "e2: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_3_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "d2": [
+                "batch",
+                32,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "d2 guaranteed by dec2 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_4",
+          "step_range": [
+            5,
+            9
+          ],
+          "num_steps": 4,
+          "input_contract": {
+            "name": "dag_block_4_input",
+            "input_shapes": {
+              "d2": [
+                "*"
+              ],
+              "e1": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "d2: shape unconstrained (no layer info)",
+              "e1: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_4_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "__ret_3": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "__ret_3: output shape unconstrained"
+            ]
+          }
+        }
+      ]
+    },
+    "agreement": {
+      "branch_merge_agrees_mono": true,
+      "layer_boundary_agrees_mono": true,
+      "dag_agrees_mono": true
+    },
+    "speedup": {
+      "branch_merge_vs_mono": 2.961,
+      "layer_boundary_vs_mono": 11.487,
+      "dag_vs_mono": 4.122
+    },
+    "branch_merge_limitations": [
+      "PRECISION LOSS: 4 input contract(s) use wildcard shapes (unconstrained) at merge/skip boundaries: block_3.b, block_3.e2, block_4.d2, block_4.e1. BRANCH_MERGE cannot derive precise shape contracts for tensors that cross branch boundaries because the producer may be in a different linear partition."
+    ]
+  },
+  {
+    "model_name": "resnet_residual",
+    "category": "residual",
+    "description": "ResNet-style residual blocks with identity skip connections",
+    "monolithic": {
+      "safe": true,
+      "time_ms": 275.056,
+      "num_steps": 14,
+      "errors": [],
+      "error": null
+    },
+    "branch_merge_decomposition": {
+      "num_steps": 14,
+      "num_submodules": 11,
+      "contracts": [
+        {
+          "submodule": "block_0",
+          "step_range": [
+            0,
+            1
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_0_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_0_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "residual": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "residual: shape preserved (op=CONTIGUOUS)",
+              "residual: output shape unconstrained"
+            ]
+          }
+        },
+        {
+          "submodule": "block_1",
+          "step_range": [
+            1,
+            2
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_1_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_1_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "constraints": [
+              "x guaranteed by b1_fc1 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_2",
+          "step_range": [
+            2,
+            3
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_2_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "x must match b1_fc2 (LINEAR) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "block_2_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "constraints": [
+              "x guaranteed by b1_fc2 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_3",
+          "step_range": [
+            3,
+            4
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_3_input",
+            "input_shapes": {
+              "residual": [
+                "*"
+              ],
+              "x": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "residual: shape unconstrained (no layer info)",
+              "x: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "block_3_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "x": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "x: output shape unconstrained"
+            ]
+          }
+        },
+        {
+          "submodule": "block_4",
+          "step_range": [
+            4,
+            5
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_4_input",
+            "input_shapes": {
+              "x": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "x: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "block_4_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "residual": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "residual: shape preserved (op=CONTIGUOUS)",
+              "residual: output shape unconstrained"
+            ]
+          }
+        },
+        {
+          "submodule": "block_5",
+          "step_range": [
+            5,
+            6
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_5_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "x must match b2_fc1 (LINEAR) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "block_5_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "constraints": [
+              "x guaranteed by b2_fc1 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_6",
+          "step_range": [
+            6,
+            7
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_6_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "x must match b2_fc2 (LINEAR) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "block_6_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "constraints": [
+              "x guaranteed by b2_fc2 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_7",
+          "step_range": [
+            7,
+            8
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_7_input",
+            "input_shapes": {
+              "residual": [
+                "*"
+              ],
+              "x": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "residual: shape unconstrained (no layer info)",
+              "x: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "block_7_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "x": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "x: output shape unconstrained"
+            ]
+          }
+        },
+        {
+          "submodule": "block_8",
+          "step_range": [
+            8,
+            10
+          ],
+          "num_steps": 2,
+          "input_contract": {
+            "name": "block_8_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "x must match b3_fc1 (LINEAR) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "block_8_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "residual": [
+                "*"
+              ],
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "constraints": [
+              "residual: shape preserved (op=CONTIGUOUS)",
+              "residual: output shape unconstrained",
+              "x guaranteed by b3_fc1 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_9",
+          "step_range": [
+            10,
+            11
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_9_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "x must match b3_fc2 (LINEAR) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "block_9_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "constraints": [
+              "x guaranteed by b3_fc2 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_10",
+          "step_range": [
+            11,
+            14
+          ],
+          "num_steps": 3,
+          "input_contract": {
+            "name": "block_10_input",
+            "input_shapes": {
+              "residual": [
+                "*"
+              ],
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "residual: shape unconstrained (no layer info)",
+              "x must match classifier (LINEAR) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "block_10_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "__ret_1": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "__ret_1: output shape unconstrained"
+            ]
+          }
+        }
+      ]
+    },
+    "branch_merge_verification": {
+      "label": "branch_merge",
+      "strategy": "branch_merge",
+      "safe": true,
+      "num_submodules": 11,
+      "time_ms": 169.712,
+      "cache_hits": 0,
+      "interface_checks": [
+        {
+          "producer": "block_0",
+          "consumer": "block_1",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        },
+        {
+          "producer": "block_1",
+          "consumer": "block_2",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_2",
+          "consumer": "block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_3",
+          "consumer": "block_4",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_4",
+          "consumer": "block_5",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        },
+        {
+          "producer": "block_5",
+          "consumer": "block_6",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_6",
+          "consumer": "block_7",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_7",
+          "consumer": "block_8",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_8",
+          "consumer": "block_9",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_9",
+          "consumer": "block_10",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        }
+      ],
+      "submodule_results": {
+        "block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 6.532
+        },
+        "block_1": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 8.628
+        },
+        "block_2": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 6.139
+        },
+        "block_3": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 8.155
+        },
+        "block_4": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 8.706
+        },
+        "block_5": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 7.982
+        },
+        "block_6": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 23.024
+        },
+        "block_7": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.266
+        },
+        "block_8": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 16.529
+        },
+        "block_9": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 33.925
+        },
+        "block_10": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 24.977
+        }
+      },
+      "error": null
+    },
+    "layer_boundary_verification": {
+      "label": "layer_boundary",
+      "strategy": "layer_boundary",
+      "safe": false,
+      "num_submodules": 8,
+      "time_ms": 189.758,
+      "cache_hits": 0,
+      "interface_checks": [
+        {
+          "producer": "block_0",
+          "consumer": "block_1",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_1",
+          "consumer": "block_2",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_2",
+          "consumer": "block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_3",
+          "consumer": "block_4",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_4",
+          "consumer": "block_5",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_5",
+          "consumer": "block_6",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_6",
+          "consumer": "block_7",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        }
+      ],
+      "submodule_results": {
+        "block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 31.016
+        },
+        "block_1": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 7.415
+        },
+        "block_2": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 53.379
+        },
+        "block_3": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 6.955
+        },
+        "block_4": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 26.035
+        },
+        "block_5": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 15.749
+        },
+        "block_6": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 13.506
+        },
+        "block_7": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 10.999
+        }
+      },
+      "error": null
+    },
+    "dag_verification": {
+      "label": "dag_branch_merge",
+      "strategy": "dag_branch_merge",
+      "safe": false,
+      "num_submodules": 5,
+      "time_ms": 172.73,
+      "cache_hits": 0,
+      "interface_checks": [
+        {
+          "producer": "dag_block_0",
+          "consumer": "dag_block_1",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_0",
+          "consumer": "dag_block_2",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_1",
+          "consumer": "dag_block_2",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_0",
+          "consumer": "dag_block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_1",
+          "consumer": "dag_block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_2",
+          "consumer": "dag_block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_0",
+          "consumer": "dag_block_4",
+          "compatible": true,
+          "message": "2 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_1",
+          "consumer": "dag_block_4",
+          "compatible": true,
+          "message": "2 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_2",
+          "consumer": "dag_block_4",
+          "compatible": true,
+          "message": "2 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_3",
+          "consumer": "dag_block_4",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        }
+      ],
+      "submodule_results": {
+        "dag_block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 17.656
+        },
+        "dag_block_1": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 38.378
+        },
+        "dag_block_2": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 25.855
+        },
+        "dag_block_3": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 40.472
+        },
+        "dag_block_4": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 36.654
+        }
+      },
+      "error": null
+    },
+    "dag_decomposition": {
+      "topology": "residual",
+      "num_submodules": 5,
+      "dag_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "contracts": [
+        {
+          "submodule": "dag_block_0",
+          "step_range": [
+            0,
+            3
+          ],
+          "num_steps": 3,
+          "input_contract": {
+            "name": "dag_block_0_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "dag_block_0_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "residual": [
+                "*"
+              ],
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "constraints": [
+              "residual: shape preserved (op=CONTIGUOUS)",
+              "residual: output shape unconstrained",
+              "x guaranteed by b1_fc2 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_1",
+          "step_range": [
+            3,
+            7
+          ],
+          "num_steps": 4,
+          "input_contract": {
+            "name": "dag_block_1_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "x must match b2_fc1 (LINEAR) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_1_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "residual": [
+                "*"
+              ],
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "constraints": [
+              "residual: shape preserved (op=CONTIGUOUS)",
+              "residual: output shape unconstrained",
+              "x guaranteed by b2_fc2 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_2",
+          "step_range": [
+            7,
+            9
+          ],
+          "num_steps": 2,
+          "input_contract": {
+            "name": "dag_block_2_input",
+            "input_shapes": {
+              "x": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "x: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_2_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "residual": [
+                "*"
+              ],
+              "x": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "residual: shape preserved (op=CONTIGUOUS)",
+              "residual: output shape unconstrained",
+              "x: output shape unconstrained"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_3",
+          "step_range": [
+            9,
+            11
+          ],
+          "num_steps": 2,
+          "input_contract": {
+            "name": "dag_block_3_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "x must match b3_fc1 (LINEAR) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_3_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "constraints": [
+              "x guaranteed by b3_fc2 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_4",
+          "step_range": [
+            11,
+            14
+          ],
+          "num_steps": 3,
+          "input_contract": {
+            "name": "dag_block_4_input",
+            "input_shapes": {
+              "residual": [
+                "*"
+              ],
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "residual: shape unconstrained (no layer info)",
+              "x must match classifier (LINEAR) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_4_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "__ret_1": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "__ret_1: output shape unconstrained"
+            ]
+          }
+        }
+      ]
+    },
+    "agreement": {
+      "branch_merge_agrees_mono": true,
+      "layer_boundary_agrees_mono": false,
+      "dag_agrees_mono": false
+    },
+    "speedup": {
+      "branch_merge_vs_mono": 1.621,
+      "layer_boundary_vs_mono": 1.45,
+      "dag_vs_mono": 1.592
+    },
+    "branch_merge_limitations": [
+      "PRECISION LOSS: 6 input contract(s) use wildcard shapes (unconstrained) at merge/skip boundaries: block_3.residual, block_3.x, block_4.x, block_7.residual, block_7.x, block_10.residual. BRANCH_MERGE cannot derive precise shape contracts for tensors that cross branch boundaries because the producer may be in a different linear partition."
+    ]
+  },
+  {
+    "model_name": "transformer_encdec",
+    "category": "attention",
+    "description": "Transformer encoder-decoder with cross-attention projection",
+    "monolithic": {
+      "safe": true,
+      "time_ms": 342.396,
+      "num_steps": 18,
+      "errors": [],
+      "error": null
+    },
+    "branch_merge_decomposition": {
+      "num_steps": 18,
+      "num_submodules": 5,
+      "contracts": [
+        {
+          "submodule": "block_0",
+          "step_range": [
+            0,
+            4
+          ],
+          "num_steps": 4,
+          "input_contract": {
+            "name": "block_0_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_0_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "enc_out": [
+                "batch",
+                64
+              ]
+            },
+            "constraints": [
+              "enc_out guaranteed by enc_proj (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_1",
+          "step_range": [
+            4,
+            5
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_1_input",
+            "input_shapes": {},
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_1_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "enc_out": [
+                "batch",
+                128
+              ]
+            },
+            "constraints": [
+              "enc_out guaranteed by enc_ff1 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_2",
+          "step_range": [
+            5,
+            6
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_2_input",
+            "input_shapes": {},
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_2_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "enc_out": [
+                "batch",
+                64
+              ]
+            },
+            "constraints": [
+              "enc_out guaranteed by enc_ff2 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_3",
+          "step_range": [
+            6,
+            15
+          ],
+          "num_steps": 9,
+          "input_contract": {
+            "name": "block_3_input",
+            "input_shapes": {
+              "enc_out": [
+                "batch",
+                64
+              ],
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "enc_out must match cross_k (LINEAR) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "block_3_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "out": [
+                "batch",
+                128
+              ]
+            },
+            "constraints": [
+              "out guaranteed by dec_ff1 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_4",
+          "step_range": [
+            15,
+            18
+          ],
+          "num_steps": 3,
+          "input_contract": {
+            "name": "block_4_input",
+            "input_shapes": {},
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_4_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "__ret_1": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "__ret_1: output shape unconstrained"
+            ]
+          }
+        }
+      ]
+    },
+    "branch_merge_verification": {
+      "label": "branch_merge",
+      "strategy": "branch_merge",
+      "safe": false,
+      "num_submodules": 5,
+      "time_ms": 87.626,
+      "cache_hits": 0,
+      "interface_checks": [
+        {
+          "producer": "block_0",
+          "consumer": "block_1",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        },
+        {
+          "producer": "block_1",
+          "consumer": "block_2",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        },
+        {
+          "producer": "block_2",
+          "consumer": "block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_3",
+          "consumer": "block_4",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        }
+      ],
+      "submodule_results": {
+        "block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 15.499
+        },
+        "block_1": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 0.655
+        },
+        "block_2": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 0.476
+        },
+        "block_3": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 58.959
+        },
+        "block_4": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 2.937
+        }
+      },
+      "error": null
+    },
+    "layer_boundary_verification": {
+      "label": "layer_boundary",
+      "strategy": "layer_boundary",
+      "safe": false,
+      "num_submodules": 18,
+      "time_ms": 60.755,
+      "cache_hits": 0,
+      "interface_checks": [
+        {
+          "producer": "block_0",
+          "consumer": "block_1",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        },
+        {
+          "producer": "block_1",
+          "consumer": "block_2",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        },
+        {
+          "producer": "block_2",
+          "consumer": "block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_3",
+          "consumer": "block_4",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        },
+        {
+          "producer": "block_4",
+          "consumer": "block_5",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        },
+        {
+          "producer": "block_5",
+          "consumer": "block_6",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        },
+        {
+          "producer": "block_6",
+          "consumer": "block_7",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        },
+        {
+          "producer": "block_7",
+          "consumer": "block_8",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        },
+        {
+          "producer": "block_8",
+          "consumer": "block_9",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_9",
+          "consumer": "block_10",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_10",
+          "consumer": "block_11",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        },
+        {
+          "producer": "block_11",
+          "consumer": "block_12",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        },
+        {
+          "producer": "block_12",
+          "consumer": "block_13",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_13",
+          "consumer": "block_14",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_14",
+          "consumer": "block_15",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        },
+        {
+          "producer": "block_15",
+          "consumer": "block_16",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_16",
+          "consumer": "block_17",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        }
+      ],
+      "submodule_results": {
+        "block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.141
+        },
+        "block_1": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.25
+        },
+        "block_2": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 1.988
+        },
+        "block_3": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.098
+        },
+        "block_4": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 0.545
+        },
+        "block_5": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 0.549
+        },
+        "block_6": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.18
+        },
+        "block_7": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.07
+        },
+        "block_8": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 1.983
+        },
+        "block_9": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.143
+        },
+        "block_10": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.232
+        },
+        "block_11": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.043
+        },
+        "block_12": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.476
+        },
+        "block_13": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.014
+        },
+        "block_14": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.082
+        },
+        "block_15": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 0.587
+        },
+        "block_16": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.309
+        },
+        "block_17": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 0.601
+        }
+      },
+      "error": null
+    },
+    "dag_verification": {
+      "label": "dag_branch_merge",
+      "strategy": "dag_branch_merge",
+      "safe": true,
+      "num_submodules": 2,
+      "time_ms": 118.603,
+      "cache_hits": 0,
+      "interface_checks": [
+        {
+          "producer": "dag_block_0",
+          "consumer": "dag_block_1",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        }
+      ],
+      "submodule_results": {
+        "dag_block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 26.931
+        },
+        "dag_block_1": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 87.128
+        }
+      },
+      "error": null
+    },
+    "dag_decomposition": {
+      "topology": "general_dag",
+      "num_submodules": 2,
+      "dag_edges": [
+        [
+          0,
+          1
+        ]
+      ],
+      "contracts": [
+        {
+          "submodule": "dag_block_0",
+          "step_range": [
+            0,
+            6
+          ],
+          "num_steps": 6,
+          "input_contract": {
+            "name": "dag_block_0_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "dag_block_0_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "enc_out": [
+                "batch",
+                64
+              ]
+            },
+            "constraints": [
+              "enc_out guaranteed by enc_ff2 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_1",
+          "step_range": [
+            6,
+            18
+          ],
+          "num_steps": 12,
+          "input_contract": {
+            "name": "dag_block_1_input",
+            "input_shapes": {
+              "enc_out": [
+                "batch",
+                64
+              ],
+              "x": [
+                "batch",
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "enc_out must match cross_k (LINEAR) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_1_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "__ret_1": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "__ret_1: output shape unconstrained"
+            ]
+          }
+        }
+      ]
+    },
+    "agreement": {
+      "branch_merge_agrees_mono": false,
+      "layer_boundary_agrees_mono": false,
+      "dag_agrees_mono": true
+    },
+    "speedup": {
+      "branch_merge_vs_mono": 3.907,
+      "layer_boundary_vs_mono": 5.636,
+      "dag_vs_mono": 2.887
+    },
+    "branch_merge_limitations": [
+      "FALSE NEGATIVE: BRANCH_MERGE reports UNSAFE on a monolithically-SAFE model. The linear cut-point decomposition severs cross-path data dependencies, causing spurious shape mismatches at merge points where tensors from different branches recombine. Failing submodules: block_1: shape mismatch; block_2: shape mismatch; block_4: shape mismatch",
+      "DAG compositional verification (verify_compositional_dag) correctly verifies this architecture by preserving cross-path edges in the decomposition graph, demonstrating that the limitation is specific to BRANCH_MERGE's linear decomposition, not the assume-guarantee framework itself."
+    ]
+  },
+  {
+    "model_name": "inception_module",
+    "category": "parallel",
+    "description": "Inception-style module with 3 parallel branches and concatenation",
+    "monolithic": {
+      "safe": true,
+      "time_ms": 58.266,
+      "num_steps": 10,
+      "errors": [],
+      "error": null
+    },
+    "branch_merge_decomposition": {
+      "num_steps": 10,
+      "num_submodules": 5,
+      "contracts": [
+        {
+          "submodule": "block_0",
+          "step_range": [
+            0,
+            2
+          ],
+          "num_steps": 2,
+          "input_contract": {
+            "name": "block_0_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                128
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_0_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "a": [
+                "batch",
+                32
+              ],
+              "b": [
+                "batch",
+                64
+              ]
+            },
+            "constraints": [
+              "a guaranteed by branch_a (LINEAR) output semantics",
+              "b guaranteed by branch_b1 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_1",
+          "step_range": [
+            2,
+            4
+          ],
+          "num_steps": 2,
+          "input_contract": {
+            "name": "block_1_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                128
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_1_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "b": [
+                "batch",
+                48
+              ],
+              "c": [
+                "batch",
+                32
+              ]
+            },
+            "constraints": [
+              "b guaranteed by branch_b2 (LINEAR) output semantics",
+              "c guaranteed by branch_c1 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_2",
+          "step_range": [
+            4,
+            5
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_2_input",
+            "input_shapes": {},
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_2_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "c": [
+                "batch",
+                32
+              ]
+            },
+            "constraints": [
+              "c guaranteed by branch_c2 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_3",
+          "step_range": [
+            5,
+            6
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_3_input",
+            "input_shapes": {},
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_3_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "c": [
+                "batch",
+                48
+              ]
+            },
+            "constraints": [
+              "c guaranteed by branch_c3 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_4",
+          "step_range": [
+            6,
+            10
+          ],
+          "num_steps": 4,
+          "input_contract": {
+            "name": "block_4_input",
+            "input_shapes": {
+              "a": [
+                "*"
+              ],
+              "b": [
+                "*"
+              ],
+              "c": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "a: shape unconstrained (no layer info)",
+              "b: shape unconstrained (no layer info)",
+              "c: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "block_4_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "__ret_1": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "__ret_1: output shape unconstrained"
+            ]
+          }
+        }
+      ]
+    },
+    "branch_merge_verification": {
+      "label": "branch_merge",
+      "strategy": "branch_merge",
+      "safe": false,
+      "num_submodules": 5,
+      "time_ms": 26.581,
+      "cache_hits": 0,
+      "interface_checks": [
+        {
+          "producer": "block_0",
+          "consumer": "block_1",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        },
+        {
+          "producer": "block_1",
+          "consumer": "block_2",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        },
+        {
+          "producer": "block_2",
+          "consumer": "block_3",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        },
+        {
+          "producer": "block_3",
+          "consumer": "block_4",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        }
+      ],
+      "submodule_results": {
+        "block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 6.367
+        },
+        "block_1": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 5.019
+        },
+        "block_2": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 0.554
+        },
+        "block_3": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 0.549
+        },
+        "block_4": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 4.699
+        }
+      },
+      "error": null
+    },
+    "layer_boundary_verification": {
+      "label": "layer_boundary",
+      "strategy": "layer_boundary",
+      "safe": false,
+      "num_submodules": 9,
+      "time_ms": 28.101,
+      "cache_hits": 0,
+      "interface_checks": [
+        {
+          "producer": "block_0",
+          "consumer": "block_1",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        },
+        {
+          "producer": "block_1",
+          "consumer": "block_2",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        },
+        {
+          "producer": "block_2",
+          "consumer": "block_3",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        },
+        {
+          "producer": "block_3",
+          "consumer": "block_4",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        },
+        {
+          "producer": "block_4",
+          "consumer": "block_5",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        },
+        {
+          "producer": "block_5",
+          "consumer": "block_6",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_6",
+          "consumer": "block_7",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_7",
+          "consumer": "block_8",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        }
+      ],
+      "submodule_results": {
+        "block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.145
+        },
+        "block_1": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.029
+        },
+        "block_2": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 0.71
+        },
+        "block_3": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.225
+        },
+        "block_4": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 0.688
+        },
+        "block_5": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 0.593
+        },
+        "block_6": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.154
+        },
+        "block_7": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.479
+        },
+        "block_8": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 0.536
+        }
+      },
+      "error": null
+    },
+    "dag_verification": {
+      "label": "dag_branch_merge",
+      "strategy": "dag_branch_merge",
+      "safe": true,
+      "num_submodules": 4,
+      "time_ms": 28.76,
+      "cache_hits": 0,
+      "interface_checks": [
+        {
+          "producer": "dag_block_0",
+          "consumer": "dag_block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_1",
+          "consumer": "dag_block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_2",
+          "consumer": "dag_block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_0",
+          "consumer": "dag_block_1",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        },
+        {
+          "producer": "dag_block_1",
+          "consumer": "dag_block_2",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        }
+      ],
+      "submodule_results": {
+        "dag_block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.319
+        },
+        "dag_block_1": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 5.328
+        },
+        "dag_block_2": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 9.57
+        },
+        "dag_block_3": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 4.825
+        }
+      },
+      "error": null
+    },
+    "dag_decomposition": {
+      "topology": "dense",
+      "num_submodules": 4,
+      "dag_edges": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "contracts": [
+        {
+          "submodule": "dag_block_0",
+          "step_range": [
+            0,
+            1
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "dag_block_0_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                128
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "dag_block_0_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "a": [
+                "batch",
+                32
+              ]
+            },
+            "constraints": [
+              "a guaranteed by branch_a (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_1",
+          "step_range": [
+            1,
+            3
+          ],
+          "num_steps": 2,
+          "input_contract": {
+            "name": "dag_block_1_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                128
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "dag_block_1_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "b": [
+                "batch",
+                48
+              ]
+            },
+            "constraints": [
+              "b guaranteed by branch_b2 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_2",
+          "step_range": [
+            3,
+            6
+          ],
+          "num_steps": 3,
+          "input_contract": {
+            "name": "dag_block_2_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                128
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "dag_block_2_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "c": [
+                "batch",
+                48
+              ]
+            },
+            "constraints": [
+              "c guaranteed by branch_c3 (LINEAR) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_3",
+          "step_range": [
+            6,
+            10
+          ],
+          "num_steps": 4,
+          "input_contract": {
+            "name": "dag_block_3_input",
+            "input_shapes": {
+              "a": [
+                "*"
+              ],
+              "b": [
+                "*"
+              ],
+              "c": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "a: shape unconstrained (no layer info)",
+              "b: shape unconstrained (no layer info)",
+              "c: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_3_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "__ret_1": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "__ret_1: output shape unconstrained"
+            ]
+          }
+        }
+      ]
+    },
+    "agreement": {
+      "branch_merge_agrees_mono": false,
+      "layer_boundary_agrees_mono": false,
+      "dag_agrees_mono": true
+    },
+    "speedup": {
+      "branch_merge_vs_mono": 2.192,
+      "layer_boundary_vs_mono": 2.073,
+      "dag_vs_mono": 2.026
+    },
+    "branch_merge_limitations": [
+      "FALSE NEGATIVE: BRANCH_MERGE reports UNSAFE on a monolithically-SAFE model. The linear cut-point decomposition severs cross-path data dependencies, causing spurious shape mismatches at merge points where tensors from different branches recombine. Failing submodules: block_1: shape mismatch; block_2: shape mismatch; block_3: shape mismatch",
+      "DAG compositional verification (verify_compositional_dag) correctly verifies this architecture by preserving cross-path edges in the decomposition graph, demonstrating that the limitation is specific to BRANCH_MERGE's linear decomposition, not the assume-guarantee framework itself.",
+      "PRECISION LOSS: 3 input contract(s) use wildcard shapes (unconstrained) at merge/skip boundaries: block_4.a, block_4.b, block_4.c. BRANCH_MERGE cannot derive precise shape contracts for tensors that cross branch boundaries because the producer may be in a different linear partition.",
+      "DAG decomposition found 4 submodules vs BRANCH_MERGE's 5. DAG-aware decomposition captures cross-path dependencies that the linear BRANCH_MERGE cut-point approach misses."
+    ]
+  },
+  {
+    "model_name": "fpn_multiscale",
+    "category": "encoder_decoder",
+    "description": "Feature Pyramid Network with multi-scale lateral connections",
+    "monolithic": {
+      "safe": false,
+      "time_ms": 122.661,
+      "num_steps": 11,
+      "errors": [],
+      "error": null
+    },
+    "branch_merge_decomposition": {
+      "num_steps": 11,
+      "num_submodules": 7,
+      "contracts": [
+        {
+          "submodule": "block_0",
+          "step_range": [
+            0,
+            1
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_0_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                3,
+                64,
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_0_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "c1_out": [
+                "batch",
+                16,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "c1_out guaranteed by c1 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_1",
+          "step_range": [
+            1,
+            2
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_1_input",
+            "input_shapes": {
+              "c1_out": [
+                "batch",
+                16,
+                "H",
+                "W"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "c1_out must match c2 (CONV2D) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "block_1_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "c2_out": [
+                "batch",
+                32,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "c2_out guaranteed by c2 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_2",
+          "step_range": [
+            2,
+            5
+          ],
+          "num_steps": 3,
+          "input_contract": {
+            "name": "block_2_input",
+            "input_shapes": {
+              "c2_out": [
+                "batch",
+                32,
+                "H",
+                "W"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "c2_out must match c3 (CONV2D) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "block_2_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "__inner_1": [
+                "batch",
+                32,
+                "H_out",
+                "W_out"
+              ],
+              "p3": [
+                "batch",
+                32,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "__inner_1 guaranteed by lat2 (CONV2D) output semantics",
+              "p3 guaranteed by lat3 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_3",
+          "step_range": [
+            5,
+            6
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_3_input",
+            "input_shapes": {
+              "__inner_1": [
+                "*"
+              ],
+              "p3": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "__inner_1: shape unconstrained (no layer info)",
+              "p3: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "block_3_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "p2": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "p2: output shape unconstrained"
+            ]
+          }
+        },
+        {
+          "submodule": "block_4",
+          "step_range": [
+            6,
+            7
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_4_input",
+            "input_shapes": {},
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_4_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "p2": [
+                "batch",
+                32,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "p2 guaranteed by refine2 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "block_5",
+          "step_range": [
+            7,
+            8
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "block_5_input",
+            "input_shapes": {
+              "c1_out": [
+                "*"
+              ],
+              "p2": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "c1_out: shape unconstrained (no layer info)",
+              "p2: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "block_5_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "p1": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "p1: output shape unconstrained"
+            ]
+          }
+        },
+        {
+          "submodule": "block_6",
+          "step_range": [
+            8,
+            11
+          ],
+          "num_steps": 3,
+          "input_contract": {
+            "name": "block_6_input",
+            "input_shapes": {},
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "block_6_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "__ret_2": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "__ret_2: output shape unconstrained"
+            ]
+          }
+        }
+      ]
+    },
+    "branch_merge_verification": {
+      "label": "branch_merge",
+      "strategy": "branch_merge",
+      "safe": false,
+      "num_submodules": 7,
+      "time_ms": 43.291,
+      "cache_hits": 0,
+      "interface_checks": [
+        {
+          "producer": "block_0",
+          "consumer": "block_1",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_1",
+          "consumer": "block_2",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_2",
+          "consumer": "block_3",
+          "compatible": true,
+          "message": "2 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_3",
+          "consumer": "block_4",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        },
+        {
+          "producer": "block_4",
+          "consumer": "block_5",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_5",
+          "consumer": "block_6",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        }
+      ],
+      "submodule_results": {
+        "block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 7.711
+        },
+        "block_1": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.683
+        },
+        "block_2": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 15.717
+        },
+        "block_3": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 0.623
+        },
+        "block_4": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 0.584
+        },
+        "block_5": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 0.748
+        },
+        "block_6": {
+          "safe": false,
+          "errors": [],
+          "time_ms": 3.532
+        }
+      },
+      "error": null
+    },
+    "layer_boundary_verification": {
+      "label": "layer_boundary",
+      "strategy": "layer_boundary",
+      "safe": true,
+      "num_submodules": 9,
+      "time_ms": 27.308,
+      "cache_hits": 2,
+      "interface_checks": [
+        {
+          "producer": "block_0",
+          "consumer": "block_1",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_1",
+          "consumer": "block_2",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_2",
+          "consumer": "block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_3",
+          "consumer": "block_4",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        },
+        {
+          "producer": "block_4",
+          "consumer": "block_5",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_5",
+          "consumer": "block_6",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_6",
+          "consumer": "block_7",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "block_7",
+          "consumer": "block_8",
+          "compatible": true,
+          "message": "1 tensor(s) flow but contracts are not explicit \u2014 assumed compatible"
+        }
+      ],
+      "submodule_results": {
+        "block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 7.711
+        },
+        "block_1": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.683
+        },
+        "block_2": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 3.011
+        },
+        "block_3": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.806
+        },
+        "block_4": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.912
+        },
+        "block_5": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 1.785
+        },
+        "block_6": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.067
+        },
+        "block_7": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.799
+        },
+        "block_8": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 0.562
+        }
+      },
+      "error": null
+    },
+    "dag_verification": {
+      "label": "dag_branch_merge",
+      "strategy": "dag_branch_merge",
+      "safe": true,
+      "num_submodules": 6,
+      "time_ms": 31.415,
+      "cache_hits": 0,
+      "interface_checks": [
+        {
+          "producer": "dag_block_0",
+          "consumer": "dag_block_1",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_1",
+          "consumer": "dag_block_2",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_1",
+          "consumer": "dag_block_3",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_2",
+          "consumer": "dag_block_4",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_3",
+          "consumer": "dag_block_4",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_0",
+          "consumer": "dag_block_5",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_4",
+          "consumer": "dag_block_5",
+          "compatible": true,
+          "message": "1 shared tensor(s) \u2014 all shapes compatible"
+        },
+        {
+          "producer": "dag_block_2",
+          "consumer": "dag_block_3",
+          "compatible": true,
+          "message": "no direct tensor flow (independent sub-modules)"
+        }
+      ],
+      "submodule_results": {
+        "dag_block_0": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.388
+        },
+        "dag_block_1": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.751
+        },
+        "dag_block_2": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 7.599
+        },
+        "dag_block_3": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 2.641
+        },
+        "dag_block_4": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 1.624
+        },
+        "dag_block_5": {
+          "safe": true,
+          "errors": [],
+          "time_ms": 4.018
+        }
+      },
+      "error": null
+    },
+    "dag_decomposition": {
+      "topology": "residual",
+      "num_submodules": 6,
+      "dag_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "contracts": [
+        {
+          "submodule": "dag_block_0",
+          "step_range": [
+            0,
+            1
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "dag_block_0_input",
+            "input_shapes": {
+              "x": [
+                "batch",
+                3,
+                64,
+                64
+              ]
+            },
+            "output_shapes": {},
+            "constraints": []
+          },
+          "output_contract": {
+            "name": "dag_block_0_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "c1_out": [
+                "batch",
+                16,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "c1_out guaranteed by c1 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_1",
+          "step_range": [
+            1,
+            2
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "dag_block_1_input",
+            "input_shapes": {
+              "c1_out": [
+                "batch",
+                16,
+                "H",
+                "W"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "c1_out must match c2 (CONV2D) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_1_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "c2_out": [
+                "batch",
+                32,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "c2_out guaranteed by c2 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_2",
+          "step_range": [
+            2,
+            4
+          ],
+          "num_steps": 2,
+          "input_contract": {
+            "name": "dag_block_2_input",
+            "input_shapes": {
+              "c2_out": [
+                "batch",
+                32,
+                "H",
+                "W"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "c2_out must match c3 (CONV2D) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_2_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "p3": [
+                "batch",
+                32,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "p3 guaranteed by lat3 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_3",
+          "step_range": [
+            4,
+            5
+          ],
+          "num_steps": 1,
+          "input_contract": {
+            "name": "dag_block_3_input",
+            "input_shapes": {
+              "c2_out": [
+                "batch",
+                32,
+                "H",
+                "W"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "c2_out must match lat2 (CONV2D) input requirements"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_3_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "__inner_1": [
+                "batch",
+                32,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "__inner_1 guaranteed by lat2 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_4",
+          "step_range": [
+            5,
+            7
+          ],
+          "num_steps": 2,
+          "input_contract": {
+            "name": "dag_block_4_input",
+            "input_shapes": {
+              "__inner_1": [
+                "*"
+              ],
+              "p3": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "__inner_1: shape unconstrained (no layer info)",
+              "p3: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_4_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "p2": [
+                "batch",
+                32,
+                "H_out",
+                "W_out"
+              ]
+            },
+            "constraints": [
+              "p2 guaranteed by refine2 (CONV2D) output semantics"
+            ]
+          }
+        },
+        {
+          "submodule": "dag_block_5",
+          "step_range": [
+            7,
+            11
+          ],
+          "num_steps": 4,
+          "input_contract": {
+            "name": "dag_block_5_input",
+            "input_shapes": {
+              "c1_out": [
+                "*"
+              ],
+              "p2": [
+                "*"
+              ]
+            },
+            "output_shapes": {},
+            "constraints": [
+              "c1_out: shape unconstrained (no layer info)",
+              "p2: shape unconstrained (no layer info)"
+            ]
+          },
+          "output_contract": {
+            "name": "dag_block_5_output",
+            "input_shapes": {},
+            "output_shapes": {
+              "__ret_2": [
+                "*"
+              ]
+            },
+            "constraints": [
+              "__ret_2: output shape unconstrained"
+            ]
+          }
+        }
+      ]
+    },
+    "agreement": {
+      "branch_merge_agrees_mono": true,
+      "layer_boundary_agrees_mono": false,
+      "dag_agrees_mono": false
+    },
+    "speedup": {
+      "branch_merge_vs_mono": 2.833,
+      "layer_boundary_vs_mono": 4.492,
+      "dag_vs_mono": 3.905
+    },
+    "branch_merge_limitations": [
+      "PRECISION LOSS: 4 input contract(s) use wildcard shapes (unconstrained) at merge/skip boundaries: block_3.__inner_1, block_3.p3, block_5.c1_out, block_5.p2. BRANCH_MERGE cannot derive precise shape contracts for tensors that cross branch boundaries because the producer may be in a different linear partition.",
+      "DAG decomposition found 6 submodules vs BRANCH_MERGE's 7. DAG-aware decomposition captures cross-path dependencies that the linear BRANCH_MERGE cut-point approach misses."
+    ]
+  }
+]

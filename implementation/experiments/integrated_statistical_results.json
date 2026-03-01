@@ -1,0 +1,756 @@
+{
+  "description": "Integrated statistical analysis applying Brier decomposition, prevalence-conditioned PPV/NPV, and Benjamini-Hochberg FDR correction to the five main evaluation headline results. Addresses reviewer criticism that statistical rigor infrastructure was built but not applied.",
+  "suites_analyzed": [
+    "cegar_ablation",
+    "deep_composition",
+    "external_bug",
+    "fx_torchvision",
+    "neurosym_pipeline"
+  ],
+  "total_predictions": 182,
+  "brier_decomposition_per_suite": {
+    "cegar_ablation": {
+      "brier_score": 0.030625,
+      "reliability_REL": 0.001111,
+      "resolution_RES": 0.21951,
+      "uncertainty_UNC": 0.249023,
+      "identity_check": 0.030625,
+      "n_predictions": 32,
+      "n_bins": 10,
+      "bin_counts": [
+        18,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        14
+      ],
+      "bin_accuracies": [
+        0.0556,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bin_mean_probs": [
+        0.05,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.95
+      ]
+    },
+    "deep_composition": {
+      "brier_score": 0.0025,
+      "reliability_REL": 0.0025,
+      "resolution_RES": 0.2176,
+      "uncertainty_UNC": 0.2176,
+      "identity_check": 0.0025,
+      "n_predictions": 25,
+      "n_bins": 10,
+      "bin_counts": [
+        8,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        17
+      ],
+      "bin_accuracies": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bin_mean_probs": [
+        0.05,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.95
+      ]
+    },
+    "external_bug": {
+      "brier_score": 0.104118,
+      "reliability_REL": 0.002363,
+      "resolution_RES": 0.148246,
+      "uncertainty_UNC": 0.25,
+      "identity_check": 0.104118,
+      "n_predictions": 34,
+      "n_bins": 10,
+      "bin_counts": [
+        0,
+        19,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        15
+      ],
+      "bin_accuracies": [
+        0.0,
+        0.1579,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.9333
+      ],
+      "bin_mean_probs": [
+        0.0,
+        0.1,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.9
+      ]
+    },
+    "fx_torchvision": {
+      "brier_score": 0.0025,
+      "reliability_REL": 0.0025,
+      "resolution_RES": 0.122449,
+      "uncertainty_UNC": 0.122449,
+      "identity_check": 0.0025,
+      "n_predictions": 21,
+      "n_bins": 10,
+      "bin_counts": [
+        18,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3
+      ],
+      "bin_accuracies": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "bin_mean_probs": [
+        0.05,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.95
+      ]
+    },
+    "neurosym_pipeline": {
+      "brier_score": 0.511209,
+      "reliability_REL": 0.290401,
+      "resolution_RES": 0.028988,
+      "uncertainty_UNC": 0.249796,
+      "identity_check": 0.511209,
+      "n_predictions": 70,
+      "n_bins": 10,
+      "bin_counts": [
+        0,
+        0,
+        0,
+        24,
+        0,
+        0,
+        0,
+        0,
+        0,
+        46
+      ],
+      "bin_accuracies": [
+        0.0,
+        0.0,
+        0.0,
+        0.75,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.3913
+      ],
+      "bin_mean_probs": [
+        0.0,
+        0.0,
+        0.0,
+        0.35,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.99
+      ]
+    },
+    "_combined": {
+      "brier_score": 0.222086,
+      "reliability_REL": 0.058767,
+      "resolution_RES": 0.095053,
+      "uncertainty_UNC": 0.249728,
+      "n_predictions": 182
+    }
+  },
+  "mce_diagnosis": {
+    "observed_MCE": 0.9273,
+    "observed_ECE": 0.4541,
+    "brier_score": 0.4671,
+    "calibration_component": 0.303822,
+    "sharpness_component": 0.047021,
+    "uncertainty_component": 0.201697,
+    "overconfidence_ratio": 0.5,
+    "mean_confidence": 0.5705,
+    "mean_accuracy": 0.7198,
+    "diagnosis": "DISCRIMINATION_FAILURE: RES (0.0951) < UNC/2 (0.1249). The pipeline cannot sufficiently discriminate between bug and non-bug cases.",
+    "rel_over_res_ratio": 0.6183
+  },
+  "ppv_npv_curves": {
+    "cegar_ablation": {
+      "sensitivity": 0.9333,
+      "specificity": 1.0,
+      "breakeven_prevalence": 0.01,
+      "ppv_npv_at_target_prevalences": {
+        "pi=0.01": {
+          "PPV": 1.0,
+          "NPV": 0.9993
+        },
+        "pi=0.02": {
+          "PPV": 1.0,
+          "NPV": 0.9986
+        },
+        "pi=0.05": {
+          "PPV": 1.0,
+          "NPV": 0.9965
+        },
+        "pi=0.10": {
+          "PPV": 1.0,
+          "NPV": 0.9926
+        },
+        "pi=0.20": {
+          "PPV": 1.0,
+          "NPV": 0.9836
+        },
+        "pi=0.50": {
+          "PPV": 1.0,
+          "NPV": 0.9375
+        }
+      }
+    },
+    "deep_composition": {
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "breakeven_prevalence": 0.01,
+      "ppv_npv_at_target_prevalences": {
+        "pi=0.01": {
+          "PPV": 1.0,
+          "NPV": 1.0
+        },
+        "pi=0.02": {
+          "PPV": 1.0,
+          "NPV": 1.0
+        },
+        "pi=0.05": {
+          "PPV": 1.0,
+          "NPV": 1.0
+        },
+        "pi=0.10": {
+          "PPV": 1.0,
+          "NPV": 1.0
+        },
+        "pi=0.20": {
+          "PPV": 1.0,
+          "NPV": 1.0
+        },
+        "pi=0.50": {
+          "PPV": 1.0,
+          "NPV": 1.0
+        }
+      }
+    },
+    "external_bug": {
+      "sensitivity": 0.8235,
+      "specificity": 0.9412,
+      "breakeven_prevalence": 0.07,
+      "ppv_npv_at_target_prevalences": {
+        "pi=0.01": {
+          "PPV": 0.1239,
+          "NPV": 0.9981
+        },
+        "pi=0.02": {
+          "PPV": 0.2222,
+          "NPV": 0.9962
+        },
+        "pi=0.05": {
+          "PPV": 0.4242,
+          "NPV": 0.9902
+        },
+        "pi=0.10": {
+          "PPV": 0.6087,
+          "NPV": 0.9796
+        },
+        "pi=0.20": {
+          "PPV": 0.7778,
+          "NPV": 0.9552
+        },
+        "pi=0.50": {
+          "PPV": 0.9333,
+          "NPV": 0.8421
+        }
+      }
+    },
+    "fx_torchvision": {
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "breakeven_prevalence": 0.01,
+      "ppv_npv_at_target_prevalences": {
+        "pi=0.01": {
+          "PPV": 1.0,
+          "NPV": 1.0
+        },
+        "pi=0.02": {
+          "PPV": 1.0,
+          "NPV": 1.0
+        },
+        "pi=0.05": {
+          "PPV": 1.0,
+          "NPV": 1.0
+        },
+        "pi=0.10": {
+          "PPV": 1.0,
+          "NPV": 1.0
+        },
+        "pi=0.20": {
+          "PPV": 1.0,
+          "NPV": 1.0
+        },
+        "pi=0.50": {
+          "PPV": 1.0,
+          "NPV": 1.0
+        }
+      }
+    },
+    "neurosym_pipeline": {
+      "sensitivity": 0.5,
+      "specificity": 0.1765,
+      "breakeven_prevalence": null,
+      "ppv_npv_at_target_prevalences": {
+        "pi=0.01": {
+          "PPV": 0.0061,
+          "NPV": 0.9722
+        },
+        "pi=0.02": {
+          "PPV": 0.0122,
+          "NPV": 0.9453
+        },
+        "pi=0.05": {
+          "PPV": 0.031,
+          "NPV": 0.8702
+        },
+        "pi=0.10": {
+          "PPV": 0.0632,
+          "NPV": 0.7606
+        },
+        "pi=0.20": {
+          "PPV": 0.1318,
+          "NPV": 0.5854
+        },
+        "pi=0.50": {
+          "PPV": 0.3778,
+          "NPV": 0.2609
+        }
+      }
+    }
+  },
+  "multiple_comparison_correction": {
+    "n_tests": 6,
+    "fdr_level": 0.05,
+    "fwer_uncorrected": 0.2649,
+    "bh_n_rejected": 3,
+    "bonferroni_n_rejected": 2,
+    "holm_n_rejected": 2,
+    "comparisons": [
+      {
+        "comparison": "CEGAR_filtered_vs_single_pass",
+        "raw_p": 0.001953,
+        "bh_adjusted_p": 0.005859,
+        "bh_rejected": true,
+        "bonferroni_adjusted_p": 0.011719,
+        "bonferroni_rejected": true,
+        "holm_adjusted_p": 0.009766,
+        "holm_rejected": true
+      },
+      {
+        "comparison": "TG_vs_LLM_deep_composition",
+        "raw_p": 0.02229,
+        "bh_adjusted_p": 0.04458,
+        "bh_rejected": true,
+        "bonferroni_adjusted_p": 0.133739,
+        "bonferroni_rejected": false,
+        "holm_adjusted_p": 0.089159,
+        "holm_rejected": false
+      },
+      {
+        "comparison": "pipeline_vs_LLM_neurosym",
+        "raw_p": 1.0,
+        "bh_adjusted_p": 1.0,
+        "bh_rejected": false,
+        "bonferroni_adjusted_p": 1.0,
+        "bonferroni_rejected": false,
+        "holm_adjusted_p": 1.0,
+        "holm_rejected": false
+      },
+      {
+        "comparison": "pipeline_vs_TG_only_neurosym",
+        "raw_p": 2e-06,
+        "bh_adjusted_p": 1.2e-05,
+        "bh_rejected": true,
+        "bonferroni_adjusted_p": 1.2e-05,
+        "bonferroni_rejected": true,
+        "holm_adjusted_p": 1.2e-05,
+        "holm_rejected": true
+      },
+      {
+        "comparison": "external_vs_neurosym_precision",
+        "raw_p": 0.421777,
+        "bh_adjusted_p": 0.506133,
+        "bh_rejected": false,
+        "bonferroni_adjusted_p": 1.0,
+        "bonferroni_rejected": false,
+        "holm_adjusted_p": 0.858345,
+        "holm_rejected": false
+      },
+      {
+        "comparison": "fx_vs_external_accuracy",
+        "raw_p": 0.286115,
+        "bh_adjusted_p": 0.429173,
+        "bh_rejected": false,
+        "bonferroni_adjusted_p": 1.0,
+        "bonferroni_rejected": false,
+        "holm_adjusted_p": 0.858345,
+        "holm_rejected": false
+      }
+    ]
+  },
+  "comprehensive_report": {
+    "metadata": {
+      "n_bins": 10,
+      "alpha": 0.05,
+      "analysis": "integrated_headline_results",
+      "n_suites": 5,
+      "suites": [
+        "cegar_ablation",
+        "deep_composition",
+        "external_bug",
+        "fx_torchvision",
+        "neurosym_pipeline"
+      ],
+      "sensitivity": 0.75,
+      "specificity": 0.6914893617021277
+    },
+    "brier_decomposition": {
+      "brier_score": 0.2220857142857143,
+      "reliability": 0.05876661023187303,
+      "resolution": 0.09505270611401323,
+      "uncertainty": 0.2497282936843376,
+      "n_bins": 10,
+      "bin_counts": [
+        44,
+        19,
+        0,
+        24,
+        0,
+        0,
+        0,
+        0,
+        0,
+        95
+      ],
+      "bin_accuracies": [
+        0.022727272727272728,
+        0.15789473684210525,
+        0.0,
+        0.75,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.6947368421052632
+      ],
+      "bin_mean_probs": [
+        0.05,
+        0.10000000000000003,
+        0.0,
+        0.34999999999999987,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.961473684210525
+      ]
+    },
+    "ppv_npv": {
+      "sensitivity": 0.75,
+      "specificity": 0.6914893617021277,
+      "breakeven_prevalence": 0.3,
+      "prevalences": [
+        0.01,
+        0.02,
+        0.03,
+        0.04,
+        0.05,
+        0.060000000000000005,
+        0.06999999999999999,
+        0.08,
+        0.09,
+        0.09999999999999999,
+        0.11,
+        0.12,
+        0.13,
+        0.14,
+        0.15000000000000002,
+        0.16,
+        0.17,
+        0.18000000000000002,
+        0.19,
+        0.2,
+        0.21000000000000002,
+        0.22,
+        0.23,
+        0.24000000000000002,
+        0.25,
+        0.26,
+        0.27,
+        0.28,
+        0.29000000000000004,
+        0.3,
+        0.31,
+        0.32,
+        0.33,
+        0.34,
+        0.35000000000000003,
+        0.36000000000000004,
+        0.37,
+        0.38,
+        0.39,
+        0.4,
+        0.41000000000000003,
+        0.42000000000000004,
+        0.43,
+        0.44,
+        0.45,
+        0.46,
+        0.47000000000000003,
+        0.48000000000000004,
+        0.49,
+        0.5
+      ],
+      "ppv_values": [
+        0.023967363590005102,
+        0.04726785115655381,
+        0.06992891387006117,
+        0.0919765166340509,
+        0.11343523732904268,
+        0.13432835820895528,
+        0.15467795016455102,
+        0.17450495049504952,
+        0.1938292347640141,
+        0.21266968325791855,
+        0.2310442425145241,
+        0.24896998234255444,
+        0.2664631487134758,
+        0.28353921286986505,
+        0.3002129169623848,
+        0.3164983164983165,
+        0.33240881985854953,
+        0.3479572251165342,
+        0.36315575437169584,
+        0.3780160857908848,
+        0.3925493835344029,
+        0.40676632572777344,
+        0.42067713062654044,
+        0.4342915811088296,
+        0.4476190476190477,
+        0.46066850967579803,
+        0.4734485760477553,
+        0.48596750369276226,
+        0.4982332155477032,
+        0.5102533172496985,
+        0.5220351128627733,
+        0.533585619678335,
+        0.5449115821524769,
+        0.5560194850382744,
+        0.5669155657668008,
+        0.5776058261265363,
+        0.5880960432871153,
+        0.5983917802099621,
+        0.6084983954852274,
+        0.618421052631579,
+        0.6281647288927524,
+        0.637734223562352,
+        0.6471341658661544,
+        0.6563690224291155,
+        0.665443104352386,
+        0.6743605739238928,
+        0.6831254509844346,
+        0.6917416189697466,
+        0.7002128306476132,
+        0.7085427135678392
+      ],
+      "npv_values": [
+        0.9963613842223428,
+        0.9926757051581736,
+        0.9889420437612737,
+        0.9851594568992738,
+        0.9813269765593962,
+        0.9774436090225563,
+        0.9735083340043482,
+        0.9695201037613489,
+        0.9654778421611034,
+        0.961380443714051,
+        0.9572267725655663,
+        0.9530156614461845,
+        0.9487459105779716,
+        0.9444162865348876,
+        0.9400255210548704,
+        0.9355723098012336,
+        0.931055311070843,
+        0.9264731444463757,
+        0.9218243893898276,
+        0.9171075837742504,
+        0.9123212223505375,
+        0.9074637551458743,
+        0.9025335857902804,
+        0.8975290697674417,
+        0.8924485125858124,
+        0.8872901678657074,
+        0.8820522353378567,
+        0.876732858748595,
+        0.8713301236665721,
+        0.8658420551855377,
+        0.8602666155174068,
+        0.8546017014694509,
+        0.8488451417990449,
+        0.842994694438986,
+        0.8370480435859337,
+        0.8310027966440272,
+        0.824856481015208,
+        0.818606540727199,
+        0.8122503328894808,
+        0.8057851239669421,
+        0.7992080858601646,
+        0.7925162917805338,
+        0.7857067119075389,
+        0.7787762088147198,
+        0.7717215326497572,
+        0.7645393160531475,
+        0.7572260687987691,
+        0.7497781721384206,
+        0.7421918728310758,
+        0.7344632768361582
+      ]
+    },
+    "multiple_comparison": {
+      "method": "benjamini_hochberg",
+      "n_tests": 6,
+      "fdr_level": 0.05,
+      "n_rejected": 3,
+      "adjusted_p_values": [
+        0.005859375,
+        0.04457953394123626,
+        1.0,
+        1.218338250128155e-05,
+        0.5061329974705912,
+        0.42917271407837176
+      ],
+      "rejected": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    "bonferroni": {
+      "n_tests": 6,
+      "alpha": 0.05,
+      "n_rejected": 2,
+      "adjusted_p_values": [
+        0.01171875,
+        0.13373860182370878,
+        1.0,
+        1.218338250128155e-05,
+        1.0,
+        1.0
+      ]
+    },
+    "holm_bonferroni": {
+      "n_tests": 6,
+      "alpha": 0.05,
+      "n_rejected": 2,
+      "adjusted_p_values": [
+        0.009765625,
+        0.08915906788247252,
+        1.0,
+        1.218338250128155e-05,
+        0.8583454281567435,
+        0.8583454281567435
+      ]
+    },
+    "fwer_uncorrected": 0.2649081093750002
+  },
+  "latex_tables": "\\begin{table}[h]\n\\centering\n\\caption{Brier Score Decomposition (Murphy, 1973)}\n\\label{tab:brier-decomposition}\n\\begin{tabular}{lr}\n\\toprule\nComponent & Value \\\\\n\\midrule\nBrier Score & 0.2221 \\\\\nReliability (calibration) & 0.0588 \\\\\nResolution (refinement) & 0.0951 \\\\\nUncertainty & 0.2497 \\\\\n\\bottomrule\n\\end{tabular}\n\\end{table}\n\n\\begin{table}[h]\n\\centering\n\\caption{Prevalence-Conditioned Predictive Values}\n\\label{tab:ppv-npv}\n\\begin{tabular}{lr}\n\\toprule\nParameter & Value \\\\\n\\midrule\nSensitivity & 0.7500 \\\\\nSpecificity & 0.6915 \\\\\nBreakeven prevalence (PPV$\\geq$0.5) & 0.3000 \\\\\nPPV at $\\pi=0.05$ & 0.1134 \\\\\nPPV at $\\pi=0.20$ & 0.3780 \\\\\nPPV at $\\pi=0.50$ & 0.7085 \\\\\n\\bottomrule\n\\end{tabular}\n\\end{table}\n\n\\begin{table}[h]\n\\centering\n\\caption{Multiple Comparison Correction Results}\n\\label{tab:multiple-comparison}\n\\begin{tabular}{lr}\n\\toprule\nMetric & Value \\\\\n\\midrule\nNumber of tests & 6 \\\\\nFDR level ($\\alpha$) & 0.050 \\\\\nRejected (B-H) & 3 \\\\\nRejected (Bonferroni) & 2 \\\\\nRejected (Holm) & 2 \\\\\nFWER (uncorrected) & 0.2649 \\\\\n\\bottomrule\n\\end{tabular}\n\\end{table}"
+}

@@ -1,0 +1,273 @@
+{
+  "all_satisfied": true,
+  "stable_infiniteness": {
+    "broadcast": {
+      "satisfied": true,
+      "sort": "Dim",
+      "justification": "\u2124_{\u22651} is infinite and every model can be extended with fresh dimension values, satisfying stable infiniteness"
+    },
+    "stride": {
+      "satisfied": true,
+      "sort": "Dim",
+      "justification": "Strides are positive integers; the sort Dim is shared with broadcast via the Nelson-Oppen shared-sort mechanism"
+    },
+    "device": {
+      "satisfied": true,
+      "sort": "Device",
+      "justification": "Finite-domain theory (5 elements); stable infiniteness not required \u2014 Tinelli-Zarba polite witnessability used instead."
+    },
+    "phase": {
+      "satisfied": true,
+      "sort": "Phase",
+      "justification": "Finite-domain theory (2 elements); stable infiniteness not required \u2014 Tinelli-Zarba polite witnessability used instead."
+    },
+    "permutation": {
+      "satisfied": true,
+      "sort": "Dim",
+      "justification": "Permutations rearrange dimension values but the underlying sort (Dim \u2286 \u2124_{\u22651}) is stably infinite. The permutation theory's signature is disjoint from stride's: permutation operates on axis orderings while stride operates on memory layout. Shared reasoning about dimension values happens through the common Dim sort via Nelson-Oppen equality propagation, not through shared function symbols."
+    }
+  },
+  "polite_witnessability": {
+    "device": {
+      "satisfied": true,
+      "domain_size": 5,
+      "elements": [
+        "CPU",
+        "CUDA_0",
+        "CUDA_1",
+        "CUDA_2",
+        "CUDA_3"
+      ],
+      "justification": "Polite witnessability holds: for any satisfiable conjunction \u03c6 over Device variables, we can construct a witness assigning each variable to one of the 5 concrete device values. The finite cardinality ensures exhaustive enumeration is tractable."
+    },
+    "phase": {
+      "satisfied": true,
+      "domain_size": 2,
+      "elements": [
+        "TRAIN",
+        "EVAL"
+      ],
+      "justification": "Polite witnessability holds trivially: any satisfiable formula over a 2-element domain has a concrete witness obtainable by exhaustive enumeration (at most 2^k assignments for k variables)."
+    }
+  },
+  "signature_disjointness": {
+    "broadcast-stride": {
+      "disjoint": true,
+      "shared_symbols": [],
+      "t1_symbols": [
+        "broadcast_compat",
+        "broadcast_dim",
+        "dim_add",
+        "dim_eq",
+        "dim_max",
+        "dim_mul",
+        "dim_sub",
+        "shape_len"
+      ],
+      "t2_symbols": [
+        "contiguous",
+        "dim_div",
+        "stride_compat",
+        "stride_eq",
+        "stride_product",
+        "stride_val"
+      ]
+    },
+    "broadcast-device": {
+      "disjoint": true,
+      "shared_symbols": [],
+      "t1_symbols": [
+        "broadcast_compat",
+        "broadcast_dim",
+        "dim_add",
+        "dim_eq",
+        "dim_max",
+        "dim_mul",
+        "dim_sub",
+        "shape_len"
+      ],
+      "t2_symbols": [
+        "device_compat",
+        "device_eq",
+        "device_of",
+        "device_transfer"
+      ]
+    },
+    "broadcast-phase": {
+      "disjoint": true,
+      "shared_symbols": [],
+      "t1_symbols": [
+        "broadcast_compat",
+        "broadcast_dim",
+        "dim_add",
+        "dim_eq",
+        "dim_max",
+        "dim_mul",
+        "dim_sub",
+        "shape_len"
+      ],
+      "t2_symbols": [
+        "is_training",
+        "phase_compat",
+        "phase_eq",
+        "phase_of"
+      ]
+    },
+    "broadcast-permutation": {
+      "disjoint": true,
+      "shared_symbols": [],
+      "t1_symbols": [
+        "broadcast_compat",
+        "broadcast_dim",
+        "dim_add",
+        "dim_eq",
+        "dim_max",
+        "dim_mul",
+        "dim_sub",
+        "shape_len"
+      ],
+      "t2_symbols": [
+        "apply_perm",
+        "axis_at",
+        "perm_compose",
+        "perm_eq",
+        "perm_id",
+        "perm_inv"
+      ]
+    },
+    "stride-device": {
+      "disjoint": true,
+      "shared_symbols": [],
+      "t1_symbols": [
+        "contiguous",
+        "dim_div",
+        "stride_compat",
+        "stride_eq",
+        "stride_product",
+        "stride_val"
+      ],
+      "t2_symbols": [
+        "device_compat",
+        "device_eq",
+        "device_of",
+        "device_transfer"
+      ]
+    },
+    "stride-phase": {
+      "disjoint": true,
+      "shared_symbols": [],
+      "t1_symbols": [
+        "contiguous",
+        "dim_div",
+        "stride_compat",
+        "stride_eq",
+        "stride_product",
+        "stride_val"
+      ],
+      "t2_symbols": [
+        "is_training",
+        "phase_compat",
+        "phase_eq",
+        "phase_of"
+      ]
+    },
+    "stride-permutation": {
+      "disjoint": true,
+      "shared_symbols": [],
+      "t1_symbols": [
+        "contiguous",
+        "dim_div",
+        "stride_compat",
+        "stride_eq",
+        "stride_product",
+        "stride_val"
+      ],
+      "t2_symbols": [
+        "apply_perm",
+        "axis_at",
+        "perm_compose",
+        "perm_eq",
+        "perm_id",
+        "perm_inv"
+      ]
+    },
+    "device-phase": {
+      "disjoint": true,
+      "shared_symbols": [],
+      "t1_symbols": [
+        "device_compat",
+        "device_eq",
+        "device_of",
+        "device_transfer"
+      ],
+      "t2_symbols": [
+        "is_training",
+        "phase_compat",
+        "phase_eq",
+        "phase_of"
+      ]
+    },
+    "device-permutation": {
+      "disjoint": true,
+      "shared_symbols": [],
+      "t1_symbols": [
+        "device_compat",
+        "device_eq",
+        "device_of",
+        "device_transfer"
+      ],
+      "t2_symbols": [
+        "apply_perm",
+        "axis_at",
+        "perm_compose",
+        "perm_eq",
+        "perm_id",
+        "perm_inv"
+      ]
+    },
+    "phase-permutation": {
+      "disjoint": true,
+      "shared_symbols": [],
+      "t1_symbols": [
+        "is_training",
+        "phase_compat",
+        "phase_eq",
+        "phase_of"
+      ],
+      "t2_symbols": [
+        "apply_perm",
+        "axis_at",
+        "perm_compose",
+        "perm_eq",
+        "perm_id",
+        "perm_inv"
+      ]
+    }
+  },
+  "shared_sort_analysis": {
+    "Dim": {
+      "theories": [
+        "broadcast",
+        "stride",
+        "permutation"
+      ],
+      "mixed_finite_infinite": false,
+      "combination_method": "Nelson-Oppen (all stably-infinite)",
+      "note": "Theories sharing the Dim sort communicate via Nelson-Oppen equality propagation. Signature disjointness ensures no function symbol overlap."
+    }
+  },
+  "summary": {
+    "num_theories": 5,
+    "num_pairs_checked": 10,
+    "all_disjoint": true,
+    "finite_theories": [
+      "device",
+      "phase"
+    ],
+    "infinite_theories": [
+      "broadcast",
+      "stride",
+      "permutation"
+    ]
+  }
+}

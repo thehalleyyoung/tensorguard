@@ -1,0 +1,134 @@
+{
+  "experiment": "thread_modular_verification",
+  "models": [
+    {
+      "name": "SimpleMLP",
+      "category": "monolithic",
+      "num_subgraphs": 1,
+      "verdict": "MONOLITHIC_SAFE",
+      "expected": "MONOLITHIC_SAFE",
+      "correct": true,
+      "num_gaps": 0,
+      "time_ms": 0.02
+    },
+    {
+      "name": "ConvClassifier",
+      "category": "monolithic",
+      "num_subgraphs": 1,
+      "verdict": "MONOLITHIC_SAFE",
+      "expected": "MONOLITHIC_SAFE",
+      "correct": true,
+      "num_gaps": 0,
+      "time_ms": 0.02
+    },
+    {
+      "name": "ResidualBlock",
+      "category": "monolithic",
+      "num_subgraphs": 1,
+      "verdict": "MONOLITHIC_SAFE",
+      "expected": "MONOLITHIC_SAFE",
+      "correct": true,
+      "num_gaps": 0,
+      "time_ms": 0.01
+    },
+    {
+      "name": "AttentionHead",
+      "category": "monolithic",
+      "num_subgraphs": 1,
+      "verdict": "MONOLITHIC_SAFE",
+      "expected": "MONOLITHIC_SAFE",
+      "correct": true,
+      "num_gaps": 0,
+      "time_ms": 0.01
+    },
+    {
+      "name": "Autoencoder",
+      "category": "monolithic",
+      "num_subgraphs": 1,
+      "verdict": "MONOLITHIC_SAFE",
+      "expected": "MONOLITHIC_SAFE",
+      "correct": true,
+      "num_gaps": 0,
+      "time_ms": 0.01
+    },
+    {
+      "name": "TwoStageMLP",
+      "category": "safe_break",
+      "num_subgraphs": 2,
+      "verdict": "COMPOSITION_VERIFIED",
+      "expected": "COMPOSITION_VERIFIED",
+      "correct": true,
+      "num_gaps": 0,
+      "time_ms": 0.04
+    },
+    {
+      "name": "EncoderDecoderSplit",
+      "category": "safe_break",
+      "num_subgraphs": 2,
+      "verdict": "COMPOSITION_VERIFIED",
+      "expected": "COMPOSITION_VERIFIED",
+      "correct": true,
+      "num_gaps": 0,
+      "time_ms": 0.04
+    },
+    {
+      "name": "ThreeStagePipeline",
+      "category": "safe_break",
+      "num_subgraphs": 3,
+      "verdict": "COMPOSITION_VERIFIED",
+      "expected": "COMPOSITION_VERIFIED",
+      "correct": true,
+      "num_gaps": 0,
+      "time_ms": 0.03
+    },
+    {
+      "name": "ReshapeAcrossBreak",
+      "category": "gap",
+      "num_subgraphs": 2,
+      "verdict": "GAP_DETECTED",
+      "expected": "GAP_DETECTED",
+      "correct": true,
+      "num_gaps": 2,
+      "gap_details": [
+        {
+          "category": "conditional_reshape",
+          "desc": "SHAPE_INVERSION: Reshape in both adjacent subgraphs \u2014 shape inversion possible. "
+        },
+        {
+          "category": "conditional_reshape",
+          "desc": "CONDITIONAL_RESHAPE: Reshape with symbolic target ('batch', 4, 16) \u2014 output shap"
+        }
+      ],
+      "time_ms": 0.05
+    },
+    {
+      "name": "ExternalInputBreak",
+      "category": "gap",
+      "num_subgraphs": 2,
+      "verdict": "GAP_DETECTED",
+      "expected": "GAP_DETECTED",
+      "correct": true,
+      "num_gaps": 2,
+      "gap_details": [
+        {
+          "category": "shape_propagation",
+          "desc": "Conservative transformer applied \u2014 inter-break Python code may modify shapes in "
+        },
+        {
+          "category": "dynamic_routing",
+          "desc": "Subgraph 1 input 'routing_mask' not found in any previous subgraph output \u2014 may "
+        }
+      ],
+      "time_ms": 0.03
+    }
+  ],
+  "summary": {
+    "total_models": 10,
+    "correct": 10,
+    "accuracy": 1.0,
+    "all_correct": true,
+    "monolithic_correct": 5,
+    "safe_break_correct": 3,
+    "gap_correct": 2
+  }
+}

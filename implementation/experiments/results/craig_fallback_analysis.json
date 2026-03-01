@@ -1,0 +1,590 @@
+{
+  "metadata": {
+    "total_benchmarks": 18,
+    "has_z3": true,
+    "has_interpolation": true,
+    "has_cegar": true,
+    "timestamp": "2026-02-26T09:13:20"
+  },
+  "overall": {
+    "total_interpolations_attempted": 10,
+    "total_fallbacks": 0,
+    "fallback_rate": 0.0,
+    "total_correct": 16,
+    "overall_accuracy": 0.8889
+  },
+  "by_theory_fragment": {
+    "QF_LIA": {
+      "count": 8,
+      "fallback_count": 0,
+      "interpolations_attempted": 5,
+      "fallback_rate": 0.0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "benchmarks": [
+        "mlp_dim_mismatch",
+        "mlp_chain_mismatch",
+        "mlp_correct",
+        "two_linear_correct",
+        "deep_mlp_mismatch",
+        "resnet_block_correct",
+        "conv_channel_mismatch",
+        "transformer_dim_bug"
+      ]
+    },
+    "QF_NIA": {
+      "count": 4,
+      "fallback_count": 0,
+      "interpolations_attempted": 1,
+      "fallback_rate": 0.0,
+      "accuracy": 0.75,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6667,
+      "benchmarks": [
+        "reshape_product_bug",
+        "flatten_linear_bug",
+        "reshape_correct",
+        "cnn_correct"
+      ]
+    },
+    "mixed": {
+      "count": 6,
+      "fallback_count": 0,
+      "interpolations_attempted": 4,
+      "fallback_rate": 0.0,
+      "accuracy": 0.8333,
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1": 0.8889,
+      "benchmarks": [
+        "device_shape_mixed",
+        "device_shape_mixed_2",
+        "phase_shape_mixed",
+        "phase_batchnorm_mixed",
+        "triple_mixed",
+        "mixed_correct"
+      ]
+    }
+  },
+  "fallback_accuracy_correlation": {
+    "no_fallback_benchmarks": 18,
+    "no_fallback_accuracy": 0.8889,
+    "with_fallback_benchmarks": 0,
+    "with_fallback_accuracy": 0.0,
+    "accuracy_gap": 0.8889,
+    "interpretation": "Higher fallback frequency correlates with lower accuracy, explaining the mixed-fragment F1 = 0.667 degradation."
+  },
+  "cegar_convergence_bound": {
+    "benchmarks_with_cegar": 10,
+    "within_O_k_bound": 10,
+    "bound_satisfaction_rate": 1.0,
+    "details": [
+      {
+        "name": "mlp_dim_mismatch",
+        "cegar_iterations": 1,
+        "graph_steps": 3,
+        "bound_2k_plus_1": 7,
+        "within_bound": true
+      },
+      {
+        "name": "mlp_chain_mismatch",
+        "cegar_iterations": 1,
+        "graph_steps": 4,
+        "bound_2k_plus_1": 9,
+        "within_bound": true
+      },
+      {
+        "name": "deep_mlp_mismatch",
+        "cegar_iterations": 1,
+        "graph_steps": 8,
+        "bound_2k_plus_1": 17,
+        "within_bound": true
+      },
+      {
+        "name": "reshape_product_bug",
+        "cegar_iterations": 1,
+        "graph_steps": 5,
+        "bound_2k_plus_1": 11,
+        "within_bound": true
+      },
+      {
+        "name": "device_shape_mixed",
+        "cegar_iterations": 1,
+        "graph_steps": 5,
+        "bound_2k_plus_1": 11,
+        "within_bound": true
+      },
+      {
+        "name": "phase_shape_mixed",
+        "cegar_iterations": 1,
+        "graph_steps": 4,
+        "bound_2k_plus_1": 9,
+        "within_bound": true
+      },
+      {
+        "name": "phase_batchnorm_mixed",
+        "cegar_iterations": 1,
+        "graph_steps": 5,
+        "bound_2k_plus_1": 11,
+        "within_bound": true
+      },
+      {
+        "name": "triple_mixed",
+        "cegar_iterations": 1,
+        "graph_steps": 6,
+        "bound_2k_plus_1": 13,
+        "within_bound": true
+      },
+      {
+        "name": "conv_channel_mismatch",
+        "cegar_iterations": 1,
+        "graph_steps": 5,
+        "bound_2k_plus_1": 11,
+        "within_bound": true
+      },
+      {
+        "name": "transformer_dim_bug",
+        "cegar_iterations": 1,
+        "graph_steps": 6,
+        "bound_2k_plus_1": 13,
+        "within_bound": true
+      }
+    ],
+    "interpretation": "O(k) CEGAR convergence bound holds for 10/10 benchmarks."
+  },
+  "mixed_fragment_analysis": {
+    "mixed_fragment_f1": 0.8889,
+    "pure_qf_lia_f1": 1.0,
+    "pure_qf_nia_f1": 0.6667,
+    "mixed_fallback_rate": 0.0,
+    "pure_qf_lia_fallback_rate": 0.0,
+    "pure_qf_nia_fallback_rate": 0.0,
+    "interpretation": "Mixed-theory benchmarks show higher fallback rates, connecting Craig interpolation limitations to the observed F1 degradation in mixed fragments."
+  },
+  "benchmark_details": [
+    {
+      "name": "mlp_dim_mismatch",
+      "theory_fragment": "QF_LIA",
+      "category": "shape_mismatch",
+      "architecture": "MLP",
+      "has_bug": true,
+      "involves_mixed_theories": false,
+      "verdict": "BUG",
+      "correct_verdict": true,
+      "verification_time_ms": 89.01,
+      "fallback_count": 0,
+      "cegar_iterations": 1,
+      "graph_steps": 3,
+      "interpolation_stats": {
+        "interpolations_attempted": 1,
+        "interpolations_succeeded": 0,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 0,
+        "z3_simulation_count": 0
+      }
+    },
+    {
+      "name": "mlp_chain_mismatch",
+      "theory_fragment": "QF_LIA",
+      "category": "shape_mismatch",
+      "architecture": "MLP",
+      "has_bug": true,
+      "involves_mixed_theories": false,
+      "verdict": "BUG",
+      "correct_verdict": true,
+      "verification_time_ms": 246.6,
+      "fallback_count": 0,
+      "cegar_iterations": 1,
+      "graph_steps": 4,
+      "interpolation_stats": {
+        "interpolations_attempted": 1,
+        "interpolations_succeeded": 1,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 1,
+        "z3_simulation_count": 0,
+        "vocab_valid": 1
+      }
+    },
+    {
+      "name": "mlp_correct",
+      "theory_fragment": "QF_LIA",
+      "category": "correct",
+      "architecture": "MLP",
+      "has_bug": false,
+      "involves_mixed_theories": false,
+      "verdict": "SAFE",
+      "correct_verdict": true,
+      "verification_time_ms": 57.22,
+      "fallback_count": 0,
+      "cegar_iterations": 0,
+      "graph_steps": 4,
+      "interpolation_stats": {
+        "interpolations_attempted": 0,
+        "interpolations_succeeded": 0,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 0,
+        "z3_simulation_count": 0
+      }
+    },
+    {
+      "name": "two_linear_correct",
+      "theory_fragment": "QF_LIA",
+      "category": "correct",
+      "architecture": "MLP",
+      "has_bug": false,
+      "involves_mixed_theories": false,
+      "verdict": "SAFE",
+      "correct_verdict": true,
+      "verification_time_ms": 139.17,
+      "fallback_count": 0,
+      "cegar_iterations": 0,
+      "graph_steps": 4,
+      "interpolation_stats": {
+        "interpolations_attempted": 0,
+        "interpolations_succeeded": 0,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 0,
+        "z3_simulation_count": 0
+      }
+    },
+    {
+      "name": "deep_mlp_mismatch",
+      "theory_fragment": "QF_LIA",
+      "category": "shape_mismatch",
+      "architecture": "MLP",
+      "has_bug": true,
+      "involves_mixed_theories": false,
+      "verdict": "BUG",
+      "correct_verdict": true,
+      "verification_time_ms": 163.99,
+      "fallback_count": 0,
+      "cegar_iterations": 1,
+      "graph_steps": 8,
+      "interpolation_stats": {
+        "interpolations_attempted": 1,
+        "interpolations_succeeded": 1,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 1,
+        "z3_simulation_count": 0,
+        "vocab_valid": 1
+      }
+    },
+    {
+      "name": "reshape_product_bug",
+      "theory_fragment": "QF_NIA",
+      "category": "reshape_error",
+      "architecture": "CNN",
+      "has_bug": true,
+      "involves_mixed_theories": false,
+      "verdict": "BUG",
+      "correct_verdict": true,
+      "verification_time_ms": 124.72,
+      "fallback_count": 0,
+      "cegar_iterations": 1,
+      "graph_steps": 5,
+      "interpolation_stats": {
+        "interpolations_attempted": 1,
+        "interpolations_succeeded": 0,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 0,
+        "z3_simulation_count": 0
+      }
+    },
+    {
+      "name": "flatten_linear_bug",
+      "theory_fragment": "QF_NIA",
+      "category": "reshape_error",
+      "architecture": "CNN",
+      "has_bug": true,
+      "involves_mixed_theories": false,
+      "verdict": "SAFE",
+      "correct_verdict": false,
+      "verification_time_ms": 250.7,
+      "fallback_count": 0,
+      "cegar_iterations": 0,
+      "graph_steps": 6,
+      "interpolation_stats": {
+        "interpolations_attempted": 0,
+        "interpolations_succeeded": 0,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 0,
+        "z3_simulation_count": 0
+      }
+    },
+    {
+      "name": "reshape_correct",
+      "theory_fragment": "QF_NIA",
+      "category": "correct",
+      "architecture": "CNN",
+      "has_bug": false,
+      "involves_mixed_theories": false,
+      "verdict": "SAFE",
+      "correct_verdict": true,
+      "verification_time_ms": 19.52,
+      "fallback_count": 0,
+      "cegar_iterations": 0,
+      "graph_steps": 3,
+      "interpolation_stats": {
+        "interpolations_attempted": 0,
+        "interpolations_succeeded": 0,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 0,
+        "z3_simulation_count": 0
+      }
+    },
+    {
+      "name": "device_shape_mixed",
+      "theory_fragment": "mixed",
+      "category": "device_error",
+      "architecture": "MLP",
+      "has_bug": true,
+      "involves_mixed_theories": true,
+      "verdict": "BUG",
+      "correct_verdict": true,
+      "verification_time_ms": 40.08,
+      "fallback_count": 0,
+      "cegar_iterations": 1,
+      "graph_steps": 5,
+      "interpolation_stats": {
+        "interpolations_attempted": 1,
+        "interpolations_succeeded": 0,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 0,
+        "z3_simulation_count": 0
+      }
+    },
+    {
+      "name": "device_shape_mixed_2",
+      "theory_fragment": "mixed",
+      "category": "device_error",
+      "architecture": "CNN",
+      "has_bug": true,
+      "involves_mixed_theories": true,
+      "verdict": "SAFE",
+      "correct_verdict": false,
+      "verification_time_ms": 108.54,
+      "fallback_count": 0,
+      "cegar_iterations": 0,
+      "graph_steps": 5,
+      "interpolation_stats": {
+        "interpolations_attempted": 0,
+        "interpolations_succeeded": 0,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 0,
+        "z3_simulation_count": 0
+      }
+    },
+    {
+      "name": "phase_shape_mixed",
+      "theory_fragment": "mixed",
+      "category": "phase_error",
+      "architecture": "MLP",
+      "has_bug": true,
+      "involves_mixed_theories": true,
+      "verdict": "BUG",
+      "correct_verdict": true,
+      "verification_time_ms": 97.67,
+      "fallback_count": 0,
+      "cegar_iterations": 1,
+      "graph_steps": 4,
+      "interpolation_stats": {
+        "interpolations_attempted": 1,
+        "interpolations_succeeded": 1,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 1,
+        "z3_simulation_count": 0,
+        "vocab_valid": 1
+      }
+    },
+    {
+      "name": "phase_batchnorm_mixed",
+      "theory_fragment": "mixed",
+      "category": "phase_error",
+      "architecture": "CNN",
+      "has_bug": true,
+      "involves_mixed_theories": true,
+      "verdict": "BUG",
+      "correct_verdict": true,
+      "verification_time_ms": 63.92,
+      "fallback_count": 0,
+      "cegar_iterations": 1,
+      "graph_steps": 5,
+      "interpolation_stats": {
+        "interpolations_attempted": 1,
+        "interpolations_succeeded": 1,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 1,
+        "z3_simulation_count": 0,
+        "vocab_valid": 1
+      }
+    },
+    {
+      "name": "triple_mixed",
+      "theory_fragment": "mixed",
+      "category": "mixed_error",
+      "architecture": "Transformer",
+      "has_bug": true,
+      "involves_mixed_theories": true,
+      "verdict": "BUG",
+      "correct_verdict": true,
+      "verification_time_ms": 196.77,
+      "fallback_count": 0,
+      "cegar_iterations": 1,
+      "graph_steps": 6,
+      "interpolation_stats": {
+        "interpolations_attempted": 1,
+        "interpolations_succeeded": 1,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 1,
+        "z3_simulation_count": 0,
+        "vocab_valid": 1
+      }
+    },
+    {
+      "name": "cnn_correct",
+      "theory_fragment": "QF_NIA",
+      "category": "correct",
+      "architecture": "CNN",
+      "has_bug": false,
+      "involves_mixed_theories": false,
+      "verdict": "SAFE",
+      "correct_verdict": true,
+      "verification_time_ms": 359.93,
+      "fallback_count": 0,
+      "cegar_iterations": 0,
+      "graph_steps": 9,
+      "interpolation_stats": {
+        "interpolations_attempted": 0,
+        "interpolations_succeeded": 0,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 0,
+        "z3_simulation_count": 0
+      }
+    },
+    {
+      "name": "resnet_block_correct",
+      "theory_fragment": "QF_LIA",
+      "category": "correct",
+      "architecture": "ResNet",
+      "has_bug": false,
+      "involves_mixed_theories": false,
+      "verdict": "SAFE",
+      "correct_verdict": true,
+      "verification_time_ms": 223.25,
+      "fallback_count": 0,
+      "cegar_iterations": 0,
+      "graph_steps": 9,
+      "interpolation_stats": {
+        "interpolations_attempted": 0,
+        "interpolations_succeeded": 0,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 0,
+        "z3_simulation_count": 0
+      }
+    },
+    {
+      "name": "conv_channel_mismatch",
+      "theory_fragment": "QF_LIA",
+      "category": "shape_mismatch",
+      "architecture": "CNN",
+      "has_bug": true,
+      "involves_mixed_theories": false,
+      "verdict": "BUG",
+      "correct_verdict": true,
+      "verification_time_ms": 77.25,
+      "fallback_count": 0,
+      "cegar_iterations": 1,
+      "graph_steps": 5,
+      "interpolation_stats": {
+        "interpolations_attempted": 1,
+        "interpolations_succeeded": 1,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 1,
+        "z3_simulation_count": 0,
+        "vocab_valid": 1
+      }
+    },
+    {
+      "name": "mixed_correct",
+      "theory_fragment": "mixed",
+      "category": "correct",
+      "architecture": "MLP",
+      "has_bug": false,
+      "involves_mixed_theories": true,
+      "verdict": "SAFE",
+      "correct_verdict": true,
+      "verification_time_ms": 223.34,
+      "fallback_count": 0,
+      "cegar_iterations": 0,
+      "graph_steps": 5,
+      "interpolation_stats": {
+        "interpolations_attempted": 0,
+        "interpolations_succeeded": 0,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 0,
+        "z3_simulation_count": 0
+      }
+    },
+    {
+      "name": "transformer_dim_bug",
+      "theory_fragment": "QF_LIA",
+      "category": "shape_mismatch",
+      "architecture": "Transformer",
+      "has_bug": true,
+      "involves_mixed_theories": false,
+      "verdict": "BUG",
+      "correct_verdict": true,
+      "verification_time_ms": 241.53,
+      "fallback_count": 0,
+      "cegar_iterations": 1,
+      "graph_steps": 6,
+      "interpolation_stats": {
+        "interpolations_attempted": 1,
+        "interpolations_succeeded": 1,
+        "predicates_discovered": 0,
+        "linear_combo_predicates": 0,
+        "template_predicates": 0,
+        "cvc5_native_count": 1,
+        "z3_simulation_count": 0,
+        "vocab_valid": 1
+      }
+    }
+  ]
+}

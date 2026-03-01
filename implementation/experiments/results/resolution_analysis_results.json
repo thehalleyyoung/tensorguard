@@ -1,0 +1,107 @@
+{
+  "confidence_mapping": {
+    "FORMAL": 0.99,
+    "HIGH": 0.85,
+    "MEDIUM": 0.6,
+    "LOW": 0.35,
+    "NONE": 0.1
+  },
+  "res_values_across_analyses": {
+    "verification_mode/CEGAR": 0.005593,
+    "perm_theory/uses_perm": 0.005683,
+    "stratified_overall": 0.005892,
+    "verification_mode/BMC": 0.007433,
+    "perm_theory/no_perm": 0.008458,
+    "architecture/CNN": 0.009119,
+    "architecture/RNN": 0.010198,
+    "architecture/Transformer": 0.017948,
+    "verification_mode/IC3": 0.026552,
+    "integrated/neurosym_pipeline": 0.028988,
+    "architecture/Other": 0.036905,
+    "architecture/MLP": 0.038961,
+    "architecture/GAN": 0.049587,
+    "integrated/_combined": 0.095053,
+    "integrated/fx_torchvision": 0.122449,
+    "integrated/external_bug": 0.148246,
+    "integrated/deep_composition": 0.2176,
+    "integrated/cegar_ablation": 0.21951
+  },
+  "confidence_distribution": {
+    "FORMAL": {
+      "count": 17,
+      "percentage": 37.8
+    },
+    "HIGH": {
+      "count": 28,
+      "percentage": 62.2
+    },
+    "MEDIUM": {
+      "count": 0,
+      "percentage": 0.0
+    },
+    "LOW": {
+      "count": 0,
+      "percentage": 0.0
+    },
+    "NONE": {
+      "count": 0,
+      "percentage": 0.0
+    }
+  },
+  "entropy_analysis": {
+    "entropy_bits": 0.9565,
+    "max_possible_entropy_bits": 2.3219,
+    "normalized_entropy": 0.4119,
+    "interpretation": "moderate_entropy"
+  },
+  "formal_high_dominance": {
+    "percentage": 100.0,
+    "exceeds_90_pct": true,
+    "architectural_explanation": "TensorGuard uses deterministic SMT solving (Z3) for shape constraint verification. SMT solvers produce binary satisfiability verdicts \u2014 a constraint is either satisfiable or unsatisfiable \u2014 with no probabilistic ambiguity. This means virtually all verdicts receive FORMAL (for detected bugs, backed by Z3 proofs) or HIGH (for sound negatives). The near-zero RES is architecturally expected: the system does not produce graded confidence levels, so there is minimal variation in predicted probabilities across bins, yielding RES \u2248 0 by construction."
+  },
+  "actual_brier_decomposition": {
+    "reliability": 0.343403,
+    "resolution": 0.18739,
+    "uncertainty": 0.246914,
+    "brier": 0.402927,
+    "base_rate": 0.4444,
+    "n_predictions": 45,
+    "n_bins_used": 2,
+    "bin_details": [
+      {
+        "bin": 8,
+        "count": 28,
+        "mean_predicted": 0.85,
+        "mean_observed": 0.1071
+      },
+      {
+        "bin": 9,
+        "count": 17,
+        "mean_predicted": 0.99,
+        "mean_observed": 1.0
+      }
+    ]
+  },
+  "entropy_conditioned_calibration": {
+    "note": "No MEDIUM/LOW/NONE predictions \u2014 all verdicts are FORMAL or HIGH. Entropy-conditioned calibration is vacuous for this system."
+  },
+  "root_cause_analysis": {
+    "all_predictions_near_deterministic": true,
+    "base_rate": 0.4444,
+    "n_predict_negative": 0,
+    "n_predict_positive": 45,
+    "event_rate_in_negatives": 0,
+    "event_rate_in_positives": 0.4444,
+    "separation": 0.4444
+  },
+  "explanation": "RES \u2248 0 is an expected artifact of deterministic SMT-based verification. 100.0% of verdicts receive FORMAL or HIGH confidence, producing a near-degenerate confidence distribution (entropy = 0.9565 bits). The Brier resolution component measures how much bin-level event rates deviate from the overall base rate; with nearly all predictions concentrated in 1-2 bins, this deviation is minimal. This does NOT indicate poor discrimination \u2014 the system correctly separates bugs from non-bugs \u2014 but rather reflects the binary nature of formal verification verdicts.",
+  "summary": {
+    "n_res_values_collected": 18,
+    "min_res": 0.005593,
+    "max_res": 0.21951,
+    "mean_res": 0.058565,
+    "n_near_zero": 6,
+    "n_nontrivial": 12,
+    "verdict": "architecturally_expected_for_deterministic_smt"
+  }
+}

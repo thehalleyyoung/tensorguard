@@ -1,0 +1,213 @@
+{
+  "categoricity_T_device": {
+    "sort_name": "T_device",
+    "expected_cardinality": 5,
+    "constants": [
+      "cpu",
+      "cuda:0",
+      "cuda:1",
+      "cuda:2",
+      "cuda:3"
+    ],
+    "satisfiable": true,
+    "no_extra_elements": true,
+    "all_reachable": true,
+    "no_missing_constraints": true,
+    "is_categorical": true
+  },
+  "categoricity_T_phase": {
+    "sort_name": "T_phase",
+    "expected_cardinality": 2,
+    "constants": [
+      "TRAIN",
+      "EVAL"
+    ],
+    "satisfiable": true,
+    "no_extra_elements": true,
+    "all_reachable": true,
+    "no_missing_constraints": true,
+    "is_categorical": true
+  },
+  "categoricity_T_perm": {
+    "sort_name": "T_perm",
+    "expected_cardinality": 5,
+    "constants": [
+      "identity",
+      "transpose",
+      "reverse",
+      "rotate_left",
+      "rotate_right"
+    ],
+    "satisfiable": true,
+    "no_extra_elements": true,
+    "all_reachable": true,
+    "no_missing_constraints": true,
+    "is_categorical": true
+  },
+  "device_theory": {
+    "categoricity_standard": {
+      "sort_name": "T_device",
+      "expected_cardinality": 5,
+      "constants": [
+        "cpu",
+        "cuda:0",
+        "cuda:1",
+        "cuda:2",
+        "cuda:3"
+      ],
+      "satisfiable": true,
+      "no_extra_elements": true,
+      "all_reachable": true,
+      "no_missing_constraints": true,
+      "is_categorical": true
+    },
+    "categoricity_alt_naming": {
+      "sort_name": "T_device_alt",
+      "expected_cardinality": 5,
+      "constants": [
+        "CPU",
+        "CUDA_0",
+        "CUDA_1",
+        "CUDA_2",
+        "CUDA_3"
+      ],
+      "satisfiable": true,
+      "no_extra_elements": true,
+      "all_reachable": true,
+      "no_missing_constraints": true,
+      "is_categorical": true
+    },
+    "same_device_expressible": true,
+    "transfer_expressible": true,
+    "device_theory_complete": true
+  },
+  "phase_theory": {
+    "categoricity": {
+      "sort_name": "T_phase",
+      "expected_cardinality": 2,
+      "constants": [
+        "TRAIN",
+        "EVAL"
+      ],
+      "satisfiable": true,
+      "no_extra_elements": true,
+      "all_reachable": true,
+      "no_missing_constraints": true,
+      "is_categorical": true
+    },
+    "bool_encoding_sat": true,
+    "no_third_value": true,
+    "phase_theory_complete": true
+  },
+  "perm_theory": {
+    "categoricity": {
+      "sort_name": "T_perm",
+      "expected_cardinality": 5,
+      "constants": [
+        "identity",
+        "transpose",
+        "reverse",
+        "rotate_left",
+        "rotate_right"
+      ],
+      "satisfiable": true,
+      "no_extra_elements": true,
+      "all_reachable": true,
+      "no_missing_constraints": true,
+      "is_categorical": true
+    },
+    "group_axiom_verification": {
+      "S_1": {
+        "n": 1,
+        "num_permutations": 1,
+        "factorial_n": 1,
+        "identity_axiom": true,
+        "closure_axiom": true,
+        "associativity_axiom": true,
+        "inverse_axiom": true,
+        "composition_correctness": true,
+        "all_axioms_hold": true
+      },
+      "S_2": {
+        "n": 2,
+        "num_permutations": 2,
+        "factorial_n": 2,
+        "identity_axiom": true,
+        "closure_axiom": true,
+        "associativity_axiom": true,
+        "inverse_axiom": true,
+        "composition_correctness": true,
+        "all_axioms_hold": true
+      },
+      "S_3": {
+        "n": 3,
+        "num_permutations": 6,
+        "factorial_n": 6,
+        "identity_axiom": true,
+        "closure_axiom": true,
+        "associativity_axiom": true,
+        "inverse_axiom": true,
+        "composition_correctness": true,
+        "all_axioms_hold": true
+      },
+      "S_4": {
+        "n": 4,
+        "num_permutations": 24,
+        "factorial_n": 24,
+        "identity_axiom": true,
+        "closure_axiom": true,
+        "associativity_axiom": true,
+        "inverse_axiom": true,
+        "composition_correctness": true,
+        "all_axioms_hold": true
+      }
+    },
+    "perm_theory_complete": true
+  },
+  "all_complete": true,
+  "projection_completeness": {
+    "lossless": {
+      "interpolant": "And(d0 >= 1, d1 == d0)",
+      "num_projected_predicates": 2,
+      "is_lossless": true,
+      "unprojected_conjuncts": [],
+      "total_conjuncts": 2,
+      "projected_conjuncts": 2,
+      "soundness_preserved": true,
+      "projection_ratio": 1.0
+    },
+    "lossy_disjunction": {
+      "interpolant": "Or(d0 == 3, d0 == 7)",
+      "num_projected_predicates": 0,
+      "is_lossless": false,
+      "unprojected_conjuncts": [
+        "Or(d0 == 3, d0 == 7)"
+      ],
+      "total_conjuncts": 1,
+      "projected_conjuncts": 0,
+      "soundness_preserved": true,
+      "projection_ratio": 0.0
+    },
+    "product_equality": {
+      "interpolant": "d0*d1 == 64",
+      "num_projected_predicates": 1,
+      "is_lossless": true,
+      "unprojected_conjuncts": [],
+      "total_conjuncts": 1,
+      "projected_conjuncts": 1,
+      "soundness_preserved": true,
+      "projection_ratio": 1.0
+    }
+  },
+  "template_language_kinds": [
+    "DIM_EQ",
+    "DIM_GT",
+    "DIM_GE",
+    "DIM_DIVISIBLE",
+    "DIM_MATCH",
+    "NDIM_EQ",
+    "SHAPE_EQ",
+    "DIM_LINEAR_COMBO",
+    "DIM_PRODUCT_EQ"
+  ]
+}

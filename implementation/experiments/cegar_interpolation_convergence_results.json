@@ -1,0 +1,980 @@
+{
+  "experiment": "cegar_interpolation_convergence",
+  "summary": {
+    "description": "CEGAR+interpolation convergence analysis. Verifies that interpolation-derived predicates are bounded by the number of interface variables (input dimensions), keeping the overall predicate universe finite and guaranteeing termination.",
+    "key_insight": "Interpolation predicates are bounded by O(n\u00b2) where n is the number of input dimension variables.  These are the interface variables shared between path formula A and safety formula B.  The total predicate universe (template + interpolation) remains finite, preserving the convergence guarantee.",
+    "num_benchmarks": 32,
+    "num_successful": 32,
+    "all_within_predicate_bound": true,
+    "all_iterations_within_bound": true,
+    "all_convergence_certified": true,
+    "total_template_predicates": 28,
+    "total_interpolation_predicates": 0,
+    "total_interpolation_attempts": 97,
+    "total_interpolation_successes": 56,
+    "mean_input_dimensions": 2.44,
+    "convergence_theorem": "For a model with L layers, D max dims/layer, K=7 predicate kinds, and n input dimensions: the CEGAR+interpolation loop terminates in at most L\u00d7D\u00d7K + n\u00b2 + n iterations.  Proof: the accumulated predicate set P grows strictly monotonically (|P_{i+1}| > |P_i|) and P \u2286 P_template \u222a P_interp where |P_template| = L\u00d7D\u00d7K and |P_interp| \u2264 n\u00b2+n (bounded by interface variable count)."
+  },
+  "per_benchmark": [
+    {
+      "name": "mlp_correct_2layer",
+      "arch": "MLP",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 28,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 34,
+        "convergence_iterations_bound": 34,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 28,
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 70.22,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 1,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 34,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "mlp_buggy_2layer",
+      "arch": "MLP",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 28,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 34,
+        "convergence_iterations_bound": 34,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 28,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 2,
+      "time_ms": 142.12,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 5,
+        "successful": 3,
+        "predicates_from_interpolation": 3
+      },
+      "total_predicate_bound": 34,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "mlp_correct_3layer",
+      "arch": "MLP",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 48,
+        "convergence_iterations_bound": 48,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 42,
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 57.53,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 1,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 48,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "mlp_buggy_3layer",
+      "arch": "MLP",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 48,
+        "convergence_iterations_bound": 48,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 42,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 2,
+      "time_ms": 99.11,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 6,
+        "successful": 6,
+        "predicates_from_interpolation": 6
+      },
+      "total_predicate_bound": 48,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "mlp_correct_4layer",
+      "arch": "MLP",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 70,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 76,
+        "convergence_iterations_bound": 76,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 70,
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 288.66,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 1,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 76,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "mlp_buggy_4layer",
+      "arch": "MLP",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 70,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 76,
+        "convergence_iterations_bound": 76,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 70,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 2,
+      "time_ms": 215.26,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 9,
+        "successful": 3,
+        "predicates_from_interpolation": 3
+      },
+      "total_predicate_bound": 76,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "cnn_correct_2conv",
+      "arch": "CNN",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 4,
+        "num_template_predicates": 84,
+        "max_interpolation_predicates_per_iteration": 20,
+        "total_predicate_bound": 104,
+        "convergence_iterations_bound": 104,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 4,
+      "template_only_bound": 84,
+      "status": "SAFE",
+      "iterations": 1,
+      "time_ms": 169.66,
+      "template_predicates_discovered": 0,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 0,
+      "interpolation_stats": {
+        "attempted": 0,
+        "successful": 0,
+        "predicates_from_interpolation": 0
+      },
+      "total_predicate_bound": 104,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "cnn_buggy_channel",
+      "arch": "CNN",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 4,
+        "num_template_predicates": 84,
+        "max_interpolation_predicates_per_iteration": 20,
+        "total_predicate_bound": 104,
+        "convergence_iterations_bound": 104,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 4,
+      "template_only_bound": 84,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 1,
+      "time_ms": 36.98,
+      "template_predicates_discovered": 0,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 0,
+      "interpolation_stats": {
+        "attempted": 2,
+        "successful": 0,
+        "predicates_from_interpolation": 0
+      },
+      "total_predicate_bound": 104,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "cnn_correct_3conv",
+      "arch": "CNN",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 4,
+        "num_template_predicates": 112,
+        "max_interpolation_predicates_per_iteration": 20,
+        "total_predicate_bound": 132,
+        "convergence_iterations_bound": 132,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 4,
+      "template_only_bound": 112,
+      "status": "SAFE",
+      "iterations": 1,
+      "time_ms": 122.02,
+      "template_predicates_discovered": 0,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 0,
+      "interpolation_stats": {
+        "attempted": 0,
+        "successful": 0,
+        "predicates_from_interpolation": 0
+      },
+      "total_predicate_bound": 132,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "cnn_buggy_deep",
+      "arch": "CNN",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 4,
+        "num_template_predicates": 112,
+        "max_interpolation_predicates_per_iteration": 20,
+        "total_predicate_bound": 132,
+        "convergence_iterations_bound": 132,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 4,
+      "template_only_bound": 112,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 1,
+      "time_ms": 149.83,
+      "template_predicates_discovered": 0,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 0,
+      "interpolation_stats": {
+        "attempted": 2,
+        "successful": 0,
+        "predicates_from_interpolation": 0
+      },
+      "total_predicate_bound": 132,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "transformer_proj_correct",
+      "arch": "Transformer",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 3,
+        "num_template_predicates": 56,
+        "max_interpolation_predicates_per_iteration": 12,
+        "total_predicate_bound": 68,
+        "convergence_iterations_bound": 68,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 3,
+      "template_only_bound": 56,
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 92.29,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 3,
+        "successful": 3,
+        "predicates_from_interpolation": 3
+      },
+      "total_predicate_bound": 68,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "transformer_proj_buggy",
+      "arch": "Transformer",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 3,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 12,
+        "total_predicate_bound": 54,
+        "convergence_iterations_bound": 54,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 3,
+      "template_only_bound": 42,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 1,
+      "time_ms": 129.12,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 4,
+        "successful": 2,
+        "predicates_from_interpolation": 2
+      },
+      "total_predicate_bound": 54,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "transformer_ffn_correct",
+      "arch": "Transformer",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 3,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 12,
+        "total_predicate_bound": 54,
+        "convergence_iterations_bound": 54,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 3,
+      "template_only_bound": 42,
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 103.85,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 1,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 54,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "transformer_ffn_buggy",
+      "arch": "Transformer",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 3,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 12,
+        "total_predicate_bound": 54,
+        "convergence_iterations_bound": 54,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 3,
+      "template_only_bound": 42,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 2,
+      "time_ms": 67.0,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 5,
+        "successful": 3,
+        "predicates_from_interpolation": 3
+      },
+      "total_predicate_bound": 54,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "autoencoder_correct",
+      "arch": "Autoencoder",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 70,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 76,
+        "convergence_iterations_bound": 76,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 70,
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 225.74,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 1,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 76,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "autoencoder_buggy",
+      "arch": "Autoencoder",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 70,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 76,
+        "convergence_iterations_bound": 76,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 70,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 2,
+      "time_ms": 150.93,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 11,
+        "successful": 3,
+        "predicates_from_interpolation": 3
+      },
+      "total_predicate_bound": 76,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "autoencoder_deep_correct",
+      "arch": "Autoencoder",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 70,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 76,
+        "convergence_iterations_bound": 76,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 70,
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 228.89,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 1,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 76,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "resnet_skip_correct",
+      "arch": "ResNet-skip",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 48,
+        "convergence_iterations_bound": 48,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 42,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 1,
+      "time_ms": 50.42,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 2,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 48,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "resnet_skip_buggy",
+      "arch": "ResNet-skip",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 48,
+        "convergence_iterations_bound": 48,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 42,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 1,
+      "time_ms": 76.02,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 2,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 48,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "resnet_deep_correct",
+      "arch": "ResNet-skip",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 56,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 62,
+        "convergence_iterations_bound": 62,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 56,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 1,
+      "time_ms": 182.49,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 2,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 62,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "unet_style_correct",
+      "arch": "U-Net-style",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 70,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 76,
+        "convergence_iterations_bound": 76,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 70,
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 167.17,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 1,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 76,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "unet_style_buggy",
+      "arch": "U-Net-style",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 70,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 76,
+        "convergence_iterations_bound": 76,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 70,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 2,
+      "time_ms": 506.99,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 5,
+        "successful": 3,
+        "predicates_from_interpolation": 3
+      },
+      "total_predicate_bound": 76,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "gan_disc_correct",
+      "arch": "GAN-discriminator",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 56,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 62,
+        "convergence_iterations_bound": 62,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 56,
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 399.35,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 1,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 62,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "gan_disc_buggy",
+      "arch": "GAN-discriminator",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 56,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 62,
+        "convergence_iterations_bound": 62,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 56,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 2,
+      "time_ms": 126.54,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 7,
+        "successful": 3,
+        "predicates_from_interpolation": 3
+      },
+      "total_predicate_bound": 62,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "classifier_correct",
+      "arch": "Classifier",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 48,
+        "convergence_iterations_bound": 48,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 42,
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 82.95,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 1,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 48,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "classifier_buggy",
+      "arch": "Classifier",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 48,
+        "convergence_iterations_bound": 48,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 42,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 2,
+      "time_ms": 72.8,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 5,
+        "successful": 3,
+        "predicates_from_interpolation": 3
+      },
+      "total_predicate_bound": 48,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "bottleneck_correct",
+      "arch": "Bottleneck",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 48,
+        "convergence_iterations_bound": 48,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 42,
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 84.6,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 1,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 48,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "bottleneck_buggy",
+      "arch": "Bottleneck",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 48,
+        "convergence_iterations_bound": 48,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 42,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 2,
+      "time_ms": 97.57,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 5,
+        "successful": 3,
+        "predicates_from_interpolation": 3
+      },
+      "total_predicate_bound": 48,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "multihead_correct",
+      "arch": "MultiHead",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 3,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 12,
+        "total_predicate_bound": 54,
+        "convergence_iterations_bound": 54,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 3,
+      "template_only_bound": 42,
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 129.09,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 2,
+        "successful": 2,
+        "predicates_from_interpolation": 2
+      },
+      "total_predicate_bound": 54,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "multihead_buggy",
+      "arch": "MultiHead",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 3,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 12,
+        "total_predicate_bound": 54,
+        "convergence_iterations_bound": 54,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 3,
+      "template_only_bound": 42,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 1,
+      "time_ms": 74.01,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 4,
+        "successful": 2,
+        "predicates_from_interpolation": 2
+      },
+      "total_predicate_bound": 54,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "wide_correct",
+      "arch": "Wide",
+      "has_bug": false,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 48,
+        "convergence_iterations_bound": 48,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 42,
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 76.16,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 1,
+        "successful": 1,
+        "predicates_from_interpolation": 1
+      },
+      "total_predicate_bound": 48,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    },
+    {
+      "name": "wide_buggy",
+      "arch": "Wide",
+      "has_bug": true,
+      "convergence_bound": {
+        "num_input_dimensions": 2,
+        "num_template_predicates": 42,
+        "max_interpolation_predicates_per_iteration": 6,
+        "total_predicate_bound": 48,
+        "convergence_iterations_bound": 48,
+        "convergence_certificate": true
+      },
+      "num_input_dimensions": 2,
+      "template_only_bound": 42,
+      "status": "REAL_BUG_FOUND",
+      "iterations": 2,
+      "time_ms": 80.47,
+      "template_predicates_discovered": 1,
+      "interpolation_predicates_discovered": 0,
+      "total_predicates": 1,
+      "interpolation_stats": {
+        "attempted": 5,
+        "successful": 3,
+        "predicates_from_interpolation": 3
+      },
+      "total_predicate_bound": 48,
+      "within_bound": true,
+      "iterations_within_bound": true,
+      "convergence_certificate": true
+    }
+  ]
+}

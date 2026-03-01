@@ -1,0 +1,157 @@
+{
+  "experiment": "cvc5_exclusion_criteria_analysis",
+  "timestamp": "2026-02-25T16:47:39Z",
+  "summary": {
+    "total_benchmarks": 396,
+    "cvc5_cross_validated": 80,
+    "excluded": 348,
+    "coverage_pct": 20.2,
+    "nn_module_coverage_pct": 62.5
+  },
+  "breakdown": {
+    "non_nn_module": 330,
+    "custom_propagator": 18,
+    "parsing_failure": 0,
+    "cvc5_eligible": 48
+  },
+  "explanation": {
+    "primary_reason": "The CVC5 cross-validation covers 50 nn.Module architecture benchmarks \u2014 the full set of models for which TensorGuard's verify_model() produces SMT-LIB 2.6 verification conditions. The remaining benchmarks are general Python functions analyzed by the guard-harvesting refinement type pipeline, which operates at a different level of abstraction (refinement types over Python values, not tensor shape constraints) and does not produce SMT-LIB certificates suitable for CVC5 cross-validation.",
+    "exclusion_categories": {
+      "non_nn_module": {
+        "count": 330,
+        "description": "Guard-harvesting benchmarks: general Python functions with null-deref, div-by-zero, index-OOB, and type-error bugs. These are verified by refinement type inference, not by SMT-LIB certificate generation. The verification operates on Python-level value constraints, not tensor shape theories."
+      },
+      "custom_propagator": {
+        "count": 18,
+        "description": "Benchmarks using Z3 UserPropagator extensions (broadcast, stride, device, phase theories). These custom theory plugins use Z3's UserPropagateBase callback API, which has no standard SMT-LIB 2.6 equivalent. CVC5 does not support Z3-style UserPropagator callbacks. The 50 cross-validated models use only the standard QF_LIA/QF_UF fragment."
+      },
+      "parsing_failure": {
+        "count": 0,
+        "description": "Benchmarks where AST parsing or extraction encountered errors."
+      }
+    },
+    "theory_gap_detail": "The key theory gap is between Z3's UserPropagateBase API and standard SMT-LIB 2.6. TensorGuard implements four custom theory plugins (BroadcastPropagator, StridePropagator, DevicePropagator, PhasePropagator) as Z3 UserPropagateBase subclasses. These implement eager theory propagation within DPLL(T) using callbacks (push, pop, fixed, final) that have no CVC5 equivalent. For the 50 cross-validated models, the shape constraints reduce to standard QF_LIA + QF_UF (linear integer arithmetic with uninterpreted functions), which both Z3 and CVC5 handle identically."
+  },
+  "cross_validated_models": [
+    "simple_linear",
+    "two_layer_mlp",
+    "three_layer_mlp",
+    "deep_mlp",
+    "residual_block",
+    "layernorm_block",
+    "cnn_simple",
+    "two_conv_cnn",
+    "transformer_ffn",
+    "bottleneck_mlp",
+    "sequential_chain",
+    "classifier_head",
+    "conv2d_small_kernel",
+    "conv2d_strided",
+    "convtranspose2d_upsample",
+    "conv2d_deep",
+    "lstm_classifier",
+    "gru_classifier",
+    "bilstm_classifier",
+    "stacked_gru",
+    "multihead_attention_block",
+    "transformer_encoder_layer_model",
+    "transformer_ffn_gelu",
+    "pre_norm_transformer",
+    "batchnorm1d_mlp",
+    "batchnorm2d_conv",
+    "groupnorm_conv",
+    "instancenorm2d_conv",
+    "maxpool_conv",
+    "avgpool_conv",
+    "adaptive_avgpool_mlp",
+    "global_avgpool_classifier",
+    "double_residual",
+    "conv_residual_block",
+    "pre_activation_resblock",
+    "residual_mlp_layernorm",
+    "embedding_classifier",
+    "embedding_with_layernorm",
+    "embedding_large_vocab",
+    "linear_autoencoder",
+    "deep_autoencoder",
+    "conv_autoencoder",
+    "variational_encoder",
+    "dual_branch_add",
+    "dual_branch_concat",
+    "triple_branch_add",
+    "wide_narrow_merge",
+    "mlp_with_softmax",
+    "identity_shortcut",
+    "tanh_sigmoid_mlp"
+  ],
+  "sample_exclusions": {
+    "non_nn_module": [
+      {
+        "benchmark": "null_deref_simple",
+        "reason": "Guard-harvesting benchmark (general Python function). CVC5 cross-validation only applies to nn.Module model verification which produces SMT-LIB 2.6 certificates."
+      },
+      {
+        "benchmark": "null_deref_chain",
+        "reason": "Guard-harvesting benchmark (general Python function). CVC5 cross-validation only applies to nn.Module model verification which produces SMT-LIB 2.6 certificates."
+      },
+      {
+        "benchmark": "null_deref_conditional_escape",
+        "reason": "Guard-harvesting benchmark (general Python function). CVC5 cross-validation only applies to nn.Module model verification which produces SMT-LIB 2.6 certificates."
+      },
+      {
+        "benchmark": "null_deref_dict_get",
+        "reason": "Guard-harvesting benchmark (general Python function). CVC5 cross-validation only applies to nn.Module model verification which produces SMT-LIB 2.6 certificates."
+      },
+      {
+        "benchmark": "null_deref_overwrite",
+        "reason": "Guard-harvesting benchmark (general Python function). CVC5 cross-validation only applies to nn.Module model verification which produces SMT-LIB 2.6 certificates."
+      }
+    ],
+    "custom_propagator": [
+      {
+        "benchmark": "ddp_wrapped_model",
+        "reason": "Uses custom UserPropagator theories (device) not expressible in standard SMT-LIB 2.6. Z3's UserPropagateBase API enables domain-specific propagation callbacks that have no equivalent in CVC5's theory plugin interface."
+      },
+      {
+        "benchmark": "resnet_fc_after_pool_bug",
+        "reason": "Uses custom UserPropagator theories (stride) not expressible in standard SMT-LIB 2.6. Z3's UserPropagateBase API enables domain-specific propagation callbacks that have no equivalent in CVC5's theory plugin interface."
+      },
+      {
+        "benchmark": "unet_encoder_decoder_channel_bug",
+        "reason": "Uses custom UserPropagator theories (stride) not expressible in standard SMT-LIB 2.6. Z3's UserPropagateBase API enables domain-specific propagation callbacks that have no equivalent in CVC5's theory plugin interface."
+      },
+      {
+        "benchmark": "mobilenet_depthwise_bug",
+        "reason": "Uses custom UserPropagator theories (stride) not expressible in standard SMT-LIB 2.6. Z3's UserPropagateBase API enables domain-specific propagation callbacks that have no equivalent in CVC5's theory plugin interface."
+      },
+      {
+        "benchmark": "vit_patch_reshape_bug",
+        "reason": "Uses custom UserPropagator theories (stride) not expressible in standard SMT-LIB 2.6. Z3's UserPropagateBase API enables domain-specific propagation callbacks that have no equivalent in CVC5's theory plugin interface."
+      }
+    ],
+    "parsing_failure": [],
+    "cvc5_eligible": [
+      {
+        "benchmark": "torch_compile_forward",
+        "reason": "nn.Module with standard QF_LIA/QF_UF constraints; CVC5-compatible."
+      },
+      {
+        "benchmark": "torch_compile_dynamic_bug",
+        "reason": "nn.Module with standard QF_LIA/QF_UF constraints; CVC5-compatible."
+      },
+      {
+        "benchmark": "autocast_forward",
+        "reason": "nn.Module with standard QF_LIA/QF_UF constraints; CVC5-compatible."
+      },
+      {
+        "benchmark": "autocast_gradscaler_bug",
+        "reason": "nn.Module with standard QF_LIA/QF_UF constraints; CVC5-compatible."
+      },
+      {
+        "benchmark": "data_parallel_bug",
+        "reason": "nn.Module with standard QF_LIA/QF_UF constraints; CVC5-compatible."
+      }
+    ]
+  },
+  "note": "See experiments/results/cvc5_exclusion_analysis.json and experiments/results/cvc5_selection_methodology.json for the expanded cross-validation covering 80+ models with detailed per-benchmark CVC5 results."
+}

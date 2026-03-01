@@ -1,0 +1,312 @@
+{
+  "experiment": "IC3/PDR vs K-Induction vs BMC comparison",
+  "num_benchmarks": 12,
+  "summary": {
+    "ic3_correct": 10,
+    "kinduction_correct": 10,
+    "bmc_correct": 12,
+    "total": 12,
+    "ic3_total_ms": 190.27379299859604,
+    "kinduction_total_ms": 183.37150099796418,
+    "bmc_total_ms": 964.7710839990395,
+    "agreements": {
+      "ic3_ki": 12,
+      "ic3_bmc": 10,
+      "ki_bmc": 10,
+      "all_three": 10
+    },
+    "ic3_vs_kinduction_speedup": 0.96,
+    "ic3_vs_bmc_speedup": 5.07,
+    "kinduction_vs_bmc_speedup": 5.26
+  },
+  "results": [
+    {
+      "name": "safe_mlp_2layer",
+      "category": "linear_chain",
+      "expected": "SAFE",
+      "ic3": {
+        "verdict": "SAFE",
+        "time_ms": 41.64,
+        "frames": 3,
+        "z3_queries": 3,
+        "correct": true
+      },
+      "k_induction": {
+        "verdict": "SAFE",
+        "time_ms": 12.68,
+        "k": 1,
+        "z3_queries": 2,
+        "correct": true
+      },
+      "bmc": {
+        "verdict": "SAFE",
+        "time_ms": 127.0,
+        "correct": true
+      }
+    },
+    {
+      "name": "buggy_mlp_mismatch",
+      "category": "linear_chain",
+      "expected": "UNSAFE",
+      "ic3": {
+        "verdict": "UNSAFE",
+        "time_ms": 13.69,
+        "frames": 1,
+        "z3_queries": 1,
+        "correct": true
+      },
+      "k_induction": {
+        "verdict": "UNSAFE",
+        "time_ms": 16.87,
+        "k": 2,
+        "z3_queries": 3,
+        "correct": true
+      },
+      "bmc": {
+        "verdict": "UNSAFE",
+        "time_ms": 44.18,
+        "correct": true
+      }
+    },
+    {
+      "name": "safe_deep_5layer",
+      "category": "deep_chain",
+      "expected": "SAFE",
+      "ic3": {
+        "verdict": "SAFE",
+        "time_ms": 7.74,
+        "frames": 3,
+        "z3_queries": 3,
+        "correct": true
+      },
+      "k_induction": {
+        "verdict": "SAFE",
+        "time_ms": 14.53,
+        "k": 1,
+        "z3_queries": 2,
+        "correct": true
+      },
+      "bmc": {
+        "verdict": "SAFE",
+        "time_ms": 112.06,
+        "correct": true
+      }
+    },
+    {
+      "name": "buggy_deep_5layer",
+      "category": "deep_chain",
+      "expected": "UNSAFE",
+      "ic3": {
+        "verdict": "UNSAFE",
+        "time_ms": 4.58,
+        "frames": 1,
+        "z3_queries": 1,
+        "correct": true
+      },
+      "k_induction": {
+        "verdict": "UNSAFE",
+        "time_ms": 63.15,
+        "k": 5,
+        "z3_queries": 9,
+        "correct": true
+      },
+      "bmc": {
+        "verdict": "UNSAFE",
+        "time_ms": 197.7,
+        "correct": true
+      }
+    },
+    {
+      "name": "safe_cnn_chain",
+      "category": "cnn",
+      "expected": "SAFE",
+      "ic3": {
+        "verdict": "SAFE",
+        "time_ms": 11.7,
+        "frames": 3,
+        "z3_queries": 3,
+        "correct": true
+      },
+      "k_induction": {
+        "verdict": "SAFE",
+        "time_ms": 6.21,
+        "k": 1,
+        "z3_queries": 2,
+        "correct": true
+      },
+      "bmc": {
+        "verdict": "SAFE",
+        "time_ms": 24.44,
+        "correct": true
+      }
+    },
+    {
+      "name": "buggy_cnn_channel",
+      "category": "cnn",
+      "expected": "UNSAFE",
+      "ic3": {
+        "verdict": "UNSAFE",
+        "time_ms": 3.45,
+        "frames": 1,
+        "z3_queries": 1,
+        "correct": true
+      },
+      "k_induction": {
+        "verdict": "UNSAFE",
+        "time_ms": 24.11,
+        "k": 2,
+        "z3_queries": 3,
+        "correct": true
+      },
+      "bmc": {
+        "verdict": "UNSAFE",
+        "time_ms": 31.49,
+        "correct": true
+      }
+    },
+    {
+      "name": "safe_transformer_block",
+      "category": "transformer",
+      "expected": "SAFE",
+      "ic3": {
+        "verdict": "SAFE",
+        "time_ms": 41.61,
+        "frames": 3,
+        "z3_queries": 3,
+        "correct": true
+      },
+      "k_induction": {
+        "verdict": "SAFE",
+        "time_ms": 7.77,
+        "k": 2,
+        "z3_queries": 3,
+        "correct": true
+      },
+      "bmc": {
+        "verdict": "SAFE",
+        "time_ms": 94.51,
+        "correct": true
+      }
+    },
+    {
+      "name": "buggy_transformer_proj",
+      "category": "transformer",
+      "expected": "UNSAFE",
+      "ic3": {
+        "verdict": "SAFE",
+        "time_ms": 6.99,
+        "frames": 3,
+        "z3_queries": 3,
+        "correct": false
+      },
+      "k_induction": {
+        "verdict": "SAFE",
+        "time_ms": 5.06,
+        "k": 2,
+        "z3_queries": 3,
+        "correct": false
+      },
+      "bmc": {
+        "verdict": "UNSAFE",
+        "time_ms": 100.42,
+        "correct": true
+      }
+    },
+    {
+      "name": "safe_uniform_10layer",
+      "category": "deep_uniform",
+      "expected": "SAFE",
+      "ic3": {
+        "verdict": "SAFE",
+        "time_ms": 10.43,
+        "frames": 3,
+        "z3_queries": 3,
+        "correct": true
+      },
+      "k_induction": {
+        "verdict": "SAFE",
+        "time_ms": 9.76,
+        "k": 1,
+        "z3_queries": 2,
+        "correct": true
+      },
+      "bmc": {
+        "verdict": "SAFE",
+        "time_ms": 93.06,
+        "correct": true
+      }
+    },
+    {
+      "name": "safe_bottleneck",
+      "category": "bottleneck",
+      "expected": "SAFE",
+      "ic3": {
+        "verdict": "SAFE",
+        "time_ms": 32.54,
+        "frames": 3,
+        "z3_queries": 3,
+        "correct": true
+      },
+      "k_induction": {
+        "verdict": "SAFE",
+        "time_ms": 13.05,
+        "k": 1,
+        "z3_queries": 2,
+        "correct": true
+      },
+      "bmc": {
+        "verdict": "SAFE",
+        "time_ms": 49.91,
+        "correct": true
+      }
+    },
+    {
+      "name": "safe_norm_dropout",
+      "category": "norm_chain",
+      "expected": "SAFE",
+      "ic3": {
+        "verdict": "SAFE",
+        "time_ms": 9.83,
+        "frames": 3,
+        "z3_queries": 3,
+        "correct": true
+      },
+      "k_induction": {
+        "verdict": "SAFE",
+        "time_ms": 6.2,
+        "k": 1,
+        "z3_queries": 2,
+        "correct": true
+      },
+      "bmc": {
+        "verdict": "SAFE",
+        "time_ms": 21.69,
+        "correct": true
+      }
+    },
+    {
+      "name": "buggy_norm_mismatch",
+      "category": "norm_chain",
+      "expected": "UNSAFE",
+      "ic3": {
+        "verdict": "SAFE",
+        "time_ms": 6.07,
+        "frames": 3,
+        "z3_queries": 3,
+        "correct": false
+      },
+      "k_induction": {
+        "verdict": "SAFE",
+        "time_ms": 3.97,
+        "k": 1,
+        "z3_queries": 2,
+        "correct": false
+      },
+      "bmc": {
+        "verdict": "UNSAFE",
+        "time_ms": 68.32,
+        "correct": true
+      }
+    }
+  ]
+}

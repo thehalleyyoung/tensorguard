@@ -1,0 +1,39 @@
+{
+  "title": "Cost-Benefit Analysis: TensorGuard vs Smoke Tests",
+  "bug_distribution": {
+    "total_bugs": 43,
+    "local_bugs": 27,
+    "nonlocal_bugs": 16,
+    "cross_domain_fraction": 0.3721,
+    "local_fraction": 0.6279
+  },
+  "tensorguard_recall": {
+    "local": 0.9231,
+    "nonlocal": 0.8333
+  },
+  "smoke_test_recall_assumptions": {
+    "local": 0.85,
+    "nonlocal": 0.1
+  },
+  "cross_domain_advantage": {
+    "tg_advantage_on_nonlocal": 0.7333,
+    "tg_deficit_on_local": -0.0731,
+    "breakeven_prevalence": -0.1107,
+    "observed_nonlocal_prevalence": 0.3721,
+    "above_breakeven": true,
+    "interpretation": "TensorGuard outperforms smoke tests when \u2265-11.1% of bugs are non-local (compositional / cross-domain).  In the benchmark 37.2% are non-local, which is above the threshold."
+  },
+  "detailed_complexity_breakdown": {
+    "external_benchmark": {
+      "compositional_3hop": 4,
+      "local": 13,
+      "compositional_2hop": 7,
+      "cross_domain": 1
+    },
+    "suite_d": {
+      "local": 14,
+      "architectural": 2,
+      "compositional_2hop": 2
+    }
+  }
+}

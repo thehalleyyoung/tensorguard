@@ -1,0 +1,954 @@
+{
+  "total": 29,
+  "in_fragment": 24,
+  "outside_fragment": 5,
+  "correct_predictions": 29,
+  "torchvision_total": 16,
+  "torchvision_in_fragment": 16,
+  "custom_in_fragment_total": 7,
+  "custom_in_fragment_correct": 7,
+  "custom_outside_total": 6,
+  "custom_outside_correct": 6,
+  "categories": {
+    "in_fragment": {
+      "total": 7,
+      "in_fragment": 7,
+      "outside_fragment": 0
+    },
+    "outside_fragment": {
+      "total": 6,
+      "in_fragment": 1,
+      "outside_fragment": 5
+    },
+    "torchvision": {
+      "total": 16,
+      "in_fragment": 16,
+      "outside_fragment": 0
+    }
+  },
+  "unsupported_category_counts": {
+    "DATA_DEPENDENT_CONTROL_FLOW": 6,
+    "TENSOR_TO_SCALAR": 2,
+    "DYNAMIC_ASSERTION": 1
+  },
+  "fragment_coverage": 0.8276,
+  "torchvision_coverage": 1.0,
+  "prediction_accuracy": 1.0,
+  "results": [
+    {
+      "name": "SimpleMLP",
+      "category": "in_fragment",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 203530,
+      "num_submodules": 3,
+      "num_supported_layers": 3,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 1.8,
+      "grammar": {
+        "num_layer_decls": 3,
+        "num_forward_stmts": 4,
+        "layer_types": [
+          "Linear",
+          "ReLU"
+        ]
+      }
+    },
+    {
+      "name": "SimpleCNN",
+      "category": "in_fragment",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 650,
+      "num_submodules": 5,
+      "num_supported_layers": 5,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 6.0,
+      "grammar": {
+        "num_layer_decls": 5,
+        "num_forward_stmts": 7,
+        "layer_types": [
+          "AdaptiveAvgPool2d",
+          "Linear",
+          "BatchNorm2d",
+          "ReLU",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "ResidualBlock",
+      "category": "in_fragment",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 74112,
+      "num_submodules": 5,
+      "num_supported_layers": 5,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 1.6,
+      "grammar": {
+        "num_layer_decls": 5,
+        "num_forward_stmts": 8,
+        "layer_types": [
+          "ReLU",
+          "BatchNorm2d",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "BasicAttention",
+      "category": "in_fragment",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 16640,
+      "num_submodules": 4,
+      "num_supported_layers": 4,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 27.9,
+      "grammar": {
+        "num_layer_decls": 4,
+        "num_forward_stmts": 10,
+        "layer_types": [
+          "Linear"
+        ]
+      }
+    },
+    {
+      "name": "MultiBranch",
+      "category": "in_fragment",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 17802,
+      "num_submodules": 3,
+      "num_supported_layers": 3,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 2.2,
+      "grammar": {
+        "num_layer_decls": 3,
+        "num_forward_stmts": 5,
+        "layer_types": [
+          "Linear"
+        ]
+      }
+    },
+    {
+      "name": "SequentialModel",
+      "category": "in_fragment",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 41802,
+      "num_submodules": 6,
+      "num_supported_layers": 6,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 2.1,
+      "grammar": {
+        "num_layer_decls": 6,
+        "num_forward_stmts": 6,
+        "layer_types": [
+          "Linear",
+          "ReLU",
+          "Sequential"
+        ]
+      }
+    },
+    {
+      "name": "ConvEncoder",
+      "category": "in_fragment",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 140800,
+      "num_submodules": 5,
+      "num_supported_layers": 5,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 1.7,
+      "grammar": {
+        "num_layer_decls": 5,
+        "num_forward_stmts": 7,
+        "layer_types": [
+          "AdaptiveAvgPool2d",
+          "Linear",
+          "BatchNorm2d",
+          "ReLU",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "DataDependentBranch",
+      "category": "outside_fragment",
+      "expected_in_fragment": false,
+      "actual_in_fragment": false,
+      "correct": true,
+      "fx_traceable": false,
+      "fx_trace_error": "symbolically traced variables cannot be used as inputs to control flow",
+      "num_parameters": 8320,
+      "num_submodules": 2,
+      "num_supported_layers": 2,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [
+        {
+          "category": "DATA_DEPENDENT_CONTROL_FLOW",
+          "description": "if-branch conditioned on tensor value",
+          "severity": "blocking"
+        },
+        {
+          "category": "DATA_DEPENDENT_CONTROL_FLOW",
+          "description": "torch.fx.symbolic_trace failed: symbolically traced variables cannot be used as inputs to control flow",
+          "severity": "blocking"
+        }
+      ],
+      "analysis_time_ms": 1.6
+    },
+    {
+      "name": "DataDependentLoop",
+      "category": "outside_fragment",
+      "expected_in_fragment": false,
+      "actual_in_fragment": false,
+      "correct": true,
+      "fx_traceable": false,
+      "fx_trace_error": "int() argument must be a string, a bytes-like object or a real number, not 'Proxy'",
+      "num_parameters": 4160,
+      "num_submodules": 1,
+      "num_supported_layers": 1,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [
+        {
+          "category": "TENSOR_TO_SCALAR",
+          "description": "call to item converts tensor to Python value",
+          "severity": "blocking"
+        },
+        {
+          "category": "DATA_DEPENDENT_CONTROL_FLOW",
+          "description": "torch.fx.symbolic_trace failed: int() argument must be a string, a bytes-like object or a real number, not 'Proxy'",
+          "severity": "blocking"
+        }
+      ],
+      "analysis_time_ms": 1.0
+    },
+    {
+      "name": "TensorToScalar",
+      "category": "outside_fragment",
+      "expected_in_fragment": false,
+      "actual_in_fragment": false,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 1056,
+      "num_submodules": 1,
+      "num_supported_layers": 1,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [
+        {
+          "category": "TENSOR_TO_SCALAR",
+          "description": "call to item converts tensor to Python value",
+          "severity": "blocking"
+        }
+      ],
+      "analysis_time_ms": 1.2
+    },
+    {
+      "name": "DataDependentEarlyReturn",
+      "category": "outside_fragment",
+      "expected_in_fragment": false,
+      "actual_in_fragment": false,
+      "correct": true,
+      "fx_traceable": false,
+      "fx_trace_error": "symbolically traced variables cannot be used as inputs to control flow",
+      "num_parameters": 1056,
+      "num_submodules": 1,
+      "num_supported_layers": 1,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [
+        {
+          "category": "DATA_DEPENDENT_CONTROL_FLOW",
+          "description": "if-branch conditioned on tensor value",
+          "severity": "blocking"
+        },
+        {
+          "category": "DATA_DEPENDENT_CONTROL_FLOW",
+          "description": "torch.fx.symbolic_trace failed: symbolically traced variables cannot be used as inputs to control flow",
+          "severity": "blocking"
+        }
+      ],
+      "analysis_time_ms": 1.1
+    },
+    {
+      "name": "CustomAutogradModel",
+      "category": "outside_fragment",
+      "expected_in_fragment": null,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 1056,
+      "num_submodules": 1,
+      "num_supported_layers": 1,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 2.9,
+      "grammar": {
+        "num_layer_decls": 1,
+        "num_forward_stmts": 2,
+        "layer_types": [
+          "Linear"
+        ]
+      }
+    },
+    {
+      "name": "DynamicAssertModel",
+      "category": "outside_fragment",
+      "expected_in_fragment": false,
+      "actual_in_fragment": false,
+      "correct": true,
+      "fx_traceable": false,
+      "fx_trace_error": "symbolically traced variables cannot be used as inputs to control flow",
+      "num_parameters": 4160,
+      "num_submodules": 1,
+      "num_supported_layers": 1,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [
+        {
+          "category": "DYNAMIC_ASSERTION",
+          "description": "assert statement in forward (may reference tensors)",
+          "severity": "blocking"
+        },
+        {
+          "category": "DATA_DEPENDENT_CONTROL_FLOW",
+          "description": "torch.fx.symbolic_trace failed: symbolically traced variables cannot be used as inputs to control flow",
+          "severity": "blocking"
+        }
+      ],
+      "analysis_time_ms": 1.0
+    },
+    {
+      "name": "tv/ResNet-18",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 11689512,
+      "num_submodules": 67,
+      "num_supported_layers": 59,
+      "num_unsupported_layers": 8,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 13.8,
+      "grammar": {
+        "num_layer_decls": 67,
+        "num_forward_stmts": 70,
+        "layer_types": [
+          "BasicBlock",
+          "AdaptiveAvgPool2d",
+          "Linear",
+          "BatchNorm2d",
+          "MaxPool2d",
+          "Sequential",
+          "ReLU",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/ResNet-50",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 25557032,
+      "num_submodules": 150,
+      "num_supported_layers": 134,
+      "num_unsupported_layers": 16,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 12.3,
+      "grammar": {
+        "num_layer_decls": 150,
+        "num_forward_stmts": 176,
+        "layer_types": [
+          "AdaptiveAvgPool2d",
+          "Linear",
+          "BatchNorm2d",
+          "Bottleneck",
+          "MaxPool2d",
+          "Sequential",
+          "ReLU",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/VGG-11",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 132863336,
+      "num_submodules": 31,
+      "num_supported_layers": 31,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 5.9,
+      "grammar": {
+        "num_layer_decls": 31,
+        "num_forward_stmts": 31,
+        "layer_types": [
+          "AdaptiveAvgPool2d",
+          "Dropout",
+          "Linear",
+          "MaxPool2d",
+          "Sequential",
+          "ReLU",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/VGG-16",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 138357544,
+      "num_submodules": 41,
+      "num_supported_layers": 41,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 5.8,
+      "grammar": {
+        "num_layer_decls": 41,
+        "num_forward_stmts": 41,
+        "layer_types": [
+          "AdaptiveAvgPool2d",
+          "Dropout",
+          "Linear",
+          "MaxPool2d",
+          "Sequential",
+          "ReLU",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/MobileNetV2",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 3504872,
+      "num_submodules": 212,
+      "num_supported_layers": 195,
+      "num_unsupported_layers": 17,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 22.6,
+      "grammar": {
+        "num_layer_decls": 212,
+        "num_forward_stmts": 154,
+        "layer_types": [
+          "InvertedResidual",
+          "Dropout",
+          "Linear",
+          "BatchNorm2d",
+          "Conv2dNormActivation",
+          "Sequential",
+          "ReLU6",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/DenseNet-121",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 7978856,
+      "num_submodules": 432,
+      "num_supported_layers": 370,
+      "num_unsupported_layers": 62,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 27.6,
+      "grammar": {
+        "num_layer_decls": 432,
+        "num_forward_stmts": 432,
+        "layer_types": [
+          "AvgPool2d",
+          "Linear",
+          "_DenseLayer",
+          "_Transition",
+          "BatchNorm2d",
+          "MaxPool2d",
+          "Sequential",
+          "_DenseBlock",
+          "ReLU",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/SqueezeNet-1.0",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 1248424,
+      "num_submodules": 67,
+      "num_supported_layers": 59,
+      "num_unsupported_layers": 8,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 8.1,
+      "grammar": {
+        "num_layer_decls": 67,
+        "num_forward_stmts": 67,
+        "layer_types": [
+          "AdaptiveAvgPool2d",
+          "Dropout",
+          "MaxPool2d",
+          "Sequential",
+          "ReLU",
+          "Fire",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/ShuffleNetV2",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 2278604,
+      "num_submodules": 204,
+      "num_supported_layers": 188,
+      "num_unsupported_layers": 16,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 39.6,
+      "grammar": {
+        "num_layer_decls": 204,
+        "num_forward_stmts": 368,
+        "layer_types": [
+          "InvertedResidual",
+          "Linear",
+          "BatchNorm2d",
+          "MaxPool2d",
+          "Sequential",
+          "ReLU",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/EfficientNet-B0",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 5288548,
+      "num_submodules": 336,
+      "num_supported_layers": 288,
+      "num_unsupported_layers": 48,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 43.2,
+      "grammar": {
+        "num_layer_decls": 336,
+        "num_forward_stmts": 250,
+        "layer_types": [
+          "SqueezeExcitation",
+          "AdaptiveAvgPool2d",
+          "StochasticDepth",
+          "Dropout",
+          "Linear",
+          "BatchNorm2d",
+          "Conv2dNormActivation",
+          "MBConv",
+          "Sequential",
+          "SiLU",
+          "Sigmoid",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/RegNet-Y-400MF",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 4344144,
+      "num_submodules": 343,
+      "num_supported_layers": 311,
+      "num_unsupported_layers": 32,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 51.7,
+      "grammar": {
+        "num_layer_decls": 343,
+        "num_forward_stmts": 271,
+        "layer_types": [
+          "SimpleStemIN",
+          "AnyStage",
+          "SqueezeExcitation",
+          "AdaptiveAvgPool2d",
+          "Linear",
+          "BatchNorm2d",
+          "Conv2dNormActivation",
+          "Sequential",
+          "Sigmoid",
+          "BottleneckTransform",
+          "ReLU",
+          "ResBottleneckBlock",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/MNASNet-1.0",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 4383312,
+      "num_submodules": 181,
+      "num_supported_layers": 165,
+      "num_unsupported_layers": 16,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 13.1,
+      "grammar": {
+        "num_layer_decls": 181,
+        "num_forward_stmts": 153,
+        "layer_types": [
+          "Dropout",
+          "Linear",
+          "BatchNorm2d",
+          "Sequential",
+          "_InvertedResidual",
+          "ReLU",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/GoogLeNet",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 13004888,
+      "num_submodules": 237,
+      "num_supported_layers": 167,
+      "num_unsupported_layers": 70,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 21.9,
+      "grammar": {
+        "num_layer_decls": 237,
+        "num_forward_stmts": 198,
+        "layer_types": [
+          "AdaptiveAvgPool2d",
+          "Dropout",
+          "Linear",
+          "Inception",
+          "BatchNorm2d",
+          "Sequential",
+          "BasicConv2d",
+          "InceptionAux",
+          "MaxPool2d",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/AlexNet",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 61100840,
+      "num_submodules": 23,
+      "num_supported_layers": 23,
+      "num_unsupported_layers": 0,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 59.8,
+      "grammar": {
+        "num_layer_decls": 23,
+        "num_forward_stmts": 23,
+        "layer_types": [
+          "AdaptiveAvgPool2d",
+          "Dropout",
+          "Linear",
+          "MaxPool2d",
+          "Sequential",
+          "ReLU",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/WideResNet-50-2",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 68883240,
+      "num_submodules": 150,
+      "num_supported_layers": 134,
+      "num_unsupported_layers": 16,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 12.0,
+      "grammar": {
+        "num_layer_decls": 150,
+        "num_forward_stmts": 176,
+        "layer_types": [
+          "AdaptiveAvgPool2d",
+          "Linear",
+          "BatchNorm2d",
+          "Bottleneck",
+          "MaxPool2d",
+          "Sequential",
+          "ReLU",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/ResNeXt-50",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 25028904,
+      "num_submodules": 150,
+      "num_supported_layers": 134,
+      "num_unsupported_layers": 16,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 13.3,
+      "grammar": {
+        "num_layer_decls": 150,
+        "num_forward_stmts": 176,
+        "layer_types": [
+          "AdaptiveAvgPool2d",
+          "Linear",
+          "BatchNorm2d",
+          "Bottleneck",
+          "MaxPool2d",
+          "Sequential",
+          "ReLU",
+          "Conv2d"
+        ]
+      }
+    },
+    {
+      "name": "tv/ConvNeXt-Tiny",
+      "category": "torchvision",
+      "expected_in_fragment": true,
+      "actual_in_fragment": true,
+      "correct": true,
+      "fx_traceable": true,
+      "fx_trace_error": null,
+      "num_parameters": 28589128,
+      "num_submodules": 202,
+      "num_supported_layers": 130,
+      "num_unsupported_layers": 72,
+      "unsupported_constructs": [],
+      "analysis_time_ms": 43.6,
+      "grammar": {
+        "num_layer_decls": 202,
+        "num_forward_stmts": 203,
+        "layer_types": [
+          "Permute",
+          "StochasticDepth",
+          "AdaptiveAvgPool2d",
+          "Linear",
+          "GELU",
+          "Conv2dNormActivation",
+          "LayerNorm2d",
+          "CNBlock",
+          "Sequential",
+          "LayerNorm",
+          "Flatten",
+          "Conv2d"
+        ]
+      }
+    }
+  ],
+  "grammar_spec": {
+    "supported_layer_types": [
+      "AdaptiveAvgPool1d",
+      "AdaptiveAvgPool2d",
+      "AdaptiveMaxPool1d",
+      "AdaptiveMaxPool2d",
+      "AlphaDropout",
+      "AvgPool1d",
+      "AvgPool2d",
+      "BatchNorm1d",
+      "BatchNorm2d",
+      "BatchNorm3d",
+      "ConstantPad2d",
+      "Conv1d",
+      "Conv2d",
+      "Conv3d",
+      "ConvTranspose1d",
+      "ConvTranspose2d",
+      "ConvTranspose3d",
+      "Dropout",
+      "Dropout2d",
+      "Dropout3d",
+      "ELU",
+      "Embedding",
+      "Flatten",
+      "Fold",
+      "FractionalMaxPool2d",
+      "GELU",
+      "GRU",
+      "GroupNorm",
+      "Hardsigmoid",
+      "Hardswish",
+      "Identity",
+      "InstanceNorm1d",
+      "InstanceNorm2d",
+      "InstanceNorm3d",
+      "LPPool2d",
+      "LSTM",
+      "LayerNorm",
+      "LeakyReLU",
+      "Linear",
+      "LogSoftmax",
+      "MaxPool1d",
+      "MaxPool2d",
+      "MaxPool3d",
+      "Mish",
+      "ModuleDict",
+      "ModuleList",
+      "MultiheadAttention",
+      "PReLU",
+      "PixelShuffle",
+      "PixelUnshuffle",
+      "RNN",
+      "ReLU",
+      "ReLU6",
+      "ReflectionPad2d",
+      "ReplicationPad2d",
+      "SELU",
+      "Sequential",
+      "SiLU",
+      "Sigmoid",
+      "Softmax",
+      "SyncBatchNorm",
+      "Tanh",
+      "TransformerDecoder",
+      "TransformerDecoderLayer",
+      "TransformerEncoder",
+      "TransformerEncoderLayer",
+      "Unflatten",
+      "Unfold",
+      "Upsample",
+      "ZeroPad2d"
+    ],
+    "supported_tensor_methods": [
+      "add",
+      "add_",
+      "bmm",
+      "chunk",
+      "clone",
+      "contiguous",
+      "cpu",
+      "cuda",
+      "detach",
+      "dim",
+      "double",
+      "expand",
+      "flatten",
+      "float",
+      "half",
+      "matmul",
+      "mean",
+      "mm",
+      "mul",
+      "mul_",
+      "narrow",
+      "numel",
+      "permute",
+      "relu",
+      "repeat",
+      "reshape",
+      "select",
+      "shape",
+      "sigmoid",
+      "size",
+      "softmax",
+      "split",
+      "squeeze",
+      "sum",
+      "tanh",
+      "to",
+      "transpose",
+      "unsqueeze",
+      "view"
+    ],
+    "num_supported_layer_types": 70,
+    "num_supported_tensor_methods": 39,
+    "excluded_constructs": [
+      "Data-dependent control flow (if/while on tensor values)",
+      "Data-dependent iteration (for with tensor-derived range)",
+      "Tensor-to-scalar conversions (.item(), .tolist(), .numpy())",
+      "Custom autograd functions (torch.autograd.Function)",
+      "Dynamic assertions (assert with tensor expressions)",
+      "torch.jit.script modules",
+      "Opaque external library calls"
+    ]
+  }
+}

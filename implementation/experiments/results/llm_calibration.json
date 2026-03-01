@@ -1,0 +1,1710 @@
+{
+  "experiment": "llm_calibration",
+  "description": "Expected Calibration Error (ECE) for the LLM component of the neuro-symbolic pipeline. Measures alignment between LLM self-reported confidence and actual prediction accuracy.",
+  "mode": "heuristic_simulation",
+  "num_benchmarks": 230,
+  "num_valid_predictions": 230,
+  "metrics": {
+    "ece": 0.138,
+    "accuracy": 0.5913,
+    "brier_score": 0.2719
+  },
+  "reliability_diagram": [
+    {
+      "bin_lower": 0.0,
+      "bin_upper": 0.1,
+      "avg_confidence": 0.0,
+      "avg_accuracy": 0.0,
+      "count": 0,
+      "gap": 0.0
+    },
+    {
+      "bin_lower": 0.1,
+      "bin_upper": 0.2,
+      "avg_confidence": 0.0,
+      "avg_accuracy": 0.0,
+      "count": 0,
+      "gap": 0.0
+    },
+    {
+      "bin_lower": 0.2,
+      "bin_upper": 0.3,
+      "avg_confidence": 0.0,
+      "avg_accuracy": 0.0,
+      "count": 0,
+      "gap": 0.0
+    },
+    {
+      "bin_lower": 0.3,
+      "bin_upper": 0.4,
+      "avg_confidence": 0.0,
+      "avg_accuracy": 0.0,
+      "count": 0,
+      "gap": 0.0
+    },
+    {
+      "bin_lower": 0.4,
+      "bin_upper": 0.5,
+      "avg_confidence": 0.0,
+      "avg_accuracy": 0.0,
+      "count": 0,
+      "gap": 0.0
+    },
+    {
+      "bin_lower": 0.5,
+      "bin_upper": 0.6,
+      "avg_confidence": 0.5507,
+      "avg_accuracy": 0.5581,
+      "count": 43,
+      "gap": 0.0074
+    },
+    {
+      "bin_lower": 0.6,
+      "bin_upper": 0.7,
+      "avg_confidence": 0.6394,
+      "avg_accuracy": 0.5769,
+      "count": 52,
+      "gap": 0.0625
+    },
+    {
+      "bin_lower": 0.7,
+      "bin_upper": 0.8,
+      "avg_confidence": 0.7448,
+      "avg_accuracy": 0.5667,
+      "count": 60,
+      "gap": 0.1782
+    },
+    {
+      "bin_lower": 0.8,
+      "bin_upper": 0.9,
+      "avg_confidence": 0.8491,
+      "avg_accuracy": 0.7241,
+      "count": 58,
+      "gap": 0.125
+    },
+    {
+      "bin_lower": 0.9,
+      "bin_upper": 1.0,
+      "avg_confidence": 0.9541,
+      "avg_accuracy": 0.3529,
+      "count": 17,
+      "gap": 0.6012
+    }
+  ],
+  "interpretation": {
+    "ece": "ECE < 0.05 indicates well-calibrated; 0.05-0.15 is moderate; > 0.15 indicates poor calibration requiring recalibration.",
+    "brier_score": "Brier score ranges 0-1; lower is better. Combines calibration and discrimination quality."
+  },
+  "per_sample": [
+    {
+      "name": "hf_mlp_block_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.84,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_layernorm_residual_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.83,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_encoder_block_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.77,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_decoder_causal_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.73,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_qkv_projection_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.54,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_gpt2_mlp_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.89,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_classification_head_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.77,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_embedding_projection_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.89,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_mlp_dim_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.85,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_residual_dim_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.7,
+      "llm_correct": false
+    },
+    {
+      "name": "hf_qkv_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.84,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_cross_attn_dim_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.98,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_encoder_output_proj_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.76,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_gpt2_mlp_expand_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.65,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_pooler_input_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.69,
+      "llm_correct": false
+    },
+    {
+      "name": "hf_layernorm_dim_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.62,
+      "llm_correct": false
+    },
+    {
+      "name": "hf_two_tower_merge_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.77,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_feedforward_chain_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.52,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_adapter_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.77,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_adapter_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.59,
+      "llm_correct": false
+    },
+    {
+      "name": "hf_multi_layer_encoder_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.68,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_decoder_fc_chain_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.77,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_token_classification_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.69,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_multihead_head_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.73,
+      "llm_correct": false
+    },
+    {
+      "name": "hf_sequence_output_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.83,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_gated_mlp_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.89,
+      "llm_correct": false
+    },
+    {
+      "name": "hf_gated_mlp_gate_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.68,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_rotary_proj_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.57,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_bottleneck_adapter_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.74,
+      "llm_correct": false
+    },
+    {
+      "name": "hf_swiglu_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.93,
+      "llm_correct": false
+    },
+    {
+      "name": "hf_swiglu_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.99,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_parallel_attention_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.84,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_parallel_attn_mlp_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.61,
+      "llm_correct": false
+    },
+    {
+      "name": "hf_language_model_head_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.67,
+      "llm_correct": true
+    },
+    {
+      "name": "hf_lm_head_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.55,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_resnet_basic_block_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.8,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_resnet_bottleneck_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.6,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_vgg_block_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.89,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_downsample_block_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.76,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_unet_encoder_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.87,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_fpn_lateral_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.5,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_squeeze_excite_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.57,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_simple_classifier_correct",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.61,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_inception_branch_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.72,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_depthwise_separable_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.59,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_resnet_residual_channel_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.81,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_bottleneck_expansion_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.74,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_bn_channel_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.65,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_conv_in_channel_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.7,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_unet_skip_channel_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.73,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_fpn_channel_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.57,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_squeeze_excite_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.62,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_inception_channel_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.6,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_depthwise_groups_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.65,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_double_conv_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.51,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_feature_extractor_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.57,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_feature_extractor_stage_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.78,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_dilated_conv_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.62,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_conv_transpose_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.56,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_conv_transpose_channel_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.59,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_resnet_downsample_stride_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.59,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_parallel_conv_add_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.51,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_mobilenet_block_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.7,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_mobilenet_expand_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.86,
+      "llm_correct": false
+    },
+    {
+      "name": "cv_aspp_branch_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.88,
+      "llm_correct": true
+    },
+    {
+      "name": "cv_aspp_channel_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.7,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_forgotten_to_device_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.6,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_buffer_not_registered_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.82,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_mixed_param_creation_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.66,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_hardcoded_cpu_tensor_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.6,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_ones_in_forward_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.67,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_registered_buffer_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.65,
+      "llm_correct": true
+    },
+    {
+      "name": "dev_nn_parameter_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.78,
+      "llm_correct": true
+    },
+    {
+      "name": "dev_multi_buffer_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.86,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_mixed_device_cat_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.54,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_device_aware_forward_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.89,
+      "llm_correct": true
+    },
+    {
+      "name": "dev_two_module_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.52,
+      "llm_correct": true
+    },
+    {
+      "name": "dev_randn_in_forward_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.56,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_arange_in_forward_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.71,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_eye_in_forward_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.71,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_parameter_list_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.68,
+      "llm_correct": true
+    },
+    {
+      "name": "dev_list_of_tensors_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.54,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_conditional_device_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.85,
+      "llm_correct": true
+    },
+    {
+      "name": "dev_linspace_in_forward_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.61,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_full_in_forward_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.77,
+      "llm_correct": false
+    },
+    {
+      "name": "dev_registered_buffer_v2_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.61,
+      "llm_correct": true
+    },
+    {
+      "name": "phase_dropout_train_only_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.74,
+      "llm_correct": true
+    },
+    {
+      "name": "phase_batchnorm_stats_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.62,
+      "llm_correct": true
+    },
+    {
+      "name": "phase_dropout_reshape_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.6,
+      "llm_correct": true
+    },
+    {
+      "name": "phase_bn_wrong_channels_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.58,
+      "llm_correct": false
+    },
+    {
+      "name": "phase_double_dropout_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.77,
+      "llm_correct": true
+    },
+    {
+      "name": "phase_bn1d_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.77,
+      "llm_correct": true
+    },
+    {
+      "name": "phase_bn1d_wrong_features_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.79,
+      "llm_correct": false
+    },
+    {
+      "name": "phase_training_only_path_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.82,
+      "llm_correct": true
+    },
+    {
+      "name": "phase_training_only_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.92,
+      "llm_correct": false
+    },
+    {
+      "name": "phase_dropout2d_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.87,
+      "llm_correct": true
+    },
+    {
+      "name": "phase_instancenorm_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.52,
+      "llm_correct": true
+    },
+    {
+      "name": "phase_instancenorm_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.86,
+      "llm_correct": false
+    },
+    {
+      "name": "phase_layernorm_after_conv_correct",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.58,
+      "llm_correct": false
+    },
+    {
+      "name": "phase_bn_after_linear_chain_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.61,
+      "llm_correct": true
+    },
+    {
+      "name": "phase_bn_chain_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.79,
+      "llm_correct": false
+    },
+    {
+      "name": "phase_groupnorm_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.7,
+      "llm_correct": true
+    },
+    {
+      "name": "phase_groupnorm_channel_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.83,
+      "llm_correct": false
+    },
+    {
+      "name": "phase_eval_only_head_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.89,
+      "llm_correct": true
+    },
+    {
+      "name": "phase_alphadropout_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.55,
+      "llm_correct": true
+    },
+    {
+      "name": "phase_dropout_wrong_input_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.8,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_parallel_proj_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.97,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_parallel_proj_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.65,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_cross_rank_3d_2d_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.78,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_cross_rank_3d_1d_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.84,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_three_way_chain_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.85,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_three_way_chain_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.91,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_multiply_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.87,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_multiply_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.99,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_residual_proj_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.8,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_four_branch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.85,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_four_branch_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.99,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_matmul_inner_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.81,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_matmul_inner_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.57,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_conv_add_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.74,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_conv_add_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.86,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_matmul_after_add_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.89,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_matmul_after_add_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.97,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_sub_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.64,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_sub_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.72,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_weighted_sum_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.87,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_weighted_sum_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.71,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_skip_connection_chain_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.77,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_dual_residual_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.77,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_dual_residual_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.64,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_nested_add_mul_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.82,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_nested_add_mul_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.99,
+      "llm_correct": false
+    },
+    {
+      "name": "bcast_five_branch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.99,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_cascade_mul_add_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.78,
+      "llm_correct": true
+    },
+    {
+      "name": "bcast_cascade_mul_add_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.99,
+      "llm_correct": false
+    },
+    {
+      "name": "reshape_flatten_fc_correct",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.84,
+      "llm_correct": false
+    },
+    {
+      "name": "reshape_flatten_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.65,
+      "llm_correct": false
+    },
+    {
+      "name": "reshape_view_wrong_product_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.84,
+      "llm_correct": true
+    },
+    {
+      "name": "reshape_sequential_conv_flatten_correct",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.73,
+      "llm_correct": false
+    },
+    {
+      "name": "reshape_unflatten_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.62,
+      "llm_correct": false
+    },
+    {
+      "name": "reshape_fc_after_pool_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.86,
+      "llm_correct": true
+    },
+    {
+      "name": "reshape_pool_fc_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.88,
+      "llm_correct": false
+    },
+    {
+      "name": "reshape_view_reshape_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.76,
+      "llm_correct": true
+    },
+    {
+      "name": "reshape_fc_chain_with_view_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.8,
+      "llm_correct": true
+    },
+    {
+      "name": "reshape_transpose_matmul_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.55,
+      "llm_correct": true
+    },
+    {
+      "name": "reshape_conv_wrong_spatial_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.8,
+      "llm_correct": false
+    },
+    {
+      "name": "reshape_permute_linear_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.59,
+      "llm_correct": true
+    },
+    {
+      "name": "reshape_squeeze_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.79,
+      "llm_correct": false
+    },
+    {
+      "name": "reshape_multi_head_split_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.68,
+      "llm_correct": true
+    },
+    {
+      "name": "reshape_flatten_wrong_start_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.59,
+      "llm_correct": false
+    },
+    {
+      "name": "reshape_adaptive_pool_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.6,
+      "llm_correct": true
+    },
+    {
+      "name": "reshape_double_flatten_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.86,
+      "llm_correct": false
+    },
+    {
+      "name": "reshape_unsqueeze_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.84,
+      "llm_correct": true
+    },
+    {
+      "name": "reshape_global_pool_fc_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.51,
+      "llm_correct": false
+    },
+    {
+      "name": "chain_5_linear_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.7,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_5_linear_mid_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.7,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_5_linear_last_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.9,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_conv_5_stage_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.72,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_conv_5_stage_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.6,
+      "llm_correct": false
+    },
+    {
+      "name": "chain_mixed_linear_conv_correct",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.7,
+      "llm_correct": false
+    },
+    {
+      "name": "chain_mixed_linear_conv_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.89,
+      "llm_correct": false
+    },
+    {
+      "name": "chain_residual_3_block_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.85,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_residual_3_block_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.84,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_6_linear_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.82,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_6_linear_early_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.73,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_bn_linear_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.6,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_bn_linear_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.74,
+      "llm_correct": false
+    },
+    {
+      "name": "chain_conv_bn_4_stage_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.76,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_conv_bn_4_stage_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.58,
+      "llm_correct": false
+    },
+    {
+      "name": "chain_encoder_decoder_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.65,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_encoder_decoder_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.74,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_gradual_expand_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.65,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_gradual_expand_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.77,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_skip_every_other_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.63,
+      "llm_correct": true
+    },
+    {
+      "name": "chain_skip_every_other_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.94,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_autoencoder",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.65,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_variational_encoder",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.68,
+      "llm_correct": false
+    },
+    {
+      "name": "correct_gan_generator",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.56,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_gan_discriminator",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.68,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_residual_network",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.7,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_highway_network",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.79,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_multi_task_head",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.9,
+      "llm_correct": false
+    },
+    {
+      "name": "correct_siamese_network",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.54,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_attention_pool",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.94,
+      "llm_correct": false
+    },
+    {
+      "name": "correct_deep_feedforward",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.54,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_dense_block",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.54,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_recurrent_style",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.54,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_feature_pyramid",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.65,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_conv_classifier",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.72,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_bottleneck_residual",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.89,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_gated_unit",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.92,
+      "llm_correct": false
+    },
+    {
+      "name": "correct_dual_encoder",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.77,
+      "llm_correct": false
+    },
+    {
+      "name": "correct_mixture_of_experts",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.65,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_batch_norm_conv_block",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.71,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_embedding_classifier",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.63,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_wide_residual",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.72,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_norm_free_block",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.67,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_cross_attention",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.56,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_projection_head",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.78,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_squeeze_excite_residual",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.88,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_prednet_block",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.78,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_channel_attention",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.77,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_inverted_bottleneck_fc",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.55,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_conv_1x1_reduction",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.71,
+      "llm_correct": true
+    },
+    {
+      "name": "correct_multi_scale_fusion",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.82,
+      "llm_correct": true
+    },
+    {
+      "name": "trans_encoder_only_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.51,
+      "llm_correct": true
+    },
+    {
+      "name": "trans_decoder_only_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.8,
+      "llm_correct": true
+    },
+    {
+      "name": "trans_enc_dec_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.61,
+      "llm_correct": true
+    },
+    {
+      "name": "trans_mha_separate_qkv_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.62,
+      "llm_correct": true
+    },
+    {
+      "name": "trans_cross_attn_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.83,
+      "llm_correct": true
+    },
+    {
+      "name": "trans_prenorm_block_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.67,
+      "llm_correct": true
+    },
+    {
+      "name": "trans_postnorm_block_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.83,
+      "llm_correct": true
+    },
+    {
+      "name": "trans_encoder_layer_stack_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.87,
+      "llm_correct": true
+    },
+    {
+      "name": "trans_embedding_encoder_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.56,
+      "llm_correct": true
+    },
+    {
+      "name": "trans_dual_encoder_correct",
+      "ground_truth_has_bug": false,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.88,
+      "llm_correct": true
+    },
+    {
+      "name": "trans_encoder_dmodel_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.87,
+      "llm_correct": false
+    },
+    {
+      "name": "trans_decoder_dmodel_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.5,
+      "llm_correct": false
+    },
+    {
+      "name": "trans_enc_dec_dmodel_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.75,
+      "llm_correct": false
+    },
+    {
+      "name": "trans_mha_embed_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.68,
+      "llm_correct": false
+    },
+    {
+      "name": "trans_cross_attn_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.81,
+      "llm_correct": true
+    },
+    {
+      "name": "trans_prenorm_residual_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.62,
+      "llm_correct": false
+    },
+    {
+      "name": "trans_encoder_input_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.62,
+      "llm_correct": false
+    },
+    {
+      "name": "trans_stacked_layer_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.76,
+      "llm_correct": false
+    },
+    {
+      "name": "trans_mha_head_indivisible_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.89,
+      "llm_correct": false
+    },
+    {
+      "name": "trans_embedding_encoder_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.57,
+      "llm_correct": false
+    },
+    {
+      "name": "trans_postnorm_fc_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.56,
+      "llm_correct": false
+    },
+    {
+      "name": "trans_dual_encoder_dim_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.52,
+      "llm_correct": false
+    },
+    {
+      "name": "trans_decoder_layer_dmodel_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.75,
+      "llm_correct": false
+    },
+    {
+      "name": "trans_mha_qkv_proj_mismatch_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": true,
+      "llm_confidence": 0.66,
+      "llm_correct": true
+    },
+    {
+      "name": "trans_seq2seq_output_proj_bug",
+      "ground_truth_has_bug": true,
+      "llm_predicts_bug": false,
+      "llm_confidence": 0.52,
+      "llm_correct": false
+    }
+  ]
+}

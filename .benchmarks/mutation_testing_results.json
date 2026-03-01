@@ -1,0 +1,277 @@
+{
+  "summary": {
+    "total_mutants": 100,
+    "killed": 85,
+    "survived": 15,
+    "equivalent": 0,
+    "errors": 0,
+    "mutation_score": 0.85,
+    "false_negative_rate": 0.15,
+    "wilson_95_ci": {
+      "lower": 0.7672,
+      "upper": 0.9069
+    },
+    "num_models": 20
+  },
+  "per_model_scores": {
+    "Autoencoder": {
+      "killed": 5,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "BottleneckBlock": {
+      "killed": 5,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "BottleneckMLP": {
+      "killed": 5,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "ConcatClassifier": {
+      "killed": 5,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "DeepMLP": {
+      "killed": 5,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "DepthwiseSeparable": {
+      "killed": 3,
+      "survived": 2,
+      "equivalent": 0,
+      "mutation_score": 0.6
+    },
+    "Generator": {
+      "killed": 4,
+      "survived": 1,
+      "equivalent": 0,
+      "mutation_score": 0.8
+    },
+    "InceptionBlock": {
+      "killed": 1,
+      "survived": 4,
+      "equivalent": 0,
+      "mutation_score": 0.2
+    },
+    "LeNetStyle": {
+      "killed": 5,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "MultiHeadSelfAttn": {
+      "killed": 5,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "PoolFlattenNet": {
+      "killed": 4,
+      "survived": 1,
+      "equivalent": 0,
+      "mutation_score": 0.8
+    },
+    "RNNClassifier": {
+      "killed": 5,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "ResBlock": {
+      "killed": 4,
+      "survived": 1,
+      "equivalent": 0,
+      "mutation_score": 0.8
+    },
+    "ResNetSmall": {
+      "killed": 3,
+      "survived": 2,
+      "equivalent": 0,
+      "mutation_score": 0.6
+    },
+    "SimpleCNN": {
+      "killed": 5,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "SimpleMLP": {
+      "killed": 5,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "SimpleTransformerBlock": {
+      "killed": 5,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    },
+    "TransposeNet": {
+      "killed": 4,
+      "survived": 1,
+      "equivalent": 0,
+      "mutation_score": 0.8
+    },
+    "UNetBlock": {
+      "killed": 2,
+      "survived": 3,
+      "equivalent": 0,
+      "mutation_score": 0.4
+    },
+    "VGGBlock": {
+      "killed": 5,
+      "survived": 0,
+      "equivalent": 0,
+      "mutation_score": 1.0
+    }
+  },
+  "per_operator_kill_rates": {
+    "add_dimension_mismatch": {
+      "killed": 14,
+      "survived": 0,
+      "kill_rate": 1.0,
+      "total_mutants": 14
+    },
+    "remove_reshape": {
+      "killed": 7,
+      "survived": 1,
+      "kill_rate": 0.875,
+      "total_mutants": 8
+    },
+    "swap_layers": {
+      "killed": 13,
+      "survived": 1,
+      "kill_rate": 0.9285714285714286,
+      "total_mutants": 14
+    },
+    "transpose_missing": {
+      "killed": 2,
+      "survived": 0,
+      "kill_rate": 1.0,
+      "total_mutants": 2
+    },
+    "wrong_channels": {
+      "killed": 8,
+      "survived": 2,
+      "kill_rate": 0.8,
+      "total_mutants": 10
+    },
+    "wrong_concat_dim": {
+      "killed": 1,
+      "survived": 1,
+      "kill_rate": 0.5,
+      "total_mutants": 2
+    },
+    "wrong_in_features": {
+      "killed": 19,
+      "survived": 1,
+      "kill_rate": 0.95,
+      "total_mutants": 20
+    },
+    "wrong_kernel_size": {
+      "killed": 9,
+      "survived": 4,
+      "kill_rate": 0.6923076923076923,
+      "total_mutants": 13
+    },
+    "wrong_out_features": {
+      "killed": 12,
+      "survived": 4,
+      "kill_rate": 0.75,
+      "total_mutants": 16
+    },
+    "wrong_pool_size": {
+      "killed": 0,
+      "survived": 1,
+      "kill_rate": 0.0,
+      "total_mutants": 1
+    }
+  },
+  "surviving_mutants": [
+    {
+      "model": "ResBlock",
+      "operator": "swap_layers",
+      "description": "Swapped forward lines 14 and 15"
+    },
+    {
+      "model": "ResNetSmall",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 21"
+    },
+    {
+      "model": "ResNetSmall",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 3 -> 7"
+    },
+    {
+      "model": "Generator",
+      "operator": "remove_reshape",
+      "description": "Removed reshape/view at line 17"
+    },
+    {
+      "model": "UNetBlock",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 3 -> 7"
+    },
+    {
+      "model": "UNetBlock",
+      "operator": "wrong_channels",
+      "description": "Conv out_channels 3 -> 16"
+    },
+    {
+      "model": "UNetBlock",
+      "operator": "wrong_pool_size",
+      "description": "Pool kernel 2 -> 16"
+    },
+    {
+      "model": "DepthwiseSeparable",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 3 -> 7"
+    },
+    {
+      "model": "DepthwiseSeparable",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 1 -> 5"
+    },
+    {
+      "model": "InceptionBlock",
+      "operator": "wrong_in_features",
+      "description": "Linear in_features 96 -> 113"
+    },
+    {
+      "model": "InceptionBlock",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 21"
+    },
+    {
+      "model": "InceptionBlock",
+      "operator": "wrong_channels",
+      "description": "Conv out_channels 32 -> 27"
+    },
+    {
+      "model": "InceptionBlock",
+      "operator": "wrong_concat_dim",
+      "description": "cat dim 1 -> 3"
+    },
+    {
+      "model": "PoolFlattenNet",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 5"
+    },
+    {
+      "model": "TransposeNet",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 128 -> 151"
+    }
+  ]
+}

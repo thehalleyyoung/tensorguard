@@ -1,0 +1,69 @@
+{
+  "project": "refinement-type-inference-dynamic-lang",
+  "title": "TensorGuard: Static Tensor Shape Verification for PyTorch",
+  "synthesis_date": "2026-02-27",
+  "average_score": 7.0,
+  "score_range": [6, 8],
+  "reviewers": [
+    {
+      "name": "Yuan Cheng",
+      "persona": "probabilistic_modeling_researcher",
+      "score": 6,
+      "key_strength": "Fragment-aware decidability classification provides honest uncertainty reporting, a rare and valuable trait in verification tooling.",
+      "key_weakness": "Confidence calibration is fundamentally underspecified — no ECE, calibration curves, or power analysis to support the zero-false-positive claim.",
+      "review_file": "review_yuan_cheng.md"
+    },
+    {
+      "name": "Aniruddha Sinha",
+      "persona": "model_checking_ai_applicant",
+      "score": 7,
+      "key_strength": "CEGAR loop with Houdini-style predicate accumulation and O(k) convergence is a clean, well-executed adaptation of mature verification techniques.",
+      "key_weakness": "IC3/PDR is compared only against bounded checking, not k-induction or interpolation; CEGAR and IC3/PDR are offered as independent modes rather than unified.",
+      "review_file": "review_aniruddha_sinha.md"
+    },
+    {
+      "name": "Lila Zhang",
+      "persona": "symbolic_reasoning_ai_expert",
+      "score": 7,
+      "key_strength": "Knuth-Bendix completion with provably confluent TRS and Lean 4 mechanization of individual propagator specs demonstrate strong formal foundations.",
+      "key_weakness": "CrossTheoryDeductionPropagator soundness is not mechanized, leaving the most critical gap between per-theory and system-level formal guarantees.",
+      "review_file": "review_lila_zhang.md"
+    },
+    {
+      "name": "Sara Roy",
+      "persona": "machine_learning_formal_verification",
+      "score": 7,
+      "key_strength": "TorchBench evaluation on 33 real-world models with 222ms average and CLI/SARIF/CI integration demonstrates strong practical deployment readiness.",
+      "key_weakness": "Benchmark results are not stratified by difficulty or architecture family, making it impossible to assess performance on complex shape dynamics.",
+      "review_file": "review_sara_roy.md"
+    },
+    {
+      "name": "Joseph S. Chang",
+      "persona": "automated_reasoning_and_logic_expert",
+      "score": 8,
+      "key_strength": "Proof certificate architecture with four cascading strategies and 100% coverage sets a standard that other domain-specific verification tools should emulate.",
+      "key_weakness": "System-level composition theorem for the 5-theory product domain is not mechanized in Lean 4, and proof certificate format lacks standardization (e.g., Alethe/LFSC).",
+      "review_file": "review_joseph_s_chang.md"
+    }
+  ],
+  "consensus_strengths": [
+    "Comprehensive verification infrastructure combining IC3/PDR, CEGAR, assume-guarantee, and proof certificates into a cohesive, practically deployable system",
+    "Lean 4 mechanization with zero sorry obligations for individual theory propagators provides machine-checked trust in core reasoning components",
+    "Fragment-aware decidability classification honestly reports solver limitations rather than silently producing unsound results",
+    "Practical deployment readiness with CLI, SARIF output, GitHub Actions integration, and sub-second analysis times on real-world TorchBench models"
+  ],
+  "consensus_weaknesses": [
+    "System-level soundness of the 5-theory product domain composition is not formally established — CrossTheoryDeductionPropagator and combination theorem lack mechanized proofs",
+    "Statistical evaluation lacks rigor: no confidence intervals on F1, no calibration analysis for the confidence model, no power analysis for the zero-false-positive claim",
+    "Benchmark results are not stratified by difficulty tier or architecture family, obscuring performance on complex shape dynamics vs. simple linear chains",
+    "IC3/PDR is compared only against bounded checking, not natural competitors like k-induction or interpolation-based verification",
+    "Confidence model uses basic logistic regression (AUC-ROC=0.78) when modern ML-guided verification techniques could substantially improve uncertainty quantification"
+  ],
+  "actionable_recommendations": [
+    "Extend Lean 4 mechanization to cover the 5-theory composition theorem, including CrossTheoryDeductionPropagator soundness and interaction with Z3's DPLL(T) core",
+    "Stratify benchmark results by difficulty tier (sequential, DAG, attention/transformer, dynamic/conditional) and report per-category F1 with Wilson confidence intervals",
+    "Compare IC3/PDR against k-induction and interpolation-based approaches; unify IC3/PDR and CEGAR into a single verification strategy with CEGAR-based invariant strengthening",
+    "Replace logistic regression confidence model with a calibrated hierarchical model conditioned on SMT fragment class; report ECE, calibration curves, and high-confidence verdict fraction",
+    "Adopt a standardized proof certificate format (Alethe or LFSC) verifiable by an independent proof checker, and implement incremental Knuth-Bendix re-completion for operator extensibility"
+  ]
+}

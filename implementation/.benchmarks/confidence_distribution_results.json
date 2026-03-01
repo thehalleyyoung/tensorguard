@@ -1,0 +1,159 @@
+{
+  "experiment": "confidence_distribution_analysis",
+  "timestamp": "2026-02-26T04:34:45",
+  "distribution": {
+    "FORMAL": 16,
+    "HIGH": 2,
+    "MEDIUM": 2,
+    "LOW": 0,
+    "NONE": 0
+  },
+  "fractions": {
+    "FORMAL": 0.8,
+    "HIGH": 0.1,
+    "MEDIUM": 0.1,
+    "LOW": 0.0,
+    "NONE": 0.0
+  },
+  "shannon_entropy": 0.921928,
+  "max_entropy": 2.321928,
+  "normalized_entropy": 0.397053,
+  "active_levels": 3,
+  "entropy_conditioned_calibration_nontrivial": {
+    "subset_size": 2,
+    "subset_levels": [
+      "MEDIUM",
+      "LOW",
+      "NONE"
+    ],
+    "brier_score": 0.36,
+    "ece": 0.6,
+    "mce": 0.6,
+    "mean_confidence": 0.6,
+    "mean_accuracy": 0.0
+  },
+  "full_calibration": {
+    "subset_size": 20,
+    "subset_levels": [
+      "FORMAL",
+      "HIGH",
+      "MEDIUM",
+      "LOW",
+      "NONE"
+    ],
+    "brier_score": 0.03833,
+    "ece": 0.083,
+    "mce": 0.6,
+    "mean_confidence": 0.937,
+    "mean_accuracy": 0.9
+  },
+  "resolution_zero_explanation": {
+    "phenomenon": "RES=0.000 (zero resolution in Brier decomposition)",
+    "root_cause": "architectural_artifact_of_deterministic_smt",
+    "explanation": "TensorGuard's SMT solver produces deterministic verdicts with fixed confidence levels. The CONFIDENCE_MAP assigns each level a single numeric value (FORMAL=0.99, HIGH=0.85, MEDIUM=0.60, LOW=0.35, NONE=0.10). Because 80%+ of benchmarks receive FORMAL confidence, the dominant calibration bin contains most predictions with near-identical accuracy. Resolution measures variation in bin-level accuracy relative to overall accuracy. When one bin dominates, this variation approaches zero.",
+    "mathematical_detail": "Resolution = (1/N) * \u03a3_k n_k * (\u014d_k - \u014d)\u00b2. When n_1 \u2248 N (one dominant bin), \u014d_1 \u2248 \u014d, so each term \u2248 0. This is NOT a calibration defect \u2014 it reflects that the SMT solver consistently produces high-confidence correct verdicts.",
+    "implications": "Zero resolution does not indicate poor prediction quality. It indicates the system lacks predictive diversity \u2014 almost all predictions are at the same confidence level. This is expected for a formal verification tool: most analyses either succeed (FORMAL confidence) or clearly fail. The interesting calibration question is on the non-trivial subset (MEDIUM/LOW/NONE)."
+  },
+  "benchmarks": [
+    {
+      "name": "transformer_dynamic_mask_safe",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "transformer_dynamic_mask_dim_bug",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "multihead_attention_safe",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "multihead_attention_embed_bug",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "moe_gating_safe",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "moe_expert_dim_bug",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "moe_hierarchical_safe",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "moe_gate_input_bug",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "gnn_message_passing_safe",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "gnn_message_passing_bug",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "gnn_multi_layer_safe",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "gnn_edge_conditioned_bug",
+      "confidence": "MEDIUM",
+      "correct": false
+    },
+    {
+      "name": "dynamic_lstm_varlen_safe",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "dynamic_lstm_varlen_bug",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "dynamic_bigru_varlen_safe",
+      "confidence": "HIGH",
+      "correct": true
+    },
+    {
+      "name": "dynamic_bigru_varlen_bug",
+      "confidence": "HIGH",
+      "correct": true
+    },
+    {
+      "name": "conditional_branch_safe",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "conditional_branch_dim_bug",
+      "confidence": "FORMAL",
+      "correct": true
+    },
+    {
+      "name": "adaptive_pooling_safe",
+      "confidence": "MEDIUM",
+      "correct": false
+    },
+    {
+      "name": "skip_connection_dim_bug",
+      "confidence": "FORMAL",
+      "correct": true
+    }
+  ]
+}

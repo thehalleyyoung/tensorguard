@@ -1,0 +1,86 @@
+{
+  "description": "Parametric architecture verification results",
+  "total_architectures": 8,
+  "universally_safe": 5,
+  "not_universally_safe": 3,
+  "results": [
+    {
+      "name": "FlexMLP",
+      "category": "universally_safe",
+      "universally_safe": true,
+      "time_ms": 82.19218254089355,
+      "constraints": []
+    },
+    {
+      "name": "BrokenMLP",
+      "category": "universally_unsafe",
+      "universally_safe": false,
+      "time_ms": 184.36193466186523,
+      "counterexample_params": {
+        "d_in": 1,
+        "d_hidden": 1,
+        "d_out": 1
+      }
+    },
+    {
+      "name": "ResBlock",
+      "category": "conditionally_safe",
+      "universally_safe": false,
+      "time_ms": 129.75502014160156,
+      "constraints": [
+        "d_hidden == d_in",
+        "d_hidden == d_out",
+        "d_in == d_out",
+        "d_in == d_hidden"
+      ],
+      "counterexample_params": {
+        "d_in": 1,
+        "d_hidden": 1,
+        "d_out": 1
+      }
+    },
+    {
+      "name": "AutoEncoder",
+      "category": "universally_safe",
+      "universally_safe": true,
+      "time_ms": 40.54903984069824,
+      "constraints": []
+    },
+    {
+      "name": "ConvBlock",
+      "category": "universally_safe",
+      "universally_safe": true,
+      "time_ms": 149.79219436645508,
+      "constraints": []
+    },
+    {
+      "name": "DeepMLP_5L",
+      "category": "universally_safe",
+      "universally_safe": true,
+      "time_ms": 253.3278465270996,
+      "constraints": []
+    },
+    {
+      "name": "DualPath",
+      "category": "conditionally_safe",
+      "universally_safe": false,
+      "time_ms": 222.04995155334473,
+      "constraints": [
+        "d_a == d_in",
+        "d_b == d_in"
+      ],
+      "counterexample_params": {
+        "d_in": 1,
+        "d_a": 1,
+        "d_b": 1
+      }
+    },
+    {
+      "name": "AttentionBlock",
+      "category": "universally_safe",
+      "universally_safe": true,
+      "time_ms": 41.81408882141113,
+      "constraints": []
+    }
+  ]
+}

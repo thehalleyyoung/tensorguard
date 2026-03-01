@@ -1,0 +1,825 @@
+{
+  "benchmark_summary": {
+    "total": 50,
+    "buggy": 25,
+    "correct": 25,
+    "categories": [
+      "AlexNet",
+      "Autoencoder",
+      "BERT",
+      "ConvNet",
+      "DCGAN",
+      "DenseNet",
+      "GPT-2",
+      "LeNet",
+      "MLP",
+      "MobileNetV2",
+      "ResNeXt",
+      "ResNet",
+      "Seq2Seq",
+      "SqueezeNet",
+      "Transformer",
+      "U-Net",
+      "VGG",
+      "WaveNet"
+    ],
+    "num_categories": 18
+  },
+  "tensorguard": {
+    "tp": 22,
+    "fp": 1,
+    "tn": 24,
+    "fn": 3,
+    "precision": 0.9565,
+    "recall": 0.88,
+    "f1": 0.9167,
+    "accuracy": 0.92,
+    "precision_95ci": [
+      0.7901,
+      0.9923
+    ],
+    "recall_95ci": [
+      0.7004,
+      0.9583
+    ],
+    "accuracy_95ci": [
+      0.8116,
+      0.9685
+    ]
+  },
+  "baseline_pytea_style": {
+    "tp": 2,
+    "fp": 0,
+    "tn": 25,
+    "fn": 23,
+    "precision": 1.0,
+    "recall": 0.08,
+    "f1": 0.1481,
+    "accuracy": 0.54,
+    "precision_95ci": [
+      0.3424,
+      1.0
+    ],
+    "recall_95ci": [
+      0.0222,
+      0.2497
+    ],
+    "accuracy_95ci": [
+      0.404,
+      0.6703
+    ]
+  },
+  "total_time_ms": 14817.3,
+  "per_model_results": {
+    "alexnet_classifier_bug": {
+      "is_buggy": true,
+      "category": "AlexNet",
+      "description": "AlexNet BUG: classifier expects 256*7*7=12544 but features produce 256*6*6=9216",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 58.8,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "alexnet_correct": {
+      "is_buggy": false,
+      "category": "AlexNet",
+      "description": "AlexNet (Krizhevsky et al. 2012) \u2013 correct feature chain + classifier",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 78.0,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "autoencoder_bug": {
+      "is_buggy": true,
+      "category": "Autoencoder",
+      "description": "Autoencoder BUG: decoder first layer expects 64 but encoder outputs 16",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 161.0,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "autoencoder_correct": {
+      "is_buggy": false,
+      "category": "Autoencoder",
+      "description": "Symmetric autoencoder \u2013 correct encoder/decoder dimension chain",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 90.6,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "bert_encoder_correct": {
+      "is_buggy": false,
+      "category": "BERT",
+      "description": "BERT encoder block (Devlin et al. 2019) \u2013 correct attention + FFN with residuals",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 306.1,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "bert_encoder_ffn_bug": {
+      "is_buggy": true,
+      "category": "BERT",
+      "description": "BERT BUG: ffn_down expects 768 but ffn_up outputs 3072",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 531.3,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "bert_pooler_bug": {
+      "is_buggy": true,
+      "category": "BERT",
+      "description": "BERT pooler BUG: pooler_dense expects 512 but cls_token is 768-dim from attention",
+      "tensorguard": {
+        "verdict": "FN",
+        "detected_bug": false,
+        "time_ms": 39.1,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "bert_pooler_correct": {
+      "is_buggy": false,
+      "category": "BERT",
+      "description": "BERT pooler (Devlin et al. 2019) \u2013 correct CLS token extraction and dense",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 221.8,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "conv_classifier_bug": {
+      "is_buggy": true,
+      "category": "ConvNet",
+      "description": "Conv classifier BUG: FC expects 64 but conv3 outputs 128 channels",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 648.2,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "conv_classifier_correct": {
+      "is_buggy": false,
+      "category": "ConvNet",
+      "description": "Simple conv classifier with global avg pool \u2013 correct",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 320.1,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "dcgan_discriminator_bug": {
+      "is_buggy": true,
+      "category": "DCGAN",
+      "description": "DCGAN discriminator BUG: FC expects 256*8*8 but conv chain 32\u219216\u21928\u21924 yields 256*4*4",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 348.2,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "dcgan_discriminator_correct": {
+      "is_buggy": false,
+      "category": "DCGAN",
+      "description": "DCGAN discriminator (Radford et al. 2016) \u2013 correct strided conv chain",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 379.2,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "dcgan_generator_bug": {
+      "is_buggy": true,
+      "category": "DCGAN",
+      "description": "DCGAN generator BUG: project outputs 256*4*4=4096 but view reshapes to 512*4*4=8192",
+      "tensorguard": {
+        "verdict": "FN",
+        "detected_bug": false,
+        "time_ms": 402.0,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "dcgan_generator_correct": {
+      "is_buggy": false,
+      "category": "DCGAN",
+      "description": "DCGAN generator (Radford et al. 2016) \u2013 correct latent\u2192image upsampling",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 350.7,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "densenet_transition_bug": {
+      "is_buggy": true,
+      "category": "DenseNet",
+      "description": "DenseNet transition BUG: BatchNorm expects 128 channels but input is 256",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 107.7,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "densenet_transition_correct": {
+      "is_buggy": false,
+      "category": "DenseNet",
+      "description": "DenseNet transition layer (Huang et al. 2017) \u2013 correct BN\u21921x1conv\u2192pool",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 79.0,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "gpt2_decoder_correct": {
+      "is_buggy": false,
+      "category": "GPT-2",
+      "description": "GPT-2 decoder block (Radford et al. 2019) \u2013 correct pre-norm + MLP + residuals",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 159.0,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "gpt2_decoder_mlp_bug": {
+      "is_buggy": true,
+      "category": "GPT-2",
+      "description": "GPT-2 BUG: mlp_down expects 768 features but mlp_up outputs 3072",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 91.3,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "gpt2_lm_head_bug": {
+      "is_buggy": true,
+      "category": "GPT-2",
+      "description": "GPT-2 LM head BUG: lm_head expects 1024 (seq_len) but receives 768 (hidden_dim)",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 119.8,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "gpt2_lm_head_correct": {
+      "is_buggy": false,
+      "category": "GPT-2",
+      "description": "GPT-2 LM head (Radford et al. 2019) \u2013 correct final projection to vocab",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 149.0,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "lenet5_correct": {
+      "is_buggy": false,
+      "category": "LeNet",
+      "description": "LeNet-5 (LeCun et al. 1998) \u2013 correct conv\u2192pool\u2192flatten\u2192FC chain",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 139.7,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "lenet5_input_bug": {
+      "is_buggy": true,
+      "category": "LeNet",
+      "description": "LeNet-5 BUG: fc1 expects 16*5*5=400 but 28x28 input yields 16*4*4=256 after convs+pools",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 244.2,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "mlp_mnist_bug": {
+      "is_buggy": true,
+      "category": "MLP",
+      "description": "MLP BUG: fc2 expects 128 features but fc1 outputs 256",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 99.3,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "mlp_mnist_correct": {
+      "is_buggy": false,
+      "category": "MLP",
+      "description": "Classic MNIST MLP \u2013 correct 784\u2192256\u2192128\u219210 chain",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 173.8,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "mobilenetv2_block_correct": {
+      "is_buggy": false,
+      "category": "MobileNetV2",
+      "description": "MobileNetV2 block with stride-2 DW conv (Sandler et al. 2018) \u2013 correct",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 412.3,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "mobilenetv2_correct": {
+      "is_buggy": false,
+      "category": "MobileNetV2",
+      "description": "MobileNetV2 inverted residual (Sandler et al. 2018) \u2013 correct expand\u2192DW\u2192project",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 457.0,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "mobilenetv2_dw_bug": {
+      "is_buggy": true,
+      "category": "MobileNetV2",
+      "description": "MobileNetV2 BUG: depthwise groups=32 but channels=192 (groups should equal channels for DW conv)",
+      "tensorguard": {
+        "verdict": "FN",
+        "detected_bug": false,
+        "time_ms": 519.0,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "mobilenetv2_project_bug": {
+      "is_buggy": true,
+      "category": "MobileNetV2",
+      "description": "MobileNetV2 BUG: project expects 48 channels but depthwise outputs 96",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 460.7,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "resnet18_correct": {
+      "is_buggy": false,
+      "category": "ResNet",
+      "description": "ResNet-18 (He et al. 2015) \u2013 two BasicBlocks, correct FC after adaptive pool",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 394.6,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "resnet18_fc_bug": {
+      "is_buggy": true,
+      "category": "ResNet",
+      "description": "ResNet-18 BUG: FC expects 256 features but AdaptiveAvgPool2d(1,1) on 128 channels yields 128",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 261.8,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "resnet50_bottleneck_bug": {
+      "is_buggy": true,
+      "category": "ResNet",
+      "description": "ResNet-50 BUG: block2 expects 128 input channels but block1 outputs 256",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 203.6,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "resnet50_bottleneck_correct": {
+      "is_buggy": false,
+      "category": "ResNet",
+      "description": "ResNet-50 bottleneck (He et al. 2015) \u2013 correct 1x1\u21923x3\u21921x1 pipeline",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 404.3,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "resnext_correct": {
+      "is_buggy": false,
+      "category": "ResNeXt",
+      "description": "ResNeXt block (Xie et al. 2017) \u2013 correct grouped 3x3 conv with residual",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 479.0,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "resnext_groups_bug": {
+      "is_buggy": true,
+      "category": "ResNeXt",
+      "description": "ResNeXt BUG: grouped conv has groups=48 but channels=128 (128%48!=0)",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 541.0,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TP",
+        "detected_bug": true
+      }
+    },
+    "seq2seq_encoder_bug": {
+      "is_buggy": true,
+      "category": "Seq2Seq",
+      "description": "Seq2Seq BUG: fc2 expects 128 but fc1 outputs 512",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 45.4,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "seq2seq_encoder_correct": {
+      "is_buggy": false,
+      "category": "Seq2Seq",
+      "description": "Simple seq2seq encoder \u2013 correct embedding\u2192FC chain",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 138.1,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "squeezenet_fire_bug": {
+      "is_buggy": true,
+      "category": "SqueezeNet",
+      "description": "SqueezeNet fire BUG: expand1x1 expects 64 ch but squeeze outputs 32 ch",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 228.7,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "squeezenet_fire_correct": {
+      "is_buggy": false,
+      "category": "SqueezeNet",
+      "description": "SqueezeNet fire module (Iandola et al. 2016) \u2013 correct squeeze\u2192expand",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 158.1,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "transformer_encoder_correct": {
+      "is_buggy": false,
+      "category": "Transformer",
+      "description": "Standard transformer encoder block \u2013 correct attention + FFN",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 383.8,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "transformer_encoder_head_bug": {
+      "is_buggy": true,
+      "category": "Transformer",
+      "description": "Transformer BUG: embed_dim=256 not divisible by num_heads=7",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 524.2,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TP",
+        "detected_bug": true
+      }
+    },
+    "unet_decoder_bug": {
+      "is_buggy": true,
+      "category": "U-Net",
+      "description": "U-Net decoder BUG: dec1_conv1 expects 256 ch but up1 outputs only 128",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 349.8,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "unet_decoder_correct": {
+      "is_buggy": false,
+      "category": "U-Net",
+      "description": "U-Net decoder (Ronneberger et al. 2015) \u2013 correct transposed conv upsampling",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 641.6,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "unet_encoder_bug": {
+      "is_buggy": true,
+      "category": "U-Net",
+      "description": "U-Net encoder BUG: bottleneck1 expects 64 input channels but pool2 outputs 128",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 580.3,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "unet_encoder_correct": {
+      "is_buggy": false,
+      "category": "U-Net",
+      "description": "U-Net encoder (Ronneberger et al. 2015) \u2013 correct double-conv + pool",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 745.5,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "vgg16_cifar_bug": {
+      "is_buggy": true,
+      "category": "VGG",
+      "description": "VGG-16 BUG: classifier expects 128*56*56=401408 but 32x32 input \u2192 128*8*8=8192 after pooling",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 30.1,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "vgg16_correct": {
+      "is_buggy": false,
+      "category": "VGG",
+      "description": "VGG-16 first 4 conv layers (Simonyan & Zisserman 2015) \u2013 correct flatten dim",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 111.8,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "wavenet_correct": {
+      "is_buggy": false,
+      "category": "WaveNet",
+      "description": "WaveNet dilated block (van den Oord et al. 2016) \u2013 correct gated activation",
+      "tensorguard": {
+        "verdict": "FP",
+        "detected_bug": true,
+        "time_ms": 393.8,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    },
+    "wavenet_residual_bug": {
+      "is_buggy": true,
+      "category": "WaveNet",
+      "description": "WaveNet BUG: residual_conv expects 128 ch but gated output z has 256 ch",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 389.8,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "wavenet_stack_bug": {
+      "is_buggy": true,
+      "category": "WaveNet",
+      "description": "WaveNet stack BUG: dilated2 expects 64 ch but dilated1 outputs 128 ch",
+      "tensorguard": {
+        "verdict": "TP",
+        "detected_bug": true,
+        "time_ms": 308.4,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "FN",
+        "detected_bug": false
+      }
+    },
+    "wavenet_stack_correct": {
+      "is_buggy": false,
+      "category": "WaveNet",
+      "description": "WaveNet dilated stack (van den Oord et al. 2016) \u2013 correct increasing dilation",
+      "tensorguard": {
+        "verdict": "TN",
+        "detected_bug": false,
+        "time_ms": 356.8,
+        "error": null
+      },
+      "baseline": {
+        "verdict": "TN",
+        "detected_bug": false
+      }
+    }
+  }
+}

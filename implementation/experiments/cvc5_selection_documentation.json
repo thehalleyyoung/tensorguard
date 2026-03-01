@@ -1,0 +1,94 @@
+{
+  "title": "CVC5 Cross-Validation Selection Documentation",
+  "timestamp": "2026-02-25T18:15:38Z",
+  "total_certificates_available": 110,
+  "total_models_in_suite": 193,
+  "certificates_validated": 110,
+  "certificates_excluded": 83,
+  "selection_criteria": "ALL nn.Module models that (1) pass TensorGuard verification as SAFE, (2) produce a valid SMT-LIB 2.6 certificate without UserPropagator extensions, and (3) pass SMT-LIB syntax checks are included. No manual selection or cherry-picking.",
+  "exclusion_categories_with_counts": {
+    "custom_propagator": 5,
+    "unsafe_model": 78
+  },
+  "failure_modes": [
+    {
+      "category": "custom_propagator",
+      "count": 5,
+      "description": "Uses Z3 UserPropagator extensions not in SMT-LIB 2.6",
+      "example_models": [
+        "embedding_layernorm_bug",
+        "detr_query_dim_bug",
+        "bert_encoder_correct",
+        "detr_correct",
+        "ddp_wrapped_model"
+      ]
+    },
+    {
+      "category": "unsafe_model",
+      "count": 78,
+      "description": "Model correctly identified as UNSAFE (no cert to validate)",
+      "example_models": [
+        "resnet_fc_after_pool_bug",
+        "vgg_classifier_mismatch",
+        "bert_pooler_dim_bug",
+        "mlp_hidden_chain_bug",
+        "gpt_lm_head_dim_bug"
+      ]
+    }
+  ],
+  "z3_subprocess_results": {
+    "validated": 110,
+    "note": "All certificates validated by Z3 subprocess"
+  },
+  "cvc5_results": {
+    "cross_solver_agreements": 110,
+    "cross_solver_disagreements": 0,
+    "agreement_ci_95": {
+      "successes": 110,
+      "trials": 110,
+      "rate": 1.0,
+      "ci_lower": 0.967,
+      "ci_upper": 1.0
+    },
+    "cvc5_cli_available": false,
+    "cvc5_python_available": true,
+    "cvc5_simulated_count": 0
+  },
+  "coverage_analysis": {
+    "coverage_pct": 57.0,
+    "coverage_ci_95": {
+      "successes": 110,
+      "trials": 193,
+      "rate": 0.5699,
+      "ci_lower": 0.4969,
+      "ci_upper": 0.6408
+    },
+    "interpretation": "110 out of 193 models produce SMT-LIB certificates suitable for cross-solver validation. The remaining 83 models are excluded for documented, structural reasons (buggy models produce no certificate, non-nn.Module models use a different verification path, etc.)."
+  },
+  "sources_loaded": {
+    "cross_solver_inline": {
+      "loaded": 50,
+      "added": 50
+    },
+    "realworld_pytorch": {
+      "loaded": 56,
+      "added": 56
+    },
+    "modern_pytorch": {
+      "loaded": 10,
+      "added": 10
+    },
+    "cegar_ablation": {
+      "loaded": 18,
+      "added": 17
+    },
+    "comprehensive_final": {
+      "loaded": 45,
+      "added": 43
+    },
+    "realworld_comprehensive": {
+      "loaded": 17,
+      "added": 17
+    }
+  }
+}

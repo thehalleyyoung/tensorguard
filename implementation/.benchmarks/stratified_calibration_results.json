@@ -1,0 +1,1298 @@
+{
+  "experiment": "stratified_calibration",
+  "description": "Stratified calibration analysis of TensorGuard. Computes ECE, Brier decomposition, and bootstrap CIs stratified by architecture family, verification mode, and T_perm theory involvement.",
+  "n_predictions": 300,
+  "n_bootstrap": 1000,
+  "overall": {
+    "stratum_name": "overall",
+    "stratum_value": "all",
+    "n_predictions": 300,
+    "ece": 0.23686666666666667,
+    "ece_ci": {
+      "point_estimate": 0.23686666666666667,
+      "ci_lower": 0.187,
+      "ci_upper": 0.29463333333333336,
+      "n_bootstrap": 1000,
+      "alpha": 0.05
+    },
+    "mce": 0.5349206349206349,
+    "brier": 0.287058,
+    "brier_decomposition": {
+      "reliability": 0.08704982094064824,
+      "resolution": 0.0058918209406482345,
+      "uncertainty": 0.20590000000000003,
+      "brier": 0.287058
+    },
+    "reliability_diagram": {
+      "bins": [
+        {
+          "bin_lower": 0.0,
+          "bin_upper": 0.1,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.1,
+          "bin_upper": 0.2,
+          "avg_confidence": 0.1,
+          "avg_accuracy": 0.6349206349206349,
+          "count": 63,
+          "gap": 0.5349206349206349
+        },
+        {
+          "bin_lower": 0.2,
+          "bin_upper": 0.3,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.3,
+          "bin_upper": 0.4,
+          "avg_confidence": 0.35,
+          "avg_accuracy": 0.6111111111111112,
+          "count": 54,
+          "gap": 0.2611111111111112
+        },
+        {
+          "bin_lower": 0.4,
+          "bin_upper": 0.5,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.5,
+          "bin_upper": 0.6,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.6,
+          "bin_upper": 0.7,
+          "avg_confidence": 0.6,
+          "avg_accuracy": 0.7313432835820896,
+          "count": 67,
+          "gap": 0.13134328358208958
+        },
+        {
+          "bin_lower": 0.7,
+          "bin_upper": 0.8,
+          "avg_confidence": 0.0,
+          "avg_accuracy": 0.0,
+          "count": 0,
+          "gap": 0.0
+        },
+        {
+          "bin_lower": 0.8,
+          "bin_upper": 0.9,
+          "avg_confidence": 0.85,
+          "avg_accuracy": 0.8208955223880597,
+          "count": 67,
+          "gap": 0.029104477611940238
+        },
+        {
+          "bin_lower": 0.9,
+          "bin_upper": 1.0,
+          "avg_confidence": 0.99,
+          "avg_accuracy": 0.7346938775510204,
+          "count": 49,
+          "gap": 0.25530612244897954
+        }
+      ],
+      "n_predictions": 300,
+      "stratum": "overall=all"
+    }
+  },
+  "stratified": {
+    "architecture": [
+      {
+        "stratum_name": "architecture",
+        "stratum_value": "CNN",
+        "n_predictions": 90,
+        "ece": 0.2977777777777778,
+        "ece_ci": {
+          "point_estimate": 0.2977777777777778,
+          "ci_lower": 0.21555555555555558,
+          "ci_upper": 0.3886666666666667,
+          "n_bootstrap": 1000,
+          "alpha": 0.05
+        },
+        "mce": 0.5666666666666667,
+        "brier": 0.2644666666666667,
+        "brier_decomposition": {
+          "reliability": 0.12037575757575757,
+          "resolution": 0.009118967452300787,
+          "uncertainty": 0.15320987654320986,
+          "brier": 0.2644666666666667
+        },
+        "reliability_diagram": {
+          "bins": [
+            {
+              "bin_lower": 0.0,
+              "bin_upper": 0.1,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.1,
+              "bin_upper": 0.2,
+              "avg_confidence": 0.1,
+              "avg_accuracy": 0.6666666666666666,
+              "count": 18,
+              "gap": 0.5666666666666667
+            },
+            {
+              "bin_lower": 0.2,
+              "bin_upper": 0.3,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.3,
+              "bin_upper": 0.4,
+              "avg_confidence": 0.35,
+              "avg_accuracy": 0.8,
+              "count": 10,
+              "gap": 0.45000000000000007
+            },
+            {
+              "bin_lower": 0.4,
+              "bin_upper": 0.5,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.5,
+              "bin_upper": 0.6,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.6,
+              "bin_upper": 0.7,
+              "avg_confidence": 0.6,
+              "avg_accuracy": 0.9,
+              "count": 20,
+              "gap": 0.30000000000000004
+            },
+            {
+              "bin_lower": 0.7,
+              "bin_upper": 0.8,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.8,
+              "bin_upper": 0.9,
+              "avg_confidence": 0.85,
+              "avg_accuracy": 0.9090909090909091,
+              "count": 22,
+              "gap": 0.05909090909090908
+            },
+            {
+              "bin_lower": 0.9,
+              "bin_upper": 1.0,
+              "avg_confidence": 0.99,
+              "avg_accuracy": 0.75,
+              "count": 20,
+              "gap": 0.24
+            }
+          ],
+          "n_predictions": 90,
+          "stratum": "architecture=CNN"
+        }
+      },
+      {
+        "stratum_name": "architecture",
+        "stratum_value": "GAN",
+        "n_predictions": 11,
+        "ece": 0.39909090909090905,
+        "ece_ci": {
+          "point_estimate": 0.39909090909090905,
+          "ci_lower": 0.21363636363636362,
+          "ci_upper": 0.730909090909091,
+          "n_bootstrap": 1000,
+          "alpha": 0.05
+        },
+        "mce": 0.99,
+        "brier": 0.4436454545454546,
+        "brier_decomposition": {
+          "reliability": 0.2618272727272727,
+          "resolution": 0.04958677685950413,
+          "uncertainty": 0.23140495867768596,
+          "brier": 0.4436454545454546
+        },
+        "reliability_diagram": {
+          "bins": [
+            {
+              "bin_lower": 0.0,
+              "bin_upper": 0.1,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.1,
+              "bin_upper": 0.2,
+              "avg_confidence": 0.10000000000000002,
+              "avg_accuracy": 0.6666666666666666,
+              "count": 3,
+              "gap": 0.5666666666666667
+            },
+            {
+              "bin_lower": 0.2,
+              "bin_upper": 0.3,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.3,
+              "bin_upper": 0.4,
+              "avg_confidence": 0.3499999999999999,
+              "avg_accuracy": 0.3333333333333333,
+              "count": 3,
+              "gap": 0.016666666666666607
+            },
+            {
+              "bin_lower": 0.4,
+              "bin_upper": 0.5,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.5,
+              "bin_upper": 0.6,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.6,
+              "bin_upper": 0.7,
+              "avg_confidence": 0.6,
+              "avg_accuracy": 0.3333333333333333,
+              "count": 3,
+              "gap": 0.26666666666666666
+            },
+            {
+              "bin_lower": 0.7,
+              "bin_upper": 0.8,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.8,
+              "bin_upper": 0.9,
+              "avg_confidence": 0.85,
+              "avg_accuracy": 0.0,
+              "count": 1,
+              "gap": 0.85
+            },
+            {
+              "bin_lower": 0.9,
+              "bin_upper": 1.0,
+              "avg_confidence": 0.99,
+              "avg_accuracy": 0.0,
+              "count": 1,
+              "gap": 0.99
+            }
+          ],
+          "n_predictions": 11,
+          "stratum": "architecture=GAN"
+        }
+      },
+      {
+        "stratum_name": "architecture",
+        "stratum_value": "MLP",
+        "n_predictions": 40,
+        "ece": 0.13525,
+        "ece_ci": {
+          "point_estimate": 0.13525,
+          "ci_lower": 0.06425,
+          "ci_upper": 0.295,
+          "n_bootstrap": 1000,
+          "alpha": 0.05
+        },
+        "mce": 0.275,
+        "brier": 0.22320249999999997,
+        "brier_decomposition": {
+          "reliability": 0.027788538961038955,
+          "resolution": 0.03896103896103896,
+          "uncertainty": 0.234375,
+          "brier": 0.22320249999999997
+        },
+        "reliability_diagram": {
+          "bins": [
+            {
+              "bin_lower": 0.0,
+              "bin_upper": 0.1,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.1,
+              "bin_upper": 0.2,
+              "avg_confidence": 0.1,
+              "avg_accuracy": 0.375,
+              "count": 8,
+              "gap": 0.275
+            },
+            {
+              "bin_lower": 0.2,
+              "bin_upper": 0.3,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.3,
+              "bin_upper": 0.4,
+              "avg_confidence": 0.35,
+              "avg_accuracy": 0.5454545454545454,
+              "count": 11,
+              "gap": 0.19545454545454544
+            },
+            {
+              "bin_lower": 0.4,
+              "bin_upper": 0.5,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.5,
+              "bin_upper": 0.6,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.6,
+              "bin_upper": 0.7,
+              "avg_confidence": 0.6,
+              "avg_accuracy": 0.5714285714285714,
+              "count": 7,
+              "gap": 0.02857142857142858
+            },
+            {
+              "bin_lower": 0.7,
+              "bin_upper": 0.8,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.8,
+              "bin_upper": 0.9,
+              "avg_confidence": 0.85,
+              "avg_accuracy": 0.75,
+              "count": 8,
+              "gap": 0.09999999999999998
+            },
+            {
+              "bin_lower": 0.9,
+              "bin_upper": 1.0,
+              "avg_confidence": 0.9899999999999999,
+              "avg_accuracy": 1.0,
+              "count": 6,
+              "gap": 0.01000000000000012
+            }
+          ],
+          "n_predictions": 40,
+          "stratum": "architecture=MLP"
+        }
+      },
+      {
+        "stratum_name": "architecture",
+        "stratum_value": "Other",
+        "n_predictions": 32,
+        "ece": 0.434375,
+        "ece_ci": {
+          "point_estimate": 0.434375,
+          "ci_lower": 0.2740625,
+          "ci_upper": 0.5965625,
+          "n_bootstrap": 1000,
+          "alpha": 0.05
+        },
+        "mce": 0.59,
+        "brier": 0.3975937500000001,
+        "brier_decomposition": {
+          "reliability": 0.2001235119047619,
+          "resolution": 0.036904761904761905,
+          "uncertainty": 0.234375,
+          "brier": 0.3975937500000001
+        },
+        "reliability_diagram": {
+          "bins": [
+            {
+              "bin_lower": 0.0,
+              "bin_upper": 0.1,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.1,
+              "bin_upper": 0.2,
+              "avg_confidence": 0.1,
+              "avg_accuracy": 0.5714285714285714,
+              "count": 7,
+              "gap": 0.4714285714285714
+            },
+            {
+              "bin_lower": 0.2,
+              "bin_upper": 0.3,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.3,
+              "bin_upper": 0.4,
+              "avg_confidence": 0.3499999999999999,
+              "avg_accuracy": 0.8333333333333334,
+              "count": 6,
+              "gap": 0.48333333333333345
+            },
+            {
+              "bin_lower": 0.4,
+              "bin_upper": 0.5,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.5,
+              "bin_upper": 0.6,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.6,
+              "bin_upper": 0.7,
+              "avg_confidence": 0.6,
+              "avg_accuracy": 0.8571428571428571,
+              "count": 7,
+              "gap": 0.2571428571428571
+            },
+            {
+              "bin_lower": 0.7,
+              "bin_upper": 0.8,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.8,
+              "bin_upper": 0.9,
+              "avg_confidence": 0.85,
+              "avg_accuracy": 0.42857142857142855,
+              "count": 7,
+              "gap": 0.42142857142857143
+            },
+            {
+              "bin_lower": 0.9,
+              "bin_upper": 1.0,
+              "avg_confidence": 0.99,
+              "avg_accuracy": 0.4,
+              "count": 5,
+              "gap": 0.59
+            }
+          ],
+          "n_predictions": 32,
+          "stratum": "architecture=Other"
+        }
+      },
+      {
+        "stratum_name": "architecture",
+        "stratum_value": "RNN",
+        "n_predictions": 43,
+        "ece": 0.18325581395348836,
+        "ece_ci": {
+          "point_estimate": 0.18325581395348836,
+          "ci_lower": 0.10116279069767443,
+          "ci_upper": 0.34069767441860466,
+          "n_bootstrap": 1000,
+          "alpha": 0.05
+        },
+        "mce": 0.65,
+        "brier": 0.2699581395348838,
+        "brier_decomposition": {
+          "reliability": 0.06057772666609876,
+          "resolution": 0.010197737482756413,
+          "uncertainty": 0.21957815035154138,
+          "brier": 0.2699581395348838
+        },
+        "reliability_diagram": {
+          "bins": [
+            {
+              "bin_lower": 0.0,
+              "bin_upper": 0.1,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.1,
+              "bin_upper": 0.2,
+              "avg_confidence": 0.1,
+              "avg_accuracy": 0.75,
+              "count": 4,
+              "gap": 0.65
+            },
+            {
+              "bin_lower": 0.2,
+              "bin_upper": 0.3,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.3,
+              "bin_upper": 0.4,
+              "avg_confidence": 0.35,
+              "avg_accuracy": 0.5,
+              "count": 10,
+              "gap": 0.15000000000000002
+            },
+            {
+              "bin_lower": 0.4,
+              "bin_upper": 0.5,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.5,
+              "bin_upper": 0.6,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.6,
+              "bin_upper": 0.7,
+              "avg_confidence": 0.6,
+              "avg_accuracy": 0.6923076923076923,
+              "count": 13,
+              "gap": 0.09230769230769231
+            },
+            {
+              "bin_lower": 0.7,
+              "bin_upper": 0.8,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.8,
+              "bin_upper": 0.9,
+              "avg_confidence": 0.85,
+              "avg_accuracy": 0.7777777777777778,
+              "count": 9,
+              "gap": 0.07222222222222219
+            },
+            {
+              "bin_lower": 0.9,
+              "bin_upper": 1.0,
+              "avg_confidence": 0.99,
+              "avg_accuracy": 0.7142857142857143,
+              "count": 7,
+              "gap": 0.2757142857142857
+            }
+          ],
+          "n_predictions": 43,
+          "stratum": "architecture=RNN"
+        }
+      },
+      {
+        "stratum_name": "architecture",
+        "stratum_value": "Transformer",
+        "n_predictions": 84,
+        "ece": 0.25595238095238093,
+        "ece_ci": {
+          "point_estimate": 0.25595238095238093,
+          "ci_lower": 0.170952380952381,
+          "ci_upper": 0.35940476190476195,
+          "n_bootstrap": 1000,
+          "alpha": 0.05
+        },
+        "mce": 0.5956521739130435,
+        "brier": 0.2878095238095238,
+        "brier_decomposition": {
+          "reliability": 0.11244655253405708,
+          "resolution": 0.01794768632090517,
+          "uncertainty": 0.19331065759637187,
+          "brier": 0.2878095238095238
+        },
+        "reliability_diagram": {
+          "bins": [
+            {
+              "bin_lower": 0.0,
+              "bin_upper": 0.1,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.1,
+              "bin_upper": 0.2,
+              "avg_confidence": 0.1,
+              "avg_accuracy": 0.6956521739130435,
+              "count": 23,
+              "gap": 0.5956521739130435
+            },
+            {
+              "bin_lower": 0.2,
+              "bin_upper": 0.3,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.3,
+              "bin_upper": 0.4,
+              "avg_confidence": 0.35,
+              "avg_accuracy": 0.5714285714285714,
+              "count": 14,
+              "gap": 0.22142857142857142
+            },
+            {
+              "bin_lower": 0.4,
+              "bin_upper": 0.5,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.5,
+              "bin_upper": 0.6,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.6,
+              "bin_upper": 0.7,
+              "avg_confidence": 0.6,
+              "avg_accuracy": 0.6470588235294118,
+              "count": 17,
+              "gap": 0.04705882352941182
+            },
+            {
+              "bin_lower": 0.7,
+              "bin_upper": 0.8,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.8,
+              "bin_upper": 0.9,
+              "avg_confidence": 0.85,
+              "avg_accuracy": 0.95,
+              "count": 20,
+              "gap": 0.09999999999999998
+            },
+            {
+              "bin_lower": 0.9,
+              "bin_upper": 1.0,
+              "avg_confidence": 0.99,
+              "avg_accuracy": 0.8,
+              "count": 10,
+              "gap": 0.18999999999999995
+            }
+          ],
+          "n_predictions": 84,
+          "stratum": "architecture=Transformer"
+        }
+      }
+    ],
+    "verification_mode": [
+      {
+        "stratum_name": "verification_mode",
+        "stratum_value": "BMC",
+        "n_predictions": 98,
+        "ece": 0.24193877551020407,
+        "ece_ci": {
+          "point_estimate": 0.24193877551020407,
+          "ci_lower": 0.15602040816326532,
+          "ci_upper": 0.34153061224489795,
+          "n_bootstrap": 1000,
+          "alpha": 0.05
+        },
+        "mce": 0.4185714285714286,
+        "brier": 0.3046826530612245,
+        "brier_decomposition": {
+          "reliability": 0.07252845804988661,
+          "resolution": 0.007433476792077376,
+          "uncertainty": 0.23958767180341525,
+          "brier": 0.3046826530612245
+        },
+        "reliability_diagram": {
+          "bins": [
+            {
+              "bin_lower": 0.0,
+              "bin_upper": 0.1,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.1,
+              "bin_upper": 0.2,
+              "avg_confidence": 0.1,
+              "avg_accuracy": 0.47619047619047616,
+              "count": 21,
+              "gap": 0.3761904761904762
+            },
+            {
+              "bin_lower": 0.2,
+              "bin_upper": 0.3,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.3,
+              "bin_upper": 0.4,
+              "avg_confidence": 0.35,
+              "avg_accuracy": 0.5555555555555556,
+              "count": 18,
+              "gap": 0.2055555555555556
+            },
+            {
+              "bin_lower": 0.4,
+              "bin_upper": 0.5,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.5,
+              "bin_upper": 0.6,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.6,
+              "bin_upper": 0.7,
+              "avg_confidence": 0.6,
+              "avg_accuracy": 0.7,
+              "count": 20,
+              "gap": 0.09999999999999998
+            },
+            {
+              "bin_lower": 0.7,
+              "bin_upper": 0.8,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.8,
+              "bin_upper": 0.9,
+              "avg_confidence": 0.85,
+              "avg_accuracy": 0.68,
+              "count": 25,
+              "gap": 0.16999999999999993
+            },
+            {
+              "bin_lower": 0.9,
+              "bin_upper": 1.0,
+              "avg_confidence": 0.99,
+              "avg_accuracy": 0.5714285714285714,
+              "count": 14,
+              "gap": 0.4185714285714286
+            }
+          ],
+          "n_predictions": 98,
+          "stratum": "verification_mode=BMC"
+        }
+      },
+      {
+        "stratum_name": "verification_mode",
+        "stratum_value": "CEGAR",
+        "n_predictions": 98,
+        "ece": 0.33285714285714285,
+        "ece_ci": {
+          "point_estimate": 0.33285714285714285,
+          "ci_lower": 0.25265306122448977,
+          "ci_upper": 0.4243877551020408,
+          "n_bootstrap": 1000,
+          "alpha": 0.05
+        },
+        "mce": 0.85,
+        "brier": 0.32478367346938763,
+        "brier_decomposition": {
+          "reliability": 0.19376703972719006,
+          "resolution": 0.00559311219699435,
+          "uncertainty": 0.13660974593919198,
+          "brier": 0.32478367346938763
+        },
+        "reliability_diagram": {
+          "bins": [
+            {
+              "bin_lower": 0.0,
+              "bin_upper": 0.1,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.1,
+              "bin_upper": 0.2,
+              "avg_confidence": 0.1,
+              "avg_accuracy": 0.95,
+              "count": 20,
+              "gap": 0.85
+            },
+            {
+              "bin_lower": 0.2,
+              "bin_upper": 0.3,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.3,
+              "bin_upper": 0.4,
+              "avg_confidence": 0.35,
+              "avg_accuracy": 0.7368421052631579,
+              "count": 19,
+              "gap": 0.3868421052631579
+            },
+            {
+              "bin_lower": 0.4,
+              "bin_upper": 0.5,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.5,
+              "bin_upper": 0.6,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.6,
+              "bin_upper": 0.7,
+              "avg_confidence": 0.6,
+              "avg_accuracy": 0.8181818181818182,
+              "count": 22,
+              "gap": 0.21818181818181825
+            },
+            {
+              "bin_lower": 0.7,
+              "bin_upper": 0.8,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.8,
+              "bin_upper": 0.9,
+              "avg_confidence": 0.85,
+              "avg_accuracy": 0.875,
+              "count": 24,
+              "gap": 0.025000000000000022
+            },
+            {
+              "bin_lower": 0.9,
+              "bin_upper": 1.0,
+              "avg_confidence": 0.99,
+              "avg_accuracy": 0.7692307692307693,
+              "count": 13,
+              "gap": 0.22076923076923072
+            }
+          ],
+          "n_predictions": 98,
+          "stratum": "verification_mode=CEGAR"
+        }
+      },
+      {
+        "stratum_name": "verification_mode",
+        "stratum_value": "IC3",
+        "n_predictions": 104,
+        "ece": 0.18586538461538465,
+        "ece_ci": {
+          "point_estimate": 0.18586538461538465,
+          "ci_lower": 0.11538461538461538,
+          "ci_upper": 0.2798076923076923,
+          "n_bootstrap": 1000,
+          "alpha": 0.05
+        },
+        "mce": 0.4,
+        "brier": 0.23490096153846154,
+        "brier_decomposition": {
+          "reliability": 0.048434943895973324,
+          "resolution": 0.02655173383680171,
+          "uncertainty": 0.21301775147928995,
+          "brier": 0.23490096153846154
+        },
+        "reliability_diagram": {
+          "bins": [
+            {
+              "bin_lower": 0.0,
+              "bin_upper": 0.1,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.1,
+              "bin_upper": 0.2,
+              "avg_confidence": 0.1,
+              "avg_accuracy": 0.5,
+              "count": 22,
+              "gap": 0.4
+            },
+            {
+              "bin_lower": 0.2,
+              "bin_upper": 0.3,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.3,
+              "bin_upper": 0.4,
+              "avg_confidence": 0.35,
+              "avg_accuracy": 0.5294117647058824,
+              "count": 17,
+              "gap": 0.17941176470588238
+            },
+            {
+              "bin_lower": 0.4,
+              "bin_upper": 0.5,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.5,
+              "bin_upper": 0.6,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.6,
+              "bin_upper": 0.7,
+              "avg_confidence": 0.6,
+              "avg_accuracy": 0.68,
+              "count": 25,
+              "gap": 0.08000000000000007
+            },
+            {
+              "bin_lower": 0.7,
+              "bin_upper": 0.8,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.8,
+              "bin_upper": 0.9,
+              "avg_confidence": 0.85,
+              "avg_accuracy": 0.9444444444444444,
+              "count": 18,
+              "gap": 0.09444444444444444
+            },
+            {
+              "bin_lower": 0.9,
+              "bin_upper": 1.0,
+              "avg_confidence": 0.9900000000000001,
+              "avg_accuracy": 0.8181818181818182,
+              "count": 22,
+              "gap": 0.17181818181818187
+            }
+          ],
+          "n_predictions": 104,
+          "stratum": "verification_mode=IC3"
+        }
+      }
+    ],
+    "perm_theory": [
+      {
+        "stratum_name": "perm_theory",
+        "stratum_value": "no_perm",
+        "n_predictions": 212,
+        "ece": 0.24665094339622642,
+        "ece_ci": {
+          "point_estimate": 0.24665094339622642,
+          "ci_lower": 0.18957547169811323,
+          "ci_upper": 0.3135377358490566,
+          "n_bootstrap": 1000,
+          "alpha": 0.05
+        },
+        "mce": 0.5595744680851064,
+        "brier": 0.2825287735849058,
+        "brier_decomposition": {
+          "reliability": 0.09661172453029046,
+          "resolution": 0.008458173444494815,
+          "uncertainty": 0.19437522249911002,
+          "brier": 0.2825287735849058
+        },
+        "reliability_diagram": {
+          "bins": [
+            {
+              "bin_lower": 0.0,
+              "bin_upper": 0.1,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.1,
+              "bin_upper": 0.2,
+              "avg_confidence": 0.1,
+              "avg_accuracy": 0.6595744680851063,
+              "count": 47,
+              "gap": 0.5595744680851064
+            },
+            {
+              "bin_lower": 0.2,
+              "bin_upper": 0.3,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.3,
+              "bin_upper": 0.4,
+              "avg_confidence": 0.35,
+              "avg_accuracy": 0.631578947368421,
+              "count": 38,
+              "gap": 0.28157894736842104
+            },
+            {
+              "bin_lower": 0.4,
+              "bin_upper": 0.5,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.5,
+              "bin_upper": 0.6,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.6,
+              "bin_upper": 0.7,
+              "avg_confidence": 0.6,
+              "avg_accuracy": 0.725,
+              "count": 40,
+              "gap": 0.125
+            },
+            {
+              "bin_lower": 0.7,
+              "bin_upper": 0.8,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.8,
+              "bin_upper": 0.9,
+              "avg_confidence": 0.85,
+              "avg_accuracy": 0.8823529411764706,
+              "count": 51,
+              "gap": 0.032352941176470584
+            },
+            {
+              "bin_lower": 0.9,
+              "bin_upper": 1.0,
+              "avg_confidence": 0.99,
+              "avg_accuracy": 0.75,
+              "count": 36,
+              "gap": 0.24
+            }
+          ],
+          "n_predictions": 212,
+          "stratum": "perm_theory=no_perm"
+        }
+      },
+      {
+        "stratum_name": "perm_theory",
+        "stratum_value": "uses_perm",
+        "n_predictions": 88,
+        "ece": 0.25079545454545454,
+        "ece_ci": {
+          "point_estimate": 0.25079545454545454,
+          "ci_lower": 0.15738636363636366,
+          "ci_upper": 0.3525,
+          "n_bootstrap": 1000,
+          "alpha": 0.05
+        },
+        "mce": 0.4625,
+        "brier": 0.29796931818181815,
+        "brier_decomposition": {
+          "reliability": 0.07547595506345507,
+          "resolution": 0.005683289774198862,
+          "uncertainty": 0.22817665289256198,
+          "brier": 0.29796931818181815
+        },
+        "reliability_diagram": {
+          "bins": [
+            {
+              "bin_lower": 0.0,
+              "bin_upper": 0.1,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.1,
+              "bin_upper": 0.2,
+              "avg_confidence": 0.1,
+              "avg_accuracy": 0.5625,
+              "count": 16,
+              "gap": 0.4625
+            },
+            {
+              "bin_lower": 0.2,
+              "bin_upper": 0.3,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.3,
+              "bin_upper": 0.4,
+              "avg_confidence": 0.35,
+              "avg_accuracy": 0.5625,
+              "count": 16,
+              "gap": 0.21250000000000002
+            },
+            {
+              "bin_lower": 0.4,
+              "bin_upper": 0.5,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.5,
+              "bin_upper": 0.6,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.6,
+              "bin_upper": 0.7,
+              "avg_confidence": 0.6,
+              "avg_accuracy": 0.7407407407407407,
+              "count": 27,
+              "gap": 0.14074074074074072
+            },
+            {
+              "bin_lower": 0.7,
+              "bin_upper": 0.8,
+              "avg_confidence": 0.0,
+              "avg_accuracy": 0.0,
+              "count": 0,
+              "gap": 0.0
+            },
+            {
+              "bin_lower": 0.8,
+              "bin_upper": 0.9,
+              "avg_confidence": 0.85,
+              "avg_accuracy": 0.625,
+              "count": 16,
+              "gap": 0.22499999999999998
+            },
+            {
+              "bin_lower": 0.9,
+              "bin_upper": 1.0,
+              "avg_confidence": 0.99,
+              "avg_accuracy": 0.6923076923076923,
+              "count": 13,
+              "gap": 0.2976923076923077
+            }
+          ],
+          "n_predictions": 88,
+          "stratum": "perm_theory=uses_perm"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,679 @@
+{
+  "summary": {
+    "total_benchmarks": 22,
+    "qf_lia_reducible": 10,
+    "qf_nia": 12,
+    "reducible_fraction": 0.4545,
+    "nia_z3_sat": 12,
+    "nia_z3_unsat": 0,
+    "nia_z3_unknown": 0,
+    "nia_z3_success_rate": 1.0,
+    "total_z3_time_s": 0.259565
+  },
+  "benchmarks": [
+    {
+      "name": "mha_fixed_heads",
+      "description": "embed_dim = 8 * head_dim (heads=8 concrete)",
+      "constraints": {
+        "embed_dim": "8 * head_dim"
+      },
+      "classification": "QF_LIA-reducible",
+      "per_constraint": [
+        {
+          "lhs": "embed_dim",
+          "expression": "8 * head_dim",
+          "classification": "QF_LIA-reducible",
+          "symbolic_vars": [
+            "head_dim"
+          ],
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.001345,
+      "z3_timed_out": false,
+      "z3_model": {
+        "embed_dim": 8,
+        "head_dim": 1
+      }
+    },
+    {
+      "name": "mha_fixed_head_dim",
+      "description": "embed_dim = heads * 64 (head_dim=64 concrete)",
+      "constraints": {
+        "embed_dim": "heads * 64"
+      },
+      "classification": "QF_LIA-reducible",
+      "per_constraint": [
+        {
+          "lhs": "embed_dim",
+          "expression": "heads * 64",
+          "classification": "QF_LIA-reducible",
+          "symbolic_vars": [
+            "heads"
+          ],
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.001185,
+      "z3_timed_out": false,
+      "z3_model": {
+        "embed_dim": 64,
+        "heads": 1
+      }
+    },
+    {
+      "name": "linear_sum",
+      "description": "total = a + b (pure addition, linear)",
+      "constraints": {
+        "total": "a + b"
+      },
+      "classification": "QF_LIA-reducible",
+      "per_constraint": [
+        {
+          "lhs": "total",
+          "expression": "a + b",
+          "classification": "QF_LIA-reducible",
+          "symbolic_vars": [
+            "a",
+            "b"
+          ],
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.011635,
+      "z3_timed_out": false,
+      "z3_model": {
+        "total": 2,
+        "a": 1,
+        "b": 1
+      }
+    },
+    {
+      "name": "linear_difference",
+      "description": "out_dim = in_dim - padding (subtraction, linear)",
+      "constraints": {
+        "out_dim": "in_dim - padding"
+      },
+      "classification": "QF_LIA-reducible",
+      "per_constraint": [
+        {
+          "lhs": "out_dim",
+          "expression": "in_dim - padding",
+          "classification": "QF_LIA-reducible",
+          "symbolic_vars": [
+            "in_dim",
+            "padding"
+          ],
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.00141,
+      "z3_timed_out": false,
+      "z3_model": {
+        "out_dim": 1,
+        "in_dim": 2,
+        "padding": 1
+      }
+    },
+    {
+      "name": "concrete_assignment",
+      "description": "embed_dim = 512 (constant)",
+      "constraints": {
+        "embed_dim": 512
+      },
+      "classification": "QF_LIA-reducible",
+      "per_constraint": [
+        {
+          "lhs": "embed_dim",
+          "expression": "512",
+          "classification": "QF_LIA-reducible",
+          "symbolic_vars": [],
+          "reason": "Concrete integer assignment \u2014 trivially linear."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.000861,
+      "z3_timed_out": false,
+      "z3_model": {
+        "embed_dim": 512
+      }
+    },
+    {
+      "name": "scaled_single_var",
+      "description": "ffn_dim = 4 * embed_dim (one symbolic variable)",
+      "constraints": {
+        "ffn_dim": "4 * embed_dim"
+      },
+      "classification": "QF_LIA-reducible",
+      "per_constraint": [
+        {
+          "lhs": "ffn_dim",
+          "expression": "4 * embed_dim",
+          "classification": "QF_LIA-reducible",
+          "symbolic_vars": [
+            "embed_dim"
+          ],
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.001029,
+      "z3_timed_out": false,
+      "z3_model": {
+        "ffn_dim": 4,
+        "embed_dim": 1
+      }
+    },
+    {
+      "name": "conv_output_linear",
+      "description": "out_h = in_h - 2 (linear conv output, kernel fixed)",
+      "constraints": {
+        "out_h": "in_h - 2"
+      },
+      "classification": "QF_LIA-reducible",
+      "per_constraint": [
+        {
+          "lhs": "out_h",
+          "expression": "in_h - 2",
+          "classification": "QF_LIA-reducible",
+          "symbolic_vars": [
+            "in_h"
+          ],
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.003644,
+      "z3_timed_out": false,
+      "z3_model": {
+        "out_h": 1,
+        "in_h": 3
+      }
+    },
+    {
+      "name": "double_linear",
+      "description": "proj_dim = 2 * embed_dim, ffn_dim = 4 * embed_dim",
+      "constraints": {
+        "proj_dim": "2 * embed_dim",
+        "ffn_dim": "4 * embed_dim"
+      },
+      "classification": "QF_LIA-reducible",
+      "per_constraint": [
+        {
+          "lhs": "proj_dim",
+          "expression": "2 * embed_dim",
+          "classification": "QF_LIA-reducible",
+          "symbolic_vars": [
+            "embed_dim"
+          ],
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        },
+        {
+          "lhs": "ffn_dim",
+          "expression": "4 * embed_dim",
+          "classification": "QF_LIA-reducible",
+          "symbolic_vars": [
+            "embed_dim"
+          ],
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.001416,
+      "z3_timed_out": false,
+      "z3_model": {
+        "proj_dim": 2,
+        "embed_dim": 1,
+        "ffn_dim": 4
+      }
+    },
+    {
+      "name": "fixed_heads_multi_constraint",
+      "description": "Multiple constraints with heads=8 concrete",
+      "constraints": {
+        "embed_dim": "8 * head_dim",
+        "ffn_dim": "4 * embed_dim"
+      },
+      "classification": "QF_LIA-reducible",
+      "per_constraint": [
+        {
+          "lhs": "embed_dim",
+          "expression": "8 * head_dim",
+          "classification": "QF_LIA-reducible",
+          "symbolic_vars": [
+            "head_dim"
+          ],
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        },
+        {
+          "lhs": "ffn_dim",
+          "expression": "4 * embed_dim",
+          "classification": "QF_LIA-reducible",
+          "symbolic_vars": [
+            "embed_dim"
+          ],
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.001193,
+      "z3_timed_out": false,
+      "z3_model": {
+        "embed_dim": 8,
+        "head_dim": 1,
+        "ffn_dim": 32
+      }
+    },
+    {
+      "name": "identity_constraint",
+      "description": "out_dim = in_dim (trivial identity)",
+      "constraints": {
+        "out_dim": "in_dim"
+      },
+      "classification": "QF_LIA-reducible",
+      "per_constraint": [
+        {
+          "lhs": "out_dim",
+          "expression": "in_dim",
+          "classification": "QF_LIA-reducible",
+          "symbolic_vars": [
+            "in_dim"
+          ],
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.001084,
+      "z3_timed_out": false,
+      "z3_model": {
+        "out_dim": 1,
+        "in_dim": 1
+      }
+    },
+    {
+      "name": "mha_all_symbolic",
+      "description": "embed_dim = heads * head_dim (all symbolic)",
+      "constraints": {
+        "embed_dim": "heads * head_dim"
+      },
+      "classification": "QF_NIA",
+      "per_constraint": [
+        {
+          "lhs": "embed_dim",
+          "expression": "heads * head_dim",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "head_dim",
+            "heads"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (head_dim, heads); enters QF_NIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.010348,
+      "z3_timed_out": false,
+      "z3_model": {
+        "embed_dim": 1152,
+        "heads": 1152,
+        "head_dim": 1
+      }
+    },
+    {
+      "name": "mha_full_transformer",
+      "description": "Transformer: embed=h*d, ffn=4*embed, all symbolic",
+      "constraints": {
+        "embed_dim": "heads * head_dim",
+        "ffn_dim": "4 * embed_dim"
+      },
+      "classification": "QF_NIA",
+      "per_constraint": [
+        {
+          "lhs": "embed_dim",
+          "expression": "heads * head_dim",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "head_dim",
+            "heads"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (head_dim, heads); enters QF_NIA."
+        },
+        {
+          "lhs": "ffn_dim",
+          "expression": "4 * embed_dim",
+          "classification": "QF_LIA-reducible",
+          "symbolic_vars": [
+            "embed_dim"
+          ],
+          "reason": "At most one symbolic variable per multiplicative term; reducible to QF_LIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.018669,
+      "z3_timed_out": false,
+      "z3_model": {
+        "embed_dim": 1024,
+        "heads": 2,
+        "head_dim": 512,
+        "ffn_dim": 4096
+      }
+    },
+    {
+      "name": "reshape_product",
+      "description": "flat = height * width (reshape, both symbolic)",
+      "constraints": {
+        "flat": "height * width"
+      },
+      "classification": "QF_NIA",
+      "per_constraint": [
+        {
+          "lhs": "flat",
+          "expression": "height * width",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "height",
+            "width"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (height, width); enters QF_NIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.013971,
+      "z3_timed_out": false,
+      "z3_model": {
+        "flat": 4095,
+        "height": 4095,
+        "width": 1
+      }
+    },
+    {
+      "name": "volume_3d",
+      "description": "volume = d * h * w (triple product, all symbolic)",
+      "constraints": {
+        "volume": "d * h * w"
+      },
+      "classification": "QF_NIA",
+      "per_constraint": [
+        {
+          "lhs": "volume",
+          "expression": "d * h * w",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "d",
+            "h",
+            "w"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (d, h, w); enters QF_NIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.052279,
+      "z3_timed_out": false,
+      "z3_model": {
+        "volume": 1,
+        "d": 1,
+        "h": 1,
+        "w": 1
+      }
+    },
+    {
+      "name": "cross_attention",
+      "description": "Cross-attention: q_dim = h*d_k, kv_dim = h*d_v",
+      "constraints": {
+        "q_dim": "heads * d_k",
+        "kv_dim": "heads * d_v"
+      },
+      "classification": "QF_NIA",
+      "per_constraint": [
+        {
+          "lhs": "q_dim",
+          "expression": "heads * d_k",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "d_k",
+            "heads"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (d_k, heads); enters QF_NIA."
+        },
+        {
+          "lhs": "kv_dim",
+          "expression": "heads * d_v",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "d_v",
+            "heads"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (d_v, heads); enters QF_NIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.028562,
+      "z3_timed_out": false,
+      "z3_model": {
+        "q_dim": 1134,
+        "heads": 567,
+        "d_k": 2,
+        "kv_dim": 3402,
+        "d_v": 6
+      }
+    },
+    {
+      "name": "conv2d_symbolic",
+      "description": "out = channels * kernel_h * kernel_w (all symbolic)",
+      "constraints": {
+        "out_features": "channels * kernel_h * kernel_w"
+      },
+      "classification": "QF_NIA",
+      "per_constraint": [
+        {
+          "lhs": "out_features",
+          "expression": "channels * kernel_h * kernel_w",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "channels",
+            "kernel_h",
+            "kernel_w"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (channels, kernel_h, kernel_w); enters QF_NIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.010848,
+      "z3_timed_out": false,
+      "z3_model": {
+        "out_features": 4096,
+        "channels": 1,
+        "kernel_h": 1,
+        "kernel_w": 4096
+      }
+    },
+    {
+      "name": "batch_seq_product",
+      "description": "total_tokens = batch * seq_len (both symbolic)",
+      "constraints": {
+        "total_tokens": "batch * seq_len"
+      },
+      "classification": "QF_NIA",
+      "per_constraint": [
+        {
+          "lhs": "total_tokens",
+          "expression": "batch * seq_len",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "batch",
+            "seq_len"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (batch, seq_len); enters QF_NIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.003899,
+      "z3_timed_out": false,
+      "z3_model": {
+        "total_tokens": 4096,
+        "batch": 2048,
+        "seq_len": 2
+      }
+    },
+    {
+      "name": "multi_head_kv_grouped",
+      "description": "Grouped-query: kv_heads * head_dim, num_groups * kv_heads",
+      "constraints": {
+        "kv_dim": "kv_heads * head_dim",
+        "total_heads": "num_groups * kv_heads"
+      },
+      "classification": "QF_NIA",
+      "per_constraint": [
+        {
+          "lhs": "kv_dim",
+          "expression": "kv_heads * head_dim",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "head_dim",
+            "kv_heads"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (head_dim, kv_heads); enters QF_NIA."
+        },
+        {
+          "lhs": "total_heads",
+          "expression": "num_groups * kv_heads",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "kv_heads",
+            "num_groups"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (kv_heads, num_groups); enters QF_NIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.007054,
+      "z3_timed_out": false,
+      "z3_model": {
+        "kv_dim": 4096,
+        "kv_heads": 4096,
+        "head_dim": 1,
+        "total_heads": 4096,
+        "num_groups": 1
+      }
+    },
+    {
+      "name": "strided_conv_nonlinear",
+      "description": "out_dim = in_dim * stride (both symbolic)",
+      "constraints": {
+        "out_dim": "in_dim * stride"
+      },
+      "classification": "QF_NIA",
+      "per_constraint": [
+        {
+          "lhs": "out_dim",
+          "expression": "in_dim * stride",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "in_dim",
+            "stride"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (in_dim, stride); enters QF_NIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.004343,
+      "z3_timed_out": false,
+      "z3_model": {
+        "out_dim": 4096,
+        "in_dim": 1,
+        "stride": 4096
+      }
+    },
+    {
+      "name": "factored_embed",
+      "description": "embed = factor_a * factor_b * factor_c (triple product)",
+      "constraints": {
+        "embed": "factor_a * factor_b * factor_c"
+      },
+      "classification": "QF_NIA",
+      "per_constraint": [
+        {
+          "lhs": "embed",
+          "expression": "factor_a * factor_b * factor_c",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "factor_a",
+            "factor_b",
+            "factor_c"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (factor_a, factor_b, factor_c); enters QF_NIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.04971,
+      "z3_timed_out": false,
+      "z3_model": {
+        "embed": 1,
+        "factor_a": 1,
+        "factor_b": 1,
+        "factor_c": 1
+      }
+    },
+    {
+      "name": "nia_with_addition",
+      "description": "out = a * b + c * d (two nonlinear terms added)",
+      "constraints": {
+        "out": "a * b + c * d"
+      },
+      "classification": "QF_NIA",
+      "per_constraint": [
+        {
+          "lhs": "out",
+          "expression": "a * b + c * d",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "a",
+            "b",
+            "c",
+            "d"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (a, b, c, d); enters QF_NIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.022958,
+      "z3_timed_out": false,
+      "z3_model": {
+        "out": 4096,
+        "a": 2,
+        "b": 112,
+        "c": 32,
+        "d": 121
+      }
+    },
+    {
+      "name": "quadratic_single_var",
+      "description": "area = side * side (single var squared \u2014 still NIA)",
+      "constraints": {
+        "area": "side * side"
+      },
+      "classification": "QF_NIA",
+      "per_constraint": [
+        {
+          "lhs": "area",
+          "expression": "side * side",
+          "classification": "QF_NIA",
+          "symbolic_vars": [
+            "side"
+          ],
+          "reason": "Multiplicative term with \u22652 symbolic variables (side); enters QF_NIA."
+        }
+      ],
+      "z3_status": "sat",
+      "z3_elapsed_s": 0.012125,
+      "z3_timed_out": false,
+      "z3_model": {
+        "area": 1024,
+        "side": 32
+      }
+    }
+  ]
+}

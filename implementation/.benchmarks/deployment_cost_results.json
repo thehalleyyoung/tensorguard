@@ -1,0 +1,1305 @@
+{
+  "experiment": "deployment_cost_analysis",
+  "num_scenarios": 6,
+  "loss_ratios": [
+    10.0,
+    100.0,
+    1000.0
+  ],
+  "total_time_s": 0.001,
+  "results": [
+    {
+      "scenario": "Perfect verifier",
+      "num_outcomes": 5,
+      "analysis_MONOLITHIC_SAFE": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 1.0,
+            "fp_cost": 0.0,
+            "fn_cost": 0.0,
+            "tp_cost": 1.0,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 0,
+            "num_tp": 2,
+            "num_tn": 3,
+            "loss_ratio": 10.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 1.0,
+            "fp_cost": 0.0,
+            "fn_cost": 0.0,
+            "tp_cost": 1.0,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 0,
+            "num_tp": 2,
+            "num_tn": 3,
+            "loss_ratio": 100.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+          },
+          "1000.0": {
+            "total_expected_cost": 1.0,
+            "fp_cost": 0.0,
+            "fn_cost": 0.0,
+            "tp_cost": 1.0,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 0,
+            "num_tp": 2,
+            "num_tn": 3,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "MONOLITHIC_SAFE verification is optimal. Accept higher FP rates to minimize catastrophic FN costs."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "MONOLITHIC_SAFE",
+        "summary": "Deployment cost analysis under MONOLITHIC_SAFE: costs by L(FN)/L(FP) ratio = {10.0: 1.0, 100.0: 1.0, 1000.0: 1.0}. Optimal strategy at ratio 10.0."
+      },
+      "analysis_PER_SUBGRAPH_SAFE": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 1.0,
+            "fp_cost": 0.0,
+            "fn_cost": 0.0,
+            "tp_cost": 1.0,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 0,
+            "num_tp": 2,
+            "num_tn": 3,
+            "loss_ratio": 10.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 1.0,
+            "fp_cost": 0.0,
+            "fn_cost": 0.0,
+            "tp_cost": 1.0,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 0,
+            "num_tp": 2,
+            "num_tn": 3,
+            "loss_ratio": 100.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+          },
+          "1000.0": {
+            "total_expected_cost": 1.0,
+            "fp_cost": 0.0,
+            "fn_cost": 0.0,
+            "tp_cost": 1.0,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 0,
+            "num_tp": 2,
+            "num_tn": 3,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "HIGH PRIORITY: Upgrade to MONOLITHIC_SAFE if possible. PER_SUBGRAPH_SAFE has ~15% higher FN risk; at L(FN)/L(FP)=1000, this translates to significant expected cost increase."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "PER_SUBGRAPH_SAFE",
+        "summary": "Deployment cost analysis under PER_SUBGRAPH_SAFE: costs by L(FN)/L(FP) ratio = {10.0: 1.0, 100.0: 1.0, 1000.0: 1.0}. Optimal strategy at ratio 10.0."
+      },
+      "analysis_UNKNOWN": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 1.0,
+            "fp_cost": 0.0,
+            "fn_cost": 0.0,
+            "tp_cost": 1.0,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 0,
+            "num_tp": 2,
+            "num_tn": 3,
+            "loss_ratio": 10.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 1.0,
+            "fp_cost": 0.0,
+            "fn_cost": 0.0,
+            "tp_cost": 1.0,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 0,
+            "num_tp": 2,
+            "num_tn": 3,
+            "loss_ratio": 100.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "Strongly prefer MONOLITHIC_SAFE or PER_SUBGRAPH_SAFE. UNKNOWN semantics add substantial risk at L(FN)/L(FP)=100."
+          },
+          "1000.0": {
+            "total_expected_cost": 1.0,
+            "fp_cost": 0.0,
+            "fn_cost": 0.0,
+            "tp_cost": 1.0,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 0,
+            "num_tp": 2,
+            "num_tn": 3,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "CRITICAL: Use MONOLITHIC_SAFE verification only. At L(FN)/L(FP)=1000, any missed bug is catastrophic. Cross-break gaps in UNKNOWN semantics are unacceptable."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "UNKNOWN",
+        "summary": "Deployment cost analysis under UNKNOWN: costs by L(FN)/L(FP) ratio = {10.0: 1.0, 100.0: 1.0, 1000.0: 1.0}. Optimal strategy at ratio 10.0."
+      },
+      "semantics_comparison_ratio_100": {
+        "MONOLITHIC_SAFE": {
+          "total_expected_cost": 1.0,
+          "fp_cost": 0.0,
+          "fn_cost": 0.0,
+          "tp_cost": 1.0,
+          "tn_cost": 0.0,
+          "num_fp": 0,
+          "num_fn": 0,
+          "num_tp": 2,
+          "num_tn": 3,
+          "loss_ratio": 100.0,
+          "composition_semantics": "MONOLITHIC_SAFE",
+          "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+        },
+        "PER_SUBGRAPH_SAFE": {
+          "total_expected_cost": 1.0,
+          "fp_cost": 0.0,
+          "fn_cost": 0.0,
+          "tp_cost": 1.0,
+          "tn_cost": 0.0,
+          "num_fp": 0,
+          "num_fn": 0,
+          "num_tp": 2,
+          "num_tn": 3,
+          "loss_ratio": 100.0,
+          "composition_semantics": "PER_SUBGRAPH_SAFE",
+          "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+        },
+        "UNKNOWN": {
+          "total_expected_cost": 1.0,
+          "fp_cost": 0.0,
+          "fn_cost": 0.0,
+          "tp_cost": 1.0,
+          "tn_cost": 0.0,
+          "num_fp": 0,
+          "num_fn": 0,
+          "num_tp": 2,
+          "num_tn": 3,
+          "loss_ratio": 100.0,
+          "composition_semantics": "UNKNOWN",
+          "strategy_recommendation": "Strongly prefer MONOLITHIC_SAFE or PER_SUBGRAPH_SAFE. UNKNOWN semantics add substantial risk at L(FN)/L(FP)=100."
+        }
+      },
+      "sensitivity": {
+        "loss_ratios": [
+          10.0,
+          100.0,
+          1000.0
+        ],
+        "expected_costs": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "elasticities": [
+          0.0,
+          0.0
+        ],
+        "cost_dominated_by": "balanced"
+      }
+    },
+    {
+      "scenario": "Conservative (high FP)",
+      "num_outcomes": 5,
+      "analysis_MONOLITHIC_SAFE": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 3.5,
+            "fp_cost": 3.0,
+            "fn_cost": 0.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 3,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 1,
+            "loss_ratio": 10.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 3.5,
+            "fp_cost": 3.0,
+            "fn_cost": 0.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 3,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 1,
+            "loss_ratio": 100.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+          },
+          "1000.0": {
+            "total_expected_cost": 3.5,
+            "fp_cost": 3.0,
+            "fn_cost": 0.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 3,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 1,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "MONOLITHIC_SAFE verification is optimal. Accept higher FP rates to minimize catastrophic FN costs."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "MONOLITHIC_SAFE",
+        "summary": "Deployment cost analysis under MONOLITHIC_SAFE: costs by L(FN)/L(FP) ratio = {10.0: 3.5, 100.0: 3.5, 1000.0: 3.5}. Optimal strategy at ratio 10.0."
+      },
+      "analysis_PER_SUBGRAPH_SAFE": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 3.65,
+            "fp_cost": 3.15,
+            "fn_cost": 0.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 3,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 1,
+            "loss_ratio": 10.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 3.65,
+            "fp_cost": 3.15,
+            "fn_cost": 0.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 3,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 1,
+            "loss_ratio": 100.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+          },
+          "1000.0": {
+            "total_expected_cost": 3.65,
+            "fp_cost": 3.15,
+            "fn_cost": 0.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 3,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 1,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "HIGH PRIORITY: Upgrade to MONOLITHIC_SAFE if possible. PER_SUBGRAPH_SAFE has ~15% higher FN risk; at L(FN)/L(FP)=1000, this translates to significant expected cost increase."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "PER_SUBGRAPH_SAFE",
+        "summary": "Deployment cost analysis under PER_SUBGRAPH_SAFE: costs by L(FN)/L(FP) ratio = {10.0: 3.6500000000000004, 100.0: 3.6500000000000004, 1000.0: 3.6500000000000004}. Optimal strategy at ratio 10.0."
+      },
+      "analysis_UNKNOWN": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 3.8,
+            "fp_cost": 3.3,
+            "fn_cost": 0.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 3,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 1,
+            "loss_ratio": 10.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 3.8,
+            "fp_cost": 3.3,
+            "fn_cost": 0.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 3,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 1,
+            "loss_ratio": 100.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "Strongly prefer MONOLITHIC_SAFE or PER_SUBGRAPH_SAFE. UNKNOWN semantics add substantial risk at L(FN)/L(FP)=100."
+          },
+          "1000.0": {
+            "total_expected_cost": 3.8,
+            "fp_cost": 3.3,
+            "fn_cost": 0.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 3,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 1,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "CRITICAL: Use MONOLITHIC_SAFE verification only. At L(FN)/L(FP)=1000, any missed bug is catastrophic. Cross-break gaps in UNKNOWN semantics are unacceptable."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "UNKNOWN",
+        "summary": "Deployment cost analysis under UNKNOWN: costs by L(FN)/L(FP) ratio = {10.0: 3.8000000000000003, 100.0: 3.8000000000000003, 1000.0: 3.8000000000000003}. Optimal strategy at ratio 10.0."
+      },
+      "semantics_comparison_ratio_100": {
+        "MONOLITHIC_SAFE": {
+          "total_expected_cost": 3.5,
+          "fp_cost": 3.0,
+          "fn_cost": 0.0,
+          "tp_cost": 0.5,
+          "tn_cost": 0.0,
+          "num_fp": 3,
+          "num_fn": 0,
+          "num_tp": 1,
+          "num_tn": 1,
+          "loss_ratio": 100.0,
+          "composition_semantics": "MONOLITHIC_SAFE",
+          "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+        },
+        "PER_SUBGRAPH_SAFE": {
+          "total_expected_cost": 3.65,
+          "fp_cost": 3.15,
+          "fn_cost": 0.0,
+          "tp_cost": 0.5,
+          "tn_cost": 0.0,
+          "num_fp": 3,
+          "num_fn": 0,
+          "num_tp": 1,
+          "num_tn": 1,
+          "loss_ratio": 100.0,
+          "composition_semantics": "PER_SUBGRAPH_SAFE",
+          "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+        },
+        "UNKNOWN": {
+          "total_expected_cost": 3.8,
+          "fp_cost": 3.3,
+          "fn_cost": 0.0,
+          "tp_cost": 0.5,
+          "tn_cost": 0.0,
+          "num_fp": 3,
+          "num_fn": 0,
+          "num_tp": 1,
+          "num_tn": 1,
+          "loss_ratio": 100.0,
+          "composition_semantics": "UNKNOWN",
+          "strategy_recommendation": "Strongly prefer MONOLITHIC_SAFE or PER_SUBGRAPH_SAFE. UNKNOWN semantics add substantial risk at L(FN)/L(FP)=100."
+        }
+      },
+      "sensitivity": {
+        "loss_ratios": [
+          10.0,
+          100.0,
+          1000.0
+        ],
+        "expected_costs": [
+          3.5,
+          3.5,
+          3.5
+        ],
+        "elasticities": [
+          0.0,
+          0.0
+        ],
+        "cost_dominated_by": "balanced"
+      }
+    },
+    {
+      "scenario": "Permissive (high FN)",
+      "num_outcomes": 5,
+      "analysis_MONOLITHIC_SAFE": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 20.5,
+            "fp_cost": 0.0,
+            "fn_cost": 20.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 2,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 10.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 200.5,
+            "fp_cost": 0.0,
+            "fn_cost": 200.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 2,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 100.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+          },
+          "1000.0": {
+            "total_expected_cost": 2000.5,
+            "fp_cost": 0.0,
+            "fn_cost": 2000.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 2,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "MONOLITHIC_SAFE verification is optimal. Accept higher FP rates to minimize catastrophic FN costs."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "MONOLITHIC_SAFE",
+        "summary": "Deployment cost analysis under MONOLITHIC_SAFE: costs by L(FN)/L(FP) ratio = {10.0: 20.5, 100.0: 200.5, 1000.0: 2000.5}. Optimal strategy at ratio 10.0."
+      },
+      "analysis_PER_SUBGRAPH_SAFE": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 23.5,
+            "fp_cost": 0.0,
+            "fn_cost": 23.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 2,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 10.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 230.5,
+            "fp_cost": 0.0,
+            "fn_cost": 230.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 2,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 100.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+          },
+          "1000.0": {
+            "total_expected_cost": 2300.5,
+            "fp_cost": 0.0,
+            "fn_cost": 2300.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 2,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "HIGH PRIORITY: Upgrade to MONOLITHIC_SAFE if possible. PER_SUBGRAPH_SAFE has ~15% higher FN risk; at L(FN)/L(FP)=1000, this translates to significant expected cost increase."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "PER_SUBGRAPH_SAFE",
+        "summary": "Deployment cost analysis under PER_SUBGRAPH_SAFE: costs by L(FN)/L(FP) ratio = {10.0: 23.5, 100.0: 230.49999999999997, 1000.0: 2300.5}. Optimal strategy at ratio 10.0."
+      },
+      "analysis_UNKNOWN": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 30.5,
+            "fp_cost": 0.0,
+            "fn_cost": 30.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 2,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 10.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 300.5,
+            "fp_cost": 0.0,
+            "fn_cost": 300.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 2,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 100.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "Strongly prefer MONOLITHIC_SAFE or PER_SUBGRAPH_SAFE. UNKNOWN semantics add substantial risk at L(FN)/L(FP)=100."
+          },
+          "1000.0": {
+            "total_expected_cost": 3000.5,
+            "fp_cost": 0.0,
+            "fn_cost": 3000.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 0,
+            "num_fn": 2,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "CRITICAL: Use MONOLITHIC_SAFE verification only. At L(FN)/L(FP)=1000, any missed bug is catastrophic. Cross-break gaps in UNKNOWN semantics are unacceptable."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "UNKNOWN",
+        "summary": "Deployment cost analysis under UNKNOWN: costs by L(FN)/L(FP) ratio = {10.0: 30.5, 100.0: 300.5, 1000.0: 3000.5}. Optimal strategy at ratio 10.0."
+      },
+      "semantics_comparison_ratio_100": {
+        "MONOLITHIC_SAFE": {
+          "total_expected_cost": 200.5,
+          "fp_cost": 0.0,
+          "fn_cost": 200.0,
+          "tp_cost": 0.5,
+          "tn_cost": 0.0,
+          "num_fp": 0,
+          "num_fn": 2,
+          "num_tp": 1,
+          "num_tn": 2,
+          "loss_ratio": 100.0,
+          "composition_semantics": "MONOLITHIC_SAFE",
+          "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+        },
+        "PER_SUBGRAPH_SAFE": {
+          "total_expected_cost": 230.5,
+          "fp_cost": 0.0,
+          "fn_cost": 230.0,
+          "tp_cost": 0.5,
+          "tn_cost": 0.0,
+          "num_fp": 0,
+          "num_fn": 2,
+          "num_tp": 1,
+          "num_tn": 2,
+          "loss_ratio": 100.0,
+          "composition_semantics": "PER_SUBGRAPH_SAFE",
+          "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+        },
+        "UNKNOWN": {
+          "total_expected_cost": 300.5,
+          "fp_cost": 0.0,
+          "fn_cost": 300.0,
+          "tp_cost": 0.5,
+          "tn_cost": 0.0,
+          "num_fp": 0,
+          "num_fn": 2,
+          "num_tp": 1,
+          "num_tn": 2,
+          "loss_ratio": 100.0,
+          "composition_semantics": "UNKNOWN",
+          "strategy_recommendation": "Strongly prefer MONOLITHIC_SAFE or PER_SUBGRAPH_SAFE. UNKNOWN semantics add substantial risk at L(FN)/L(FP)=100."
+        }
+      },
+      "sensitivity": {
+        "loss_ratios": [
+          10.0,
+          100.0,
+          1000.0
+        ],
+        "expected_costs": [
+          20.5,
+          200.5,
+          2000.5
+        ],
+        "elasticities": [
+          0.9756097560975611,
+          0.9975062344139651
+        ],
+        "cost_dominated_by": "FN"
+      }
+    },
+    {
+      "scenario": "Mixed errors",
+      "num_outcomes": 5,
+      "analysis_MONOLITHIC_SAFE": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 11.5,
+            "fp_cost": 1.0,
+            "fn_cost": 10.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 1,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 10.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 101.5,
+            "fp_cost": 1.0,
+            "fn_cost": 100.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 1,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 100.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+          },
+          "1000.0": {
+            "total_expected_cost": 1001.5,
+            "fp_cost": 1.0,
+            "fn_cost": 1000.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 1,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "MONOLITHIC_SAFE verification is optimal. Accept higher FP rates to minimize catastrophic FN costs."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "MONOLITHIC_SAFE",
+        "summary": "Deployment cost analysis under MONOLITHIC_SAFE: costs by L(FN)/L(FP) ratio = {10.0: 11.5, 100.0: 101.5, 1000.0: 1001.5}. Optimal strategy at ratio 10.0."
+      },
+      "analysis_PER_SUBGRAPH_SAFE": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 13.05,
+            "fp_cost": 1.05,
+            "fn_cost": 11.5,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 1,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 10.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 116.55,
+            "fp_cost": 1.05,
+            "fn_cost": 115.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 1,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 100.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+          },
+          "1000.0": {
+            "total_expected_cost": 1151.55,
+            "fp_cost": 1.05,
+            "fn_cost": 1150.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 1,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "HIGH PRIORITY: Upgrade to MONOLITHIC_SAFE if possible. PER_SUBGRAPH_SAFE has ~15% higher FN risk; at L(FN)/L(FP)=1000, this translates to significant expected cost increase."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "PER_SUBGRAPH_SAFE",
+        "summary": "Deployment cost analysis under PER_SUBGRAPH_SAFE: costs by L(FN)/L(FP) ratio = {10.0: 13.05, 100.0: 116.54999999999998, 1000.0: 1151.55}. Optimal strategy at ratio 10.0."
+      },
+      "analysis_UNKNOWN": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 16.6,
+            "fp_cost": 1.1,
+            "fn_cost": 15.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 1,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 10.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 151.6,
+            "fp_cost": 1.1,
+            "fn_cost": 150.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 1,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 100.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "Strongly prefer MONOLITHIC_SAFE or PER_SUBGRAPH_SAFE. UNKNOWN semantics add substantial risk at L(FN)/L(FP)=100."
+          },
+          "1000.0": {
+            "total_expected_cost": 1501.6,
+            "fp_cost": 1.1,
+            "fn_cost": 1500.0,
+            "tp_cost": 0.5,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 1,
+            "num_tp": 1,
+            "num_tn": 2,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "CRITICAL: Use MONOLITHIC_SAFE verification only. At L(FN)/L(FP)=1000, any missed bug is catastrophic. Cross-break gaps in UNKNOWN semantics are unacceptable."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "UNKNOWN",
+        "summary": "Deployment cost analysis under UNKNOWN: costs by L(FN)/L(FP) ratio = {10.0: 16.6, 100.0: 151.6, 1000.0: 1501.6}. Optimal strategy at ratio 10.0."
+      },
+      "semantics_comparison_ratio_100": {
+        "MONOLITHIC_SAFE": {
+          "total_expected_cost": 101.5,
+          "fp_cost": 1.0,
+          "fn_cost": 100.0,
+          "tp_cost": 0.5,
+          "tn_cost": 0.0,
+          "num_fp": 1,
+          "num_fn": 1,
+          "num_tp": 1,
+          "num_tn": 2,
+          "loss_ratio": 100.0,
+          "composition_semantics": "MONOLITHIC_SAFE",
+          "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+        },
+        "PER_SUBGRAPH_SAFE": {
+          "total_expected_cost": 116.55,
+          "fp_cost": 1.05,
+          "fn_cost": 115.0,
+          "tp_cost": 0.5,
+          "tn_cost": 0.0,
+          "num_fp": 1,
+          "num_fn": 1,
+          "num_tp": 1,
+          "num_tn": 2,
+          "loss_ratio": 100.0,
+          "composition_semantics": "PER_SUBGRAPH_SAFE",
+          "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+        },
+        "UNKNOWN": {
+          "total_expected_cost": 151.6,
+          "fp_cost": 1.1,
+          "fn_cost": 150.0,
+          "tp_cost": 0.5,
+          "tn_cost": 0.0,
+          "num_fp": 1,
+          "num_fn": 1,
+          "num_tp": 1,
+          "num_tn": 2,
+          "loss_ratio": 100.0,
+          "composition_semantics": "UNKNOWN",
+          "strategy_recommendation": "Strongly prefer MONOLITHIC_SAFE or PER_SUBGRAPH_SAFE. UNKNOWN semantics add substantial risk at L(FN)/L(FP)=100."
+        }
+      },
+      "sensitivity": {
+        "loss_ratios": [
+          10.0,
+          100.0,
+          1000.0
+        ],
+        "expected_costs": [
+          11.5,
+          101.5,
+          1001.5
+        ],
+        "elasticities": [
+          0.8695652173913043,
+          0.9852216748768474
+        ],
+        "cost_dominated_by": "FN"
+      }
+    },
+    {
+      "scenario": "No ground truth",
+      "num_outcomes": 5,
+      "analysis_MONOLITHIC_SAFE": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 5.8,
+            "fp_cost": 0.6,
+            "fn_cost": 4.5,
+            "tp_cost": 0.7,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 3,
+            "loss_ratio": 10.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 46.3,
+            "fp_cost": 0.6,
+            "fn_cost": 45.0,
+            "tp_cost": 0.7,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 3,
+            "loss_ratio": 100.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+          },
+          "1000.0": {
+            "total_expected_cost": 451.3,
+            "fp_cost": 0.6,
+            "fn_cost": 450.0,
+            "tp_cost": 0.7,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 3,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "MONOLITHIC_SAFE verification is optimal. Accept higher FP rates to minimize catastrophic FN costs."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "MONOLITHIC_SAFE",
+        "summary": "Deployment cost analysis under MONOLITHIC_SAFE: costs by L(FN)/L(FP) ratio = {10.0: 5.800000000000001, 100.0: 46.30000000000001, 1000.0: 451.30000000000007}. Optimal strategy at ratio 10.0."
+      },
+      "analysis_PER_SUBGRAPH_SAFE": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 6.505,
+            "fp_cost": 0.63,
+            "fn_cost": 5.175,
+            "tp_cost": 0.7,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 3,
+            "loss_ratio": 10.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 53.08,
+            "fp_cost": 0.63,
+            "fn_cost": 51.75,
+            "tp_cost": 0.7,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 3,
+            "loss_ratio": 100.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+          },
+          "1000.0": {
+            "total_expected_cost": 518.83,
+            "fp_cost": 0.63,
+            "fn_cost": 517.5,
+            "tp_cost": 0.7,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 3,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "HIGH PRIORITY: Upgrade to MONOLITHIC_SAFE if possible. PER_SUBGRAPH_SAFE has ~15% higher FN risk; at L(FN)/L(FP)=1000, this translates to significant expected cost increase."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "PER_SUBGRAPH_SAFE",
+        "summary": "Deployment cost analysis under PER_SUBGRAPH_SAFE: costs by L(FN)/L(FP) ratio = {10.0: 6.505000000000001, 100.0: 53.080000000000005, 1000.0: 518.8300000000002}. Optimal strategy at ratio 10.0."
+      },
+      "analysis_UNKNOWN": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 8.11,
+            "fp_cost": 0.66,
+            "fn_cost": 6.75,
+            "tp_cost": 0.7,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 3,
+            "loss_ratio": 10.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 68.86,
+            "fp_cost": 0.66,
+            "fn_cost": 67.5,
+            "tp_cost": 0.7,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 3,
+            "loss_ratio": 100.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "Strongly prefer MONOLITHIC_SAFE or PER_SUBGRAPH_SAFE. UNKNOWN semantics add substantial risk at L(FN)/L(FP)=100."
+          },
+          "1000.0": {
+            "total_expected_cost": 676.36,
+            "fp_cost": 0.66,
+            "fn_cost": 675.0,
+            "tp_cost": 0.7,
+            "tn_cost": 0.0,
+            "num_fp": 1,
+            "num_fn": 0,
+            "num_tp": 1,
+            "num_tn": 3,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "CRITICAL: Use MONOLITHIC_SAFE verification only. At L(FN)/L(FP)=1000, any missed bug is catastrophic. Cross-break gaps in UNKNOWN semantics are unacceptable."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "UNKNOWN",
+        "summary": "Deployment cost analysis under UNKNOWN: costs by L(FN)/L(FP) ratio = {10.0: 8.110000000000001, 100.0: 68.86000000000001, 1000.0: 676.3600000000001}. Optimal strategy at ratio 10.0."
+      },
+      "semantics_comparison_ratio_100": {
+        "MONOLITHIC_SAFE": {
+          "total_expected_cost": 46.3,
+          "fp_cost": 0.6,
+          "fn_cost": 45.0,
+          "tp_cost": 0.7,
+          "tn_cost": 0.0,
+          "num_fp": 1,
+          "num_fn": 0,
+          "num_tp": 1,
+          "num_tn": 3,
+          "loss_ratio": 100.0,
+          "composition_semantics": "MONOLITHIC_SAFE",
+          "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+        },
+        "PER_SUBGRAPH_SAFE": {
+          "total_expected_cost": 53.08,
+          "fp_cost": 0.63,
+          "fn_cost": 51.75,
+          "tp_cost": 0.7,
+          "tn_cost": 0.0,
+          "num_fp": 1,
+          "num_fn": 0,
+          "num_tp": 1,
+          "num_tn": 3,
+          "loss_ratio": 100.0,
+          "composition_semantics": "PER_SUBGRAPH_SAFE",
+          "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+        },
+        "UNKNOWN": {
+          "total_expected_cost": 68.86,
+          "fp_cost": 0.66,
+          "fn_cost": 67.5,
+          "tp_cost": 0.7,
+          "tn_cost": 0.0,
+          "num_fp": 1,
+          "num_fn": 0,
+          "num_tp": 1,
+          "num_tn": 3,
+          "loss_ratio": 100.0,
+          "composition_semantics": "UNKNOWN",
+          "strategy_recommendation": "Strongly prefer MONOLITHIC_SAFE or PER_SUBGRAPH_SAFE. UNKNOWN semantics add substantial risk at L(FN)/L(FP)=100."
+        }
+      },
+      "sensitivity": {
+        "loss_ratios": [
+          10.0,
+          100.0,
+          1000.0
+        ],
+        "expected_costs": [
+          5.800000000000001,
+          46.30000000000001,
+          451.30000000000007
+        ],
+        "elasticities": [
+          0.7758620689655173,
+          0.9719222462203023
+        ],
+        "cost_dominated_by": "FN"
+      }
+    },
+    {
+      "scenario": "Large suite (100 models)",
+      "num_outcomes": 100,
+      "analysis_MONOLITHIC_SAFE": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 29.0,
+            "fp_cost": 13.0,
+            "fn_cost": 10.0,
+            "tp_cost": 6.0,
+            "tn_cost": 0.0,
+            "num_fp": 13,
+            "num_fn": 1,
+            "num_tp": 12,
+            "num_tn": 74,
+            "loss_ratio": 10.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 119.0,
+            "fp_cost": 13.0,
+            "fn_cost": 100.0,
+            "tp_cost": 6.0,
+            "tn_cost": 0.0,
+            "num_fp": 13,
+            "num_fn": 1,
+            "num_tp": 12,
+            "num_tn": 74,
+            "loss_ratio": 100.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+          },
+          "1000.0": {
+            "total_expected_cost": 1019.0,
+            "fp_cost": 13.0,
+            "fn_cost": 1000.0,
+            "tp_cost": 6.0,
+            "tn_cost": 0.0,
+            "num_fp": 13,
+            "num_fn": 1,
+            "num_tp": 12,
+            "num_tn": 74,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "MONOLITHIC_SAFE",
+            "strategy_recommendation": "MONOLITHIC_SAFE verification is optimal. Accept higher FP rates to minimize catastrophic FN costs."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "MONOLITHIC_SAFE",
+        "summary": "Deployment cost analysis under MONOLITHIC_SAFE: costs by L(FN)/L(FP) ratio = {10.0: 29.0, 100.0: 119.0, 1000.0: 1019.0}. Optimal strategy at ratio 10.0."
+      },
+      "analysis_PER_SUBGRAPH_SAFE": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 31.15,
+            "fp_cost": 13.65,
+            "fn_cost": 11.5,
+            "tp_cost": 6.0,
+            "tn_cost": 0.0,
+            "num_fp": 13,
+            "num_fn": 1,
+            "num_tp": 12,
+            "num_tn": 74,
+            "loss_ratio": 10.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 134.65,
+            "fp_cost": 13.65,
+            "fn_cost": 115.0,
+            "tp_cost": 6.0,
+            "tn_cost": 0.0,
+            "num_fp": 13,
+            "num_fn": 1,
+            "num_tp": 12,
+            "num_tn": 74,
+            "loss_ratio": 100.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+          },
+          "1000.0": {
+            "total_expected_cost": 1169.65,
+            "fp_cost": 13.65,
+            "fn_cost": 1150.0,
+            "tp_cost": 6.0,
+            "tn_cost": 0.0,
+            "num_fp": 13,
+            "num_fn": 1,
+            "num_tp": 12,
+            "num_tn": 74,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "PER_SUBGRAPH_SAFE",
+            "strategy_recommendation": "HIGH PRIORITY: Upgrade to MONOLITHIC_SAFE if possible. PER_SUBGRAPH_SAFE has ~15% higher FN risk; at L(FN)/L(FP)=1000, this translates to significant expected cost increase."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "PER_SUBGRAPH_SAFE",
+        "summary": "Deployment cost analysis under PER_SUBGRAPH_SAFE: costs by L(FN)/L(FP) ratio = {10.0: 31.15, 100.0: 134.64999999999998, 1000.0: 1169.65}. Optimal strategy at ratio 10.0."
+      },
+      "analysis_UNKNOWN": {
+        "cost_by_ratio": {
+          "10.0": {
+            "total_expected_cost": 35.3,
+            "fp_cost": 14.3,
+            "fn_cost": 15.0,
+            "tp_cost": 6.0,
+            "tn_cost": 0.0,
+            "num_fp": 13,
+            "num_fn": 1,
+            "num_tp": 12,
+            "num_tn": 74,
+            "loss_ratio": 10.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models."
+          },
+          "100.0": {
+            "total_expected_cost": 170.3,
+            "fp_cost": 14.3,
+            "fn_cost": 150.0,
+            "tp_cost": 6.0,
+            "tn_cost": 0.0,
+            "num_fp": 13,
+            "num_fn": 1,
+            "num_tp": 12,
+            "num_tn": 74,
+            "loss_ratio": 100.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "Strongly prefer MONOLITHIC_SAFE or PER_SUBGRAPH_SAFE. UNKNOWN semantics add substantial risk at L(FN)/L(FP)=100."
+          },
+          "1000.0": {
+            "total_expected_cost": 1520.3,
+            "fp_cost": 14.3,
+            "fn_cost": 1500.0,
+            "tp_cost": 6.0,
+            "tn_cost": 0.0,
+            "num_fp": 13,
+            "num_fn": 1,
+            "num_tp": 12,
+            "num_tn": 74,
+            "loss_ratio": 1000.0,
+            "composition_semantics": "UNKNOWN",
+            "strategy_recommendation": "CRITICAL: Use MONOLITHIC_SAFE verification only. At L(FN)/L(FP)=1000, any missed bug is catastrophic. Cross-break gaps in UNKNOWN semantics are unacceptable."
+          }
+        },
+        "optimal_strategy": "FP cost dominates at low loss ratios. Prefer high-precision verification to minimize false alarms. PER_SUBGRAPH_SAFE is acceptable for most models.",
+        "optimal_loss_ratio": 10.0,
+        "composition_semantics": "UNKNOWN",
+        "summary": "Deployment cost analysis under UNKNOWN: costs by L(FN)/L(FP) ratio = {10.0: 35.3, 100.0: 170.3, 1000.0: 1520.3}. Optimal strategy at ratio 10.0."
+      },
+      "semantics_comparison_ratio_100": {
+        "MONOLITHIC_SAFE": {
+          "total_expected_cost": 119.0,
+          "fp_cost": 13.0,
+          "fn_cost": 100.0,
+          "tp_cost": 6.0,
+          "tn_cost": 0.0,
+          "num_fp": 13,
+          "num_fn": 1,
+          "num_tp": 12,
+          "num_tn": 74,
+          "loss_ratio": 100.0,
+          "composition_semantics": "MONOLITHIC_SAFE",
+          "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+        },
+        "PER_SUBGRAPH_SAFE": {
+          "total_expected_cost": 134.65,
+          "fp_cost": 13.65,
+          "fn_cost": 115.0,
+          "tp_cost": 6.0,
+          "tn_cost": 0.0,
+          "num_fp": 13,
+          "num_fn": 1,
+          "num_tp": 12,
+          "num_tn": 74,
+          "loss_ratio": 100.0,
+          "composition_semantics": "PER_SUBGRAPH_SAFE",
+          "strategy_recommendation": "Balance FP/FN tradeoff. Use highest-confidence verification available. PER_SUBGRAPH_SAFE acceptable if graph breaks are few."
+        },
+        "UNKNOWN": {
+          "total_expected_cost": 170.3,
+          "fp_cost": 14.3,
+          "fn_cost": 150.0,
+          "tp_cost": 6.0,
+          "tn_cost": 0.0,
+          "num_fp": 13,
+          "num_fn": 1,
+          "num_tp": 12,
+          "num_tn": 74,
+          "loss_ratio": 100.0,
+          "composition_semantics": "UNKNOWN",
+          "strategy_recommendation": "Strongly prefer MONOLITHIC_SAFE or PER_SUBGRAPH_SAFE. UNKNOWN semantics add substantial risk at L(FN)/L(FP)=100."
+        }
+      },
+      "sensitivity": {
+        "loss_ratios": [
+          10.0,
+          100.0,
+          1000.0
+        ],
+        "expected_costs": [
+          29.0,
+          119.0,
+          1019.0
+        ],
+        "elasticities": [
+          0.3448275862068966,
+          0.8403361344537815
+        ],
+        "cost_dominated_by": "FN"
+      }
+    }
+  ],
+  "summary": {
+    "key_finding": "FN cost dominates at high loss ratios (100+). MONOLITHIC_SAFE consistently yields lowest expected cost. UNKNOWN semantics amplify FN costs by 50%."
+  }
+}

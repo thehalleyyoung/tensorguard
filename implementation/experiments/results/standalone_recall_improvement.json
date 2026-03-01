@@ -1,0 +1,60 @@
+{
+  "description": "Standalone recall improvement via expanded layer coverage and fx fallback",
+  "changes": {
+    "new_layer_kinds": [
+      "CONVTRANSPOSE1D",
+      "ADAPTIVE_MAXPOOL2D",
+      "PIXEL_SHUFFLE",
+      "UNFOLD",
+      "FOLD"
+    ],
+    "new_op_kinds": [
+      "STACK",
+      "WHERE",
+      "CHUNK",
+      "SPLIT"
+    ],
+    "new_propagators": [
+      "_propagate_convtranspose1d",
+      "_propagate_adaptive_maxpool2d",
+      "_propagate_pixel_shuffle",
+      "_propagate_unfold",
+      "_propagate_fold"
+    ],
+    "fx_fallback": "Added _fallback_module_graph for data-dependent control flow models",
+    "function_mapping_improvements": [
+      "torch.where -> WHERE",
+      "torch.chunk -> CHUNK",
+      "torch.split -> SPLIT",
+      "torch.stack -> STACK (was CAT)"
+    ]
+  },
+  "total_layer_kinds": 36,
+  "total_op_kinds": 22,
+  "test_results": {
+    "tests_passed": 2805,
+    "tests_skipped": 1,
+    "tests_failed": 0
+  },
+  "comprehensive_v3_metrics": {
+    "experiment_1_cegar_ablation": {},
+    "experiment_2_theory_exercising": {
+      "syntactic_metrics": {},
+      "tensorguard_metrics": {}
+    },
+    "experiment_3_conditional": {
+      "syntactic_metrics": {},
+      "tensorguard_metrics": {}
+    },
+    "experiment_4_production": {
+      "syntactic_metrics": {},
+      "tensorguard_metrics": {}
+    }
+  },
+  "improvements_over_baseline": {
+    "layer_kind_coverage": "31 -> 36 (+5 new layer types)",
+    "op_kind_coverage": "18 -> 22 (+4 new operation types)",
+    "fx_tracing_robustness": "Added fallback extraction for data-dependent control flow",
+    "ast_name_mappings": "+10 new nn.Module string mappings"
+  }
+}

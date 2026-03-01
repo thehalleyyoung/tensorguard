@@ -1,0 +1,1188 @@
+{
+  "experiment": "cegar_ablation_v5",
+  "description": "CEGAR ablation with SYMBOLIC input dimensions (n=32) to force contract discovery.  Compares single-pass, unfiltered CEGAR, and quality-filtered CEGAR.  Addresses reviewer critique that prior ablations were underpowered (n=8) or used concrete dims that bypassed CEGAR entirely.",
+  "date": "2026-02-24 20:13:24",
+  "num_benchmarks": 32,
+  "num_buggy": 15,
+  "num_correct": 17,
+  "architectures": [
+    "Autoencoder",
+    "Bottleneck",
+    "CNN",
+    "Classifier",
+    "GAN-discriminator",
+    "MLP",
+    "MultiHead",
+    "ResNet-skip",
+    "Transformer",
+    "U-Net-style",
+    "Wide"
+  ],
+  "bootstrap_resamples": 10000,
+  "configs": {
+    "single_pass": {
+      "label": "Single-pass (max_iter=1, no refinement)",
+      "metrics": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 11,
+        "tn": 17,
+        "precision": 1.0,
+        "recall": 0.2667,
+        "f1": 0.4211
+      },
+      "confidence_intervals_95_10k": {
+        "precision": [
+          1.0,
+          1.0
+        ],
+        "recall": [
+          0.0667,
+          0.5
+        ],
+        "f1": [
+          0.125,
+          0.6667
+        ]
+      },
+      "total_predicates": 28,
+      "total_rejected": 22,
+      "total_iterations": 32,
+      "total_time_ms": 5814.47,
+      "per_benchmark": [
+        {
+          "name": "mlp_correct_2layer",
+          "arch": "MLP",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 99.48
+        },
+        {
+          "name": "mlp_buggy_2layer",
+          "arch": "MLP",
+          "has_bug": true,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 280.55
+        },
+        {
+          "name": "mlp_correct_3layer",
+          "arch": "MLP",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 86.04
+        },
+        {
+          "name": "mlp_buggy_3layer",
+          "arch": "MLP",
+          "has_bug": true,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 97.52
+        },
+        {
+          "name": "mlp_correct_4layer",
+          "arch": "MLP",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 311.04
+        },
+        {
+          "name": "mlp_buggy_4layer",
+          "arch": "MLP",
+          "has_bug": true,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 195.24
+        },
+        {
+          "name": "cnn_correct_2conv",
+          "arch": "CNN",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "predicates_rejected": 0,
+          "time_ms": 218.76
+        },
+        {
+          "name": "cnn_buggy_channel",
+          "arch": "CNN",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "predicates_rejected": 0,
+          "time_ms": 159.09
+        },
+        {
+          "name": "cnn_correct_3conv",
+          "arch": "CNN",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "predicates_rejected": 0,
+          "time_ms": 158.98
+        },
+        {
+          "name": "cnn_buggy_deep",
+          "arch": "CNN",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "predicates_rejected": 0,
+          "time_ms": 391.48
+        },
+        {
+          "name": "transformer_proj_correct",
+          "arch": "Transformer",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 182.21
+        },
+        {
+          "name": "transformer_proj_buggy",
+          "arch": "Transformer",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 45.34
+        },
+        {
+          "name": "transformer_ffn_correct",
+          "arch": "Transformer",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 124.95
+        },
+        {
+          "name": "transformer_ffn_buggy",
+          "arch": "Transformer",
+          "has_bug": true,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 258.02
+        },
+        {
+          "name": "autoencoder_correct",
+          "arch": "Autoencoder",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 131.85
+        },
+        {
+          "name": "autoencoder_buggy",
+          "arch": "Autoencoder",
+          "has_bug": true,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 4,
+          "time_ms": 441.06
+        },
+        {
+          "name": "autoencoder_deep_correct",
+          "arch": "Autoencoder",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 171.32
+        },
+        {
+          "name": "resnet_skip_correct",
+          "arch": "ResNet-skip",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 258.01
+        },
+        {
+          "name": "resnet_skip_buggy",
+          "arch": "ResNet-skip",
+          "has_bug": true,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 38.34
+        },
+        {
+          "name": "resnet_deep_correct",
+          "arch": "ResNet-skip",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 95.8
+        },
+        {
+          "name": "unet_style_correct",
+          "arch": "U-Net-style",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 443.48
+        },
+        {
+          "name": "unet_style_buggy",
+          "arch": "U-Net-style",
+          "has_bug": true,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 306.23
+        },
+        {
+          "name": "gan_disc_correct",
+          "arch": "GAN-discriminator",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 155.45
+        },
+        {
+          "name": "gan_disc_buggy",
+          "arch": "GAN-discriminator",
+          "has_bug": true,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 78.15
+        },
+        {
+          "name": "classifier_correct",
+          "arch": "Classifier",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 241.98
+        },
+        {
+          "name": "classifier_buggy",
+          "arch": "Classifier",
+          "has_bug": true,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 172.88
+        },
+        {
+          "name": "bottleneck_correct",
+          "arch": "Bottleneck",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 33.58
+        },
+        {
+          "name": "bottleneck_buggy",
+          "arch": "Bottleneck",
+          "has_bug": true,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 88.96
+        },
+        {
+          "name": "multihead_correct",
+          "arch": "MultiHead",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 194.12
+        },
+        {
+          "name": "multihead_buggy",
+          "arch": "MultiHead",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 214.65
+        },
+        {
+          "name": "wide_correct",
+          "arch": "Wide",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 69.48
+        },
+        {
+          "name": "wide_buggy",
+          "arch": "Wide",
+          "has_bug": true,
+          "detected_bug": false,
+          "status": "MAX_ITER",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 70.43
+        }
+      ]
+    },
+    "cegar_unfiltered": {
+      "label": "CEGAR \u2014 quality filter OFF",
+      "metrics": {
+        "tp": 14,
+        "fp": 0,
+        "fn": 1,
+        "tn": 17,
+        "precision": 1.0,
+        "recall": 0.9333,
+        "f1": 0.9655
+      },
+      "confidence_intervals_95_10k": {
+        "precision": [
+          1.0,
+          1.0
+        ],
+        "recall": [
+          0.7778,
+          1.0
+        ],
+        "f1": [
+          0.875,
+          1.0
+        ]
+      },
+      "total_predicates": 28,
+      "total_rejected": 28,
+      "total_iterations": 58,
+      "total_time_ms": 6993.76,
+      "per_benchmark": [
+        {
+          "name": "mlp_correct_2layer",
+          "arch": "MLP",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 142.9
+        },
+        {
+          "name": "mlp_buggy_2layer",
+          "arch": "MLP",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 141.97
+        },
+        {
+          "name": "mlp_correct_3layer",
+          "arch": "MLP",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 55.02
+        },
+        {
+          "name": "mlp_buggy_3layer",
+          "arch": "MLP",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 299.46
+        },
+        {
+          "name": "mlp_correct_4layer",
+          "arch": "MLP",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 360.7
+        },
+        {
+          "name": "mlp_buggy_4layer",
+          "arch": "MLP",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 4,
+          "time_ms": 459.76
+        },
+        {
+          "name": "cnn_correct_2conv",
+          "arch": "CNN",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "predicates_rejected": 0,
+          "time_ms": 195.84
+        },
+        {
+          "name": "cnn_buggy_channel",
+          "arch": "CNN",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "predicates_rejected": 0,
+          "time_ms": 67.04
+        },
+        {
+          "name": "cnn_correct_3conv",
+          "arch": "CNN",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "predicates_rejected": 0,
+          "time_ms": 167.16
+        },
+        {
+          "name": "cnn_buggy_deep",
+          "arch": "CNN",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "predicates_rejected": 0,
+          "time_ms": 312.65
+        },
+        {
+          "name": "transformer_proj_correct",
+          "arch": "Transformer",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 226.88
+        },
+        {
+          "name": "transformer_proj_buggy",
+          "arch": "Transformer",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 270.12
+        },
+        {
+          "name": "transformer_ffn_correct",
+          "arch": "Transformer",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 253.77
+        },
+        {
+          "name": "transformer_ffn_buggy",
+          "arch": "Transformer",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 151.38
+        },
+        {
+          "name": "autoencoder_correct",
+          "arch": "Autoencoder",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 422.51
+        },
+        {
+          "name": "autoencoder_buggy",
+          "arch": "Autoencoder",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 6,
+          "time_ms": 416.64
+        },
+        {
+          "name": "autoencoder_deep_correct",
+          "arch": "Autoencoder",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 470.12
+        },
+        {
+          "name": "resnet_skip_correct",
+          "arch": "ResNet-skip",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 185.83
+        },
+        {
+          "name": "resnet_skip_buggy",
+          "arch": "ResNet-skip",
+          "has_bug": true,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 186.99
+        },
+        {
+          "name": "resnet_deep_correct",
+          "arch": "ResNet-skip",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 640.6
+        },
+        {
+          "name": "unet_style_correct",
+          "arch": "U-Net-style",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 762.5
+        },
+        {
+          "name": "unet_style_buggy",
+          "arch": "U-Net-style",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 175.92
+        },
+        {
+          "name": "gan_disc_correct",
+          "arch": "GAN-discriminator",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 86.23
+        },
+        {
+          "name": "gan_disc_buggy",
+          "arch": "GAN-discriminator",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 4,
+          "time_ms": 90.59
+        },
+        {
+          "name": "classifier_correct",
+          "arch": "Classifier",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 46.44
+        },
+        {
+          "name": "classifier_buggy",
+          "arch": "Classifier",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 53.81
+        },
+        {
+          "name": "bottleneck_correct",
+          "arch": "Bottleneck",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 56.13
+        },
+        {
+          "name": "bottleneck_buggy",
+          "arch": "Bottleneck",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 52.12
+        },
+        {
+          "name": "multihead_correct",
+          "arch": "MultiHead",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 87.8
+        },
+        {
+          "name": "multihead_buggy",
+          "arch": "MultiHead",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 47.33
+        },
+        {
+          "name": "wide_correct",
+          "arch": "Wide",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 48.56
+        },
+        {
+          "name": "wide_buggy",
+          "arch": "Wide",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 58.99
+        }
+      ]
+    },
+    "cegar_filtered": {
+      "label": "CEGAR \u2014 quality filter ON",
+      "metrics": {
+        "tp": 14,
+        "fp": 0,
+        "fn": 1,
+        "tn": 17,
+        "precision": 1.0,
+        "recall": 0.9333,
+        "f1": 0.9655
+      },
+      "confidence_intervals_95_10k": {
+        "precision": [
+          1.0,
+          1.0
+        ],
+        "recall": [
+          0.7778,
+          1.0
+        ],
+        "f1": [
+          0.875,
+          1.0
+        ]
+      },
+      "total_predicates": 28,
+      "total_rejected": 28,
+      "total_iterations": 58,
+      "total_time_ms": 2081.9,
+      "per_benchmark": [
+        {
+          "name": "mlp_correct_2layer",
+          "arch": "MLP",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 32.06
+        },
+        {
+          "name": "mlp_buggy_2layer",
+          "arch": "MLP",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 43.3
+        },
+        {
+          "name": "mlp_correct_3layer",
+          "arch": "MLP",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 35.59
+        },
+        {
+          "name": "mlp_buggy_3layer",
+          "arch": "MLP",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 52.85
+        },
+        {
+          "name": "mlp_correct_4layer",
+          "arch": "MLP",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 113.48
+        },
+        {
+          "name": "mlp_buggy_4layer",
+          "arch": "MLP",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 4,
+          "time_ms": 225.55
+        },
+        {
+          "name": "cnn_correct_2conv",
+          "arch": "CNN",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "predicates_rejected": 0,
+          "time_ms": 67.69
+        },
+        {
+          "name": "cnn_buggy_channel",
+          "arch": "CNN",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "predicates_rejected": 0,
+          "time_ms": 28.2
+        },
+        {
+          "name": "cnn_correct_3conv",
+          "arch": "CNN",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "predicates_rejected": 0,
+          "time_ms": 45.11
+        },
+        {
+          "name": "cnn_buggy_deep",
+          "arch": "CNN",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 1,
+          "predicates_discovered": 0,
+          "predicates_rejected": 0,
+          "time_ms": 48.05
+        },
+        {
+          "name": "transformer_proj_correct",
+          "arch": "Transformer",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 66.45
+        },
+        {
+          "name": "transformer_proj_buggy",
+          "arch": "Transformer",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 43.85
+        },
+        {
+          "name": "transformer_ffn_correct",
+          "arch": "Transformer",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 46.28
+        },
+        {
+          "name": "transformer_ffn_buggy",
+          "arch": "Transformer",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 52.49
+        },
+        {
+          "name": "autoencoder_correct",
+          "arch": "Autoencoder",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 92.1
+        },
+        {
+          "name": "autoencoder_buggy",
+          "arch": "Autoencoder",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 6,
+          "time_ms": 112.46
+        },
+        {
+          "name": "autoencoder_deep_correct",
+          "arch": "Autoencoder",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 84.92
+        },
+        {
+          "name": "resnet_skip_correct",
+          "arch": "ResNet-skip",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 49.56
+        },
+        {
+          "name": "resnet_skip_buggy",
+          "arch": "ResNet-skip",
+          "has_bug": true,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 48.31
+        },
+        {
+          "name": "resnet_deep_correct",
+          "arch": "ResNet-skip",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 101.86
+        },
+        {
+          "name": "unet_style_correct",
+          "arch": "U-Net-style",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 99.38
+        },
+        {
+          "name": "unet_style_buggy",
+          "arch": "U-Net-style",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 93.67
+        },
+        {
+          "name": "gan_disc_correct",
+          "arch": "GAN-discriminator",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 56.36
+        },
+        {
+          "name": "gan_disc_buggy",
+          "arch": "GAN-discriminator",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 4,
+          "time_ms": 72.07
+        },
+        {
+          "name": "classifier_correct",
+          "arch": "Classifier",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 36.89
+        },
+        {
+          "name": "classifier_buggy",
+          "arch": "Classifier",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 41.96
+        },
+        {
+          "name": "bottleneck_correct",
+          "arch": "Bottleneck",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 40.38
+        },
+        {
+          "name": "bottleneck_buggy",
+          "arch": "Bottleneck",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 43.7
+        },
+        {
+          "name": "multihead_correct",
+          "arch": "MultiHead",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 75.87
+        },
+        {
+          "name": "multihead_buggy",
+          "arch": "MultiHead",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 1,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 38.41
+        },
+        {
+          "name": "wide_correct",
+          "arch": "Wide",
+          "has_bug": false,
+          "detected_bug": false,
+          "status": "SAFE",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 0,
+          "time_ms": 43.39
+        },
+        {
+          "name": "wide_buggy",
+          "arch": "Wide",
+          "has_bug": true,
+          "detected_bug": true,
+          "status": "REAL_BUG_FOUND",
+          "iterations": 2,
+          "predicates_discovered": 1,
+          "predicates_rejected": 2,
+          "time_ms": 49.66
+        }
+      ]
+    }
+  },
+  "summary": {
+    "single_pass_f1": 0.4211,
+    "cegar_unfiltered_f1": 0.9655,
+    "cegar_filtered_f1": 0.9655,
+    "filtered_vs_single_pass_delta_f1": 0.5444,
+    "filtered_vs_unfiltered_delta_f1": 0.0,
+    "single_pass_total_predicates": 28,
+    "cegar_filtered_total_predicates": 28,
+    "cegar_discovers_more_predicates": false,
+    "quality_filtered_cegar_does_not_degrade_f1": true,
+    "total_rejected_predicates": 28
+  }
+}

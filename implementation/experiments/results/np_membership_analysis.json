@@ -1,0 +1,254 @@
+{
+  "experiment": "np_membership_analysis",
+  "timestamp": "2026-02-25T17:32:53Z",
+  "description": "Formal analysis establishing NP-membership of RESHAPE-SAT, addressing MAJOR reviewer critique #4 about the NP-completeness claim. The Lean proof establishes NP-hardness via SUBSET-PRODUCT reduction; this analysis provides the NP-membership argument with concrete demonstrations.",
+  "formal_argument": {
+    "problem_definition": {
+      "name": "RESHAPE-SAT",
+      "input": "Weights s\u2081, ..., s\u2096 \u2208 \u2115\u207a and target T \u2208 \u2115\u207a",
+      "question": "\u2203 c\u2081, ..., c\u2096 with c\u1d62 \u2208 {1, s\u1d62} such that \u220f\u1d62 c\u1d62 = T?"
+    },
+    "np_membership": {
+      "claim": "RESHAPE-SAT \u2208 NP",
+      "proof": {
+        "certificate": "A vector (c\u2081, ..., c\u2096) where each c\u1d62 \u2208 {1, s\u1d62}",
+        "certificate_size": "k values, each at most max(s\u1d62), so O(k \u00b7 log(max s\u1d62)) bits \u2014 polynomial in input size",
+        "verification_algorithm": [
+          "1. Check len(certificate) == k \u2014 O(1)",
+          "2. For i = 1 to k: check c\u1d62 \u2208 {1, s\u1d62} \u2014 O(k) comparisons",
+          "3. Compute P = \u220f\u1d62 c\u1d62 \u2014 O(k) multiplications",
+          "4. Check P == T \u2014 O(1) comparison"
+        ],
+        "verification_complexity": "O(k) arithmetic operations",
+        "conclusion": "The verifier runs in O(k) time, which is polynomial in the input size (k numbers). Therefore RESHAPE-SAT \u2208 NP."
+      }
+    },
+    "np_hardness": {
+      "claim": "RESHAPE-SAT is NP-hard",
+      "proof_method": "Polynomial-time reduction from SUBSET-PRODUCT",
+      "reduction": {
+        "from_problem": "SUBSET-PRODUCT",
+        "np_completeness_reference": "Garey & Johnson, 1979",
+        "reduction_description": "Given SUBSET-PRODUCT instance (S = {s\u2081,...,s\u2096}, T): construct RESHAPE-SAT instance with weights = S, target = T. This is the identity reduction \u2014 the problems are equivalent because choosing d\u1d62 = s\u1d62 vs d\u1d62 = 1 is exactly subset selection.",
+        "forward_direction": "If subset with product T exists \u2192 choose d\u1d62 = s\u1d62 for included elements, d\u1d62 = 1 for excluded. \u220fd\u1d62 = T. \u2713",
+        "reverse_direction": "If choices satisfy \u220fd\u1d62 = T \u2192 subset {s\u1d62 | d\u1d62 = s\u1d62} has product T (factors of 1 don't contribute). \u2713",
+        "lean_proof": "Both directions fully mechanized in lean/TheoryCombination.lean as subset_product_forward and subset_product_reverse, with zero sorry obligations."
+      }
+    },
+    "np_completeness": {
+      "claim": "RESHAPE-SAT is NP-complete",
+      "proof": "NP-membership (polynomial verifier, shown above) + NP-hardness (SUBSET-PRODUCT reduction, mechanized in Lean) \u27f9 NP-completeness.",
+      "lean_theorem": "reshape_np_complete in lean/TheoryCombination.lean",
+      "note_on_lean_proof": "The Lean theorem reshape_np_complete proves the equivalence SubsetProduct weights T \u2194 ReshapeDimSat weights T, which establishes NP-hardness. NP-membership is a meta-theorem (about Turing machines / computational complexity) that is standard to argue informally: the certificate size is polynomial and verification is polynomial. Formalizing NP membership in Lean would require a formalization of computational complexity theory (Turing machines, polynomial time), which is outside the scope of this work but is a standard mathematical argument."
+    }
+  },
+  "concrete_examples": [
+    {
+      "name": "simple_satisfiable",
+      "weights": [
+        2,
+        3,
+        5
+      ],
+      "target": 6,
+      "certificate": [
+        2,
+        3,
+        1
+      ],
+      "valid": true,
+      "reason": "Valid certificate",
+      "verification_operations": 8,
+      "k": 3,
+      "explanation": "Reshape constraint: d\u2081\u2208{1,2}, d\u2082\u2208{1,3}, d\u2083\u2208{1,5}, \u220fd\u1d62 = 6. Certificate: [2, 3, 1]. Product = 6 = 6. Verified in 8 operations (O(k=3))."
+    },
+    {
+      "name": "unsatisfiable",
+      "weights": [
+        2,
+        3,
+        5
+      ],
+      "target": 7,
+      "certificate_attempt": [
+        2,
+        3,
+        1
+      ],
+      "valid": false,
+      "reason": "Product 6 != target 7",
+      "has_any_solution": false,
+      "brute_force_checked": true,
+      "all_possible_products": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        10,
+        15,
+        30
+      ],
+      "explanation": "Target 7 is not achievable. All possible products from weights [2, 3, 5] with choices in {1, s\u1d62}: [1, 2, 3, 5, 6, 10, 15, 30]. Since 7 is not among them, the instance is unsatisfiable."
+    },
+    {
+      "name": "reshape_scenario",
+      "weights": [
+        4,
+        8,
+        16
+      ],
+      "target": 32,
+      "certificate": [
+        4,
+        8,
+        1
+      ],
+      "valid": true,
+      "reason": "Valid certificate",
+      "verification_operations": 8,
+      "k": 3,
+      "context": "Tensor reshape from shape [4, 8, 16] to [32, 16]. Question: can we choose dimensions d\u2081\u2208{1,4}, d\u2082\u2208{1,8}, d\u2083\u2208{1,16} such that d\u2081\u00d7d\u2082\u00d7d\u2083 = 32?",
+      "explanation": "Certificate [4, 8, 1]: product = 32 = 32. Verified in 8 operations."
+    },
+    {
+      "name": "invalid_certificate_domain",
+      "weights": [
+        3,
+        7,
+        11
+      ],
+      "target": 21,
+      "certificate": [
+        3,
+        7,
+        2
+      ],
+      "valid": false,
+      "reason": "certificate[2]=2 \u2209 {1, 11}",
+      "verification_operations": 4,
+      "explanation": "Certificate [3, 7, 2] is invalid: c\u2083=2 but d\u2083 \u2208 {1, 11}. The verifier catches this in O(k) time."
+    },
+    {
+      "name": "scaling_k20",
+      "weights": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "target": 1024,
+      "certificate": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "valid": true,
+      "reason": "Valid certificate",
+      "verification_operations": 42,
+      "k": 20,
+      "search_space_size": 1048576,
+      "verification_complexity": "O(20)",
+      "explanation": "k=20 dimensions, each d\u1d62 \u2208 {1, 2}. Target = 2^10 = 1024. Search space: 2^20 = 1048576 candidates. But verification of a given certificate takes only 42 operations = O(k=20), polynomial in input size."
+    },
+    {
+      "name": "scaling_k50",
+      "k": 50,
+      "target": 33554432,
+      "certificate_valid": true,
+      "verification_operations": 102,
+      "search_space_size_log2": 50,
+      "search_space_note": "2^50 \u2248 10^15",
+      "verification_complexity": "O(50)",
+      "explanation": "k=50: search space = 2^50, but verification = O(50) = 102 operations. This exponential gap between searching and verifying is the essence of NP."
+    },
+    {
+      "name": "scaling_k100",
+      "k": 100,
+      "target": 1125899906842624,
+      "certificate_valid": true,
+      "verification_operations": 202,
+      "search_space_size_log2": 100,
+      "search_space_note": "2^100 \u2248 10^30",
+      "verification_complexity": "O(100)",
+      "explanation": "k=100: search space = 2^100, but verification = O(100) = 202 operations. This exponential gap between searching and verifying is the essence of NP."
+    }
+  ],
+  "complexity_analysis": {
+    "verification_time": {
+      "description": "Time to verify a certificate",
+      "complexity": "O(k)",
+      "operations": [
+        "k comparisons for domain check",
+        "k multiplications for product",
+        "1 comparison for target check"
+      ],
+      "total": "2k + 2 operations"
+    },
+    "search_time_brute_force": {
+      "description": "Time to find a certificate by exhaustive search",
+      "complexity": "O(2^k \u00b7 k)",
+      "explanation": "2^k possible certificates, each verified in O(k)"
+    },
+    "np_gap": {
+      "description": "The exponential gap between verifying (O(k)) and searching (O(2^k \u00b7 k)) is characteristic of NP problems.",
+      "examples": {
+        "k=10": {
+          "search_space": 1024,
+          "verify_ops": 22
+        },
+        "k=20": {
+          "search_space": 1048576,
+          "verify_ops": 42
+        },
+        "k=50": {
+          "search_space": "~10^15",
+          "verify_ops": 102
+        },
+        "k=100": {
+          "search_space": "~10^30",
+          "verify_ops": 202
+        }
+      }
+    }
+  },
+  "conclusion": {
+    "np_membership": "RESHAPE-SAT \u2208 NP: given certificate (c\u2081,...,c\u2096), verify \u220fc\u1d62 = T in O(k) time. Certificate size = O(k log(max s\u1d62)) bits.",
+    "np_hardness": "RESHAPE-SAT is NP-hard: SUBSET-PRODUCT \u2264\u209a RESHAPE-SAT via identity reduction (mechanized in Lean with zero sorry).",
+    "np_completeness": "NP \u220b RESHAPE-SAT \u2227 RESHAPE-SAT is NP-hard \u27f9 RESHAPE-SAT is NP-complete.",
+    "reviewer_response": "The paper's NP-completeness claim is justified: NP-hardness is mechanized in Lean (subset_product_forward, subset_product_reverse), and NP-membership follows from exhibiting a polynomial-time verifier (O(k) operations for k-dimensional reshape constraints). The Lean proof covers the reduction; NP-membership is a standard complexity-theoretic argument about verifier efficiency."
+  }
+}

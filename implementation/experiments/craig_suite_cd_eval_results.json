@@ -1,0 +1,948 @@
+{
+  "experiment": "craig_suite_cd_eval",
+  "description": "Craig interpolation cross-domain evaluation: does interpolation close the CEGAR\u2013BMC accuracy gap on architectures where template-based CEGAR typically fails?",
+  "num_benchmarks": 24,
+  "num_buggy": 10,
+  "num_safe": 14,
+  "categories": [
+    "beyond_template",
+    "deep_composition",
+    "flatten_reshape",
+    "multihead_attention",
+    "skip_connection"
+  ],
+  "aggregate": {
+    "cegar_no_interp": {
+      "tp": 7,
+      "fp": 3,
+      "fn": 3,
+      "tn": 11,
+      "precision": 0.7,
+      "recall": 0.7,
+      "f1": 0.7,
+      "accuracy": 0.75
+    },
+    "cegar_with_interp": {
+      "tp": 7,
+      "fp": 3,
+      "fn": 3,
+      "tn": 11,
+      "precision": 0.7,
+      "recall": 0.7,
+      "f1": 0.7,
+      "accuracy": 0.75
+    },
+    "bmc_baseline": {
+      "tp": 10,
+      "fp": 14,
+      "fn": 0,
+      "tn": 0,
+      "precision": 0.4167,
+      "recall": 1.0,
+      "f1": 0.5882,
+      "accuracy": 0.4167
+    },
+    "delta_f1_interp_vs_no_interp": 0.0,
+    "delta_accuracy_interp_vs_no_interp": 0.0,
+    "total_interpolation_predicates": 42
+  },
+  "gap_analysis": {
+    "gap_cases": 3,
+    "gaps_closed_by_interpolation": 0,
+    "interpolation_success_rate": 0.0,
+    "wilson_score_95_ci": [
+      0.0,
+      0.5615
+    ],
+    "gap_case_names": [
+      "conv_flatten_linear_buggy",
+      "conv_pool_flatten_buggy",
+      "deep_conv_pool_fc_buggy"
+    ],
+    "closed_case_names": []
+  },
+  "per_category": {
+    "beyond_template": {
+      "total": 4,
+      "cegar_no_interp_correct": 4,
+      "cegar_with_interp_correct": 4,
+      "bmc_correct": 2,
+      "gap_cases": 0,
+      "gaps_closed": 0
+    },
+    "deep_composition": {
+      "total": 5,
+      "cegar_no_interp_correct": 4,
+      "cegar_with_interp_correct": 4,
+      "bmc_correct": 2,
+      "gap_cases": 1,
+      "gaps_closed": 0
+    },
+    "flatten_reshape": {
+      "total": 5,
+      "cegar_no_interp_correct": 3,
+      "cegar_with_interp_correct": 3,
+      "bmc_correct": 2,
+      "gap_cases": 2,
+      "gaps_closed": 0
+    },
+    "multihead_attention": {
+      "total": 5,
+      "cegar_no_interp_correct": 4,
+      "cegar_with_interp_correct": 4,
+      "bmc_correct": 2,
+      "gap_cases": 0,
+      "gaps_closed": 0
+    },
+    "skip_connection": {
+      "total": 5,
+      "cegar_no_interp_correct": 3,
+      "cegar_with_interp_correct": 3,
+      "bmc_correct": 2,
+      "gap_cases": 0,
+      "gaps_closed": 0
+    }
+  },
+  "per_benchmark": [
+    {
+      "name": "conv_flatten_linear_correct",
+      "category": "flatten_reshape",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 436.44
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 1,
+        "time_ms": 607.26
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 7,
+        "num_constraints": 101,
+        "time_ms": 306.98
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "conv_flatten_linear_buggy",
+      "category": "flatten_reshape",
+      "has_bug": true,
+      "expected": "UNSAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 397.35
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 1,
+        "time_ms": 403.33
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 7,
+        "num_constraints": 101,
+        "time_ms": 292.65
+      },
+      "cegar_no_interp_correct": false,
+      "cegar_with_interp_correct": false,
+      "bmc_correct": true,
+      "is_gap_case": true,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "conv_pool_flatten_correct",
+      "category": "flatten_reshape",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 356.51
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 2,
+        "time_ms": 591.34
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 6,
+        "num_constraints": 84,
+        "time_ms": 298.1
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "conv_pool_flatten_buggy",
+      "category": "flatten_reshape",
+      "has_bug": true,
+      "expected": "UNSAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 317.97
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 2,
+        "time_ms": 330.55
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 6,
+        "num_constraints": 84,
+        "time_ms": 248.61
+      },
+      "cegar_no_interp_correct": false,
+      "cegar_with_interp_correct": false,
+      "bmc_correct": true,
+      "is_gap_case": true,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "reshape_view_chain_correct",
+      "category": "flatten_reshape",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 362.37
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 2,
+        "time_ms": 218.29
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 5,
+        "num_constraints": 72,
+        "time_ms": 67.57
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "resblock_conv_correct",
+      "category": "skip_connection",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 0,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 0,
+        "time_ms": 202.17
+      },
+      "cegar_with_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 0,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 0,
+        "time_ms": 338.07
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 7,
+        "num_constraints": 102,
+        "time_ms": 347.39
+      },
+      "cegar_no_interp_correct": false,
+      "cegar_with_interp_correct": false,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "resblock_conv_buggy",
+      "category": "skip_connection",
+      "has_bug": true,
+      "expected": "UNSAFE",
+      "cegar_no_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 0,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 0,
+        "time_ms": 142.21
+      },
+      "cegar_with_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 0,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 0,
+        "time_ms": 69.09
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 7,
+        "num_constraints": 96,
+        "time_ms": 64.11
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": true,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "double_skip_correct",
+      "category": "skip_connection",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 0,
+        "time_ms": 104.01
+      },
+      "cegar_with_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 1,
+        "time_ms": 125.98
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 11,
+        "num_constraints": 166,
+        "time_ms": 85.98
+      },
+      "cegar_no_interp_correct": false,
+      "cegar_with_interp_correct": false,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "double_skip_buggy",
+      "category": "skip_connection",
+      "has_bug": true,
+      "expected": "UNSAFE",
+      "cegar_no_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 0,
+        "time_ms": 95.15
+      },
+      "cegar_with_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 1,
+        "time_ms": 112.58
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 11,
+        "num_constraints": 163,
+        "time_ms": 89.47
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": true,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "downsample_skip_correct",
+      "category": "skip_connection",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 92.15
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 2,
+        "time_ms": 94.26
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 7,
+        "num_constraints": 103,
+        "time_ms": 42.84
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "multihead_qkv_correct",
+      "category": "multihead_attention",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 68.88
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 3,
+        "time_ms": 78.97
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 5,
+        "num_constraints": 79,
+        "time_ms": 45.36
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "multihead_qkv_buggy",
+      "category": "multihead_attention",
+      "has_bug": true,
+      "expected": "UNSAFE",
+      "cegar_no_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 0,
+        "time_ms": 41.51
+      },
+      "cegar_with_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 3,
+        "time_ms": 60.66
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 5,
+        "num_constraints": 76,
+        "time_ms": 36.91
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": true,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "multihead_split_merge_correct",
+      "category": "multihead_attention",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 215.35
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 4,
+        "time_ms": 235.54
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 9,
+        "num_constraints": 141,
+        "time_ms": 105.08
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "multihead_split_merge_buggy",
+      "category": "multihead_attention",
+      "has_bug": true,
+      "expected": "UNSAFE",
+      "cegar_no_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 0,
+        "time_ms": 104.41
+      },
+      "cegar_with_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 4,
+        "time_ms": 130.18
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 9,
+        "num_constraints": 141,
+        "time_ms": 104.2
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": true,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "mha_ffn_block_correct",
+      "category": "multihead_attention",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 0,
+        "time_ms": 63.1
+      },
+      "cegar_with_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 1,
+        "time_ms": 69.52
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 7,
+        "num_constraints": 105,
+        "time_ms": 61.59
+      },
+      "cegar_no_interp_correct": false,
+      "cegar_with_interp_correct": false,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "deep_conv_pool_fc_correct",
+      "category": "deep_composition",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 178.18
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 2,
+        "time_ms": 197.36
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 10,
+        "num_constraints": 144,
+        "time_ms": 74.74
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "deep_conv_pool_fc_buggy",
+      "category": "deep_composition",
+      "has_bug": true,
+      "expected": "UNSAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 171.68
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 2,
+        "time_ms": 175.54
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 10,
+        "num_constraints": 144,
+        "time_ms": 76.63
+      },
+      "cegar_no_interp_correct": false,
+      "cegar_with_interp_correct": false,
+      "bmc_correct": true,
+      "is_gap_case": true,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "five_layer_chain_correct",
+      "category": "deep_composition",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 146.02
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 1,
+        "time_ms": 137.88
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 10,
+        "num_constraints": 148,
+        "time_ms": 116.76
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "five_layer_chain_buggy",
+      "category": "deep_composition",
+      "has_bug": true,
+      "expected": "UNSAFE",
+      "cegar_no_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 0,
+        "time_ms": 185.87
+      },
+      "cegar_with_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 1,
+        "time_ms": 170.09
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 10,
+        "num_constraints": 139,
+        "time_ms": 281.71
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": true,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "encoder_decoder_deep_correct",
+      "category": "deep_composition",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 773.19
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 1,
+        "time_ms": 630.6
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 12,
+        "num_constraints": 178,
+        "time_ms": 508.71
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "cross_branch_add_correct",
+      "category": "beyond_template",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 1040.25
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 2,
+        "time_ms": 884.03
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 7,
+        "num_constraints": 103,
+        "time_ms": 219.3
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "cross_branch_add_buggy",
+      "category": "beyond_template",
+      "has_bug": true,
+      "expected": "UNSAFE",
+      "cegar_no_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 0,
+        "time_ms": 432.31
+      },
+      "cegar_with_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 2,
+        "time_ms": 453.85
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 7,
+        "num_constraints": 98,
+        "time_ms": 224.29
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": true,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "project_gate_correct",
+      "category": "beyond_template",
+      "has_bug": false,
+      "expected": "SAFE",
+      "cegar_no_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 0,
+        "time_ms": 542.23
+      },
+      "cegar_with_interp": {
+        "verdict": "SAFE",
+        "predicates": 1,
+        "iterations": 2,
+        "status": "SAFE",
+        "interp_preds": 2,
+        "time_ms": 375.61
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 6,
+        "num_constraints": 90,
+        "time_ms": 308.58
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": false,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    },
+    {
+      "name": "project_gate_buggy",
+      "category": "beyond_template",
+      "has_bug": true,
+      "expected": "UNSAFE",
+      "cegar_no_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 0,
+        "time_ms": 149.52
+      },
+      "cegar_with_interp": {
+        "verdict": "UNSAFE",
+        "predicates": 1,
+        "iterations": 1,
+        "status": "REAL_BUG_FOUND",
+        "interp_preds": 2,
+        "time_ms": 84.85
+      },
+      "bmc_baseline": {
+        "verdict": "UNSAFE",
+        "num_steps": 6,
+        "num_constraints": 85,
+        "time_ms": 167.52
+      },
+      "cegar_no_interp_correct": true,
+      "cegar_with_interp_correct": true,
+      "bmc_correct": true,
+      "is_gap_case": false,
+      "interpolation_closes_gap": false
+    }
+  ],
+  "comparison_table": {
+    "headers": [
+      "Mode",
+      "F1",
+      "Precision",
+      "Recall",
+      "Accuracy",
+      "TP",
+      "FP",
+      "FN",
+      "TN"
+    ],
+    "rows": [
+      [
+        "CEGAR (no interp)",
+        0.7,
+        0.7,
+        0.7,
+        0.75,
+        7,
+        3,
+        3,
+        11
+      ],
+      [
+        "CEGAR (with interp)",
+        0.7,
+        0.7,
+        0.7,
+        0.75,
+        7,
+        3,
+        3,
+        11
+      ],
+      [
+        "BMC (monolithic)",
+        0.5882,
+        0.4167,
+        1.0,
+        0.4167,
+        10,
+        14,
+        0,
+        0
+      ]
+    ]
+  }
+}

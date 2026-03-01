@@ -1,0 +1,626 @@
+{
+  "metadata": {
+    "description": "F1 disaggregated by SMT fragment (QF_LIA vs QF_NIA). Addresses reviewer request to see where errors concentrate. QF_NIA arises from reshape/view/flatten product-equality constraints (batch*seq=total), which are beyond QF_LIA.",
+    "total_benchmarks": 50,
+    "elapsed_s": 0.1622,
+    "analyzer_used": "analyze_unified"
+  },
+  "overall_metrics": {
+    "fragment": "overall",
+    "tp": 38,
+    "fp": 0,
+    "fn": 2,
+    "tn": 10,
+    "precision": 1.0,
+    "recall": 0.95,
+    "f1": 0.9744,
+    "n_benchmarks": 50,
+    "fp_benchmarks": [],
+    "fn_benchmarks": [
+      "null_find_result",
+      "shape_flatten_matmul"
+    ]
+  },
+  "per_fragment_metrics": {
+    "QF_LIA": {
+      "fragment": "QF_LIA",
+      "tp": 34,
+      "fp": 0,
+      "fn": 1,
+      "tn": 9,
+      "precision": 1.0,
+      "recall": 0.9714,
+      "f1": 0.9855,
+      "n_benchmarks": 44,
+      "fp_benchmarks": [],
+      "fn_benchmarks": [
+        "null_find_result"
+      ]
+    },
+    "QF_NIA": {
+      "fragment": "QF_NIA",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "tn": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "n_benchmarks": 4,
+      "fp_benchmarks": [],
+      "fn_benchmarks": []
+    },
+    "mixed": {
+      "fragment": "mixed",
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "tn": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6667,
+      "n_benchmarks": 2,
+      "fp_benchmarks": [],
+      "fn_benchmarks": [
+        "shape_flatten_matmul"
+      ]
+    }
+  },
+  "fragment_distribution": {
+    "QF_LIA": 44,
+    "QF_NIA": 4,
+    "mixed": 2
+  },
+  "nia_error_analysis": {
+    "description": "Errors (FP/FN) attributed to QF_NIA constraints. Reshape's batch*seq=total is QF_NIA, beyond QF_LIA. Z3 handles concrete-c factor-pair enumeration (a*b=c with c known) but may struggle with fully symbolic products.",
+    "total_nia_errors": 1,
+    "nia_fp_count": 0,
+    "nia_fn_count": 1,
+    "nia_error_details": [
+      {
+        "name": "shape_flatten_matmul",
+        "category": "tensor_shapes",
+        "fragment": "mixed",
+        "has_bug": true,
+        "detected": false,
+        "outcome": "FN",
+        "nia_error_attribution": true,
+        "description": "Flatten produces wrong dim for linear layer"
+      }
+    ]
+  },
+  "decidability_scoping": {
+    "qf_lia": {
+      "description": "Quantifier-free linear integer arithmetic. Covers matmul inner-dim equality, broadcasting, addition, concatenation dim checks. Decidable in P for fixed-rank concrete shapes (Presburger arithmetic).",
+      "decidable": true,
+      "complexity": "P"
+    },
+    "qf_nia": {
+      "description": "Quantifier-free nonlinear integer arithmetic. Arises from reshape/view/flatten product-equality constraints: d1*d2*...*dk = d1'*d2'*...*dk'. Unrestricted QF_NIA is undecidable (Matiyasevich 1970).",
+      "decidable": "depends on sub-fragment",
+      "complexity": "NP-hard (bounded), undecidable (unbounded)",
+      "sub_fragments": {
+        "concrete_c_factor_pair": {
+          "description": "a*b = c where c is a concrete integer. Z3 enumerates factor pairs of c. Decidable.",
+          "example": "batch*seq = 1024 (reshape with known total)",
+          "z3_strategy": "factor-pair enumeration",
+          "decidable": true
+        },
+        "bounded_symbolic": {
+          "description": "a*b = c where all variables have finite bounds. Decidable via bit-blasting to SAT.",
+          "example": "heads*head_dim = embed_dim with 1\u2264heads\u2264128",
+          "z3_strategy": "bit-blasting or nlsat",
+          "decidable": true
+        },
+        "fully_symbolic": {
+          "description": "a*b = c with no concrete values or bounds. Enters undecidable fragment. Z3's nlsat may return unknown.",
+          "example": "batch*seq = total (all symbolic, no bounds)",
+          "z3_strategy": "nlsat (incomplete)",
+          "decidable": false
+        }
+      }
+    }
+  },
+  "benchmark_details": [
+    {
+      "name": "null_dict_get",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "dict.get() returns Optional, dereferenced without check"
+    },
+    {
+      "name": "null_conditional_escape",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "None escapes one branch"
+    },
+    {
+      "name": "null_overwrite",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Good value overwritten with None"
+    },
+    {
+      "name": "null_append_return",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "list.append returns None"
+    },
+    {
+      "name": "null_wrong_guard",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Guard checks wrong variable"
+    },
+    {
+      "name": "null_loop_init",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Variable set inside loop body may remain None"
+    },
+    {
+      "name": "null_chain_deref",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Method chain on None value"
+    },
+    {
+      "name": "null_nested_access",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Nested attr access on maybe-None"
+    },
+    {
+      "name": "null_reassign_branch",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Only one branch sets variable"
+    },
+    {
+      "name": "null_simple_deref",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Direct None dereference"
+    },
+    {
+      "name": "null_sort_return",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "list.sort returns None"
+    },
+    {
+      "name": "null_setdefault_misuse",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Misuse of dict.get after pop"
+    },
+    {
+      "name": "null_ternary_none",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Ternary can produce None"
+    },
+    {
+      "name": "null_find_result",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": false,
+      "outcome": "FN",
+      "nia_error_attribution": false,
+      "description": "str.find returns -1, not None, but pattern is Optional-like"
+    },
+    {
+      "name": "null_multiple_returns",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Function returns None on some paths, caller dereferences"
+    },
+    {
+      "name": "null_exception_handler",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Variable set in try but used after except may be None"
+    },
+    {
+      "name": "null_attr_on_none",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Attribute access on explicit None"
+    },
+    {
+      "name": "null_subscript_none",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Subscript on None value"
+    },
+    {
+      "name": "null_iter_none",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Iterating over None"
+    },
+    {
+      "name": "null_call_none",
+      "category": "null_safety",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Calling None as function"
+    },
+    {
+      "name": "shape_matmul_mismatch",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "matmul with incompatible inner dims"
+    },
+    {
+      "name": "shape_matmul_3d",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Batched matmul with wrong inner dim"
+    },
+    {
+      "name": "shape_add_mismatch",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Element-wise add with incompatible shapes"
+    },
+    {
+      "name": "shape_reshape_invalid",
+      "category": "tensor_shapes",
+      "fragment": "QF_NIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Reshape to incompatible total elements"
+    },
+    {
+      "name": "shape_cat_dim_mismatch",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "torch.cat with mismatched non-cat dim"
+    },
+    {
+      "name": "shape_linear_mismatch",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "nn.Linear input features mismatch"
+    },
+    {
+      "name": "shape_conv_mismatch",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Conv2d input channels mismatch"
+    },
+    {
+      "name": "shape_view_invalid",
+      "category": "tensor_shapes",
+      "fragment": "QF_NIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "view with wrong total elements"
+    },
+    {
+      "name": "shape_attention_mismatch",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Attention Q/K dimension mismatch"
+    },
+    {
+      "name": "shape_broadcast_fail",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Broadcasting fails on incompatible dims"
+    },
+    {
+      "name": "shape_mm_wrong_dims",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "torch.mm dimension mismatch"
+    },
+    {
+      "name": "shape_reshape_chain",
+      "category": "tensor_shapes",
+      "fragment": "QF_NIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Chain of reshapes leads to invalid shape"
+    },
+    {
+      "name": "shape_stack_ndim",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "torch.stack with different shaped tensors"
+    },
+    {
+      "name": "shape_mv_mismatch",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Matrix-vector multiply dimension mismatch"
+    },
+    {
+      "name": "shape_residual_mismatch",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Residual connection with mismatched shapes"
+    },
+    {
+      "name": "shape_transpose_matmul",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Wrong transpose before matmul"
+    },
+    {
+      "name": "shape_concat_wrong_axis",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Concatenation along wrong axis"
+    },
+    {
+      "name": "shape_flatten_matmul",
+      "category": "tensor_shapes",
+      "fragment": "mixed",
+      "has_bug": true,
+      "detected": false,
+      "outcome": "FN",
+      "nia_error_attribution": true,
+      "description": "Flatten produces wrong dim for linear layer"
+    },
+    {
+      "name": "shape_squeeze_error",
+      "category": "tensor_shapes",
+      "fragment": "mixed",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "Operations after wrong reshape"
+    },
+    {
+      "name": "shape_einsum_mismatch",
+      "category": "tensor_shapes",
+      "fragment": "QF_LIA",
+      "has_bug": true,
+      "detected": true,
+      "outcome": "TP",
+      "nia_error_attribution": false,
+      "description": "matmul after incompatible reshape"
+    },
+    {
+      "name": "safe_none_check",
+      "category": "correct",
+      "fragment": "QF_LIA",
+      "has_bug": false,
+      "detected": false,
+      "outcome": "TN",
+      "nia_error_attribution": false,
+      "description": "Proper None guard before use"
+    },
+    {
+      "name": "safe_early_return",
+      "category": "correct",
+      "fragment": "QF_LIA",
+      "has_bug": false,
+      "detected": false,
+      "outcome": "TN",
+      "nia_error_attribution": false,
+      "description": "Early return on None"
+    },
+    {
+      "name": "safe_isinstance_guard",
+      "category": "correct",
+      "fragment": "QF_LIA",
+      "has_bug": false,
+      "detected": false,
+      "outcome": "TN",
+      "nia_error_attribution": false,
+      "description": "isinstance guard before method call"
+    },
+    {
+      "name": "safe_truthiness",
+      "category": "correct",
+      "fragment": "QF_LIA",
+      "has_bug": false,
+      "detected": false,
+      "outcome": "TN",
+      "nia_error_attribution": false,
+      "description": "Truthiness check guards None"
+    },
+    {
+      "name": "safe_default_value",
+      "category": "correct",
+      "fragment": "QF_LIA",
+      "has_bug": false,
+      "detected": false,
+      "outcome": "TN",
+      "nia_error_attribution": false,
+      "description": "Default value prevents None"
+    },
+    {
+      "name": "safe_assert_not_none",
+      "category": "correct",
+      "fragment": "QF_LIA",
+      "has_bug": false,
+      "detected": false,
+      "outcome": "TN",
+      "nia_error_attribution": false,
+      "description": "Assert guards against None"
+    },
+    {
+      "name": "safe_matmul",
+      "category": "correct",
+      "fragment": "QF_LIA",
+      "has_bug": false,
+      "detected": false,
+      "outcome": "TN",
+      "nia_error_attribution": false,
+      "description": "Valid matmul dimensions"
+    },
+    {
+      "name": "safe_reshape",
+      "category": "correct",
+      "fragment": "QF_NIA",
+      "has_bug": false,
+      "detected": false,
+      "outcome": "TN",
+      "nia_error_attribution": false,
+      "description": "Valid reshape preserving elements"
+    },
+    {
+      "name": "safe_broadcast",
+      "category": "correct",
+      "fragment": "QF_LIA",
+      "has_bug": false,
+      "detected": false,
+      "outcome": "TN",
+      "nia_error_attribution": false,
+      "description": "Valid broadcasting"
+    },
+    {
+      "name": "safe_cat_same_dim",
+      "category": "correct",
+      "fragment": "QF_LIA",
+      "has_bug": false,
+      "detected": false,
+      "outcome": "TN",
+      "nia_error_attribution": false,
+      "description": "Valid concatenation"
+    }
+  ]
+}

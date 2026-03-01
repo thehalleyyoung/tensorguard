@@ -1,0 +1,1438 @@
+{
+  "description": "Chain-of-thought LLM baseline comparison using gpt-4.1-nano (weak LLM). Compares simple prompting, chain-of-thought, and architecture-aware CoT against TensorGuard's formal verification.",
+  "model": "gpt-4.1-nano",
+  "note": "gpt-4.1-nano is a weak/small model. This benchmark measures prompting strategy impact, not frontier LLM capability.",
+  "num_benchmarks": 35,
+  "num_buggy": 18,
+  "num_clean": 17,
+  "tensorguard_metrics": {
+    "TP": 9,
+    "FP": 1,
+    "FN": 9,
+    "TN": 16,
+    "precision": 0.9,
+    "precision_ci_95": [
+      0.5958,
+      0.9821
+    ],
+    "recall": 0.5,
+    "recall_ci_95": [
+      0.2903,
+      0.7097
+    ],
+    "f1": 0.6429,
+    "accuracy": 0.7143
+  },
+  "strategies": {
+    "simple": {
+      "strategy": "simple",
+      "model": "gpt-4.1-nano",
+      "metrics": {
+        "TP": 17,
+        "FP": 2,
+        "FN": 1,
+        "TN": 15,
+        "precision": 0.8947,
+        "precision_ci_95": [
+          0.6861,
+          0.9706
+        ],
+        "recall": 0.9444,
+        "recall_ci_95": [
+          0.7424,
+          0.9901
+        ],
+        "f1": 0.9189,
+        "accuracy": 0.9143
+      },
+      "skipped": 0,
+      "per_category": {
+        "shape_attention": {
+          "TP": 1,
+          "FP": 0,
+          "FN": 0,
+          "TN": 1,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        },
+        "shape_conv": {
+          "TP": 5,
+          "FP": 0,
+          "FN": 0,
+          "TN": 4,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.5655,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.5655,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        },
+        "shape_embedding": {
+          "TP": 1,
+          "FP": 0,
+          "FN": 0,
+          "TN": 1,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        },
+        "shape_flatten": {
+          "TP": 1,
+          "FP": 0,
+          "FN": 0,
+          "TN": 0,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        },
+        "shape_linear": {
+          "TP": 6,
+          "FP": 1,
+          "FN": 1,
+          "TN": 7,
+          "precision": 0.8571,
+          "precision_ci_95": [
+            0.4869,
+            0.9743
+          ],
+          "recall": 0.8571,
+          "recall_ci_95": [
+            0.4869,
+            0.9743
+          ],
+          "f1": 0.8571,
+          "accuracy": 0.8667
+        },
+        "shape_norm": {
+          "TP": 1,
+          "FP": 0,
+          "FN": 0,
+          "TN": 1,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        },
+        "shape_rnn": {
+          "TP": 2,
+          "FP": 1,
+          "FN": 0,
+          "TN": 1,
+          "precision": 0.6667,
+          "precision_ci_95": [
+            0.2077,
+            0.9385
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.3424,
+            1.0
+          ],
+          "f1": 0.8,
+          "accuracy": 0.75
+        }
+      },
+      "benchmarks": [
+        {
+          "name": "linear_chain_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 1976.9,
+          "llm_response": "YES"
+        },
+        {
+          "name": "conv_channel_mismatch",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 815.1,
+          "llm_response": "YES"
+        },
+        {
+          "name": "autoencoder_decoder_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 1246.5,
+          "llm_response": "YES"
+        },
+        {
+          "name": "mlp_hidden_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 349.8,
+          "llm_response": "YES"
+        },
+        {
+          "name": "resnet_shortcut_mismatch",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 1193.5,
+          "llm_response": "YES"
+        },
+        {
+          "name": "transformer_mlp_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 385.7,
+          "llm_response": "YES"
+        },
+        {
+          "name": "conv_flatten_linear_mismatch",
+          "category": "shape_flatten",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 1271.7,
+          "llm_response": "YES"
+        },
+        {
+          "name": "lstm_hidden_mismatch",
+          "category": "shape_rnn",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 465.9,
+          "llm_response": "YES"
+        },
+        {
+          "name": "attention_proj_mismatch",
+          "category": "shape_attention",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 1183.5,
+          "llm_response": "YES"
+        },
+        {
+          "name": "unet_skip_mismatch",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 484.6,
+          "llm_response": "YES"
+        },
+        {
+          "name": "double_conv_channel_bug",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 566.1,
+          "llm_response": "YES"
+        },
+        {
+          "name": "embedding_linear_mismatch",
+          "category": "shape_embedding",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 459.4,
+          "llm_response": "YES"
+        },
+        {
+          "name": "batchnorm_channel_mismatch",
+          "category": "shape_norm",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 1177.7,
+          "llm_response": "YES"
+        },
+        {
+          "name": "gru_output_mismatch",
+          "category": "shape_rnn",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 477.2,
+          "llm_response": "YES"
+        },
+        {
+          "name": "three_layer_conv_bug",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 488.6,
+          "llm_response": "YES"
+        },
+        {
+          "name": "classifier_head_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 693.8,
+          "llm_response": "YES"
+        },
+        {
+          "name": "vae_decoder_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 459.9,
+          "llm_response": "YES"
+        },
+        {
+          "name": "multihead_concat_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": false,
+          "label": "FN",
+          "ms": 356.8,
+          "llm_response": "NO"
+        },
+        {
+          "name": "linear_chain_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 647.2,
+          "llm_response": "NO"
+        },
+        {
+          "name": "conv_chain_correct",
+          "category": "shape_conv",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 362.4,
+          "llm_response": "NO"
+        },
+        {
+          "name": "autoencoder_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": true,
+          "label": "FP",
+          "ms": 401.1,
+          "llm_response": "YES"
+        },
+        {
+          "name": "mlp_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 475.3,
+          "llm_response": "NO"
+        },
+        {
+          "name": "resnet_block_correct",
+          "category": "shape_conv",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 554.0,
+          "llm_response": "NO"
+        },
+        {
+          "name": "transformer_mlp_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 1705.5,
+          "llm_response": "NO"
+        },
+        {
+          "name": "lstm_classifier_correct",
+          "category": "shape_rnn",
+          "has_bug": false,
+          "predicted": true,
+          "label": "FP",
+          "ms": 369.2,
+          "llm_response": "YES"
+        },
+        {
+          "name": "attention_correct",
+          "category": "shape_attention",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 388.9,
+          "llm_response": "NO"
+        },
+        {
+          "name": "embedding_net_correct",
+          "category": "shape_embedding",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 372.6,
+          "llm_response": "NO"
+        },
+        {
+          "name": "batchnorm_correct",
+          "category": "shape_norm",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 363.8,
+          "llm_response": "NO"
+        },
+        {
+          "name": "gru_net_correct",
+          "category": "shape_rnn",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 696.0,
+          "llm_response": "NO"
+        },
+        {
+          "name": "three_layer_conv_correct",
+          "category": "shape_conv",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 336.9,
+          "llm_response": "NO"
+        },
+        {
+          "name": "classifier_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 395.8,
+          "llm_response": "NO"
+        },
+        {
+          "name": "vae_decoder_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 704.4,
+          "llm_response": "NO"
+        },
+        {
+          "name": "multihead_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 393.5,
+          "llm_response": "NO"
+        },
+        {
+          "name": "double_conv_correct",
+          "category": "shape_conv",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 389.8,
+          "llm_response": "NO"
+        },
+        {
+          "name": "deep_classifier_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 587.6,
+          "llm_response": "NO"
+        }
+      ]
+    },
+    "chain_of_thought": {
+      "strategy": "chain_of_thought",
+      "model": "gpt-4.1-nano",
+      "metrics": {
+        "TP": 16,
+        "FP": 0,
+        "FN": 0,
+        "TN": 17,
+        "precision": 1.0,
+        "precision_ci_95": [
+          0.8064,
+          1.0
+        ],
+        "recall": 1.0,
+        "recall_ci_95": [
+          0.8064,
+          1.0
+        ],
+        "f1": 1.0,
+        "accuracy": 1.0
+      },
+      "skipped": 2,
+      "per_category": {
+        "shape_attention": {
+          "TP": 1,
+          "FP": 0,
+          "FN": 0,
+          "TN": 1,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        },
+        "shape_conv": {
+          "TP": 4,
+          "FP": 0,
+          "FN": 0,
+          "TN": 4,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.5101,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.5101,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        },
+        "shape_embedding": {
+          "TP": 1,
+          "FP": 0,
+          "FN": 0,
+          "TN": 1,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        },
+        "shape_flatten": {
+          "TP": 0,
+          "FP": 0,
+          "FN": 0,
+          "TN": 0,
+          "precision": 0.0,
+          "precision_ci_95": [
+            0.0,
+            0.0
+          ],
+          "recall": 0.0,
+          "recall_ci_95": [
+            0.0,
+            0.0
+          ],
+          "f1": 0.0,
+          "accuracy": 0.0
+        },
+        "shape_linear": {
+          "TP": 7,
+          "FP": 0,
+          "FN": 0,
+          "TN": 8,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.6457,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.6457,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        },
+        "shape_norm": {
+          "TP": 1,
+          "FP": 0,
+          "FN": 0,
+          "TN": 1,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        },
+        "shape_rnn": {
+          "TP": 2,
+          "FP": 0,
+          "FN": 0,
+          "TN": 2,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.3424,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.3424,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        }
+      },
+      "benchmarks": [
+        {
+          "name": "linear_chain_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 3188.8,
+          "llm_response": "Let's analyze the model step by step:\n\n### __init__ layer definitions:\n\n1. **self.fc1 = nn.Linear(10, 20)**\n   - Input dimension: 10\n   - Output dimension: 20\n\n2. **self.fc2 = nn.Linear(30, 5)**\n   - Input dimension: 30\n   - Output dimension: 5\n\n---\n\n### Forward method:\n\n```python\ndef forward(self, x):\n    x = self.fc1(x)\n    x = self.fc2(x)\n    return x\n```\n\n---\n\n### Step-by-step tensor shape tracking:\n\n- **Input `x`**: The shape of `x` must match the input dimension of `fc1`, which is 10.\n\n  - **Assumption**: `x` is of shape `(batch_size, 10)`.\n\n- **After `x = self.fc1(x)`**:\n  - Input shape: `(batch_size, 10)`\n  - `fc1` transforms it to `(batch_size, 20)`\n\n- **Next, `x = self.fc2(x)`**:\n  - Input shape: `(batch_size, 20)`\n  - `fc2` expects input of size 30, but currently, `x` has size 20 in the feature dimension.\n\n  - **Mismatch**: The input to `fc2` is `(batch_size, 20)`, but `fc2` expects `(batch_size, 30)`.\n\n### Conclusion:\n\n- The shape after `fc1` is `(batch_size, 20)`.\n- `fc2` expects `(batch_size, 30)` but receives `(batch_size, 20)`.\n\n**Dimension mismatch occurs at the second linear layer.**\n\n---\n\n### Final answer:\n\n**YES**"
+        },
+        {
+          "name": "conv_channel_mismatch",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 5488.5,
+          "llm_response": "Let's analyze the model step by step.\n\n---\n\n### __init__ Layer Analysis:\n\n1. **self.conv1 = nn.Conv2d(3, 16, 3)**  \n   - Input channels: 3  \n   - Output channels: 16  \n   - Kernel size: 3x3\n\n2. **self.conv2 = nn.Conv2d(32, 64, 3)**  \n   - Input channels: 32  \n   - Output channels: 64  \n   - Kernel size: 3x3\n\n---\n\n### Forward Method Analysis:\n\n```python\ndef forward(self, x):\n    x = self.conv1(x)\n    x = self.conv2(x)\n    return x\n```\n\n---\n\n### Step-by-step tensor shape tracking:\n\n**Input tensor `x`:**  \n- Since the first convolution expects 3 channels, assume input shape: `(batch_size, 3, H, W)`.  \n- Let's denote input shape as `(N, 3, H, W)`.\n\n---\n\n**After `x = self.conv1(x)`**:\n\n- Conv2d with kernel size 3, default stride=1, padding=0.  \n- Output height and width:  \n  \\[\n  H_{out} = H_{in} - (kernel\\_size - 1) = H - 2\n  \\]\n  \\[\n  W_{out} = W - 2\n  \\]\n- Output shape: `(N, 16, H-2, W-2)`\n\n---\n\n**Next, `x = self.conv2(x)`**:\n\n- **Input to `conv2`:** shape `(N, 16, H-2, W-2)`  \n- **But `conv2` expects input channels = 32!**  \n- **Current tensor has 16 channels, but `conv2` expects 32 channels.**\n\n**Dimension mismatch occurs here.**\n\n---\n\n### Final conclusion:\n\n- The model's `conv2` layer expects an input with 32 channels, but the previous layer outputs only 16 channels.  \n- Therefore, **a dimension mismatch occurs** during the forward pass.\n\n---\n\n### **Final answer: YES**"
+        },
+        {
+          "name": "autoencoder_decoder_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 7239.6,
+          "llm_response": "Let's analyze the model step by step.\n\n### Initialization (`__init__`):\n\n1. **enc1**: `nn.Linear(784, 256)`\n   - Input dimension: 784\n   - Output dimension: 256\n\n2. **enc2**: `nn.Linear(256, 64)`\n   - Input dimension: 256\n   - Output dimension: 64\n\n3. **dec1**: `nn.Linear(64, 128)`\n   - Input dimension: 64\n   - Output dimension: 128\n\n4. **dec2**: `nn.Linear(256, 784)`\n   - Input dimension: 256\n   - Output dimension: 784\n\n---\n\n### Forward pass:\n\nAssuming the input `x` is a batch of flattened images, typically with shape `(batch_size, 784)`.\n\n---\n\n**Step 1: `x = self.enc1(x)`**\n\n- Input shape: `(batch_size, 784)`\n- `enc1` transforms `(batch_size, 784)` \u2192 `(batch_size, 256)`\n\n**Shape after enc1:** `(batch_size, 256)`\n\n---\n\n**Step 2: `x = self.enc2(x)`**\n\n- Input shape: `(batch_size, 256)`\n- `enc2` transforms `(batch_size, 256)` \u2192 `(batch_size, 64)`\n\n**Shape after enc2:** `(batch_size, 64)`\n\n---\n\n**Step 3: `x = self.dec1(x)`**\n\n- Input shape: `(batch_size, 64)`\n- `dec1` transforms `(batch_size, 64)` \u2192 `(batch_size, 128)`\n\n**Shape after dec1:** `(batch_size, 128)`\n\n---\n\n**Step 4: `x = self.dec2(x)`**\n\n- Input shape: `(batch_size, 128)`\n- `dec2` expects input of size 256, but current tensor is `(batch_size, 128)`\n\n**Issue:**\n\n- `dec2` is defined as `nn.Linear(256, 784)`, but the input to `dec2` is `(batch_size, 128)`.\n- The input dimension does **not** match the expected 256.\n\n**Conclusion:**\n\n- There is a dimension mismatch at the last layer: the output of `dec1` is `(batch_size, 128)`, but `dec2` expects `(batch_size, 256)`.\n\n---\n\n### Final answer:\n\n**YES**, a dimension mismatch occurs."
+        },
+        {
+          "name": "mlp_hidden_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 4742.6,
+          "llm_response": "Let's analyze the model step by step.\n\n### Initialization (`__init__`):\n\n1. `self.fc1 = nn.Linear(512, 256)`\n   - Input dimension: 512\n   - Output dimension: 256\n\n2. `self.fc2 = nn.Linear(128, 64)`\n   - Input dimension: 128\n   - Output dimension: 64\n\n3. `self.fc3 = nn.Linear(64, 10)`\n   - Input dimension: 64\n   - Output dimension: 10\n\n---\n\n### Forward pass:\n\n```python\ndef forward(self, x):\n    x = self.fc1(x)\n    x = self.fc2(x)\n    x = self.fc3(x)\n    return x\n```\n\n---\n\n### Step-by-step tensor shape tracking:\n\n- **Input `x`**: The shape must match the input dimension of `fc1`, which is `(batch_size, 512)`.\n\n- **After `x = self.fc1(x)`**:\n  - Input: `(batch_size, 512)`\n  - Output: `(batch_size, 256)` (since `fc1` maps 512 -> 256)\n\n- **Next, `x = self.fc2(x)`**:\n  - Input: `(batch_size, 256)`\n  - But `fc2` expects input dimension 128, not 256.\n  - **Mismatch**: The input to `fc2` is `(batch_size, 256)`, but it expects `(batch_size, 128)`.\n\n- **Therefore, the code will raise an error at this point due to dimension mismatch.**\n\n---\n\n### Final conclusion:\n\n- The first layer's output shape `(batch_size, 256)` does not match the expected input shape `(batch_size, 128)` for `fc2`.\n- **No further steps are valid because of this mismatch.**\n\n---\n\n### **Answer: YES** (a dimension mismatch occurs)"
+        },
+        {
+          "name": "resnet_shortcut_mismatch",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 3352.6,
+          "llm_response": "Let's analyze the model step by step.\n\n### Class: ResBlock\n\n#### __init__ method:\n- `self.conv1 = nn.Conv2d(64, 128, 3, padding=1)`\n  - Input channels: 64\n  - Output channels: 128\n  - Kernel size: 3x3\n  - Padding: 1 (to preserve spatial dimensions)\n- `self.conv2 = nn.Conv2d(128, 128, 3, padding=1)`\n  - Input channels: 128\n  - Output channels: 128\n  - Kernel size: 3x3\n  - Padding: 1\n\n---\n\n### Forward method:\n\nInput tensor: `x`\n\nAssuming the input `x` has shape `(batch_size, 64, H, W)`.\n\n---\n\n### Step 1: `self.conv1(x)`\n\n- Input shape: `(batch_size, 64, H, W)`\n- Conv2d with padding=1 and kernel=3 preserves spatial dimensions:\n  - Output shape: `(batch_size, 128, H, W)`\n\n### Step 2: `self.conv2(...)`\n\n- Input shape: `(batch_size, 128, H, W)`\n- Conv2d with padding=1:\n  - Output shape: `(batch_size, 128, H, W)`\n\n### Step 3: `out + x`\n\n- `out` shape: `(batch_size, 128, H, W)`\n- `x` shape: `(batch_size, 64, H, W)`\n\n**Dimension mismatch occurs here** because the number of channels in `out` (128) does not match the number of channels in `x` (64). \n\nAdding tensors requires the same shape, so this will raise an error during execution.\n\n---\n\n### Final answer:\n\n**YES**, a dimension mismatch occurs."
+        },
+        {
+          "name": "transformer_mlp_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 5909.2,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ Layer Analysis:\n\n1. **self.norm = nn.LayerNorm(768)**  \n   - Input dimension: 768  \n   - Output dimension: 768\n\n2. **self.fc1 = nn.Linear(768, 3072)**  \n   - Input dimension: 768  \n   - Output dimension: 3072\n\n3. **self.fc2 = nn.Linear(2048, 768)**  \n   - Input dimension: 2048  \n   - Output dimension: 768\n\n---\n\n### Forward Pass Analysis:\n\n```python\ndef forward(self, x):\n    h = self.fc1(self.norm(x))\n    return x + self.fc2(h)\n```\n\n---\n\n### Step-by-step tensor shape tracking:\n\n- **Input `x`**:  \n  The input to the model should have shape `(batch_size, 768)` because `LayerNorm(768)` expects the last dimension to be 768.\n\n- **After `self.norm(x)`**:  \n  Shape remains `(batch_size, 768)`.\n\n- **After `self.fc1(self.norm(x))`**:  \n  Shape: `(batch_size, 768) -> (batch_size, 3072)`.\n\n  So, `h` has shape `(batch_size, 3072)`.\n\n- **After `self.fc2(h)`**:  \n  Input shape: `(batch_size, 3072)`.\n\n  But `self.fc2` expects input of size 2048, not 3072.\n\n  **Dimension mismatch here**:  \n  - `h` has shape `(batch_size, 3072)`  \n  - `self.fc2` expects input of size 2048\n\n  Therefore, applying `self.fc2(h)` will cause a runtime error due to size mismatch.\n\n- **Addition `x + self.fc2(h)`**:  \n  Even if the previous step succeeded, for addition, both tensors must have the same shape `(batch_size, 768)`.\n\n  But `self.fc2(h)` outputs `(batch_size, 768)`, which matches `x`'s shape, so addition is valid **if** the previous step was correct.\n\n---\n\n### Final conclusion:\n\n- The critical issue is the input size mismatch for `self.fc2`.  \n- `h` is `(batch_size, 3072)` but `self.fc2` expects `(batch_size, 2048)`.\n\n**Therefore, the code will raise an error at runtime due to dimension mismatch.**\n\n---\n\n### **Answer: YES** (dimension mismatch occurs)"
+        },
+        {
+          "name": "conv_flatten_linear_mismatch",
+          "category": "shape_flatten",
+          "has_bug": true,
+          "predicted": null,
+          "label": "SKIP",
+          "ms": 8939.4,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ Layer Analysis:\n\n1. **self.conv = nn.Conv2d(3, 16, 3)**\n   - Input channels: 3\n   - Output channels: 16\n   - Kernel size: 3x3\n   - Stride: default (1)\n   - Padding: default (0)\n\n2. **self.fc = nn.Linear(1000, 10)**\n   - Input features: 1000\n   - Output features: 10\n\n---\n\n### Forward Pass Analysis:\n\nAssume the input tensor `x` has shape `(batch_size, 3, H, W)`.\n\n---\n\n### Step 1: `x = self.conv(x)`\n\n- Input shape: `(batch_size, 3, H, W)`\n- Output shape after Conv2d:\n  \n  The formula for output spatial dimensions:\n  \n  \\[\n  \\text{Output size} = \\left\\lfloor \\frac{H - \\text{kernel_size} + 2 \\times \\text{padding}}{\\text{stride}} \\right\\rfloor + 1\n  \\]\n  \n  With kernel_size=3, padding=0, stride=1:\n  \n  \\[\n  H_{out} = H - 3 + 1 = H - 2\n  \\]\n  \n  \\[\n  W_{out} = W - 3 + 1 = W - 2\n  \\]\n  \n- Output shape: `(batch_size, 16, H-2, W-2)`\n\n---\n\n### Step 2: `x = x.view(x.size(0), -1)`\n\n- Reshape to flatten all dimensions except batch size.\n- Flattened size per sample: `16 * (H-2) * (W-2)`\n\n- Shape after view: `(batch_size, 16 * (H-2) * (W-2))`\n\n---\n\n### Step 3: `x = self.fc(x)`\n\n- The linear layer expects input features of size 1000.\n- For this to work without error, the flattened size must be 1000:\n  \n  \\[\n  16 \\times (H-2) \\times (W-2) = 1000\n  \\]\n  \n- Therefore, the input image dimensions `(H, W)` must satisfy:\n  \n  \\[\n  16 \\times (H-2) \\times (W-2) = 1000\n  \\]\n  \n- For example, if we choose `H = W = 14`:\n  \n  \\[\n  16 \\times (14-2) \\times (14-2) = 16 \\times 12 \\times 12 = 16 \\times 144 = 2304 \\neq 1000\n  \\]\n  \n- If `H = W = 13`:\n  \n  \\[\n  16 \\times 11 \\times 11 = 16 \\times 121 = 1936 \\neq 1000\n  \\]\n  \n- If `H = W = 12`:\n  \n  \\[\n  16 \\times 10 \\times 10 = 16 \\times 100 = 1600 \\neq 1000\n  \\]\n  \n- If `H = W = 11`:\n  \n  \\[\n  16 \\times 9 \\times 9 = 16 \\times 81 = 1296 \\neq 1000\n  \\]\n  \n- If `H = W = 10`:\n  \n  \\[\n  16 \\times 8 \\times 8 = 16 \\times 64 = 1024 \\neq 1000\n  \\]\n  \n- If `H = W = 9`:\n  \n  \\[\n  16 \\times 7 \\times 7 = 16 \\times 49 = 784 \\neq 1000\n  \\]\n  \n- If `H = W = 8`:\n  \n  \\[\n  16 \\times 6 \\times 6 = 16 \\times 36 = 576 \\neq 1000\n  \\]\n  \n- If `H = W = 7`:\n  \n  \\[\n  16 \\times 5 \\times 5 = 16 \\times 25 = 400 \\neq 1000\n  \\]\n  \n- If `H = W = 6`:\n  \n  \\[\n  16 \\times 4 \\times 4 = 16 \\times 16 = 256 \\neq 1000\n  \\]\n  \n- If `H = W = 5`:\n  \n  \\[\n  16 \\times 3 \\times 3 = 16 \\times 9 = 144 \\neq 1000\n  \\]\n  \n- If `H = W = 4`:"
+        },
+        {
+          "name": "lstm_hidden_mismatch",
+          "category": "shape_rnn",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 4726.8,
+          "llm_response": "Let's analyze the model step by step.\n\n---\n\n### __init__ method:\n\n1. **self.lstm = nn.LSTM(100, 256, batch_first=True)**  \n   - Input dimension: 100  \n   - Hidden dimension: 256  \n   - Batch first: True\n\n2. **self.fc = nn.Linear(128, 10)**  \n   - Input features: 128  \n   - Output features: 10\n\n---\n\n### Forward method:\n\n```python\ndef forward(self, x):\n    _, (h, _) = self.lstm(x)\n    return self.fc(h.squeeze(0))\n```\n\n---\n\n### Step-by-step tensor shape analysis:\n\n**Input `x`:**\n\n- Since `batch_first=True`, `x` should have shape: `(batch_size, sequence_length, input_size)`\n- Input size expected: 100 (from LSTM input size)\n\nSuppose:\n- `batch_size = B`\n- `sequence_length = S`\n\nSo, `x` shape: `(B, S, 100)`\n\n---\n\n**LSTM layer:**\n\n```python\n_, (h, _) = self.lstm(x)\n```\n\n- Output of LSTM (the first value `_`) is `(B, S, 256)` (sequence outputs)\n- Hidden state `h` shape: `(num_layers * num_directions, B, 256)`\n\nSince default `num_layers=1` and unidirectional, `h` shape: `(1, B, 256)`\n\n---\n\n**Next step:**\n\n```python\nh.squeeze(0)\n```\n\n- Squeezing dimension 0 (size 1) results in shape: `(B, 256)`\n\n---\n\n**Final layer:**\n\n```python\nself.fc(h.squeeze(0))\n```\n\n- `h.squeeze(0)` shape: `(B, 256)`\n\n- `self.fc` expects input features of size 128, but the tensor has size 256.\n\n**Dimension mismatch:**\n\n- The linear layer expects input features = 128, but the tensor has 256 features.\n\n---\n\n### **Conclusion:**\n\n- The model's `Linear` layer is defined with input features 128, but the output of the LSTM (after squeezing) is 256-dimensional.\n- This mismatch will cause an error during execution.\n\n---\n\n### **Final answer:**\n\n**YES**, there is a dimension mismatch."
+        },
+        {
+          "name": "attention_proj_mismatch",
+          "category": "shape_attention",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 7120.5,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ Layer Analysis:\n\n- `self.q_proj = nn.Linear(512, 512)`\n  - Input: 512\n  - Output: 512\n\n- `self.k_proj = nn.Linear(512, 512)`\n  - Input: 512\n  - Output: 512\n\n- `self.v_proj = nn.Linear(512, 512)`\n  - Input: 512\n  - Output: 512\n\n- `self.out_proj = nn.Linear(256, 512)`\n  - Input: 256\n  - Output: 512\n\n---\n\n### Forward Pass Analysis:\n\nAssume input tensor `x` has shape `(batch_size, seq_len, 512)`.\n\n---\n\n**Step 1: q = self.q_proj(x)**\n\n- Input shape: `(batch_size, seq_len, 512)`\n- Linear layer applies to last dimension:\n  - Output shape: `(batch_size, seq_len, 512)`\n\n**q shape:** `(batch_size, seq_len, 512)`\n\n---\n\n**Step 2: k = self.k_proj(x)**\n\n- Same reasoning:\n  - Output shape: `(batch_size, seq_len, 512)`\n\n**k shape:** `(batch_size, seq_len, 512)`\n\n---\n\n**Step 3: v = self.v_proj(x)**\n\n- Same reasoning:\n  - Output shape: `(batch_size, seq_len, 512)`\n\n**v shape:** `(batch_size, seq_len, 512)`\n\n---\n\n**Step 4: attn = torch.matmul(q, k.transpose(-2, -1))**\n\n- q shape: `(batch_size, seq_len, 512)`\n- k transpose: `(batch_size, 512, seq_len)`\n\n- Matrix multiplication over last two dims:\n  - Result shape: `(batch_size, seq_len, seq_len)`\n\n**attn shape:** `(batch_size, seq_len, seq_len)`\n\n---\n\n**Step 5: attn = torch.softmax(attn / 22.6, dim=-1)**\n\n- Shape remains `(batch_size, seq_len, seq_len)`\n\n---\n\n**Step 6: out = torch.matmul(attn, v)**\n\n- attn shape: `(batch_size, seq_len, seq_len)`\n- v shape: `(batch_size, seq_len, 512)`\n\n- Matrix multiplication:\n  - `(batch_size, seq_len, seq_len) @ (batch_size, seq_len, 512)` over last two dims:\n  - Result shape: `(batch_size, seq_len, 512)`\n\n**out shape:** `(batch_size, seq_len, 512)`\n\n---\n\n**Step 7: return self.out_proj(out)**\n\n- `self.out_proj` expects input of size 256, but `out` has size 512 in last dimension.\n\n- Applying `self.out_proj` to `out`:\n  - Input shape: `(batch_size, seq_len, 512)`\n  - Linear layer expects last dimension: 256, but input last dimension is 512.\n\n**Dimension mismatch occurs here.**\n\n---\n\n### Final conclusion:\n\n**Yes**, there is a dimension mismatch because `self.out_proj` expects an input with last dimension 256, but the actual tensor `out` has last dimension 512.\n\n---\n\n**Final answer: YES**"
+        },
+        {
+          "name": "unet_skip_mismatch",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": null,
+          "label": "SKIP",
+          "ms": 10743.9,
+          "llm_response": "Let's analyze the code step by step.\n\n---\n\n### __init__ method:\n\n1. **self.down = nn.Conv2d(64, 128, 3, stride=2, padding=1)**\n\n- Input channels: 64\n- Output channels: 128\n- Kernel size: 3\n- Stride: 2\n- Padding: 1\n\n**Input shape:** (batch_size, 64, H, W)\n\n**Output shape:**  \nUsing the formula for Conv2d output size:\n\n\\[ \nH_{out} = \\left\\lfloor \\frac{H + 2 \\times padding - kernel\\_size}{stride} \\right\\rfloor + 1\n\\]\n\nSimilarly for W.\n\n\\[\nH_{down} = \\left\\lfloor \\frac{H + 2 \\times 1 - 3}{2} \\right\\rfloor + 1 = \\left\\lfloor \\frac{H - 1}{2} \\right\\rfloor + 1\n\\]\n\nSame for W.\n\n**Output shape after down:** (batch_size, 128, H_down, W_down)\n\n---\n\n2. **self.up = nn.ConvTranspose2d(128, 64, 3, stride=2, padding=1, output_padding=1)**\n\n- Input channels: 128\n- Output channels: 64\n- Kernel size: 3\n- Stride: 2\n- Padding: 1\n- Output padding: 1\n\n**Input shape:** (batch_size, 128, H_down, W_down)\n\n**Output shape:**  \nUsing ConvTranspose2d output size formula:\n\n\\[\nH_{up} = (H_{in} - 1) \\times stride - 2 \\times padding + kernel\\_size + output\\_padding\n\\]\n\n\\[\nH_{up} = (H_{down} - 1) \\times 2 - 2 \\times 1 + 3 + 1 = 2 \\times (H_{down} - 1) + 1\n\\]\n\nSimilarly for W.\n\n---\n\n3. **self.merge = nn.Conv2d(192, 64, 1)**\n\n- Input channels: 192\n- Output channels: 64\n- Kernel size: 1\n\n---\n\n### Forward method:\n\n```python\ndef forward(self, x):\n    d = self.down(x)\n    u = self.up(d)\n    return self.merge(torch.cat([u, x], dim=1))\n```\n\n---\n\n### Step-by-step tensor shape tracking:\n\nLet\u2019s assume an initial input tensor shape:\n\n\\[\nx: (batch_size, 64, H, W)\n\\]\n\n---\n\n**Step 1: `d = self.down(x)`**\n\n- Input: (batch_size, 64, H, W)\n- Output: (batch_size, 128, H_down, W_down)\n\nwhere:\n\n\\[\nH_{down} = \\left\\lfloor \\frac{H - 1}{2} \\right\\rfloor + 1\n\\]\n\\[\nW_{down} = \\left\\lfloor \\frac{W - 1}{2} \\right\\rfloor + 1\n\\]\n\n---\n\n**Step 2: `u = self.up(d)`**\n\n- Input: (batch_size, 128, H_down, W_down)\n- Output: (batch_size, 64, H_up, W_up)\n\nwhere:\n\n\\[\nH_{up} = 2 \\times (H_{down} - 1) + 1\n\\]\n\\[\nW_{up} = 2 \\times (W_{down} - 1) + 1\n\\]\n\n---\n\n**Step 3: Concatenate `u` and `x` along channel dimension**\n\n- `u`: (batch_size, 64, H_up, W_up)\n- `x`: (batch_size, 64, H, W)\n\nFor concatenation along `dim=1`, the spatial dimensions must match:\n\n\\[\nH_{up} = H\n\\]\n\\[\nW_{up} = W\n\\]\n\nCheck if this holds:\n\n\\[\nH_{up} = 2 \\times (H_{down} - 1) + 1\n\\]\n\nRecall:\n\n\\[\nH_{down} = \\left\\lfloor \\frac{H - 1}{2} \\right\\rfloor + 1\n\\]\n\nLet's test with an example:\n\nSuppose \\(H= W= 64\\):\n\n- \\(H_{down} = \\left\\lfloor \\frac{64 - 1}{2} \\right\\rfloor + 1 = \\left\\lfloor \\frac{63}{2} \\right\\rfloor + 1 = 31 + 1 = 32\\)\n\n- \\(H_{up} = 2 \\times (32 - 1"
+        },
+        {
+          "name": "double_conv_channel_bug",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 4273.4,
+          "llm_response": "Let's analyze the code step by step.\n\n### __init__ Layer Analysis:\n\n```python\nself.conv1 = nn.Conv2d(3, 64, 3, padding=1)\n```\n- Input channels: 3\n- Output channels: 64\n- Kernel size: 3x3\n- Padding: 1 (to preserve spatial dimensions)\n\n```python\nself.conv2 = nn.Conv2d(32, 64, 3, padding=1)\n```\n- Input channels: 32\n- Output channels: 64\n- Kernel size: 3x3\n- Padding: 1\n\n```python\nself.bn = nn.BatchNorm2d(64)\n```\n- Number of features: 64\n\n---\n\n### Forward method analysis:\n\n```python\nx = self.conv1(x)\n```\n- Input: x (shape: batch_size, 3, H, W)\n- Output: shape: (batch_size, 64, H, W)\n\n```python\nx = self.conv2(x)\n```\n- Input: x (shape: batch_size, 64, H, W)\n- But conv2 expects input channels = 32, yet current x has 64 channels.\n\n**Dimension mismatch here**:\n- conv2 expects 32 channels, but receives 64 channels.\n\nThis will cause an error during execution.\n\n---\n\n### Final step:\n\n```python\nreturn self.bn(x)\n```\n- Input: x (shape: batch_size, 64, H, W)\n- Output: same shape after batch normalization.\n\n---\n\n### Summary:\n\n- The first convolution (`conv1`) is compatible with input shape.\n- The second convolution (`conv2`) expects 32 input channels but receives 64 channels, leading to a dimension mismatch.\n\n**Answer: YES** (dimension mismatch occurs)"
+        },
+        {
+          "name": "embedding_linear_mismatch",
+          "category": "shape_embedding",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 3302.6,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ layers:\n\n1. **self.embed = nn.Embedding(1000, 128)**\n   - Input: indices (integers) with shape `(batch_size, sequence_length)` (or `(batch_size,)` if a single index)\n   - Output: tensor with shape `(batch_size, sequence_length, 128)`\n\n2. **self.fc = nn.Linear(256, 64)**\n   - Input: expects a tensor with last dimension 256\n   - Output: tensor with last dimension 64\n\n---\n\n### Forward method:\n\n```python\ndef forward(self, x):\n    x = self.embed(x)\n    return self.fc(x)\n```\n\n---\n\n### Step-by-step tensor shape tracking:\n\n- **Input `x`**: Let's assume `x` has shape `(batch_size, sequence_length)` (common for embedding inputs).\n\n- **After `self.embed(x)`**:\n  - Shape: `(batch_size, sequence_length, 128)`\n\n- **Passing through `self.fc(x)`**:\n  - `nn.Linear` applies to the last dimension.\n  - It expects input with last dimension 256, but current tensor has last dimension 128.\n\n**Dimension mismatch occurs here** because the `Linear` layer expects input features of size 256, but the embedding output has size 128.\n\n---\n\n### Final answer:\n\n**YES**, a dimension mismatch occurs."
+        },
+        {
+          "name": "batchnorm_channel_mismatch",
+          "category": "shape_norm",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 4462.3,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ Layer Analysis:\n\n1. **self.conv = nn.Conv2d(3, 32, 3, padding=1)**\n   - Input channels: 3\n   - Output channels: 32\n   - Kernel size: 3x3\n   - Padding: 1 (to preserve spatial dimensions)\n   \n2. **self.bn = nn.BatchNorm2d(64)**\n   - Number of features: 64\n   - **Issue:** The BatchNorm expects 64 channels, but the previous conv outputs 32 channels. This is a mismatch.\n\n3. **self.fc = nn.Linear(64, 10)**\n   - Input features: 64\n   - Output features: 10\n\n---\n\n### Forward method analysis:\n\n```python\ndef forward(self, x):\n    x = self.conv(x)\n    x = self.bn(x)\n    return x\n```\n\n- Input `x`: shape `(batch_size, 3, H, W)` (assuming standard image input)\n\n---\n\n### Step-by-step tensor shape tracking:\n\n1. **Input `x`:** `(batch_size, 3, H, W)`\n\n2. **After `self.conv(x)`:**\n   - Conv2d with padding=1 and kernel=3 preserves spatial dimensions:\n   - Output shape: `(batch_size, 32, H, W)`\n\n3. **After `self.bn(x)`:**\n   - BatchNorm2d expects 64 channels, but input has 32 channels.\n   - **Mismatch here**: BatchNorm is initialized with 64 features, but input has 32 channels.\n\n**Conclusion:**\n\n- The mismatch occurs at the BatchNorm layer because the number of features (64) does not match the number of channels output by the convolution (32).\n\n---\n\n### Final answer:\n\n**YES**, there is a dimension mismatch."
+        },
+        {
+          "name": "gru_output_mismatch",
+          "category": "shape_rnn",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 3467.8,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ Layer Analysis:\n\n1. **self.gru = nn.GRU(50, 100, batch_first=True)**\n   - Input dimension: 50\n   - Hidden dimension: 100\n   - Batch first: True (input shape: (batch_size, seq_len, 50))\n   - Output:\n     - `out`: shape (batch_size, seq_len, 100)\n     - `_`: shape (1, batch_size, 100) (hidden state, not used here)\n\n2. **self.fc = nn.Linear(200, 10)**\n   - Input dimension: 200\n   - Output dimension: 10\n\n---\n\n### Forward Method Analysis:\n\n```python\ndef forward(self, x):\n    out, _ = self.gru(x)\n    return self.fc(out[:, -1, :])\n```\n\n- Input `x`: shape (batch_size, seq_len, 50)\n\n---\n\n### Step-by-step tensor shape tracking:\n\n1. **Input `x`:** (batch_size, seq_len, 50)\n\n2. **After `self.gru(x)`:**\n   - `out`: shape (batch_size, seq_len, 100)\n   - `_`: shape (1, batch_size, 100)\n\n3. **`out[:, -1, :]`:**\n   - Selects the last time step for each batch\n   - shape: (batch_size, 100)\n\n4. **Passing through `self.fc`:**\n   - `self.fc` expects input of shape (batch_size, 200)\n   - But current input shape: (batch_size, 100)\n\n**Dimension mismatch occurs here** because the linear layer expects 200 features, but the tensor has only 100 features.\n\n---\n\n### Final answer:\n\n**YES**, there is a dimension mismatch."
+        },
+        {
+          "name": "three_layer_conv_bug",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 5644.4,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ Layer Analysis:\n\n1. **self.c1 = nn.Conv2d(3, 32, 3, padding=1)**\n   - Input channels: 3\n   - Output channels: 32\n   - Kernel size: 3x3\n   - Padding: 1 (to preserve spatial dimensions)\n   \n2. **self.c2 = nn.Conv2d(32, 64, 3, padding=1)**\n   - Input channels: 32\n   - Output channels: 64\n   - Kernel size: 3x3\n   - Padding: 1 (preserves spatial dimensions)\n   \n3. **self.c3 = nn.Conv2d(128, 256, 3, padding=1)**\n   - Input channels: 128\n   - Output channels: 256\n   - Kernel size: 3x3\n   - Padding: 1\n\n**Note:** The input to `c3` expects 128 channels, but the previous layer outputs 64 channels. This indicates a mismatch in the expected input channels for `c3`.\n\n---\n\n### Forward Pass Analysis:\n\nAssuming the input tensor `x` has shape `(batch_size, channels, height, width)`.\n\nLet's denote the input shape as `(N, C_in, H, W)`.\n\n---\n\n**Step 1: `x = self.c1(x)`**\n\n- Input: `(N, 3, H, W)`\n- `c1` outputs `(N, 32, H, W)` because padding=1 preserves height and width.\n\n**Shape after c1:** `(N, 32, H, W)`\n\n---\n\n**Step 2: `x = self.c2(x)`**\n\n- Input: `(N, 32, H, W)`\n- `c2` outputs `(N, 64, H, W)` (padding=1 preserves spatial dimensions).\n\n**Shape after c2:** `(N, 64, H, W)`\n\n---\n\n**Step 3: `x = self.c3(x)`**\n\n- Input: `(N, 64, H, W)`\n- But `c3` expects input channels = 128, yet current tensor has 64 channels.\n\n**Mismatch:** The input channels for `c3` do not match the output channels from `c2`.\n\n---\n\n### Final conclusion:\n\n- The code will raise an error at the line `x = self.c3(x)` because the input tensor has 64 channels, but `c3` expects 128 channels.\n\n**Answer: YES** (a dimension mismatch occurs).\n\n---\n\n**Final answer: YES**"
+        },
+        {
+          "name": "classifier_head_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 3883.9,
+          "llm_response": "Let's analyze the model step by step.\n\n---\n\n### __init__ method:\n\n1. **self.features = nn.Sequential(...)**\n\n   - **First layer:** `nn.Linear(784, 512)`\n     - Input: shape `(batch_size, 784)`\n     - Output: shape `(batch_size, 512)`\n\n   - **Activation:** `nn.ReLU()`\n     - Input: `(batch_size, 512)`\n     - Output: `(batch_size, 512)`\n\n   - **Second layer:** `nn.Linear(512, 256)`\n     - Input: `(batch_size, 512)`\n     - Output: `(batch_size, 256)`\n\n   - **Activation:** `nn.ReLU()`\n     - Input: `(batch_size, 256)`\n     - Output: `(batch_size, 256)`\n\n2. **self.head = nn.Linear(128, 10)**\n   - Input: expects `(batch_size, 128)`\n   - Output: `(batch_size, 10)`\n\n---\n\n### forward() method:\n\n```python\ndef forward(self, x):\n    x = self.features(x)\n    return self.head(x)\n```\n\n- Input `x`: shape `(batch_size, 784)` (assuming the input is a flattened image, e.g., 28x28 pixels)\n\n- After `self.features(x)`:\n  - The last layer in `self.features` outputs `(batch_size, 256)`\n\n- The output of `self.features(x)` is then passed to `self.head(x)`:\n  - `self.head` expects input of shape `(batch_size, 128)`, but it receives `(batch_size, 256)`\n\n**Dimension mismatch occurs here** because the `self.head` layer's input dimension (128) does not match the output dimension of `self.features` (256).\n\n---\n\n### Final answer:\n\n**YES**, a dimension mismatch occurs."
+        },
+        {
+          "name": "vae_decoder_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 5316.9,
+          "llm_response": "Let's analyze the model step by step.\n\n### Initialization (`__init__`):\n\n1. **self.fc1 = nn.Linear(32, 128)**\n   - Input dimension: 32\n   - Output dimension: 128\n\n2. **self.fc2 = nn.Linear(256, 512)**\n   - Input dimension: 256\n   - Output dimension: 512\n\n3. **self.fc3 = nn.Linear(512, 784)**\n   - Input dimension: 512\n   - Output dimension: 784\n\n---\n\n### Forward pass:\n\n```python\ndef forward(self, z):\n    h = self.fc1(z)\n    h = self.fc2(h)\n    return self.fc3(h)\n```\n\n---\n\n### Step-by-step tensor shape tracking:\n\n- **Input `z`**: The model expects `z` to be of shape `(batch_size, 32)` because `fc1` expects input features of size 32.\n\n- **After `h = self.fc1(z)`**:\n  - Input: `(batch_size, 32)`\n  - Output: `(batch_size, 128)`\n\n- **Next `h = self.fc2(h)`**:\n  - Input: `(batch_size, 128)`\n  - But `fc2` expects input features of size 256 (as per its definition).\n  - **Dimension mismatch here**: `(batch_size, 128)` vs. expected `(batch_size, 256)`\n\nSince the input to `fc2` does not match its expected input size, a dimension mismatch occurs at this step.\n\n---\n\n### Final answer:\n\n**YES**, a dimension mismatch occurs during the forward pass."
+        },
+        {
+          "name": "multihead_concat_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 4012.6,
+          "llm_response": "Let's analyze the model step by step:\n\n### __init__ Layer Analysis:\n- `self.head1 = nn.Linear(256, 64)`\n  - Input: 256\n  - Output: 64\n- `self.head2 = nn.Linear(256, 64)`\n  - Input: 256\n  - Output: 64\n- `self.merge = nn.Linear(256, 128)`\n  - Input: 256\n  - Output: 128\n\n### Forward Method:\n```python\ndef forward(self, x):\n    h1 = self.head1(x)\n    h2 = self.head2(x)\n    return self.merge(torch.cat([h1, h2], dim=-1))\n```\n\n### Step-by-step tensor shape tracking:\n\n1. **Input `x`**:\n   - The `head1` and `head2` layers expect input of size 256.\n   - So, `x` should have shape `(batch_size, 256)`.\n\n2. **`h1 = self.head1(x)`**:\n   - Input shape: `(batch_size, 256)`\n   - Output shape: `(batch_size, 64)`\n\n3. **`h2 = self.head2(x)`**:\n   - Input shape: `(batch_size, 256)`\n   - Output shape: `(batch_size, 64)`\n\n4. **Concatenate `h1` and `h2` along `dim=-1`**:\n   - Concatenation along the last dimension:\n   - Resulting shape: `(batch_size, 64 + 64) = (batch_size, 128)`\n\n5. **`self.merge` applied to concatenated tensor**:\n   - Input shape: `(batch_size, 128)`\n   - The `merge` layer expects input of size 256, but the current tensor has size 128.\n   - **Dimension mismatch occurs here** because `self.merge` expects input size 256, but it receives 128.\n\n### Final conclusion:\n- The `merge` layer's input dimension does not match the concatenated tensor's size.\n- **Dimension mismatch occurs.**\n\n**Answer: YES**"
+        },
+        {
+          "name": "linear_chain_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 3784.5,
+          "llm_response": "Let's analyze the model step by step:\n\n### __init__ layers:\n- `self.fc1 = nn.Linear(10, 20)`\n  - Input dimension: 10\n  - Output dimension: 20\n- `self.fc2 = nn.Linear(20, 5)`\n  - Input dimension: 20\n  - Output dimension: 5\n\n### Forward method:\n```python\ndef forward(self, x):\n    x = self.fc1(x)\n    x = self.fc2(x)\n    return x\n```\n\n### Step-by-step tensor shape tracking:\n\n1. **Input `x`**:\n   - The model expects an input with shape `(batch_size, 10)` because `fc1` expects input features of size 10.\n   - For example, if batch size is `B`, shape: `(B, 10)`\n\n2. **After `x = self.fc1(x)`**:\n   - `fc1` transforms `(B, 10)` to `(B, 20)`\n   - Shape: `(B, 20)`\n\n3. **After `x = self.fc2(x)`**:\n   - `fc2` transforms `(B, 20)` to `(B, 5)`\n   - Shape: `(B, 5)`\n\n4. **Return `x`**:\n   - Final output shape: `(B, 5)`\n\n### Dimension consistency check:\n- The input to `fc1` is `(B, 10)` which matches its expected input size.\n- The output of `fc1` is `(B, 20)` which matches the input size of `fc2`.\n- The output of `fc2` is `(B, 5)` which is consistent with its output size.\n\n### Final conclusion:\n- No dimension mismatch occurs during the forward pass.\n\n**Answer: NO**"
+        },
+        {
+          "name": "conv_chain_correct",
+          "category": "shape_conv",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 7202.0,
+          "llm_response": "Let's analyze the model step by step.\n\n---\n\n### __init__ Layer Definitions:\n\n1. **self.conv1 = nn.Conv2d(3, 16, 3)**\n   - Input channels: 3\n   - Output channels: 16\n   - Kernel size: 3x3\n\n2. **self.conv2 = nn.Conv2d(16, 32, 3)**\n   - Input channels: 16\n   - Output channels: 32\n   - Kernel size: 3x3\n\n---\n\n### Forward Pass:\n\nAssuming the input tensor `x` has shape `(batch_size, channels, height, width)`.\n\nLet's denote the input shape as `(N, C_in, H_in, W_in)`.\n\n---\n\n### Step 1: `x = self.conv1(x)`\n\n- Input shape: `(N, 3, H_in, W_in)`\n- Convolution parameters:\n  - Kernel size: 3\n  - Padding: 0 (default)\n  - Stride: 1 (default)\n- Output height and width:\n  \n  \\[\n  H_{out} = H_{in} - (kernel\\_size - 1) = H_{in} - 2\n  \\]\n  \n  \\[\n  W_{out} = W_{in} - 2\n  \\]\n  \n- Output shape: `(N, 16, H_in - 2, W_in - 2)`\n\n---\n\n### Step 2: `x = self.conv2(x)`\n\n- Input shape: `(N, 16, H_in - 2, W_in - 2)`\n- Convolution parameters:\n  - Kernel size: 3\n  - Padding: 0\n  - Stride: 1\n- Output height and width:\n  \n  \\[\n  H_{out} = (H_{in} - 2) - 2 = H_{in} - 4\n  \\]\n  \n  \\[\n  W_{out} = (W_{in} - 2) - 2 = W_{in} - 4\n  \\]\n  \n- Output shape: `(N, 32, H_in - 4, W_in - 4)`\n\n---\n\n### Final output shape:\n\n`(batch_size, 32, H_in - 4, W_in - 4)`\n\n---\n\n### Dimension mismatch check:\n\n- The only potential mismatch could occur if the input dimensions are too small to pass through the convolutions.\n- For the convolutions to produce valid outputs, the input height and width must satisfy:\n\n  \\[\n  H_{in} \\geq 5 \\quad \\text{and} \\quad W_{in} \\geq 5\n  \\]\n  \n  because:\n  \n  - After first conv: height/width become `H_in - 2` / `W_in - 2`\n  - After second conv: height/width become `H_in - 4` / `W_in - 4`\n  \n- If `H_in` or `W_in` are less than 5, the output dimensions become negative or invalid, indicating a mismatch.\n\n---\n\n### Final answer:\n\n**No dimension mismatch occurs as long as the input height and width are at least 5.**\n\n**Answer: NO**"
+        },
+        {
+          "name": "autoencoder_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 4567.9,
+          "llm_response": "Let's analyze the model step by step:\n\n### __init__ layers:\n\n1. **enc1**: `nn.Linear(784, 256)`\n   - Input dimension: 784\n   - Output dimension: 256\n\n2. **enc2**: `nn.Linear(256, 64)`\n   - Input dimension: 256\n   - Output dimension: 64\n\n3. **dec1**: `nn.Linear(64, 256)`\n   - Input dimension: 64\n   - Output dimension: 256\n\n4. **dec2**: `nn.Linear(256, 784)`\n   - Input dimension: 256\n   - Output dimension: 784\n\n---\n\n### Forward pass:\n\nAssuming the input `x` has shape `(batch_size, 784)`:\n\n1. `x = self.enc1(x)`\n   - Input shape: `(batch_size, 784)`\n   - Output shape: `(batch_size, 256)`\n\n2. `x = self.enc2(x)`\n   - Input shape: `(batch_size, 256)`\n   - Output shape: `(batch_size, 64)`\n\n3. `x = self.dec1(x)`\n   - Input shape: `(batch_size, 64)`\n   - Output shape: `(batch_size, 256)`\n\n4. `x = self.dec2(x)`\n   - Input shape: `(batch_size, 256)`\n   - Output shape: `(batch_size, 784)`\n\n---\n\n### Final check:\n\n- The input to `enc1` is `(batch_size, 784)` and the output is `(batch_size, 256)` \u2014 matches expected.\n- The output of `enc2` is `(batch_size, 64)` \u2014 matches expected.\n- The input to `dec1` is `(batch_size, 64)` and output `(batch_size, 256)` \u2014 matches.\n- The final output `(batch_size, 784)` matches the original input dimension.\n\n**No dimension mismatch occurs.**\n\n---\n\n**Final answer: NO**"
+        },
+        {
+          "name": "mlp_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 3806.0,
+          "llm_response": "Let's analyze the model step by step:\n\n### Initialization (`__init__`):\n\n- `self.fc1 = nn.Linear(512, 256)`\n  - Input dimension: 512\n  - Output dimension: 256\n\n- `self.fc2 = nn.Linear(256, 64)`\n  - Input dimension: 256\n  - Output dimension: 64\n\n- `self.fc3 = nn.Linear(64, 10)`\n  - Input dimension: 64\n  - Output dimension: 10\n\n### Forward pass:\n\nAssuming the input tensor `x` has shape `(batch_size, 512)` (since the first layer expects 512 features):\n\n1. `x = self.fc1(x)`\n   - Input shape: `(batch_size, 512)`\n   - Output shape: `(batch_size, 256)`\n\n2. `x = self.fc2(x)`\n   - Input shape: `(batch_size, 256)`\n   - Output shape: `(batch_size, 64)`\n\n3. `x = self.fc3(x)`\n   - Input shape: `(batch_size, 64)`\n   - Output shape: `(batch_size, 10)`\n\n### Dimension consistency check:\n\n- The output of `fc1` matches the input of `fc2`.\n- The output of `fc2` matches the input of `fc3`.\n- The final output shape `(batch_size, 10)` is consistent with the last layer.\n\n### Final answer:\n\n**No dimension mismatch occurs.**\n\n**Answer: NO**"
+        },
+        {
+          "name": "resnet_block_correct",
+          "category": "shape_conv",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 2993.7,
+          "llm_response": "Let's analyze the model step by step.\n\n### Class: ResBlock\n\n#### __init__ method:\n- `self.conv1 = nn.Conv2d(64, 64, 3, padding=1)`\n  - Input channels: 64\n  - Output channels: 64\n  - Kernel size: 3x3\n  - Padding: 1 (to preserve spatial dimensions)\n- `self.conv2 = nn.Conv2d(64, 64, 3, padding=1)`\n  - Same as above\n\n---\n\n### Forward method:\n\nInput tensor: `x`\n\nAssuming the input tensor shape is `(batch_size, 64, H, W)` (since the first conv expects 64 channels).\n\n---\n\n### Step-by-step tensor shape tracking:\n\n1. **Input `x`:** `(batch_size, 64, H, W)`\n\n2. **After `self.conv1(x)`:**\n   - Convolution with padding=1 and kernel=3x3 preserves height and width.\n   - Output shape: `(batch_size, 64, H, W)`\n\n3. **After `self.conv2(...)`:**\n   - Input: `(batch_size, 64, H, W)`\n   - Convolution with padding=1, kernel=3x3\n   - Output shape: `(batch_size, 64, H, W)`\n\n4. **Adding `out + x`:**\n   - Both tensors are `(batch_size, 64, H, W)`\n   - Element-wise addition is valid.\n\n---\n\n### Final check:\n\n- The input and output tensors for the residual addition have matching dimensions `(batch_size, 64, H, W)`.\n- No dimension mismatch occurs.\n\n---\n\n### **Answer: NO** (no dimension mismatch)"
+        },
+        {
+          "name": "transformer_mlp_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 3543.0,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ Layer Dimensions:\n\n1. **self.norm = nn.LayerNorm(768)**  \n   - Input dimension: 768  \n   - Output dimension: 768\n\n2. **self.fc1 = nn.Linear(768, 3072)**  \n   - Input dimension: 768  \n   - Output dimension: 3072\n\n3. **self.fc2 = nn.Linear(3072, 768)**  \n   - Input dimension: 3072  \n   - Output dimension: 768\n\n---\n\n### Forward Pass:\n\nInput: `x` (assumed shape: `[batch_size, 768]`)\n\n---\n\n**Step 1:** `self.norm(x)`  \n- Input shape: `[batch_size, 768]`  \n- LayerNorm operates on the last dimension, output shape: `[batch_size, 768]`\n\n**Step 2:** `self.fc1(self.norm(x))`  \n- Input shape: `[batch_size, 768]`  \n- Linear layer maps 768 \u2192 3072  \n- Output shape: `[batch_size, 3072]`  \n- Assign to `h`\n\n**Step 3:** `self.fc2(h)`  \n- Input shape: `[batch_size, 3072]`  \n- Linear layer maps 3072 \u2192 768  \n- Output shape: `[batch_size, 768]`\n\n**Step 4:** `return x + self.fc2(h)`  \n- `x` shape: `[batch_size, 768]`  \n- `self.fc2(h)` shape: `[batch_size, 768]`  \n- Addition is valid; element-wise addition of same shape tensors.\n\n---\n\n### Final check:\n\n- The input `x` and the output of `self.fc2(h)` both have shape `[batch_size, 768]`, so addition is valid.\n- No dimension mismatch occurs.\n\n---\n\n### **Answer: NO**"
+        },
+        {
+          "name": "lstm_classifier_correct",
+          "category": "shape_rnn",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 5191.0,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ Layer Analysis:\n\n1. **self.lstm = nn.LSTM(100, 256, batch_first=True)**\n   - Input dimension: 100\n   - Hidden dimension: 256\n   - Batch first: True (input shape: (batch_size, seq_len, 100))\n   - Output:\n     - Output tensor: (batch_size, seq_len, 256)\n     - Hidden state `h`: (1, batch_size, 256) (since num_layers=1 by default)\n     - Cell state `c`: (1, batch_size, 256)\n\n2. **self.fc = nn.Linear(256, 10)**\n   - Input dimension: 256\n   - Output dimension: 10\n\n---\n\n### Forward Method Analysis:\n\n```python\n_, (h, _) = self.lstm(x)\nreturn self.fc(h.squeeze(0))\n```\n\n- Input `x`: shape (batch_size, seq_len, 100)\n\n**Step 1: Passing `x` through LSTM**\n\n- Output: `_, (h, _)`\n  - `_` is the sequence output: shape (batch_size, seq_len, 256)\n  - `h`: shape (1, batch_size, 256)\n\n**Step 2: Squeezing `h`**\n\n- `h.squeeze(0)`:\n  - Since `h` shape is (1, batch_size, 256), squeezing dimension 0 results in shape (batch_size, 256)\n\n**Step 3: Passing through `self.fc`**\n\n- Input to `fc`: shape (batch_size, 256)\n- Output: shape (batch_size, 10)\n\n---\n\n### Dimension consistency check:\n\n- Input `x`: (batch_size, seq_len, 100)\n- LSTM output hidden state `h`: (1, batch_size, 256)\n- After squeeze: (batch_size, 256)\n- After fc: (batch_size, 10)\n\n**No dimension mismatch occurs.**\n\n---\n\n### Final answer:\n\n**NO**"
+        },
+        {
+          "name": "attention_correct",
+          "category": "shape_attention",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 5247.2,
+          "llm_response": "Let's analyze the model step by step.\n\n---\n\n### __init__ Layer Analysis:\n\n- **q_proj**: `nn.Linear(512, 512)`\n  - Input: shape `(batch_size, seq_len, 512)` (assuming batch-first)\n  - Output: `(batch_size, seq_len, 512)`\n\n- **k_proj**: `nn.Linear(512, 512)`\n  - Input: `(batch_size, seq_len, 512)`\n  - Output: `(batch_size, seq_len, 512)`\n\n- **v_proj**: `nn.Linear(512, 512)`\n  - Input: `(batch_size, seq_len, 512)`\n  - Output: `(batch_size, seq_len, 512)`\n\n- **out_proj**: `nn.Linear(512, 512)`\n  - Input: `(batch_size, seq_len, 512)`\n  - Output: `(batch_size, seq_len, 512)`\n\n---\n\n### Forward Pass:\n\nAssuming input `x` has shape `(batch_size, seq_len, 512)`.\n\n1. **q = self.q_proj(x)**  \n   - Shape: `(batch_size, seq_len, 512)`\n\n2. **k = self.k_proj(x)**  \n   - Shape: `(batch_size, seq_len, 512)`\n\n3. **v = self.v_proj(x)**  \n   - Shape: `(batch_size, seq_len, 512)`\n\n4. **attn = torch.matmul(q, k.transpose(-2, -1))**  \n   - `k.transpose(-2, -1)` changes shape from `(batch_size, seq_len, 512)` to `(batch_size, 512, seq_len)`\n   - Matrix multiplication: `(batch_size, seq_len, 512) @ (batch_size, 512, seq_len)`  \n   - Resulting shape: `(batch_size, seq_len, seq_len)` (attention scores for each position against all positions)\n\n5. **attn = torch.softmax(attn / 22.6, dim=-1)**  \n   - Shape remains `(batch_size, seq_len, seq_len)`\n\n6. **out = torch.matmul(attn, v)**  \n   - `attn`: `(batch_size, seq_len, seq_len)`\n   - `v`: `(batch_size, seq_len, 512)`\n   - Matrix multiplication: `(batch_size, seq_len, seq_len) @ (batch_size, seq_len, 512)`  \n   - Result: `(batch_size, seq_len, 512)`\n\n7. **return self.out_proj(out)**  \n   - Input to `out_proj`: `(batch_size, seq_len, 512)`\n   - Output: `(batch_size, seq_len, 512)`\n\n---\n\n### Final check:\n\n- All matrix multiplications are valid with matching inner dimensions.\n- The output shape matches the input shape `(batch_size, seq_len, 512)`.\n\n---\n\n### Conclusion:\n\n**No dimension mismatch occurs.**\n\n**Final answer: NO**"
+        },
+        {
+          "name": "embedding_net_correct",
+          "category": "shape_embedding",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 5001.8,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ Layer Analysis:\n\n1. **self.embed = nn.Embedding(1000, 128)**\n   - Input: indices (integers) representing tokens, shape: `(batch_size, sequence_length)` (or `(batch_size,)` if a single token)\n   - Output: embedded vectors, shape: `(batch_size, sequence_length, 128)`\n\n2. **self.fc = nn.Linear(128, 64)**\n   - Input: features of size 128\n   - Output: features of size 64\n\n---\n\n### Forward Pass Analysis:\n\n```python\ndef forward(self, x):\n    x = self.embed(x)\n    return self.fc(x)\n```\n\n- **Input `x`**: shape depends on input data, typically `(batch_size, sequence_length)` for token indices.\n\n- **After `self.embed(x)`**:\n  - Shape: `(batch_size, sequence_length, 128)`\n\n- **Passing through `self.fc(x)`**:\n  - `nn.Linear` applies to the last dimension of the input tensor.\n  - It transforms `(batch_size, sequence_length, 128)` to `(batch_size, sequence_length, 64)`.\n\n---\n\n### Dimension Tracking:\n\n| Step | Operation | Input Shape | Output Shape | Notes |\n|--------|--------------|--------------|--------------|--------|\n| Input | `x` | `(batch_size, sequence_length)` | N/A | token indices |\n| Embed | `self.embed(x)` | `(batch_size, sequence_length)` | `(batch_size, sequence_length, 128)` | embedding vectors |\n| Linear | `self.fc(x)` | `(batch_size, sequence_length, 128)` | `(batch_size, sequence_length, 64)` | linear transformation applied to last dimension |\n\n---\n\n### Final check:\n\n- The `nn.Linear` layer is applied to the last dimension, which is 128, matching its input features.\n- No dimension mismatch occurs.\n\n---\n\n### **Answer: NO** (no dimension mismatch)"
+        },
+        {
+          "name": "batchnorm_correct",
+          "category": "shape_norm",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 4287.5,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ Layer Analysis:\n\n1. **self.conv = nn.Conv2d(3, 32, 3, padding=1)**\n   - Input channels: 3\n   - Output channels: 32\n   - Kernel size: 3x3\n   - Padding: 1 (to preserve spatial dimensions)\n   \n2. **self.bn = nn.BatchNorm2d(32)**\n   - Applies batch normalization over 32 channels\n\n---\n\n### Forward Pass Analysis:\n\nAssuming the input tensor `x` has shape `(batch_size, 3, H, W)`.\n\n---\n\n### Step-by-step tensor shape tracking:\n\n1. **Input `x` shape:** `(batch_size, 3, H, W)`\n\n2. **After `x = self.conv(x)`**\n   - Convolution with padding=1 and kernel=3x3 preserves spatial dimensions.\n   - Output shape: `(batch_size, 32, H, W)`\n\n3. **After `x = self.bn(x)`**\n   - BatchNorm2d operates on 32 channels, shape remains `(batch_size, 32, H, W)`\n\n---\n\n### Final output shape:\n\n- `(batch_size, 32, H, W)`\n\n### Dimension mismatch check:\n\n- The convolution preserves height and width due to padding=1.\n- BatchNorm does not change shape.\n- No shape mismatches occur.\n\n---\n\n### Final answer:\n\n**NO**"
+        },
+        {
+          "name": "gru_net_correct",
+          "category": "shape_rnn",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 4141.4,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ Layer Analysis:\n\n1. **self.gru = nn.GRU(50, 100, batch_first=True)**\n   - Input dimension: 50\n   - Hidden dimension: 100\n   - Batch first: True (input shape: (batch_size, seq_len, 50))\n   - Output:\n     - `out`: shape (batch_size, seq_len, 100)\n     - `_`: shape (1, batch_size, 100) (hidden state, not used here)\n\n2. **self.fc = nn.Linear(100, 10)**\n   - Input dimension: 100\n   - Output dimension: 10\n\n---\n\n### Forward Pass Analysis:\n\n```python\ndef forward(self, x):\n    out, _ = self.gru(x)\n    return self.fc(out[:, -1, :])\n```\n\n---\n\n### Step-by-step tensor shape tracking:\n\n- **Input `x`**: shape `(batch_size, seq_len, 50)` (since `batch_first=True`)\n\n- **After `self.gru(x)`**:\n  - `out`: shape `(batch_size, seq_len, 100)`\n  - `_`: shape `(1, batch_size, 100)` (ignored)\n\n- **`out[:, -1, :]`**:\n  - Selects the last time step for each batch\n  - shape: `(batch_size, 100)`\n\n- **Passing through `self.fc`**:\n  - Input: `(batch_size, 100)`\n  - Output: `(batch_size, 10)`\n\n---\n\n### Final check for dimension mismatch:\n\n- The GRU output's last time step shape `(batch_size, 100)` matches the input expected by the linear layer `(100)`.\n\n- The linear layer outputs `(batch_size, 10)`.\n\n**No dimension mismatch occurs.**\n\n---\n\n### Final answer:\n\n**NO**"
+        },
+        {
+          "name": "three_layer_conv_correct",
+          "category": "shape_conv",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 4245.4,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ Layer Analysis:\n\n- **self.c1 = nn.Conv2d(3, 32, 3, padding=1)**\n  - Input channels: 3\n  - Output channels: 32\n  - Kernel size: 3x3\n  - Padding: 1 (to preserve spatial dimensions)\n  \n- **self.c2 = nn.Conv2d(32, 64, 3, padding=1)**\n  - Input channels: 32\n  - Output channels: 64\n  - Kernel size: 3x3\n  - Padding: 1\n  \n- **self.c3 = nn.Conv2d(64, 128, 3, padding=1)**\n  - Input channels: 64\n  - Output channels: 128\n  - Kernel size: 3x3\n  - Padding: 1\n\n---\n\n### Forward Pass Analysis:\n\nAssume the input tensor `x` has shape `(batch_size, 3, H, W)`.\n\n---\n\n**Step 1: `x = self.c1(x)`**\n\n- Input shape: `(batch_size, 3, H, W)`\n- Convolution with padding=1 and kernel=3x3 preserves height and width:\n  - Output shape: `(batch_size, 32, H, W)`\n\n---\n\n**Step 2: `x = self.c2(x)`**\n\n- Input shape: `(batch_size, 32, H, W)`\n- Convolution with padding=1:\n  - Output shape: `(batch_size, 64, H, W)`\n\n---\n\n**Step 3: `x = self.c3(x)`**\n\n- Input shape: `(batch_size, 64, H, W)`\n- Convolution with padding=1:\n  - Output shape: `(batch_size, 128, H, W)`\n\n---\n\n### Final output shape:\n\n- `(batch_size, 128, H, W)`\n\n### Dimension mismatch check:\n\n- All convolutions preserve spatial dimensions due to padding=1.\n- The number of channels increases as expected.\n- No mismatches or errors are apparent.\n\n---\n\n### **Final answer:**\n\n**NO** dimension mismatch occurs."
+        },
+        {
+          "name": "classifier_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 5815.5,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ method:\n\n1. **self.features = nn.Sequential(...)**\n   - First layer: `nn.Linear(784, 512)`\n     - Input: tensor of shape `(batch_size, 784)`\n     - Output: `(batch_size, 512)`\n   - Activation: `nn.ReLU()` (no shape change)\n   - Second layer: `nn.Linear(512, 256)`\n     - Input: `(batch_size, 512)`\n     - Output: `(batch_size, 256)`\n   - Activation: `nn.ReLU()` (no shape change)\n\n2. **self.head = nn.Linear(256, 10)**\n   - Input: `(batch_size, 256)`\n   - Output: `(batch_size, 10)`\n\n---\n\n### Forward method:\n\n```python\ndef forward(self, x):\n    x = self.features(x)\n    return self.head(x)\n```\n\n- Input `x`: shape `(batch_size, 784)` (expected for the first Linear layer)\n\n**Step-by-step:**\n\n1. `x = self.features(x)`:\n   - Pass through first Linear: `(batch_size, 784)` \u2192 `(batch_size, 512)`\n   - ReLU: no shape change\n   - Pass through second Linear: `(batch_size, 512)` \u2192 `(batch_size, 256)`\n   - ReLU: no shape change\n\n2. `return self.head(x)`:\n   - Linear: `(batch_size, 256)` \u2192 `(batch_size, 10)`\n\n---\n\n### Final shape flow:\n\n| Step | Operation | Input shape | Output shape |\n|--------|--------------|--------------|--------------|\n| Input | - | `(batch_size, 784)` | `(batch_size, 784)` |\n| features[0] | Linear(784, 512) | `(batch_size, 784)` | `(batch_size, 512)` |\n| features[1] | ReLU | `(batch_size, 512)` | `(batch_size, 512)` |\n| features[2] | Linear(512, 256) | `(batch_size, 512)` | `(batch_size, 256)` |\n| features[3] | ReLU | `(batch_size, 256)` | `(batch_size, 256)` |\n| head | Linear(256, 10) | `(batch_size, 256)` | `(batch_size, 10)` |\n\n### Dimension mismatch check:\n\n- The input to the model must be `(batch_size, 784)` for the first Linear layer.\n- The output of the last Linear layer is `(batch_size, 10)`.\n\n**No mismatches are observed.**\n\n---\n\n**Final answer: NO**"
+        },
+        {
+          "name": "vae_decoder_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 2838.0,
+          "llm_response": "Let's analyze the model step by step:\n\n### Initialization (`__init__`):\n- `self.fc1 = nn.Linear(32, 128)`\n  - Input dimension: 32\n  - Output dimension: 128\n- `self.fc2 = nn.Linear(128, 512)`\n  - Input dimension: 128\n  - Output dimension: 512\n- `self.fc3 = nn.Linear(512, 784)`\n  - Input dimension: 512\n  - Output dimension: 784\n\n### Forward pass:\nInput: `z`\n\nAssuming `z` has shape `(batch_size, 32)` (since the first layer expects 32 features):\n\n1. `h = self.fc1(z)`\n   - Input shape: `(batch_size, 32)`\n   - Output shape: `(batch_size, 128)`\n\n2. `h = self.fc2(h)`\n   - Input shape: `(batch_size, 128)`\n   - Output shape: `(batch_size, 512)`\n\n3. `return self.fc3(h)`\n   - Input shape: `(batch_size, 512)`\n   - Output shape: `(batch_size, 784)`\n\n### Final check:\n- The input to `fc1` is `(batch_size, 32)` which matches the expected input dimension.\n- The output of `fc3` is `(batch_size, 784)`, which is consistent with the last layer.\n\n**No dimension mismatch occurs.**\n\n---\n\n**Final answer: NO**"
+        },
+        {
+          "name": "multihead_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 4002.3,
+          "llm_response": "Let's analyze the model step by step:\n\n### __init__ layers:\n\n1. **self.head1 = nn.Linear(256, 64)**\n   - Input dimension: 256\n   - Output dimension: 64\n\n2. **self.head2 = nn.Linear(256, 64)**\n   - Input dimension: 256\n   - Output dimension: 64\n\n3. **self.merge = nn.Linear(128, 128)**\n   - Input dimension: 128\n   - Output dimension: 128\n\n---\n\n### Forward method:\n\n```python\ndef forward(self, x):\n    h1 = self.head1(x)\n    h2 = self.head2(x)\n    return self.merge(torch.cat([h1, h2], dim=-1))\n```\n\n---\n\n### Step-by-step tensor shape tracking:\n\n- **Input `x`**: The model expects `x` to have a last dimension of 256, i.e., shape `(batch_size, 256)`.\n\n---\n\n**Step 1: `h1 = self.head1(x)`**\n\n- `x`: `(batch_size, 256)`\n- `head1`: Linear(256, 64)\n- Output `h1`: `(batch_size, 64)`\n\n**Step 2: `h2 = self.head2(x)`**\n\n- `x`: `(batch_size, 256)`\n- `head2`: Linear(256, 64)\n- Output `h2`: `(batch_size, 64)`\n\n**Step 3: `torch.cat([h1, h2], dim=-1)`**\n\n- Concatenate along last dimension:\n- Result: `(batch_size, 64 + 64) = (batch_size, 128)`\n\n**Step 4: `self.merge(...)`**\n\n- Input: `(batch_size, 128)`\n- `merge`: Linear(128, 128)\n- Output: `(batch_size, 128)`\n\n---\n\n### Final check:\n\n- The concatenated tensor shape `(batch_size, 128)` matches the input dimension expected by `self.merge`.\n- No dimension mismatch occurs.\n\n---\n\n### **Answer: NO**"
+        },
+        {
+          "name": "double_conv_correct",
+          "category": "shape_conv",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 4641.7,
+          "llm_response": "Let's analyze the model step by step.\n\n### __init__ Layer Analysis:\n\n- `self.conv1 = nn.Conv2d(3, 64, 3, padding=1)`\n  - Input channels: 3\n  - Output channels: 64\n  - Kernel size: 3x3\n  - Padding: 1 (to preserve spatial dimensions)\n  \n- `self.conv2 = nn.Conv2d(64, 64, 3, padding=1)`\n  - Input channels: 64\n  - Output channels: 64\n  - Kernel size: 3x3\n  - Padding: 1 (to preserve spatial dimensions)\n  \n- `self.bn = nn.BatchNorm2d(64)`\n  - Normalizes over 64 channels\n\n---\n\n### Forward method analysis:\n\nSuppose the input tensor `x` has shape `(batch_size, 3, H, W)`.\n\n---\n\n### Step-by-step tensor shape tracking:\n\n1. **Input:**\n   - `x`: `(batch_size, 3, H, W)`\n\n2. **After `self.conv1(x)`**:\n   - Conv2d with padding=1 and kernel=3 preserves spatial dimensions.\n   - Output shape: `(batch_size, 64, H, W)`\n\n3. **After `self.conv2(x)`**:\n   - Input: `(batch_size, 64, H, W)`\n   - Conv2d with padding=1, kernel=3, preserves spatial dimensions.\n   - Output shape: `(batch_size, 64, H, W)`\n\n4. **After `self.bn(x)`**:\n   - BatchNorm2d applied over 64 channels, shape remains `(batch_size, 64, H, W)`\n\n---\n\n### Final output shape:\n- `(batch_size, 64, H, W)`\n\n### Dimension mismatch check:\n- All convolutions preserve spatial dimensions due to padding=1.\n- BatchNorm does not change shape.\n- No shape mismatches occur.\n\n---\n\n### **Answer: NO**"
+        },
+        {
+          "name": "deep_classifier_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 4855.9,
+          "llm_response": "Let's analyze the model step by step:\n\n### __init__ method:\n- `nn.Linear(100, 200)`:\n  - Input: tensor with shape `(batch_size, 100)`\n  - Output: `(batch_size, 200)`\n\n- `nn.ReLU()`:\n  - Input: `(batch_size, 200)`\n  - Output: `(batch_size, 200)`\n\n- `nn.Linear(200, 100)`:\n  - Input: `(batch_size, 200)`\n  - Output: `(batch_size, 100)`\n\n- `nn.ReLU()`:\n  - Input: `(batch_size, 100)`\n  - Output: `(batch_size, 100)`\n\n- `nn.Linear(100, 50)`:\n  - Input: `(batch_size, 100)`\n  - Output: `(batch_size, 50)`\n\n- `nn.ReLU()`:\n  - Input: `(batch_size, 50)`\n  - Output: `(batch_size, 50)`\n\n- `nn.Linear(50, 10)`:\n  - Input: `(batch_size, 50)`\n  - Output: `(batch_size, 10)`\n\n---\n\n### forward method:\n- Input `x`: shape `(batch_size, 100)` (expected, since the first layer expects 100 features)\n\n- After first layer (`nn.Linear(100, 200)`):\n  - shape: `(batch_size, 200)`\n\n- After first ReLU:\n  - shape: `(batch_size, 200)`\n\n- After second layer (`nn.Linear(200, 100)`):\n  - shape: `(batch_size, 100)`\n\n- After second ReLU:\n  - shape: `(batch_size, 100)`\n\n- After third layer (`nn.Linear(100, 50)`):\n  - shape: `(batch_size, 50)`\n\n- After third ReLU:\n  - shape: `(batch_size, 50)`\n\n- After final layer (`nn.Linear(50, 10)`):\n  - shape: `(batch_size, 10)`\n\n### Final output shape:\n- `(batch_size, 10)`\n\n### Dimension mismatch check:\n- The input to the model must be `(batch_size, 100)` to match the first linear layer.\n- The data flows correctly through all layers without any shape mismatch.\n\n---\n\n**Answer: NO** (no dimension mismatch occurs)."
+        }
+      ]
+    },
+    "architecture_aware_cot": {
+      "strategy": "architecture_aware_cot",
+      "model": "gpt-4.1-nano",
+      "metrics": {
+        "TP": 18,
+        "FP": 5,
+        "FN": 0,
+        "TN": 12,
+        "precision": 0.7826,
+        "precision_ci_95": [
+          0.581,
+          0.9034
+        ],
+        "recall": 1.0,
+        "recall_ci_95": [
+          0.8241,
+          1.0
+        ],
+        "f1": 0.878,
+        "accuracy": 0.8571
+      },
+      "skipped": 0,
+      "per_category": {
+        "shape_attention": {
+          "TP": 1,
+          "FP": 0,
+          "FN": 0,
+          "TN": 1,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        },
+        "shape_conv": {
+          "TP": 5,
+          "FP": 1,
+          "FN": 0,
+          "TN": 3,
+          "precision": 0.8333,
+          "precision_ci_95": [
+            0.4365,
+            0.9699
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.5655,
+            1.0
+          ],
+          "f1": 0.9091,
+          "accuracy": 0.8889
+        },
+        "shape_embedding": {
+          "TP": 1,
+          "FP": 1,
+          "FN": 0,
+          "TN": 0,
+          "precision": 0.5,
+          "precision_ci_95": [
+            0.0945,
+            0.9055
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "f1": 0.6667,
+          "accuracy": 0.5
+        },
+        "shape_flatten": {
+          "TP": 1,
+          "FP": 0,
+          "FN": 0,
+          "TN": 0,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        },
+        "shape_linear": {
+          "TP": 7,
+          "FP": 2,
+          "FN": 0,
+          "TN": 6,
+          "precision": 0.7778,
+          "precision_ci_95": [
+            0.4526,
+            0.9368
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.6457,
+            1.0
+          ],
+          "f1": 0.875,
+          "accuracy": 0.8667
+        },
+        "shape_norm": {
+          "TP": 1,
+          "FP": 1,
+          "FN": 0,
+          "TN": 0,
+          "precision": 0.5,
+          "precision_ci_95": [
+            0.0945,
+            0.9055
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.2065,
+            1.0
+          ],
+          "f1": 0.6667,
+          "accuracy": 0.5
+        },
+        "shape_rnn": {
+          "TP": 2,
+          "FP": 0,
+          "FN": 0,
+          "TN": 2,
+          "precision": 1.0,
+          "precision_ci_95": [
+            0.3424,
+            1.0
+          ],
+          "recall": 1.0,
+          "recall_ci_95": [
+            0.3424,
+            1.0
+          ],
+          "f1": 1.0,
+          "accuracy": 1.0
+        }
+      },
+      "benchmarks": [
+        {
+          "name": "linear_chain_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 6415.6,
+          "llm_response": "Let's analyze the provided code step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.fc1 = nn.Linear(10, 20)`\n  - Expected input shape: `(batch_size, 10)`\n  - Output shape: `(batch_size, 20)`\n\n- `self.fc2 = nn.Linear(30, 5)`\n  - Expected input shape: `(batch_size, 30)`\n  - Output shape: `(batch_size, 5)`\n\n### 2. Trace data flow through `forward()`:\n\n```python\ndef forward(self, x):\n    x = self.fc1(x)\n    x = self.fc2(x)\n    return x\n```\n\n- Input `x` to `forward()`:\n  - For `self.fc1(x)`:\n    - `x` must have shape `(batch_size, 10)` to match `fc1`'s input features.\n  - After `fc1`, `x` has shape `(batch_size, 20)`.\n\n- Next, `x = self.fc2(x)`:\n  - `x` now has shape `(batch_size, 20)`.\n  - `self.fc2` expects input shape `(batch_size, 30)`.\n  - **Mismatch**: The input to `fc2` is `(batch_size, 20)`, but it expects `(batch_size, 30)`.\n\n### 3. Connection point check:\n\n- The output of `fc1` is `(batch_size, 20)`.\n- The input to `fc2` is `(batch_size, 20)`.\n- `fc2` expects `(batch_size, 30)`.\n\n**Dimensional incompatibility**: The code will raise an error during execution because `fc2`'s input features do not match the shape of the tensor coming from `fc1`.\n\n### 4. Device assignment and behavioral issues:\n\n- No device assignment issues are evident from the code snippet.\n- No specific train/eval mode behavior issues are apparent here.\n\n### **Summary:**\n\n- The main bug is the mismatch between the output of `fc1` and the expected input of `fc2`.\n- The `fc2` layer expects 30 input features, but the previous layer outputs only 20 features.\n\n**Final answer:**\n\n**YES (bug found)**\n\n**Specific bug location:** The input to `self.fc2` in `forward()` is `(batch_size, 20)`, but `self.fc2` expects `(batch_size, 30)`. The mismatch occurs at the line `x = self.fc2(x)`."
+        },
+        {
+          "name": "conv_channel_mismatch",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 6089.0,
+          "llm_response": "Let's analyze the provided `nn.Module` step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.conv1 = nn.Conv2d(3, 16, 3)`\n  - Input channels: 3\n  - Output channels: 16\n  - Kernel size: 3x3\n  - Expected input shape: `(batch_size, 3, H, W)`\n  - Output shape: `(batch_size, 16, H-2, W-2)` (assuming default stride=1, padding=0)\n\n- `self.conv2 = nn.Conv2d(32, 64, 3)`\n  - Input channels: 32\n  - Output channels: 64\n  - Kernel size: 3x3\n  - Expected input shape: `(batch_size, 32, H, W)`\n  - Output shape: `(batch_size, 64, H-2, W-2)`\n\n### 2. Data flow in `forward()`:\n\n```python\nx = self.conv1(x)\nx = self.conv2(x)\nreturn x\n```\n\n- Input `x` to `conv1`: shape `(batch_size, 3, H, W)`\n- After `conv1`: shape `(batch_size, 16, H-2, W-2)`\n\n- Next, `x` is passed to `conv2`: shape `(batch_size, 16, H-2, W-2)`\n\n- **Issue:** `conv2` expects input channels = 32, but the current tensor has 16 channels after `conv1`.\n\n### 3. Dimensional compatibility check:\n\n- The output of `conv1` has shape `(batch_size, 16, H-2, W-2)`.\n- `conv2` expects input channels = 32, but receives 16 channels.\n- **This mismatch will cause a runtime error** when executing `conv2`.\n\n### 4. Device and behavioral checks:\n\n- No device assignment issues are evident; no explicit device code.\n- No training/eval mode differences are relevant here.\n\n### **Summary:**\n\n- The main bug is the mismatch in input channels for `conv2`. The first convolution outputs 16 channels, but `conv2` expects 32 channels.\n- This indicates a bug in the architecture: the input channels of `conv2` should match the output channels of `conv1`.\n\n### **Final answer:**\n\n**YES (bug found)**\n\n**Location:** The input channels of `conv2` should be 16, not 32."
+        },
+        {
+          "name": "autoencoder_decoder_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 6872.6,
+          "llm_response": "Let's analyze the provided `AE` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.enc1 = nn.Linear(784, 256)`\n  - Input: shape `(batch_size, 784)`\n  - Output: `(batch_size, 256)`\n\n- `self.enc2 = nn.Linear(256, 64)`\n  - Input: `(batch_size, 256)`\n  - Output: `(batch_size, 64)`\n\n- `self.dec1 = nn.Linear(64, 128)`\n  - Input: `(batch_size, 64)`\n  - Output: `(batch_size, 128)`\n\n- `self.dec2 = nn.Linear(256, 784)`\n  - Input: `(batch_size, 256)` (but see below)\n  - Output: `(batch_size, 784)`\n\n### 2. Forward pass tracing:\n\n```python\ndef forward(self, x):\n    x = self.enc1(x)        # shape: (batch_size, 784) -> (batch_size, 256)\n    x = self.enc2(x)        # shape: (batch_size, 256) -> (batch_size, 64)\n    x = self.dec1(x)        # shape: (batch_size, 64) -> (batch_size, 128)\n    x = self.dec2(x)        # shape: (batch_size, 128) -> ??? (expected (batch_size, 784))\n    return x\n```\n\n### 3. Connection points and dimensional compatibility:\n\n- After `enc2`, tensor shape is `(batch_size, 64)`.\n- `dec1` takes `(batch_size, 64)` and outputs `(batch_size, 128)`.\n- `dec2` expects input of shape `(batch_size, 256)` but receives `(batch_size, 128)`.\n\n**Issue:** The input to `dec2` is `(batch_size, 128)`, but `dec2` is defined as `nn.Linear(256, 784)`. This mismatch will cause a runtime error during forward pass.\n\n### 4. Additional observations:\n\n- The decoder's last layer `dec2` expects 256 features, but the previous layer outputs only 128 features.\n- There is no concatenation or other operation that would produce a `(batch_size, 256)` tensor before `dec2`.\n- The code does not include any reshaping or concatenation to match the expected input size of `dec2`.\n\n### 5. Device and train/eval mode:\n\n- No device assignment issues are evident; no `.to()` calls are present.\n- No specific train/eval mode behaviors are involved here.\n\n### **Summary:**\n\n- The main bug is at the connection between `enc2` and `dec1`, and then from `dec1` to `dec2`.\n- Specifically, `dec2` expects an input of size 256, but receives only 128, leading to a shape mismatch.\n\n---\n\n### **Final answer:**\n\n**YES (bug found)**\n\n**Location:** The input to `self.dec2` in `forward()` is `(batch_size, 128)`, but `dec2` expects `(batch_size, 256)`. This mismatch causes a runtime error."
+        },
+        {
+          "name": "mlp_hidden_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 4876.6,
+          "llm_response": "Let's analyze the provided `MLP` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.fc1 = nn.Linear(512, 256)`\n  - Input shape: `(batch_size, 512)`\n  - Output shape: `(batch_size, 256)`\n\n- `self.fc2 = nn.Linear(128, 64)`\n  - Input shape: `(batch_size, 128)`\n  - Output shape: `(batch_size, 64)`\n\n- `self.fc3 = nn.Linear(64, 10)`\n  - Input shape: `(batch_size, 64)`\n  - Output shape: `(batch_size, 10)`\n\n### 2. Forward pass tracing:\n\n```python\ndef forward(self, x):\n    x = self.fc1(x)  # expects x: (batch_size, 512)\n    x = self.fc2(x)  # expects x: (batch_size, 128)\n    x = self.fc3(x)  # expects x: (batch_size, 64)\n    return x\n```\n\n### 3. Dimensional compatibility check:\n\n- After `self.fc1(x)`, `x` will be `(batch_size, 256)`.\n- Next, `self.fc2(x)` expects input of shape `(batch_size, 128)`, but the previous layer outputs `(batch_size, 256)`.\n- **Mismatch here:** The input to `fc2` is `(batch_size, 256)`, but `fc2` expects `(batch_size, 128)`.\n\nThis indicates a shape incompatibility: the output of `fc1` does not match the expected input size of `fc2`.\n\n### 4. Device and behavioral checks:\n\n- No device assignment issues are evident from the code.\n- No specific training/eval mode behaviors are involved here.\n\n### **Summary:**\n\n- The main bug is the mismatch between the output of `fc1` and the input expected by `fc2`.\n- The `fc2` layer expects an input of size 128, but `fc1` outputs size 256.\n\n**Final conclusion:**\n\n**YES (bug found)** \u2014 The shape mismatch occurs at the connection between `fc1` and `fc2`. The `fc2` layer's input size should be 256, not 128."
+        },
+        {
+          "name": "resnet_shortcut_mismatch",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 5091.5,
+          "llm_response": "Let's analyze the provided `ResBlock` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.conv1 = nn.Conv2d(64, 128, 3, padding=1)`\n  - Input shape: `(batch_size, 64, H, W)`\n  - Output shape: `(batch_size, 128, H, W)` (since kernel=3, padding=1 preserves spatial dimensions)\n\n- `self.conv2 = nn.Conv2d(128, 128, 3, padding=1)`\n  - Input shape: `(batch_size, 128, H, W)`\n  - Output shape: `(batch_size, 128, H, W)`\n\n### 2. Trace data flow in `forward()`:\n\n- Input `x`: shape `(batch_size, 64, H, W)`\n- After `self.conv1(x)`: shape `(batch_size, 128, H, W)`\n- After `self.conv2(...)`: shape `(batch_size, 128, H, W)`\n- Final output: `out + x`\n\n### 3. Connection point check:\n\n- The addition `out + x` requires both tensors to have the same shape.\n- `out` has shape `(batch_size, 128, H, W)`\n- `x` has shape `(batch_size, 64, H, W)`\n\n**Issue:** The shapes do not match for addition. The residual connection adds a tensor with 64 channels to one with 128 channels, which is incompatible.\n\n### 4. Device and behavioral considerations:\n\n- No device issues are apparent from the code snippet.\n- No specific training/eval mode behaviors are involved here.\n\n### **Summary of the bug:**\n\nThe core problem is the mismatch in the number of channels between the input `x` and the output of the convolutional layers. The residual addition `out + x` is invalid because `x` has 64 channels, while `out` has 128 channels.\n\n**To fix this**, the input `x` should be transformed to match the output channels before addition, typically by applying a 1x1 convolution or ensuring the input has 128 channels.\n\n---\n\n**Final answer:**\n\n**YES (bug found)**\n\n**Location:** The addition `out + x` in the `forward()` method, due to mismatched channel dimensions (64 vs. 128)."
+        },
+        {
+          "name": "transformer_mlp_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 8470.2,
+          "llm_response": "Let's analyze the provided `TransformerMLP` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.norm = nn.LayerNorm(768)`:\n  - Expects input shape: `(batch_size, *, 768)` (i.e., last dimension 768)\n  - Output shape: same as input, `(batch_size, *, 768)`\n\n- `self.fc1 = nn.Linear(768, 3072)`:\n  - Expects input shape: last dimension 768\n  - Output shape: last dimension 3072\n\n- `self.fc2 = nn.Linear(2048, 768)`:\n  - Expects input shape: last dimension 2048\n  - Output shape: last dimension 768\n\n### 2. Data flow in `forward()`:\n\n```python\nh = self.fc1(self.norm(x))\nreturn x + self.fc2(h)\n```\n\n- Input `x`: shape `(batch_size, *, 768)` (assumed)\n- After `self.norm(x)`: shape `(batch_size, *, 768)`\n- After `self.fc1(...)`: shape `(batch_size, *, 3072)` (since last dim 768 -> 3072)\n\nNow, `h` has shape `(batch_size, *, 3072)`.\n\n- Next, `self.fc2(h)`:\n  - `self.fc2` expects input last dimension 2048, but `h` has last dimension 3072.\n  - **This is a shape mismatch.**\n\nThe code attempts to do:\n\n```python\nreturn x + self.fc2(h)\n```\n\n- `x` has shape `(batch_size, *, 768)`\n- `self.fc2(h)` has shape `(batch_size, *, 768)` (if it were correct), but currently, `h` is `(batch_size, *, 3072)` and `self.fc2` expects 2048, which does not match.\n\n**Key issue:**\n\n- The `self.fc2` layer expects input last dimension 2048, but `h` has last dimension 3072.\n- Therefore, `self.fc2(h)` will raise a runtime shape error unless `h` is sliced or reshaped.\n\n### 3. Connection point check:\n\n- The main bug is at the line:\n\n```python\nreturn x + self.fc2(h)\n```\n\n- The addition requires `x` and `self.fc2(h)` to have the same shape `(batch_size, *, 768)`.\n- But `self.fc2(h)` is currently `(batch_size, *, 768)` only if `h`'s last dimension is 2048, which it isn't.\n\n### 4. Device and train/eval issues:\n\n- No device assignment issues are evident; no `.to()` calls are present.\n- No specific train/eval behavior differences are apparent.\n\n### **Summary:**\n\n- The main shape bug is that `self.fc2` expects input last dimension 2048, but `h` has last dimension 3072.\n- This mismatch will cause a runtime error during forward pass.\n\n---\n\n### Final answer:\n\n**YES (bug found)**\n\n**Location:** The line `return x + self.fc2(h)` because `h` has shape `(batch_size, *, 3072)` but `self.fc2` expects input last dimension 2048. To fix this, either `self.fc1` should output 2048, or `h` should be sliced or reshaped before passing to `self.fc2`."
+        },
+        {
+          "name": "conv_flatten_linear_mismatch",
+          "category": "shape_flatten",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 10597.2,
+          "llm_response": "Let's analyze the provided CNN class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.conv = nn.Conv2d(3, 16, 3)`\n  - Input shape: `(batch_size, 3, H, W)`\n  - Output shape: `(batch_size, 16, H_out, W_out)`\n  - H_out and W_out depend on input size and kernel parameters.\n\n- `self.fc = nn.Linear(1000, 10)`\n  - Input shape: `(batch_size, 1000)`\n  - Output shape: `(batch_size, 10)`\n\n### 2. Data flow in `forward()`:\n\n```python\nx = self.conv(x)\nx = x.view(x.size(0), -1)\nx = self.fc(x)\nreturn x\n```\n\n- Input `x`: shape `(batch_size, 3, H, W)`\n\n- After `self.conv(x)`:\n  - Shape: `(batch_size, 16, H_out, W_out)`\n  - H_out and W_out are computed as:\n    \\[\n    H_{out} = \\left\\lfloor \\frac{H + 2 \\times 0 - 3}{1} + 1 \\right\\rfloor = H - 2\n    \\]\n    \\[\n    W_{out} = W - 2\n    \\]\n  - So, output shape: `(batch_size, 16, H - 2, W - 2)`\n\n- After `x.view(x.size(0), -1)`:\n  - Shape: `(batch_size, 16 * (H - 2) * (W - 2))`\n\n- Then, `self.fc(x)` expects input of size `(batch_size, 1000)`. \n\n### 3. Dimensional compatibility check:\n\n- The flattened tensor fed into `self.fc` has shape `(batch_size, 16 * (H - 2) * (W - 2))`.\n- For this to be compatible with `nn.Linear(1000, 10)`, the flattened size must be exactly 1000:\n  \n  \\[\n  16 \\times (H - 2) \\times (W - 2) = 1000\n  \\]\n  \n- Rearranged:\n  \n  \\[\n  (H - 2) \\times (W - 2) = \\frac{1000}{16} = 62.5\n  \\]\n  \n- Since `(H - 2) * (W - 2)` must be an integer, and 62.5 is not an integer, **this indicates a shape mismatch unless the input dimensions are specifically chosen**.\n\n- For example, if the input image size `(H, W)` is `(32, 32)`:\n  \n  \\[\n  H - 2 = 30,\\quad W - 2 = 30\n  \\]\n  \n  \\[\n  16 \\times 30 \\times 30 = 16 \\times 900 = 14,400\n  \\]\n  \n  Which is much larger than 1000, so the linear layer would not match.\n\n- To match the linear layer's input size, the flattened size must be exactly 1000, which implies:\n\n  \\[\n  (H - 2) \\times (W - 2) = 62.5\n  \\]\n  \n  Impossible with integer dimensions.\n\n- **Therefore, unless the input size `(H, W)` is specifically chosen such that:**\n\n  \\[\n  16 \\times (H - 2) \\times (W - 2) = 1000\n  \\]\n  \n  which is not an integer solution, **the code will raise a shape mismatch error at runtime**.\n\n### 4. Device assignment issues and train/eval differences:\n\n- No explicit device placement code is provided, so assuming default device.\n- No batch normalization or dropout, so no train/eval discrepancy concerns.\n- No such issues are evident from the code snippet.\n\n### **Summary:**\n\n- The main problem is the mismatch between the flattened feature size after the convolution and the expected input size of the linear layer.\n- The linear layer expects an input size of 1000, but the flattened size depends on the input image dimensions `(H, W)` and the convolution output size.\n- For typical image sizes (e.g., 32x32), the flattened size is much larger than 1000, leading to a shape mismatch.\n\n### **Final conclusion:**\n\n**YES (bug found)** \u2014 The shape mismatch occurs because the linear layer's input features (1000) do not match the flattened size of the convolution output for typical input sizes. To fix this, either:\n\n- Adjust the linear layer's input features to match the flattened size for a given input size, or\n- Add an adaptive pooling layer before"
+        },
+        {
+          "name": "lstm_hidden_mismatch",
+          "category": "shape_rnn",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 6028.5,
+          "llm_response": "Let's analyze the provided `LSTMClassifier` step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- **self.lstm**:\n  - Input size: 100\n  - Hidden size: 256\n  - `batch_first=True` means input shape: `(batch_size, seq_len, input_size)`\n  - Output: \n    - Output tensor: `(batch_size, seq_len, 256)`\n    - Hidden state `h`: `(1, batch_size, 256)` (since num_layers defaults to 1)\n    - Cell state `_`: `(1, batch_size, 256)`\n\n- **self.fc**:\n  - Input features: 128\n  - Output features: 10\n\n### 2. Trace data flow in `forward()`:\n\n```python\n_, (h, _) = self.lstm(x)\nreturn self.fc(h.squeeze(0))\n```\n\n- The input `x` is passed to `lstm`.\n- The output `_` (sequence output) is ignored.\n- The hidden state `h` is used:\n  - `h` shape: `(1, batch_size, 256)`\n\n- `h.squeeze(0)`:\n  - Removes dimension 0 if it is 1.\n  - Resulting shape: `(batch_size, 256)`\n\n- The `fc` layer expects input shape `(batch_size, 128)`, but the actual input shape after squeezing is `(batch_size, 256)`.\n\n### 3. Dimensional compatibility check:\n\n- The `fc` layer expects input features of size 128, but the tensor passed to it after squeezing `h` is `(batch_size, 256)`.\n- **Mismatch**: The input to `self.fc` is `(batch_size, 256)`, but `self.fc` expects `(batch_size, 128)`.\n\n### 4. Device assignment and behavioral issues:\n\n- No explicit device management is shown, but assuming default device placement.\n- No specific training/eval mode issues are evident here.\n\n### **Summary of issues:**\n\n- The main bug is the mismatch between the hidden state size (`256`) and the expected input size of the `fc` layer (`128`).\n- The `fc` layer's input features should match the size of `h.squeeze(0)`, which is `256`.\n\n### **Final conclusion:**\n\n**YES (bug found)**\n\n**Specific bug location:** The `self.fc` layer is initialized with `in_features=128`, but the hidden state `h` after squeezing has shape `(batch_size, 256)`. This mismatch will cause a runtime shape error during forward pass."
+        },
+        {
+          "name": "attention_proj_mismatch",
+          "category": "shape_attention",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 8167.5,
+          "llm_response": "Let's analyze the provided SelfAttention module step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.q_proj = nn.Linear(512, 512)`  \n  Input: shape `(batch_size, seq_len, 512)`  \n  Output: `(batch_size, seq_len, 512)`\n\n- `self.k_proj = nn.Linear(512, 512)`  \n  Input: `(batch_size, seq_len, 512)`  \n  Output: `(batch_size, seq_len, 512)`\n\n- `self.v_proj = nn.Linear(512, 512)`  \n  Input: `(batch_size, seq_len, 512)`  \n  Output: `(batch_size, seq_len, 512)`\n\n- `self.out_proj = nn.Linear(256, 512)`  \n  Input: `(batch_size, seq_len, 256)`  \n  Output: `(batch_size, seq_len, 512)`\n\n**Observation:**  \nThe `out_proj` expects an input with last dimension 256, but the `out` tensor coming from `torch.matmul(attn, v)` will have shape `(batch_size, seq_len, 512)` because `attn` is `(batch_size, seq_len, seq_len)` and `v` is `(batch_size, seq_len, 512)`.\n\n---\n\n### 2. Trace data flow in `forward()`:\n\n- `q = self.q_proj(x)`  \n  Shape: `(batch_size, seq_len, 512)`\n\n- `k = self.k_proj(x)`  \n  Shape: `(batch_size, seq_len, 512)`\n\n- `v = self.v_proj(x)`  \n  Shape: `(batch_size, seq_len, 512)`\n\n- `attn = torch.matmul(q, k.transpose(-2, -1))`  \n  `k.transpose(-2, -1)` shape: `(batch_size, 512, seq_len)`  \n  Resulting `attn` shape: `(batch_size, seq_len, seq_len)`\n\n- `attn = torch.softmax(attn / 22.6, dim=-1)`  \n  Shape remains `(batch_size, seq_len, seq_len)`\n\n- `out = torch.matmul(attn, v)`  \n  `attn`: `(batch_size, seq_len, seq_len)`  \n  `v`: `(batch_size, seq_len, 512)`  \n  Result: `(batch_size, seq_len, 512)`\n\n- `return self.out_proj(out)`  \n  `out`: `(batch_size, seq_len, 512)`  \n  `self.out_proj` expects input of shape `(batch_size, seq_len, 256)`, but receives `(batch_size, seq_len, 512)`.\n\n### 3. Dimensional compatibility check:\n\n- The main issue is at the last step: `self.out_proj(out)`  \n  The `out_proj` layer is defined as `nn.Linear(256, 512)`, expecting input with last dimension 256, but `out` has last dimension 512.\n\n**Conclusion:**  \nThis mismatch will cause a runtime shape error when calling `self.out_proj(out)`.\n\n### 4. Device assignment and behavioral issues:\n\n- No device assignment issues are evident from the code snippet.\n- No specific train/eval mode behavior issues are apparent here.\n\n---\n\n### **Final assessment:**\n\n**Bug location:** The mismatch between the output of `torch.matmul(attn, v)` (shape `(batch_size, seq_len, 512)`) and the expected input shape `(batch_size, seq_len, 256)` for `self.out_proj`.\n\n**Specific bug:** The `self.out_proj` layer is incorrectly initialized with input features `256` but receives `512`. To fix this, `self.out_proj` should be `nn.Linear(512, 512)`.\n\n**Answer:** YES (bug found at the definition of `self.out_proj`)"
+        },
+        {
+          "name": "unet_skip_mismatch",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 6688.8,
+          "llm_response": "Let's analyze the provided `UNetBlock` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.down = nn.Conv2d(64, 128, 3, stride=2, padding=1)`\n  - Input: shape `(N, 64, H, W)`\n  - Output: shape `(N, 128, H/2, W/2)` (since stride=2)\n\n- `self.up = nn.ConvTranspose2d(128, 64, 3, stride=2, padding=1, output_padding=1)`\n  - Input: shape `(N, 128, H/2, W/2)`\n  - Output: shape `(N, 64, H, W)` (because ConvTranspose2d with stride=2 and output_padding=1 doubles spatial dimensions)\n\n- `self.merge = nn.Conv2d(192, 64, 1)`\n  - Input: shape `(N, 192, H, W)` (after concatenation)\n  - Output: shape `(N, 64, H, W)`\n\n### 2. Data flow in `forward()`:\n\n```python\ndef forward(self, x):\n    d = self.down(x)            # shape: (N, 128, H/2, W/2)\n    u = self.up(d)              # shape: (N, 64, H, W)\n    return self.merge(torch.cat([u, x], dim=1))\n```\n\n- `x`: shape `(N, 64, H, W)`\n- `d = self.down(x)`: shape `(N, 128, H/2, W/2)`\n\nNext:\n\n- `u = self.up(d)`: shape `(N, 64, H, W)`\n\nThen:\n\n- Concatenate `[u, x]` along `dim=1`:\n\n  - `u`: `(N, 64, H, W)`\n  - `x`: `(N, 64, H, W)`\n\n  - Concatenated shape: `(N, 128, H, W)`\n\n- Pass through `self.merge`: expects input channels = 192, but current concatenation yields 128 channels.\n\n### 3. Dimensional compatibility check:\n\n- The `merge` layer expects input channels = 192, but the concatenation produces 128 channels.\n\n- **Bug:** The concatenation of `u` and `x` results in 128 channels, but `self.merge` expects 192 channels. This mismatch will cause a runtime error.\n\n### 4. Device assignment and behavioral issues:\n\n- No explicit device assignment in the code; assuming tensors are on the same device during execution.\n\n- No specific train/eval mode issues are evident here.\n\n---\n\n### **Summary of issues:**\n\n- The main bug is the mismatch between the number of channels after concatenation (`128`) and the expected input channels for `self.merge` (`192`).\n\n- To fix this, either:\n\n  - Change the `merge` layer to accept 128 channels: `nn.Conv2d(128, 64, 1)`, or\n  - Adjust the concatenation to produce 192 channels (e.g., by concatenating with an additional tensor).\n\n---\n\n### **Final answer:**\n\n**YES (bug found)** \u2014 The bug is at the line `self.merge = nn.Conv2d(192, 64, 1)` because the concatenation produces 128 channels, not 192."
+        },
+        {
+          "name": "double_conv_channel_bug",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 4981.4,
+          "llm_response": "Let's analyze the provided code step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.conv1 = nn.Conv2d(3, 64, 3, padding=1)`\n  - Input channels: 3\n  - Output channels: 64\n  - Kernel size: 3x3\n  - Padding: 1 (preserves spatial dimensions)\n- `self.conv2 = nn.Conv2d(32, 64, 3, padding=1)`\n  - Input channels: 32\n  - Output channels: 64\n  - Kernel size: 3x3\n  - Padding: 1\n- `self.bn = nn.BatchNorm2d(64)`\n  - Expects input with 64 channels\n\n### 2. Data flow in `forward()`:\n\n```python\ndef forward(self, x):\n    x = self.conv1(x)\n    x = self.conv2(x)\n    return self.bn(x)\n```\n\n- Input `x`: shape `(batch_size, 3, H, W)` (assuming standard image input)\n- After `conv1`: shape `(batch_size, 64, H, W)` (since padding=1, spatial dims preserved)\n- After `conv2`: shape `(batch_size, 64, H, W)`? **Wait**, the input to `conv2` is the output of `conv1`, which has 64 channels, but `conv2` expects 32 input channels.\n\n### 3. Dimensional compatibility check:\n\n- `conv1` outputs 64 channels, which is compatible with the input shape `(batch_size, 3, H, W)`.\n- `conv2` expects input with 32 channels, but receives 64 channels from `conv1`. **This is a mismatch**.\n\n### 4. Device and train/eval mode considerations:\n\n- No device assignment issues are apparent; no `.to()` calls are shown.\n- No specific train/eval mode behavior is involved here.\n\n### **Summary of issues:**\n\n- The main bug is at the connection between `conv1` and `conv2`. The output of `conv1` has 64 channels, but `conv2` expects 32 channels as input, leading to a shape mismatch.\n\n### **Final answer:**\n\n**YES (bug found)**\n\n**Specific bug location:** The input channels of `conv2` should be 64, not 32, to match the output of `conv1`."
+        },
+        {
+          "name": "embedding_linear_mismatch",
+          "category": "shape_embedding",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 5531.3,
+          "llm_response": "Let's analyze the provided `EmbedNet` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.embed = nn.Embedding(1000, 128)`\n  - Input: LongTensor of shape `(batch_size, sequence_length)` (or `(batch_size,)` for single indices)\n  - Output: FloatTensor of shape `(batch_size, sequence_length, 128)`\n\n- `self.fc = nn.Linear(256, 64)`\n  - Input: FloatTensor of shape `(batch_size, 256)` (or `(batch_size, *)` where `*` is any shape with last dimension 256)\n  - Output: FloatTensor of shape `(batch_size, 64)`\n\n### 2. Trace data flow in `forward()`:\n\n```python\ndef forward(self, x):\n    x = self.embed(x)\n    return self.fc(x)\n```\n\n- Input `x`: shape `(batch_size, sequence_length)` (assuming typical usage)\n- After `self.embed(x)`: shape `(batch_size, sequence_length, 128)`\n\nNext, `x` is passed directly into `self.fc(x)`. The `nn.Linear` layer expects the last dimension of the input to be 256, but currently, the tensor shape is `(batch_size, sequence_length, 128)`.\n\n### 3. Connection point compatibility:\n\n- The `self.fc` layer expects input shape `(batch_size, 256)`, but the actual tensor shape after embedding is `(batch_size, sequence_length, 128)`.\n- This mismatch will cause a runtime error unless the tensor is reshaped or sliced appropriately.\n\n### 4. Device and behavioral considerations:\n\n- No explicit device assignment is specified; assuming default.\n- No training/eval mode differences are evident here.\n\n### **Summary of issues:**\n\n- The main problem is the mismatch between the expected input size of `self.fc` (which is 256) and the actual size of the tensor after embedding (which is 128 per token).\n- To fix this, either:\n  - The embedding output should be reshaped or combined to produce a last dimension of 256, e.g., via concatenation or pooling.\n  - Or, the `nn.Linear` layer should be adjusted to accept 128 as input size.\n\n### **Conclusion:**\n\n**The code as written will raise a runtime error during forward pass due to shape mismatch at `self.fc(x)`**.\n\n**Specific bug location:** The mismatch occurs at the line `return self.fc(x)` because `x` has shape `(batch_size, sequence_length, 128)` but `self.fc` expects input with last dimension 256.\n\n---\n\n**Final answer: YES (bug found).**  \n**Location:** The input to `self.fc` does not match its expected input size; the last dimension of `x` is 128, but `self.fc` expects 256."
+        },
+        {
+          "name": "batchnorm_channel_mismatch",
+          "category": "shape_norm",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 5269.2,
+          "llm_response": "Let's analyze the provided `BNNet` class step-by-step:\n\n### 1. Layers defined in `__init__` and their expected input/output shapes:\n\n- `self.conv = nn.Conv2d(3, 32, 3, padding=1)`\n  - Input shape: `(batch_size, 3, H, W)`\n  - Output shape: `(batch_size, 32, H, W)` (since kernel=3, padding=1 preserves spatial dimensions)\n\n- `self.bn = nn.BatchNorm2d(64)`\n  - Expects input shape: `(batch_size, 64, H, W)`\n  - Output shape: same as input `(batch_size, 64, H, W)`\n\n- `self.fc = nn.Linear(64, 10)`\n  - Expects input shape: `(batch_size, 64)` (after flattening)\n  - Output shape: `(batch_size, 10)`\n\n### 2. Trace data flow through `forward()`:\n\n```python\ndef forward(self, x):\n    x = self.conv(x)        # shape: (batch_size, 3, H, W) -> (batch_size, 32, H, W)\n    x = self.bn(x)          # shape: (batch_size, 32, H, W) -> (batch_size, 32, H, W)\n    return x\n```\n\n- After `conv`: shape `(batch_size, 32, H, W)`\n- After `bn`: shape `(batch_size, 32, H, W)`\n\n### 3. Dimensional compatibility check:\n\n- The `BatchNorm2d` layer expects 64 channels, but the output of `conv` has 32 channels.\n- This mismatch will cause a runtime error when passing the output of `conv` into `bn`.\n\n### 4. Device assignment and behavioral issues:\n\n- No explicit device assignment in the code; assuming default.\n- No training/eval mode issues are evident here, but the shape mismatch is the critical bug.\n\n### **Summary:**\n\n- The main bug is the mismatch between the number of channels output by `conv` (32) and the number expected by `bn` (64). This will cause a runtime error during forward pass.\n\n---\n\n**Final answer: YES (bug found)**\n\n**Specific bug location:** The `BatchNorm2d(64)` layer expects 64 channels, but the preceding `Conv2d` outputs only 32 channels, leading to a shape mismatch during forward pass."
+        },
+        {
+          "name": "gru_output_mismatch",
+          "category": "shape_rnn",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 6744.2,
+          "llm_response": "Let's analyze the provided `GRUNet` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- **`self.gru = nn.GRU(50, 100, batch_first=True)`**\n  - Input shape: `(batch_size, seq_len, 50)`\n  - Output shape: `(batch_size, seq_len, 100)`\n  - Hidden state: `(1, batch_size, 100)` (by default, num_layers=1, so hidden state shape is `(num_layers, batch_size, hidden_size)`)\n\n- **`self.fc = nn.Linear(200, 10)`**\n  - Input shape: `(batch_size, 200)` (expected)\n  - Output shape: `(batch_size, 10)`\n\n### 2. Trace data flow through `forward()`:\n\n```python\ndef forward(self, x):\n    out, _ = self.gru(x)\n    return self.fc(out[:, -1, :])\n```\n\n- Input `x`: shape `(batch_size, seq_len, 50)` (expected, matching GRU input size)\n- After `self.gru(x)`:\n  - `out`: shape `(batch_size, seq_len, 100)`\n- `out[:, -1, :]`:\n  - shape `(batch_size, 100)` (last time step for each batch)\n- Passing to `self.fc`:\n  - `self.fc` expects input shape `(batch_size, 200)`, but receives `(batch_size, 100)`\n\n### 3. Connection point check:\n\n- The output of `out[:, -1, :]` is `(batch_size, 100)`.\n- The `self.fc` layer expects `(batch_size, 200)` as input, but receives `(batch_size, 100)`.\n\n**Dimensional mismatch**: The linear layer's input features are set to 200, but the actual input is 100. This will cause a runtime shape error.\n\n### 4. Device assignment and behavioral issues:\n\n- No explicit device assignment in the code.\n- No difference in train/eval modes affecting shape.\n- The main bug is the mismatch in expected input size for the linear layer.\n\n### **Summary:**\n\n- The core issue is that the `Linear` layer expects an input of size 200, but the data passed to it is of size 100.\n- To fix this, either:\n  - Change `self.fc = nn.Linear(100, 10)` (matching the output of the last hidden state), or\n  - Change the data flow to produce a `(batch_size, 200)` tensor before the linear layer.\n\n### **Final answer:**\n\n**YES (bug found)**\n\n**Location:** The mismatch between the `Linear` layer's input features (`200`) and the actual tensor shape `(batch_size, 100)` passed to it after the GRU output."
+        },
+        {
+          "name": "three_layer_conv_bug",
+          "category": "shape_conv",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 7189.3,
+          "llm_response": "Let's analyze the provided `ThreeLayerConv` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- **`self.c1 = nn.Conv2d(3, 32, 3, padding=1)`**\n  - Input: expects a tensor with shape `(batch_size, 3, H, W)`\n  - Output: `(batch_size, 32, H, W)` (since kernel size=3, padding=1 preserves spatial dimensions)\n\n- **`self.c2 = nn.Conv2d(32, 64, 3, padding=1)`**\n  - Input: expects `(batch_size, 32, H, W)`\n  - Output: `(batch_size, 64, H, W)`\n\n- **`self.c3 = nn.Conv2d(128, 256, 3, padding=1)`**\n  - Input: expects `(batch_size, 128, H, W)`\n  - Output: `(batch_size, 256, H, W)`\n\n### 2. Data flow in `forward()`:\n\n```python\ndef forward(self, x):\n    x = self.c1(x)  # shape: (batch_size, 3, H, W) -> (batch_size, 32, H, W)\n    x = self.c2(x)  # shape: (batch_size, 32, H, W) -> (batch_size, 64, H, W)\n    x = self.c3(x)  # shape: (batch_size, 128, H, W) -> (batch_size, 256, H, W)\n    return x\n```\n\n### 3. Dimensional compatibility check:\n\n- After `c1`: shape `(batch_size, 32, H, W)`\n- After `c2`: shape `(batch_size, 64, H, W)` \u2014 compatible with `c2` expecting 32 channels as input, so OK.\n- After `c2`, the shape is `(batch_size, 64, H, W)`, but `c3` expects input with **128 channels**.\n\n**Issue:** The input to `c3` is `(batch_size, 64, H, W)`, but `c3` expects `(batch_size, 128, H, W)`. This is a mismatch.\n\n### 4. Device and train/eval mode considerations:\n\n- No device assignment issues are evident from the code snippet.\n- No specific train/eval mode behavior issues are apparent here.\n\n### **Summary of the bug:**\n\nThe main problem is the mismatch between the output channels of `c2` and the expected input channels of `c3`. The `c3` layer expects 128 input channels, but the previous layer outputs only 64 channels.\n\n**Likely fix:** either change `c3` to accept 64 channels, or insert a layer (e.g., a Conv2d or a 1x1 conv) to increase the number of channels from 64 to 128 before `c3`.\n\n---\n\n### Final answer:\n\n**YES (bug found)** \u2014 The bug is at the connection between `c2` and `c3`. The input to `c3` is `(batch_size, 64, H, W)`, but `c3` expects `(batch_size, 128, H, W)`."
+        },
+        {
+          "name": "classifier_head_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 6158.3,
+          "llm_response": "Let's analyze the provided `Classifier` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.features`:\n  - `nn.Linear(784, 512)`:\n    - Input shape: `(batch_size, 784)`\n    - Output shape: `(batch_size, 512)`\n  - `nn.ReLU()`:\n    - Same shape as input: `(batch_size, 512)`\n  - `nn.Linear(512, 256)`:\n    - Input shape: `(batch_size, 512)`\n    - Output shape: `(batch_size, 256)`\n  - `nn.ReLU()`:\n    - Same shape as input: `(batch_size, 256)`\n\n- `self.head`:\n  - `nn.Linear(128, 10)`:\n    - Input shape: `(batch_size, 128)`\n    - Output shape: `(batch_size, 10)`\n\n### 2. Trace data flow through `forward()`:\n\n- Input `x`: shape `(batch_size, 784)` (assumed, as per the first Linear layer)\n- After `self.features(x)`:\n  - First Linear: `(batch_size, 784)` \u2192 `(batch_size, 512)`\n  - ReLU: `(batch_size, 512)`\n  - Second Linear: `(batch_size, 512)` \u2192 `(batch_size, 256)`\n  - ReLU: `(batch_size, 256)`\n\n- Final output:\n  - `x` is passed to `self.head(x)`:\n    - `self.head` expects input shape `(batch_size, 128)`, but the current shape after `self.features` is `(batch_size, 256)`.\n\n### 3. Dimensional compatibility check:\n\n- The output of `self.features` is `(batch_size, 256)`.\n- The input to `self.head` is `(batch_size, 128)`.\n\n**Mismatch**:\n- `self.head` expects 128 features, but the previous layer outputs 256 features.\n\n### 4. Device assignment and behavioral issues:\n\n- No device-specific code is present.\n- No explicit training/eval mode issues are evident.\n- The main bug is the shape mismatch.\n\n### **Summary of the bug:**\n\n- The `self.head` layer is defined with `nn.Linear(128, 10)`, but the preceding features output `(batch_size, 256)`.\n- This will cause a runtime error during forward pass: `RuntimeError: mat1 and mat2 shapes cannot be multiplied (batch_size x 256 and 128 x 10)`.\n\n### **Final conclusion:**\n\n**YES (bug found)**\n\n- The bug is at the line defining `self.head = nn.Linear(128, 10)`. It should be `nn.Linear(256, 10)` to match the output of `self.features`."
+        },
+        {
+          "name": "vae_decoder_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 5498.3,
+          "llm_response": "Let's analyze the provided `VAEDecoder` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.fc1 = nn.Linear(32, 128)`\n  - Input: tensor of shape `(batch_size, 32)`\n  - Output: `(batch_size, 128)`\n\n- `self.fc2 = nn.Linear(256, 512)`\n  - Input: tensor of shape `(batch_size, 256)`\n  - Output: `(batch_size, 512)`\n\n- `self.fc3 = nn.Linear(512, 784)`\n  - Input: tensor of shape `(batch_size, 512)`\n  - Output: `(batch_size, 784)`\n\n### 2. Data flow in `forward()`:\n\n```python\ndef forward(self, z):\n    h = self.fc1(z)\n    h = self.fc2(h)\n    return self.fc3(h)\n```\n\n- Input `z`: shape `(batch_size, ?)`\n- After `self.fc1(z)`: shape `(batch_size, 128)` (since `fc1` expects 32, but input is not specified)\n- After `self.fc2(h)`: shape `(batch_size, 512)` (but `fc2` expects input of size 256, yet current `h` is `(batch_size, 128)`)\n\n### 3. Dimensional compatibility check:\n\n- The output of `fc1` is `(batch_size, 128)`.\n- The input to `fc2` is `(batch_size, 256)`, but the actual input is `(batch_size, 128)`.\n\n**Mismatch:** `fc2` expects input features of size 256, but receives 128.\n\n**Conclusion:** The code will raise a runtime error during forward pass due to shape mismatch at the line `h = self.fc2(h)`.\n\n### 4. Device assignment and behavioral issues:\n\n- No explicit device assignment is specified; assuming default.\n- No training/eval mode differences are evident here.\n\n### Final assessment:\n\n- The main bug is the mismatch between the output of `fc1` and the expected input of `fc2`.\n- The expected input size for `fc2` is 256, but the actual input size after `fc1` is 128.\n\n**Bug location:** The input size of `fc2` does not match the output size of `fc1`. To fix this, either change `fc1` to output 256 features or change `fc2` to accept 128 features.\n\n---\n\n**Answer: YES (bug found)**\n\n**Specific bug location:** The mismatch between `fc1` output (128) and `fc2` input (expects 256)."
+        },
+        {
+          "name": "multihead_concat_mismatch",
+          "category": "shape_linear",
+          "has_bug": true,
+          "predicted": true,
+          "label": "TP",
+          "ms": 6413.5,
+          "llm_response": "Let's analyze the provided `MultiHead` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.head1 = nn.Linear(256, 64)`\n  - Input shape: `(batch_size, 256)`\n  - Output shape: `(batch_size, 64)`\n\n- `self.head2 = nn.Linear(256, 64)`\n  - Input shape: `(batch_size, 256)`\n  - Output shape: `(batch_size, 64)`\n\n- `self.merge = nn.Linear(256, 128)`\n  - Input shape: `(batch_size, 256)` (but note that in the forward, it receives the concatenation of `h1` and `h2`)\n  - Output shape: `(batch_size, 128)`\n\n### 2. Data flow in `forward()`:\n\n```python\ndef forward(self, x):\n    h1 = self.head1(x)  # shape: (batch_size, 64)\n    h2 = self.head2(x)  # shape: (batch_size, 64)\n    return self.merge(torch.cat([h1, h2], dim=-1))\n```\n\n- `x`: expected shape `(batch_size, 256)` to match the input of `head1` and `head2`.\n- `h1`: shape `(batch_size, 64)`\n- `h2`: shape `(batch_size, 64)`\n- `torch.cat([h1, h2], dim=-1)`: concatenates along last dimension, resulting in shape `(batch_size, 128)`\n\n- The concatenated tensor `(batch_size, 128)` is passed to `self.merge`.\n\n### 3. Compatibility check:\n\n- `self.merge` expects input shape `(batch_size, 256)` but receives `(batch_size, 128)` from concatenation.\n\n**Issue:** The `merge` layer's input dimension is 256, but the actual input after concatenation is 128. This mismatch will cause a runtime error during execution.\n\n### 4. Device assignment and behavioral considerations:\n\n- No explicit device assignment in the code; assuming default.\n- No training/eval mode issues are evident here.\n\n### **Summary:**\n\n- The main bug is in the `self.merge` layer's input dimension. It is defined as `nn.Linear(256, 128)` but receives only 128 features after concatenation, which is incompatible.\n\n**Correct fix:** Change the `merge` layer to accept 128 features:\n\n```python\nself.merge = nn.Linear(128, 128)\n```\n\nor modify the concatenation to produce 256 features (e.g., by concatenating different tensors).\n\n---\n\n### Final answer:\n\n**YES (bug found)** \u2014 The bug is at the line defining `self.merge = nn.Linear(256, 128)`; it should be `nn.Linear(128, 128)` to match the concatenated tensor shape."
+        },
+        {
+          "name": "linear_chain_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 3607.0,
+          "llm_response": "Let's analyze the provided code step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n- `self.fc1 = nn.Linear(10, 20)`\n  - Input shape: `(batch_size, 10)`\n  - Output shape: `(batch_size, 20)`\n- `self.fc2 = nn.Linear(20, 5)`\n  - Input shape: `(batch_size, 20)`\n  - Output shape: `(batch_size, 5)`\n\n### 2. Trace data flow through `forward()`:\n- Input `x`: shape `(batch_size, 10)` (assumed)\n- After `x = self.fc1(x)`:\n  - shape: `(batch_size, 20)`\n- After `x = self.fc2(x)`:\n  - shape: `(batch_size, 5)`\n- Final output shape: `(batch_size, 5)`\n\n### 3. Connection points and dimensional compatibility:\n- The output of `fc1` is `(batch_size, 20)`, which matches the expected input of `fc2`.\n- No shape mismatch occurs at the linear layer connections.\n\n### 4. Device assignment and behavioral considerations:\n- The code does not specify device placement; it relies on the input tensor `x` being on the correct device.\n- No explicit training/eval mode dependencies are present; the model is purely linear layers.\n\n### Final assessment:\n- The model's architecture and data flow are consistent.\n- No shape mismatches or device issues are evident.\n- The code appears correct for typical usage.\n\n**Answer: NO (code is correct).**"
+        },
+        {
+          "name": "conv_chain_correct",
+          "category": "shape_conv",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 6453.9,
+          "llm_response": "Let's analyze the provided `nn.Module` step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.conv1 = nn.Conv2d(3, 16, 3)`\n  - Input shape: `(batch_size, 3, H, W)`\n  - Output shape: `(batch_size, 16, H_out, W_out)`\n  - H_out and W_out depend on input size and kernel size, stride, padding, etc.\n\n- `self.conv2 = nn.Conv2d(16, 32, 3)`\n  - Input shape: `(batch_size, 16, H, W)` (from previous layer)\n  - Output shape: `(batch_size, 32, H_out2, W_out2)`\n\n### 2. Forward pass tracing:\n\nAssuming the input `x` has shape `(batch_size, 3, H, W)`:\n\n- After `x = self.conv1(x)`:\n  - Shape: `(batch_size, 16, H1, W1)`\n  - Where:\n    - `H1 = H - 3 + 1 = H - 2` (assuming default stride=1, padding=0)\n    - `W1 = W - 3 + 1 = W - 2`\n\n- After `x = self.conv2(x)`:\n  - Shape: `(batch_size, 32, H2, W2)`\n  - Where:\n    - `H2 = H1 - 3 + 1 = (H - 2) - 2 = H - 4`\n    - `W2 = W1 - 2 = W - 4`\n\n### 3. Connection compatibility:\n\n- The second convolution expects input with 16 channels, which matches the output of the first convolution.\n- The spatial dimensions after the second convolution are `(H - 4, W - 4)`.\n\n### 4. Device and training/eval mode considerations:\n\n- No device assignment issues are evident; no `.to()` calls are present.\n- No batch normalization or dropout layers that behave differently in train/eval modes are present.\n\n### **Summary of potential issues:**\n\n- The code assumes the input size `(H, W)` is at least `4` to avoid negative or zero spatial dimensions after convolutions.\n- No explicit padding is used, so the output spatial dimensions shrink with each convolution.\n\n### **Final assessment:**\n\n- The code itself is syntactically correct.\n- The only potential bug is that if the input spatial dimensions `(H, W)` are smaller than 4, the output dimensions will be invalid or zero, which could cause runtime errors or unintended behavior.\n\n**Conclusion:**\n\n- The code is correct in terms of shape compatibility for sufficiently large input sizes.\n- However, it does not handle small input sizes gracefully, which could be considered a bug depending on context.\n\n**Final answer:**\n\n**NO (code is correct for valid input sizes).**\n\n*Note:* If the question considers the possibility of small inputs causing shape issues, then technically, a bug exists in not handling small input sizes, but based on the code alone, no explicit bug is present."
+        },
+        {
+          "name": "autoencoder_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 5142.8,
+          "llm_response": "Let's analyze the provided `AE` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.enc1 = nn.Linear(784, 256)`\n  - Input shape: `(batch_size, 784)`\n  - Output shape: `(batch_size, 256)`\n\n- `self.enc2 = nn.Linear(256, 64)`\n  - Input shape: `(batch_size, 256)`\n  - Output shape: `(batch_size, 64)`\n\n- `self.dec1 = nn.Linear(64, 256)`\n  - Input shape: `(batch_size, 64)`\n  - Output shape: `(batch_size, 256)`\n\n- `self.dec2 = nn.Linear(256, 784)`\n  - Input shape: `(batch_size, 256)`\n  - Output shape: `(batch_size, 784)`\n\n### 2. Forward pass tracing:\n\n```python\ndef forward(self, x):\n    x = self.enc1(x)   # shape: (batch_size, 784) -> (batch_size, 256)\n    x = self.enc2(x)   # shape: (batch_size, 256) -> (batch_size, 64)\n    x = self.dec1(x)   # shape: (batch_size, 64) -> (batch_size, 256)\n    x = self.dec2(x)   # shape: (batch_size, 256) -> (batch_size, 784)\n    return x\n```\n\n- Starting with input `x` of shape `(batch_size, 784)`.\n- After `enc1`: `(batch_size, 256)`\n- After `enc2`: `(batch_size, 64)`\n- After `dec1`: `(batch_size, 256)`\n- After `dec2`: `(batch_size, 784)`\n\nThe data flow is consistent, with each layer receiving the expected input shape and producing the expected output shape.\n\n### 3. Connection point checks:\n\n- The output of `enc1` matches the expected input of `enc2`.\n- The output of `enc2` matches the expected input of `dec1`.\n- The output of `dec1` matches the expected input of `dec2`.\n\nAll linear layers are connected properly, with matching input/output dimensions.\n\n### 4. Device assignment and behavioral issues:\n\n- No device assignments are specified; default is CPU.\n- No activation functions are used, but that is not a shape issue.\n- The architecture is a straightforward autoencoder with symmetric dimensions.\n\n### Final assessment:\n\n- The shape flow is consistent.\n- No shape mismatches or dimension errors are evident.\n- No device or training/eval mode issues are apparent.\n\n**Conclusion:** The code appears correct with respect to tensor shapes and connections.\n\n---\n\n**Answer: NO (code is correct)**"
+        },
+        {
+          "name": "mlp_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 5411.7,
+          "llm_response": "Let's analyze the provided `MLP` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n- `self.fc1 = nn.Linear(512, 256)`\n  - Input shape: `(batch_size, 512)`\n  - Output shape: `(batch_size, 256)`\n- `self.fc2 = nn.Linear(256, 64)`\n  - Input shape: `(batch_size, 256)`\n  - Output shape: `(batch_size, 64)`\n- `self.fc3 = nn.Linear(64, 10)`\n  - Input shape: `(batch_size, 64)`\n  - Output shape: `(batch_size, 10)`\n\n### 2. Trace data flow through `forward()`:\n- Input `x`: shape `(batch_size, *)`\n- `x = self.fc1(x)`:\n  - Expect `x` shape `(batch_size, 512)` for correct operation.\n  - Output shape: `(batch_size, 256)`\n- `x = self.fc2(x)`:\n  - Input shape: `(batch_size, 256)` (matches expectation)\n  - Output shape: `(batch_size, 64)`\n- `x = self.fc3(x)`:\n  - Input shape: `(batch_size, 64)` (matches expectation)\n  - Output shape: `(batch_size, 10)`\n\n### 3. Connection point compatibility:\n- The chain of linear layers is consistent:\n  - `fc1` takes `(batch_size, 512)` \u2192 `(batch_size, 256)`\n  - `fc2` takes `(batch_size, 256)` \u2192 `(batch_size, 64)`\n  - `fc3` takes `(batch_size, 64)` \u2192 `(batch_size, 10)`\n\n### 4. Device assignment and behavioral considerations:\n- No device-specific code is present; assuming default device.\n- No dropout, batchnorm, or other layers that behave differently in train/eval modes.\n- The code appears straightforward and correct in this regard.\n\n### Final assessment:\n- The main potential issue is the input shape to the network. The `Linear(512, 256)` layer expects input tensors with the last dimension being 512.\n- If the input tensor `x` passed to `forward()` is not of shape `(batch_size, 512)`, a runtime error will occur.\n- The code itself is correct assuming the input shape is `(batch_size, 512)`.\n\n**Conclusion:**  \nThe code is correct as written, assuming the input tensor shape matches the expected `(batch_size, 512)`.\n\n**Answer:** NO (code is correct)"
+        },
+        {
+          "name": "resnet_block_correct",
+          "category": "shape_conv",
+          "has_bug": false,
+          "predicted": true,
+          "label": "FP",
+          "ms": 6838.6,
+          "llm_response": "Let's analyze the provided `ResBlock` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.conv1 = nn.Conv2d(64, 64, 3, padding=1)`\n  - Input channels: 64\n  - Output channels: 64\n  - Kernel size: 3x3\n  - Padding: 1 (to preserve spatial dimensions)\n- `self.conv2 = nn.Conv2d(64, 64, 3, padding=1)`\n  - Same as above\n\n**Expected input shape to `ResBlock`:** `(batch_size, 64, H, W)`\n\n**Expected output shape from each conv:**\n- After `conv1`: `(batch_size, 64, H, W)`\n- After `conv2`: `(batch_size, 64, H, W)`\n\n### 2. Trace data flow through `forward()`:\n\n```python\ndef forward(self, x):\n    out = self.conv1(x)        # shape: (batch_size, 64, H, W)\n    out = self.conv2(out)        # shape: (batch_size, 64, H, W)\n    return out + x               # element-wise addition\n```\n\n- The addition `out + x` requires `out` and `x` to have the same shape.\n\n### 3. Connection point compatibility:\n\n- Since both convolutions preserve spatial dimensions (due to padding=1), the output shape after `conv2` is `(batch_size, 64, H, W)`.\n- The input `x` must also be `(batch_size, 64, H, W)` for the addition to be valid.\n\n**Potential issue:** The code assumes that the input `x` has 64 channels. If the input tensor has a different number of channels, the addition will raise a shape mismatch error.\n\n### 4. Device assignment and behavioral issues:\n\n- No device-specific code is present; assuming default device.\n- No training/eval mode differences are evident here.\n\n### **Summary of findings:**\n\n- The code correctly preserves spatial dimensions due to padding.\n- The residual addition requires the input `x` to have 64 channels.\n- If the input tensor to `ResBlock` does not have 64 channels, the addition will fail.\n\n### **Final assessment:**\n\n- The code is correct **if and only if** the input tensor to `ResBlock` has 64 channels.\n- There is a potential bug if the input tensor has a different number of channels, leading to a shape mismatch during addition.\n\n**Since the code itself does not enforce or check the number of input channels, and the residual addition assumes 64 channels, this is a common source of bugs.**\n\n---\n\n### **Answer: YES (bug found)**\n\n**Specific bug location:** The residual addition `return out + x` assumes `x` has 64 channels, which may not always be true. If `x` has a different number of channels, this will cause a shape mismatch error."
+        },
+        {
+          "name": "transformer_mlp_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 5617.2,
+          "llm_response": "Let's analyze the provided `TransformerMLP` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.norm = nn.LayerNorm(768)`:\n  - Expects input shape: `(batch_size, *, 768)` (i.e., last dimension 768)\n  - Output shape: same as input, `(batch_size, *, 768)`\n\n- `self.fc1 = nn.Linear(768, 3072)`:\n  - Expects input shape: last dimension 768\n  - Output shape: last dimension 3072\n\n- `self.fc2 = nn.Linear(3072, 768)`:\n  - Expects input shape: last dimension 3072\n  - Output shape: last dimension 768\n\n### 2. Data flow in `forward()`:\n\n```python\nh = self.fc1(self.norm(x))\nreturn x + self.fc2(h)\n```\n\n- Input `x`: shape `(batch_size, *, 768)` (assumed)\n- `self.norm(x)`:\n  - Shape remains `(batch_size, *, 768)`\n- `self.fc1(self.norm(x))`:\n  - Shape: `(batch_size, *, 3072)`\n- `h`: shape `(batch_size, *, 3072)`\n\nNext:\n\n- `self.fc2(h)`:\n  - Shape: `(batch_size, *, 768)`\n\nFinally:\n\n- `x + self.fc2(h)`:\n  - Both tensors must have the same shape for addition.\n\n### 3. Dimensional compatibility:\n\n- The addition `x + self.fc2(h)` requires `x` and `self.fc2(h)` to have the same shape.\n- Both are `(batch_size, *, 768)` assuming the input `x` has shape `(batch_size, *, 768)`.\n\n### 4. Additional considerations:\n\n- The code assumes `x` has shape `(batch_size, *, 768)`. If `x` is 2D `(batch_size, 768)`, the code still works because `LayerNorm` and `Linear` handle 2D inputs as well.\n- No device issues are apparent; the code does not specify device placement.\n- The residual addition is valid as long as input and output shapes match, which they do.\n\n### Final assessment:\n\n- The code appears correct in terms of tensor shapes and operations.\n- The residual connection matches in shape.\n- No shape mismatch or device issues are evident.\n\n**Conclusion:**\n\n**NO (code is correct)**\n\n**Final answer:** NO"
+        },
+        {
+          "name": "lstm_classifier_correct",
+          "category": "shape_rnn",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 4663.6,
+          "llm_response": "Let's analyze the provided `LSTMClassifier` step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- **self.lstm**: `nn.LSTM(100, 256, batch_first=True)`\n  - Input shape: `(batch_size, seq_len, 100)`\n  - Output shape: `(batch_size, seq_len, 256)` for the output, and `(1, batch_size, 256)` for `h` (hidden state at last time step)\n- **self.fc**: `nn.Linear(256, 10)`\n  - Input shape: `(batch_size, 256)` (expected)\n  - Output shape: `(batch_size, 10)`\n\n### 2. Trace data flow through `forward()`:\n\n```python\n_, (h, _) = self.lstm(x)\nreturn self.fc(h.squeeze(0))\n```\n\n- `x`: shape `(batch_size, seq_len, 100)` (assumed)\n- `self.lstm(x)`:\n  - Output: `output`, shape `(batch_size, seq_len, 256)`\n  - Hidden state: `h`, shape `(1, batch_size, 256)`\n- `h.squeeze(0)`:\n  - Removes dimension 0 if size 1, resulting in shape `(batch_size, 256)`\n- `self.fc(h.squeeze(0))`:\n  - Input: `(batch_size, 256)`\n  - Output: `(batch_size, 10)`\n\n### 3. Connection point checks:\n\n- The key point is the shape of `h`:\n  - `h` is `(1, batch_size, 256)`, so `h.squeeze(0)` results in `(batch_size, 256)` which is compatible with `self.fc`.\n- No shape mismatch appears here.\n\n### 4. Device assignment and behavioral considerations:\n\n- No explicit device management is present, but assuming consistent device placement, no issues.\n- The code should behave similarly in train/eval modes, as no dropout or batchnorm is used.\n\n### Additional considerations:\n\n- The code assumes `x` has shape `(batch_size, seq_len, 100)`.\n- If `x` has a different shape, the code will break, but this is outside the scope of the current code snippet.\n\n### Final assessment:\n\n- The code correctly extracts the last hidden state `h` from the LSTM output, squeezes the first dimension, and feeds it into the linear layer.\n- The shape transformations are consistent and compatible.\n- No shape bugs are evident.\n\n**Answer: NO (code is correct).**"
+        },
+        {
+          "name": "attention_correct",
+          "category": "shape_attention",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 7216.2,
+          "llm_response": "Let's analyze the provided SelfAttention module step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.q_proj = nn.Linear(512, 512)`:\n  - Input shape: `(batch_size, seq_len, 512)` (assuming batch-first)\n  - Output shape: `(batch_size, seq_len, 512)`\n\n- `self.k_proj = nn.Linear(512, 512)`:\n  - Same input/output shape as above.\n\n- `self.v_proj = nn.Linear(512, 512)`:\n  - Same input/output shape as above.\n\n- `self.out_proj = nn.Linear(512, 512)`:\n  - Input shape: `(batch_size, seq_len, 512)`\n  - Output shape: `(batch_size, seq_len, 512)`\n\n### 2. Trace data flow in `forward()`:\n\nAssuming input `x` has shape `(batch_size, seq_len, 512)`:\n\n- `q = self.q_proj(x)`:\n  - Shape: `(batch_size, seq_len, 512)`\n\n- `k = self.k_proj(x)`:\n  - Shape: `(batch_size, seq_len, 512)`\n\n- `v = self.v_proj(x)`:\n  - Shape: `(batch_size, seq_len, 512)`\n\n- `attn = torch.matmul(q, k.transpose(-2, -1))`:\n  - `k.transpose(-2, -1)` shape: `(batch_size, 512, seq_len)`\n  - `q` shape: `(batch_size, seq_len, 512)`\n  - Resulting `attn` shape: `(batch_size, seq_len, seq_len)` (attention scores for each position against all positions)\n\n- `attn = torch.softmax(attn / 22.6, dim=-1)`:\n  - Shape remains `(batch_size, seq_len, seq_len)`\n\n- `out = torch.matmul(attn, v)`:\n  - `attn`: `(batch_size, seq_len, seq_len)`\n  - `v`: `(batch_size, seq_len, 512)`\n  - Result: `(batch_size, seq_len, 512)`\n\n- `return self.out_proj(out)`:\n  - Output shape: `(batch_size, seq_len, 512)`\n\n### 3. Connection point checks:\n\n- The `matmul` between `q` and `k.transpose(-2, -1)` is valid: `(batch_size, seq_len, 512) x (batch_size, 512, seq_len)` \u2192 `(batch_size, seq_len, seq_len)`.\n\n- The `matmul` between `attn` and `v` is valid: `(batch_size, seq_len, seq_len) x (batch_size, seq_len, 512)` \u2192 `(batch_size, seq_len, 512)`.\n\n- The final `self.out_proj` is a linear layer expecting input `(batch_size, seq_len, 512)` and outputs `(batch_size, seq_len, 512)`.\n\n### 4. Device and behavioral considerations:\n\n- No device assignment issues are evident; all layers are on the same device if input is on the same device.\n\n- No explicit training/eval mode differences are shown here, but the code appears consistent.\n\n### **Key Observation:**\n\nThe only potential issue is the division by `22.6` in `attn = torch.softmax(attn / 22.6, dim=-1)`. Typically, in scaled dot-product attention, the division is by `sqrt(d_k)` where `d_k` is the dimension of the key vectors, which here is 512. \n\n- `sqrt(512) \u2248 22.6`, so this division is correct and intentional.\n\n### **Final conclusion:**\n\n- The tensor shapes are consistent throughout the module.\n- The attention scaling factor is correct.\n- No shape mismatches or device issues are apparent.\n\n**Answer: NO (code is correct).**"
+        },
+        {
+          "name": "embedding_net_correct",
+          "category": "shape_embedding",
+          "has_bug": false,
+          "predicted": true,
+          "label": "FP",
+          "ms": 5736.4,
+          "llm_response": "Let's analyze the provided `EmbedNet` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.embed = nn.Embedding(1000, 128)`\n  - Input: LongTensor of shape `(N, ...)` with integer indices, typically `(batch_size, sequence_length)` or `(batch_size,)`.\n  - Output: FloatTensor of shape `(N, ..., 128)` (matching input shape with last dimension replaced by embedding size).\n\n- `self.fc = nn.Linear(128, 64)`\n  - Input: FloatTensor of shape `(N, ..., 128)`\n  - Output: FloatTensor of shape `(N, ..., 64)`\n\n### 2. Data flow in `forward()`:\n\n```python\ndef forward(self, x):\n    x = self.embed(x)\n    return self.fc(x)\n```\n\n- Input `x`: expected to be a LongTensor of shape `(batch_size, sequence_length)` or `(batch_size,)`.\n- After `self.embed(x)`: shape becomes `(batch_size, sequence_length, 128)` or `(batch_size, 128)` if input was `(batch_size,)`.\n- Passing this to `self.fc(x)`:\n  - `nn.Linear` expects the last dimension to be 128.\n  - It applies the linear transformation to the last dimension, outputting shape `(batch_size, sequence_length, 64)` or `(batch_size, 64)`.\n\n### 3. Connection point compatibility:\n\n- The embedding layer outputs a tensor with last dimension 128, compatible with the `nn.Linear(128, 64)` layer.\n- The code should work correctly for typical input shapes like `(batch_size,)` or `(batch_size, sequence_length)`.\n\n### 4. Device and behavioral considerations:\n\n- No explicit device assignment; the model will run on CPU or GPU depending on input.\n- No training/eval mode issues; the layers used are standard.\n\n### **Summary:**\n\n- The layers are correctly defined.\n- The data flow and tensor shapes are compatible.\n- No shape mismatches or device issues are apparent.\n\n### **Final verdict:**\n\n**NO (code is correct).**"
+        },
+        {
+          "name": "batchnorm_correct",
+          "category": "shape_norm",
+          "has_bug": false,
+          "predicted": true,
+          "label": "FP",
+          "ms": 4403.0,
+          "llm_response": "Let's analyze the provided `BNNet` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.conv = nn.Conv2d(3, 32, 3, padding=1)`\n  - Input shape: `(batch_size, 3, H, W)`\n  - Output shape: `(batch_size, 32, H, W)` (since kernel size=3, padding=1 preserves spatial dimensions)\n  \n- `self.bn = nn.BatchNorm2d(32)`\n  - Input shape: `(batch_size, 32, H, W)`\n  - Output shape: `(batch_size, 32, H, W)` (BatchNorm2d operates channel-wise, shape unchanged)\n\n### 2. Trace data flow through `forward()`:\n\n- Input `x`: shape `(batch_size, 3, H, W)`\n- After `x = self.conv(x)`:\n  - shape `(batch_size, 32, H, W)`\n- After `x = self.bn(x)`:\n  - shape `(batch_size, 32, H, W)`\n- Return `x`: shape `(batch_size, 32, H, W)`\n\n### 3. Connection point compatibility:\n\n- The `conv` layer expects 3 input channels, which matches typical RGB images.\n- The `bn` layer expects 32 channels, which matches the output of `conv`.\n- No shape mismatches are observed at any connection point.\n\n### 4. Device assignment and training/eval differences:\n\n- No device assignment code is provided, but assuming default device placement, no issues are apparent.\n- BatchNorm behaves differently during training and evaluation, but that is standard and not a bug in the code itself.\n\n### Final assessment:\n\n- The code correctly defines a simple convolution followed by batch normalization.\n- The shapes are consistent throughout the forward pass.\n- No shape mismatches or device issues are evident.\n\n**Conclusion:** The code appears correct with respect to tensor shapes and connections.\n\n**Answer:** NO (code is correct)"
+        },
+        {
+          "name": "gru_net_correct",
+          "category": "shape_rnn",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 5318.6,
+          "llm_response": "Let's analyze the provided `GRUNet` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.gru = nn.GRU(50, 100, batch_first=True)`\n  - Input shape: `(batch_size, seq_len, 50)`\n  - Output shape: `(batch_size, seq_len, 100)`\n- `self.fc = nn.Linear(100, 10)`\n  - Input shape: `(batch_size, 100)`\n  - Output shape: `(batch_size, 10)`\n\n### 2. Trace data flow through `forward()`:\n\n```python\ndef forward(self, x):\n    out, _ = self.gru(x)\n    return self.fc(out[:, -1, :])\n```\n\n- `x`: shape `(batch_size, seq_len, 50)` (expected)\n- `out, _ = self.gru(x)`:\n  - `out`: shape `(batch_size, seq_len, 100)`\n- `out[:, -1, :]`:\n  - shape `(batch_size, 100)` (selects the last time step)\n- `self.fc(out[:, -1, :])`:\n  - shape `(batch_size, 10)`\n\n### 3. Connection point checks:\n\n- The slicing `out[:, -1, :]` correctly extracts the last time step for each batch, matching the input expected by `self.fc`.\n- The dimensions are compatible: `(batch_size, 100)` input to `Linear(100, 10)`.\n\n### 4. Device assignment and behavioral considerations:\n\n- No explicit device management is present, but assuming consistent device placement during training.\n- No issues with train/eval modes affecting shape or behavior.\n\n### Final assessment:\n\n- The code correctly processes the input tensor shape, and the dimensions match at each step.\n- The only potential concern is whether the input `x` is correctly shaped when passed in, but that is outside the scope of this code snippet.\n\n**Conclusion:** The code appears correct with respect to tensor shapes and connections.\n\n**Answer:** NO (code is correct)"
+        },
+        {
+          "name": "three_layer_conv_correct",
+          "category": "shape_conv",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 6899.1,
+          "llm_response": "Let's analyze the provided `ThreeLayerConv` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- **`self.c1 = nn.Conv2d(3, 32, 3, padding=1)`**\n  - Input shape: `(batch_size, 3, H, W)`\n  - Output shape: `(batch_size, 32, H, W)` (since kernel=3, padding=1 preserves spatial dimensions)\n\n- **`self.c2 = nn.Conv2d(32, 64, 3, padding=1)`**\n  - Input shape: `(batch_size, 32, H, W)`\n  - Output shape: `(batch_size, 64, H, W)`\n\n- **`self.c3 = nn.Conv2d(64, 128, 3, padding=1)`**\n  - Input shape: `(batch_size, 64, H, W)`\n  - Output shape: `(batch_size, 128, H, W)`\n\n### 2. Data flow in `forward()`:\n\n```python\ndef forward(self, x):\n    x = self.c1(x)  # shape: (batch_size, 32, H, W)\n    x = self.c2(x)  # shape: (batch_size, 64, H, W)\n    x = self.c3(x)  # shape: (batch_size, 128, H, W)\n    return x\n```\n\n- The input `x` should have shape `(batch_size, 3, H, W)`.\n- After `c1`, shape: `(batch_size, 32, H, W)`\n- After `c2`, shape: `(batch_size, 64, H, W)`\n- After `c3`, shape: `(batch_size, 128, H, W)`\n\n### 3. Connection points and dimensional compatibility:\n\n- The output of each layer matches the expected input of the next:\n  - `c1` takes `(batch_size, 3, H, W)` and outputs `(batch_size, 32, H, W)`\n  - `c2` takes `(batch_size, 32, H, W)` and outputs `(batch_size, 64, H, W)`\n  - `c3` takes `(batch_size, 64, H, W)` and outputs `(batch_size, 128, H, W)`\n\nNo shape mismatches are evident.\n\n### 4. Device assignment and behavioral considerations:\n\n- The code does not specify device placement; it relies on the input tensor `x` being on the same device as the model parameters.\n- No explicit training/eval mode dependencies are present; the layers are standard convolutions.\n\n### Final assessment:\n\n- The architecture and tensor flow are consistent.\n- No shape mismatches or device issues are apparent.\n- The code appears correct for typical usage.\n\n**Answer: NO (code is correct).**"
+        },
+        {
+          "name": "classifier_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": true,
+          "label": "FP",
+          "ms": 4680.6,
+          "llm_response": "Let's analyze the provided `Classifier` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.features`:\n  - `nn.Linear(784, 512)`:\n    - Input shape: `(batch_size, 784)`\n    - Output shape: `(batch_size, 512)`\n  - `nn.ReLU()`:\n    - Input shape: `(batch_size, 512)`\n    - Output shape: `(batch_size, 512)`\n  - `nn.Linear(512, 256)`:\n    - Input shape: `(batch_size, 512)`\n    - Output shape: `(batch_size, 256)`\n  - `nn.ReLU()`:\n    - Input shape: `(batch_size, 256)`\n    - Output shape: `(batch_size, 256)`\n\n- `self.head`:\n  - `nn.Linear(256, 10)`:\n    - Input shape: `(batch_size, 256)`\n    - Output shape: `(batch_size, 10)`\n\n### 2. Data flow in `forward()`:\n\n- Input `x`:\n  - Expected shape: `(batch_size, 784)` (since the first layer expects 784 features)\n- After `x = self.features(x)`:\n  - Shape: `(batch_size, 256)`\n- After `return self.head(x)`:\n  - Shape: `(batch_size, 10)`\n\n### 3. Connection points and dimensional compatibility:\n\n- The first layer in `features` expects input shape `(batch_size, 784)`.\n- The output of `features` is `(batch_size, 256)`, which is compatible with `self.head` expecting `(batch_size, 256)`.\n\n### 4. Device assignment and behavioral considerations:\n\n- No explicit device placement in the code; assuming default.\n- No training/eval mode specific code; so no issues there.\n\n### Final assessment:\n\n- The input to the model must be a tensor of shape `(batch_size, 784)`.\n- The sequence of layers and their connections are consistent.\n- No shape mismatches are evident.\n- No device or mode issues are apparent.\n\n**Conclusion:** The code appears correct with respect to tensor shapes and connections.\n\n**Answer:** NO (code is correct)"
+        },
+        {
+          "name": "vae_decoder_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 6148.8,
+          "llm_response": "Let's analyze the provided `VAEDecoder` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.fc1 = nn.Linear(32, 128)`\n  - Input: tensor of shape `(batch_size, 32)`\n  - Output: `(batch_size, 128)`\n\n- `self.fc2 = nn.Linear(128, 512)`\n  - Input: tensor of shape `(batch_size, 128)`\n  - Output: `(batch_size, 512)`\n\n- `self.fc3 = nn.Linear(512, 784)`\n  - Input: tensor of shape `(batch_size, 512)`\n  - Output: `(batch_size, 784)`\n\n### 2. Data flow in `forward()`:\n\n- Input: `z` (shape unspecified, but expected to be `(batch_size, 32)` for compatibility)\n- `h = self.fc1(z)`:\n  - `z` shape: `(batch_size, 32)`\n  - `h` shape: `(batch_size, 128)`\n\n- `h = self.fc2(h)`:\n  - `h` shape: `(batch_size, 128)`\n  - After second layer: `(batch_size, 512)`\n\n- `return self.fc3(h)`:\n  - `h` shape: `(batch_size, 512)`\n  - Output shape: `(batch_size, 784)`\n\n### 3. Connection point compatibility:\n\n- The input to `fc1` must be `(batch_size, 32)`:\n  - If the input `z` is not `(batch_size, 32)`, there will be a shape mismatch.\n- The output of `fc3` is `(batch_size, 784)`, which is consistent with typical image flattening (e.g., 28x28 images).\n\n### 4. Device and behavioral considerations:\n\n- No device assignments are explicitly specified; assuming default CPU.\n- No dropout, batchnorm, or other layers that could cause training/eval discrepancies.\n- The code appears straightforward and compatible in both train and eval modes.\n\n### Final assessment:\n\n- The main potential bug is the assumption about the input shape to `fc1`. If the input `z` is not `(batch_size, 32)`, a shape mismatch will occur.\n- The code itself is correct if the input shape is `(batch_size, 32)`.\n\n**Conclusion:**\n\n- If the input tensor `z` is provided with shape `(batch_size, 32)`, the code is correct.\n- If not, a shape mismatch will occur at the first layer.\n\n**Since the code does not specify the expected input shape explicitly, and the shape compatibility depends on the input, the potential bug is the assumption that input `z` is `(batch_size, 32)` without validation.**\n\n**Final answer: NO (code is correct assuming proper input shape).**\n\n**However, if the input shape is not `(batch_size, 32)`, then a bug exists at the input connection to `fc1`.**\n\n---\n\n**Answer: NO (assuming correct input shape).**"
+        },
+        {
+          "name": "multihead_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": true,
+          "label": "FP",
+          "ms": 5549.4,
+          "llm_response": "Let's analyze the provided `MultiHead` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.head1 = nn.Linear(256, 64)`\n  - Input shape: `(batch_size, 256)`\n  - Output shape: `(batch_size, 64)`\n\n- `self.head2 = nn.Linear(256, 64)`\n  - Input shape: `(batch_size, 256)`\n  - Output shape: `(batch_size, 64)`\n\n- `self.merge = nn.Linear(128, 128)`\n  - Input shape: `(batch_size, 128)` (since it will receive concatenated tensor)\n  - Output shape: `(batch_size, 128)`\n\n### 2. Forward pass tracing:\n\n```python\ndef forward(self, x):\n    h1 = self.head1(x)  # shape: (batch_size, 64)\n    h2 = self.head2(x)  # shape: (batch_size, 64)\n    concatenated = torch.cat([h1, h2], dim=-1)  # shape: (batch_size, 128)\n    output = self.merge(concatenated)  # shape: (batch_size, 128)\n    return output\n```\n\n### 3. Dimensional compatibility checks:\n\n- `h1` and `h2` both have shape `(batch_size, 64)`.\n- Concatenating along `dim=-1` (the feature dimension) results in shape `(batch_size, 128)`, which matches the input expected by `self.merge`.\n- The `self.merge` layer takes `(batch_size, 128)` and outputs `(batch_size, 128)`.\n\n**No shape mismatch issues are apparent.**\n\n### 4. Device assignment and behavioral considerations:\n\n- All layers are instantiated on the default device; no explicit device placement is specified.\n- No parameters are shared or manipulated in a way that would cause device mismatch.\n- The code appears straightforward and should behave identically in train/eval modes.\n\n### Final assessment:\n\n- The input to the `forward()` method must be a tensor of shape `(batch_size, 256)` for the code to work correctly.\n- If the input shape is different, e.g., `(batch_size, 128)`, it would cause a runtime error at `self.head1(x)`.\n\n**However, based solely on the code provided, the architecture and tensor flow are consistent and compatible.**\n\n---\n\n### **Conclusion:**\n\n**NO (code is correct).**"
+        },
+        {
+          "name": "double_conv_correct",
+          "category": "shape_conv",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 4513.1,
+          "llm_response": "Let's analyze the provided `DoubleConv` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `self.conv1 = nn.Conv2d(3, 64, 3, padding=1)`\n  - Input: shape `(N, 3, H, W)`\n  - Output: shape `(N, 64, H, W)` (since kernel=3, padding=1 preserves spatial dimensions)\n\n- `self.conv2 = nn.Conv2d(64, 64, 3, padding=1)`\n  - Input: shape `(N, 64, H, W)`\n  - Output: shape `(N, 64, H, W)`\n\n- `self.bn = nn.BatchNorm2d(64)`\n  - Input: shape `(N, 64, H, W)`\n  - Output: shape `(N, 64, H, W)`\n\n### 2. Data flow in `forward()`:\n\n```python\ndef forward(self, x):\n    x = self.conv1(x)  # shape after: (N, 64, H, W)\n    x = self.conv2(x)  # shape after: (N, 64, H, W)\n    return self.bn(x)   # shape after: (N, 64, H, W)\n```\n\n### 3. Connection points and dimensional compatibility:\n\n- `conv1` takes input `(N, 3, H, W)` and outputs `(N, 64, H, W)` \u2014 compatible.\n- `conv2` takes input `(N, 64, H, W)` and outputs `(N, 64, H, W)` \u2014 compatible.\n- `bn` takes input `(N, 64, H, W)` and outputs `(N, 64, H, W)` \u2014 compatible.\n\nNo shape mismatches are observed.\n\n### 4. Device assignment and behavioral issues:\n\n- No device-specific code is present; assuming default device.\n- No training/eval mode issues are evident here, as batch norm is used, but no explicit mode switching is shown.\n\n### Final assessment:\n\n- The code correctly maintains tensor shapes throughout.\n- No shape bugs or device issues are apparent.\n\n**Answer: NO (code is correct).**"
+        },
+        {
+          "name": "deep_classifier_correct",
+          "category": "shape_linear",
+          "has_bug": false,
+          "predicted": false,
+          "label": "TN",
+          "ms": 6035.0,
+          "llm_response": "Let's analyze the provided `DeepClassifier` class step-by-step:\n\n### 1. Layers in `__init__` and their expected input/output shapes:\n\n- `nn.Linear(100, 200)`:\n  - Input shape: `(batch_size, 100)`\n  - Output shape: `(batch_size, 200)`\n\n- `nn.ReLU()`:\n  - Same shape as input: `(batch_size, 200)`\n\n- `nn.Linear(200, 100)`:\n  - Input shape: `(batch_size, 200)`\n  - Output shape: `(batch_size, 100)`\n\n- `nn.ReLU()`:\n  - Same shape as input: `(batch_size, 100)`\n\n- `nn.Linear(100, 50)`:\n  - Input shape: `(batch_size, 100)`\n  - Output shape: `(batch_size, 50)`\n\n- `nn.ReLU()`:\n  - Same shape as input: `(batch_size, 50)`\n\n- `nn.Linear(50, 10)`:\n  - Input shape: `(batch_size, 50)`\n  - Output shape: `(batch_size, 10)`\n\n### 2. Trace data flow through `forward()`:\n\n- Input `x`: shape `(batch_size, 100)` (expected for the first layer)\n- After first `Linear(100, 200)`: shape `(batch_size, 200)`\n- After first `ReLU()`: shape `(batch_size, 200)`\n- After second `Linear(200, 100)`: shape `(batch_size, 100)`\n- After second `ReLU()`: shape `(batch_size, 100)`\n- After third `Linear(100, 50)`: shape `(batch_size, 50)`\n- After third `ReLU()`: shape `(batch_size, 50)`\n- After final `Linear(50, 10)`: shape `(batch_size, 10)`\n\nThe output shape is `(batch_size, 10)`.\n\n### 3. Connection points and dimensional compatibility:\n\n- The input to the first `Linear` layer must be `(batch_size, 100)`. The code assumes the input `x` has this shape.\n- Each subsequent layer receives the output of the previous layer, which matches the expected input shape.\n- No shape mismatches are apparent in the sequential chain.\n\n### 4. Device assignment and behavioral considerations:\n\n- The code does not specify device placement; it relies on the input tensor `x` being on the same device as the model parameters.\n- No explicit `train()` or `eval()` modes are used, but that does not affect shape correctness.\n- No issues with train/eval modes are evident here.\n\n### Final assessment:\n\n- The architecture expects input tensors with shape `(batch_size, 100)`.\n- The sequence of layers and their connections are consistent.\n- No shape mismatches or device issues are apparent.\n\n**Conclusion:** The code appears correct with respect to tensor shapes and connections.\n\n---\n\n**Answer: NO (code is correct).**"
+        }
+      ]
+    }
+  },
+  "comparison": {
+    "tensorguard_f1": 0.6429,
+    "simple_f1": 0.9189,
+    "chain_of_thought_f1": 1.0,
+    "architecture_aware_cot_f1": 0.878
+  }
+}

@@ -1,0 +1,428 @@
+{
+  "experiment": "cegar_category_stratification",
+  "description": "Per-architecture CEGAR ablation stratification (Cheng critique) and predicate utilization analysis (Zhang critique). 32 benchmarks, 11 architecture families.",
+  "date": "2026-02-24 21:55:09",
+  "num_benchmarks": 32,
+  "architectures": [
+    "Autoencoder",
+    "Bottleneck",
+    "CNN",
+    "Classifier",
+    "GAN-discriminator",
+    "MLP",
+    "MultiHead",
+    "ResNet-skip",
+    "Transformer",
+    "U-Net-style",
+    "Wide"
+  ],
+  "overall": {
+    "single_pass": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 11,
+      "tn": 17,
+      "precision": 1.0,
+      "recall": 0.2667,
+      "f1": 0.4211,
+      "n": 32
+    },
+    "cegar": {
+      "tp": 14,
+      "fp": 0,
+      "fn": 1,
+      "tn": 17,
+      "precision": 1.0,
+      "recall": 0.9333,
+      "f1": 0.9655,
+      "n": 32
+    },
+    "delta_f1": 0.5444
+  },
+  "per_architecture": {
+    "Autoencoder": {
+      "n": 3,
+      "n_buggy": 1,
+      "n_safe": 2,
+      "single_pass": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "tn": 2,
+        "precision": 1.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "n": 3
+      },
+      "cegar": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 3
+      },
+      "delta_f1": 1.0,
+      "cegar_f1_ci": [
+        0.4385,
+        1
+      ],
+      "total_predicates_discovered": 3,
+      "total_predicates_rejected": 6,
+      "mean_iterations": 2.0
+    },
+    "Bottleneck": {
+      "n": 2,
+      "n_buggy": 1,
+      "n_safe": 1,
+      "single_pass": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "tn": 1,
+        "precision": 1.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "n": 2
+      },
+      "cegar": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 2
+      },
+      "delta_f1": 1.0,
+      "cegar_f1_ci": [
+        0.3424,
+        1
+      ],
+      "total_predicates_discovered": 2,
+      "total_predicates_rejected": 2,
+      "mean_iterations": 2.0
+    },
+    "CNN": {
+      "n": 4,
+      "n_buggy": 2,
+      "n_safe": 2,
+      "single_pass": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "tn": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 4
+      },
+      "cegar": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "tn": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 4
+      },
+      "delta_f1": 0.0,
+      "cegar_f1_ci": [
+        0.5101,
+        1
+      ],
+      "total_predicates_discovered": 0,
+      "total_predicates_rejected": 0,
+      "mean_iterations": 1.0
+    },
+    "Classifier": {
+      "n": 2,
+      "n_buggy": 1,
+      "n_safe": 1,
+      "single_pass": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "tn": 1,
+        "precision": 1.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "n": 2
+      },
+      "cegar": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 2
+      },
+      "delta_f1": 1.0,
+      "cegar_f1_ci": [
+        0.3424,
+        1
+      ],
+      "total_predicates_discovered": 2,
+      "total_predicates_rejected": 2,
+      "mean_iterations": 2.0
+    },
+    "GAN-discriminator": {
+      "n": 2,
+      "n_buggy": 1,
+      "n_safe": 1,
+      "single_pass": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "tn": 1,
+        "precision": 1.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "n": 2
+      },
+      "cegar": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 2
+      },
+      "delta_f1": 1.0,
+      "cegar_f1_ci": [
+        0.3424,
+        1
+      ],
+      "total_predicates_discovered": 2,
+      "total_predicates_rejected": 4,
+      "mean_iterations": 2.0
+    },
+    "MLP": {
+      "n": 6,
+      "n_buggy": 3,
+      "n_safe": 3,
+      "single_pass": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 3,
+        "tn": 3,
+        "precision": 1.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "n": 6
+      },
+      "cegar": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "tn": 3,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 6
+      },
+      "delta_f1": 1.0,
+      "cegar_f1_ci": [
+        0.6097,
+        1
+      ],
+      "total_predicates_discovered": 6,
+      "total_predicates_rejected": 8,
+      "mean_iterations": 2.0
+    },
+    "MultiHead": {
+      "n": 2,
+      "n_buggy": 1,
+      "n_safe": 1,
+      "single_pass": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 2
+      },
+      "cegar": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 2
+      },
+      "delta_f1": 0.0,
+      "cegar_f1_ci": [
+        0.3424,
+        1
+      ],
+      "total_predicates_discovered": 2,
+      "total_predicates_rejected": 0,
+      "mean_iterations": 1.5
+    },
+    "ResNet-skip": {
+      "n": 3,
+      "n_buggy": 1,
+      "n_safe": 2,
+      "single_pass": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "tn": 2,
+        "precision": 1.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "n": 3
+      },
+      "cegar": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "tn": 2,
+        "precision": 1.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "n": 3
+      },
+      "delta_f1": 0.0,
+      "cegar_f1_ci": [
+        0,
+        0.5615
+      ],
+      "total_predicates_discovered": 3,
+      "total_predicates_rejected": 0,
+      "mean_iterations": 2.0
+    },
+    "Transformer": {
+      "n": 4,
+      "n_buggy": 2,
+      "n_safe": 2,
+      "single_pass": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 1,
+        "tn": 2,
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6667,
+        "n": 4
+      },
+      "cegar": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "tn": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 4
+      },
+      "delta_f1": 0.3333,
+      "cegar_f1_ci": [
+        0.5101,
+        1
+      ],
+      "total_predicates_discovered": 4,
+      "total_predicates_rejected": 2,
+      "mean_iterations": 1.75
+    },
+    "U-Net-style": {
+      "n": 2,
+      "n_buggy": 1,
+      "n_safe": 1,
+      "single_pass": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "tn": 1,
+        "precision": 1.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "n": 2
+      },
+      "cegar": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 2
+      },
+      "delta_f1": 1.0,
+      "cegar_f1_ci": [
+        0.3424,
+        1
+      ],
+      "total_predicates_discovered": 2,
+      "total_predicates_rejected": 2,
+      "mean_iterations": 2.0
+    },
+    "Wide": {
+      "n": 2,
+      "n_buggy": 1,
+      "n_safe": 1,
+      "single_pass": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "tn": 1,
+        "precision": 1.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "n": 2
+      },
+      "cegar": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "n": 2
+      },
+      "delta_f1": 1.0,
+      "cegar_f1_ci": [
+        0.3424,
+        1
+      ],
+      "total_predicates_discovered": 2,
+      "total_predicates_rejected": 2,
+      "mean_iterations": 2.0
+    }
+  },
+  "heterogeneity": {
+    "mean_delta_f1": 0.6667,
+    "sd_delta_f1": 0.4714,
+    "min_delta_f1": 0.0,
+    "max_delta_f1": 1.0,
+    "architectures_with_zero_benefit": 3,
+    "architectures_with_positive_benefit": 8
+  },
+  "predicate_utilization": {
+    "total_discovered": 28,
+    "total_rejected_by_quality_filter": 28,
+    "total_used_in_safety_proofs": 15,
+    "utilization_rate": 0.5357,
+    "false_predicate_rate": 0.5,
+    "provenance_distribution": {
+      "api_stub": 28
+    },
+    "kind_distribution": {
+      "DIM_EQ": 28
+    }
+  }
+}

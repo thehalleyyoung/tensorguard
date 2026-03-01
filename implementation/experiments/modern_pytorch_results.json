@@ -1,0 +1,263 @@
+{
+  "experiment": "modern_pytorch_pattern_detection",
+  "timestamp": "2026-02-24T18:59:04",
+  "summary": {
+    "total": 10,
+    "verified_safe": 7,
+    "verified_unsafe": 3,
+    "errors": 0,
+    "correct_verdicts": 9,
+    "features_detected": 17,
+    "features_expected": 17,
+    "feature_detection_recall": 1.0
+  },
+  "benchmarks": {
+    "torch_compile_forward": {
+      "verdict": "safe",
+      "expected_buggy": false,
+      "correct": true,
+      "category": "torch_compile",
+      "description": "Model with @torch.compile on forward \u2014 shapes are correct",
+      "dynamic_features_detected": {
+        "torch_compile_present": true,
+        "torch_compile_forward": true
+      },
+      "dynamic_feature_warnings": [
+        "torch.compile detected: Dynamo may insert graph breaks that alter control flow. Shape verification remains valid for the eager-mode semantics; dtype/layout may change under compiler backends."
+      ],
+      "expected_features": [
+        "torch_compile_present",
+        "torch_compile_forward"
+      ],
+      "expected_features_found": [
+        "torch_compile_present",
+        "torch_compile_forward"
+      ],
+      "expected_features_missed": [],
+      "verification_time_ms": 215.53,
+      "errors": []
+    },
+    "torch_compile_dynamic_bug": {
+      "verdict": "unsafe",
+      "expected_buggy": true,
+      "correct": true,
+      "category": "torch_compile",
+      "description": "torch.compile(dynamic=True) with Linear dimension mismatch",
+      "dynamic_features_detected": {
+        "torch_compile_present": true,
+        "torch_compile_dynamic_shapes": true
+      },
+      "dynamic_feature_warnings": [
+        "torch.compile detected: Dynamo may insert graph breaks that alter control flow. Shape verification remains valid for the eager-mode semantics; dtype/layout may change under compiler backends.",
+        "torch.compile(dynamic=True) detected: symbolic shapes used at runtime may differ from static analysis assumptions. Shape verification treats dimensions as symbolic \u2014 guarantees hold for all concrete instantiations satisfying the stated constraints."
+      ],
+      "expected_features": [
+        "torch_compile_present",
+        "torch_compile_dynamic_shapes"
+      ],
+      "expected_features_found": [
+        "torch_compile_present",
+        "torch_compile_dynamic_shapes"
+      ],
+      "expected_features_missed": [],
+      "verification_time_ms": 46.73,
+      "errors": []
+    },
+    "autocast_forward": {
+      "verdict": "safe",
+      "expected_buggy": false,
+      "correct": true,
+      "category": "mixed_precision",
+      "description": "Correct model using torch.amp.autocast in forward",
+      "dynamic_features_detected": {
+        "mixed_precision": true,
+        "mixed_precision_api": "torch.amp.autocast",
+        "forward_uses_autocast": true
+      },
+      "dynamic_feature_warnings": [
+        "Mixed-precision (autocast) detected: dtypes may be silently down-cast to float16/bfloat16. Shape verification is unaffected, but dtype-sensitive operations (e.g., large reductions) may lose precision. Gradient scaling should use GradScaler.",
+        "Autocast context used inside forward(): intermediate tensor dtypes will vary. Shape verification remains valid; dtype guarantees are weakened within the autocast region.",
+        "Dynamic reshape operations detected (e.g., view(-1, ...)): inferred dimensions depend on runtime shapes. Verification models these symbolically."
+      ],
+      "expected_features": [
+        "mixed_precision",
+        "forward_uses_autocast"
+      ],
+      "expected_features_found": [
+        "mixed_precision",
+        "forward_uses_autocast"
+      ],
+      "expected_features_missed": [],
+      "verification_time_ms": 236.39,
+      "errors": []
+    },
+    "autocast_gradscaler_bug": {
+      "verdict": "unsafe",
+      "expected_buggy": true,
+      "correct": true,
+      "category": "mixed_precision",
+      "description": "Mixed-precision model with channel mismatch hidden by autocast",
+      "dynamic_features_detected": {
+        "mixed_precision": true,
+        "mixed_precision_api": "torch.cuda.amp",
+        "grad_scaler": true,
+        "forward_uses_autocast": true
+      },
+      "dynamic_feature_warnings": [
+        "Mixed-precision (autocast) detected: dtypes may be silently down-cast to float16/bfloat16. Shape verification is unaffected, but dtype-sensitive operations (e.g., large reductions) may lose precision. Gradient scaling should use GradScaler.",
+        "GradScaler detected alongside autocast \u2014 gradient scaling is properly configured for mixed-precision training.",
+        "Autocast context used inside forward(): intermediate tensor dtypes will vary. Shape verification remains valid; dtype guarantees are weakened within the autocast region."
+      ],
+      "expected_features": [
+        "mixed_precision",
+        "forward_uses_autocast",
+        "grad_scaler"
+      ],
+      "expected_features_found": [
+        "mixed_precision",
+        "grad_scaler",
+        "forward_uses_autocast"
+      ],
+      "expected_features_missed": [],
+      "verification_time_ms": 108.97,
+      "errors": []
+    },
+    "ddp_wrapped_model": {
+      "verdict": "safe",
+      "expected_buggy": false,
+      "correct": true,
+      "category": "distributed",
+      "description": "Correct model wrapped with DDP \u2014 shapes verified on single replica",
+      "dynamic_features_detected": {
+        "distributed_ddp": true
+      },
+      "dynamic_feature_warnings": [
+        "DistributedDataParallel detected: model is replicated across devices. Shape verification applies to a single replica. All-reduce communication patterns are not verified."
+      ],
+      "expected_features": [
+        "distributed_ddp"
+      ],
+      "expected_features_found": [
+        "distributed_ddp"
+      ],
+      "expected_features_missed": [],
+      "verification_time_ms": 179.74,
+      "errors": []
+    },
+    "data_parallel_bug": {
+      "verdict": "unsafe",
+      "expected_buggy": true,
+      "correct": true,
+      "category": "data_parallel",
+      "description": "DataParallel model with Linear input dimension mismatch",
+      "dynamic_features_detected": {
+        "data_parallel": true
+      },
+      "dynamic_feature_warnings": [
+        "DataParallel detected: input batch is split across GPUs. The batch dimension is divided by the number of devices. Shape verification applies to the full (unsplit) input.",
+        "Dynamic reshape operations detected (e.g., view(-1, ...)): inferred dimensions depend on runtime shapes. Verification models these symbolically."
+      ],
+      "expected_features": [
+        "data_parallel"
+      ],
+      "expected_features_found": [
+        "data_parallel"
+      ],
+      "expected_features_missed": [],
+      "verification_time_ms": 80.74,
+      "errors": []
+    },
+    "data_dependent_control_flow": {
+      "verdict": "safe",
+      "expected_buggy": false,
+      "correct": true,
+      "category": "data_dependent",
+      "description": "Branching on tensor value \u2014 both paths have correct shapes",
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [
+        "Data-dependent control flow detected: branches conditioned on tensor values create multiple execution paths. Verification covers the primary path; alternative branches may have different shape constraints."
+      ],
+      "expected_features": [
+        "data_dependent_branches"
+      ],
+      "expected_features_found": [
+        "data_dependent_branches"
+      ],
+      "expected_features_missed": [],
+      "verification_time_ms": 60.96,
+      "errors": []
+    },
+    "jit_script_model": {
+      "verdict": "safe",
+      "expected_buggy": false,
+      "correct": true,
+      "category": "jit",
+      "description": "Model destined for torch.jit.script \u2014 correct shapes",
+      "dynamic_features_detected": {
+        "jit_script": true
+      },
+      "dynamic_feature_warnings": [
+        "torch.jit.script detected: TorchScript compilation constrains the model to a static subset of Python. Shape verification results transfer to the scripted model."
+      ],
+      "expected_features": [
+        "jit_script"
+      ],
+      "expected_features_found": [
+        "jit_script"
+      ],
+      "expected_features_missed": [],
+      "verification_time_ms": 90.85,
+      "errors": []
+    },
+    "jit_trace_data_dependent": {
+      "verdict": "safe",
+      "expected_buggy": true,
+      "correct": false,
+      "category": "jit",
+      "description": "torch.jit.trace on model with data-dependent branch \u2014 shape mismatch on alternative path",
+      "dynamic_features_detected": {
+        "jit_trace": true
+      },
+      "dynamic_feature_warnings": [
+        "torch.jit.trace detected: traced model records a single execution path. Data-dependent control flow is NOT captured by tracing. Shape verification covers the traced path only.",
+        "Data-dependent control flow detected: branches conditioned on tensor values create multiple execution paths. Verification covers the primary path; alternative branches may have different shape constraints."
+      ],
+      "expected_features": [
+        "jit_trace",
+        "data_dependent_branches"
+      ],
+      "expected_features_found": [
+        "data_dependent_branches",
+        "jit_trace"
+      ],
+      "expected_features_missed": [],
+      "verification_time_ms": 34.48,
+      "errors": []
+    },
+    "torch_export_reshape": {
+      "verdict": "safe",
+      "expected_buggy": false,
+      "correct": true,
+      "category": "export",
+      "description": "Correct model with torch.export and dynamic reshape",
+      "dynamic_features_detected": {
+        "torch_export": true
+      },
+      "dynamic_feature_warnings": [
+        "torch.export detected: the exported program has fixed signatures. Shape verification of the eager Module still applies to the exported variant provided dynamic_shapes constraints match.",
+        "Dynamic reshape operations detected (e.g., view(-1, ...)): inferred dimensions depend on runtime shapes. Verification models these symbolically."
+      ],
+      "expected_features": [
+        "torch_export",
+        "shape_dependent_ops"
+      ],
+      "expected_features_found": [
+        "shape_dependent_ops",
+        "torch_export"
+      ],
+      "expected_features_missed": [],
+      "verification_time_ms": 154.53,
+      "errors": []
+    }
+  }
+}

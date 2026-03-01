@@ -1,0 +1,346 @@
+{
+  "timestamp": "2026-02-26T09:46:12",
+  "total_benchmarks": 18,
+  "overall_metrics": {
+    "tp": 8,
+    "fp": 0,
+    "fn": 0,
+    "tn": 10,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "accuracy": 1.0
+  },
+  "per_boundary_metrics": {
+    "multi_theory": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "tn": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0
+    },
+    "pure_lia": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "tn": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0
+    },
+    "shape_broadcast": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0
+    },
+    "shape_device": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "tn": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0
+    },
+    "shape_phase": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "tn": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0
+    },
+    "shape_stride": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "tn": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0
+    },
+    "stride_perm": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0
+    }
+  },
+  "boundary_disaggregation": {
+    "total_benchmarks": 18,
+    "failures_by_pair": {},
+    "f1_by_pair": {},
+    "individual_results": []
+  },
+  "individual_results": [
+    {
+      "name": "reshape_correct_simple",
+      "boundary": "shape_stride",
+      "theories": [
+        "T_shape",
+        "T_stride"
+      ],
+      "mutation_type": "",
+      "expected_safe": true,
+      "actual_safe": true,
+      "correct": true,
+      "time_s": 0.2798,
+      "error": null
+    },
+    {
+      "name": "reshape_wrong_out_features",
+      "boundary": "shape_stride",
+      "theories": [
+        "T_shape",
+        "T_stride"
+      ],
+      "mutation_type": "wrong_out_features",
+      "expected_safe": false,
+      "actual_safe": false,
+      "correct": true,
+      "time_s": 0.157,
+      "error": null
+    },
+    {
+      "name": "reshape_element_count_mismatch",
+      "boundary": "shape_stride",
+      "theories": [
+        "T_shape",
+        "T_stride"
+      ],
+      "mutation_type": "wrong_out_features",
+      "expected_safe": false,
+      "actual_safe": false,
+      "correct": true,
+      "time_s": 0.0411,
+      "error": null
+    },
+    {
+      "name": "reshape_correct_factored",
+      "boundary": "shape_stride",
+      "theories": [
+        "T_shape",
+        "T_stride"
+      ],
+      "mutation_type": "",
+      "expected_safe": true,
+      "actual_safe": true,
+      "correct": true,
+      "time_s": 0.0428,
+      "error": null
+    },
+    {
+      "name": "matmul_correct",
+      "boundary": "shape_device",
+      "theories": [
+        "T_shape",
+        "T_device"
+      ],
+      "mutation_type": "",
+      "expected_safe": true,
+      "actual_safe": true,
+      "correct": true,
+      "time_s": 0.019,
+      "error": null
+    },
+    {
+      "name": "matmul_wrong_inner_dim",
+      "boundary": "shape_device",
+      "theories": [
+        "T_shape",
+        "T_device"
+      ],
+      "mutation_type": "wrong_out_features",
+      "expected_safe": false,
+      "actual_safe": false,
+      "correct": true,
+      "time_s": 0.017,
+      "error": null
+    },
+    {
+      "name": "batchnorm_correct",
+      "boundary": "shape_phase",
+      "theories": [
+        "T_shape",
+        "T_phase"
+      ],
+      "mutation_type": "",
+      "expected_safe": true,
+      "actual_safe": true,
+      "correct": true,
+      "time_s": 0.0223,
+      "error": null
+    },
+    {
+      "name": "batchnorm_wrong_features",
+      "boundary": "shape_phase",
+      "theories": [
+        "T_shape",
+        "T_phase"
+      ],
+      "mutation_type": "wrong_num_features",
+      "expected_safe": false,
+      "actual_safe": false,
+      "correct": true,
+      "time_s": 0.3123,
+      "error": null
+    },
+    {
+      "name": "broadcast_add_correct",
+      "boundary": "shape_broadcast",
+      "theories": [
+        "T_shape",
+        "T_broadcast"
+      ],
+      "mutation_type": "",
+      "expected_safe": true,
+      "actual_safe": true,
+      "correct": true,
+      "time_s": 0.0117,
+      "error": null
+    },
+    {
+      "name": "transpose_correct",
+      "boundary": "stride_perm",
+      "theories": [
+        "T_stride",
+        "T_perm"
+      ],
+      "mutation_type": "",
+      "expected_safe": true,
+      "actual_safe": true,
+      "correct": true,
+      "time_s": 0.0262,
+      "error": null
+    },
+    {
+      "name": "conv_linear_correct",
+      "boundary": "multi_theory",
+      "theories": [
+        "T_shape",
+        "T_stride",
+        "T_device"
+      ],
+      "mutation_type": "",
+      "expected_safe": true,
+      "actual_safe": true,
+      "correct": true,
+      "time_s": 0.0221,
+      "error": null
+    },
+    {
+      "name": "conv_wrong_channels",
+      "boundary": "multi_theory",
+      "theories": [
+        "T_shape",
+        "T_stride",
+        "T_device"
+      ],
+      "mutation_type": "wrong_out_channels",
+      "expected_safe": false,
+      "actual_safe": false,
+      "correct": true,
+      "time_s": 0.0297,
+      "error": null
+    },
+    {
+      "name": "backward_wrong_out_relu",
+      "boundary": "shape_stride",
+      "theories": [
+        "T_shape",
+        "T_stride"
+      ],
+      "mutation_type": "wrong_out_features",
+      "expected_safe": false,
+      "actual_safe": false,
+      "correct": true,
+      "time_s": 0.0265,
+      "error": null
+    },
+    {
+      "name": "correct_three_layer_mlp",
+      "boundary": "shape_stride",
+      "theories": [
+        "T_shape",
+        "T_stride"
+      ],
+      "mutation_type": "",
+      "expected_safe": true,
+      "actual_safe": true,
+      "correct": true,
+      "time_s": 0.03,
+      "error": null
+    },
+    {
+      "name": "wrong_middle_three_layer",
+      "boundary": "shape_stride",
+      "theories": [
+        "T_shape",
+        "T_stride"
+      ],
+      "mutation_type": "wrong_out_features",
+      "expected_safe": false,
+      "actual_safe": false,
+      "correct": true,
+      "time_s": 0.0343,
+      "error": null
+    },
+    {
+      "name": "pure_lia_correct",
+      "boundary": "pure_lia",
+      "theories": [
+        "T_shape"
+      ],
+      "mutation_type": "",
+      "expected_safe": true,
+      "actual_safe": true,
+      "correct": true,
+      "time_s": 0.0212,
+      "error": null
+    },
+    {
+      "name": "pure_lia_wrong_input",
+      "boundary": "pure_lia",
+      "theories": [
+        "T_shape"
+      ],
+      "mutation_type": "wrong_in_features",
+      "expected_safe": false,
+      "actual_safe": false,
+      "correct": true,
+      "time_s": 0.017,
+      "error": null
+    },
+    {
+      "name": "dropout_correct",
+      "boundary": "shape_phase",
+      "theories": [
+        "T_shape",
+        "T_phase"
+      ],
+      "mutation_type": "",
+      "expected_safe": true,
+      "actual_safe": true,
+      "correct": true,
+      "time_s": 0.0394,
+      "error": null
+    }
+  ]
+}

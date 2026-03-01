@@ -1,0 +1,110 @@
+{
+  "experiment": "hierarchical_random_effects_meta_analysis",
+  "timestamp": "2026-02-25T12:38:21Z",
+  "method": "DerSimonian-Laird random-effects",
+  "per_suite": [
+    {
+      "suite": "Suite B (CEGAR ablation)",
+      "f1": 0.966,
+      "n": 32,
+      "wilson_ci_95": [
+        0.8385,
+        0.9936
+      ],
+      "variance": 0.001026,
+      "re_weight": 460.3257
+    },
+    {
+      "suite": "Suite C (external bugs)",
+      "f1": 0.875,
+      "n": 34,
+      "wilson_ci_95": [
+        0.7249,
+        0.949
+      ],
+      "variance": 0.003217,
+      "re_weight": 229.2047
+    },
+    {
+      "suite": "Suite D (standard)",
+      "f1": 0.917,
+      "n": 50,
+      "wilson_ci_95": [
+        0.8078,
+        0.9667
+      ],
+      "variance": 0.001522,
+      "re_weight": 374.7817
+    },
+    {
+      "suite": "Deep composition",
+      "f1": 1.0,
+      "n": 25,
+      "wilson_ci_95": [
+        0.8668,
+        1.0
+      ],
+      "variance": 0.000754,
+      "re_weight": 526.1945
+    }
+  ],
+  "pooled": {
+    "pooled_estimate": 0.9526,
+    "pooled_se": 0.0251,
+    "pooled_ci_95": [
+      0.9034,
+      1
+    ],
+    "tau_squared": 0.001146,
+    "cochrans_Q": 5.6111,
+    "Q_df": 3,
+    "p_heterogeneity": 0.1321,
+    "I_squared_pct": 46.5,
+    "fixed_effect_estimate": 0.9613,
+    "method": "DerSimonian-Laird",
+    "heterogeneity_interpretation": "moderate heterogeneity"
+  },
+  "forest_plot": [
+    {
+      "label": "Suite B (CEGAR ablation)",
+      "estimate": 0.966,
+      "ci_lo": 0.8385,
+      "ci_hi": 0.9936,
+      "weight_pct": 28.9,
+      "n": 32
+    },
+    {
+      "label": "Suite C (external bugs)",
+      "estimate": 0.875,
+      "ci_lo": 0.7249,
+      "ci_hi": 0.949,
+      "weight_pct": 14.4,
+      "n": 34
+    },
+    {
+      "label": "Suite D (standard)",
+      "estimate": 0.917,
+      "ci_lo": 0.8078,
+      "ci_hi": 0.9667,
+      "weight_pct": 23.6,
+      "n": 50
+    },
+    {
+      "label": "Deep composition",
+      "estimate": 1.0,
+      "ci_lo": 0.8668,
+      "ci_hi": 1.0,
+      "weight_pct": 33.1,
+      "n": 25
+    },
+    {
+      "label": "Pooled (RE)",
+      "estimate": 0.9526,
+      "ci_lo": 0.9034,
+      "ci_hi": 1,
+      "weight_pct": 100.0,
+      "n": 141
+    }
+  ],
+  "interpretation": "The random-effects pooled F1 across four evaluation suites is 0.953 (95% CI: [0.903, 1.000]). I\u00b2 = 46.5% indicates moderate heterogeneity. The non-significant Q test (p=0.132) suggests that differences across suites may be attributable to sampling variability."
+}

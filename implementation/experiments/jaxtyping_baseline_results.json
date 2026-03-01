@@ -1,0 +1,441 @@
+{
+  "benchmarks": [
+    {
+      "name": "linear_dim_mismatch_bug",
+      "category": "linear_dim_mismatch",
+      "is_buggy": true,
+      "tensorguard": {
+        "detected_bug": true,
+        "time_ms": 50.16,
+        "errors": [
+          "CounterexampleTrace(model_name='LinearDimBug', violations=[SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc2), message='Linear expects last dim=128, got 256', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 256)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None), SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc2), message='Z3 violation (shape_incompatible) at step 1:\\n  phase_s1 = TRAIN_1\\n  phase_s0 = TRAIN_1\\n  batch = 1\\n  dev_x_s0 = CPU_1\\n  grad_x_s0 = False\\n  dev_x_s1 = CPU_1\\n  grad_x_s1 = True', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)], failing_step=1, states=[ModelState(shape_env={'x': TensorShape(dims=(batch, 784))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 256))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 256))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False})], concrete_dims={'batch': 1})"
+        ]
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": true,
+        "time_ms": 24.5,
+        "errors": [
+          "RuntimeError: mat1 and mat2 shapes cannot be multiplied (4x256 and 128x10)"
+        ]
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "linear_dim_safe",
+      "category": "linear_dim_mismatch",
+      "is_buggy": false,
+      "tensorguard": {
+        "detected_bug": false,
+        "time_ms": 9.25,
+        "errors": []
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": false,
+        "time_ms": 1.66,
+        "errors": []
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "conv_channel_mismatch_bug",
+      "category": "conv_channel_mismatch",
+      "is_buggy": true,
+      "tensorguard": {
+        "detected_bug": true,
+        "time_ms": 13.36,
+        "errors": [
+          "CounterexampleTrace(model_name='ConvChannelBug', violations=[SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['x'], out=x, layer=conv2), message='Conv2d expects 32 input channels, got 64', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 64, 32, 32)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None), SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['x'], out=x, layer=conv2), message='Z3 violation (shape_incompatible) at step 1:\\n  phase_s1 = TRAIN_3\\n  batch = 1\\n  phase_s0 = TRAIN_3\\n  dev_x_s0 = CPU_3\\n  grad_x_s0 = False\\n  dev_x_s1 = CPU_3\\n  grad_x_s1 = True', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)], failing_step=1, states=[ModelState(shape_env={'x': TensorShape(dims=(batch, 3, 32, 32))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 64, 32, 32))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 64, 32, 32))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False})], concrete_dims={'batch': 1})"
+        ]
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": true,
+        "time_ms": 10.37,
+        "errors": [
+          "RuntimeError: Given groups=1, weight of size [128, 32, 3, 3], expected input[4, 64, 32, 32] to have 32 channels, but got 64 channels instead"
+        ]
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "conv_channel_safe",
+      "category": "conv_channel_mismatch",
+      "is_buggy": false,
+      "tensorguard": {
+        "detected_bug": false,
+        "time_ms": 10.7,
+        "errors": []
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": false,
+        "time_ms": 3.4,
+        "errors": []
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "reshape_flatten_bug",
+      "category": "reshape_flatten",
+      "is_buggy": true,
+      "tensorguard": {
+        "detected_bug": true,
+        "time_ms": 16.73,
+        "errors": [
+          "CounterexampleTrace(model_name='ReshapeBug', violations=[SafetyViolation(kind='shape_incompatible', step_index=2, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc), message='Linear expects last dim=8192, got 16384', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 16384)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None), SafetyViolation(kind='shape_incompatible', step_index=2, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc), message='Z3 violation (shape_incompatible) at step 2:\\n  phase_s1 = TRAIN_5\\n  batch = 1\\n  dev_x_s1 = CPU_5\\n  phase_s0 = TRAIN_5\\n  grad_x_s0 = False\\n  grad_x_s2 = True\\n  phase_s2 = TRAIN_5\\n  dev_x_s0 = CPU_5\\n  grad_x_s1 = True\\n  dev_x_s2 = CPU_5', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)], failing_step=2, states=[ModelState(shape_env={'x': TensorShape(dims=(batch, 3, 32, 32))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 16, 32, 32))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 16384))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 16384))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False})], concrete_dims={'batch': 1})"
+        ]
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": true,
+        "time_ms": 2.62,
+        "errors": [
+          "RuntimeError: mat1 and mat2 shapes cannot be multiplied (4x16384 and 8192x10)"
+        ]
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "reshape_flatten_safe",
+      "category": "reshape_flatten",
+      "is_buggy": false,
+      "tensorguard": {
+        "detected_bug": false,
+        "time_ms": 14.14,
+        "errors": []
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": false,
+        "time_ms": 1.46,
+        "errors": []
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "mha_divisibility_bug",
+      "category": "mha_divisibility",
+      "is_buggy": true,
+      "tensorguard": {
+        "detected_bug": true,
+        "time_ms": 9.43,
+        "errors": [
+          "CounterexampleTrace(model_name='MHABug', violations=[SafetyViolation(kind='shape_incompatible', step_index=0, step=Step(LAYER_CALL, in=['x', 'x', 'x'], out=x, layer=attn), message='embed_dim=256 not divisible by num_heads=7', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 10, 256)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)], failing_step=0, states=[ModelState(shape_env={'x': TensorShape(dims=(batch, 10, 256))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 10, 256))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False})], concrete_dims={'batch': 1})"
+        ]
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": true,
+        "time_ms": 0.21,
+        "errors": [
+          "AssertionError: embed_dim must be divisible by num_heads"
+        ]
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "mha_divisibility_safe",
+      "category": "mha_divisibility",
+      "is_buggy": false,
+      "tensorguard": {
+        "detected_bug": false,
+        "time_ms": 7.94,
+        "errors": []
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": false,
+        "time_ms": 13.17,
+        "errors": []
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "deep_chain_bug",
+      "category": "deep_chain",
+      "is_buggy": true,
+      "tensorguard": {
+        "detected_bug": true,
+        "time_ms": 17.06,
+        "errors": [
+          "CounterexampleTrace(model_name='DeepChainBug', violations=[SafetyViolation(kind='shape_incompatible', step_index=3, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc4), message='Linear expects last dim=32, got 64', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 64)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None), SafetyViolation(kind='shape_incompatible', step_index=3, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc4), message='Z3 violation (shape_incompatible) at step 3:\\n  dev_x_s1 = CPU_9\\n  phase_s3 = TRAIN_9\\n  phase_s1 = TRAIN_9\\n  grad_x_s0 = False\\n  phase_s0 = TRAIN_9\\n  dev_x_s0 = CPU_9\\n  grad_x_s3 = True\\n  batch = 1\\n  grad_x_s2 = True\\n  dev_x_s2 = CPU_9\\n  dev_x_s3 = CPU_9\\n  grad_x_s1 = True\\n  phase_s2 = TRAIN_9', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)], failing_step=3, states=[ModelState(shape_env={'x': TensorShape(dims=(batch, 512))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 256))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 128))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 64))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 64))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False})], concrete_dims={'batch': 1})"
+        ]
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": true,
+        "time_ms": 1.21,
+        "errors": [
+          "RuntimeError: mat1 and mat2 shapes cannot be multiplied (4x64 and 32x10)"
+        ]
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "deep_chain_safe",
+      "category": "deep_chain",
+      "is_buggy": false,
+      "tensorguard": {
+        "detected_bug": false,
+        "time_ms": 16.99,
+        "errors": []
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": false,
+        "time_ms": 1.12,
+        "errors": []
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "conv_linear_flatten_bug",
+      "category": "conv_linear_flatten",
+      "is_buggy": true,
+      "tensorguard": {
+        "detected_bug": true,
+        "time_ms": 20.08,
+        "errors": [
+          "CounterexampleTrace(model_name='ConvLinearBug', violations=[SafetyViolation(kind='shape_incompatible', step_index=3, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc), message='Linear expects last dim=9216, got 36864', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 36864)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None), SafetyViolation(kind='shape_incompatible', step_index=3, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc), message='Z3 violation (shape_incompatible) at step 3:\\n  phase_s0 = TRAIN_11\\n  grad_x_s0 = False\\n  dev_x_s2 = CPU_11\\n  dev_x_s3 = CPU_11\\n  dev_x_s1 = CPU_11\\n  grad_x_s3 = True\\n  batch = 1\\n  phase_s2 = TRAIN_11\\n  dev_x_s0 = CPU_11\\n  grad_x_s2 = True\\n  phase_s3 = TRAIN_11\\n  phase_s1 = TRAIN_11\\n  grad_x_s1 = True', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)], failing_step=3, states=[ModelState(shape_env={'x': TensorShape(dims=(batch, 1, 28, 28))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 32, 26, 26))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 64, 24, 24))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 36864))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 36864))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False})], concrete_dims={'batch': 1})"
+        ]
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": true,
+        "time_ms": 1.94,
+        "errors": [
+          "RuntimeError: mat1 and mat2 shapes cannot be multiplied (4x36864 and 9216x10)"
+        ]
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "conv_linear_flatten_safe",
+      "category": "conv_linear_flatten",
+      "is_buggy": false,
+      "tensorguard": {
+        "detected_bug": false,
+        "time_ms": 17.27,
+        "errors": []
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": false,
+        "time_ms": 2.5,
+        "errors": []
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "transposed_conv_bug",
+      "category": "transposed_conv",
+      "is_buggy": true,
+      "tensorguard": {
+        "detected_bug": true,
+        "time_ms": 24.0,
+        "errors": [
+          "CounterexampleTrace(model_name='TransConvBug', violations=[SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['x'], out=x, layer=deconv), message='ConvTranspose2d expects 32 input channels, got 64', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 64, 32, 32)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None), SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['x'], out=x, layer=deconv), message='Z3 violation (shape_incompatible) at step 1:\\n  dev_x_s1 = CPU_13\\n  batch = 1\\n  phase_s1 = TRAIN_13\\n  grad_x_s0 = False\\n  phase_s0 = TRAIN_13\\n  dev_x_s0 = CPU_13\\n  grad_x_s1 = True', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)], failing_step=1, states=[ModelState(shape_env={'x': TensorShape(dims=(batch, 3, 32, 32))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 64, 32, 32))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 64, 32, 32))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False})], concrete_dims={'batch': 1})"
+        ]
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": true,
+        "time_ms": 2.49,
+        "errors": [
+          "RuntimeError: Given transposed=1, weight of size [32, 3, 3, 3], expected input[4, 64, 32, 32] to have 32 channels, but got 64 channels instead"
+        ]
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "transposed_conv_safe",
+      "category": "transposed_conv",
+      "is_buggy": false,
+      "tensorguard": {
+        "detected_bug": false,
+        "time_ms": 11.04,
+        "errors": []
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": false,
+        "time_ms": 2.18,
+        "errors": []
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "pool_linear_bug",
+      "category": "pool_linear",
+      "is_buggy": true,
+      "tensorguard": {
+        "detected_bug": true,
+        "time_ms": 23.58,
+        "errors": [
+          "CounterexampleTrace(model_name='PoolLinearBug', violations=[SafetyViolation(kind='shape_incompatible', step_index=3, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc), message='Linear expects last dim=128, got 512', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 512)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None), SafetyViolation(kind='shape_incompatible', step_index=3, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc), message='Z3 violation (shape_incompatible) at step 3:\\n  dev_x_s0 = CPU_15\\n  grad_x_s0 = False\\n  phase_s2 = TRAIN_15\\n  phase_s3 = TRAIN_15\\n  grad_x_s3 = False\\n  batch = 1\\n  phase_s1 = TRAIN_15\\n  phase_s0 = TRAIN_15\\n  dev_x_s2 = CPU_15\\n  grad_x_s2 = False\\n  dev_x_s3 = CPU_15\\n  dev_x_s1 = CPU_15\\n  grad_x_s1 = True', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)], failing_step=3, states=[ModelState(shape_env={'x': TensorShape(dims=(batch, 3, 32, 32))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 32, 32, 32))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 32, 4, 4))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 512))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 512))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False})], concrete_dims={'batch': 1})"
+        ]
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": true,
+        "time_ms": 2.84,
+        "errors": [
+          "RuntimeError: mat1 and mat2 shapes cannot be multiplied (4x512 and 128x10)"
+        ]
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "pool_linear_safe",
+      "category": "pool_linear",
+      "is_buggy": false,
+      "tensorguard": {
+        "detected_bug": false,
+        "time_ms": 17.21,
+        "errors": []
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": false,
+        "time_ms": 0.98,
+        "errors": []
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "residual_shape_bug",
+      "category": "residual_shape",
+      "is_buggy": true,
+      "tensorguard": {
+        "detected_bug": false,
+        "time_ms": 15.33,
+        "errors": []
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": true,
+        "time_ms": 3.36,
+        "errors": [
+          "RuntimeError: The size of tensor a (128) must match the size of tensor b (256) at non-singleton dimension 1"
+        ]
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "residual_shape_safe",
+      "category": "residual_shape",
+      "is_buggy": false,
+      "tensorguard": {
+        "detected_bug": false,
+        "time_ms": 14.69,
+        "errors": []
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": false,
+        "time_ms": 0.81,
+        "errors": []
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "batchnorm_channel_bug",
+      "category": "batchnorm_channel",
+      "is_buggy": true,
+      "tensorguard": {
+        "detected_bug": true,
+        "time_ms": 15.46,
+        "errors": [
+          "CounterexampleTrace(model_name='BNBug', violations=[SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['x'], out=x, layer=bn), message='BatchNorm expects 32 features, got 64', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 64, 32, 32)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None), SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['x'], out=x, layer=bn), message='Z3 violation (shape_incompatible) at step 1:\\n  dev_x_s1 = CPU_19\\n  batch = 1\\n  grad_x_s0 = False\\n  dev_x_s0 = CPU_19\\n  phase_s1 = TRAIN_19\\n  phase_s0 = TRAIN_19\\n  grad_x_s1 = True', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)], failing_step=1, states=[ModelState(shape_env={'x': TensorShape(dims=(batch, 3, 32, 32))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 64, 32, 32))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False}), ModelState(shape_env={'x': TensorShape(dims=(batch, 64, 32, 32))}, device_map={'x': <Device.CPU: 'cpu'>}, phase=<Phase.TRAIN: 1>, gradient_status={'x': False})], concrete_dims={'batch': 1})"
+        ]
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": true,
+        "time_ms": 4.55,
+        "errors": [
+          "RuntimeError: running_mean should contain 64 elements not 32"
+        ]
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    },
+    {
+      "name": "batchnorm_channel_safe",
+      "category": "batchnorm_channel",
+      "is_buggy": false,
+      "tensorguard": {
+        "detected_bug": false,
+        "time_ms": 11.9,
+        "errors": []
+      },
+      "jaxtyping_runtime": {
+        "detected_bug": false,
+        "time_ms": 2.83,
+        "errors": []
+      },
+      "jaxtyping_static": {
+        "detected_bug": false,
+        "note": "jaxtyping has no static analysis; requires runtime execution with annotations"
+      }
+    }
+  ],
+  "tensorguard": {
+    "tp": 9,
+    "fp": 0,
+    "tn": 10,
+    "fn": 1,
+    "precision": 1.0,
+    "recall": 0.9,
+    "f1": 0.9474
+  },
+  "jaxtyping_runtime": {
+    "tp": 10,
+    "fp": 0,
+    "tn": 10,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "analysis": "TensorGuard is a static verifier that works on unannotated nn.Module code, catching shape bugs before any execution via Z3 SMT solving. jaxtyping + beartype requires (1) explicit shape annotations on every tensor parameter and return value, and (2) concrete test inputs that exercise the buggy code path. Without annotations, jaxtyping provides no benefit over plain runtime testing \u2014 PyTorch itself raises RuntimeError on shape mismatches. The 'jaxtyping_runtime' column here measures runtime testing (which is what annotated jaxtyping enables), showing that while runtime testing can catch bugs on executed paths, it fundamentally cannot provide the ahead-of-time guarantees that static verification offers. TensorGuard requires zero developer annotation effort and catches bugs before deployment."
+}

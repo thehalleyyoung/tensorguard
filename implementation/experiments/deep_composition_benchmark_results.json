@@ -1,0 +1,517 @@
+{
+  "tensorguard": {
+    "correct": 25,
+    "total": 25,
+    "accuracy": 1.0,
+    "results": [
+      {
+        "name": "deep-chain-15-bug-at-12",
+        "category": "deep_composition",
+        "difficulty": "15-hop",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 378.0,
+        "violation": "Linear expects last dim=128, got 256"
+      },
+      {
+        "name": "reshape-divisibility-bug",
+        "category": "reshape_arithmetic",
+        "difficulty": "arithmetic",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 109.9,
+        "violation": "Linear expects last dim=18432, got 16384"
+      },
+      {
+        "name": "cross-branch-broadcast-subtle",
+        "category": "cross_branch",
+        "difficulty": "cross-branch",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 367.2,
+        "violation": "Cannot broadcast (batch, 63) and (batch, 64)"
+      },
+      {
+        "name": "mha-dim-mismatch",
+        "category": "transformer_arithmetic",
+        "difficulty": "arithmetic",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 358.5,
+        "violation": "Linear expects last dim=256, got 512"
+      },
+      {
+        "name": "deep-chain-20-safe",
+        "category": "deep_composition",
+        "difficulty": "20-hop",
+        "expected_safe": true,
+        "actual_safe": true,
+        "correct": true,
+        "time_ms": 126.6
+      },
+      {
+        "name": "conv-flatten-arithmetic-bug",
+        "category": "conv_arithmetic",
+        "difficulty": "arithmetic",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 200.8,
+        "violation": "Linear expects last dim=6272, got 4608"
+      },
+      {
+        "name": "double-reshape-product-bug",
+        "category": "reshape_arithmetic",
+        "difficulty": "arithmetic",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 258.8,
+        "violation": "Linear expects last dim=768, got 256"
+      },
+      {
+        "name": "nested-sequential-bug",
+        "category": "deep_composition",
+        "difficulty": "10-hop",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 118.8,
+        "violation": "Cannot broadcast (batch, 1023) and (batch, 1024)"
+      },
+      {
+        "name": "embedding-cascade-bug",
+        "category": "embedding_arithmetic",
+        "difficulty": "cascade",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 283.9,
+        "violation": "Linear expects last dim=9, got 8"
+      },
+      {
+        "name": "complex-safe-unet-style",
+        "category": "complex_safe",
+        "difficulty": "15-hop",
+        "expected_safe": true,
+        "actual_safe": true,
+        "correct": true,
+        "time_ms": 595.9
+      },
+      {
+        "name": "deep-chain-25-bug-at-18",
+        "category": "deep_composition",
+        "difficulty": "25-hop",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 587.0,
+        "violation": "Linear expects last dim=512, got 256"
+      },
+      {
+        "name": "conv-maxpool-spatial-bug",
+        "category": "pooling_arithmetic",
+        "difficulty": "6-hop",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 424.2,
+        "violation": "Linear expects last dim=2048, got 1152"
+      },
+      {
+        "name": "triple-branch-merge-bug",
+        "category": "multi_branch_merge",
+        "difficulty": "3-branch",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 228.1,
+        "violation": "Linear expects last dim=192, got 193"
+      },
+      {
+        "name": "transpose-conv-spatial-bug",
+        "category": "transpose_conv_arithmetic",
+        "difficulty": "6-hop",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 258.1,
+        "violation": "Linear expects last dim=63504, got 65536"
+      },
+      {
+        "name": "long-conv-pool-flatten-bug",
+        "category": "conv_arithmetic",
+        "difficulty": "6-hop",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 132.1,
+        "violation": "Linear expects last dim=3200, got 2048"
+      },
+      {
+        "name": "autoencoder-skip-mismatch",
+        "category": "deep_composition",
+        "difficulty": "16-hop",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 1003.8,
+        "violation": "Linear expects last dim=1025, got 1024"
+      },
+      {
+        "name": "four-branch-concat-channel-bug",
+        "category": "multi_branch_merge",
+        "difficulty": "4-branch",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 529.0,
+        "violation": "Conv2d expects 256 input channels, got 240"
+      },
+      {
+        "name": "deep-residual-shortcut-bug",
+        "category": "cross_branch",
+        "difficulty": "8-hop",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 224.1,
+        "violation": "Cannot broadcast (batch, 128) and (batch, 127)"
+      },
+      {
+        "name": "reshape-flatten-linear-bug",
+        "category": "reshape_arithmetic",
+        "difficulty": "arithmetic",
+        "expected_safe": false,
+        "actual_safe": false,
+        "correct": true,
+        "time_ms": 332.0,
+        "violation": "Linear expects last dim=128, got 96"
+      },
+      {
+        "name": "deep-bottleneck-safe",
+        "category": "deep_composition",
+        "difficulty": "11-hop",
+        "expected_safe": true,
+        "actual_safe": true,
+        "correct": true,
+        "time_ms": 520.0
+      },
+      {
+        "name": "conv-pool-chain-safe",
+        "category": "pooling_arithmetic",
+        "difficulty": "10-hop",
+        "expected_safe": true,
+        "actual_safe": true,
+        "correct": true,
+        "time_ms": 213.2
+      },
+      {
+        "name": "inception-merge-safe",
+        "category": "multi_branch_merge",
+        "difficulty": "3-branch",
+        "expected_safe": true,
+        "actual_safe": true,
+        "correct": true,
+        "time_ms": 307.9
+      },
+      {
+        "name": "transpose-conv-roundtrip-safe",
+        "category": "transpose_conv_arithmetic",
+        "difficulty": "6-hop",
+        "expected_safe": true,
+        "actual_safe": true,
+        "correct": true,
+        "time_ms": 450.4
+      },
+      {
+        "name": "deep-residual-8-block-safe",
+        "category": "cross_branch",
+        "difficulty": "24-hop",
+        "expected_safe": true,
+        "actual_safe": true,
+        "correct": true,
+        "time_ms": 249.4
+      },
+      {
+        "name": "vgg-style-deep-safe",
+        "category": "conv_arithmetic",
+        "difficulty": "13-hop",
+        "expected_safe": true,
+        "actual_safe": true,
+        "correct": true,
+        "time_ms": 242.8
+      }
+    ]
+  },
+  "llm": {
+    "correct": 19,
+    "total": 25,
+    "accuracy": 0.76,
+    "results": [
+      {
+        "name": "deep-chain-15-bug-at-12",
+        "category": "deep_composition",
+        "difficulty": "15-hop",
+        "expected_safe": false,
+        "llm_safe": false,
+        "correct": true,
+        "time_ms": 2949.7,
+        "llm_answer_snippet": "UNSAFE"
+      },
+      {
+        "name": "reshape-divisibility-bug",
+        "category": "reshape_arithmetic",
+        "difficulty": "arithmetic",
+        "expected_safe": false,
+        "llm_safe": true,
+        "correct": false,
+        "time_ms": 4355.3,
+        "llm_answer_snippet": "Let's analyze the shape transformations step by step:\n\n**Input shape:** {'x': ('batch', 3, 32, 32)}\n\n---\n\n1. **After conv1 (nn.Conv2d(3, 64, 3, padding=1)):**\n\n- Input: (batch, 3, 32, 32)\n- Kernel siz"
+      },
+      {
+        "name": "cross-branch-broadcast-subtle",
+        "category": "cross_branch",
+        "difficulty": "cross-branch",
+        "expected_safe": false,
+        "llm_safe": false,
+        "correct": true,
+        "time_ms": 2355.3,
+        "llm_answer_snippet": "Let's analyze the shapes step by step:\n\n- Input `x`: shape = ('batch', 512)\n\n**Branch A:**\n- First Linear: 512 -> 256, output shape = ('batch', 256)\n- ReLU: same shape\n- Second Linear: 256 -> 128, sha"
+      },
+      {
+        "name": "mha-dim-mismatch",
+        "category": "transformer_arithmetic",
+        "difficulty": "arithmetic",
+        "expected_safe": false,
+        "llm_safe": false,
+        "correct": true,
+        "time_ms": 2356.7,
+        "llm_answer_snippet": "Let's analyze step by step:\n\nInput shape: {'x': ('batch', 128, 512)}\n\n1. q = self.q_proj(x)\n   - self.q_proj is nn.Linear(512, 512)\n   - Applies to last dimension\n   - Output shape: ('batch', 128, 512"
+      },
+      {
+        "name": "deep-chain-20-safe",
+        "category": "deep_composition",
+        "difficulty": "20-hop",
+        "expected_safe": true,
+        "llm_safe": true,
+        "correct": true,
+        "time_ms": 3531.3,
+        "llm_answer_snippet": "Let's analyze the shape flow step by step:\n\n- Input shape: {'x': ('batch', 512)}  \n  So, x has shape (batch_size, 512).\n\n- The first layer: nn.Linear(512, 512)  \n  Input shape: (batch_size, 512)  \n  O"
+      },
+      {
+        "name": "conv-flatten-arithmetic-bug",
+        "category": "conv_arithmetic",
+        "difficulty": "arithmetic",
+        "expected_safe": false,
+        "llm_safe": true,
+        "correct": false,
+        "time_ms": 4864.3,
+        "llm_answer_snippet": "Let's analyze the shape transformations step by step:\n\n**Input shape:** {'x': ('batch', 3, 64, 64)}\n\n---\n\n**After conv1:**\n\n- Conv2d(3, 32, 5, stride=2)\n\n- Input: 64x64\n\n- Kernel size: 5\n\n- Stride: 2\n"
+      },
+      {
+        "name": "double-reshape-product-bug",
+        "category": "reshape_arithmetic",
+        "difficulty": "arithmetic",
+        "expected_safe": false,
+        "llm_safe": false,
+        "correct": true,
+        "time_ms": 3686.8,
+        "llm_answer_snippet": "Let's analyze the shape flow step by step:\n\n1. Input shape: `{'x': ('batch', 768)}`\n\n2. After `self.fc1(x)`:\n   - `fc1` is `nn.Linear(768, 768)`, so output shape: `(batch, 768)`\n\n3. `x = x.view(-1, 3,"
+      },
+      {
+        "name": "nested-sequential-bug",
+        "category": "deep_composition",
+        "difficulty": "10-hop",
+        "expected_safe": false,
+        "llm_safe": false,
+        "correct": true,
+        "time_ms": 2662.4,
+        "llm_answer_snippet": "Let's analyze the shape flow step by step:\n\n1. Input `x`: shape = ('batch', 1024)\n\n2. `identity = self.skip(x)`:\n   - `self.skip` is `nn.Linear(1024, 1024)`, so output shape = ('batch', 1024)\n\n3. `z ="
+      },
+      {
+        "name": "embedding-cascade-bug",
+        "category": "embedding_arithmetic",
+        "difficulty": "cascade",
+        "expected_safe": false,
+        "llm_safe": false,
+        "correct": true,
+        "time_ms": 3981.8,
+        "llm_answer_snippet": "Let's analyze the shape transformations step by step:\n\nInput shape: {'x': ('batch', 128, 512)}\n\n- The input tensor to the model is of shape (batch_size, 128, 512).\n\nIn the code, the `nn.Linear` layers"
+      },
+      {
+        "name": "complex-safe-unet-style",
+        "category": "complex_safe",
+        "difficulty": "15-hop",
+        "expected_safe": true,
+        "llm_safe": true,
+        "correct": true,
+        "time_ms": 5233.0,
+        "llm_answer_snippet": "Let's analyze the shape transformations step by step:\n\nInput shape: {'x': ('batch', 3, 128, 128)}\n\n1. **enc1:** nn.Conv2d(3, 32, 3, padding=1)\n   - Input: (batch, 3, 128, 128)\n   - Output: (batch, 32,"
+      },
+      {
+        "name": "deep-chain-25-bug-at-18",
+        "category": "deep_composition",
+        "difficulty": "25-hop",
+        "expected_safe": false,
+        "llm_safe": false,
+        "correct": true,
+        "time_ms": 2662.6,
+        "llm_answer_snippet": "Let's analyze the shape flow step by step:\n\n- Input: {'x': ('batch', 512)}  \n  So, x.shape = (batch_size, 512)\n\n- self.fc1 = nn.Linear(512, 512)  \n  x after fc1: (batch, 512)\n\n- self.fc2 = nn.Linear(5"
+      },
+      {
+        "name": "conv-maxpool-spatial-bug",
+        "category": "pooling_arithmetic",
+        "difficulty": "6-hop",
+        "expected_safe": false,
+        "llm_safe": false,
+        "correct": true,
+        "time_ms": 3994.9,
+        "llm_answer_snippet": "Let's analyze the shape transformations step by step, starting with input shape: {'x': ('batch', 3, 30, 30)}.\n\n1. Input: (batch, 3, 30, 30)\n\n2. After conv1 (nn.Conv2d(3, 32, 3, padding=1)):\n   - Outpu"
+      },
+      {
+        "name": "triple-branch-merge-bug",
+        "category": "multi_branch_merge",
+        "difficulty": "3-branch",
+        "expected_safe": false,
+        "llm_safe": false,
+        "correct": true,
+        "time_ms": 2387.3,
+        "llm_answer_snippet": "Let's analyze step by step:\n\n1. Input shape: {'x': ('batch', 256)}\n\n2. Branch A:\n   - Input: (batch, 256)\n   - After nn.Linear(256, 128): (batch, 128)\n   - After nn.ReLU(): (batch, 128)\n   - After nn."
+      },
+      {
+        "name": "transpose-conv-spatial-bug",
+        "category": "transpose_conv_arithmetic",
+        "difficulty": "6-hop",
+        "expected_safe": false,
+        "llm_safe": true,
+        "correct": false,
+        "time_ms": 4858.9,
+        "llm_answer_snippet": "Let's analyze the shape transformations step by step:\n\n**Input shape:** {'x': ('batch', 3, 64, 64)}\n\n---\n\n**After enc1 (Conv2d(3, 32, 3, stride=2, padding=1)):**\n\n- Input: (batch, 3, 64, 64)\n- Output:"
+      },
+      {
+        "name": "long-conv-pool-flatten-bug",
+        "category": "conv_arithmetic",
+        "difficulty": "6-hop",
+        "expected_safe": false,
+        "llm_safe": true,
+        "correct": false,
+        "time_ms": 4736.3,
+        "llm_answer_snippet": "Let's analyze the shape transformations step by step, starting with input shape:\n\nInput shape: {'x': ('batch', 3, 50, 50)}\n\n---\n\n**Step 1: conv1 (nn.Conv2d(3, 32, 3))**\n\n- Input: (batch, 3, 50, 50)\n- "
+      },
+      {
+        "name": "autoencoder-skip-mismatch",
+        "category": "deep_composition",
+        "difficulty": "16-hop",
+        "expected_safe": false,
+        "llm_safe": true,
+        "correct": false,
+        "time_ms": 3785.9,
+        "llm_answer_snippet": "Let's analyze the shape flow step by step:\n\nInput shape: {'x': ('batch', 768)}\n\n1. e1 = self.enc1(x): shape ('batch', 768) -> ('batch', 512)\n\n2. e2 = self.enc2(e1): ('batch', 512) -> ('batch', 256)\n\n3"
+      },
+      {
+        "name": "four-branch-concat-channel-bug",
+        "category": "multi_branch_merge",
+        "difficulty": "4-branch",
+        "expected_safe": false,
+        "llm_safe": true,
+        "correct": false,
+        "time_ms": 4812.9,
+        "llm_answer_snippet": "Let's analyze step-by-step:\n\nInput shape: {'x': ('batch', 3, 16, 16)}\n\n1. **stem**: nn.Conv2d(3, 64, 3, padding=1)\n   - Output shape: (batch, 64, 16, 16)\n\n2. **Branches (a, b, c, d)**: Each takes inpu"
+      },
+      {
+        "name": "deep-residual-shortcut-bug",
+        "category": "cross_branch",
+        "difficulty": "8-hop",
+        "expected_safe": false,
+        "llm_safe": false,
+        "correct": true,
+        "time_ms": 3788.9,
+        "llm_answer_snippet": "Let's analyze the shape flow step by step:\n\nInput shape: {'x': ('batch', 256)}\n\n1. `identity = self.shortcut(x)`  \n   - `self.shortcut` is `nn.Linear(256, 127)`  \n   - Input: (batch, 256)  \n   - Outpu"
+      },
+      {
+        "name": "reshape-flatten-linear-bug",
+        "category": "reshape_arithmetic",
+        "difficulty": "arithmetic",
+        "expected_safe": false,
+        "llm_safe": false,
+        "correct": true,
+        "time_ms": 3174.6,
+        "llm_answer_snippet": "Let's analyze step by step:\n\n1. **Input shape:** `{'x': ('batch', 384)}`\n\n2. **After `self.fc1(x)`:**  \n   - `x` shape: `(batch, 384)`  \n   - `self.fc1` maps 384 \u2192 384, so output shape: `(batch, 384)`"
+      },
+      {
+        "name": "deep-bottleneck-safe",
+        "category": "deep_composition",
+        "difficulty": "11-hop",
+        "expected_safe": true,
+        "llm_safe": true,
+        "correct": true,
+        "time_ms": 2356.2,
+        "llm_answer_snippet": "Let's analyze the shape flow step by step:\n\n- Input: {'x': ('batch', 512)}  \n  So, x.shape = (batch_size, 512)\n\n- After self.fc1: nn.Linear(512, 256)  \n  x.shape = (batch_size, 256)\n\n- After self.fc2:"
+      },
+      {
+        "name": "conv-pool-chain-safe",
+        "category": "pooling_arithmetic",
+        "difficulty": "10-hop",
+        "expected_safe": true,
+        "llm_safe": true,
+        "correct": true,
+        "time_ms": 3378.0,
+        "llm_answer_snippet": "Let's analyze the shape transformations step by step, starting with input shape:\n\nInput shape: {'x': ('batch', 3, 32, 32)}\n\n1. After conv1 (nn.Conv2d(3, 32, 3, padding=1)):\n   - Output channels: 32\n  "
+      },
+      {
+        "name": "inception-merge-safe",
+        "category": "multi_branch_merge",
+        "difficulty": "3-branch",
+        "expected_safe": true,
+        "llm_safe": true,
+        "correct": true,
+        "time_ms": 3482.5,
+        "llm_answer_snippet": "Let's analyze the shape flow step by step:\n\nInput shape: {'x': ('batch', 3, 16, 16)}\n\n1. `self.pre = nn.Conv2d(3, 64, 3, padding=1)`\n   - Input: (batch, 3, 16, 16)\n   - Output: (batch, 64, 16, 16)\n\n2."
+      },
+      {
+        "name": "transpose-conv-roundtrip-safe",
+        "category": "transpose_conv_arithmetic",
+        "difficulty": "6-hop",
+        "expected_safe": true,
+        "llm_safe": true,
+        "correct": true,
+        "time_ms": 3332.5,
+        "llm_answer_snippet": "Let's analyze the shape transformations step by step, starting with input shape {'x': ('batch', 3, 32, 32)}.\n\n1. Input: (batch, 3, 32, 32)\n\n2. After enc1 (Conv2d(3, 32, 3, stride=2, padding=1)):\n   - "
+      },
+      {
+        "name": "deep-residual-8-block-safe",
+        "category": "cross_branch",
+        "difficulty": "24-hop",
+        "expected_safe": true,
+        "llm_safe": true,
+        "correct": true,
+        "time_ms": 2812.7,
+        "llm_answer_snippet": "Let's analyze the shape flow step by step:\n\n1. Input shape: `{'x': ('batch', 256)}`\n\n2. The input `x` has shape `(batch_size, 256)`.\n\n3. Inside the `forward` method, for each block:\n   - `block(x)`:\n "
+      },
+      {
+        "name": "vgg-style-deep-safe",
+        "category": "conv_arithmetic",
+        "difficulty": "13-hop",
+        "expected_safe": true,
+        "llm_safe": true,
+        "correct": true,
+        "time_ms": 3684.4,
+        "llm_answer_snippet": "Let's analyze the shape transformations step by step:\n\nInput shape: {'x': ('batch', 3, 32, 32)}\n\n1. After first Conv2d(3, 64, 3, padding=1):\n   - Output shape: ('batch', 64, 32, 32)\n\n2. After BatchNor"
+      }
+    ]
+  },
+  "tg_wins_over_llm": [
+    "reshape-divisibility-bug",
+    "conv-flatten-arithmetic-bug",
+    "transpose-conv-spatial-bug",
+    "long-conv-pool-flatten-bug",
+    "autoencoder-skip-mismatch",
+    "four-branch-concat-channel-bug"
+  ],
+  "llm_wins_over_tg": []
+}

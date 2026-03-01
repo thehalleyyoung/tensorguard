@@ -1,0 +1,390 @@
+{
+  "summary": {
+    "total_tests": 26,
+    "passed": 26,
+    "violations": 0,
+    "idempotence_verified": true,
+    "expressions_that_changed": 22,
+    "expressions_already_normal": 4
+  },
+  "per_test": [
+    {
+      "name": "R1_bc_identity_right_var",
+      "input": "bc(a, 1)",
+      "after_once": "a",
+      "after_twice": "a",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R1"
+      ],
+      "time_first_ms": 0.032,
+      "time_second_ms": 0.003
+    },
+    {
+      "name": "R1_bc_identity_right_const",
+      "input": "bc(32, 1)",
+      "after_once": "32",
+      "after_twice": "32",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R1"
+      ],
+      "time_first_ms": 0.015,
+      "time_second_ms": 0.003
+    },
+    {
+      "name": "R2_bc_identity_left_var",
+      "input": "bc(1, b)",
+      "after_once": "b",
+      "after_twice": "b",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R2"
+      ],
+      "time_first_ms": 0.011,
+      "time_second_ms": 0.002
+    },
+    {
+      "name": "R2_bc_identity_left_const",
+      "input": "bc(1, 64)",
+      "after_once": "64",
+      "after_twice": "64",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R2"
+      ],
+      "time_first_ms": 0.011,
+      "time_second_ms": 0.003
+    },
+    {
+      "name": "R3_bc_idempotent_var",
+      "input": "bc(a, a)",
+      "after_once": "a",
+      "after_twice": "a",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R3"
+      ],
+      "time_first_ms": 0.011,
+      "time_second_ms": 0.002
+    },
+    {
+      "name": "R3_bc_idempotent_const",
+      "input": "bc(16, 16)",
+      "after_once": "16",
+      "after_twice": "16",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R3"
+      ],
+      "time_first_ms": 0.012,
+      "time_second_ms": 0.003
+    },
+    {
+      "name": "R4_double_transpose_var",
+      "input": "transp(transp(s, d0, d1), d0, d1)",
+      "after_once": "s",
+      "after_twice": "s",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R4"
+      ],
+      "time_first_ms": 0.014,
+      "time_second_ms": 0.002
+    },
+    {
+      "name": "R4_double_transpose_const",
+      "input": "transp(transp(32, 0, 1), 0, 1)",
+      "after_once": "32",
+      "after_twice": "32",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R4"
+      ],
+      "time_first_ms": 0.014,
+      "time_second_ms": 0.003
+    },
+    {
+      "name": "R5_reshape_numel_var",
+      "input": "numel(reshape(s, t))",
+      "after_once": "numel(s)",
+      "after_twice": "numel(s)",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R5"
+      ],
+      "time_first_ms": 0.024,
+      "time_second_ms": 0.008
+    },
+    {
+      "name": "R5_reshape_numel_const",
+      "input": "numel(reshape(32, 8))",
+      "after_once": "numel(32)",
+      "after_twice": "numel(32)",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R5"
+      ],
+      "time_first_ms": 0.021,
+      "time_second_ms": 0.008
+    },
+    {
+      "name": "R6_conv_basic_var",
+      "input": "conv(h, k, 1, 0)",
+      "after_once": "add(sub(h, k), 1)",
+      "after_twice": "add(sub(h, k), 1)",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R6"
+      ],
+      "time_first_ms": 0.033,
+      "time_second_ms": 0.017
+    },
+    {
+      "name": "R6_conv_basic_const",
+      "input": "conv(32, 3, 1, 0)",
+      "after_once": "add(sub(32, 3), 1)",
+      "after_twice": "add(sub(32, 3), 1)",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R6"
+      ],
+      "time_first_ms": 0.033,
+      "time_second_ms": 0.017
+    },
+    {
+      "name": "R7_pool_stride_eq_kernel_var",
+      "input": "pool(h, k, k, 0)",
+      "after_once": "floor_div(h, k)",
+      "after_twice": "floor_div(h, k)",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R7"
+      ],
+      "time_first_ms": 0.022,
+      "time_second_ms": 0.01
+    },
+    {
+      "name": "R7_pool_stride_eq_kernel_const",
+      "input": "pool(64, 8, 8, 0)",
+      "after_once": "floor_div(64, 8)",
+      "after_twice": "floor_div(64, 8)",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R7"
+      ],
+      "time_first_ms": 0.022,
+      "time_second_ms": 0.01
+    },
+    {
+      "name": "AC_commutativity",
+      "input": "bc(b, a)",
+      "after_once": "bc(a, b)",
+      "after_twice": "bc(a, b)",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "AC"
+      ],
+      "time_first_ms": 0.013,
+      "time_second_ms": 0.012
+    },
+    {
+      "name": "nested_R1_inside_bc",
+      "input": "bc(bc(a, 1), b)",
+      "after_once": "bc(a, b)",
+      "after_twice": "bc(a, b)",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R1"
+      ],
+      "time_first_ms": 0.045,
+      "time_second_ms": 0.012
+    },
+    {
+      "name": "nested_R5_double_reshape",
+      "input": "numel(reshape(reshape(s, t), a))",
+      "after_once": "numel(s)",
+      "after_twice": "numel(s)",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R5"
+      ],
+      "time_first_ms": 0.027,
+      "time_second_ms": 0.008
+    },
+    {
+      "name": "combined_R4_R1",
+      "input": "transp(transp(bc(a, 1), d0, d1), d0, d1)",
+      "after_once": "a",
+      "after_twice": "a",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R4",
+        "R1"
+      ],
+      "time_first_ms": 0.019,
+      "time_second_ms": 0.002
+    },
+    {
+      "name": "combined_R1_R6",
+      "input": "conv(bc(h, 1), k, 1, 0)",
+      "after_once": "add(sub(h, k), 1)",
+      "after_twice": "add(sub(h, k), 1)",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R1",
+        "R6"
+      ],
+      "time_first_ms": 0.047,
+      "time_second_ms": 0.017
+    },
+    {
+      "name": "combined_R3_R7",
+      "input": "pool(bc(h, h), k, k, 0)",
+      "after_once": "floor_div(h, k)",
+      "after_twice": "floor_div(h, k)",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R3",
+        "R7"
+      ],
+      "time_first_ms": 0.03,
+      "time_second_ms": 0.009
+    },
+    {
+      "name": "already_normal_var",
+      "input": "a",
+      "after_once": "a",
+      "after_twice": "a",
+      "idempotent": true,
+      "changed_from_input": false,
+      "target_rules": [],
+      "time_first_ms": 0.002,
+      "time_second_ms": 0.002
+    },
+    {
+      "name": "already_normal_const",
+      "input": "32",
+      "after_once": "32",
+      "after_twice": "32",
+      "idempotent": true,
+      "changed_from_input": false,
+      "target_rules": [],
+      "time_first_ms": 0.003,
+      "time_second_ms": 0.002
+    },
+    {
+      "name": "already_normal_add",
+      "input": "add(a, b)",
+      "after_once": "add(a, b)",
+      "after_twice": "add(a, b)",
+      "idempotent": true,
+      "changed_from_input": false,
+      "target_rules": [],
+      "time_first_ms": 0.01,
+      "time_second_ms": 0.01
+    },
+    {
+      "name": "already_normal_bc_distinct",
+      "input": "bc(a, b)",
+      "after_once": "bc(a, b)",
+      "after_twice": "bc(a, b)",
+      "idempotent": true,
+      "changed_from_input": false,
+      "target_rules": [],
+      "time_first_ms": 0.013,
+      "time_second_ms": 0.012
+    },
+    {
+      "name": "deep_bc_chain",
+      "input": "bc(bc(bc(a, 1), 1), 1)",
+      "after_once": "a",
+      "after_twice": "a",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R1"
+      ],
+      "time_first_ms": 0.027,
+      "time_second_ms": 0.002
+    },
+    {
+      "name": "numel_of_conv",
+      "input": "numel(conv(h, k, 1, 0))",
+      "after_once": "numel(add(sub(h, k), 1))",
+      "after_twice": "numel(add(sub(h, k), 1))",
+      "idempotent": true,
+      "changed_from_input": true,
+      "target_rules": [
+        "R6"
+      ],
+      "time_first_ms": 0.045,
+      "time_second_ms": 0.022
+    }
+  ],
+  "violations": [],
+  "rules_tested": [
+    {
+      "id": 1,
+      "name": "bc_identity_right",
+      "lhs": "bc(a, 1)",
+      "rhs": "a"
+    },
+    {
+      "id": 2,
+      "name": "bc_identity_left",
+      "lhs": "bc(1, b)",
+      "rhs": "b"
+    },
+    {
+      "id": 3,
+      "name": "bc_idempotent",
+      "lhs": "bc(a, a)",
+      "rhs": "a"
+    },
+    {
+      "id": 4,
+      "name": "double_transpose",
+      "lhs": "transp(transp(s, d0, d1), d0, d1)",
+      "rhs": "s"
+    },
+    {
+      "id": 5,
+      "name": "reshape_numel",
+      "lhs": "numel(reshape(s, t))",
+      "rhs": "numel(s)"
+    },
+    {
+      "id": 6,
+      "name": "conv_basic",
+      "lhs": "conv(h, k, 1, 0)",
+      "rhs": "add(sub(h, k), 1)"
+    },
+    {
+      "id": 7,
+      "name": "pool_stride_eq_kernel",
+      "lhs": "pool(h, k, k, 0)",
+      "rhs": "floor_div(h, k)"
+    }
+  ]
+}

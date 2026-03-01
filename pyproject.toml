@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tensorguard"
+version = "0.1.0"
+description = "Guard-harvesting constraint verification for PyTorch nn.Module — catches shape mismatches, broadcast bugs, device inconsistencies, and phase-dependent errors before training starts"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    { name = "TensorGuard Authors" },
+]
+keywords = ["pytorch", "static-analysis", "shape-checking", "smt", "verification", "deep-learning"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Typing :: Typed",
+]
+dependencies = [
+    "z3-solver>=4.12",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "mypy"]
+
+[project.urls]
+Homepage = "https://github.com/tensorguard/tensorguard"
+Repository = "https://github.com/tensorguard/tensorguard"
+
+[project.scripts]
+tensorguard = "tensorguard.cli.main:main"

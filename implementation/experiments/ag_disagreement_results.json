@@ -1,0 +1,113 @@
+{
+  "summary": {
+    "total_models": 14,
+    "agreements": 14,
+    "disagreements": 0,
+    "unsound_count": 0,
+    "incomplete_count": 0,
+    "soundness_preserved": true,
+    "all_disagreements_are_over_approximations": true
+  },
+  "per_model_results": [
+    {
+      "model_name": "simple_mlp_2layer",
+      "category": "simple_mlp",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "model_name": "simple_mlp_3layer",
+      "category": "simple_mlp",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "model_name": "medium_mlp_5layer",
+      "category": "medium_mlp",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "model_name": "medium_mlp_8layer",
+      "category": "medium_mlp",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "model_name": "deep_mlp_10layer",
+      "category": "deep_mlp",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "model_name": "deep_mlp_15layer",
+      "category": "deep_mlp",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "model_name": "deep_mlp_20layer",
+      "category": "deep_mlp",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "model_name": "cnn_simple",
+      "category": "cnn",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "model_name": "cnn_deep",
+      "category": "cnn",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "model_name": "residual_block",
+      "category": "residual",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "model_name": "multihead_attention",
+      "category": "attention",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "model_name": "lstm_classifier",
+      "category": "lstm",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "model_name": "wide_parallel",
+      "category": "wide",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    },
+    {
+      "model_name": "bottleneck_mlp",
+      "category": "medium_mlp",
+      "monolithic_safe": true,
+      "compositional_safe": true,
+      "agree": true
+    }
+  ],
+  "disagreement_analyses": [],
+  "conclusion": "Pre-fix analysis: the original 2/14 disagreements (cnn_simple, cnn_deep) were both INCOMPLETE \u2014 compositional rejects but monolithic accepts. Zero UNSOUND cases. Root cause: rank-changing ops (view/flatten) at sub-module boundaries caused the interface checker to flag a rank mismatch (4D\u21922D) even though element counts were consistent. Fix applied to check_interface_compatibility: when the consumer's first op on a boundary tensor is FLATTEN/RESHAPE, element-count compatibility is checked instead of strict shape matching. Post-fix: 14/14 models agree, 0 disagreements remain."
+}

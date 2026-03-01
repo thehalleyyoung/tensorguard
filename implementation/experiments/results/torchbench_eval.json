@@ -1,0 +1,368 @@
+{
+  "experiment": "torchbench_scale_evaluation",
+  "description": "Evaluates TensorGuard on 30 real-world PyTorch model architectures from torchvision, HuggingFace Transformers, timm, and Detectron2.",
+  "summary": {
+    "total_models": 33,
+    "analyzable": 32,
+    "analyzable_fraction": 0.9697,
+    "verdict_distribution": {
+      "safe": 26,
+      "unsafe": 6,
+      "error": 1
+    },
+    "total_time_ms": 7337.0,
+    "avg_time_per_model_ms": 222.3,
+    "per_library": {
+      "torchvision": {
+        "total": 14,
+        "analyzable": 14,
+        "safe": 12,
+        "unsafe": 2,
+        "error": 0,
+        "unknown": 0
+      },
+      "timm": {
+        "total": 6,
+        "analyzable": 6,
+        "safe": 2,
+        "unsafe": 4,
+        "error": 0,
+        "unknown": 0
+      },
+      "transformers": {
+        "total": 3,
+        "analyzable": 3,
+        "safe": 3,
+        "unsafe": 0,
+        "error": 0,
+        "unknown": 0
+      },
+      "detectron2": {
+        "total": 3,
+        "analyzable": 3,
+        "safe": 3,
+        "unsafe": 0,
+        "error": 0,
+        "unknown": 0
+      },
+      "medical-imaging": {
+        "total": 1,
+        "analyzable": 1,
+        "safe": 1,
+        "unsafe": 0,
+        "error": 0,
+        "unknown": 0
+      },
+      "custom": {
+        "total": 6,
+        "analyzable": 5,
+        "safe": 5,
+        "unsafe": 0,
+        "error": 1,
+        "unknown": 0
+      }
+    },
+    "operator_coverage_gaps": {}
+  },
+  "per_model_results": [
+    {
+      "name": "AlexNet",
+      "library": "torchvision",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 340.7,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "VGG16",
+      "library": "torchvision",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 122.5,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "VGG19",
+      "library": "torchvision",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 116.3,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "ResNet18",
+      "library": "torchvision",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 434.1,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "ResNet34",
+      "library": "torchvision",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 402.2,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "ResNet50",
+      "library": "torchvision",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 224.9,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "ResNet101",
+      "library": "torchvision",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 248.6,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "SqueezeNet",
+      "library": "torchvision",
+      "verdict": "unsafe",
+      "analyzable": true,
+      "time_ms": 26.1,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "DenseNet121",
+      "library": "torchvision",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 521.2,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "InceptionV3-simplified",
+      "library": "torchvision",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 414.1,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "MobileNetV2",
+      "library": "torchvision",
+      "verdict": "unsafe",
+      "analyzable": true,
+      "time_ms": 238.7,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "MobileNetV3-Small",
+      "library": "torchvision",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 49.4,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "ShuffleNetV2",
+      "library": "torchvision",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 448.0,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "EfficientNet-B0",
+      "library": "timm",
+      "verdict": "unsafe",
+      "analyzable": true,
+      "time_ms": 543.0,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "RegNetY-400MF",
+      "library": "timm",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 97.7,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "ConvNeXt-Tiny",
+      "library": "timm",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 293.2,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "ViT-B/16",
+      "library": "timm",
+      "verdict": "unsafe",
+      "analyzable": true,
+      "time_ms": 118.1,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "ViT-L/16",
+      "library": "timm",
+      "verdict": "unsafe",
+      "analyzable": true,
+      "time_ms": 200.6,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "Swin-Tiny",
+      "library": "timm",
+      "verdict": "unsafe",
+      "analyzable": true,
+      "time_ms": 247.1,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "BERT-base",
+      "library": "transformers",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 61.6,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "GPT2",
+      "library": "transformers",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 53.0,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "T5-small-encoder",
+      "library": "transformers",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 95.0,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "DETR-backbone",
+      "library": "detectron2",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 113.7,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "FPN",
+      "library": "detectron2",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 469.1,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "YOLOv5-like",
+      "library": "detectron2",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 326.4,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "U-Net",
+      "library": "medical-imaging",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 429.2,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "LSTM-Seq2Seq",
+      "library": "custom",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 58.6,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "WaveNet-simplified",
+      "library": "custom",
+      "verdict": "error",
+      "analyzable": false,
+      "time_ms": 28.9,
+      "errors": [
+        "TypeError: 'NoneType' object is not subscriptable"
+      ],
+      "missing_ops": []
+    },
+    {
+      "name": "Transformer-EncoderDecoder",
+      "library": "custom",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 73.0,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "MoE-layer",
+      "library": "custom",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 103.7,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "GRU-Classifier",
+      "library": "custom",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 39.7,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "DeepLabV3-head",
+      "library": "torchvision",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 373.3,
+      "errors": [],
+      "missing_ops": []
+    },
+    {
+      "name": "Autoencoder",
+      "library": "custom",
+      "verdict": "safe",
+      "analyzable": true,
+      "time_ms": 25.2,
+      "errors": [],
+      "missing_ops": []
+    }
+  ]
+}

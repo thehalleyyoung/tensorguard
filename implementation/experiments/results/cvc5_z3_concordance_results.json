@@ -1,0 +1,465 @@
+{
+  "metadata": {
+    "z3_version": "4.15.4",
+    "cvc5_available": true,
+    "cvc5_version": "1.3.2",
+    "num_problems": 15
+  },
+  "problems": [
+    {
+      "name": "linear_shape_sat",
+      "expected": "SAT",
+      "z3": {
+        "verdict": "sat",
+        "time_ms": 1.0325409966753796,
+        "unsat_core_size": null
+      },
+      "cvc5": {
+        "verdict": "sat",
+        "time_ms": 2.662416998646222,
+        "proof_info": null,
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": null
+    },
+    {
+      "name": "linear_shape_unsat",
+      "expected": "UNSAT",
+      "z3": {
+        "verdict": "unsat",
+        "time_ms": 0.8780420030234382,
+        "unsat_core_size": 2
+      },
+      "cvc5": {
+        "verdict": "unsat",
+        "time_ms": 0.8074579964159057,
+        "proof_info": {
+          "num_steps": 9,
+          "rule_histogram": {
+            "assume": 2,
+            "refl": 1,
+            "cong": 1,
+            "evaluate": 1,
+            "trans": 1,
+            "eq-resolve": 1,
+            "scope": 2
+          },
+          "theories_used": [],
+          "root_step": 8
+        },
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": "attempted",
+      "proof_structure": {
+        "cvc5_proof_steps": 9,
+        "cvc5_theories_used": [],
+        "cvc5_rules": {
+          "assume": 2,
+          "refl": 1,
+          "cong": 1,
+          "evaluate": 1,
+          "trans": 1,
+          "eq-resolve": 1,
+          "scope": 2
+        }
+      }
+    },
+    {
+      "name": "broadcast_compatible",
+      "expected": "SAT",
+      "z3": {
+        "verdict": "sat",
+        "time_ms": 0.8705829968675971,
+        "unsat_core_size": null
+      },
+      "cvc5": {
+        "verdict": "sat",
+        "time_ms": 2.649582995218225,
+        "proof_info": null,
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": null
+    },
+    {
+      "name": "matmul_dims_match",
+      "expected": "SAT",
+      "z3": {
+        "verdict": "sat",
+        "time_ms": 0.8966250024968758,
+        "unsat_core_size": null
+      },
+      "cvc5": {
+        "verdict": "sat",
+        "time_ms": 2.664625004399568,
+        "proof_info": null,
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": null
+    },
+    {
+      "name": "matmul_dims_mismatch",
+      "expected": "UNSAT",
+      "z3": {
+        "verdict": "unsat",
+        "time_ms": 0.7842500053811818,
+        "unsat_core_size": 3
+      },
+      "cvc5": {
+        "verdict": "unsat",
+        "time_ms": 0.768083002185449,
+        "proof_info": {
+          "num_steps": 9,
+          "rule_histogram": {
+            "assume": 3,
+            "cong": 1,
+            "evaluate": 1,
+            "trans": 1,
+            "eq-resolve": 1,
+            "scope": 2
+          },
+          "theories_used": [],
+          "root_step": 8
+        },
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": "attempted",
+      "proof_structure": {
+        "cvc5_proof_steps": 9,
+        "cvc5_theories_used": [],
+        "cvc5_rules": {
+          "assume": 3,
+          "cong": 1,
+          "evaluate": 1,
+          "trans": 1,
+          "eq-resolve": 1,
+          "scope": 2
+        }
+      }
+    },
+    {
+      "name": "reshape_product_sat",
+      "expected": "SAT",
+      "z3": {
+        "verdict": "sat",
+        "time_ms": 1.6404999914811924,
+        "unsat_core_size": null
+      },
+      "cvc5": {
+        "verdict": "sat",
+        "time_ms": 2.82024999614805,
+        "proof_info": null,
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": null
+    },
+    {
+      "name": "reshape_product_unsat",
+      "expected": "UNSAT",
+      "z3": {
+        "verdict": "unsat",
+        "time_ms": 0.31112499709706753,
+        "unsat_core_size": 3
+      },
+      "cvc5": {
+        "verdict": "unsat",
+        "time_ms": 1.073583000106737,
+        "proof_info": {
+          "num_steps": 9,
+          "rule_histogram": {
+            "assume": 1,
+            "arith-poly-norm": 1,
+            "refl": 1,
+            "cong": 1,
+            "trans": 2,
+            "eq-resolve": 1,
+            "scope": 2
+          },
+          "theories_used": [],
+          "root_step": 8
+        },
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": "attempted",
+      "proof_structure": {
+        "cvc5_proof_steps": 9,
+        "cvc5_theories_used": [],
+        "cvc5_rules": {
+          "assume": 1,
+          "arith-poly-norm": 1,
+          "refl": 1,
+          "cong": 1,
+          "trans": 2,
+          "eq-resolve": 1,
+          "scope": 2
+        }
+      }
+    },
+    {
+      "name": "stride_contiguous_sat",
+      "expected": "SAT",
+      "z3": {
+        "verdict": "sat",
+        "time_ms": 11.154541993164457,
+        "unsat_core_size": null
+      },
+      "cvc5": {
+        "verdict": "sat",
+        "time_ms": 2.8108749975217506,
+        "proof_info": null,
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": null
+    },
+    {
+      "name": "stride_contiguous_unsat",
+      "expected": "UNSAT",
+      "z3": {
+        "verdict": "unsat",
+        "time_ms": 0.36991700471844524,
+        "unsat_core_size": 4
+      },
+      "cvc5": {
+        "verdict": "unsat",
+        "time_ms": 0.8709999965503812,
+        "proof_info": {
+          "num_steps": 15,
+          "rule_histogram": {
+            "assume": 2,
+            "refl": 2,
+            "arith-poly-norm": 1,
+            "cong": 2,
+            "eq-resolve": 3,
+            "trans": 2,
+            "evaluate": 1,
+            "scope": 2
+          },
+          "theories_used": [],
+          "root_step": 14
+        },
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": "attempted",
+      "proof_structure": {
+        "cvc5_proof_steps": 15,
+        "cvc5_theories_used": [],
+        "cvc5_rules": {
+          "assume": 2,
+          "refl": 2,
+          "arith-poly-norm": 1,
+          "cong": 2,
+          "eq-resolve": 3,
+          "trans": 2,
+          "evaluate": 1,
+          "scope": 2
+        }
+      }
+    },
+    {
+      "name": "dim_ordering_sat",
+      "expected": "SAT",
+      "z3": {
+        "verdict": "sat",
+        "time_ms": 15.440999995917082,
+        "unsat_core_size": null
+      },
+      "cvc5": {
+        "verdict": "sat",
+        "time_ms": 2.9436250042635947,
+        "proof_info": null,
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": null
+    },
+    {
+      "name": "dim_triangle_unsat",
+      "expected": "UNSAT",
+      "z3": {
+        "verdict": "unsat",
+        "time_ms": 21.382958002504893,
+        "unsat_core_size": 3
+      },
+      "cvc5": {
+        "verdict": "unsat",
+        "time_ms": 3.0108329956419766,
+        "proof_info": {
+          "num_steps": 26,
+          "rule_histogram": {
+            "assume": 1,
+            "dsl-rewrite": 2,
+            "symm": 1,
+            "cong": 1,
+            "trans": 4,
+            "eq-resolve": 7,
+            "and-intro": 1,
+            "scope": 4,
+            "implies-elim": 1,
+            "resolution": 1,
+            "not-and": 1,
+            "nary-cong": 1,
+            "chain-m-resolution": 1
+          },
+          "theories_used": [],
+          "root_step": 25
+        },
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": "attempted",
+      "proof_structure": {
+        "cvc5_proof_steps": 26,
+        "cvc5_theories_used": [],
+        "cvc5_rules": {
+          "assume": 1,
+          "dsl-rewrite": 2,
+          "symm": 1,
+          "cong": 1,
+          "trans": 4,
+          "eq-resolve": 7,
+          "and-intro": 1,
+          "scope": 4,
+          "implies-elim": 1,
+          "resolution": 1,
+          "not-and": 1,
+          "nary-cong": 1,
+          "chain-m-resolution": 1
+        }
+      }
+    },
+    {
+      "name": "conv2d_spatial_dims",
+      "expected": "SAT",
+      "z3": {
+        "verdict": "sat",
+        "time_ms": 1.2153330026194453,
+        "unsat_core_size": null
+      },
+      "cvc5": {
+        "verdict": "sat",
+        "time_ms": 2.6939590024994686,
+        "proof_info": null,
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": null
+    },
+    {
+      "name": "multi_layer_sat",
+      "expected": "SAT",
+      "z3": {
+        "verdict": "sat",
+        "time_ms": 10.928540999884717,
+        "unsat_core_size": null
+      },
+      "cvc5": {
+        "verdict": "sat",
+        "time_ms": 2.835915991454385,
+        "proof_info": null,
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": null
+    },
+    {
+      "name": "boolean_implication",
+      "expected": "SAT",
+      "z3": {
+        "verdict": "sat",
+        "time_ms": 11.225042006117292,
+        "unsat_core_size": null
+      },
+      "cvc5": {
+        "verdict": "sat",
+        "time_ms": 2.6406669931020588,
+        "proof_info": null,
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": null
+    },
+    {
+      "name": "device_equality_unsat",
+      "expected": "UNSAT",
+      "z3": {
+        "verdict": "unsat",
+        "time_ms": 1.2873339874204248,
+        "unsat_core_size": 3
+      },
+      "cvc5": {
+        "verdict": "unsat",
+        "time_ms": 0.8320420020027086,
+        "proof_info": {
+          "num_steps": 13,
+          "rule_histogram": {
+            "assume": 3,
+            "refl": 2,
+            "cong": 2,
+            "eq-resolve": 2,
+            "evaluate": 1,
+            "trans": 1,
+            "scope": 2
+          },
+          "theories_used": [],
+          "root_step": 12
+        },
+        "unsat_core_size": null
+      },
+      "verdict_agrees": true,
+      "interpolant_attempt": "attempted",
+      "proof_structure": {
+        "cvc5_proof_steps": 13,
+        "cvc5_theories_used": [],
+        "cvc5_rules": {
+          "assume": 3,
+          "refl": 2,
+          "cong": 2,
+          "eq-resolve": 2,
+          "evaluate": 1,
+          "trans": 1,
+          "scope": 2
+        }
+      }
+    }
+  ],
+  "summary": {
+    "total": 15,
+    "verdict_agreements": 15,
+    "verdict_disagreements": 0,
+    "z3_only_unknown": 0,
+    "cvc5_only_unknown": 0,
+    "proofs_extracted": 6,
+    "interpolants_attempted": 6
+  },
+  "interface_gap": {
+    "description": "CVC5 does not expose a Z3-style UserPropagateBase API. Z3 provides push/pop/_on_fixed/_on_final callbacks for custom theory propagators. CVC5 provides a Plugin API with check()/notifySatClause()/notifyTheoryLemma() which is observation-only. Concordance testing compares verdicts and proof structure instead.",
+    "z3_features": [
+      "UserPropagateBase",
+      "push/pop callbacks",
+      "_on_fixed/_on_final",
+      "conflict()/propagate() methods",
+      "Incremental solving"
+    ],
+    "cvc5_features": [
+      "Plugin API",
+      "check() lemma injection",
+      "notifyTheoryLemma()",
+      "Alethe proof certificates",
+      "Native Craig interpolation"
+    ],
+    "common_features": [
+      "SAT/UNSAT/UNKNOWN verdicts",
+      "Model extraction",
+      "Unsat core extraction",
+      "Push/pop scope management"
+    ]
+  }
+}

@@ -1,0 +1,911 @@
+{
+  "experiment": "cegar_convergence_grounding_analysis",
+  "timestamp": "2026-02-25T17:33:03Z",
+  "description": "Grounds the abstract CEGAR convergence bound (N iterations) in concrete predicate templates, addressing MAJOR reviewer critique #5. Enumerates predicate kinds, tracks per-benchmark convergence, and relates empirical iterations to the theoretical bound N = L \u00d7 D \u00d7 K.",
+  "predicate_template_kinds": [
+    {
+      "name": "DIM_EQ",
+      "value": 1,
+      "description": "tensor.shape[axis] == value"
+    },
+    {
+      "name": "DIM_GT",
+      "value": 2,
+      "description": "tensor.shape[axis] > value"
+    },
+    {
+      "name": "DIM_GE",
+      "value": 3,
+      "description": "tensor.shape[axis] >= value"
+    },
+    {
+      "name": "DIM_DIVISIBLE",
+      "value": 4,
+      "description": "tensor.shape[axis] % divisor == 0"
+    },
+    {
+      "name": "DIM_MATCH",
+      "value": 5,
+      "description": "tensor_a.shape[axis_a] == tensor_b.shape[axis_b]"
+    },
+    {
+      "name": "NDIM_EQ",
+      "value": 6,
+      "description": "len(tensor.shape) == value"
+    },
+    {
+      "name": "SHAPE_EQ",
+      "value": 7,
+      "description": "tensor.shape == (d0, d1, ...)"
+    }
+  ],
+  "num_predicate_kinds": 7,
+  "convergence_theory": {
+    "bound_formula": "N = L \u00d7 D \u00d7 K",
+    "L": "number of layers in nn.Module",
+    "D": "maximum shape dimensions per layer",
+    "K": "|PredicateKind| = 7",
+    "explanation": "The predicate universe P_prog contains at most L \u00d7 D \u00d7 K candidate predicates. The CEGAR loop adds \u22651 new predicate per iteration (monotone growth), so it terminates in at most |P_prog| = L \u00d7 D \u00d7 K iterations. This is formalized as Kleene's fixed-point theorem on the powerset lattice in cegar_cpa.py and mechanized in lean/TheoryCombination.lean.",
+    "mechanized_proof": "cegar_terminates in lean/TheoryCombination.lean"
+  },
+  "aggregate_statistics": {
+    "total_benchmarks": 15,
+    "decidable_safe": 13,
+    "decidable_unsafe": 2,
+    "undecidable": 0,
+    "errors": 0,
+    "all_converged_within_bound": true,
+    "mean_iterations": 1.27,
+    "max_iterations": 2,
+    "mean_theoretical_bound": 43.87,
+    "mean_utilization_ratio": 0.0103
+  },
+  "decidability_partition": {
+    "decidable_safe": [
+      "single_linear",
+      "two_layer_mlp",
+      "three_layer_mlp",
+      "deep_mlp_5layer",
+      "conv_net",
+      "embedding_model",
+      "residual_block",
+      "batchnorm_mlp",
+      "symbolic_input",
+      "wide_network",
+      "autoencoder",
+      "multi_head_simple",
+      "deep_chain_7layer"
+    ],
+    "decidable_unsafe": [
+      "linear_dim_mismatch_bug",
+      "chain_mismatch_bug"
+    ],
+    "undecidable": []
+  },
+  "per_benchmark_results": [
+    {
+      "benchmark": "single_linear",
+      "description": "Single linear layer \u2014 minimal CEGAR case",
+      "has_bug": false,
+      "num_layers_annotated": 1,
+      "max_dims_annotated": 2,
+      "theoretical_bound": {
+        "N": 14,
+        "L_layers": 1,
+        "D_max_dims": 2,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 1 \u00d7 2 \u00d7 7 = 14"
+      },
+      "bound_from_utility": {
+        "bound": 14,
+        "layers": 1,
+        "dims": 2,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 1 \u00d7 2 \u00d7 7 = 14"
+      },
+      "empirical": {
+        "iterations": 2,
+        "final_status": "SAFE",
+        "verdict": "SAFE",
+        "total_predicates_discovered": 1,
+        "total_time_ms": 80.21,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 1,
+            "num_spurious": 1,
+            "num_real": 0,
+            "predicates_added": 1,
+            "predicate_kinds": [
+              "DIM_EQ"
+            ],
+            "time_ms": 65.9
+          },
+          {
+            "iteration": 1,
+            "num_violations": 0,
+            "num_spurious": 0,
+            "num_real": 0,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 12.46
+          }
+        ],
+        "predicate_kind_distribution": {
+          "DIM_EQ": 1
+        },
+        "discovered_predicates": [
+          {
+            "kind": "DIM_EQ",
+            "tensor": "x",
+            "axis": -1,
+            "value": 768,
+            "pretty": "x.shape[-1] == 768"
+          }
+        ],
+        "universe_utilization": {
+          "empirical_universe_size": 1,
+          "theoretical_bound": 14,
+          "utilization_ratio": 0.0714,
+          "converged_within_bound": true,
+          "slack": 12
+        },
+        "decidability_fragment": "decidable_safe"
+      }
+    },
+    {
+      "benchmark": "two_layer_mlp",
+      "description": "Two-layer MLP",
+      "has_bug": false,
+      "num_layers_annotated": 2,
+      "max_dims_annotated": 2,
+      "theoretical_bound": {
+        "N": 28,
+        "L_layers": 2,
+        "D_max_dims": 2,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28"
+      },
+      "bound_from_utility": {
+        "bound": 28,
+        "layers": 2,
+        "dims": 2,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28"
+      },
+      "empirical": {
+        "iterations": 1,
+        "final_status": "SAFE",
+        "verdict": "SAFE",
+        "total_predicates_discovered": 0,
+        "total_time_ms": 25.5,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 0,
+            "num_spurious": 0,
+            "num_real": 0,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 25.14
+          }
+        ],
+        "predicate_kind_distribution": {},
+        "discovered_predicates": [],
+        "universe_utilization": {
+          "empirical_universe_size": 0,
+          "theoretical_bound": 28,
+          "utilization_ratio": 0.0,
+          "converged_within_bound": true,
+          "slack": 27
+        },
+        "decidability_fragment": "decidable_safe"
+      }
+    },
+    {
+      "benchmark": "three_layer_mlp",
+      "description": "Three-layer MLP with ReLU",
+      "has_bug": false,
+      "num_layers_annotated": 3,
+      "max_dims_annotated": 2,
+      "theoretical_bound": {
+        "N": 42,
+        "L_layers": 3,
+        "D_max_dims": 2,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 3 \u00d7 2 \u00d7 7 = 42"
+      },
+      "bound_from_utility": {
+        "bound": 42,
+        "layers": 3,
+        "dims": 2,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 3 \u00d7 2 \u00d7 7 = 42"
+      },
+      "empirical": {
+        "iterations": 1,
+        "final_status": "SAFE",
+        "verdict": "SAFE",
+        "total_predicates_discovered": 0,
+        "total_time_ms": 44.43,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 0,
+            "num_spurious": 0,
+            "num_real": 0,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 43.94
+          }
+        ],
+        "predicate_kind_distribution": {},
+        "discovered_predicates": [],
+        "universe_utilization": {
+          "empirical_universe_size": 0,
+          "theoretical_bound": 42,
+          "utilization_ratio": 0.0,
+          "converged_within_bound": true,
+          "slack": 41
+        },
+        "decidability_fragment": "decidable_safe"
+      }
+    },
+    {
+      "benchmark": "deep_mlp_5layer",
+      "description": "Five-layer deep MLP",
+      "has_bug": false,
+      "num_layers_annotated": 5,
+      "max_dims_annotated": 2,
+      "theoretical_bound": {
+        "N": 70,
+        "L_layers": 5,
+        "D_max_dims": 2,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 5 \u00d7 2 \u00d7 7 = 70"
+      },
+      "bound_from_utility": {
+        "bound": 70,
+        "layers": 5,
+        "dims": 2,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 5 \u00d7 2 \u00d7 7 = 70"
+      },
+      "empirical": {
+        "iterations": 1,
+        "final_status": "SAFE",
+        "verdict": "SAFE",
+        "total_predicates_discovered": 0,
+        "total_time_ms": 63.32,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 0,
+            "num_spurious": 0,
+            "num_real": 0,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 62.78
+          }
+        ],
+        "predicate_kind_distribution": {},
+        "discovered_predicates": [],
+        "universe_utilization": {
+          "empirical_universe_size": 0,
+          "theoretical_bound": 70,
+          "utilization_ratio": 0.0,
+          "converged_within_bound": true,
+          "slack": 69
+        },
+        "decidability_fragment": "decidable_safe"
+      }
+    },
+    {
+      "benchmark": "conv_net",
+      "description": "Simple CNN with Conv2d + Linear",
+      "has_bug": false,
+      "num_layers_annotated": 3,
+      "max_dims_annotated": 4,
+      "theoretical_bound": {
+        "N": 84,
+        "L_layers": 3,
+        "D_max_dims": 4,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 3 \u00d7 4 \u00d7 7 = 84"
+      },
+      "bound_from_utility": {
+        "bound": 84,
+        "layers": 3,
+        "dims": 4,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 3 \u00d7 4 \u00d7 7 = 84"
+      },
+      "empirical": {
+        "iterations": 2,
+        "final_status": "SAFE",
+        "verdict": "SAFE",
+        "total_predicates_discovered": 1,
+        "total_time_ms": 306.09,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 2,
+            "num_spurious": 2,
+            "num_real": 0,
+            "predicates_added": 2,
+            "predicate_kinds": [
+              "DIM_EQ",
+              "DIM_EQ"
+            ],
+            "time_ms": 181.3
+          },
+          {
+            "iteration": 1,
+            "num_violations": 2,
+            "num_spurious": 2,
+            "num_real": 0,
+            "predicates_added": 2,
+            "predicate_kinds": [
+              "DIM_EQ",
+              "DIM_EQ"
+            ],
+            "time_ms": 112.82
+          }
+        ],
+        "predicate_kind_distribution": {
+          "DIM_EQ": 1
+        },
+        "discovered_predicates": [
+          {
+            "kind": "DIM_EQ",
+            "tensor": "__inner_2",
+            "axis": -1,
+            "value": 32,
+            "pretty": "__inner_2.shape[-1] == 32"
+          }
+        ],
+        "universe_utilization": {
+          "empirical_universe_size": 1,
+          "theoretical_bound": 84,
+          "utilization_ratio": 0.0119,
+          "converged_within_bound": true,
+          "slack": 82
+        },
+        "decidability_fragment": "decidable_safe"
+      }
+    },
+    {
+      "benchmark": "linear_dim_mismatch_bug",
+      "description": "Buggy: Linear expects 768 but gets 512",
+      "has_bug": true,
+      "num_layers_annotated": 1,
+      "max_dims_annotated": 2,
+      "theoretical_bound": {
+        "N": 14,
+        "L_layers": 1,
+        "D_max_dims": 2,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 1 \u00d7 2 \u00d7 7 = 14"
+      },
+      "bound_from_utility": {
+        "bound": 14,
+        "layers": 1,
+        "dims": 2,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 1 \u00d7 2 \u00d7 7 = 14"
+      },
+      "empirical": {
+        "iterations": 1,
+        "final_status": "REAL_BUG_FOUND",
+        "verdict": "UNSAFE",
+        "total_predicates_discovered": 0,
+        "total_time_ms": 25.35,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 2,
+            "num_spurious": 0,
+            "num_real": 2,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 24.93
+          }
+        ],
+        "predicate_kind_distribution": {},
+        "discovered_predicates": [],
+        "universe_utilization": {
+          "empirical_universe_size": 0,
+          "theoretical_bound": 14,
+          "utilization_ratio": 0.0,
+          "converged_within_bound": true,
+          "slack": 13
+        },
+        "decidability_fragment": "decidable_unsafe"
+      }
+    },
+    {
+      "benchmark": "chain_mismatch_bug",
+      "description": "Buggy: fc2 expects 128 but fc1 outputs 256",
+      "has_bug": true,
+      "num_layers_annotated": 2,
+      "max_dims_annotated": 2,
+      "theoretical_bound": {
+        "N": 28,
+        "L_layers": 2,
+        "D_max_dims": 2,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28"
+      },
+      "bound_from_utility": {
+        "bound": 28,
+        "layers": 2,
+        "dims": 2,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28"
+      },
+      "empirical": {
+        "iterations": 2,
+        "final_status": "REAL_BUG_FOUND",
+        "verdict": "UNSAFE",
+        "total_predicates_discovered": 1,
+        "total_time_ms": 52.99,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 2,
+            "num_spurious": 2,
+            "num_real": 0,
+            "predicates_added": 2,
+            "predicate_kinds": [
+              "DIM_EQ",
+              "DIM_EQ"
+            ],
+            "time_ms": 30.18
+          },
+          {
+            "iteration": 1,
+            "num_violations": 2,
+            "num_spurious": 0,
+            "num_real": 2,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 21.03
+          }
+        ],
+        "predicate_kind_distribution": {
+          "DIM_EQ": 1
+        },
+        "discovered_predicates": [
+          {
+            "kind": "DIM_EQ",
+            "tensor": "x",
+            "axis": -1,
+            "value": 128,
+            "pretty": "x.shape[-1] == 128"
+          }
+        ],
+        "universe_utilization": {
+          "empirical_universe_size": 1,
+          "theoretical_bound": 28,
+          "utilization_ratio": 0.0357,
+          "converged_within_bound": true,
+          "slack": 26
+        },
+        "decidability_fragment": "decidable_unsafe"
+      }
+    },
+    {
+      "benchmark": "embedding_model",
+      "description": "Embedding + Linear",
+      "has_bug": false,
+      "num_layers_annotated": 2,
+      "max_dims_annotated": 3,
+      "theoretical_bound": {
+        "N": 42,
+        "L_layers": 2,
+        "D_max_dims": 3,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 2 \u00d7 3 \u00d7 7 = 42"
+      },
+      "bound_from_utility": {
+        "bound": 42,
+        "layers": 2,
+        "dims": 3,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 2 \u00d7 3 \u00d7 7 = 42"
+      },
+      "empirical": {
+        "iterations": 1,
+        "final_status": "SAFE",
+        "verdict": "SAFE",
+        "total_predicates_discovered": 0,
+        "total_time_ms": 24.09,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 0,
+            "num_spurious": 0,
+            "num_real": 0,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 23.74
+          }
+        ],
+        "predicate_kind_distribution": {},
+        "discovered_predicates": [],
+        "universe_utilization": {
+          "empirical_universe_size": 0,
+          "theoretical_bound": 42,
+          "utilization_ratio": 0.0,
+          "converged_within_bound": true,
+          "slack": 41
+        },
+        "decidability_fragment": "decidable_safe"
+      }
+    },
+    {
+      "benchmark": "residual_block",
+      "description": "Residual block with skip connection",
+      "has_bug": false,
+      "num_layers_annotated": 2,
+      "max_dims_annotated": 2,
+      "theoretical_bound": {
+        "N": 28,
+        "L_layers": 2,
+        "D_max_dims": 2,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28"
+      },
+      "bound_from_utility": {
+        "bound": 28,
+        "layers": 2,
+        "dims": 2,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28"
+      },
+      "empirical": {
+        "iterations": 1,
+        "final_status": "SAFE",
+        "verdict": "SAFE",
+        "total_predicates_discovered": 0,
+        "total_time_ms": 41.96,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 0,
+            "num_spurious": 0,
+            "num_real": 0,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 41.61
+          }
+        ],
+        "predicate_kind_distribution": {},
+        "discovered_predicates": [],
+        "universe_utilization": {
+          "empirical_universe_size": 0,
+          "theoretical_bound": 28,
+          "utilization_ratio": 0.0,
+          "converged_within_bound": true,
+          "slack": 27
+        },
+        "decidability_fragment": "decidable_safe"
+      }
+    },
+    {
+      "benchmark": "batchnorm_mlp",
+      "description": "MLP with BatchNorm layers",
+      "has_bug": false,
+      "num_layers_annotated": 4,
+      "max_dims_annotated": 2,
+      "theoretical_bound": {
+        "N": 56,
+        "L_layers": 4,
+        "D_max_dims": 2,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 4 \u00d7 2 \u00d7 7 = 56"
+      },
+      "bound_from_utility": {
+        "bound": 56,
+        "layers": 4,
+        "dims": 2,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 4 \u00d7 2 \u00d7 7 = 56"
+      },
+      "empirical": {
+        "iterations": 1,
+        "final_status": "SAFE",
+        "verdict": "SAFE",
+        "total_predicates_discovered": 0,
+        "total_time_ms": 52.79,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 0,
+            "num_spurious": 0,
+            "num_real": 0,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 52.28
+          }
+        ],
+        "predicate_kind_distribution": {},
+        "discovered_predicates": [],
+        "universe_utilization": {
+          "empirical_universe_size": 0,
+          "theoretical_bound": 56,
+          "utilization_ratio": 0.0,
+          "converged_within_bound": true,
+          "slack": 55
+        },
+        "decidability_fragment": "decidable_safe"
+      }
+    },
+    {
+      "benchmark": "symbolic_input",
+      "description": "Fully symbolic input dimensions",
+      "has_bug": false,
+      "num_layers_annotated": 2,
+      "max_dims_annotated": 2,
+      "theoretical_bound": {
+        "N": 28,
+        "L_layers": 2,
+        "D_max_dims": 2,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28"
+      },
+      "bound_from_utility": {
+        "bound": 28,
+        "layers": 2,
+        "dims": 2,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28"
+      },
+      "empirical": {
+        "iterations": 2,
+        "final_status": "SAFE",
+        "verdict": "SAFE",
+        "total_predicates_discovered": 1,
+        "total_time_ms": 125.52,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 1,
+            "num_spurious": 1,
+            "num_real": 0,
+            "predicates_added": 1,
+            "predicate_kinds": [
+              "DIM_EQ"
+            ],
+            "time_ms": 28.97
+          },
+          {
+            "iteration": 1,
+            "num_violations": 0,
+            "num_spurious": 0,
+            "num_real": 0,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 94.68
+          }
+        ],
+        "predicate_kind_distribution": {
+          "DIM_EQ": 1
+        },
+        "discovered_predicates": [
+          {
+            "kind": "DIM_EQ",
+            "tensor": "x",
+            "axis": -1,
+            "value": 64,
+            "pretty": "x.shape[-1] == 64"
+          }
+        ],
+        "universe_utilization": {
+          "empirical_universe_size": 1,
+          "theoretical_bound": 28,
+          "utilization_ratio": 0.0357,
+          "converged_within_bound": true,
+          "slack": 26
+        },
+        "decidability_fragment": "decidable_safe"
+      }
+    },
+    {
+      "benchmark": "wide_network",
+      "description": "Wide network with many parameters per layer",
+      "has_bug": false,
+      "num_layers_annotated": 2,
+      "max_dims_annotated": 2,
+      "theoretical_bound": {
+        "N": 28,
+        "L_layers": 2,
+        "D_max_dims": 2,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28"
+      },
+      "bound_from_utility": {
+        "bound": 28,
+        "layers": 2,
+        "dims": 2,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28"
+      },
+      "empirical": {
+        "iterations": 1,
+        "final_status": "SAFE",
+        "verdict": "SAFE",
+        "total_predicates_discovered": 0,
+        "total_time_ms": 115.56,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 0,
+            "num_spurious": 0,
+            "num_real": 0,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 114.81
+          }
+        ],
+        "predicate_kind_distribution": {},
+        "discovered_predicates": [],
+        "universe_utilization": {
+          "empirical_universe_size": 0,
+          "theoretical_bound": 28,
+          "utilization_ratio": 0.0,
+          "converged_within_bound": true,
+          "slack": 27
+        },
+        "decidability_fragment": "decidable_safe"
+      }
+    },
+    {
+      "benchmark": "autoencoder",
+      "description": "Autoencoder with encoder + decoder",
+      "has_bug": false,
+      "num_layers_annotated": 4,
+      "max_dims_annotated": 2,
+      "theoretical_bound": {
+        "N": 56,
+        "L_layers": 4,
+        "D_max_dims": 2,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 4 \u00d7 2 \u00d7 7 = 56"
+      },
+      "bound_from_utility": {
+        "bound": 56,
+        "layers": 4,
+        "dims": 2,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 4 \u00d7 2 \u00d7 7 = 56"
+      },
+      "empirical": {
+        "iterations": 1,
+        "final_status": "SAFE",
+        "verdict": "SAFE",
+        "total_predicates_discovered": 0,
+        "total_time_ms": 225.76,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 0,
+            "num_spurious": 0,
+            "num_real": 0,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 225.29
+          }
+        ],
+        "predicate_kind_distribution": {},
+        "discovered_predicates": [],
+        "universe_utilization": {
+          "empirical_universe_size": 0,
+          "theoretical_bound": 56,
+          "utilization_ratio": 0.0,
+          "converged_within_bound": true,
+          "slack": 55
+        },
+        "decidability_fragment": "decidable_safe"
+      }
+    },
+    {
+      "benchmark": "multi_head_simple",
+      "description": "Simple multi-head architecture",
+      "has_bug": false,
+      "num_layers_annotated": 3,
+      "max_dims_annotated": 2,
+      "theoretical_bound": {
+        "N": 42,
+        "L_layers": 3,
+        "D_max_dims": 2,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 3 \u00d7 2 \u00d7 7 = 42"
+      },
+      "bound_from_utility": {
+        "bound": 42,
+        "layers": 3,
+        "dims": 2,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 3 \u00d7 2 \u00d7 7 = 42"
+      },
+      "empirical": {
+        "iterations": 1,
+        "final_status": "SAFE",
+        "verdict": "SAFE",
+        "total_predicates_discovered": 0,
+        "total_time_ms": 70.28,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 0,
+            "num_spurious": 0,
+            "num_real": 0,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 69.89
+          }
+        ],
+        "predicate_kind_distribution": {},
+        "discovered_predicates": [],
+        "universe_utilization": {
+          "empirical_universe_size": 0,
+          "theoretical_bound": 42,
+          "utilization_ratio": 0.0,
+          "converged_within_bound": true,
+          "slack": 41
+        },
+        "decidability_fragment": "decidable_safe"
+      }
+    },
+    {
+      "benchmark": "deep_chain_7layer",
+      "description": "Seven-layer deep chain \u2014 tests convergence bound",
+      "has_bug": false,
+      "num_layers_annotated": 7,
+      "max_dims_annotated": 2,
+      "theoretical_bound": {
+        "N": 98,
+        "L_layers": 7,
+        "D_max_dims": 2,
+        "K_predicate_kinds": 7,
+        "formula": "|P_prog| = 7 \u00d7 2 \u00d7 7 = 98"
+      },
+      "bound_from_utility": {
+        "bound": 98,
+        "layers": 7,
+        "dims": 2,
+        "predicate_kinds": 7,
+        "formula": "|P_prog| = 7 \u00d7 2 \u00d7 7 = 98"
+      },
+      "empirical": {
+        "iterations": 1,
+        "final_status": "SAFE",
+        "verdict": "SAFE",
+        "total_predicates_discovered": 0,
+        "total_time_ms": 242.31,
+        "per_iteration": [
+          {
+            "iteration": 0,
+            "num_violations": 0,
+            "num_spurious": 0,
+            "num_real": 0,
+            "predicates_added": 0,
+            "predicate_kinds": [],
+            "time_ms": 241.66
+          }
+        ],
+        "predicate_kind_distribution": {},
+        "discovered_predicates": [],
+        "universe_utilization": {
+          "empirical_universe_size": 0,
+          "theoretical_bound": 98,
+          "utilization_ratio": 0.0,
+          "converged_within_bound": true,
+          "slack": 97
+        },
+        "decidability_fragment": "decidable_safe"
+      }
+    }
+  ]
+}

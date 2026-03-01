@@ -1,0 +1,1424 @@
+{
+  "experiment": "comprehensive_v3",
+  "date": "2026-02-25 11:55:57",
+  "total_benchmarks": 46,
+  "total_time_ms": 10846.54,
+  "predicate_quality_threshold": 0.25,
+  "experiment_1_cegar_ablation": {
+    "experiment": "cegar_ablation",
+    "num_test_cases": 16,
+    "configs": {
+      "no_cegar": {
+        "label": "No contract discovery (single-pass verification)",
+        "metrics": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 0,
+          "tn": 7,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "avg_time_ms": 155.01
+        },
+        "confidence_intervals_95": {
+          "precision": [
+            1.0,
+            1.0
+          ],
+          "recall": [
+            1.0,
+            1.0
+          ],
+          "f1": [
+            1.0,
+            1.0
+          ]
+        },
+        "total_predicates": 0,
+        "total_rejected": 0,
+        "total_time_ms": 2480.13,
+        "per_benchmark": [
+          {
+            "name": "mlp_dim_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "UNSAFE",
+            "time_ms": 86.15
+          },
+          {
+            "name": "mlp_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "time_ms": 49.88
+          },
+          {
+            "name": "cnn_channel_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "UNSAFE",
+            "time_ms": 164.72
+          },
+          {
+            "name": "cnn_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "time_ms": 73.29
+          },
+          {
+            "name": "transformer_proj_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "UNSAFE",
+            "time_ms": 211.42
+          },
+          {
+            "name": "resnet_block_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "time_ms": 71.45
+          },
+          {
+            "name": "unet_encoder_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "UNSAFE",
+            "time_ms": 54.23
+          },
+          {
+            "name": "gan_disc_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "UNSAFE",
+            "time_ms": 156.56
+          },
+          {
+            "name": "autoencoder_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "time_ms": 148.66
+          },
+          {
+            "name": "lstm_style_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "UNSAFE",
+            "time_ms": 234.97
+          },
+          {
+            "name": "broadcast_sym_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "UNSAFE",
+            "time_ms": 211.08
+          },
+          {
+            "name": "reshape_flow_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "time_ms": 104.87
+          },
+          {
+            "name": "multi_branch_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "UNSAFE",
+            "time_ms": 180.16
+          },
+          {
+            "name": "deep_chain_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "time_ms": 346.96
+          },
+          {
+            "name": "conv_bn_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "UNSAFE",
+            "time_ms": 244.03
+          },
+          {
+            "name": "attention_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "time_ms": 141.7
+          }
+        ]
+      },
+      "cegar_no_filter": {
+        "label": "CEGAR \u2014 quality filter OFF",
+        "metrics": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 0,
+          "tn": 7,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "avg_time_ms": 100.8
+        },
+        "confidence_intervals_95": {
+          "precision": [
+            1.0,
+            1.0
+          ],
+          "recall": [
+            1.0,
+            1.0
+          ],
+          "f1": [
+            1.0,
+            1.0
+          ]
+        },
+        "total_predicates": 0,
+        "total_rejected": 0,
+        "total_time_ms": 1612.86,
+        "per_benchmark": [
+          {
+            "name": "mlp_dim_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 59.75
+          },
+          {
+            "name": "mlp_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 38.57
+          },
+          {
+            "name": "cnn_channel_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 145.28
+          },
+          {
+            "name": "cnn_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 128.44
+          },
+          {
+            "name": "transformer_proj_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 193.25
+          },
+          {
+            "name": "resnet_block_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 55.38
+          },
+          {
+            "name": "unet_encoder_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 32.1
+          },
+          {
+            "name": "gan_disc_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 25.01
+          },
+          {
+            "name": "autoencoder_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 95.36
+          },
+          {
+            "name": "lstm_style_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 109.64
+          },
+          {
+            "name": "broadcast_sym_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 53.31
+          },
+          {
+            "name": "reshape_flow_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 60.45
+          },
+          {
+            "name": "multi_branch_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 67.57
+          },
+          {
+            "name": "deep_chain_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 124.2
+          },
+          {
+            "name": "conv_bn_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 239.19
+          },
+          {
+            "name": "attention_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 185.36
+          }
+        ]
+      },
+      "cegar_with_filter": {
+        "label": "CEGAR \u2014 quality filter ON",
+        "metrics": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 0,
+          "tn": 7,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "avg_time_ms": 67.27
+        },
+        "confidence_intervals_95": {
+          "precision": [
+            1.0,
+            1.0
+          ],
+          "recall": [
+            1.0,
+            1.0
+          ],
+          "f1": [
+            1.0,
+            1.0
+          ]
+        },
+        "total_predicates": 0,
+        "total_rejected": 0,
+        "total_time_ms": 1076.38,
+        "per_benchmark": [
+          {
+            "name": "mlp_dim_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 28.46
+          },
+          {
+            "name": "mlp_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 19.86
+          },
+          {
+            "name": "cnn_channel_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 49.77
+          },
+          {
+            "name": "cnn_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 34.28
+          },
+          {
+            "name": "transformer_proj_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 112.99
+          },
+          {
+            "name": "resnet_block_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 108.07
+          },
+          {
+            "name": "unet_encoder_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 20.62
+          },
+          {
+            "name": "gan_disc_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 27.62
+          },
+          {
+            "name": "autoencoder_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 84.48
+          },
+          {
+            "name": "lstm_style_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 132.86
+          },
+          {
+            "name": "broadcast_sym_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 44.37
+          },
+          {
+            "name": "reshape_flow_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 35.47
+          },
+          {
+            "name": "multi_branch_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 59.41
+          },
+          {
+            "name": "deep_chain_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 206.37
+          },
+          {
+            "name": "conv_bn_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "status": "REAL_BUG_FOUND",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 61.81
+          },
+          {
+            "name": "attention_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "status": "SAFE",
+            "iterations": 1,
+            "predicates_discovered": 0,
+            "predicates_rejected": 0,
+            "time_ms": 49.94
+          }
+        ]
+      }
+    },
+    "summary": {
+      "no_cegar_f1": 1.0,
+      "cegar_no_filter_f1": 1.0,
+      "cegar_with_filter_f1": 1.0,
+      "filter_vs_no_cegar_delta_f1": 0.0,
+      "filter_vs_unfiltered_delta_f1": 0.0
+    }
+  },
+  "experiment_2_theory_exercising": {
+    "experiment": "theory_exercising",
+    "num_benchmarks": 12,
+    "categories": {
+      "broadcast": 7,
+      "stride": 3,
+      "combined": 2
+    },
+    "tools": {
+      "syntactic": {
+        "metrics": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 5,
+          "tn": 6,
+          "precision": 1.0,
+          "recall": 0.1667,
+          "f1": 0.2857,
+          "avg_time_ms": 0.27
+        },
+        "confidence_intervals_95": {
+          "precision": [
+            0.0,
+            1.0
+          ],
+          "recall": [
+            0.0,
+            0.5
+          ],
+          "f1": [
+            0.0,
+            0.6667
+          ]
+        },
+        "per_benchmark": [
+          {
+            "name": "broadcast_parallel_bug",
+            "ground_truth": true,
+            "detected_bug": false,
+            "time_ms": 0.26,
+            "details": ""
+          },
+          {
+            "name": "broadcast_parallel_safe",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.24,
+            "details": ""
+          },
+          {
+            "name": "broadcast_cross_rank_bug",
+            "ground_truth": true,
+            "detected_bug": false,
+            "time_ms": 0.24,
+            "details": ""
+          },
+          {
+            "name": "broadcast_cross_rank_safe",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.24,
+            "details": ""
+          },
+          {
+            "name": "broadcast_mul_bug",
+            "ground_truth": true,
+            "detected_bug": false,
+            "time_ms": 0.31,
+            "details": ""
+          },
+          {
+            "name": "stride_reshape_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.25,
+            "details": ""
+          },
+          {
+            "name": "stride_conv_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 0.24,
+            "details": "Shape mismatch at self.conv2"
+          },
+          {
+            "name": "stride_conv_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.24,
+            "details": ""
+          },
+          {
+            "name": "combined_reshape_broadcast_bug",
+            "ground_truth": true,
+            "detected_bug": false,
+            "time_ms": 0.3,
+            "details": ""
+          },
+          {
+            "name": "combined_chain_safe",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.29,
+            "details": ""
+          },
+          {
+            "name": "triple_add_chain_bug",
+            "ground_truth": true,
+            "detected_bug": false,
+            "time_ms": 0.3,
+            "details": ""
+          },
+          {
+            "name": "triple_add_chain_safe",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.34,
+            "details": ""
+          }
+        ]
+      },
+      "tensorguard": {
+        "metrics": {
+          "tp": 6,
+          "fp": 1,
+          "fn": 0,
+          "tn": 5,
+          "precision": 0.8571,
+          "recall": 1.0,
+          "f1": 0.9231,
+          "avg_time_ms": 180.64
+        },
+        "confidence_intervals_95": {
+          "precision": [
+            0.5714,
+            1.0
+          ],
+          "recall": [
+            1.0,
+            1.0
+          ],
+          "f1": [
+            0.7273,
+            1.0
+          ]
+        },
+        "per_benchmark": [
+          {
+            "name": "broadcast_parallel_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 128.15,
+            "details": "Cannot broadcast (batch, 128) and (batch, 64); Z3 violation (shape_incompatible) at step 2:\n  dev_a_s1 = CPU_49\n  dev_a_s2 = CPU_49\n  dev_x_s0 = CPU_49\n  grad_x_s0 = F; "
+          },
+          {
+            "name": "broadcast_parallel_safe",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 172.84,
+            "details": ""
+          },
+          {
+            "name": "broadcast_cross_rank_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 76.68,
+            "details": "Cannot broadcast (batch, seq, 256) and (batch, 128); Z3 violation (shape_incompatible) at step 2:\n  dev_bias_s2 = CPU_53\n  dev_x_s2 = CPU_53\n  dev_bias_s1 = CPU_53\n  dev_x_s; "
+          },
+          {
+            "name": "broadcast_cross_rank_safe",
+            "ground_truth": false,
+            "detected_bug": true,
+            "time_ms": 232.26,
+            "details": "Z3 violation (shape_incompatible) at step 2:\n  phase_s2 = TRAIN_55\n  dev_x_s0 = CPU_55\n  grad_x_s0 = False\n  phase_s1 = ; "
+          },
+          {
+            "name": "broadcast_mul_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 90.83,
+            "details": "Cannot broadcast (batch, 256) and (batch, 128); Z3 violation (shape_incompatible) at step 2:\n  phase_s0 = TRAIN_57\n  dev_feat_s2 = CPU_57\n  grad_x_s0 = False\n  dev_x_s2; "
+          },
+          {
+            "name": "stride_reshape_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 60.92,
+            "details": ""
+          },
+          {
+            "name": "stride_conv_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 252.62,
+            "details": "Conv2d expects 32 input channels, got 64; Z3 violation (shape_incompatible) at step 1:\n  dev_x_s1 = CPU_61\n  batch = 1\n  phase_s0 = TRAIN_61\n  h = 1\n  phase_s1 = ; "
+          },
+          {
+            "name": "stride_conv_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 32.06,
+            "details": ""
+          },
+          {
+            "name": "combined_reshape_broadcast_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 207.49,
+            "details": "Cannot broadcast (batch, 256) and (batch, 128); Z3 violation (shape_incompatible) at step 2:\n  dev_b_s2 = CPU_65\n  phase_s2 = TRAIN_65\n  grad_x_s0 = False\n  grad_b_s2 =; "
+          },
+          {
+            "name": "combined_chain_safe",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 171.64,
+            "details": ""
+          },
+          {
+            "name": "triple_add_chain_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 301.3,
+            "details": "Cannot broadcast (batch, 32) and (batch, 64); Z3 violation (shape_incompatible) at step 4:\n  dev_c_s4 = CPU_69\n  grad_b_s3 = True\n  grad_s_s3 = True\n  grad_a_s4 = Tru; "
+          },
+          {
+            "name": "triple_add_chain_safe",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 440.86,
+            "details": ""
+          }
+        ]
+      }
+    },
+    "per_category": {
+      "broadcast": {
+        "syntactic": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 4,
+          "tn": 3,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "avg_time_ms": 0.28
+        },
+        "tensorguard": {
+          "tp": 4,
+          "fp": 1,
+          "fn": 0,
+          "tn": 2,
+          "precision": 0.8,
+          "recall": 1.0,
+          "f1": 0.8889,
+          "avg_time_ms": 206.13
+        }
+      },
+      "combined": {
+        "syntactic": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1,
+          "tn": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "avg_time_ms": 0.29
+        },
+        "tensorguard": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "avg_time_ms": 189.56
+        }
+      },
+      "stride": {
+        "syntactic": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "avg_time_ms": 0.24
+        },
+        "tensorguard": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "avg_time_ms": 115.2
+        }
+      }
+    },
+    "disagreements": [
+      {
+        "benchmark": "broadcast_parallel_bug",
+        "ground_truth_has_bug": true,
+        "winner": "TensorGuard"
+      },
+      {
+        "benchmark": "broadcast_cross_rank_bug",
+        "ground_truth_has_bug": true,
+        "winner": "TensorGuard"
+      },
+      {
+        "benchmark": "broadcast_cross_rank_safe",
+        "ground_truth_has_bug": false,
+        "winner": "Syntactic"
+      },
+      {
+        "benchmark": "broadcast_mul_bug",
+        "ground_truth_has_bug": true,
+        "winner": "TensorGuard"
+      },
+      {
+        "benchmark": "combined_reshape_broadcast_bug",
+        "ground_truth_has_bug": true,
+        "winner": "TensorGuard"
+      },
+      {
+        "benchmark": "triple_add_chain_bug",
+        "ground_truth_has_bug": true,
+        "winner": "TensorGuard"
+      }
+    ]
+  },
+  "experiment_3_conditional_branches": {
+    "experiment": "conditional_branch_handling",
+    "num_benchmarks": 6,
+    "tools": {
+      "syntactic": {
+        "metrics": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "avg_time_ms": 0.37
+        },
+        "confidence_intervals_95": {
+          "precision": [
+            1.0,
+            1.0
+          ],
+          "recall": [
+            1.0,
+            1.0
+          ],
+          "f1": [
+            1.0,
+            1.0
+          ]
+        },
+        "per_benchmark": [
+          {
+            "name": "training_dropout_safe",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.32,
+            "details": ""
+          },
+          {
+            "name": "cond_branch_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 0.65,
+            "details": "Shape mismatch at self.fc2"
+          },
+          {
+            "name": "bn_training_safe",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.35,
+            "details": ""
+          },
+          {
+            "name": "cond_path_bug_train_only",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 0.31,
+            "details": "Shape mismatch at self.fc_train"
+          },
+          {
+            "name": "multi_path_merge_safe",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.31,
+            "details": ""
+          },
+          {
+            "name": "guard_bn_mismatch_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 0.26,
+            "details": "Shape mismatch at self.bn1"
+          }
+        ]
+      },
+      "tensorguard": {
+        "metrics": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "avg_time_ms": 167.6
+        },
+        "confidence_intervals_95": {
+          "precision": [
+            1.0,
+            1.0
+          ],
+          "recall": [
+            1.0,
+            1.0
+          ],
+          "f1": [
+            1.0,
+            1.0
+          ]
+        },
+        "per_benchmark": [
+          {
+            "name": "training_dropout_safe",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 100.75,
+            "details": ""
+          },
+          {
+            "name": "cond_branch_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 203.49,
+            "details": "Linear expects last dim=64, got 128; Z3 violation (shape_incompatible) at step 2:\n  grad___inner_1_s2 = True\n  dev_x_s0 = CPU_75\n  grad_x_s0 = False\n  dev___; "
+          },
+          {
+            "name": "bn_training_safe",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 62.68,
+            "details": ""
+          },
+          {
+            "name": "cond_path_bug_train_only",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 150.4,
+            "details": "Linear expects last dim=128, got 256; "
+          },
+          {
+            "name": "multi_path_merge_safe",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 181.42,
+            "details": ""
+          },
+          {
+            "name": "guard_bn_mismatch_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 306.89,
+            "details": "BatchNorm expects 32 features, got 64; Z3 violation (shape_incompatible) at step 1:\n  batch = 1\n  phase_s1 = TRAIN_83\n  phase_s0 = TRAIN_83\n  dev_x_s0 = CPU_83; "
+          }
+        ]
+      }
+    },
+    "fp_reduction": {
+      "syntactic_fp": 0,
+      "tensorguard_fp": 0,
+      "delta": 0
+    }
+  },
+  "experiment_4_production_architectures": {
+    "experiment": "production_architecture_eval",
+    "num_benchmarks": 12,
+    "architectures": [
+      "AlexNet",
+      "BERT",
+      "FPN",
+      "GAN",
+      "GPT",
+      "Inception",
+      "MobileNet",
+      "ResNet",
+      "SE-Net",
+      "Transformer",
+      "U-Net",
+      "VAE"
+    ],
+    "tools": {
+      "syntactic": {
+        "metrics": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 6,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "avg_time_ms": 0.35
+        },
+        "confidence_intervals_95": {
+          "precision": [
+            1.0,
+            1.0
+          ],
+          "recall": [
+            1.0,
+            1.0
+          ],
+          "f1": [
+            1.0,
+            1.0
+          ]
+        },
+        "per_benchmark": [
+          {
+            "name": "resnet_basicblock_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.39,
+            "details": "",
+            "arch": "ResNet"
+          },
+          {
+            "name": "bert_attention_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 0.31,
+            "details": "Shape mismatch at self.dense",
+            "arch": "BERT"
+          },
+          {
+            "name": "transformer_encoder_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.44,
+            "details": "",
+            "arch": "Transformer"
+          },
+          {
+            "name": "unet_skip_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 0.29,
+            "details": "Shape mismatch at self.dec_conv1",
+            "arch": "U-Net"
+          },
+          {
+            "name": "gan_generator_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.31,
+            "details": "",
+            "arch": "GAN"
+          },
+          {
+            "name": "vae_encoder_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 0.32,
+            "details": "Shape mismatch at self.fc_logvar",
+            "arch": "VAE"
+          },
+          {
+            "name": "alexnet_classifier_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.3,
+            "details": "",
+            "arch": "AlexNet"
+          },
+          {
+            "name": "senet_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 0.33,
+            "details": "Shape mismatch at self.fc2",
+            "arch": "SE-Net"
+          },
+          {
+            "name": "inception_branch_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.29,
+            "details": "",
+            "arch": "Inception"
+          },
+          {
+            "name": "fpn_lateral_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 0.41,
+            "details": "Shape mismatch at self.smooth",
+            "arch": "FPN"
+          },
+          {
+            "name": "mobilenet_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 0.56,
+            "details": "",
+            "arch": "MobileNet"
+          },
+          {
+            "name": "gpt_ffn_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 0.3,
+            "details": "Shape mismatch at self.ff2",
+            "arch": "GPT"
+          }
+        ]
+      },
+      "tensorguard": {
+        "metrics": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 6,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "avg_time_ms": 204.4
+        },
+        "confidence_intervals_95": {
+          "precision": [
+            1.0,
+            1.0
+          ],
+          "recall": [
+            1.0,
+            1.0
+          ],
+          "f1": [
+            1.0,
+            1.0
+          ]
+        },
+        "per_benchmark": [
+          {
+            "name": "resnet_basicblock_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 289.87,
+            "details": "",
+            "arch": "ResNet"
+          },
+          {
+            "name": "bert_attention_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 185.94,
+            "details": "Linear expects last dim=512, got 768; Z3 violation (shape_incompatible) at step 3:\n  grad_k_s3 = True\n  grad_q_s2 = True\n  phase_s1 = TRAIN_87\n  grad_x_s0 = F; Linear expects last dim=768, got 512; ",
+            "arch": "BERT"
+          },
+          {
+            "name": "transformer_encoder_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 327.43,
+            "details": "",
+            "arch": "Transformer"
+          },
+          {
+            "name": "unet_skip_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 64.52,
+            "details": "Conv2d expects 64 input channels, got 128; Z3 violation (shape_incompatible) at step 2:\n  dev_x_s0 = CPU_92\n  batch = 1\n  dev_x_s2 = CPU_92\n  phase_s2 = TRAIN_92\n ; ",
+            "arch": "U-Net"
+          },
+          {
+            "name": "gan_generator_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 303.84,
+            "details": "",
+            "arch": "GAN"
+          },
+          {
+            "name": "vae_encoder_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 101.94,
+            "details": "Linear expects last dim=200, got 400; Z3 violation (shape_incompatible) at step 3:\n  phase_s3 = TRAIN_96\n  grad_x_s0 = False\n  dev_x_s0 = CPU_96\n  dev___inner; Linear expects last dim=784, got 200; ",
+            "arch": "VAE"
+          },
+          {
+            "name": "alexnet_classifier_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 280.15,
+            "details": "",
+            "arch": "AlexNet"
+          },
+          {
+            "name": "senet_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 174.27,
+            "details": "Z3 violation (shape_incompatible) at step 1:\n  batch = 1\n  H_out = 1\n  h = 1\n  dev_x_s1 = CPU_101\n  grad_x_s0 = False\n  ; Linear expects last dim=32, got 16; ",
+            "arch": "SE-Net"
+          },
+          {
+            "name": "inception_branch_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 168.97,
+            "details": "",
+            "arch": "Inception"
+          },
+          {
+            "name": "fpn_lateral_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 194.91,
+            "details": "Conv2d expects 128 input channels, got 256; Z3 violation (shape_incompatible) at step 1:\n  phase_s0 = TRAIN_106\n  H_out = 1\n  dev_x_s1 = CPU_106\n  h = 1\n  W_out = 1; ",
+            "arch": "FPN"
+          },
+          {
+            "name": "mobilenet_correct",
+            "ground_truth": false,
+            "detected_bug": false,
+            "time_ms": 240.98,
+            "details": "",
+            "arch": "MobileNet"
+          },
+          {
+            "name": "gpt_ffn_bug",
+            "ground_truth": true,
+            "detected_bug": true,
+            "time_ms": 119.96,
+            "details": "Linear expects last dim=2048, got 3072; Z3 violation (shape_incompatible) at step 3:\n  grad___inner_1_s2 = True\n  phase_s1 = TRAIN_111\n  dev_x_s2 = CPU_111\n  ph; ",
+            "arch": "GPT"
+          }
+        ]
+      }
+    },
+    "per_architecture": {
+      "ResNet": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "avg_time_ms": 289.87
+      },
+      "BERT": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "avg_time_ms": 185.94
+      },
+      "Transformer": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "avg_time_ms": 327.43
+      },
+      "U-Net": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "avg_time_ms": 64.52
+      },
+      "GAN": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "avg_time_ms": 303.84
+      },
+      "VAE": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "avg_time_ms": 101.94
+      },
+      "AlexNet": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "avg_time_ms": 280.15
+      },
+      "SE-Net": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "avg_time_ms": 174.27
+      },
+      "Inception": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "avg_time_ms": 168.97
+      },
+      "FPN": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "avg_time_ms": 194.91
+      },
+      "MobileNet": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "avg_time_ms": 240.98
+      },
+      "GPT": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "avg_time_ms": 119.96
+      }
+    }
+  }
+}

@@ -1,0 +1,780 @@
+{
+  "total_rule_pairs": 28,
+  "pairs_with_overlap": 4,
+  "critical_pairs_found": 7,
+  "all_joinable": true,
+  "all_rpo_oriented": true,
+  "elapsed_seconds": 0.003,
+  "pairs": [
+    {
+      "rule1_id": 1,
+      "rule1_name": "bc_identity_right",
+      "rule2_id": 1,
+      "rule2_name": "bc_identity_right",
+      "is_self_overlap": true,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 2,
+      "rule1_name": "bc_identity_left",
+      "rule2_id": 2,
+      "rule2_name": "bc_identity_left",
+      "is_self_overlap": true,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 3,
+      "rule1_name": "bc_idempotent",
+      "rule2_id": 3,
+      "rule2_name": "bc_idempotent",
+      "is_self_overlap": true,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 4,
+      "rule1_name": "double_transpose",
+      "rule2_id": 4,
+      "rule2_name": "double_transpose",
+      "is_self_overlap": true,
+      "overlaps_found": 1,
+      "critical_pairs": [
+        {
+          "term1": "transp(s_r2, d0_r2, d1_r2)",
+          "term2": "transp(s_r2, d0_r2, d1_r2)",
+          "normal_form1": "transp(s_r2, d0_r2, d1_r2)",
+          "normal_form2": "transp(s_r2, d0_r2, d1_r2)",
+          "overlap_position": [
+            0
+          ],
+          "joinable": true
+        }
+      ],
+      "joinable_count": 1,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 5,
+      "rule1_name": "reshape_numel",
+      "rule2_id": 5,
+      "rule2_name": "reshape_numel",
+      "is_self_overlap": true,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 6,
+      "rule1_name": "conv_basic",
+      "rule2_id": 6,
+      "rule2_name": "conv_basic",
+      "is_self_overlap": true,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 7,
+      "rule1_name": "pool_stride_eq_kernel",
+      "rule2_id": 7,
+      "rule2_name": "pool_stride_eq_kernel",
+      "is_self_overlap": true,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 1,
+      "rule1_name": "bc_identity_right",
+      "rule2_id": 2,
+      "rule2_name": "bc_identity_left",
+      "is_self_overlap": false,
+      "overlaps_found": 2,
+      "critical_pairs": [
+        {
+          "term1": "1",
+          "term2": "1",
+          "normal_form1": "1",
+          "normal_form2": "1",
+          "overlap_position": [],
+          "joinable": true
+        },
+        {
+          "term1": "1",
+          "term2": "1",
+          "normal_form1": "1",
+          "normal_form2": "1",
+          "overlap_position": [],
+          "joinable": true
+        }
+      ],
+      "joinable_count": 2,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 1,
+      "rule1_name": "bc_identity_right",
+      "rule2_id": 3,
+      "rule2_name": "bc_idempotent",
+      "is_self_overlap": false,
+      "overlaps_found": 2,
+      "critical_pairs": [
+        {
+          "term1": "1",
+          "term2": "1",
+          "normal_form1": "1",
+          "normal_form2": "1",
+          "overlap_position": [],
+          "joinable": true
+        },
+        {
+          "term1": "1",
+          "term2": "1",
+          "normal_form1": "1",
+          "normal_form2": "1",
+          "overlap_position": [],
+          "joinable": true
+        }
+      ],
+      "joinable_count": 2,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 1,
+      "rule1_name": "bc_identity_right",
+      "rule2_id": 4,
+      "rule2_name": "double_transpose",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 1,
+      "rule1_name": "bc_identity_right",
+      "rule2_id": 5,
+      "rule2_name": "reshape_numel",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 1,
+      "rule1_name": "bc_identity_right",
+      "rule2_id": 6,
+      "rule2_name": "conv_basic",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 1,
+      "rule1_name": "bc_identity_right",
+      "rule2_id": 7,
+      "rule2_name": "pool_stride_eq_kernel",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 2,
+      "rule1_name": "bc_identity_left",
+      "rule2_id": 3,
+      "rule2_name": "bc_idempotent",
+      "is_self_overlap": false,
+      "overlaps_found": 2,
+      "critical_pairs": [
+        {
+          "term1": "1",
+          "term2": "1",
+          "normal_form1": "1",
+          "normal_form2": "1",
+          "overlap_position": [],
+          "joinable": true
+        },
+        {
+          "term1": "1",
+          "term2": "1",
+          "normal_form1": "1",
+          "normal_form2": "1",
+          "overlap_position": [],
+          "joinable": true
+        }
+      ],
+      "joinable_count": 2,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 2,
+      "rule1_name": "bc_identity_left",
+      "rule2_id": 4,
+      "rule2_name": "double_transpose",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 2,
+      "rule1_name": "bc_identity_left",
+      "rule2_id": 5,
+      "rule2_name": "reshape_numel",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 2,
+      "rule1_name": "bc_identity_left",
+      "rule2_id": 6,
+      "rule2_name": "conv_basic",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 2,
+      "rule1_name": "bc_identity_left",
+      "rule2_id": 7,
+      "rule2_name": "pool_stride_eq_kernel",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 3,
+      "rule1_name": "bc_idempotent",
+      "rule2_id": 4,
+      "rule2_name": "double_transpose",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 3,
+      "rule1_name": "bc_idempotent",
+      "rule2_id": 5,
+      "rule2_name": "reshape_numel",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 3,
+      "rule1_name": "bc_idempotent",
+      "rule2_id": 6,
+      "rule2_name": "conv_basic",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 3,
+      "rule1_name": "bc_idempotent",
+      "rule2_id": 7,
+      "rule2_name": "pool_stride_eq_kernel",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 4,
+      "rule1_name": "double_transpose",
+      "rule2_id": 5,
+      "rule2_name": "reshape_numel",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 4,
+      "rule1_name": "double_transpose",
+      "rule2_id": 6,
+      "rule2_name": "conv_basic",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 4,
+      "rule1_name": "double_transpose",
+      "rule2_id": 7,
+      "rule2_name": "pool_stride_eq_kernel",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 5,
+      "rule1_name": "reshape_numel",
+      "rule2_id": 6,
+      "rule2_name": "conv_basic",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 5,
+      "rule1_name": "reshape_numel",
+      "rule2_id": 7,
+      "rule2_name": "pool_stride_eq_kernel",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    },
+    {
+      "rule1_id": 6,
+      "rule1_name": "conv_basic",
+      "rule2_id": 7,
+      "rule2_name": "pool_stride_eq_kernel",
+      "is_self_overlap": false,
+      "overlaps_found": 0,
+      "critical_pairs": [],
+      "joinable_count": 0,
+      "all_joinable": true
+    }
+  ],
+  "rpo_orientation": [
+    {
+      "rule_id": 1,
+      "name": "bc_identity_right",
+      "lhs": "bc(a, 1)",
+      "rhs": "a",
+      "lhs_gt_rhs_rpo": true
+    },
+    {
+      "rule_id": 2,
+      "name": "bc_identity_left",
+      "lhs": "bc(1, b)",
+      "rhs": "b",
+      "lhs_gt_rhs_rpo": true
+    },
+    {
+      "rule_id": 3,
+      "name": "bc_idempotent",
+      "lhs": "bc(a, a)",
+      "rhs": "a",
+      "lhs_gt_rhs_rpo": true
+    },
+    {
+      "rule_id": 4,
+      "name": "double_transpose",
+      "lhs": "transp(transp(s, d0, d1), d0, d1)",
+      "rhs": "s",
+      "lhs_gt_rhs_rpo": true
+    },
+    {
+      "rule_id": 5,
+      "name": "reshape_numel",
+      "lhs": "numel(reshape(s, t))",
+      "rhs": "numel(s)",
+      "lhs_gt_rhs_rpo": true
+    },
+    {
+      "rule_id": 6,
+      "name": "conv_basic",
+      "lhs": "conv(h, k, 1, 0)",
+      "rhs": "add(sub(h, k), 1)",
+      "lhs_gt_rhs_rpo": true
+    },
+    {
+      "rule_id": 7,
+      "name": "pool_stride_eq_kernel",
+      "lhs": "pool(h, k, k, 0)",
+      "rhs": "floor_div(h, k)",
+      "lhs_gt_rhs_rpo": true
+    }
+  ],
+  "kzk_commutativity": {
+    "tested": 49,
+    "commutative": 49,
+    "examples": [
+      {
+        "name": "bc_id_right",
+        "input": "bc(a, 1)",
+        "kzk_once": "a",
+        "kzk_twice": "a",
+        "commutative": true
+      },
+      {
+        "name": "bc_id_left",
+        "input": "bc(1, b)",
+        "kzk_once": "b",
+        "kzk_twice": "b",
+        "commutative": true
+      },
+      {
+        "name": "bc_idempotent",
+        "input": "bc(a, a)",
+        "kzk_once": "a",
+        "kzk_twice": "a",
+        "commutative": true
+      },
+      {
+        "name": "bc_comm",
+        "input": "bc(b, a)",
+        "kzk_once": "bc(a, b)",
+        "kzk_twice": "bc(a, b)",
+        "commutative": true
+      },
+      {
+        "name": "double_transp",
+        "input": "transp(transp(s, d0, d1), d0, d1)",
+        "kzk_once": "s",
+        "kzk_twice": "s",
+        "commutative": true
+      },
+      {
+        "name": "reshape_numel",
+        "input": "numel(reshape(s, t))",
+        "kzk_once": "numel(s)",
+        "kzk_twice": "numel(s)",
+        "commutative": true
+      },
+      {
+        "name": "conv_basic",
+        "input": "conv(h, k, 1, 0)",
+        "kzk_once": "add(sub(h, k), 1)",
+        "kzk_twice": "add(sub(h, k), 1)",
+        "commutative": true
+      },
+      {
+        "name": "pool_basic",
+        "input": "pool(h, k, k, 0)",
+        "kzk_once": "floor_div(h, k)",
+        "kzk_twice": "floor_div(h, k)",
+        "commutative": true
+      },
+      {
+        "name": "nested_bc_r1",
+        "input": "bc(bc(a, 1), b)",
+        "kzk_once": "bc(a, b)",
+        "kzk_twice": "bc(a, b)",
+        "commutative": true
+      },
+      {
+        "name": "nested_bc_r2",
+        "input": "bc(bc(1, a), b)",
+        "kzk_once": "bc(a, b)",
+        "kzk_twice": "bc(a, b)",
+        "commutative": true
+      },
+      {
+        "name": "nested_bc_r3",
+        "input": "bc(bc(a, a), b)",
+        "kzk_once": "bc(a, b)",
+        "kzk_twice": "bc(a, b)",
+        "commutative": true
+      },
+      {
+        "name": "double_r1",
+        "input": "bc(bc(a, 1), 1)",
+        "kzk_once": "a",
+        "kzk_twice": "a",
+        "commutative": true
+      },
+      {
+        "name": "conv_with_bc",
+        "input": "conv(bc(h, 1), k, 1, 0)",
+        "kzk_once": "add(sub(h, k), 1)",
+        "kzk_twice": "add(sub(h, k), 1)",
+        "commutative": true
+      },
+      {
+        "name": "pool_with_bc",
+        "input": "pool(bc(h, h), k, k, 0)",
+        "kzk_once": "floor_div(h, k)",
+        "kzk_twice": "floor_div(h, k)",
+        "commutative": true
+      },
+      {
+        "name": "numel_reshape_bc",
+        "input": "numel(reshape(bc(s, 1), t))",
+        "kzk_once": "numel(s)",
+        "kzk_twice": "numel(s)",
+        "commutative": true
+      },
+      {
+        "name": "transp_bc",
+        "input": "transp(transp(bc(a, 1), d0, d1), d0, d1)",
+        "kzk_once": "a",
+        "kzk_twice": "a",
+        "commutative": true
+      },
+      {
+        "name": "var_a",
+        "input": "a",
+        "kzk_once": "a",
+        "kzk_twice": "a",
+        "commutative": true
+      },
+      {
+        "name": "const_32",
+        "input": "32",
+        "kzk_once": "32",
+        "kzk_twice": "32",
+        "commutative": true
+      },
+      {
+        "name": "add_ab",
+        "input": "add(a, b)",
+        "kzk_once": "add(a, b)",
+        "kzk_twice": "add(a, b)",
+        "commutative": true
+      },
+      {
+        "name": "bc_distinct",
+        "input": "bc(a, b)",
+        "kzk_once": "bc(a, b)",
+        "kzk_twice": "bc(a, b)",
+        "commutative": true
+      },
+      {
+        "name": "deep_bc",
+        "input": "bc(bc(bc(a, 1), 1), 1)",
+        "kzk_once": "a",
+        "kzk_twice": "a",
+        "commutative": true
+      },
+      {
+        "name": "bc_const_1_1",
+        "input": "bc(1, 1)",
+        "kzk_once": "1",
+        "kzk_twice": "1",
+        "commutative": true
+      },
+      {
+        "name": "numel_conv",
+        "input": "numel(conv(h, k, 1, 0))",
+        "kzk_once": "numel(add(sub(h, k), 1))",
+        "kzk_twice": "numel(add(sub(h, k), 1))",
+        "commutative": true
+      },
+      {
+        "name": "bc_nested_r1_r3",
+        "input": "bc(bc(a, 1), bc(a, a))",
+        "kzk_once": "a",
+        "kzk_twice": "a",
+        "commutative": true
+      },
+      {
+        "name": "pool_conv_nested",
+        "input": "pool(conv(h, k, 1, 0), 3, 3, 0)",
+        "kzk_once": "floor_div(add(sub(h, k), 1), 3)",
+        "kzk_twice": "floor_div(add(sub(h, k), 1), 3)",
+        "commutative": true
+      },
+      {
+        "name": "triple_bc",
+        "input": "bc(bc(a, b), c)",
+        "kzk_once": "bc(bc(a, b), c)",
+        "kzk_twice": "bc(bc(a, b), c)",
+        "commutative": true
+      },
+      {
+        "name": "reshape_reshape",
+        "input": "numel(reshape(reshape(s, t), a))",
+        "kzk_once": "numel(s)",
+        "kzk_twice": "numel(s)",
+        "commutative": true
+      },
+      {
+        "name": "bc_32_32",
+        "input": "bc(32, 32)",
+        "kzk_once": "32",
+        "kzk_twice": "32",
+        "commutative": true
+      },
+      {
+        "name": "bc_16_64",
+        "input": "bc(16, 64)",
+        "kzk_once": "bc(16, 64)",
+        "kzk_twice": "bc(16, 64)",
+        "commutative": true
+      },
+      {
+        "name": "conv_32_3",
+        "input": "conv(32, 3, 1, 0)",
+        "kzk_once": "add(sub(32, 3), 1)",
+        "kzk_twice": "add(sub(32, 3), 1)",
+        "commutative": true
+      },
+      {
+        "name": "pool_64_8",
+        "input": "pool(64, 8, 8, 0)",
+        "kzk_once": "floor_div(64, 8)",
+        "kzk_twice": "floor_div(64, 8)",
+        "commutative": true
+      },
+      {
+        "name": "mul_sub",
+        "input": "mul(sub(a, b), c)",
+        "kzk_once": "mul(sub(a, b), c)",
+        "kzk_twice": "mul(sub(a, b), c)",
+        "commutative": true
+      },
+      {
+        "name": "floor_div_ab",
+        "input": "floor_div(a, b)",
+        "kzk_once": "floor_div(a, b)",
+        "kzk_twice": "floor_div(a, b)",
+        "commutative": true
+      },
+      {
+        "name": "bc_a_bc_a_1",
+        "input": "bc(a, bc(a, 1))",
+        "kzk_once": "a",
+        "kzk_twice": "a",
+        "commutative": true
+      },
+      {
+        "name": "transp_single",
+        "input": "transp(s, d0, d1)",
+        "kzk_once": "transp(s, d0, d1)",
+        "kzk_twice": "transp(s, d0, d1)",
+        "commutative": true
+      },
+      {
+        "name": "numel_s",
+        "input": "numel(s)",
+        "kzk_once": "numel(s)",
+        "kzk_twice": "numel(s)",
+        "commutative": true
+      },
+      {
+        "name": "reshape_st",
+        "input": "reshape(s, t)",
+        "kzk_once": "reshape(s, t)",
+        "kzk_twice": "reshape(s, t)",
+        "commutative": true
+      },
+      {
+        "name": "perm_sp",
+        "input": "perm(s, t)",
+        "kzk_once": "perm(s, t)",
+        "kzk_twice": "perm(s, t)",
+        "commutative": true
+      },
+      {
+        "name": "conv_general",
+        "input": "conv(h, k, s, t)",
+        "kzk_once": "conv(h, k, s, t)",
+        "kzk_twice": "conv(h, k, s, t)",
+        "commutative": true
+      },
+      {
+        "name": "pool_general",
+        "input": "pool(h, k, s, t)",
+        "kzk_once": "pool(h, k, s, t)",
+        "kzk_twice": "pool(h, k, s, t)",
+        "commutative": true
+      },
+      {
+        "name": "bc_chain_4",
+        "input": "bc(bc(bc(bc(a, 1), 1), 1), 1)",
+        "kzk_once": "a",
+        "kzk_twice": "a",
+        "commutative": true
+      },
+      {
+        "name": "numel_reshape_chain",
+        "input": "numel(reshape(reshape(reshape(s, t), a), b))",
+        "kzk_once": "numel(s)",
+        "kzk_twice": "numel(s)",
+        "commutative": true
+      },
+      {
+        "name": "double_transp_nested",
+        "input": "transp(transp(transp(transp(s, d0, d1), d0, d1), d0, d1), d0, d1)",
+        "kzk_once": "s",
+        "kzk_twice": "s",
+        "commutative": true
+      },
+      {
+        "name": "conv_pool",
+        "input": "pool(conv(h, k, 1, 0), 3, 3, 0)",
+        "kzk_once": "floor_div(add(sub(h, k), 1), 3)",
+        "kzk_twice": "floor_div(add(sub(h, k), 1), 3)",
+        "commutative": true
+      },
+      {
+        "name": "bc_conv",
+        "input": "conv(bc(h, 1), bc(k, 1), 1, 0)",
+        "kzk_once": "add(sub(h, k), 1)",
+        "kzk_twice": "add(sub(h, k), 1)",
+        "commutative": true
+      },
+      {
+        "name": "numel_bc",
+        "input": "numel(bc(a, 1))",
+        "kzk_once": "numel(a)",
+        "kzk_twice": "numel(a)",
+        "commutative": true
+      },
+      {
+        "name": "reshape_bc",
+        "input": "reshape(bc(s, 1), t)",
+        "kzk_once": "reshape(s, t)",
+        "kzk_twice": "reshape(s, t)",
+        "commutative": true
+      },
+      {
+        "name": "transp_conv",
+        "input": "transp(conv(h, k, 1, 0), d0, d1)",
+        "kzk_once": "transp(add(sub(h, k), 1), d0, d1)",
+        "kzk_twice": "transp(add(sub(h, k), 1), d0, d1)",
+        "commutative": true
+      },
+      {
+        "name": "add_sub",
+        "input": "add(sub(a, b), 1)",
+        "kzk_once": "add(sub(a, b), 1)",
+        "kzk_twice": "add(sub(a, b), 1)",
+        "commutative": true
+      }
+    ]
+  }
+}

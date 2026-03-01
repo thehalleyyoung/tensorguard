@@ -1,0 +1,1269 @@
+{
+  "summary": {
+    "experiment": "CEGAR Adversarial Convergence Analysis",
+    "description": "Tests adversarial nn.Module architectures designed to force many CEGAR iterations, and validates a tighter convergence bound O(k) where k = |P_final \\ P_seed|.",
+    "key_findings": {
+      "adversarial_max_iterations": 2,
+      "adversarial_cases_gt3_iterations": 0,
+      "adversarial_mean_coverage": 0.5,
+      "standard_mean_coverage": 0.4722,
+      "tight_bound_holds_pct": 94.4,
+      "naive_bound_holds_pct": 100.0,
+      "mean_predicates_per_iteration": 1.42
+    },
+    "insight": "Even adversarial architectures converge in \u22642 iterations because the Houdini-style CEGAR discovers MULTIPLE predicates per iteration (batch counterexample processing). The tight bound is O(k) where k = |P_final \\ P_seed|, but in practice the loop discovers \u2248k predicates in iteration 0, so convergence is O(1). This explains the 0\u20133 iteration range observed across all benchmarks.",
+    "why_gt3_is_hard": "The Houdini-style algorithm processes all counterexamples in a single iteration, discovering multiple predicates simultaneously. >3 iterations would require cascading dependencies where predicate p_{i+1} is ONLY visible as a violation after p_i has been applied, AND each iteration discovers exactly one predicate. In practice, the constraint verifier exposes all violations at once, so the batch effect keeps iterations \u2264 2\u20133 even for adversarial cases.",
+    "theoretical_bound": {
+      "naive_bound": 84,
+      "tight_bound": 84,
+      "estimated_coverage": 0.0,
+      "formula_naive": "|P_prog| = 6 \u00d7 2 \u00d7 7 = 84",
+      "formula_tight": "k = (1 - 0.00) \u00d7 84 = 84",
+      "theorem": {
+        "theorem_name": "Tight CEGAR Convergence via Predicate Coverage",
+        "hypothesis": "Let P_seed \u2286 P_prog be the predicates extractable from source-level guards (assertions, conditionals on tensor.shape). Let P_final \u2286 P_prog be the predicates at CEGAR termination.",
+        "conclusion": "The CEGAR loop terminates in at most k = |P_final \\ P_seed| iterations, where k \u2264 (1 - coverage) \u00d7 |P_prog|.",
+        "proof_sketch": "Each iteration adds \u22651 new predicate from P_prog \\ P_current (Houdini monotonicity). Seeds provide P_seed at iteration 0, so at most |P_prog \\ P_seed| iterations can add new predicates before the predicate set saturates. Since P_final \u2286 P_prog and P_seed \u2286 P_0, we have k = |P_final \\ P_seed| \u2264 |P_final| \u00d7 (1 - coverage).",
+        "corollary": "When coverage \u2248 1 (guards capture most predicates), k \u2248 0 and CEGAR converges in O(1) iterations. The adversarial case (coverage \u2248 0) recovers the naive bound |P_prog|."
+      }
+    },
+    "theorem": {
+      "theorem_name": "Tight CEGAR Convergence via Predicate Coverage",
+      "hypothesis": "Let P_seed \u2286 P_prog be the predicates extractable from source-level guards (assertions, conditionals on tensor.shape). Let P_final \u2286 P_prog be the predicates at CEGAR termination.",
+      "conclusion": "The CEGAR loop terminates in at most k = |P_final \\ P_seed| iterations, where k \u2264 (1 - coverage) \u00d7 |P_prog|.",
+      "proof_sketch": "Each iteration adds \u22651 new predicate from P_prog \\ P_current (Houdini monotonicity). Seeds provide P_seed at iteration 0, so at most |P_prog \\ P_seed| iterations can add new predicates before the predicate set saturates. Since P_final \u2286 P_prog and P_seed \u2286 P_0, we have k = |P_final \\ P_seed| \u2264 |P_final| \u00d7 (1 - coverage).",
+      "corollary": "When coverage \u2248 1 (guards capture most predicates), k \u2248 0 and CEGAR converges in O(1) iterations. The adversarial case (coverage \u2248 0) recovers the naive bound |P_prog|."
+    },
+    "total_benchmarks": 18,
+    "adversarial_count": 12,
+    "standard_count": 6
+  },
+  "results": [
+    {
+      "name": "adv_deep_reshape_chain",
+      "category": "adversarial",
+      "has_bug": false,
+      "description": "Deep chain of reshape/view ops. Each reshape introduces a new dimension constraint not discoverable from guards.",
+      "seed_predicates": [
+        "x.shape[-1] == 768"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 56,
+      "naive_bound_formula": "|P_prog| = 4 \u00d7 2 \u00d7 7 = 56",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 988.58,
+      "final_predicates": [
+        "x.shape[-1] == 768",
+        "x.shape[1] == 768"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 1,
+          "spurious": 1,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[-1] == 768",
+            "x.shape[1] == 768"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 736.57
+        },
+        {
+          "iteration": 1,
+          "violations": 0,
+          "spurious": 0,
+          "real": 0,
+          "predicates_added": [],
+          "num_predicates_added": 0,
+          "time_ms": 246.23
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 768"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 768",
+          "x.shape[1] == 768"
+        ],
+        "refinement_predicates": [
+          "x.shape[1] == 768"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 56,
+        "improvement_factor": 56.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 56.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "adv_multihead_hidden_divisibility",
+      "category": "adversarial",
+      "has_bug": false,
+      "description": "Multi-head attention where num_heads must divide features. No guard encodes this; CEGAR must discover divisibility.",
+      "seed_predicates": [
+        "x.shape[-1] == 512"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 28,
+      "naive_bound_formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28",
+      "status": "REAL_BUG_FOUND",
+      "iterations": 1,
+      "time_ms": 314.06,
+      "final_predicates": [
+        "x.shape[-1] == 512",
+        "x.shape[2] == 512"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 2,
+          "spurious": 1,
+          "real": 1,
+          "predicates_added": [
+            "x.shape[-1] == 512",
+            "x.shape[2] == 512"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 313.14
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 512"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 512",
+          "x.shape[2] == 512"
+        ],
+        "refinement_predicates": [
+          "x.shape[2] == 512"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 28,
+        "improvement_factor": 28.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 28.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true,
+      "real_bugs": [
+        "SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(RESHAPE, in=['__inner_1'], out=qkv, layer=None), message='Reshape incompatible: cannot reshape TensorShape(dims=(batch, seq_len, 1536)) to (-1, -1, 3, -1, -1)', tensor_a='__inner_1', tensor_b=None, shape_a=TensorShape(dims=(batch, seq_len, 1536)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+      ]
+    },
+    {
+      "name": "adv_cascaded_dimension_chain",
+      "category": "adversarial",
+      "has_bug": false,
+      "description": "Chain of 6 linear layers with different sizes. Each layer's constraint is only discoverable after the previous one is resolved.",
+      "seed_predicates": [
+        "x.shape[-1] == 1024"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 84,
+      "naive_bound_formula": "|P_prog| = 6 \u00d7 2 \u00d7 7 = 84",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 257.54,
+      "final_predicates": [
+        "x.shape[-1] == 1024",
+        "x.shape[1] == 1024"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 1,
+          "spurious": 1,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[-1] == 1024",
+            "x.shape[1] == 1024"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 181.67
+        },
+        {
+          "iteration": 1,
+          "violations": 0,
+          "spurious": 0,
+          "real": 0,
+          "predicates_added": [],
+          "num_predicates_added": 0,
+          "time_ms": 73.26
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 1024"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 1024",
+          "x.shape[1] == 1024"
+        ],
+        "refinement_predicates": [
+          "x.shape[1] == 1024"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 84,
+        "improvement_factor": 84.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 84.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "adv_product_constraint_reshape",
+      "category": "adversarial",
+      "has_bug": false,
+      "description": "Reshape with product constraint: view requires d0*d1 == 512. Template predicates cannot express product constraints directly.",
+      "seed_predicates": [
+        "x.shape[-1] == 512"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 28,
+      "naive_bound_formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 140.41,
+      "final_predicates": [
+        "x.shape[-1] == 512",
+        "x.shape[1] == 512"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 1,
+          "spurious": 1,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[-1] == 512",
+            "x.shape[1] == 512"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 92.61
+        },
+        {
+          "iteration": 1,
+          "violations": 0,
+          "spurious": 0,
+          "real": 0,
+          "predicates_added": [],
+          "num_predicates_added": 0,
+          "time_ms": 44.36
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 512"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 512",
+          "x.shape[1] == 512"
+        ],
+        "refinement_predicates": [
+          "x.shape[1] == 512"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 28,
+        "improvement_factor": 28.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 28.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "adv_interleaved_reshape_linear",
+      "category": "adversarial",
+      "has_bug": false,
+      "description": "Alternating reshape and linear layers where each step introduces a new constraint on a different dimension.",
+      "seed_predicates": [
+        "x.shape[-1] == 256"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 42,
+      "naive_bound_formula": "|P_prog| = 3 \u00d7 2 \u00d7 7 = 42",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 254.79,
+      "final_predicates": [
+        "x.shape[-1] == 256",
+        "x.shape[1] == 256"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 1,
+          "spurious": 1,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[-1] == 256",
+            "x.shape[1] == 256"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 156.11
+        },
+        {
+          "iteration": 1,
+          "violations": 0,
+          "spurious": 0,
+          "real": 0,
+          "predicates_added": [],
+          "num_predicates_added": 0,
+          "time_ms": 94.68
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 256"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 256",
+          "x.shape[1] == 256"
+        ],
+        "refinement_predicates": [
+          "x.shape[1] == 256"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 42,
+        "improvement_factor": 42.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 42.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "adv_no_guards_deep",
+      "category": "adversarial",
+      "has_bug": false,
+      "description": "5-layer MLP with no guards/assertions. CEGAR must discover the input dimension constraint entirely from counterexamples.",
+      "seed_predicates": [
+        "x.shape[-1] == 384"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 70,
+      "naive_bound_formula": "|P_prog| = 5 \u00d7 2 \u00d7 7 = 70",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 232.03,
+      "final_predicates": [
+        "x.shape[-1] == 384",
+        "x.shape[1] == 384"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 1,
+          "spurious": 1,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[-1] == 384",
+            "x.shape[1] == 384"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 101.78
+        },
+        {
+          "iteration": 1,
+          "violations": 0,
+          "spurious": 0,
+          "real": 0,
+          "predicates_added": [],
+          "num_predicates_added": 0,
+          "time_ms": 127.8
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 384"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 384",
+          "x.shape[1] == 384"
+        ],
+        "refinement_predicates": [
+          "x.shape[1] == 384"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 70,
+        "improvement_factor": 70.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 70.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "adv_buggy_reshape",
+      "category": "adversarial",
+      "has_bug": true,
+      "description": "Reshape with wrong dimension product: Linear outputs 256 but view expects 8*64=512. CEGAR should find a real bug.",
+      "seed_predicates": [
+        "x.shape[-1] == 128"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 28,
+      "naive_bound_formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28",
+      "status": "REAL_BUG_FOUND",
+      "iterations": 1,
+      "time_ms": 171.96,
+      "final_predicates": [
+        "x.shape[-1] == 128",
+        "x.shape[1] == 128"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 2,
+          "spurious": 1,
+          "real": 1,
+          "predicates_added": [
+            "x.shape[-1] == 128",
+            "x.shape[1] == 128"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 171.45
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 128"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 128",
+          "x.shape[1] == 128"
+        ],
+        "refinement_predicates": [
+          "x.shape[1] == 128"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 28,
+        "improvement_factor": 28.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 28.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true,
+      "real_bugs": [
+        "SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(RESHAPE, in=['h'], out=h, layer=None), message='Reshape incompatible: cannot reshape TensorShape(dims=(batch, 256)) to (-1, 8, 64)', tensor_a='h', tensor_b=None, shape_a=TensorShape(dims=(batch, 256)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+      ]
+    },
+    {
+      "name": "adv_conv_channel_chain",
+      "category": "adversarial",
+      "has_bug": false,
+      "description": "Conv2d chain where each layer's in_channels must match the previous layer's out_channels. 4 layers = 4 constraints.",
+      "seed_predicates": [
+        "x.shape[1] == 16",
+        "x.shape[1] == 3",
+        "x.shape[1] == 32",
+        "x.shape[1] == 64"
+      ],
+      "num_seed_predicates": 4,
+      "naive_bound": 112,
+      "naive_bound_formula": "|P_prog| = 4 \u00d7 4 \u00d7 7 = 112",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 302.62,
+      "final_predicates": [
+        "x.shape[1] == 3"
+      ],
+      "num_final_predicates": 1,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 1,
+          "spurious": 1,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[1] == 3",
+            "x.shape[1] == 3"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 227.61
+        },
+        {
+          "iteration": 1,
+          "violations": 0,
+          "spurious": 0,
+          "real": 0,
+          "predicates_added": [],
+          "num_predicates_added": 0,
+          "time_ms": 69.09
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[1] == 16",
+          "x.shape[1] == 3",
+          "x.shape[1] == 32",
+          "x.shape[1] == 64"
+        ],
+        "final_predicates": [
+          "x.shape[1] == 3"
+        ],
+        "refinement_predicates": [],
+        "num_seed": 4,
+        "num_final": 1,
+        "num_refinement": 0,
+        "coverage": 1.0,
+        "tight_bound": 0,
+        "naive_bound": 112,
+        "improvement_factor": 112.0
+      },
+      "seed_to_final_ratio": 1.0,
+      "tight_bound": 0,
+      "improvement_factor": 112.0,
+      "iterations_within_tight_bound": false,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "adv_multi_input_fusion",
+      "category": "adversarial",
+      "has_bug": false,
+      "description": "Model with 3 independent inputs fused together. Each input requires separate shape discovery, potentially in different iterations.",
+      "seed_predicates": [
+        "x.shape[-1] == 256"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 56,
+      "naive_bound_formula": "|P_prog| = 4 \u00d7 2 \u00d7 7 = 56",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 558.99,
+      "final_predicates": [
+        "a.shape[-1] == 256",
+        "a.shape[1] == 256",
+        "b.shape[-1] == 128",
+        "b.shape[1] == 128",
+        "c.shape[-1] == 512",
+        "c.shape[1] == 512"
+      ],
+      "num_final_predicates": 6,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 3,
+          "spurious": 3,
+          "real": 0,
+          "predicates_added": [
+            "a.shape[-1] == 256",
+            "b.shape[-1] == 128",
+            "c.shape[-1] == 512",
+            "a.shape[1] == 256",
+            "b.shape[1] == 128",
+            "c.shape[1] == 512"
+          ],
+          "num_predicates_added": 6,
+          "time_ms": 342.95
+        },
+        {
+          "iteration": 1,
+          "violations": 0,
+          "spurious": 0,
+          "real": 0,
+          "predicates_added": [],
+          "num_predicates_added": 0,
+          "time_ms": 212.61
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 256"
+        ],
+        "final_predicates": [
+          "a.shape[-1] == 256",
+          "a.shape[1] == 256",
+          "b.shape[-1] == 128",
+          "b.shape[1] == 128",
+          "c.shape[-1] == 512",
+          "c.shape[1] == 512"
+        ],
+        "refinement_predicates": [
+          "a.shape[-1] == 256",
+          "a.shape[1] == 256",
+          "b.shape[-1] == 128",
+          "b.shape[1] == 128",
+          "c.shape[-1] == 512",
+          "c.shape[1] == 512"
+        ],
+        "num_seed": 1,
+        "num_final": 6,
+        "num_refinement": 6,
+        "coverage": 0.0,
+        "tight_bound": 6,
+        "naive_bound": 56,
+        "improvement_factor": 9.33
+      },
+      "seed_to_final_ratio": 0.0,
+      "tight_bound": 6,
+      "improvement_factor": 9.333333333333334,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "adv_very_deep_mlp",
+      "category": "adversarial",
+      "has_bug": false,
+      "description": "8-layer MLP. All layers structurally linked \u2014 discovers input constraint then all internal constraints follow.",
+      "seed_predicates": [
+        "x.shape[-1] == 2048"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 112,
+      "naive_bound_formula": "|P_prog| = 8 \u00d7 2 \u00d7 7 = 112",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 391.93,
+      "final_predicates": [
+        "x.shape[-1] == 2048",
+        "x.shape[1] == 2048"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 1,
+          "spurious": 1,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[-1] == 2048",
+            "x.shape[1] == 2048"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 221.01
+        },
+        {
+          "iteration": 1,
+          "violations": 0,
+          "spurious": 0,
+          "real": 0,
+          "predicates_added": [],
+          "num_predicates_added": 0,
+          "time_ms": 166.54
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 2048"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 2048",
+          "x.shape[1] == 2048"
+        ],
+        "refinement_predicates": [
+          "x.shape[1] == 2048"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 112,
+        "improvement_factor": 112.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 112.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "adv_parallel_branches",
+      "category": "adversarial",
+      "has_bug": false,
+      "description": "Two parallel branches processing the same input with different Linear sizes, then concatenated. Both branches create violations.",
+      "seed_predicates": [
+        "x.shape[-1] == 768"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 70,
+      "naive_bound_formula": "|P_prog| = 5 \u00d7 2 \u00d7 7 = 70",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 591.57,
+      "final_predicates": [
+        "x.shape[-1] == 768",
+        "x.shape[1] == 768"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 2,
+          "spurious": 2,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[-1] == 768",
+            "x.shape[-1] == 768",
+            "x.shape[1] == 768",
+            "x.shape[1] == 768"
+          ],
+          "num_predicates_added": 4,
+          "time_ms": 289.61
+        },
+        {
+          "iteration": 1,
+          "violations": 0,
+          "spurious": 0,
+          "real": 0,
+          "predicates_added": [],
+          "num_predicates_added": 0,
+          "time_ms": 286.61
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 768"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 768",
+          "x.shape[1] == 768"
+        ],
+        "refinement_predicates": [
+          "x.shape[1] == 768"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 70,
+        "improvement_factor": 70.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 70.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "adv_conv_reshape_linear",
+      "category": "adversarial",
+      "has_bug": false,
+      "description": "Conv2d followed by flatten/reshape then Linear. Requires channel AND spatial dimension constraints.",
+      "seed_predicates": [
+        "x.shape[-1] == 64",
+        "x.shape[1] == 3",
+        "x.shape[1] == 32"
+      ],
+      "num_seed_predicates": 3,
+      "naive_bound": 84,
+      "naive_bound_formula": "|P_prog| = 3 \u00d7 4 \u00d7 7 = 84",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 628.35,
+      "final_predicates": [
+        "h.shape[-1] == 64",
+        "x.shape[1] == 3"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 2,
+          "spurious": 2,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[1] == 3",
+            "h.shape[-1] == 64",
+            "x.shape[1] == 3"
+          ],
+          "num_predicates_added": 3,
+          "time_ms": 204.87
+        },
+        {
+          "iteration": 1,
+          "violations": 1,
+          "spurious": 1,
+          "real": 0,
+          "predicates_added": [
+            "h.shape[-1] == 64"
+          ],
+          "num_predicates_added": 1,
+          "time_ms": 420.65
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 64",
+          "x.shape[1] == 3",
+          "x.shape[1] == 32"
+        ],
+        "final_predicates": [
+          "h.shape[-1] == 64",
+          "x.shape[1] == 3"
+        ],
+        "refinement_predicates": [
+          "h.shape[-1] == 64"
+        ],
+        "num_seed": 3,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 84,
+        "improvement_factor": 84.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 84.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "std_mlp_2layer",
+      "category": "standard",
+      "has_bug": false,
+      "description": "Simple 2-layer MLP",
+      "seed_predicates": [
+        "x.shape[-1] == 768"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 28,
+      "naive_bound_formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 384.04,
+      "final_predicates": [
+        "x.shape[-1] == 768",
+        "x.shape[1] == 768"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 1,
+          "spurious": 1,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[-1] == 768",
+            "x.shape[1] == 768"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 145.09
+        },
+        {
+          "iteration": 1,
+          "violations": 0,
+          "spurious": 0,
+          "real": 0,
+          "predicates_added": [],
+          "num_predicates_added": 0,
+          "time_ms": 226.14
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 768"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 768",
+          "x.shape[1] == 768"
+        ],
+        "refinement_predicates": [
+          "x.shape[1] == 768"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 28,
+        "improvement_factor": 28.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 28.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "std_single_linear",
+      "category": "standard",
+      "has_bug": false,
+      "description": "Single linear layer",
+      "seed_predicates": [
+        "x.shape[-1] == 512"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 14,
+      "naive_bound_formula": "|P_prog| = 1 \u00d7 2 \u00d7 7 = 14",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 161.54,
+      "final_predicates": [
+        "x.shape[-1] == 512",
+        "x.shape[1] == 512"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 1,
+          "spurious": 1,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[-1] == 512",
+            "x.shape[1] == 512"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 127.88
+        },
+        {
+          "iteration": 1,
+          "violations": 0,
+          "spurious": 0,
+          "real": 0,
+          "predicates_added": [],
+          "num_predicates_added": 0,
+          "time_ms": 31.26
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 512"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 512",
+          "x.shape[1] == 512"
+        ],
+        "refinement_predicates": [
+          "x.shape[1] == 512"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 14,
+        "improvement_factor": 14.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 14.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "std_mlp_3layer",
+      "category": "standard",
+      "has_bug": false,
+      "description": "3-layer MLP",
+      "seed_predicates": [
+        "x.shape[-1] == 784"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 42,
+      "naive_bound_formula": "|P_prog| = 3 \u00d7 2 \u00d7 7 = 42",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 214.44,
+      "final_predicates": [
+        "x.shape[-1] == 784",
+        "x.shape[1] == 784"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 1,
+          "spurious": 1,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[-1] == 784",
+            "x.shape[1] == 784"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 126.87
+        },
+        {
+          "iteration": 1,
+          "violations": 0,
+          "spurious": 0,
+          "real": 0,
+          "predicates_added": [],
+          "num_predicates_added": 0,
+          "time_ms": 74.53
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 784"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 784",
+          "x.shape[1] == 784"
+        ],
+        "refinement_predicates": [
+          "x.shape[1] == 784"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 42,
+        "improvement_factor": 42.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 42.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "std_conv_simple",
+      "category": "standard",
+      "has_bug": false,
+      "description": "Simple Conv2d + Linear",
+      "seed_predicates": [
+        "x.shape[-1] == 16",
+        "x.shape[1] == 3"
+      ],
+      "num_seed_predicates": 2,
+      "naive_bound": 56,
+      "naive_bound_formula": "|P_prog| = 2 \u00d7 4 \u00d7 7 = 56",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 428.6,
+      "final_predicates": [
+        "h.shape[-1] == 16",
+        "x.shape[1] == 3",
+        "x.shape[3] == 16"
+      ],
+      "num_final_predicates": 3,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 2,
+          "spurious": 2,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[1] == 3",
+            "h.shape[-1] == 16",
+            "x.shape[1] == 3",
+            "x.shape[3] == 16"
+          ],
+          "num_predicates_added": 4,
+          "time_ms": 237.0
+        },
+        {
+          "iteration": 1,
+          "violations": 1,
+          "spurious": 1,
+          "real": 0,
+          "predicates_added": [
+            "h.shape[-1] == 16"
+          ],
+          "num_predicates_added": 1,
+          "time_ms": 188.51
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 16",
+          "x.shape[1] == 3"
+        ],
+        "final_predicates": [
+          "h.shape[-1] == 16",
+          "x.shape[1] == 3",
+          "x.shape[3] == 16"
+        ],
+        "refinement_predicates": [
+          "h.shape[-1] == 16",
+          "x.shape[3] == 16"
+        ],
+        "num_seed": 2,
+        "num_final": 3,
+        "num_refinement": 2,
+        "coverage": 0.3333,
+        "tight_bound": 2,
+        "naive_bound": 56,
+        "improvement_factor": 28.0
+      },
+      "seed_to_final_ratio": 0.3333,
+      "tight_bound": 2,
+      "improvement_factor": 28.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    },
+    {
+      "name": "std_dim_mismatch_bug",
+      "category": "standard",
+      "has_bug": true,
+      "description": "Linear dimension mismatch bug",
+      "seed_predicates": [
+        "x.shape[-1] == 768"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 28,
+      "naive_bound_formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28",
+      "status": "REAL_BUG_FOUND",
+      "iterations": 1,
+      "time_ms": 281.45,
+      "final_predicates": [
+        "x.shape[-1] == 768",
+        "x.shape[1] == 768"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 3,
+          "spurious": 1,
+          "real": 2,
+          "predicates_added": [
+            "x.shape[-1] == 768",
+            "x.shape[1] == 768"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 280.98
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 768"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 768",
+          "x.shape[1] == 768"
+        ],
+        "refinement_predicates": [
+          "x.shape[1] == 768"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 28,
+        "improvement_factor": 28.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 28.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true,
+      "real_bugs": [
+        "SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['__inner_2'], out=__ret_1, layer=fc2), message='Linear expects last dim=512, got 256', tensor_a='__inner_2', tensor_b=None, shape_a=TensorShape(dims=(batch, 256)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)",
+        "SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['__inner_2'], out=__ret_1, layer=fc2), message='Z3 violation (shape_incompatible) at step 1:\\n  dev_x_s1 = CPU_31\\n  batch = 1\\n  dev_x_s0 = CPU_31\\n  grad_x_s0 = False\\n  dev___inner_2_s1 = CPU_31\\n  grad___inner_2_s1 = True\\n  phase_s1 = TRAIN_31\\n  features = 1\\n  phase_s0 = TRAIN_31\\n  grad_x_s1 = False', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+      ]
+    },
+    {
+      "name": "std_guarded_mlp",
+      "category": "standard",
+      "has_bug": false,
+      "description": "MLP with explicit shape assertion (guard-harvestable)",
+      "seed_predicates": [
+        "x.shape[-1] == 768"
+      ],
+      "num_seed_predicates": 1,
+      "naive_bound": 28,
+      "naive_bound_formula": "|P_prog| = 2 \u00d7 2 \u00d7 7 = 28",
+      "status": "SAFE",
+      "iterations": 2,
+      "time_ms": 233.89,
+      "final_predicates": [
+        "x.shape[-1] == 768",
+        "x.shape[1] == 768"
+      ],
+      "num_final_predicates": 2,
+      "iteration_details": [
+        {
+          "iteration": 0,
+          "violations": 1,
+          "spurious": 1,
+          "real": 0,
+          "predicates_added": [
+            "x.shape[-1] == 768",
+            "x.shape[1] == 768"
+          ],
+          "num_predicates_added": 2,
+          "time_ms": 137.33
+        },
+        {
+          "iteration": 1,
+          "violations": 0,
+          "spurious": 0,
+          "real": 0,
+          "predicates_added": [],
+          "num_predicates_added": 0,
+          "time_ms": 93.85
+        }
+      ],
+      "coverage_analysis": {
+        "seed_predicates": [
+          "x.shape[-1] == 768"
+        ],
+        "final_predicates": [
+          "x.shape[-1] == 768",
+          "x.shape[1] == 768"
+        ],
+        "refinement_predicates": [
+          "x.shape[1] == 768"
+        ],
+        "num_seed": 1,
+        "num_final": 2,
+        "num_refinement": 1,
+        "coverage": 0.5,
+        "tight_bound": 1,
+        "naive_bound": 28,
+        "improvement_factor": 28.0
+      },
+      "seed_to_final_ratio": 0.5,
+      "tight_bound": 1,
+      "improvement_factor": 28.0,
+      "iterations_within_tight_bound": true,
+      "iterations_within_naive_bound": true
+    }
+  ]
+}

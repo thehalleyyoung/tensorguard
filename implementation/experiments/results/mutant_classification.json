@@ -1,0 +1,352 @@
+{
+  "metadata": {
+    "total_models": 21,
+    "timestamp": "2026-02-26T09:13:49"
+  },
+  "summary": {
+    "total_mutants": 126,
+    "killed": 107,
+    "survived": 19,
+    "equivalent_mutants": 1,
+    "genuine_escapes": 18,
+    "raw_mutation_score": 0.8492,
+    "adjusted_mutation_score": 0.856,
+    "adjustment_delta": 0.0068,
+    "wilson_95_ci": {
+      "lower": 0.7838,
+      "upper": 0.9069
+    }
+  },
+  "by_theory_fragment": {
+    "QF_LIA": {
+      "total": 84,
+      "killed": 72,
+      "survived": 12,
+      "equivalent": 1,
+      "genuine_escapes": 11,
+      "raw_mutation_score": 0.8571,
+      "adjusted_mutation_score": 0.8675
+    },
+    "QF_NIA": {
+      "total": 36,
+      "killed": 31,
+      "survived": 5,
+      "equivalent": 0,
+      "genuine_escapes": 5,
+      "raw_mutation_score": 0.8611,
+      "adjusted_mutation_score": 0.8611
+    },
+    "mixed": {
+      "total": 6,
+      "killed": 4,
+      "survived": 2,
+      "equivalent": 0,
+      "genuine_escapes": 2,
+      "raw_mutation_score": 0.6667,
+      "adjusted_mutation_score": 0.6667
+    }
+  },
+  "by_architecture": {
+    "CNN": {
+      "total": 36,
+      "killed": 30,
+      "survived": 6,
+      "equivalent": 0,
+      "genuine_escapes": 6,
+      "raw_mutation_score": 0.8333,
+      "adjusted_mutation_score": 0.8333
+    },
+    "Inception": {
+      "total": 6,
+      "killed": 5,
+      "survived": 1,
+      "equivalent": 0,
+      "genuine_escapes": 1,
+      "raw_mutation_score": 0.8333,
+      "adjusted_mutation_score": 0.8333
+    },
+    "LSTM": {
+      "total": 6,
+      "killed": 5,
+      "survived": 1,
+      "equivalent": 0,
+      "genuine_escapes": 1,
+      "raw_mutation_score": 0.8333,
+      "adjusted_mutation_score": 0.8333
+    },
+    "MLP": {
+      "total": 42,
+      "killed": 37,
+      "survived": 5,
+      "equivalent": 0,
+      "genuine_escapes": 5,
+      "raw_mutation_score": 0.881,
+      "adjusted_mutation_score": 0.881
+    },
+    "ResNet": {
+      "total": 18,
+      "killed": 15,
+      "survived": 3,
+      "equivalent": 1,
+      "genuine_escapes": 2,
+      "raw_mutation_score": 0.8333,
+      "adjusted_mutation_score": 0.8824
+    },
+    "Transformer": {
+      "total": 12,
+      "killed": 12,
+      "survived": 0,
+      "equivalent": 0,
+      "genuine_escapes": 0,
+      "raw_mutation_score": 1.0,
+      "adjusted_mutation_score": 1.0
+    },
+    "UNet": {
+      "total": 6,
+      "killed": 3,
+      "survived": 3,
+      "equivalent": 0,
+      "genuine_escapes": 3,
+      "raw_mutation_score": 0.5,
+      "adjusted_mutation_score": 0.5
+    }
+  },
+  "by_bug_category": {
+    "channel_mismatch": {
+      "total": 14,
+      "killed": 14,
+      "survived": 0,
+      "equivalent": 0,
+      "genuine_escapes": 0,
+      "raw_mutation_score": 1.0,
+      "adjusted_mutation_score": 1.0
+    },
+    "concat_error": {
+      "total": 1,
+      "killed": 1,
+      "survived": 0,
+      "equivalent": 0,
+      "genuine_escapes": 0,
+      "raw_mutation_score": 1.0,
+      "adjusted_mutation_score": 1.0
+    },
+    "kernel_error": {
+      "total": 15,
+      "killed": 10,
+      "survived": 5,
+      "equivalent": 0,
+      "genuine_escapes": 5,
+      "raw_mutation_score": 0.6667,
+      "adjusted_mutation_score": 0.6667
+    },
+    "layer_ordering": {
+      "total": 14,
+      "killed": 13,
+      "survived": 1,
+      "equivalent": 1,
+      "genuine_escapes": 0,
+      "raw_mutation_score": 0.9286,
+      "adjusted_mutation_score": 1.0
+    },
+    "pooling_error": {
+      "total": 8,
+      "killed": 7,
+      "survived": 1,
+      "equivalent": 0,
+      "genuine_escapes": 1,
+      "raw_mutation_score": 0.875,
+      "adjusted_mutation_score": 0.875
+    },
+    "reshape_error": {
+      "total": 10,
+      "killed": 9,
+      "survived": 1,
+      "equivalent": 0,
+      "genuine_escapes": 1,
+      "raw_mutation_score": 0.9,
+      "adjusted_mutation_score": 0.9
+    },
+    "shape_mismatch": {
+      "total": 62,
+      "killed": 51,
+      "survived": 11,
+      "equivalent": 0,
+      "genuine_escapes": 11,
+      "raw_mutation_score": 0.8226,
+      "adjusted_mutation_score": 0.8226
+    },
+    "transpose_error": {
+      "total": 2,
+      "killed": 2,
+      "survived": 0,
+      "equivalent": 0,
+      "genuine_escapes": 0,
+      "raw_mutation_score": 1.0,
+      "adjusted_mutation_score": 1.0
+    }
+  },
+  "equivalence_reason_distribution": {
+    "not_equivalent": 18,
+    "swap_commutative": 1
+  },
+  "genuine_escape_details": [
+    {
+      "model": "DeepMLP",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 13",
+      "theory_fragment": "QF_LIA",
+      "architecture": "MLP",
+      "bug_category": "shape_mismatch"
+    },
+    {
+      "model": "BottleneckMLP",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 33",
+      "theory_fragment": "QF_LIA",
+      "architecture": "MLP",
+      "bug_category": "shape_mismatch"
+    },
+    {
+      "model": "SimpleCNN",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 13",
+      "theory_fragment": "QF_NIA",
+      "architecture": "CNN",
+      "bug_category": "shape_mismatch"
+    },
+    {
+      "model": "VGGBlock",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 13",
+      "theory_fragment": "QF_NIA",
+      "architecture": "CNN",
+      "bug_category": "shape_mismatch"
+    },
+    {
+      "model": "ResNetSmall",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 13",
+      "theory_fragment": "mixed",
+      "architecture": "ResNet",
+      "bug_category": "shape_mismatch"
+    },
+    {
+      "model": "ResNetSmall",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 3 -> 7",
+      "theory_fragment": "mixed",
+      "architecture": "ResNet",
+      "bug_category": "kernel_error"
+    },
+    {
+      "model": "Autoencoder",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 784 -> 795",
+      "theory_fragment": "QF_LIA",
+      "architecture": "MLP",
+      "bug_category": "shape_mismatch"
+    },
+    {
+      "model": "Generator",
+      "operator": "remove_reshape",
+      "description": "Removed reshape/view at line 17",
+      "theory_fragment": "QF_LIA",
+      "architecture": "MLP",
+      "bug_category": "reshape_error"
+    },
+    {
+      "model": "UNetBlock",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 3 -> 7",
+      "theory_fragment": "QF_LIA",
+      "architecture": "UNet",
+      "bug_category": "kernel_error"
+    },
+    {
+      "model": "UNetBlock",
+      "operator": "wrong_pool_size",
+      "description": "Pool kernel 2 -> 16",
+      "theory_fragment": "QF_LIA",
+      "architecture": "UNet",
+      "bug_category": "pooling_error"
+    },
+    {
+      "model": "UNetBlock",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 3 -> 7",
+      "theory_fragment": "QF_LIA",
+      "architecture": "UNet",
+      "bug_category": "kernel_error"
+    },
+    {
+      "model": "RNNClassifier",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 33",
+      "theory_fragment": "QF_LIA",
+      "architecture": "LSTM",
+      "bug_category": "shape_mismatch"
+    },
+    {
+      "model": "DepthwiseSeparable",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 3 -> 7",
+      "theory_fragment": "QF_LIA",
+      "architecture": "CNN",
+      "bug_category": "kernel_error"
+    },
+    {
+      "model": "DepthwiseSeparable",
+      "operator": "wrong_kernel_size",
+      "description": "Conv kernel_size 1 -> 5",
+      "theory_fragment": "QF_LIA",
+      "architecture": "CNN",
+      "bug_category": "kernel_error"
+    },
+    {
+      "model": "InceptionBlock",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 21",
+      "theory_fragment": "QF_NIA",
+      "architecture": "Inception",
+      "bug_category": "shape_mismatch"
+    },
+    {
+      "model": "PoolFlattenNet",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 5",
+      "theory_fragment": "QF_NIA",
+      "architecture": "CNN",
+      "bug_category": "shape_mismatch"
+    },
+    {
+      "model": "TransposeNet",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 128 -> 139",
+      "theory_fragment": "QF_LIA",
+      "architecture": "MLP",
+      "bug_category": "shape_mismatch"
+    },
+    {
+      "model": "PoolClassifier",
+      "operator": "wrong_out_features",
+      "description": "Linear out_features 10 -> 5",
+      "theory_fragment": "QF_NIA",
+      "architecture": "CNN",
+      "bug_category": "shape_mismatch"
+    }
+  ],
+  "equivalent_mutant_details": [
+    {
+      "model": "ResBlock",
+      "operator": "swap_layers",
+      "description": "Swapped forward lines 14 and 15",
+      "equivalence_reason": "swap_commutative",
+      "theory_fragment": "QF_LIA"
+    }
+  ],
+  "interpretation": {
+    "equivalent_fraction": 0.0526,
+    "message": "Of 19 surviving mutants, 1 (5%) are classified as equivalent (no observable behavior change). 18 are genuine escapes representing real detection gaps.",
+    "mixed_fragment_impact": "Mixed-theory fragment shows 2 genuine escapes, consistent with Craig interpolation fallback limitations."
+  }
+}

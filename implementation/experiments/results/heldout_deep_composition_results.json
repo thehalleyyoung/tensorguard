@@ -1,0 +1,185 @@
+{
+  "benchmark": "heldout_deep_composition",
+  "num_models": 15,
+  "tensorguard_correct": 15,
+  "tensorguard_accuracy": 1.0,
+  "models_where_llm_likely_fails": 15,
+  "category_breakdown": {
+    "reshape_chain": {
+      "correct": 5,
+      "total": 5,
+      "accuracy": 1.0
+    },
+    "multi_branch": {
+      "correct": 5,
+      "total": 5,
+      "accuracy": 1.0
+    },
+    "mixed_arithmetic": {
+      "correct": 5,
+      "total": 5,
+      "accuracy": 1.0
+    }
+  },
+  "results": [
+    {
+      "name": "reshape-chain-transpose-bug",
+      "category": "reshape_chain",
+      "num_hops": 5,
+      "has_bug": true,
+      "tg_verdict": "UNSAFE",
+      "tg_correct": true,
+      "time_ms": 260.3,
+      "violation": "Linear expects last dim=50, got 48",
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "reshape-chain-safe-roundtrip",
+      "category": "reshape_chain",
+      "num_hops": 4,
+      "has_bug": false,
+      "tg_verdict": "SAFE",
+      "tg_correct": true,
+      "time_ms": 246.2,
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "reshape-chain-view-squeeze-bug",
+      "category": "reshape_chain",
+      "num_hops": 6,
+      "has_bug": true,
+      "tg_verdict": "UNSAFE",
+      "tg_correct": true,
+      "time_ms": 312.3,
+      "violation": "Linear expects last dim=100, got 120",
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "reshape-chain-nested-safe",
+      "category": "reshape_chain",
+      "num_hops": 5,
+      "has_bug": false,
+      "tg_verdict": "SAFE",
+      "tg_correct": true,
+      "time_ms": 418.9,
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "reshape-chain-multi-view-bug",
+      "category": "reshape_chain",
+      "num_hops": 5,
+      "has_bug": true,
+      "tg_verdict": "UNSAFE",
+      "tg_correct": true,
+      "time_ms": 156.7,
+      "violation": "Linear expects last dim=64, got 60",
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "multi-branch-triple-merge-bug",
+      "category": "multi_branch",
+      "num_hops": 4,
+      "has_bug": true,
+      "tg_verdict": "UNSAFE",
+      "tg_correct": true,
+      "time_ms": 424.1,
+      "violation": "Cannot broadcast (batch, 32) and (batch, 31)",
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "multi-branch-residual-safe",
+      "category": "multi_branch",
+      "num_hops": 3,
+      "has_bug": false,
+      "tg_verdict": "SAFE",
+      "tg_correct": true,
+      "time_ms": 141.9,
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "multi-branch-asymmetric-bug",
+      "category": "multi_branch",
+      "num_hops": 5,
+      "has_bug": true,
+      "tg_verdict": "UNSAFE",
+      "tg_correct": true,
+      "time_ms": 40.0,
+      "violation": "Cannot broadcast (batch, 16) and (batch, 15)",
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "multi-branch-parallel-safe",
+      "category": "multi_branch",
+      "num_hops": 4,
+      "has_bug": false,
+      "tg_verdict": "SAFE",
+      "tg_correct": true,
+      "time_ms": 75.5,
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "multi-branch-four-way-bug",
+      "category": "multi_branch",
+      "num_hops": 4,
+      "has_bug": true,
+      "tg_verdict": "UNSAFE",
+      "tg_correct": true,
+      "time_ms": 614.9,
+      "violation": "Cannot broadcast (batch, 64) and (batch, 63)",
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "conv-stride-padding-bug",
+      "category": "mixed_arithmetic",
+      "num_hops": 4,
+      "has_bug": true,
+      "tg_verdict": "UNSAFE",
+      "tg_correct": true,
+      "time_ms": 150.3,
+      "violation": "Linear expects last dim=2048, got 1152",
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "conv-pooling-safe",
+      "category": "mixed_arithmetic",
+      "num_hops": 4,
+      "has_bug": false,
+      "tg_verdict": "SAFE",
+      "tg_correct": true,
+      "time_ms": 296.3,
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "conv-dilation-bug",
+      "category": "mixed_arithmetic",
+      "num_hops": 4,
+      "has_bug": true,
+      "tg_verdict": "UNSAFE",
+      "tg_correct": true,
+      "time_ms": 215.6,
+      "violation": "Linear expects last dim=4096, got 3136",
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "conv-residual-arithmetic-safe",
+      "category": "mixed_arithmetic",
+      "num_hops": 5,
+      "has_bug": false,
+      "tg_verdict": "SAFE",
+      "tg_correct": true,
+      "time_ms": 236.3,
+      "expected_llm_difficulty": "LLM_likely_fails"
+    },
+    {
+      "name": "conv-kernel-stride-mismatch-bug",
+      "category": "mixed_arithmetic",
+      "num_hops": 5,
+      "has_bug": true,
+      "tg_verdict": "UNSAFE",
+      "tg_correct": true,
+      "time_ms": 374.3,
+      "violation": "Linear expects last dim=1152, got 512",
+      "expected_llm_difficulty": "LLM_likely_fails"
+    }
+  ]
+}

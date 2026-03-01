@@ -1,0 +1,79 @@
+{
+  "torch_version": "2.9.1",
+  "dynamo_available": false,
+  "models": [
+    {
+      "name": "SimpleMLP",
+      "has_data_dependent_control_flow": false,
+      "fx_success": true,
+      "fx_time_ms": 199.42,
+      "fx_steps": 3,
+      "fx_layers": 3,
+      "dynamo_success": false,
+      "dynamo_error": "TorchDynamo not available"
+    },
+    {
+      "name": "ConvNet",
+      "has_data_dependent_control_flow": false,
+      "fx_success": true,
+      "fx_time_ms": 1.03,
+      "fx_steps": 5,
+      "fx_layers": 4,
+      "dynamo_success": false,
+      "dynamo_error": "TorchDynamo not available"
+    },
+    {
+      "name": "ResidualBlock",
+      "has_data_dependent_control_flow": false,
+      "fx_success": true,
+      "fx_time_ms": 1.14,
+      "fx_steps": 5,
+      "fx_layers": 3,
+      "dynamo_success": false,
+      "dynamo_error": "TorchDynamo not available"
+    },
+    {
+      "name": "ShapeConditional",
+      "has_data_dependent_control_flow": true,
+      "fx_success": false,
+      "fx_time_ms": 0.54,
+      "fx_error": "symbolically traced variables cannot be used as inputs to control flow",
+      "dynamo_success": false,
+      "dynamo_error": "TorchDynamo not available"
+    },
+    {
+      "name": "ValueConditional",
+      "has_data_dependent_control_flow": true,
+      "fx_success": false,
+      "fx_time_ms": 0.71,
+      "fx_error": "symbolically traced variables cannot be used as inputs to control flow",
+      "dynamo_success": false,
+      "dynamo_error": "TorchDynamo not available"
+    },
+    {
+      "name": "MoEGating",
+      "has_data_dependent_control_flow": true,
+      "fx_success": false,
+      "fx_time_ms": 0.53,
+      "fx_error": "symbolically traced variables cannot be used as inputs to control flow",
+      "dynamo_success": false,
+      "dynamo_error": "TorchDynamo not available"
+    },
+    {
+      "name": "DynamicLoop",
+      "has_data_dependent_control_flow": true,
+      "fx_success": false,
+      "fx_time_ms": 0.45,
+      "fx_error": "symbolically traced variables cannot be used as inputs to control flow",
+      "dynamo_success": false,
+      "dynamo_error": "TorchDynamo not available"
+    }
+  ],
+  "summary": {
+    "fx_success_rate": "3/7",
+    "dynamo_success_rate": "0/7",
+    "fx_control_flow_success": "0/4",
+    "dynamo_control_flow_success": "0/4",
+    "coverage_improvement_on_control_flow": "0/4 \u2192 0/4"
+  }
+}

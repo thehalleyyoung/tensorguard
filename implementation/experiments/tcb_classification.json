@@ -1,0 +1,39 @@
+{
+  "description": "Formal Trusted Computing Base classification of Suite D false positives",
+  "methodology": "Each apparent FP is traced through five TCB layers to identify which component, if any, produced incorrect reasoning",
+  "tcb_layers": {
+    "L1_soundness": "Core Z3/UserPropagator theory reasoning \u2014 a failure here means a soundness bug",
+    "L2_theory_combination": "Tinelli-Zarba arrangement enumeration \u2014 a failure here means incomplete combination",
+    "L3_computation_graph": "AST extraction and graph construction \u2014 a failure here means incorrect model parsing",
+    "L4_api_stubs": "nn.Module stub specifications (e.g., Linear, Conv2d) \u2014 a failure here means incorrect operation semantics",
+    "L5_specification": "Benchmark labeling (is_buggy annotation) \u2014 a failure here means the benchmark itself is wrong"
+  },
+  "classifications": [
+    {
+      "benchmark": "wavenet_correct",
+      "apparent_verdict": "FP",
+      "true_verdict": "TP (benchmark mislabeled)",
+      "tcb_layer": "L5_specification",
+      "tcb_trace": {
+        "L1_soundness": "PASS \u2014 Z3 correctly proves shape (batch,256,16001) incompatible with (batch,256,16000)",
+        "L2_theory_combination": "PASS \u2014 single theory involved (T_shape), no combination needed",
+        "L3_computation_graph": "PASS \u2014 Conv1d(256,256,kernel_size=2,padding=1) correctly modeled as output_length = floor((L+2*1-1*(2-1)-1)/1+1) = L+1",
+        "L4_api_stubs": "PASS \u2014 Conv1d output length formula matches PyTorch documentation",
+        "L5_specification": "FAIL \u2014 benchmark labeled as 'correct' but Conv1d with padding=1 and kernel_size=2 produces L+1 output, causing shape mismatch in residual addition. This is a genuine shape bug confirmed by PyTorch RuntimeError."
+      },
+      "pytorch_confirmation": "torch.nn.Conv1d(256,256,kernel_size=2,padding=1) on input (1,256,16000) \u2192 output (1,256,16001). Residual add(output, input) \u2192 RuntimeError: shapes don't match",
+      "corrective_action": "Reclassify benchmark as buggy, OR fix benchmark to include output slicing (h[:,:,:x.size(2)]) as in canonical WaveNet",
+      "soundness_impact": "None \u2014 TensorGuard's formal reasoning is correct. The apparent FP is a benchmark labeling error."
+    }
+  ],
+  "summary": {
+    "total_apparent_fps": 1,
+    "L1_soundness_failures": 0,
+    "L2_theory_combination_failures": 0,
+    "L3_computation_graph_failures": 0,
+    "L4_api_stub_failures": 0,
+    "L5_specification_failures": 1,
+    "genuine_soundness_bugs": 0,
+    "conclusion": "Zero genuine soundness bugs in Suite D evaluation. The sole apparent FP (wavenet_correct) traces to TCB layer L5 (specification): the benchmark is mislabeled. TensorGuard correctly identifies a shape mismatch that would produce a PyTorch RuntimeError. After TCB classification, TensorGuard's effective precision on Suite D is 1.000 (23/23 true bugs detected, 0 false alarms among correctly-labeled benchmarks)."
+  }
+}

@@ -1,0 +1,405 @@
+{
+  "total_models": 34,
+  "buggy_models": 17,
+  "safe_models": 17,
+  "true_positives": 14,
+  "true_negatives": 16,
+  "false_positives": 1,
+  "false_negatives": 3,
+  "precision": 0.9333,
+  "recall": 0.8235,
+  "f1": 0.875,
+  "accuracy": 0.8824,
+  "per_category": {
+    "linear_mismatch": {
+      "tp": 3,
+      "fp": 0,
+      "tn": 3,
+      "fn": 0
+    },
+    "conv_spatial": {
+      "tp": 3,
+      "fp": 0,
+      "tn": 3,
+      "fn": 0
+    },
+    "embedding_mismatch": {
+      "tp": 1,
+      "fp": 1,
+      "tn": 1,
+      "fn": 1
+    },
+    "multihead_attention": {
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0
+    },
+    "concatenation": {
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0
+    },
+    "transpose_permute": {
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0
+    },
+    "batchnorm_mismatch": {
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0
+    },
+    "skip_connection": {
+      "tp": 0,
+      "fp": 0,
+      "tn": 2,
+      "fn": 2
+    }
+  },
+  "individual_results": [
+    {
+      "name": "linear_mismatch_buggy",
+      "category": "linear_mismatch",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 81.0,
+      "error": null,
+      "description": "Pattern from PyTorch forum: transfer learning head replacement with wrong input dim"
+    },
+    {
+      "name": "linear_mismatch_safe",
+      "category": "linear_mismatch",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 28.9,
+      "error": null,
+      "description": "Corrected transfer learning head"
+    },
+    {
+      "name": "linear_chain_buggy",
+      "category": "linear_mismatch",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 64.1,
+      "error": null,
+      "description": "Pattern from GitHub issues: copy-paste error in MLP chain, fc3 input doesn't match fc2 output"
+    },
+    {
+      "name": "linear_chain_safe",
+      "category": "linear_mismatch",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 70.6,
+      "error": null,
+      "description": "Corrected deep MLP chain"
+    },
+    {
+      "name": "conv_spatial_buggy",
+      "category": "conv_spatial",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 73.0,
+      "error": null,
+      "description": "Pattern from StackOverflow: Linear input uses pre-pool spatial dims instead of post-pool"
+    },
+    {
+      "name": "conv_spatial_safe",
+      "category": "conv_spatial",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 109.5,
+      "error": null,
+      "description": "Corrected conv classifier with correct flatten size"
+    },
+    {
+      "name": "conv_channel_buggy",
+      "category": "conv_spatial",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 77.7,
+      "error": null,
+      "description": "Pattern from GitHub: mismatched conv channel dimensions between layers"
+    },
+    {
+      "name": "conv_channel_safe",
+      "category": "conv_spatial",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 72.6,
+      "error": null,
+      "description": "Corrected conv channel chain"
+    },
+    {
+      "name": "embedding_mismatch_buggy",
+      "category": "embedding_mismatch",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 24.4,
+      "error": null,
+      "description": "Pattern from StackOverflow: embedding dim doesn't match downstream linear layer input"
+    },
+    {
+      "name": "embedding_mismatch_safe",
+      "category": "embedding_mismatch",
+      "is_buggy": false,
+      "detected": true,
+      "verdict": "FP",
+      "time_ms": 26.3,
+      "error": null,
+      "description": "Corrected text classifier"
+    },
+    {
+      "name": "embedding_lstm_buggy",
+      "category": "embedding_mismatch",
+      "is_buggy": true,
+      "detected": false,
+      "verdict": "FN",
+      "time_ms": 33.2,
+      "error": null,
+      "description": "Pattern from PyTorch forum: LSTM hidden_size doesn't match subsequent Linear input"
+    },
+    {
+      "name": "embedding_lstm_safe",
+      "category": "embedding_mismatch",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 25.9,
+      "error": null,
+      "description": "Corrected LSTM classifier"
+    },
+    {
+      "name": "mha_indivisible_buggy",
+      "category": "multihead_attention",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 13.8,
+      "error": null,
+      "description": "Pattern from PyTorch GitHub issues: embed_dim=100 not divisible by num_heads=3"
+    },
+    {
+      "name": "mha_indivisible_safe",
+      "category": "multihead_attention",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 22.3,
+      "error": null,
+      "description": "Corrected attention block with embed_dim divisible by num_heads"
+    },
+    {
+      "name": "mha_proj_buggy",
+      "category": "multihead_attention",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 61.3,
+      "error": null,
+      "description": "Pattern from HuggingFace issues: FFN second layer input doesn't match first layer output"
+    },
+    {
+      "name": "mha_proj_safe",
+      "category": "multihead_attention",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 36.9,
+      "error": null,
+      "description": "Corrected transformer FFN"
+    },
+    {
+      "name": "cat_wrong_dim_buggy",
+      "category": "concatenation",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 55.8,
+      "error": null,
+      "description": "Pattern from StackOverflow: torch.cat on dim=0 instead of dim=1 for feature concat"
+    },
+    {
+      "name": "cat_wrong_dim_safe",
+      "category": "concatenation",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 83.1,
+      "error": null,
+      "description": "Corrected dual-path model with correct concat dimension"
+    },
+    {
+      "name": "cat_size_buggy",
+      "category": "concatenation",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 81.0,
+      "error": null,
+      "description": "Pattern from GitHub: Linear after concat doesn't account for doubled feature dim"
+    },
+    {
+      "name": "cat_size_safe",
+      "category": "concatenation",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 102.1,
+      "error": null,
+      "description": "Corrected feature fusion with correct Linear input after cat"
+    },
+    {
+      "name": "transpose_buggy",
+      "category": "transpose_permute",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 16.7,
+      "error": null,
+      "description": "Pattern from PyTorch forum: linear input dim doesn't match transposed channel dim"
+    },
+    {
+      "name": "transpose_safe",
+      "category": "transpose_permute",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 13.4,
+      "error": null,
+      "description": "Corrected transpose-then-linear model"
+    },
+    {
+      "name": "batchnorm_buggy",
+      "category": "batchnorm_mismatch",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 56.7,
+      "error": null,
+      "description": "Pattern from StackOverflow: BatchNorm2d(32) but Conv2d output has 64 channels"
+    },
+    {
+      "name": "batchnorm_safe",
+      "category": "batchnorm_mismatch",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 65.6,
+      "error": null,
+      "description": "Corrected Conv-BN chain"
+    },
+    {
+      "name": "batchnorm1d_buggy",
+      "category": "batchnorm_mismatch",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 33.1,
+      "error": null,
+      "description": "Pattern from GitHub: BatchNorm1d features match fc1 input instead of output"
+    },
+    {
+      "name": "batchnorm1d_safe",
+      "category": "batchnorm_mismatch",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 32.5,
+      "error": null,
+      "description": "Corrected MLP with BatchNorm1d"
+    },
+    {
+      "name": "skip_connection_buggy",
+      "category": "skip_connection",
+      "is_buggy": true,
+      "detected": false,
+      "verdict": "FN",
+      "time_ms": 33.0,
+      "error": null,
+      "description": "Pattern from GitHub: residual add with mismatched feature dims (no projection)"
+    },
+    {
+      "name": "skip_connection_safe",
+      "category": "skip_connection",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 37.1,
+      "error": null,
+      "description": "Corrected residual block with matching dims"
+    },
+    {
+      "name": "skip_conv_buggy",
+      "category": "skip_connection",
+      "is_buggy": true,
+      "detected": false,
+      "verdict": "FN",
+      "time_ms": 75.5,
+      "error": null,
+      "description": "Pattern from ResNet: skip connection without 1x1 projection when channels change"
+    },
+    {
+      "name": "skip_conv_safe",
+      "category": "skip_connection",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 132.5,
+      "error": null,
+      "description": "Corrected conv residual with matching channels"
+    },
+    {
+      "name": "autoencoder_buggy",
+      "category": "linear_mismatch",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 21.2,
+      "error": null,
+      "description": "Pattern from StackOverflow: autoencoder decoder input doesn't match encoder bottleneck dim"
+    },
+    {
+      "name": "autoencoder_safe",
+      "category": "linear_mismatch",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 22.3,
+      "error": null,
+      "description": "Corrected autoencoder"
+    },
+    {
+      "name": "gan_generator_buggy",
+      "category": "conv_spatial",
+      "is_buggy": true,
+      "detected": true,
+      "verdict": "TP",
+      "time_ms": 91.3,
+      "error": null,
+      "description": "Pattern from DCGAN tutorials: ConvTranspose2d channel mismatch in generator"
+    },
+    {
+      "name": "gan_generator_safe",
+      "category": "conv_spatial",
+      "is_buggy": false,
+      "detected": false,
+      "verdict": "TN",
+      "time_ms": 71.8,
+      "error": null,
+      "description": "Corrected DCGAN generator"
+    }
+  ]
+}

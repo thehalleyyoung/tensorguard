@@ -1,0 +1,114 @@
+{
+  "experiment": "counterexample_validation",
+  "date": "2026-02-24 13:40:21",
+  "cases": [
+    {
+      "name": "linear_dim_mismatch",
+      "description": "Linear layer expects 10 features, input has 20",
+      "tensorguard_found_bug": true,
+      "pytorch_raised_error": true,
+      "pytorch_error_type": "RuntimeError",
+      "pytorch_error_message": "mat1 and mat2 shapes cannot be multiplied (4x20 and 10x5)",
+      "counterexample_validated": true,
+      "expected_error": "RuntimeError"
+    },
+    {
+      "name": "conv2d_channel_mismatch",
+      "description": "Conv2d expects 3 channels, input has 64",
+      "tensorguard_found_bug": true,
+      "pytorch_raised_error": true,
+      "pytorch_error_type": "RuntimeError",
+      "pytorch_error_message": "Given groups=1, weight of size [16, 3, 3, 3], expected input[2, 64, 32, 32] to have 3 channels, but got 64 channels instead",
+      "counterexample_validated": true,
+      "expected_error": "RuntimeError"
+    },
+    {
+      "name": "matmul_incompatible",
+      "description": "Matrix multiply with incompatible inner dimensions",
+      "tensorguard_found_bug": true,
+      "pytorch_raised_error": true,
+      "pytorch_error_type": "RuntimeError",
+      "pytorch_error_message": "mat1 and mat2 shapes cannot be multiplied (4x10 and 8x3)",
+      "counterexample_validated": true,
+      "expected_error": "RuntimeError"
+    },
+    {
+      "name": "linear_chain_mismatch",
+      "description": "Second Linear expects 256 but first outputs 128",
+      "tensorguard_found_bug": true,
+      "pytorch_raised_error": true,
+      "pytorch_error_type": "RuntimeError",
+      "pytorch_error_message": "mat1 and mat2 shapes cannot be multiplied (4x128 and 256x64)",
+      "counterexample_validated": true,
+      "expected_error": "RuntimeError"
+    },
+    {
+      "name": "batchnorm_channel_mismatch",
+      "description": "BatchNorm2d expects 32 features but Conv2d outputs 64",
+      "tensorguard_found_bug": true,
+      "pytorch_raised_error": true,
+      "pytorch_error_type": "RuntimeError",
+      "pytorch_error_message": "running_mean should contain 64 elements not 32",
+      "counterexample_validated": true,
+      "expected_error": "RuntimeError"
+    },
+    {
+      "name": "add_shape_mismatch",
+      "description": "Adding tensors with incompatible shapes (non-broadcastable)",
+      "tensorguard_found_bug": true,
+      "pytorch_raised_error": true,
+      "pytorch_error_type": "RuntimeError",
+      "pytorch_error_message": "The size of tensor a (50) must match the size of tensor b (30) at non-singleton dimension 1",
+      "counterexample_validated": true,
+      "expected_error": "RuntimeError"
+    },
+    {
+      "name": "mha_embed_dim_mismatch",
+      "description": "MultiheadAttention embed_dim=512 but input last dim=768",
+      "tensorguard_found_bug": true,
+      "pytorch_raised_error": true,
+      "pytorch_error_type": "AssertionError",
+      "pytorch_error_message": "was expecting embedding dimension of 512, but got 768",
+      "counterexample_validated": true,
+      "expected_error": "RuntimeError"
+    },
+    {
+      "name": "transformer_encoder_dim_mismatch",
+      "description": "TransformerEncoder d_model=512 but input last dim=256",
+      "tensorguard_found_bug": true,
+      "pytorch_raised_error": true,
+      "pytorch_error_type": "AssertionError",
+      "pytorch_error_message": "was expecting embedding dimension of 512, but got 256",
+      "counterexample_validated": true,
+      "expected_error": "RuntimeError"
+    },
+    {
+      "name": "residual_shape_mismatch",
+      "description": "Residual add fails because projection changes dim",
+      "tensorguard_found_bug": true,
+      "pytorch_raised_error": true,
+      "pytorch_error_type": "RuntimeError",
+      "pytorch_error_message": "The size of tensor a (512) must match the size of tensor b (256) at non-singleton dimension 1",
+      "counterexample_validated": true,
+      "expected_error": "RuntimeError"
+    },
+    {
+      "name": "conv_chain_channel_mismatch",
+      "description": "Second Conv2d expects 32 channels but first outputs 64",
+      "tensorguard_found_bug": true,
+      "pytorch_raised_error": true,
+      "pytorch_error_type": "RuntimeError",
+      "pytorch_error_message": "Given groups=1, weight of size [128, 32, 3, 3], expected input[2, 64, 32, 32] to have 32 channels, but got 64 channels instead",
+      "counterexample_validated": true,
+      "expected_error": "RuntimeError"
+    }
+  ],
+  "summary": {
+    "total_cases": 10,
+    "tensorguard_found_bug": 10,
+    "pytorch_raised_error": 10,
+    "counterexamples_validated": 10,
+    "validation_rate": 1.0,
+    "false_positive_rate": 0.0
+  }
+}

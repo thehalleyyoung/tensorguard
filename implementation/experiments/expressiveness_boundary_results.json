@@ -1,0 +1,661 @@
+{
+  "characterization": "TensorGuard correctly handled 17/19 within-expressiveness tests, 3/3 boundary tests, and 6/7 outside-expressiveness tests. Overall: 26/29 tests matched expectations. Core strengths: linear/conv/reshape/matmul/device/phase shape checking. Precision gaps: element-wise ops (broadcasting, skip-connection add) not fully tracked. Honest limitations: dynamic shapes, variable-length sequences, custom autograd, complex indexing, and dict returns produce false negatives.",
+  "overall": {
+    "total": 29,
+    "correct": 26,
+    "accuracy": 0.896551724137931
+  },
+  "per_category": {
+    "within_expressiveness": {
+      "total": 19,
+      "correct": 17,
+      "accuracy": 0.8947368421052632,
+      "tests": [
+        {
+          "name": "linear_chain_safe",
+          "category": "within_expressiveness",
+          "category_number": 1,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "Matching in/out features",
+          "time_ms": 17.167091369628906
+        },
+        {
+          "name": "linear_chain_bug",
+          "category": "within_expressiveness",
+          "category_number": 1,
+          "expected_result": "bug",
+          "actual_result": "bug",
+          "correct": true,
+          "notes": "fc1 out=20 but fc2 in=50",
+          "time_ms": 144.85788345336914
+        },
+        {
+          "name": "conv2d_channel_safe",
+          "category": "within_expressiveness",
+          "category_number": 2,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "Conv out_channels matches next in_channels",
+          "time_ms": 22.610902786254883
+        },
+        {
+          "name": "conv2d_channel_bug",
+          "category": "within_expressiveness",
+          "category_number": 2,
+          "expected_result": "bug",
+          "actual_result": "bug",
+          "correct": true,
+          "notes": "conv1 out=16 but conv2 in=64",
+          "time_ms": 302.90794372558594
+        },
+        {
+          "name": "reshape_safe",
+          "category": "within_expressiveness",
+          "category_number": 3,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "view(-1,20) then Linear(20,10)",
+          "time_ms": 60.12272834777832
+        },
+        {
+          "name": "reshape_bug",
+          "category": "within_expressiveness",
+          "category_number": 3,
+          "expected_result": "bug",
+          "actual_result": "bug",
+          "correct": true,
+          "notes": "view(-1,20) but Linear expects 30",
+          "time_ms": 33.47373008728027
+        },
+        {
+          "name": "broadcast_safe",
+          "category": "within_expressiveness",
+          "category_number": 4,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "bias (1,10) broadcasts with (batch,10)",
+          "time_ms": 16.02482795715332
+        },
+        {
+          "name": "broadcast_bug",
+          "category": "within_expressiveness",
+          "category_number": 4,
+          "expected_result": "bug",
+          "actual_result": "safe",
+          "correct": false,
+          "notes": "bias (5,3) incompatible with (batch,10)",
+          "time_ms": 13.904094696044922
+        },
+        {
+          "name": "device_safe",
+          "category": "within_expressiveness",
+          "category_number": 5,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "All on CPU",
+          "time_ms": 12.627840042114258
+        },
+        {
+          "name": "device_bug",
+          "category": "within_expressiveness",
+          "category_number": 5,
+          "expected_result": "bug",
+          "actual_result": "bug",
+          "correct": true,
+          "notes": "Input moved to CUDA but model on CPU",
+          "time_ms": 50.83513259887695
+        },
+        {
+          "name": "phase_train",
+          "category": "within_expressiveness",
+          "category_number": 6,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "Dropout+BN in training mode",
+          "time_ms": 201.95817947387695
+        },
+        {
+          "name": "phase_eval",
+          "category": "within_expressiveness",
+          "category_number": 6,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "Dropout+BN in eval mode",
+          "time_ms": 189.03183937072754
+        },
+        {
+          "name": "matmul_safe",
+          "category": "within_expressiveness",
+          "category_number": 7,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "Compatible matmul shapes",
+          "time_ms": 101.20391845703125
+        },
+        {
+          "name": "matmul_bug",
+          "category": "within_expressiveness",
+          "category_number": 7,
+          "expected_result": "bug",
+          "actual_result": "bug",
+          "correct": true,
+          "notes": "x cols (10) != w rows (7)",
+          "time_ms": 15.588760375976562
+        },
+        {
+          "name": "mha_safe",
+          "category": "within_expressiveness",
+          "category_number": 8,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "All projections match embed_dim=512",
+          "time_ms": 113.20614814758301
+        },
+        {
+          "name": "mha_bug",
+          "category": "within_expressiveness",
+          "category_number": 8,
+          "expected_result": "bug",
+          "actual_result": "bug",
+          "correct": true,
+          "notes": "q_proj out=256 but out_proj in=512",
+          "time_ms": 162.66489028930664
+        },
+        {
+          "name": "skip_safe",
+          "category": "within_expressiveness",
+          "category_number": 9,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "Skip and output both (batch,10)",
+          "time_ms": 78.42516899108887
+        },
+        {
+          "name": "skip_bug",
+          "category": "within_expressiveness",
+          "category_number": 9,
+          "expected_result": "bug",
+          "actual_result": "safe",
+          "correct": false,
+          "notes": "Skip (batch,10) + fc1 output (batch,20) \u2014 shape mismatch on add",
+          "time_ms": 270.99108695983887
+        },
+        {
+          "name": "transpose_safe",
+          "category": "within_expressiveness",
+          "category_number": 10,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "Double transpose restores shape",
+          "time_ms": 89.72597122192383
+        }
+      ]
+    },
+    "boundary": {
+      "total": 3,
+      "correct": 3,
+      "accuracy": 1.0,
+      "tests": [
+        {
+          "name": "symbolic_cegar",
+          "category": "boundary",
+          "category_number": 1,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "Fully symbolic batch dim with CEGAR refinement",
+          "time_ms": 50.22025108337402
+        },
+        {
+          "name": "relational_mha",
+          "category": "boundary",
+          "category_number": 2,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "Relational constraint: embed_dim = heads * head_dim",
+          "time_ms": 242.65408515930176
+        },
+        {
+          "name": "modulelist_iteration",
+          "category": "boundary",
+          "category_number": 3,
+          "expected_result": "safe",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "ModuleList with for-loop iteration",
+          "time_ms": 112.72406578063965
+        }
+      ]
+    },
+    "outside_expressiveness": {
+      "total": 7,
+      "correct": 6,
+      "accuracy": 0.8571428571428571,
+      "tests": [
+        {
+          "name": "data_dependent_control_flow",
+          "category": "outside_expressiveness",
+          "category_number": 1,
+          "expected_result": "limitation",
+          "actual_result": "bug",
+          "correct": false,
+          "notes": "Surprisingly detected bug despite complex feature. fc_big->(batch,20) fed to fc_out(5,2): bug only on one branch Violations: ['Linear expects last dim=5, got 20']",
+          "time_ms": 52.281856536865234
+        },
+        {
+          "name": "dynamic_computation_graph",
+          "category": "outside_expressiveness",
+          "category_number": 2,
+          "expected_result": "limitation",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "False negative confirms limitation (reported safe despite hidden bug). fc->(1,5) cat'd then fc2 expects 10: dynamic loop hides mismatch",
+          "time_ms": 20.194053649902344
+        },
+        {
+          "name": "variable_length_sequences",
+          "category": "outside_expressiveness",
+          "category_number": 3,
+          "expected_result": "limitation",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "False negative confirms limitation (reported safe despite hidden bug). LSTM out=20 fed to fc(15,5): pack_padded_sequence hides shape",
+          "time_ms": 56.16283416748047
+        },
+        {
+          "name": "dict_return",
+          "category": "outside_expressiveness",
+          "category_number": 4,
+          "expected_result": "limitation",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "False negative confirms limitation (reported safe despite hidden bug). Dict return type makes shape tracking ambiguous",
+          "time_ms": 34.58380699157715
+        },
+        {
+          "name": "complex_indexing",
+          "category": "outside_expressiveness",
+          "category_number": 5,
+          "expected_result": "limitation",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "False negative confirms limitation (reported safe despite hidden bug). Boolean mask indexing produces data-dependent output shape",
+          "time_ms": 61.3558292388916
+        },
+        {
+          "name": "custom_autograd",
+          "category": "outside_expressiveness",
+          "category_number": 6,
+          "expected_result": "limitation",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "False negative confirms limitation (reported safe despite hidden bug). Custom Function reshapes to (-1,20) but fc expects 10",
+          "time_ms": 92.62895584106445
+        },
+        {
+          "name": "recursive_modules",
+          "category": "outside_expressiveness",
+          "category_number": 7,
+          "expected_result": "limitation",
+          "actual_result": "safe",
+          "correct": true,
+          "notes": "False negative confirms limitation (reported safe despite hidden bug). Recursive module instantiation with depth parameter",
+          "time_ms": 83.53996276855469
+        }
+      ]
+    }
+  },
+  "capabilities": [
+    "linear_chain_safe",
+    "linear_chain_bug",
+    "conv2d_channel_safe",
+    "conv2d_channel_bug",
+    "reshape_safe",
+    "reshape_bug",
+    "broadcast_safe",
+    "device_safe",
+    "device_bug",
+    "phase_train",
+    "phase_eval",
+    "matmul_safe",
+    "matmul_bug",
+    "mha_safe",
+    "mha_bug",
+    "skip_safe",
+    "transpose_safe"
+  ],
+  "boundary_capabilities": [
+    "symbolic_cegar",
+    "relational_mha",
+    "modulelist_iteration"
+  ],
+  "limitations": [
+    "dynamic_computation_graph",
+    "variable_length_sequences",
+    "dict_return",
+    "complex_indexing",
+    "custom_autograd",
+    "recursive_modules"
+  ],
+  "precision_misses": [
+    {
+      "name": "broadcast_bug",
+      "notes": "bias (5,3) incompatible with (batch,10)"
+    },
+    {
+      "name": "skip_bug",
+      "notes": "Skip (batch,10) + fc1 output (batch,20) \u2014 shape mismatch on add"
+    }
+  ],
+  "surprise_capabilities": [
+    {
+      "name": "data_dependent_control_flow",
+      "notes": "Surprisingly detected bug despite complex feature. fc_big->(batch,20) fed to fc_out(5,2): bug only on one branch Violations: ['Linear expects last dim=5, got 20']"
+    }
+  ],
+  "all_results": [
+    {
+      "name": "linear_chain_safe",
+      "category": "within_expressiveness",
+      "category_number": 1,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "Matching in/out features",
+      "time_ms": 17.167091369628906
+    },
+    {
+      "name": "linear_chain_bug",
+      "category": "within_expressiveness",
+      "category_number": 1,
+      "expected_result": "bug",
+      "actual_result": "bug",
+      "correct": true,
+      "notes": "fc1 out=20 but fc2 in=50",
+      "time_ms": 144.85788345336914
+    },
+    {
+      "name": "conv2d_channel_safe",
+      "category": "within_expressiveness",
+      "category_number": 2,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "Conv out_channels matches next in_channels",
+      "time_ms": 22.610902786254883
+    },
+    {
+      "name": "conv2d_channel_bug",
+      "category": "within_expressiveness",
+      "category_number": 2,
+      "expected_result": "bug",
+      "actual_result": "bug",
+      "correct": true,
+      "notes": "conv1 out=16 but conv2 in=64",
+      "time_ms": 302.90794372558594
+    },
+    {
+      "name": "reshape_safe",
+      "category": "within_expressiveness",
+      "category_number": 3,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "view(-1,20) then Linear(20,10)",
+      "time_ms": 60.12272834777832
+    },
+    {
+      "name": "reshape_bug",
+      "category": "within_expressiveness",
+      "category_number": 3,
+      "expected_result": "bug",
+      "actual_result": "bug",
+      "correct": true,
+      "notes": "view(-1,20) but Linear expects 30",
+      "time_ms": 33.47373008728027
+    },
+    {
+      "name": "broadcast_safe",
+      "category": "within_expressiveness",
+      "category_number": 4,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "bias (1,10) broadcasts with (batch,10)",
+      "time_ms": 16.02482795715332
+    },
+    {
+      "name": "broadcast_bug",
+      "category": "within_expressiveness",
+      "category_number": 4,
+      "expected_result": "bug",
+      "actual_result": "safe",
+      "correct": false,
+      "notes": "bias (5,3) incompatible with (batch,10)",
+      "time_ms": 13.904094696044922
+    },
+    {
+      "name": "device_safe",
+      "category": "within_expressiveness",
+      "category_number": 5,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "All on CPU",
+      "time_ms": 12.627840042114258
+    },
+    {
+      "name": "device_bug",
+      "category": "within_expressiveness",
+      "category_number": 5,
+      "expected_result": "bug",
+      "actual_result": "bug",
+      "correct": true,
+      "notes": "Input moved to CUDA but model on CPU",
+      "time_ms": 50.83513259887695
+    },
+    {
+      "name": "phase_train",
+      "category": "within_expressiveness",
+      "category_number": 6,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "Dropout+BN in training mode",
+      "time_ms": 201.95817947387695
+    },
+    {
+      "name": "phase_eval",
+      "category": "within_expressiveness",
+      "category_number": 6,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "Dropout+BN in eval mode",
+      "time_ms": 189.03183937072754
+    },
+    {
+      "name": "matmul_safe",
+      "category": "within_expressiveness",
+      "category_number": 7,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "Compatible matmul shapes",
+      "time_ms": 101.20391845703125
+    },
+    {
+      "name": "matmul_bug",
+      "category": "within_expressiveness",
+      "category_number": 7,
+      "expected_result": "bug",
+      "actual_result": "bug",
+      "correct": true,
+      "notes": "x cols (10) != w rows (7)",
+      "time_ms": 15.588760375976562
+    },
+    {
+      "name": "mha_safe",
+      "category": "within_expressiveness",
+      "category_number": 8,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "All projections match embed_dim=512",
+      "time_ms": 113.20614814758301
+    },
+    {
+      "name": "mha_bug",
+      "category": "within_expressiveness",
+      "category_number": 8,
+      "expected_result": "bug",
+      "actual_result": "bug",
+      "correct": true,
+      "notes": "q_proj out=256 but out_proj in=512",
+      "time_ms": 162.66489028930664
+    },
+    {
+      "name": "skip_safe",
+      "category": "within_expressiveness",
+      "category_number": 9,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "Skip and output both (batch,10)",
+      "time_ms": 78.42516899108887
+    },
+    {
+      "name": "skip_bug",
+      "category": "within_expressiveness",
+      "category_number": 9,
+      "expected_result": "bug",
+      "actual_result": "safe",
+      "correct": false,
+      "notes": "Skip (batch,10) + fc1 output (batch,20) \u2014 shape mismatch on add",
+      "time_ms": 270.99108695983887
+    },
+    {
+      "name": "transpose_safe",
+      "category": "within_expressiveness",
+      "category_number": 10,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "Double transpose restores shape",
+      "time_ms": 89.72597122192383
+    },
+    {
+      "name": "symbolic_cegar",
+      "category": "boundary",
+      "category_number": 1,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "Fully symbolic batch dim with CEGAR refinement",
+      "time_ms": 50.22025108337402
+    },
+    {
+      "name": "relational_mha",
+      "category": "boundary",
+      "category_number": 2,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "Relational constraint: embed_dim = heads * head_dim",
+      "time_ms": 242.65408515930176
+    },
+    {
+      "name": "modulelist_iteration",
+      "category": "boundary",
+      "category_number": 3,
+      "expected_result": "safe",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "ModuleList with for-loop iteration",
+      "time_ms": 112.72406578063965
+    },
+    {
+      "name": "data_dependent_control_flow",
+      "category": "outside_expressiveness",
+      "category_number": 1,
+      "expected_result": "limitation",
+      "actual_result": "bug",
+      "correct": false,
+      "notes": "Surprisingly detected bug despite complex feature. fc_big->(batch,20) fed to fc_out(5,2): bug only on one branch Violations: ['Linear expects last dim=5, got 20']",
+      "time_ms": 52.281856536865234
+    },
+    {
+      "name": "dynamic_computation_graph",
+      "category": "outside_expressiveness",
+      "category_number": 2,
+      "expected_result": "limitation",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "False negative confirms limitation (reported safe despite hidden bug). fc->(1,5) cat'd then fc2 expects 10: dynamic loop hides mismatch",
+      "time_ms": 20.194053649902344
+    },
+    {
+      "name": "variable_length_sequences",
+      "category": "outside_expressiveness",
+      "category_number": 3,
+      "expected_result": "limitation",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "False negative confirms limitation (reported safe despite hidden bug). LSTM out=20 fed to fc(15,5): pack_padded_sequence hides shape",
+      "time_ms": 56.16283416748047
+    },
+    {
+      "name": "dict_return",
+      "category": "outside_expressiveness",
+      "category_number": 4,
+      "expected_result": "limitation",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "False negative confirms limitation (reported safe despite hidden bug). Dict return type makes shape tracking ambiguous",
+      "time_ms": 34.58380699157715
+    },
+    {
+      "name": "complex_indexing",
+      "category": "outside_expressiveness",
+      "category_number": 5,
+      "expected_result": "limitation",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "False negative confirms limitation (reported safe despite hidden bug). Boolean mask indexing produces data-dependent output shape",
+      "time_ms": 61.3558292388916
+    },
+    {
+      "name": "custom_autograd",
+      "category": "outside_expressiveness",
+      "category_number": 6,
+      "expected_result": "limitation",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "False negative confirms limitation (reported safe despite hidden bug). Custom Function reshapes to (-1,20) but fc expects 10",
+      "time_ms": 92.62895584106445
+    },
+    {
+      "name": "recursive_modules",
+      "category": "outside_expressiveness",
+      "category_number": 7,
+      "expected_result": "limitation",
+      "actual_result": "safe",
+      "correct": true,
+      "notes": "False negative confirms limitation (reported safe despite hidden bug). Recursive module instantiation with depth parameter",
+      "time_ms": 83.53996276855469
+    }
+  ]
+}

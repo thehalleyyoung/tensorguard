@@ -1,0 +1,353 @@
+{
+  "experiment": "dynamic_architecture_evaluation",
+  "description": "Evaluates TensorGuard on modern dynamic-shape architectures: Transformer w/ dynamic attention masks, MoE, GNN, dynamic sequence models, and conditional computation.",
+  "timestamp": "2026-02-25T23:21:43",
+  "summary": {
+    "total_benchmarks": 20,
+    "correct": 18,
+    "accuracy": 0.9,
+    "tp": 9,
+    "fp": 1,
+    "tn": 9,
+    "fn": 1,
+    "precision": 0.9,
+    "recall": 0.9,
+    "f1": 0.9,
+    "errors": 0,
+    "category_breakdown": {
+      "transformer": {
+        "total": 4,
+        "correct": 4,
+        "accuracy": 1.0
+      },
+      "moe": {
+        "total": 4,
+        "correct": 4,
+        "accuracy": 1.0
+      },
+      "gnn": {
+        "total": 4,
+        "correct": 3,
+        "accuracy": 0.75
+      },
+      "dynamic_sequence": {
+        "total": 4,
+        "correct": 4,
+        "accuracy": 1.0
+      },
+      "conditional": {
+        "total": 4,
+        "correct": 3,
+        "accuracy": 0.75
+      }
+    }
+  },
+  "benchmarks": [
+    {
+      "name": "transformer_dynamic_mask_safe",
+      "category": "transformer",
+      "description": "Transformer encoder with dynamic attention mask, correct shapes",
+      "expected_safe": true,
+      "verdict": "safe",
+      "is_correct": true,
+      "verification_time_ms": 206.93,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes",
+        "dynamic_control_flow"
+      ]
+    },
+    {
+      "name": "transformer_dynamic_mask_dim_bug",
+      "category": "transformer",
+      "description": "Transformer with Linear dim mismatch after encoder",
+      "expected_safe": false,
+      "verdict": "unsafe",
+      "is_correct": true,
+      "verification_time_ms": 107.84,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "multihead_attention_safe",
+      "category": "transformer",
+      "description": "Multi-head attention with dynamic key/value lengths",
+      "expected_safe": true,
+      "verdict": "safe",
+      "is_correct": true,
+      "verification_time_ms": 463.25,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "multihead_attention_embed_bug",
+      "category": "transformer",
+      "description": "MHA with mismatched embed dim between projection and attention",
+      "expected_safe": false,
+      "verdict": "unsafe",
+      "is_correct": true,
+      "verification_time_ms": 276.09,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "moe_gating_safe",
+      "category": "moe",
+      "description": "MoE with gating network routing to expert MLPs, correct dims",
+      "expected_safe": true,
+      "verdict": "safe",
+      "is_correct": true,
+      "verification_time_ms": 212.54,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "dynamic_control_flow",
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "moe_expert_dim_bug",
+      "category": "moe",
+      "description": "MoE where one expert has wrong output dim",
+      "expected_safe": false,
+      "verdict": "unsafe",
+      "is_correct": true,
+      "verification_time_ms": 422.63,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "dynamic_control_flow",
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "moe_hierarchical_safe",
+      "category": "moe",
+      "description": "Hierarchical MoE with two-level gating",
+      "expected_safe": true,
+      "verdict": "safe",
+      "is_correct": true,
+      "verification_time_ms": 187.9,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "dynamic_control_flow"
+      ]
+    },
+    {
+      "name": "moe_gate_input_bug",
+      "category": "moe",
+      "description": "MoE gate input dim doesn't match input feature dim",
+      "expected_safe": false,
+      "verdict": "unsafe",
+      "is_correct": true,
+      "verification_time_ms": 314.73,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "dynamic_control_flow"
+      ]
+    },
+    {
+      "name": "gnn_message_passing_safe",
+      "category": "gnn",
+      "description": "GNN with message passing: node features -> MLP -> aggregate",
+      "expected_safe": true,
+      "verdict": "safe",
+      "is_correct": true,
+      "verification_time_ms": 42.75,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes",
+        "dynamic_control_flow"
+      ]
+    },
+    {
+      "name": "gnn_message_passing_bug",
+      "category": "gnn",
+      "description": "GNN with dim mismatch between message and update functions",
+      "expected_safe": false,
+      "verdict": "unsafe",
+      "is_correct": true,
+      "verification_time_ms": 41.9,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "gnn_multi_layer_safe",
+      "category": "gnn",
+      "description": "Multi-layer GNN with residual connections",
+      "expected_safe": true,
+      "verdict": "safe",
+      "is_correct": true,
+      "verification_time_ms": 267.06,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "gnn_edge_conditioned_bug",
+      "category": "gnn",
+      "description": "Edge-conditioned GNN with feature dim mismatch",
+      "expected_safe": false,
+      "verdict": "safe",
+      "is_correct": false,
+      "verification_time_ms": 72.25,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "dynamic_lstm_varlen_safe",
+      "category": "dynamic_sequence",
+      "description": "LSTM with variable-length sequences, correct shapes",
+      "expected_safe": true,
+      "verdict": "safe",
+      "is_correct": true,
+      "verification_time_ms": 193.42,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "dynamic_lstm_varlen_bug",
+      "category": "dynamic_sequence",
+      "description": "LSTM with hidden-to-linear dim mismatch",
+      "expected_safe": false,
+      "verdict": "unsafe",
+      "is_correct": true,
+      "verification_time_ms": 85.21,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "dynamic_bigru_varlen_safe",
+      "category": "dynamic_sequence",
+      "description": "Bidirectional GRU with variable-length input",
+      "expected_safe": true,
+      "verdict": "safe",
+      "is_correct": true,
+      "verification_time_ms": 35.7,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "dynamic_bigru_varlen_bug",
+      "category": "dynamic_sequence",
+      "description": "BiGRU forgetting to double hidden size for bidirectional",
+      "expected_safe": false,
+      "verdict": "unsafe",
+      "is_correct": true,
+      "verification_time_ms": 75.47,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "conditional_branch_safe",
+      "category": "conditional",
+      "description": "Model with dual branch paths, both having correct shapes",
+      "expected_safe": true,
+      "verdict": "safe",
+      "is_correct": true,
+      "verification_time_ms": 165.72,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "dynamic_control_flow",
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "conditional_branch_dim_bug",
+      "category": "conditional",
+      "description": "Conditional branches produce different output dims",
+      "expected_safe": false,
+      "verdict": "unsafe",
+      "is_correct": true,
+      "verification_time_ms": 86.12,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "dynamic_control_flow",
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "adaptive_pooling_safe",
+      "category": "conditional",
+      "description": "Model with adaptive pooling handling variable spatial dims",
+      "expected_safe": true,
+      "verdict": "unsafe",
+      "is_correct": false,
+      "verification_time_ms": 191.15,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes"
+      ]
+    },
+    {
+      "name": "skip_connection_dim_bug",
+      "category": "conditional",
+      "description": "Skip connection with channel mismatch",
+      "expected_safe": false,
+      "verdict": "unsafe",
+      "is_correct": true,
+      "verification_time_ms": 82.29,
+      "errors": [],
+      "dynamic_features_detected": {},
+      "dynamic_feature_warnings": [],
+      "expected_dynamic_features": [
+        "data_dependent_shapes"
+      ]
+    }
+  ]
+}
