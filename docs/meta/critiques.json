@@ -1,0 +1,53 @@
+{
+  "project": "refinement-type-inference-dynamic-lang",
+  "title": "TensorGuard: Static Tensor Shape Verification for PyTorch",
+  "synthesis_date": "2026-03-02",
+  "average_score": 6.7,
+  "score_range": [6, 7],
+  "reviewers": [
+    {
+      "name": "Cesar Sanchez",
+      "persona": "formal_verification_AI_researcher",
+      "score": 7,
+      "key_strength": "The 5-theory product domain with machine-checked Tinelli-Zarba composition soundness is a genuine contribution to domain-specific SMT verification.",
+      "key_weakness": "The IC3/PDR adaptation lacks a formal interpolation completeness argument for the shape constraint domain, making the unbounded verification heuristic rather than verified.",
+      "review_file": "review_cesar_sanchez.md"
+    },
+    {
+      "name": "Roderick Bloem",
+      "persona": "machine_learning_specification_safety_researcher",
+      "score": 7,
+      "key_strength": "Implicit specification approach with CI/CD integration (SARIF, exit codes) demonstrates deployment maturity rare in academic verification tools.",
+      "key_weakness": "No comparison with existing shape checking tools (TorchScript, mypy tensor plugins) makes it impossible to assess the marginal value of heavyweight SMT-based verification.",
+      "review_file": "review_roderick_bloem.md"
+    },
+    {
+      "name": "Vasco Vasconcelos",
+      "persona": "probabilistic_models_and_formal_methods_expert",
+      "score": 6,
+      "key_strength": "The refinement type structure with IC3/PDR reframed as inductive type inference and CEGAR as principal type inference is an elegant application of type-theoretic ideas.",
+      "key_weakness": "The decidability boundary of the refinement type system is uncharacterized, and Knuth-Bendix completion cannot succeed for the full shape algebra involving nonlinear integer arithmetic.",
+      "review_file": "review_vasco_vasconcelos.md"
+    }
+  ],
+  "consensus_strengths": [
+    "The 5-theory product domain (Shape×Device×Phase×Stride×Permutation) with verified Nelson-Oppen/Tinelli-Zarba composition soundness is a well-designed and formally grounded contribution to domain-specific verification.",
+    "IC3/PDR unbounded verification with 9.5–21.2× speedup provides genuine safety guarantees for all symbolic dimension values, not just sampled ones.",
+    "Zero false positives on 230 benchmarks with 100% proof certificate coverage meets the soundness standard required for CI gate deployment.",
+    "Comprehensive engineering effort — 193+ operators, 6,054 tests, SARIF integration, CLI tooling, TorchBench evaluation — demonstrates practical deployment maturity."
+  ],
+  "consensus_weaknesses": [
+    "The IC3/PDR adaptation to shape verification lacks formal justification: no Craig interpolation completeness argument for the shape domain, and correctness relies on empirical agreement rather than proof.",
+    "Composition soundness claims under Tinelli-Zarba are suspect for the Stride theory, which involves divisibility predicates that may violate the convexity precondition required for completeness.",
+    "The Lean 4 mechanization scope is ambiguous — it is unclear which theorems are fully mechanized versus stated as axioms, undermining the mechanization claims.",
+    "No comparison with existing shape checking tools (TorchScript, ShapeFlow, mypy/pyright tensor plugins) prevents assessment of the marginal value of SMT-based verification over simpler approaches.",
+    "The decidability boundary of the refinement type system is uncharacterized: nonlinear integer arithmetic arising from convolution formulas is undecidable, and the system may return 'unknown' for decidable instances."
+  ],
+  "actionable_recommendations": [
+    "Provide a formal argument or reference that the shape constraint domain admits Craig interpolation, ensuring IC3/PDR frame refinement completeness, or clearly state that the procedure is sound but incomplete.",
+    "Clarify the Lean 4 mechanization scope by listing which theorems are fully mechanized and which are admitted, and provide the Lean source for independent verification.",
+    "Add baseline comparisons against at least 2-3 existing shape checking tools (TorchScript, mypy tensor plugins, ShapeFlow) to quantify the marginal benefit of SMT-based verification.",
+    "Characterize the decidable fragment of integer arithmetic that arises from the 193+ transfer functions and document which operators produce nonlinear constraints that may cause 'unknown' verdicts.",
+    "Provide a formal adequacy theorem relating the denotational semantics of the shape algebra to PyTorch's runtime shape computation, at least for a representative subset of operators."
+  ]
+}
