@@ -466,6 +466,60 @@ Also exposes `get_all_covered_ops.get_unsupported_op_shape` for retrieving the f
 
 ## CLI (`src.cli.main`)
 
+### `reftype analyze-package [DIRECTORY]`
+
+Analyze an entire Python package or directory. Recursively finds `.py` files, respects `.gitignore` patterns, processes all files, and shows an aggregated summary.
+
+```bash
+reftype analyze-package my_project/
+reftype analyze-package src/ --output-format json -o results.json
+reftype analyze-package . --requirements requirements.txt --output-format sarif
+```
+
+| Flag | Description |
+|------|-------------|
+| `DIRECTORY` | Directory to analyze (default: `.`) |
+| `--requirements FILE` | Path to `requirements.txt` or `pyproject.toml` for library type stubs |
+| `--output-format` | Output format: `text` (default), `json`, `sarif` |
+| `-o, --output` | Output file (default: stdout) |
+| `--include` | Glob patterns to include (default: `**/*.py`) |
+| `--exclude` | Additional glob patterns to exclude |
+| `-w, --workers N` | Parallel workers (0 = auto-detect) |
+| `--timeout N` | Per-file timeout in seconds (default: 300) |
+| `-v, --verbose` | Show per-file details |
+| `-c, --config` | Config file path |
+| `--stubs-dir PATH` | Directory containing `.pyi` stub files to use as known types |
+| `--mypy-baseline FILE` | mypy output file (text or JSON) for baseline comparison |
+| `--pyright-baseline FILE` | pyright JSON output file for baseline comparison |
+
+**Output formats:**
+
+- **`text`** — Human-readable summary with files analyzed, types inferred, refinements found, and bugs.
+- **`json`** — Machine-readable JSON with full results, summary, and optional `requirements` section.
+- **`sarif`** — SARIF 2.1.0 format for GitHub Code Scanning / GitHub Advanced Security integration.
+
+**`--requirements` flag:**
+
+When provided, parses a `requirements.txt` or `pyproject.toml` to extract dependency names and reports which dependencies have known type stubs (numpy, pandas, torch, scipy, requests, flask, django, sqlalchemy, tensorflow, pydantic).
+
+**`--stubs-dir` flag:**
+
+Scans the given directory for `.pyi` stub files, parses type annotations using the `ast` module, and provides them as "known types" to the inference engine. This allows the tool to start from existing type information and refine it further. Typeshed stubs are also auto-detected if available.
+
+**`--mypy-baseline` flag:**
+
+Imports mypy output as a baseline for comparison. Supports both mypy's default text format (`file:line: error: message [code]`) and JSON output (from `--output json`). After analysis, prints a comparison showing how many mypy errors were confirmed by refinement types, how many are likely false positives, and how many new issues were found.
+
+**`--pyright-baseline` flag:**
+
+Imports pyright's JSON output as a baseline. Same comparison logic as `--mypy-baseline`.
+
+**Skipped directories:** `venv/`, `.venv/`, `__pycache__/`, `.git/`, `node_modules/`, `.mypy_cache/`, `.pytest_cache/`, `dist/`, `build/`, `*.egg-info/`.
+
+**Exit codes:** `0` = no bugs, `1` = bugs found, `2` = error.
+
+---
+
 ### `reftype verify FILE`
 
 Verify an `nn.Module` source file from the command line.

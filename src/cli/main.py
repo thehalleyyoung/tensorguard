@@ -8,6 +8,7 @@ analysing Python / TypeScript code via CEGAR-based refinement type inference.
 """
 
 import argparse
+import ast
 import contextlib
 import enum
 import fnmatch
@@ -1787,6 +1788,18 @@ class AnalyzeCommand:
         parser.add_argument("--baseline", help="Baseline file for comparison")
         parser.add_argument("--no-color", action="store_true")
         parser.add_argument("--fail-on-new-bugs", action="store_true")
+        parser.add_argument(
+            "--stubs-dir", metavar="PATH",
+            help="Directory containing .pyi stub files to use as known types",
+        )
+        parser.add_argument(
+            "--mypy-baseline", metavar="FILE",
+            help="mypy output file (text or JSON) for baseline comparison",
+        )
+        parser.add_argument(
+            "--pyright-baseline", metavar="FILE",
+            help="pyright JSON output file for baseline comparison",
+        )
 
     def execute(self, args: argparse.Namespace) -> int:
         LoggingSetup.configure(getattr(args, "verbose", 0))
@@ -1804,6 +1817,16 @@ class AnalyzeCommand:
 
         telemetry = TelemetryCollector(enabled=cfg.telemetry_enabled)
         telemetry.record("analyze_start", files=len(cfg.paths))
+
+        # Load .pyi stubs if provided
+        known_stubs: List[StubType] = []
+        stubs_dir = getattr(args, "stubs_dir", None)
+        if stubs_dir:
+            known_stubs = _scan_pyi_stubs(stubs_dir)
+            sys.stderr.write(f"Loaded {len(known_stubs)} type annotations from stubs\n")
+        typeshed = _detect_typeshed()
+        if typeshed and not stubs_dir:
+            logger.debug("Auto-detected typeshed at %s", typeshed)
 
         try:
             include = getattr(args, "include", None) or cfg.include_patterns
@@ -1860,6 +1883,20 @@ class AnalyzeCommand:
             new_bug_count: Optional[int] = None
             if cfg.baseline_file:
                 new_bug_count = self._compare_baseline(cfg.baseline_file, all_results)
+
+            # Checker baseline comparisons (mypy / pyright)
+            mypy_bl = getattr(args, "mypy_baseline", None)
+            pyright_bl = getattr(args, "pyright_baseline", None)
+            if mypy_bl:
+                mypy_issues = _parse_mypy_baseline(mypy_bl)
+                cmp = _compare_checker_baseline(mypy_issues, all_results)
+                sys.stderr.write(f"\n── mypy baseline comparison ({len(mypy_issues)} issues) ──\n")
+                sys.stderr.write(cmp.summary_text() + "\n")
+            if pyright_bl:
+                pyright_issues = _parse_pyright_baseline(pyright_bl)
+                cmp = _compare_checker_baseline(pyright_issues, all_results)
+                sys.stderr.write(f"\n── pyright baseline comparison ({len(pyright_issues)} issues) ──\n")
+                sys.stderr.write(cmp.summary_text() + "\n")
 
             # Output
             self._write_output(args, cfg, all_results, summary)
@@ -2526,6 +2563,498 @@ class ConfigCommand:
         return 0
 
 
+# ── PackageAnalyzeCommand ─────────────────────────────────────────────────
+
+
+# Known type stub info for popular libraries (used by --requirements)
+_KNOWN_LIBRARY_STUBS: Dict[str, Dict[str, str]] = {
+    "numpy": {"stub_package": "numpy", "types": "ndarray, dtype, int64, float64"},
+    "pandas": {"stub_package": "pandas-stubs", "types": "DataFrame, Series, Index"},
+    "scipy": {"stub_package": "scipy", "types": "sparse.csr_matrix, optimize.OptimizeResult"},
+    "requests": {"stub_package": "types-requests", "types": "Response, Session"},
+    "flask": {"stub_package": "flask", "types": "Flask, Request, Response"},
+    "django": {"stub_package": "django-stubs", "types": "HttpRequest, HttpResponse, QuerySet"},
+    "sqlalchemy": {"stub_package": "sqlalchemy-stubs", "types": "Session, Engine, Column"},
+    "torch": {"stub_package": "torch", "types": "Tensor, nn.Module, optim.Optimizer"},
+    "tensorflow": {"stub_package": "tensorflow", "types": "Tensor, Variable, keras.Model"},
+    "pydantic": {"stub_package": "pydantic", "types": "BaseModel, Field, validator"},
+}
+
+
+def _parse_requirements_txt(path: pathlib.Path) -> List[str]:
+    """Extract package names from a requirements.txt file."""
+    packages: List[str] = []
+    if not path.is_file():
+        return packages
+    with open(path, "r", errors="replace") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("#") or line.startswith("-"):
+                continue
+            # Strip version specifiers: numpy>=1.21 -> numpy
+            name = re.split(r"[>=<!\[;]", line)[0].strip()
+            if name:
+                packages.append(name.lower())
+    return packages
+
+
+def _parse_pyproject_dependencies(path: pathlib.Path) -> List[str]:
+    """Extract dependency names from pyproject.toml [project.dependencies]."""
+    packages: List[str] = []
+    if not path.is_file():
+        return packages
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return packages
+    in_deps = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped == "[project]":
+            continue
+        if re.match(r"^\[", stripped) and stripped != "[project]":
+            in_deps = False
+        if stripped.startswith("dependencies"):
+            in_deps = True
+            continue
+        if in_deps and stripped.startswith('"'):
+            name = re.split(r'[>=<!\[;"\']', stripped.strip('", '))[0].strip()
+            if name:
+                packages.append(name.lower())
+        if in_deps and stripped == "]":
+            in_deps = False
+    return packages
+
+
+# ---------------------------------------------------------------------------
+# .pyi stub parsing and checker baseline import utilities
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class StubType:
+    """A type annotation extracted from a .pyi stub file."""
+    module: str
+    qualified_name: str
+    annotation: str
+    line: int = 0
+
+
+def _scan_pyi_stubs(stubs_dir: str) -> List[StubType]:
+    """Scan a directory for .pyi files and extract type annotations via ast."""
+    stubs: List[StubType] = []
+    root = pathlib.Path(stubs_dir)
+    if not root.is_dir():
+        logger.warning("Stubs directory does not exist: %s", stubs_dir)
+        return stubs
+    for pyi_path in root.rglob("*.pyi"):
+        rel = pyi_path.relative_to(root)
+        module = str(rel.with_suffix("")).replace(os.sep, ".")
+        if module.endswith(".__init__"):
+            module = module[: -len(".__init__")]
+        try:
+            tree = ast.parse(pyi_path.read_text(encoding="utf-8"), filename=str(pyi_path))
+        except (SyntaxError, OSError) as exc:
+            logger.debug("Skipping stub %s: %s", pyi_path, exc)
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                ret = ast.dump(node.returns) if node.returns else "None"
+                stubs.append(StubType(
+                    module=module,
+                    qualified_name=f"{module}.{node.name}",
+                    annotation=ret,
+                    line=node.lineno,
+                ))
+            elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                ann = ast.dump(node.annotation) if node.annotation else "Any"
+                stubs.append(StubType(
+                    module=module,
+                    qualified_name=f"{module}.{node.target.id}",
+                    annotation=ann,
+                    line=node.lineno,
+                ))
+    return stubs
+
+
+def _detect_typeshed() -> Optional[str]:
+    """Try to find typeshed stubs bundled with the Python installation."""
+    # mypy bundles typeshed; also check the stdlib pyi path
+    for candidate in [
+        pathlib.Path(sys.prefix) / "lib" / "mypy" / "typeshed",
+        pathlib.Path(sys.prefix) / "lib" / "typeshed",
+        pathlib.Path(shutil.which("mypy") or "/nonexistent").parent.parent / "lib" / "mypy" / "typeshed",
+    ]:
+        if candidate.is_dir():
+            return str(candidate)
+    return None
+
+
+@dataclass
+class CheckerIssue:
+    """An issue imported from an external type checker (mypy / pyright)."""
+    file: str
+    line: int
+    message: str
+    error_code: str
+    source: str  # "mypy" or "pyright"
+    severity: str = "error"
+
+    def fingerprint(self) -> str:
+        raw = f"{self.source}:{self.file}:{self.line}:{self.error_code}:{self.message}"
+        return hashlib.sha256(raw.encode()).hexdigest()[:16]
+
+
+@dataclass
+class BaselineComparison:
+    """Result of comparing refinement type results against a checker baseline."""
+    confirmed: List[CheckerIssue] = field(default_factory=list)
+    false_positives: List[CheckerIssue] = field(default_factory=list)
+    new_issues: List[Bug] = field(default_factory=list)
+
+    def summary_text(self) -> str:
+        lines = [
+            f"  Checker errors confirmed   : {len(self.confirmed)}",
+            f"  Checker false positives     : {len(self.false_positives)}",
+            f"  New issues (refinement type): {len(self.new_issues)}",
+        ]
+        return "\n".join(lines)
+
+
+def _parse_mypy_text(text: str) -> List[CheckerIssue]:
+    """Parse mypy's default text output: file:line: error: message [code]."""
+    issues: List[CheckerIssue] = []
+    pattern = re.compile(
+        r"^(?P<file>[^:]+):(?P<line>\d+):\s*(?P<sev>error|warning|note):\s*"
+        r"(?P<msg>.+?)(?:\s+\[(?P<code>[^\]]+)\])?\s*$"
+    )
+    for raw_line in text.splitlines():
+        m = pattern.match(raw_line.strip())
+        if m:
+            issues.append(CheckerIssue(
+                file=m.group("file"),
+                line=int(m.group("line")),
+                message=m.group("msg"),
+                error_code=m.group("code") or "unknown",
+                source="mypy",
+                severity=m.group("sev"),
+            ))
+    return issues
+
+
+def _parse_mypy_json(data: Any) -> List[CheckerIssue]:
+    """Parse mypy's JSON output (list of dicts with file, line, message, code)."""
+    issues: List[CheckerIssue] = []
+    items = data if isinstance(data, list) else data.get("errors", data.get("messages", []))
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        issues.append(CheckerIssue(
+            file=item.get("file", "<unknown>"),
+            line=int(item.get("line", 0)),
+            message=item.get("message", ""),
+            error_code=item.get("code", item.get("error_code", "unknown")),
+            source="mypy",
+            severity=item.get("severity", "error"),
+        ))
+    return issues
+
+
+def _parse_mypy_baseline(path: str) -> List[CheckerIssue]:
+    """Load a mypy baseline file (text or JSON format)."""
+    text = pathlib.Path(path).read_text(encoding="utf-8", errors="replace")
+    text_stripped = text.strip()
+    if text_stripped.startswith(("{", "[")):
+        try:
+            data = json.loads(text_stripped)
+            return _parse_mypy_json(data)
+        except json.JSONDecodeError:
+            pass
+    return _parse_mypy_text(text)
+
+
+def _parse_pyright_baseline(path: str) -> List[CheckerIssue]:
+    """Parse pyright's JSON output format."""
+    text = pathlib.Path(path).read_text(encoding="utf-8", errors="replace")
+    data = json.loads(text)
+    issues: List[CheckerIssue] = []
+    diagnostics = data.get("generalDiagnostics", data.get("diagnostics", []))
+    for diag in diagnostics:
+        if not isinstance(diag, dict):
+            continue
+        rng = diag.get("range", {}).get("start", {})
+        issues.append(CheckerIssue(
+            file=diag.get("file", diag.get("uri", "<unknown>")),
+            line=int(rng.get("line", 0)) + 1,  # pyright uses 0-based lines
+            message=diag.get("message", ""),
+            error_code=diag.get("rule", diag.get("code", "unknown")),
+            source="pyright",
+            severity=diag.get("severity", "error"),
+        ))
+    return issues
+
+
+def _compare_checker_baseline(
+    checker_issues: List[CheckerIssue],
+    analysis_results: List[AnalysisResult],
+) -> BaselineComparison:
+    """Compare external checker issues against reftype analysis results."""
+    result_bugs_by_loc: Dict[str, List[Bug]] = {}
+    for r in analysis_results:
+        for b in r.bugs:
+            key = f"{b.location.file}:{b.location.line}"
+            result_bugs_by_loc.setdefault(key, []).append(b)
+
+    confirmed: List[CheckerIssue] = []
+    false_positives: List[CheckerIssue] = []
+    matched_bug_fps: Set[str] = set()
+
+    for issue in checker_issues:
+        key = f"{issue.file}:{issue.line}"
+        bugs_at_loc = result_bugs_by_loc.get(key, [])
+        if bugs_at_loc:
+            confirmed.append(issue)
+            for b in bugs_at_loc:
+                matched_bug_fps.add(b.fingerprint())
+        else:
+            false_positives.append(issue)
+
+    new_issues: List[Bug] = []
+    for r in analysis_results:
+        for b in r.bugs:
+            if b.fingerprint() not in matched_bug_fps:
+                new_issues.append(b)
+
+    return BaselineComparison(
+        confirmed=confirmed,
+        false_positives=false_positives,
+        new_issues=new_issues,
+    )
+
+
+class PackageAnalyzeCommand:
+    """Analyze an entire Python package or directory for refinement type bugs.
+
+    Recursively discovers .py files, respects .gitignore, processes all
+    files, and aggregates results with a summary.
+    """
+
+    # Directories always skipped
+    _SKIP_DIRS = {"venv", ".venv", "__pycache__", ".git", "node_modules",
+                  ".mypy_cache", ".pytest_cache", "dist", "build", "*.egg-info"}
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "directory", nargs="?", default=".",
+            help="Directory or Python package to analyze (default: current dir)",
+        )
+        parser.add_argument(
+            "--requirements", metavar="FILE",
+            help="Path to requirements.txt or pyproject.toml for library type stubs",
+        )
+        parser.add_argument(
+            "--output-format", choices=["text", "json", "sarif"], default="text",
+            help="Output format (default: text)",
+        )
+        parser.add_argument(
+            "-o", "--output", help="Output file (default: stdout)",
+        )
+        parser.add_argument(
+            "-v", "--verbose", action="count", default=0,
+        )
+        parser.add_argument(
+            "--include", nargs="*", default=["**/*.py"],
+            help="Glob patterns to include (default: **/*.py)",
+        )
+        parser.add_argument(
+            "--exclude", nargs="*", default=[],
+            help="Additional glob patterns to exclude",
+        )
+        parser.add_argument(
+            "-w", "--workers", type=int, default=0,
+            help="Parallel workers (0 = auto)",
+        )
+        parser.add_argument(
+            "--timeout", type=float, default=300.0,
+            help="Per-file timeout in seconds",
+        )
+        parser.add_argument(
+            "-c", "--config", help="Config file path",
+        )
+        parser.add_argument(
+            "--stubs-dir", metavar="PATH",
+            help="Directory containing .pyi stub files to use as known types",
+        )
+        parser.add_argument(
+            "--mypy-baseline", metavar="FILE",
+            help="mypy output file (text or JSON) for baseline comparison",
+        )
+        parser.add_argument(
+            "--pyright-baseline", metavar="FILE",
+            help="pyright JSON output file for baseline comparison",
+        )
+
+    def execute(self, args: argparse.Namespace) -> int:
+        LoggingSetup.configure(getattr(args, "verbose", 0))
+
+        directory = pathlib.Path(getattr(args, "directory", ".")).resolve()
+        if not directory.is_dir():
+            sys.stderr.write(f"Not a directory: {directory}\n")
+            return 2
+
+        # Build exclusion patterns
+        exclude = list(self._SKIP_DIRS) + (getattr(args, "exclude", None) or [])
+        include = getattr(args, "include", None) or ["**/*.py"]
+
+        # Discover files
+        discovery = FileDiscovery(include=include, exclude=exclude)
+        files = discovery.discover([str(directory)])
+
+        if not files:
+            sys.stderr.write("No Python files found in directory.\n")
+            return 0
+
+        sys.stderr.write(f"Discovered {len(files)} Python file(s) in {directory}\n")
+
+        # Parse requirements if provided
+        req_info: Optional[Dict[str, Any]] = None
+        req_path_str = getattr(args, "requirements", None)
+        if req_path_str:
+            req_path = pathlib.Path(req_path_str)
+            if req_path.name == "pyproject.toml":
+                dep_names = _parse_pyproject_dependencies(req_path)
+            else:
+                dep_names = _parse_requirements_txt(req_path)
+
+            stubs_available: List[Dict[str, str]] = []
+            for dep in dep_names:
+                if dep in _KNOWN_LIBRARY_STUBS:
+                    stubs_available.append(
+                        {"package": dep, **_KNOWN_LIBRARY_STUBS[dep]}
+                    )
+
+            req_info = {
+                "source": str(req_path),
+                "dependencies": dep_names,
+                "known_stubs": stubs_available,
+            }
+            sys.stderr.write(
+                f"Parsed {len(dep_names)} dependencies from {req_path.name}, "
+                f"{len(stubs_available)} with known type stubs\n"
+            )
+
+        # Load .pyi stubs if provided
+        known_stubs: List[StubType] = []
+        stubs_dir = getattr(args, "stubs_dir", None)
+        if stubs_dir:
+            known_stubs = _scan_pyi_stubs(stubs_dir)
+            sys.stderr.write(f"Loaded {len(known_stubs)} type annotations from stubs\n")
+        typeshed = _detect_typeshed()
+        if typeshed and not stubs_dir:
+            logger.debug("Auto-detected typeshed at %s", typeshed)
+
+        # Load config and run analysis
+        loader = ConfigLoader()
+        file_cfg = loader.load(getattr(args, "config", None))
+        cfg = loader.merge(file_cfg, args)
+
+        executor = ParallelExecutor(
+            workers=cfg.effective_workers(),
+            chunk_size=cfg.parallel.chunk_size,
+            timeout_per_file=cfg.parallel.timeout_per_file,
+            language=cfg.language,
+        )
+
+        progress = ProgressReporter(total=len(files))
+        results = executor.execute(files, progress)
+        progress.finish()
+
+        summary = AnalysisSummary()
+        for r in results:
+            summary.merge(r)
+
+        # Compute refinement stats
+        total_types_inferred = sum(len(r.contracts) for r in results)
+        total_refinements = sum(
+            sum(len(c.preconditions) + len(c.postconditions) for c in r.contracts)
+            for r in results
+        )
+
+        # Checker baseline comparisons (mypy / pyright)
+        checker_comparison: Optional[BaselineComparison] = None
+        mypy_bl = getattr(args, "mypy_baseline", None)
+        pyright_bl = getattr(args, "pyright_baseline", None)
+        if mypy_bl:
+            mypy_issues = _parse_mypy_baseline(mypy_bl)
+            checker_comparison = _compare_checker_baseline(mypy_issues, results)
+            sys.stderr.write(f"\n── mypy baseline comparison ({len(mypy_issues)} issues) ──\n")
+            sys.stderr.write(checker_comparison.summary_text() + "\n")
+        if pyright_bl:
+            pyright_issues = _parse_pyright_baseline(pyright_bl)
+            checker_comparison = _compare_checker_baseline(pyright_issues, results)
+            sys.stderr.write(f"\n── pyright baseline comparison ({len(pyright_issues)} issues) ──\n")
+            sys.stderr.write(checker_comparison.summary_text() + "\n")
+
+        # Output
+        out_format = getattr(args, "output_format", "text")
+        output_path = getattr(args, "output", None)
+
+        content: str
+        if out_format == "json":
+            data = JsonOutputGenerator().generate(results, summary)
+            data["package_directory"] = str(directory)
+            if req_info:
+                data["requirements"] = req_info
+            content = json.dumps(data, indent=2)
+        elif out_format == "sarif":
+            sarif = SarifGenerator().generate(results)
+            content = json.dumps(sarif, indent=2)
+        else:
+            # Text summary
+            lines: List[str] = []
+            lines.append("")
+            lines.append("═══ Package Analysis Summary ═══")
+            lines.append(f"  Directory        : {directory}")
+            lines.append(f"  Files analyzed   : {summary.total_files}")
+            lines.append(f"  Functions        : {summary.total_functions}")
+            lines.append(f"  Types inferred   : {total_types_inferred}")
+            lines.append(f"  Refinements found: {total_refinements}")
+            lines.append(f"  Bugs found       : {summary.total_bugs}")
+            if summary.bugs_by_severity:
+                for sev, cnt in sorted(summary.bugs_by_severity.items()):
+                    lines.append(f"    {sev:10s}: {cnt}")
+            if summary.bugs_by_category:
+                lines.append("  By category:")
+                for cat, cnt in sorted(summary.bugs_by_category.items(), key=lambda x: -x[1]):
+                    lines.append(f"    {cat:25s}: {cnt}")
+            lines.append(f"  CEGAR iterations : {summary.total_cegar_iterations}")
+            lines.append(f"  Duration         : {summary.duration_ms:.0f}ms")
+            if req_info:
+                lines.append(f"  Dependencies     : {len(req_info['dependencies'])}")
+                lines.append(f"  Known type stubs : {len(req_info['known_stubs'])}")
+            if summary.files_timed_out:
+                lines.append(f"  Timed-out files  : {summary.files_timed_out}")
+            lines.append("")
+
+            # Per-file details in verbose mode
+            if getattr(args, "verbose", 0) >= 1:
+                printer = ResultPrinter(stream=sys.stderr, color=True)
+                for r in results:
+                    printer.print_result(r)
+
+            content = "\n".join(lines)
+
+        if output_path:
+            pathlib.Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+            with open(output_path, "w") as fh:
+                fh.write(content)
+            sys.stderr.write(f"Output written to {output_path}\n")
+        else:
+            sys.stdout.write(content + "\n")
+
+        return 0 if summary.total_bugs == 0 else 1
+
+
 # ── VerifyCommand ─────────────────────────────────────────────────────────
 
 
@@ -2657,6 +3186,7 @@ class ReftypeCliApp:
 
     COMMANDS: Dict[str, Callable[[], Command]] = {
         "analyze": lambda: AnalyzeCommand(),
+        "analyze-package": lambda: PackageAnalyzeCommand(),
         "verify": lambda: VerifyCommand(),
         "watch": lambda: WatchCommand(),
         "ci-check": lambda: CiCheckCommand(),
@@ -2685,6 +3215,8 @@ class ReftypeCliApp:
             examples:
               reftype analyze .
               reftype analyze src/ --format sarif -o results.sarif
+              reftype analyze-package my_project/ --output-format json
+              reftype analyze-package . --requirements requirements.txt --output-format sarif
               reftype watch src/ --debounce 1.0
               reftype ci-check --baseline baseline.json --sarif-output results.sarif
               reftype init --language python
@@ -2709,6 +3241,7 @@ class ReftypeCliApp:
     def _command_help(name: str) -> str:
         helps: Dict[str, str] = {
             "analyze": "Analyse files/directories for refinement type bugs",
+            "analyze-package": "Analyse an entire Python package/directory with summary",
             "verify": "Verify nn.Module architecture via constraint-based verification",
             "watch": "Watch files for changes and re-analyse incrementally",
             "ci-check": "Run analysis in CI mode with exit codes",
