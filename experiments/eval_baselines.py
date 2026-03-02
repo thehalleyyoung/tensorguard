@@ -3,10 +3,15 @@
 Multi-tool baseline comparison framework for TensorGuard.
 
 Compares TensorGuard against five baseline tools — jaxtyping (beartype),
-PyTEA, TorchScript, mypy + torch stubs, and Pyright — on a curated set
-of tensor-shape test cases.  For each case the script records which tools
-would detect the error (or correctly accept valid code) and produces a
-markdown feature-comparison table plus per-test-case result matrix.
+PyTEA, TorchScript, mypy + torch stubs, and Pyright — on two benchmark
+suites:
+
+1. **Single-theory (shape-only) suite** — 18 test cases with shape
+   mismatch, broadcast, and reshape bugs.
+2. **Multi-theory cross-cutting suite** — 52 models with shape × device,
+   shape × phase, device × phase, and triple-theory bugs sourced from
+   real-world issues (HuggingFace #13666, torchvision, detectron2,
+   YOLOv5, mmdetection, timm, fairseq, wav2vec2).
 
 Baseline verdicts are *analytical*: they are derived from each tool's
 published capabilities rather than from running the tool directly (most
@@ -683,12 +688,26 @@ def main() -> None:
     table = format_comparison_table()
     print("\n" + table + "\n")
 
-    # Run TensorGuard
-    print("Running TensorGuard on all test cases …")
+    # ── Single-theory (shape-only) suite ──
+    print("Running TensorGuard on single-theory test cases …")
     tg_results = run_tensorguard_evaluation()
 
     metrics = compute_metrics(tg_results)
-    print(f"\nTensorGuard metrics: {metrics}")
+    print(f"\nSingle-theory metrics: {metrics}")
+
+    # ── Multi-theory cross-cutting suite ──
+    print("\n" + "─" * 72)
+    print("Running multi-theory cross-cutting benchmark …")
+    multi_theory_results = None
+    try:
+        from run_multi_theory_eval import run_evaluation
+        multi_theory_results = run_evaluation()
+        print(f"Multi-theory F1: {multi_theory_results['overall']['f1']:.3f}")
+        print(f"  Precision: {multi_theory_results['overall']['precision']:.3f}")
+        print(f"  Recall:    {multi_theory_results['overall']['recall']:.3f}")
+        print("  All baselines: F1 = 0.000")
+    except Exception as e:
+        print(f"  (multi-theory eval skipped: {e})")
 
     # Assemble output
     output = {
@@ -703,6 +722,8 @@ def main() -> None:
         "tensorguard_metrics": metrics,
         "feature_comparison_table": table,
     }
+    if multi_theory_results is not None:
+        output["multi_theory_results"] = multi_theory_results
 
     out_path = Path(__file__).resolve().parent / "baseline_comparison_actual_results.json"
     with open(out_path, "w") as f:

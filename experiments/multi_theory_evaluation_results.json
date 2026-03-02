@@ -1,0 +1,1041 @@
+{
+  "experiment": "multi_theory_cross_cutting_evaluation",
+  "description": "TensorGuard evaluation on cross-cutting multi-theory bugs that span shape \u00d7 device \u00d7 phase boundaries. These bugs are invisible to all existing tools.",
+  "n_benchmarks": 52,
+  "n_buggy": 44,
+  "n_correct": 8,
+  "tensorguard_metrics": {
+    "tp": 20,
+    "fp": 0,
+    "tn": 8,
+    "fn": 24,
+    "precision": 1.0,
+    "recall": 0.4545,
+    "f1": 0.625,
+    "accuracy": 0.5385
+  },
+  "baseline_metrics": {
+    "torchscript": {
+      "tp": 0,
+      "fp": 0,
+      "tn": 8,
+      "fn": 44,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "mypy": {
+      "tp": 0,
+      "fp": 0,
+      "tn": 8,
+      "fn": 44,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "pytea": {
+      "tp": 0,
+      "fp": 0,
+      "tn": 8,
+      "fn": 44,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "jaxtyping": {
+      "tp": 0,
+      "fp": 0,
+      "tn": 8,
+      "fn": 44,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    }
+  },
+  "per_category": {
+    "device_shape": {
+      "tp": 4,
+      "fp": 0,
+      "tn": 0,
+      "fn": 12,
+      "f1": 0.4
+    },
+    "phase_shape": {
+      "tp": 9,
+      "fp": 0,
+      "tn": 0,
+      "fn": 5,
+      "f1": 0.7826
+    },
+    "device_phase": {
+      "tp": 1,
+      "fp": 0,
+      "tn": 0,
+      "fn": 3,
+      "f1": 0.4
+    },
+    "triple": {
+      "tp": 6,
+      "fp": 0,
+      "tn": 0,
+      "fn": 4,
+      "f1": 0.75
+    },
+    "correct": {
+      "tp": 0,
+      "fp": 0,
+      "tn": 8,
+      "fn": 0,
+      "f1": 0.0
+    }
+  },
+  "results": [
+    {
+      "name": "buffer_device_mismatch",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 150.7,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "device_dependent_reshape",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 104.6,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "literal_tensor_device",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 64.0,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": true,
+      "error": null
+    },
+    {
+      "name": "hardcoded_device_forward",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 63.7,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": true,
+      "error": null
+    },
+    {
+      "name": "buffer_shape_device_compound",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 40.7,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "cross_device_concat",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 61.2,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "mixed_precision_shape",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 44.2,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "attention_weight_device",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 13.6,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "device_transfer_shape_break",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 26.6,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": true,
+      "error": null
+    },
+    {
+      "name": "embedding_position_device",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 22.8,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "norm_buffer_wrong_size",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 68.5,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": true,
+      "error": null
+    },
+    {
+      "name": "skip_connection_cross_device",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 81.7,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "dropout_shape_assumption",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 143.0,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "batchnorm_eval_crash",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 118.7,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": true,
+      "error": null
+    },
+    {
+      "name": "aux_loss_shape_mismatch",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 43.9,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "phase_arch_mismatch",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 16.3,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "layernorm_train_augment",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 26.8,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "training_batch_assumption",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 17.5,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "spectral_norm_phase",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 29.0,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": true,
+      "error": null
+    },
+    {
+      "name": "pool_phase_mismatch",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 30.3,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "teacher_forcing_shape",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 20.4,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "instancenorm_phase",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 30.2,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": true,
+      "error": null
+    },
+    {
+      "name": "training_device_transfer",
+      "category": "device_phase",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 31.0,
+      "theories_required": [
+        "device",
+        "phase"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "dataparallel_eval_device",
+      "category": "device_phase",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 19.3,
+      "theories_required": [
+        "device",
+        "phase"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": false,
+      "error": null
+    },
+    {
+      "name": "grad_checkpoint_device",
+      "category": "device_phase",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 70.3,
+      "theories_required": [
+        "device",
+        "phase"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": false,
+      "error": null
+    },
+    {
+      "name": "eval_postprocess_device",
+      "category": "device_phase",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 58.1,
+      "theories_required": [
+        "device",
+        "phase"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": false,
+      "error": null
+    },
+    {
+      "name": "triple_theory_classifier",
+      "category": "triple",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 59.0,
+      "theories_required": [
+        "shape",
+        "device",
+        "phase"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": false,
+      "error": null
+    },
+    {
+      "name": "triple_augment_train",
+      "category": "triple",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 79.4,
+      "theories_required": [
+        "shape",
+        "device",
+        "phase"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": false,
+      "error": null
+    },
+    {
+      "name": "triple_eval_feature_extract",
+      "category": "triple",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 21.4,
+      "theories_required": [
+        "shape",
+        "device",
+        "phase"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": false,
+      "error": null
+    },
+    {
+      "name": "triple_knowledge_distill",
+      "category": "triple",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 38.4,
+      "theories_required": [
+        "shape",
+        "device",
+        "phase"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": false,
+      "error": null
+    },
+    {
+      "name": "triple_contrastive",
+      "category": "triple",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 30.3,
+      "theories_required": [
+        "shape",
+        "device",
+        "phase"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": false,
+      "error": null
+    },
+    {
+      "name": "triple_gan_discriminator",
+      "category": "triple",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 40.1,
+      "theories_required": [
+        "shape",
+        "device",
+        "phase"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": false,
+      "error": null
+    },
+    {
+      "name": "correct_phase_aware_model",
+      "category": "correct",
+      "has_bug": false,
+      "detected_bug": false,
+      "verdict": "TN",
+      "time_ms": 37.7,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "correct_residual_bn",
+      "category": "correct",
+      "has_bug": false,
+      "detected_bug": false,
+      "verdict": "TN",
+      "time_ms": 76.3,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "correct_multi_head",
+      "category": "correct",
+      "has_bug": false,
+      "detected_bug": false,
+      "verdict": "TN",
+      "time_ms": 62.9,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "correct_buffer_usage",
+      "category": "correct",
+      "has_bug": false,
+      "detected_bug": false,
+      "verdict": "TN",
+      "time_ms": 32.7,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "correct_conv_bn_relu",
+      "category": "correct",
+      "has_bug": false,
+      "detected_bug": false,
+      "verdict": "TN",
+      "time_ms": 154.1,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "correct_dual_phase_output",
+      "category": "correct",
+      "has_bug": false,
+      "detected_bug": false,
+      "verdict": "TN",
+      "time_ms": 68.2,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "correct_embedding_with_buffer",
+      "category": "correct",
+      "has_bug": false,
+      "detected_bug": false,
+      "verdict": "TN",
+      "time_ms": 65.7,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "correct_train_eval_dropout",
+      "category": "correct",
+      "has_bug": false,
+      "detected_bug": false,
+      "verdict": "TN",
+      "time_ms": 85.8,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "real_hf_position_ids_device",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 40.5,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "real_resnet_downsample_phase",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 93.2,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": true,
+      "error": null
+    },
+    {
+      "name": "real_dcgan_noise_device",
+      "category": "triple",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 17.7,
+      "theories_required": [
+        "device",
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "real_so_batchnorm_channels",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 252.6,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": true,
+      "error": null
+    },
+    {
+      "name": "real_forums_attention_bias_device",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 349.4,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": false,
+      "error": null
+    },
+    {
+      "name": "real_fairseq_beam_phase",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 31.7,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "real_torchvision_fpn_channels",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 155.5,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": true,
+      "error": null
+    },
+    {
+      "name": "real_detectron2_mask_phase",
+      "category": "phase_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 133.0,
+      "theories_required": [
+        "phase",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "real_timm_se_block_device",
+      "category": "device_shape",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 195.7,
+      "theories_required": [
+        "device",
+        "shape"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    },
+    {
+      "name": "real_mmdet_anchor_triple",
+      "category": "triple",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 47.2,
+      "theories_required": [
+        "shape",
+        "device",
+        "phase"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": false,
+      "error": null
+    },
+    {
+      "name": "real_yolo_postprocess_triple",
+      "category": "triple",
+      "has_bug": true,
+      "detected_bug": true,
+      "verdict": "TP",
+      "time_ms": 13.7,
+      "theories_required": [
+        "shape",
+        "device",
+        "phase"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": false,
+      "error": null
+    },
+    {
+      "name": "real_wav2vec_feature_freeze",
+      "category": "triple",
+      "has_bug": true,
+      "detected_bug": false,
+      "verdict": "FN",
+      "time_ms": 80.5,
+      "theories_required": [
+        "shape",
+        "device",
+        "phase"
+      ],
+      "torchscript_catches": false,
+      "mypy_catches": false,
+      "pytea_catches": false,
+      "jaxtyping_catches": false,
+      "llm_catches": null,
+      "error": null
+    }
+  ],
+  "total_time_ms": 3659.9
+}

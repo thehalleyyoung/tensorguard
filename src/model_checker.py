@@ -7047,28 +7047,60 @@ class ConstraintVerifier:
         step: ComputationStep,
         violations: List[SafetyViolation],
     ) -> None:
-        """Apply a conditional step by processing the active branch(es).
+        """Apply a conditional step by processing BOTH branches for
+        ``self.training`` conditions (multi-phase verification).
 
-        For ``self.training`` conditions we only process the branch that
-        matches the current phase, eliminating false positives from the
-        inactive branch.  For other conditions we conservatively process
-        both branches and merge the resulting shape environments.
+        This is the key to TensorGuard's cross-cutting multi-theory
+        verification: bugs that only manifest in train or eval mode
+        are caught by checking both paths and annotating violations
+        with the phase in which they occur.
+
+        For other conditions we conservatively process both branches
+        and merge the resulting shape environments.
         """
         cond = step.condition
         true_steps = step.true_branch or []
         false_steps = step.false_branch or []
 
         if cond == "self.training":
-            # Only the branch matching current phase is reachable
-            branch = true_steps if state.phase == Phase.TRAIN else false_steps
-            for s in branch:
+            # Multi-phase verification: check BOTH branches to catch
+            # phase-dependent bugs (e.g., wrong dims only in eval)
+            active_branch = true_steps if state.phase == Phase.TRAIN else false_steps
+            inactive_branch = false_steps if state.phase == Phase.TRAIN else true_steps
+            inactive_phase = Phase.EVAL if state.phase == Phase.TRAIN else Phase.TRAIN
+
+            # Process active branch (updates state)
+            for s in active_branch:
                 state, vs = self._step_transition(state, s)
                 violations.extend(vs)
+
+            # Also verify inactive branch on a copy (catches phase-dependent bugs)
+            if inactive_branch:
+                alt_state = state.copy()
+                alt_state.phase = inactive_phase
+                for s in inactive_branch:
+                    alt_state, vs = self._step_transition(alt_state, s)
+                    for v in vs:
+                        v.message = (f"[{inactive_phase.value} mode] " + v.message)
+                    violations.extend(vs)
+
         elif cond == "not self.training":
-            branch = true_steps if state.phase == Phase.EVAL else false_steps
-            for s in branch:
+            active_branch = true_steps if state.phase == Phase.EVAL else false_steps
+            inactive_branch = false_steps if state.phase == Phase.EVAL else true_steps
+            inactive_phase = Phase.TRAIN if state.phase == Phase.EVAL else Phase.EVAL
+
+            for s in active_branch:
                 state, vs = self._step_transition(state, s)
                 violations.extend(vs)
+
+            if inactive_branch:
+                alt_state = state.copy()
+                alt_state.phase = inactive_phase
+                for s in inactive_branch:
+                    alt_state, vs = self._step_transition(alt_state, s)
+                    for v in vs:
+                        v.message = (f"[{inactive_phase.value} mode] " + v.message)
+                    violations.extend(vs)
         elif cond is not None and cond.startswith("hasattr:self."):
             # hasattr(self, attr) — only take true branch if attr exists
             attr = cond.split(".", 1)[1] if "." in cond.split(":", 1)[1] else ""
