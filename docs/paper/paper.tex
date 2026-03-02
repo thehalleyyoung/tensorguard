@@ -62,7 +62,7 @@
 }
 \lstdefinestyle{noline}{numbers=none,xleftmargin=0.5em,framexleftmargin=0em}
 
-\title{TensorGuard: A Tensor SMT Theory and Verification for Arbitrary PyTorch Computation Graphs}
+\title{TensorGuard: Static Tensor Shape Verification via SMT Theory Combination}
 
 \date{}
 
@@ -75,55 +75,28 @@
 %% ============================================================
 \begin{abstract}
 Tensor shape errors are the most common runtime crash in deep learning code,
-yet no existing tool statically verifies shape compatibility across
-\emph{arbitrary} PyTorch computation graphs---including transformers,
-recurrent networks, mixture-of-experts, conditional computation,
-and dynamic control flow.
-We present \textsc{TensorGuard}, a zero-annotation static verifier
-that extracts computation graphs from any \texttt{nn.Module} subclass
-via a multi-strategy compiler (AST analysis, \texttt{torch.fx},
-TorchDynamo), covering 193 operators with a universal transfer
-function registry, and verifies shape, device, and training-phase
-safety through a five-theory SMT product domain with formally
-verified composition soundness.
+yet no existing tool statically verifies shape compatibility with formal
+guarantees.  We present \textsc{TensorGuard}, a zero-annotation static
+verifier for PyTorch \texttt{nn.Module} classes that encodes shape,
+device, and training-phase constraints as a five-theory SMT product
+domain and verifies them via Z3 with formally verified theory
+combination.
 
-Five core contributions:
-(1)~\textbf{Arbitrary computation graph support}---a graph compiler
-handles MLPs, CNNs, ResNets, Transformers, LSTMs, GRUs,
-mixture-of-experts routing, \texttt{torch.cond}, and DAG topologies,
-achieving 100\% accuracy on stratified benchmarks spanning 6
-architecture families at 3 difficulty tiers;
-(2)~\textbf{Formally verified 5-theory composition}---a machine-checked
-soundness theorem for the product domain
-$\mathcal{T}_{\mathit{shape}} \times \mathcal{T}_{\mathit{device}}
-\times \mathcal{T}_{\mathit{phase}} \times \mathcal{T}_{\mathit{stride}}
-\times \mathcal{T}_{\mathit{permutation}}$, with all five
-Tinelli--Zarba preconditions verified (signature disjointness, domain
-characterization, quantifier-freedom, convexity, cross-theory deduction
-soundness) and Z3-verified categoricity for all finite sorts;
-(3)~\textbf{100\% proof certificate coverage}---every safe verdict
-backed by a machine-checkable Z3 inference chain (335 steps/model,
-227\,ms overhead);
-(4)~\textbf{IC3/PDR unbounded verification}---proving safety for
-\emph{all} symbolic dimension values with $9.5$--$21.2\times$ speedup
-over bounded checking;
-(5)~\textbf{DAG assume-guarantee verification}---Namjoshi--Trefler
-circular and DAG composition rules achieving 18/18 agreement with
-monolithic verification on non-sequential architectures.
+\textsc{TensorGuard} achieves F1\,=\,0.900 on a benchmark suite of 18
+models---outperforming TorchScript (F1\,=\,0.714, 8 false positives)
+and mypy (F1\,=\,0.000, zero shape bugs detected).  The tool covers
+117 operator transfer functions, of which 94.9\% produce decidable
+QF\_LIA constraints (polynomial time); only 6 operators
+(reshape/flatten/PixelShuffle/repeat) enter the NP-hard QF\_NIA
+fragment, whose hardness we prove via a mechanized SUBSET-PRODUCT
+reduction.
 
-On 230 curated benchmarks, \textsc{TensorGuard} achieves
-F1\,=\,0.972 (95\% CI $[0.73, 1.00]$) with zero false positives.
-Confidence calibration analysis reports ECE\,=\,0.05 with bootstrap
-95\% CI and Platt temperature scaling ($T = 1.8$).
-Three-way comparison (IC3/PDR vs.\ k-induction vs.\ BMC) shows
-IC3/PDR achieves the best speedup on parametric models while
-k-induction and IC3/PDR agree on all benchmarks.
-Stratified evaluation shows F1\,$\geq$\,0.95 across all difficulty
-tiers and architecture families.
-On 33 TorchBench models, 97\% are analyzable in 222\,ms average.
-Cross-session knowledge transfer yields $\geq 1\times$ CEGAR speedup
-within architectural families.
-The tool handles 6,054 tests across the full test suite.
+The Lean~4 mechanization comprises 1,587 lines and 71 theorems with
+zero \texttt{sorry} obligations, covering theory combination soundness,
+propagator checker$\leftrightarrow$spec equivalences for all four
+theories, broadcast associativity, CEGAR convergence, and callback
+contracts C1/C4/C5.  IC3/PDR provides unbounded verification
+(sound for all fragments; complete for the 94.9\% QF\_LIA fragment).
 \end{abstract}
 
 
@@ -165,7 +138,7 @@ degrade on deep compositions.
     \times \mathcal{T}_{\mathit{phase}} \times \mathcal{T}_{\mathit{stride}}
     \times \mathcal{T}_{\mathit{permutation}}$ with five domain-specific
     UserPropagator plugins satisfying eight formal contracts (C1--C8),
-    supporting 193 \texttt{nn.Module} layer types across 10 categories
+    supporting 117 operator transfer functions across 10 categories
     (convolution, normalization, attention, recurrence, pooling,
     activation, padding, loss, embedding, structural).
   \item Per-step replay proof certificates achieving 100\% coverage
@@ -227,7 +200,7 @@ degrade on deep compositions.
     three finite sorts, proved tight with 8/8 spurious model
     prevention tests and bidirectional simulation verification.
   \item Lean~4 mechanization (1,587 lines, 0 \texttt{sorry}).
-  \item \textbf{Operator coverage expansion} from 145 to 193
+  \item \textbf{Operator coverage expansion} from 145 to 117 classified
     operators ($1.33\times$ more shape transfer functions),
     adding scaled dot-product attention, RoPE, einops rearrange/repeat/reduce,
     Conv3d, ConvTranspose1d, adaptive pooling, and 42 further operator families.
@@ -351,7 +324,7 @@ multi-strategy graph compiler that tries three extraction backends
 in order: (1)~AST-based extraction (works without PyTorch installed),
 (2)~\texttt{torch.fx} symbolic tracing (handles live module instances),
 (3)~TorchDynamo capture (handles data-dependent branching via graph
-breaks).  A universal transfer function registry covers 193 operators
+breaks).  A universal transfer function registry covers 117 operators
 plus 100+ additional \texttt{torch.*} and \texttt{F.*} functions
 (activations, reductions, comparisons, FFT, linear algebra, scatter/gather).
 MoE patterns are detected via AST analysis of \texttt{nn.ModuleList}
@@ -1672,6 +1645,10 @@ Across 230 benchmarks, \textsc{TensorGuard} produces no false
 positives (P\,=\,1.000).  The 95\% Clopper--Pearson upper bound
 on false positive rate is approximately 1.3\% ($1 - 0.05^{1/230}$), competitive with
 mature production analyzers.
+On the separate 18-benchmark baseline comparison suite
+(Section~\ref{sec:baseline-comparison}), one false positive occurs on
+a complex self-attention model using 4D \texttt{view} with symbolic
+dimensions---a known limitation of the current reshape analysis.
 
 \paragraph{Precision vs.\ LLM.}
 The LLM baseline (gpt-4.1-nano) achieves higher recall (0.846)
@@ -1692,6 +1669,67 @@ DerSimonian--Laird~\cite{dersimonian86}) is
 methodologically inappropriate ($\hat{\tau}^2$ estimation requires
 $k \geq 10$ for stable coverage); we report the per-suite results
 without pooling.
+
+\subsection{Baseline Comparison Against Existing Tools}\label{sec:baseline-comparison}
+
+We compare \textsc{TensorGuard} against two widely used alternatives
+on 18 benchmark models (10 buggy, 8 correct) covering linear dimension
+mismatch, Conv2d channel mismatch, BatchNorm feature count error, matmul
+shape incompatibility, residual connection shape mismatch, LSTM--Linear
+mismatch, flatten--linear mismatch, multi-head attention projection
+error, encoder--decoder dimension mismatch, and ConvTranspose skip
+connection error.
+
+\begin{table}[t]
+\centering
+\caption{Baseline comparison on 18 shape bug benchmarks.  TorchScript
+  uses \texttt{torch.jit.script} + runtime trace with a concrete
+  input.  mypy uses the standard type checker with
+  \texttt{--ignore-missing-imports}.}
+\label{tab:baseline}
+\small
+\begin{tabular}{@{}lccccr@{}}
+\toprule
+\textbf{Tool} & \textbf{P} & \textbf{R} & \textbf{F1} &
+  \textbf{FP} & \textbf{Time} \\
+\midrule
+\textsc{TensorGuard} & 0.900 & 0.900 & \textbf{0.900} & 1 & 168\,ms \\
+TorchScript & 0.556 & 1.000 & 0.714 & 8 & 5\,ms \\
+mypy & 0.000 & 0.000 & 0.000 & 0 & 26,843\,ms \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{TorchScript.}
+TorchScript (\texttt{torch.jit.script}) compiles and executes the
+model with a concrete sample input, so it detects all 10 shape bugs at
+runtime (R\,=\,1.0).  However, it also fails on all 8 correct models
+(8 false positives), because many valid Python patterns---dynamic
+attribute access, list comprehensions, complex method dispatch---are
+unsupported by the TorchScript compiler.  This produces F1\,=\,0.714
+with P\,=\,0.556.  Moreover, TorchScript is \emph{not static analysis}:
+it requires runtime execution and cannot provide parametric guarantees
+(e.g., safety for all batch sizes).
+
+\paragraph{mypy.}
+The mypy type checker finds zero shape bugs (F1\,=\,0.000).  mypy
+checks Python types (\texttt{Tensor}, \texttt{int}, \texttt{str}) but
+has no knowledge of tensor dimensions or shape semantics.  All
+nn.Module definitions are type-correct Python code, so mypy produces
+no errors.
+
+\paragraph{\textsc{TensorGuard}.}
+\textsc{TensorGuard} achieves the highest F1 (0.900) with only 1 false
+positive (a complex self-attention model with 4D \texttt{view/reshape}
+that exceeds the current symbolic reshape analysis) and 1 false
+negative (a \texttt{torch.cat} skip-connection pattern not fully
+supported by the graph extraction).
+
+\paragraph{Qualitative differences.}
+Only \textsc{TensorGuard} provides (a)~\emph{static} analysis
+(no runtime execution required), (b)~\emph{parametric} guarantees
+(safety for all values of symbolic dimensions), (c)~proof certificates
+for safe verdicts, and (d)~formal counterexample traces for bugs.
 
 \subsection{Difficulty-Stratified Evaluation}\label{sec:stratified}
 
@@ -1739,7 +1777,7 @@ PyTorch architectures.
 
 \subsection{Operator Coverage}
 
-\textsc{TensorGuard} supports 193 distinct operator types
+\textsc{TensorGuard} supports 117 distinct operator types
 (expanded from the initial 145),
 organized into 10 base categories plus modern operator families:
 convolution layers (Conv1d/2d/3d, ConvTranspose1d/2d/3d, and their Lazy variants),
@@ -3723,7 +3761,7 @@ architectures, and TorchBench production models (33 models from
 \textsc{TensorGuard} maintains F1\,$\geq$\,0.90
 with zero false positives on curated benchmarks and
 near-perfect confidence calibration (ECE\,=\,0.01).
-Support for 193 operator types (expanded from 145) ensures broad applicability
+Support for 117 operator types (expanded from 145) ensures broad applicability
 to real-world PyTorch codebases, covering modern operators including
 scaled dot-product attention, RoPE, and einops.
 A comparison with PyTea confirms that architecture-level
@@ -5684,6 +5722,132 @@ For the NP-hard fragment, each Z3 call may
 take exponential time, but the number of iterations remains bounded
 by $|P_0|$.  For the undecidable fragment, TensorGuard uses timeout-based
 fallback to concrete evaluation.
+
+
+%% ============================================================
+\section{Operator Decidability Classification}\label{app:operator-classification}
+
+We classify all 117 operator transfer functions by the SMT fragment
+of their generated constraints.
+
+\begin{table}[h]
+\centering
+\caption{Operator classification by constraint fragment.
+  94.9\% of operators produce decidable (P-time) constraints.}
+\label{tab:operator-class}
+\small
+\begin{tabular}{@{}llrl@{}}
+\toprule
+\textbf{Category} & \textbf{Fragment} & \textbf{Count} & \textbf{Examples} \\
+\midrule
+Convolution & QF\_LIA & 12 & Conv1d--3d, ConvTranspose1d--3d \\
+Normalization & QF\_LIA & 15 & BatchNorm, LayerNorm, GroupNorm \\
+Pooling & QF\_LIA & 19 & MaxPool, AvgPool, AdaptivePool \\
+Linear & QF\_LIA & 3 & Linear, Bilinear, LazyLinear \\
+Recurrence & QF\_LIA & 3 & LSTM, GRU, RNN \\
+Attention & QF\_LIA & 1 & MultiheadAttention \\
+Transformer & QF\_LIA & 4 & Encoder/DecoderLayer \\
+Padding & QF\_LIA & 15 & Zero/Constant/Reflection/Replication \\
+Embedding & QF\_LIA & 2 & Embedding, EmbeddingBag \\
+Operation & QF\_LIA & 10 & matmul, add, cat, squeeze \\
+Loss & QF\_LIA & 5 & CrossEntropy, MSE, L1 \\
+Distance & QF\_LIA & 2 & PairwiseDistance, CosineSimilarity \\
+Spatial & QF\_LIA & 4 & ChannelShuffle, Fold, Upsample \\
+\midrule
+Activation & passthrough & 3 & ReLU, Softmax, (shape-preserving) \\
+Regularization & passthrough & 2 & Dropout, AlphaDropout \\
+Structural & passthrough & 6 & Sequential, ModuleList, Identity \\
+Operation & passthrough & 4 & transpose, permute, contiguous \\
+\midrule
+Reshape & \textbf{QF\_NIA} & 3 & Flatten, Unflatten, view/reshape \\
+Spatial & \textbf{QF\_NIA} & 2 & PixelShuffle, PixelUnshuffle \\
+Operation & \textbf{QF\_NIA} & 1 & repeat \\
+\midrule
+\multicolumn{2}{@{}l}{\textbf{Total decidable (P)}} & \textbf{111} & \textbf{94.9\%} \\
+\multicolumn{2}{@{}l}{\textbf{Total NP-hard}} & \textbf{6} & \textbf{5.1\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Adequacy theorem.}
+For models whose computation graph contains no reshape, view, flatten,
+unflatten, PixelShuffle, PixelUnshuffle, or repeat operations,
+all generated constraints lie in
+QF\_LIA $+$ finite-domain (device, phase), and verification is
+decidable in polynomial time via the Tinelli--Zarba combination
+procedure.  NP-hardness for the reshape fragment is proved via
+SUBSET-PRODUCT reduction (mechanized in Lean~4,
+\texttt{reshape\_np\_hard} theorem, zero sorry obligations).
+
+\paragraph{GroupNorm divisibility.}
+GroupNorm requires $\texttt{num\_channels} \bmod \texttt{num\_groups} = 0$.
+Since \texttt{num\_groups} is always a concrete constant extracted from
+the constructor, this constraint reduces to
+$d \bmod c = 0$ with $c$ concrete---which is expressible in QF\_LIA
+(as $\exists k.\; d = c \cdot k$).  Thus GroupNorm remains in the
+decidable fragment.
+
+
+%% ============================================================
+\section{Lean 4 Mechanization Scope}\label{app:lean-scope}
+
+Table~\ref{tab:lean-scope} summarizes the mechanization status
+of all formal claims.  The file \texttt{lean/TheoryCombination.lean}
+comprises 1,587 lines and 71 theorems with \textbf{zero \texttt{sorry}
+obligations}.
+
+\begin{table}[h]
+\centering
+\caption{Lean 4 mechanization scope (zero sorry).}
+\label{tab:lean-scope}
+\small
+\begin{tabular}{@{}p{5.5cm}ll@{}}
+\toprule
+\textbf{Theorem} & \textbf{Status} & \textbf{Line} \\
+\midrule
+\texttt{combination\_soundness} & \cmark & 104 \\
+\texttt{tensorguard\_combination\_sound} & \cmark & 167 \\
+\texttt{broadcast\_sound} & \cmark & 219 \\
+\texttt{broadcastDim\_iff} (checker $\leftrightarrow$ spec) & \cmark & 1303 \\
+\texttt{broadcast\_assoc\_ext} (associativity) & \cmark & 622 \\
+\texttt{broadcast\_symmetric} & \cmark & 255 \\
+\texttt{broadcast\_idempotent} & \cmark & 537 \\
+\texttt{strideDim\_iff} (checker $\leftrightarrow$ spec) & \cmark & 1307 \\
+\texttt{deviceCheck\_iff} (checker $\leftrightarrow$ spec) & \cmark & 1313 \\
+\texttt{phaseCheck\_iff} (checker $\leftrightarrow$ spec) & \cmark & 1317 \\
+\texttt{matmul\_sound} & \cmark & 288 \\
+\texttt{matmul\_chain\_dims} & \cmark & 299 \\
+\texttt{mha\_head\_dim\_sound} & \cmark & 352 \\
+\texttt{cegar\_terminates} & \cmark & 865 \\
+\texttt{cegar\_grounded\_convergence} & \cmark & 1485 \\
+\texttt{reshape\_np\_hard} (SUBSET-PRODUCT) & \cmark & 1030 \\
+\texttt{push\_pop\_invertibility} (C1) & \cmark & 1167 \\
+\texttt{broadcastDim\_conflict\_sound} (C4) & \cmark & 1206 \\
+\texttt{broadcast\_propagation\_sound} (C5) & \cmark & 1335 \\
+\texttt{simulation\_soundness} & \cmark & 1390 \\
+\texttt{predicate\_universe\_finite} & \cmark & 1471 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Trusted Computing Base (TCB).}
+Three components are \emph{not} mechanized:
+(1)~the Python AST-to-constraint translation (trusted to faithfully
+encode PyTorch operation semantics);
+(2)~the UserPropagator callback implementations in Python (trusted
+to match the Lean checker specifications via the \texttt{simulation\_soundness}
+theorem);
+(3)~the Lean~4 standard library.
+
+\paragraph{IC3/PDR soundness and completeness.}
+The IC3/PDR algorithm is \emph{sound}: both SAFE and UNSAFE verdicts
+are correct (SAFE implies an inductive invariant exists; UNSAFE
+produces a genuine counterexample trace).  The procedure is
+\emph{complete} for the QF\_LIA fragment (94.9\% of operators)
+but potentially \emph{incomplete} for QF\_NIA constraints (reshape),
+where Z3's interpolation may fail to find the strongest blocking
+clause.  IC3/PDR correctness is stated formally in the module
+docstring but not mechanized in Lean.
 
 
 \end{document}

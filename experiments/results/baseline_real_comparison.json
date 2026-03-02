@@ -1,0 +1,460 @@
+{
+  "description": "Real baseline comparison: TensorGuard vs TorchScript vs mypy on shape bug benchmarks",
+  "num_benchmarks": 18,
+  "num_buggy": 10,
+  "num_correct": 8,
+  "metrics": {
+    "tensorguard": {
+      "tp": 9,
+      "fp": 1,
+      "fn": 1,
+      "tn": 7,
+      "precision": 0.9,
+      "recall": 0.9,
+      "f1": 0.9,
+      "mean_time_ms": 168.29,
+      "median_time_ms": 73.05,
+      "tool_errors": 0
+    },
+    "torchscript": {
+      "tp": 10,
+      "fp": 8,
+      "fn": 0,
+      "tn": 0,
+      "precision": 0.5556,
+      "recall": 1.0,
+      "f1": 0.7143,
+      "mean_time_ms": 4.85,
+      "median_time_ms": 4.25,
+      "tool_errors": 0
+    },
+    "mypy": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 10,
+      "tn": 8,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "mean_time_ms": 26842.71,
+      "median_time_ms": 20341.04,
+      "tool_errors": 0
+    }
+  },
+  "per_model": [
+    {
+      "name": "linear_dim_mismatch",
+      "has_bug": true,
+      "bug_description": "fc1 outputs 256 but fc2 expects 128",
+      "tensorguard": {
+        "detected_bug": true,
+        "error_message": "CounterexampleTrace(LinearDimMismatch)\n  Failing step: 1\n  Concrete dims: batch=1\n  Computation path (3 steps):\n    \u2192 [0] x: TensorShape(dims=(batch, 768))\n    \u2717 [1] x: TensorShape(dims=(batch, 256))\n      [2] x: TensorShape(dims=(batch, 256))\n  VIOLATION [1]: Linear expects last dim=128, got 256\n    Shape: TensorShape(dims=(batch, 256))\n  VIOLATION [1]: Z3 violation (shape_incompatible) at step 1:\n  phase_s1 = TRAIN_1\n  phase_s0 = TRAIN_1\n  batch = 1\n  dev_x_s0 = CPU_1\n  grad_x_s0 = False\n  dev",
+        "analysis_time_ms": 132.1,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 12.23,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 52233.28,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "conv_channel_mismatch",
+      "has_bug": true,
+      "bug_description": "conv1 outputs 64 channels but conv2 expects 32",
+      "tensorguard": {
+        "detected_bug": true,
+        "error_message": "CounterexampleTrace(ConvChannelMismatch)\n  Failing step: 1\n  Concrete dims: batch=1\n  Computation path (3 steps):\n    \u2192 [0] x: TensorShape(dims=(batch, 3, 32, 32))\n    \u2717 [1] x: TensorShape(dims=(batch, 64, 32, 32))\n      [2] x: TensorShape(dims=(batch, 64, 32, 32))\n  VIOLATION [1]: Conv2d expects 32 input channels, got 64\n    Shape: TensorShape(dims=(batch, 64, 32, 32))\n  VIOLATION [1]: Z3 violation (shape_incompatible) at step 1:\n  dev_x_s0 = CPU_2\n  batch = 1\n  phase_s1 = TRAIN_2\n  phase_s0 = ",
+        "analysis_time_ms": 61.47,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 1.97,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 67244.93,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "batchnorm_mismatch",
+      "has_bug": true,
+      "bug_description": "conv1 outputs 64 channels but BatchNorm2d expects 32",
+      "tensorguard": {
+        "detected_bug": true,
+        "error_message": "CounterexampleTrace(BatchNormMismatch)\n  Failing step: 1\n  Concrete dims: batch=1\n  Computation path (3 steps):\n    \u2192 [0] x: TensorShape(dims=(batch, 3, 32, 32))\n    \u2717 [1] x: TensorShape(dims=(batch, 64, 32, 32))\n      [2] x: TensorShape(dims=(batch, 64, 32, 32))\n  VIOLATION [1]: BatchNorm expects 32 features, got 64\n    Shape: TensorShape(dims=(batch, 64, 32, 32))\n  VIOLATION [1]: Z3 violation (shape_incompatible) at step 1:\n  phase_s1 = TRAIN_3\n  batch = 1\n  phase_s0 = TRAIN_3\n  dev_x_s0 = CPU",
+        "analysis_time_ms": 43.9,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 6.68,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 27817.73,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "matmul_shape_error",
+      "has_bug": true,
+      "bug_description": "Query dim 64 and key dim 128 are incompatible for attention matmul",
+      "tensorguard": {
+        "detected_bug": true,
+        "error_message": "CounterexampleTrace(MatmulShapeError)\n  Failing step: 3\n  Concrete dims: batch=1\n  Computation path (5 steps):\n    \u2192 [0] x: TensorShape(dims=(batch, 10, 512))\n    \u2192 [1] q: TensorShape(dims=(batch, 10, 64)), x: TensorShape(dims=(batch, 10, 512))\n    \u2192 [2] k: TensorShape(dims=(batch, 10, 128)), q: TensorShape(dims=(batch, 10, 64)), x: TensorShape(dims=(batch, 10, 512))\n    \u2717 [3] __inner_1: TensorShape(dims=(batch, 128, 10)), k: TensorShape(dims=(batch, 10, 128)), q: TensorShape(dims=(batch, 10, 64",
+        "analysis_time_ms": 83.77,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 1.15,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 16374.16,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "residual_shape_mismatch",
+      "has_bug": true,
+      "bug_description": "Residual add: x has 128 channels but residual has 64 channels",
+      "tensorguard": {
+        "detected_bug": true,
+        "error_message": "CounterexampleTrace(ResidualShapeMismatch)\n  Failing step: 3\n  Concrete dims: batch=1\n  Computation path (5 steps):\n    \u2192 [0] x: TensorShape(dims=(batch, 64, 32, 32))\n    \u2192 [1] residual: TensorShape(dims=(batch, 64, 32, 32)), x: TensorShape(dims=(batch, 64, 32, 32))\n    \u2192 [2] residual: TensorShape(dims=(batch, 64, 32, 32)), x: TensorShape(dims=(batch, 128, 32, 32))\n    \u2717 [3] residual: TensorShape(dims=(batch, 64, 32, 32)), x: TensorShape(dims=(batch, 128, 32, 32))\n      [4] residual: TensorShape",
+        "analysis_time_ms": 109.83,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 2.26,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 19498.39,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "lstm_linear_mismatch",
+      "has_bug": true,
+      "bug_description": "LSTM hidden_size is 128 but fc expects input_features=64",
+      "tensorguard": {
+        "detected_bug": true,
+        "error_message": "CounterexampleTrace(LSTMLinearMismatch)\n  Failing step: 3\n  Concrete dims: batch=1\n  Computation path (5 steps):\n    \u2192 [0] x: TensorShape(dims=(batch, 20, 256))\n    \u2192 [1] output: TensorShape(dims=(batch, 20, 128)), x: TensorShape(dims=(batch, 20, 256))\n    \u2192 [2] h_n: TensorShape(dims=(batch, 20, 128)), output: TensorShape(dims=(batch, 20, 128)), x: TensorShape(dims=(batch, 20, 256))\n    \u2717 [3] __subscript_1: TensorShape(dims=(batch, 128)), h_n: TensorShape(dims=(batch, 20, 128)), output: TensorSh",
+        "analysis_time_ms": 57.39,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 5.41,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 19163.29,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "flatten_linear_mismatch",
+      "has_bug": true,
+      "bug_description": "After conv+pool the flattened size is 800 but fc1 expects 1024",
+      "tensorguard": {
+        "detected_bug": true,
+        "error_message": "CounterexampleTrace(FlattenLinearMismatch)\n  Failing step: 7\n  Concrete dims: batch=1\n  Computation path (9 steps):\n    \u2192 [0] x: TensorShape(dims=(batch, 3, 32, 32))\n    \u2192 [1] __inner_2: TensorShape(dims=(batch, 16, 28, 28)), x: TensorShape(dims=(batch, 3, 32, 32))\n    \u2192 [2] __inner_1: TensorShape(dims=(batch, 16, 28, 28)), __inner_2: TensorShape(dims=(batch, 16, 28, 28)), x: TensorShape(dims=(batch, 3, 32, 32))\n    \u2192 [3] __inner_1: TensorShape(dims=(batch, 16, 28, 28)), __inner_2: TensorShape(d",
+        "analysis_time_ms": 188.55,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 2.26,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 20904.98,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "multihead_proj_mismatch",
+      "has_bug": true,
+      "bug_description": "W_o expects 256 but concatenated heads produce 512",
+      "tensorguard": {
+        "detected_bug": true,
+        "error_message": "CounterexampleTrace(MultiHeadProjMismatch)\n  Failing step: 2\n  Concrete dims: batch=1\n  Computation path (4 steps):\n    \u2192 [0] x: TensorShape(dims=(batch, 10, 512))\n    \u2192 [1] x: TensorShape(dims=(batch, 10, 512))\n    \u2717 [2] __inner_3: TensorShape(dims=(batch, 10, 512)), x: TensorShape(dims=(batch, 10, 512))\n      [3] __inner_3: TensorShape(dims=(batch, 10, 512)), x: TensorShape(dims=(batch, 10, 512))\n  VIOLATION [2]: Reshape incompatible: cannot reshape TensorShape(dims=(batch, 10, 512)) to (-1, -",
+        "analysis_time_ms": 317.56,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 5.13,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 22357.4,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "encoder_decoder_mismatch",
+      "has_bug": true,
+      "bug_description": "Encoder outputs 64-dim but Decoder expects 32-dim input",
+      "tensorguard": {
+        "detected_bug": true,
+        "error_message": "CounterexampleTrace(AutoEncoder)\n  Failing step: 1\n  Concrete dims: batch=1\n  Computation path (3 steps):\n    \u2192 [0] x: TensorShape(dims=(batch, 784))\n    \u2717 [1] x: TensorShape(dims=(batch, 784)), z: TensorShape(dims=(batch, 64))\n      [2] x: TensorShape(dims=(batch, 784)), z: TensorShape(dims=(batch, 64))\n  VIOLATION [1]: Linear expects last dim=32, got 64\n    Shape: TensorShape(dims=(batch, 64))\n  VIOLATION [1]: Linear expects last dim=256, got 64\n    Shape: TensorShape(dims=(batch, 64))",
+        "analysis_time_ms": 36.8,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 1.69,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 29743.82,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "convtranspose_mismatch",
+      "has_bug": true,
+      "bug_description": "ConvTranspose2d outputs 32 channels; concat with 64-ch skip gives 96 but design intent requires 128",
+      "tensorguard": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 454.16,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 1.97,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 56181.97,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "correct_mlp",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 55.91,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 2.0,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 53954.19,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "correct_cnn",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 73.05,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 2.04,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 10875.68,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "correct_resblock",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 69.26,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 1.79,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 20341.04,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "correct_lstm",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 29.39,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 6.52,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 10169.42,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "correct_self_attention",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": true,
+        "error_message": "CounterexampleTrace(CorrectSelfAttention)\n  Failing step: 2\n  Concrete dims: batch=1\n  Computation path (4 steps):\n    \u2192 [0] x: TensorShape(dims=(batch, 10, 512))\n    \u2192 [1] x: TensorShape(dims=(batch, 10, 512))\n    \u2717 [2] __inner_3: TensorShape(dims=(batch, 10, 512)), x: TensorShape(dims=(batch, 10, 512))\n      [3] __inner_3: TensorShape(dims=(batch, 10, 512)), x: TensorShape(dims=(batch, 10, 512))\n  VIOLATION [2]: Reshape incompatible: cannot reshape TensorShape(dims=(batch, 10, 512)) to (-1, -1",
+        "analysis_time_ms": 884.61,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 5.59,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 15654.95,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "correct_autoencoder",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 15.65,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 4.25,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 9190.69,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "correct_vgg_block",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 34.77,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 17.86,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 15503.31,
+        "tool_error": ""
+      }
+    },
+    {
+      "name": "correct_transformer_enc",
+      "has_bug": false,
+      "bug_description": "",
+      "tensorguard": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 381.11,
+        "tool_error": ""
+      },
+      "torchscript": {
+        "detected_bug": true,
+        "error_message": "could not get source code",
+        "analysis_time_ms": 6.46,
+        "tool_error": ""
+      },
+      "mypy": {
+        "detected_bug": false,
+        "error_message": "",
+        "analysis_time_ms": 15959.62,
+        "tool_error": ""
+      }
+    }
+  ]
+}

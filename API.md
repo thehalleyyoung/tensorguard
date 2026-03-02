@@ -1,11 +1,11 @@
 # TensorGuard API Reference
 
-**193 operators** across convolutions, attention, RoPE, MoE routing, einops-style rearrangements, and 145 core `nn.Module` layer types. Verified over a 5-theory product domain (shape × device × phase × stride × permutation).
+**117 operator transfer functions** across convolutions, attention, recurrence, pooling, normalization, and more. Verified over a 5-theory product domain (shape × device × phase × stride × permutation).
 
 ## Installation
 
 ```bash
-pip install -e ".[smt]"
+pip install -e .
 ```
 
 ---

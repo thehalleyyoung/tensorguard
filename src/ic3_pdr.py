@@ -17,6 +17,20 @@ frame over-approximates the set of reachable states at depth ≤ i.  It uses
 UNSAT-core–based generalization (via Craig interpolation when available)
 to efficiently block sets of bad states and detect inductive invariants.
 
+Soundness and Completeness:
+  - SOUND: If IC3/PDR returns SAFE, the property holds for all values of
+    symbolic dimensions.  Proof: each frame F_i is an over-approximation
+    of reachable states at depth ≤ i, and the fixed-point check ensures
+    the inductive invariant F_k implies the safety property.
+  - SOUND: If IC3/PDR returns UNSAFE with a counterexample trace, the
+    trace is a genuine execution violating the safety property.
+  - INCOMPLETE for nonlinear constraints: When reshape/view operations
+    produce QF_NIA constraints, Z3's interpolation and generalization
+    may fail to find the strongest blocking clause.  The procedure
+    remains sound (never reports false positives or false negatives)
+    but may not terminate for some nonlinear instances.  For the
+    QF_LIA fragment (94.9% of operators), the procedure is complete.
+
 Usage::
 
     from src.ic3_pdr import ic3_verify, IC3Result

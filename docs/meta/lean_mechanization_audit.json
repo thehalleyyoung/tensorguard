@@ -1,0 +1,193 @@
+{
+  "file": "lean/TheoryCombination.lean",
+  "lines": 1587,
+  "theorems_total": 71,
+  "sorry_count": 0,
+  "axiom_count": 0,
+  "admitted_count": 0,
+  "status": "all_discharged",
+  "lean_version": "Lean 4",
+  "tcb": [
+    "Python AST-to-constraint translation (trusted to faithfully encode PyTorch op semantics)",
+    "UserPropagator callback implementations in Python (trusted to match Lean checker specs)",
+    "Lean 4 standard library (Nat, Fin, List, etc.)"
+  ],
+  "mechanized_components": [
+    {
+      "component": "Theory Combination Soundness",
+      "theorem": "combination_soundness",
+      "line": 104,
+      "status": "fully_mechanized",
+      "description": "If Tinelli-Zarba procedure returns SAT, combined theory is satisfiable"
+    },
+    {
+      "component": "TensorGuard-Specific Corollary",
+      "theorem": "tensorguard_combination_sound",
+      "line": 167,
+      "status": "fully_mechanized",
+      "description": "Instantiation for T_shape × T_device × T_phase"
+    },
+    {
+      "component": "Broadcast Soundness",
+      "theorem": "broadcast_sound",
+      "line": 219,
+      "status": "fully_mechanized",
+      "description": "Broadcast-compatible shapes → output shape is max"
+    },
+    {
+      "component": "Broadcast Checker ↔ Spec",
+      "theorem": "broadcastDim_iff",
+      "line": 1303,
+      "status": "fully_mechanized",
+      "description": "Boolean checker logically equivalent to semantic spec"
+    },
+    {
+      "component": "Broadcast Symmetry",
+      "theorem": "broadcast_symmetric",
+      "line": 255,
+      "status": "fully_mechanized",
+      "description": "broadcast(a,b) compat ↔ broadcast(b,a) compat"
+    },
+    {
+      "component": "Broadcast Associativity",
+      "theorem": "broadcast_assoc_ext",
+      "line": 622,
+      "status": "fully_mechanized",
+      "description": "broadcast(broadcast(a,b),c) = broadcast(a,broadcast(b,c))"
+    },
+    {
+      "component": "Broadcast Idempotence",
+      "theorem": "broadcast_idempotent",
+      "line": 537,
+      "status": "fully_mechanized",
+      "description": "broadcast(a,a) = a"
+    },
+    {
+      "component": "Stride Soundness",
+      "theorem": "stride_sound",
+      "line": 232,
+      "status": "fully_mechanized",
+      "description": "Conv2d output dim formula is correct"
+    },
+    {
+      "component": "Stride Checker ↔ Spec",
+      "theorem": "strideDim_iff",
+      "line": 1307,
+      "status": "fully_mechanized",
+      "description": "Boolean checker logically equivalent to semantic spec"
+    },
+    {
+      "component": "Device Consistency",
+      "theorem": "device_consistent_transitive",
+      "line": 242,
+      "status": "fully_mechanized",
+      "description": "Device consistency is transitive (equivalence relation)"
+    },
+    {
+      "component": "Device Checker ↔ Spec",
+      "theorem": "deviceCheck_iff",
+      "line": 1313,
+      "status": "fully_mechanized",
+      "description": "Boolean checker logically equivalent to semantic spec"
+    },
+    {
+      "component": "Phase Checker ↔ Spec",
+      "theorem": "phaseCheck_iff",
+      "line": 1317,
+      "status": "fully_mechanized",
+      "description": "Boolean checker logically equivalent to semantic spec"
+    },
+    {
+      "component": "MHA Head Dimension",
+      "theorem": "mha_head_dim_sound",
+      "line": 352,
+      "status": "fully_mechanized",
+      "description": "embed_dim divisible by num_heads → head_dim well-defined"
+    },
+    {
+      "component": "Matmul Soundness",
+      "theorem": "matmul_sound",
+      "line": 288,
+      "status": "fully_mechanized",
+      "description": "Inner dimension consistency"
+    },
+    {
+      "component": "Matmul Chain Associativity",
+      "theorem": "matmul_chain_dims",
+      "line": 299,
+      "status": "fully_mechanized",
+      "description": "(A@B)@C and A@(B@C) have same output shape"
+    },
+    {
+      "component": "Linear Layer Consistency",
+      "theorem": "linear_output_dim",
+      "line": 329,
+      "status": "fully_mechanized",
+      "description": "nn.Linear output shape determined by out_features"
+    },
+    {
+      "component": "CEGAR Convergence",
+      "theorem": "cegar_terminates",
+      "line": 865,
+      "status": "fully_mechanized",
+      "description": "CEGAR loop terminates in ≤ N iterations for universe of size N"
+    },
+    {
+      "component": "CEGAR Grounded Convergence",
+      "theorem": "cegar_grounded_convergence",
+      "line": 1485,
+      "status": "fully_mechanized",
+      "description": "Concrete bound 7·|vars|²·C iterations from predicate template"
+    },
+    {
+      "component": "Reshape NP-hardness",
+      "theorem": "reshape_np_hard",
+      "line": 1030,
+      "status": "fully_mechanized",
+      "description": "SUBSET-PRODUCT ↔ ReshapeDimSat (both directions proved)"
+    },
+    {
+      "component": "Callback C1: Push-Pop",
+      "theorem": "push_pop_invertibility",
+      "line": 1167,
+      "status": "fully_mechanized",
+      "description": "pop(push(σ, f)) = σ"
+    },
+    {
+      "component": "Callback C4: Conflict Soundness",
+      "theorem": "broadcastDim_conflict_sound (+ stride, device, phase)",
+      "line": 1206,
+      "status": "fully_mechanized",
+      "description": "checker=false → spec truly fails (all 4 theories)"
+    },
+    {
+      "component": "Callback C5: Propagation Soundness",
+      "theorem": "broadcast_propagation_sound",
+      "line": 1335,
+      "status": "fully_mechanized",
+      "description": "Propagated max(a,b) is broadcast-compatible with both inputs"
+    },
+    {
+      "component": "Simulation Relation",
+      "theorem": "simulation_soundness",
+      "line": 1390,
+      "status": "fully_mechanized",
+      "description": "Python checker faithfully simulating Lean checker → semantic correctness"
+    },
+    {
+      "component": "Predicate Universe Finiteness",
+      "theorem": "predicate_universe_finite",
+      "line": 1471,
+      "status": "fully_mechanized",
+      "description": "7-kind template × n² vars × C constants = finite universe"
+    }
+  ],
+  "not_mechanized": [
+    "Python AST → computation graph extraction",
+    "Z3 constraint encoding from computation graph",
+    "UserPropagator Python implementations (correctness assumed via simulation relation)",
+    "IC3/PDR algorithm correctness (soundness stated in docstring, not mechanized)",
+    "Denotational semantics adequacy (stated in paper, not mechanized)",
+    "Arrangement enumeration completeness (allArrangementsEnumerated defined but not instantiated)"
+  ]
+}

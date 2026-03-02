@@ -1,0 +1,1088 @@
+{
+  "total_operators": 117,
+  "fragment_counts": {
+    "linear": 96,
+    "passthrough": 15,
+    "nonlinear": 6
+  },
+  "complexity_counts": {
+    "P": 96,
+    "O(1)": 15,
+    "NP-hard": 6
+  },
+  "decidable_fragment": {
+    "count": 111,
+    "fraction": 0.9487,
+    "logic": "QF_LIA + finite-domain (Tinelli-Zarba)",
+    "complexity": "P"
+  },
+  "nonlinear_fragment": {
+    "count": 6,
+    "operators": [
+      "Flatten",
+      "Unflatten",
+      "view/reshape",
+      "PixelShuffle",
+      "PixelUnshuffle",
+      "repeat"
+    ],
+    "logic": "QF_NIA",
+    "complexity": "NP-hard (SUBSET-PRODUCT reduction, mechanized in Lean 4)"
+  },
+  "adequacy_theorem": "For the 111-operator decidable fragment (no reshape/view/flatten/repeat/PixelShuffle), TensorGuard verification reduces to QF_LIA + finite-domain satisfiability, which is decidable in P via Tinelli-Zarba combination.",
+  "classifications": [
+    {
+      "name": "Linear",
+      "category": "linear",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "x.shape[-1] == in_features \u2192 out shape[-1] = out_features"
+    },
+    {
+      "name": "LazyLinear",
+      "category": "linear",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Same as Linear, in_features inferred"
+    },
+    {
+      "name": "Bilinear",
+      "category": "linear",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Two input last-dim constraints"
+    },
+    {
+      "name": "Conv1d",
+      "category": "convolution",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "h_out = floor((h_in + 2*pad - kernel) / stride) + 1"
+    },
+    {
+      "name": "Conv2d",
+      "category": "convolution",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Two spatial dims, each a linear stride formula"
+    },
+    {
+      "name": "Conv3d",
+      "category": "convolution",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Three spatial dims"
+    },
+    {
+      "name": "ConvTranspose1d",
+      "category": "convolution",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "h_out = (h_in-1)*stride - 2*pad + kernel + output_padding"
+    },
+    {
+      "name": "ConvTranspose2d",
+      "category": "convolution",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Two spatial dims, transpose formula"
+    },
+    {
+      "name": "ConvTranspose3d",
+      "category": "convolution",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Three spatial dims, transpose formula"
+    },
+    {
+      "name": "LazyConv1d",
+      "category": "convolution",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LazyConv2d",
+      "category": "convolution",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LazyConv3d",
+      "category": "convolution",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LazyConvTranspose1d",
+      "category": "convolution",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LazyConvTranspose2d",
+      "category": "convolution",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LazyConvTranspose3d",
+      "category": "convolution",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "BatchNorm1d",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "num_features == input channel dim"
+    },
+    {
+      "name": "BatchNorm2d",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "BatchNorm3d",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LayerNorm",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "normalized_shape matches trailing dims"
+    },
+    {
+      "name": "GroupNorm",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "num_channels divisible by num_groups (linear)"
+    },
+    {
+      "name": "InstanceNorm1d",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "InstanceNorm2d",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "InstanceNorm3d",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "SyncBatchNorm",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LazyBatchNorm1d",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LazyBatchNorm2d",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LazyBatchNorm3d",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LazyInstanceNorm1d",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LazyInstanceNorm2d",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LazyInstanceNorm3d",
+      "category": "normalization",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "MaxPool1d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "MaxPool2d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "MaxPool3d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "AvgPool1d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "AvgPool2d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "AvgPool3d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "AdaptiveAvgPool1d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "output_size directly specified"
+    },
+    {
+      "name": "AdaptiveAvgPool2d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "AdaptiveAvgPool3d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "AdaptiveMaxPool1d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "AdaptiveMaxPool2d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "AdaptiveMaxPool3d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LPPool1d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LPPool2d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "FractionalMaxPool2d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "output_size specified or ratio fixed"
+    },
+    {
+      "name": "FractionalMaxPool3d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "MaxUnpool1d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "MaxUnpool2d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "MaxUnpool3d",
+      "category": "pooling",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "ReLU",
+      "category": "activation",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": "Shape-preserving, no constraints generated"
+    },
+    {
+      "name": "Softmax",
+      "category": "activation",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": ""
+    },
+    {
+      "name": "GLU",
+      "category": "activation",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Halves dimension along specified axis"
+    },
+    {
+      "name": "Dropout",
+      "category": "regularization",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": "Shape-preserving; phase constraint: dropout off in eval"
+    },
+    {
+      "name": "AlphaDropout",
+      "category": "regularization",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": ""
+    },
+    {
+      "name": "Flatten",
+      "category": "reshape",
+      "constraint_fragment": "nonlinear",
+      "smt_logic": "QF_NIA",
+      "decidable": true,
+      "complexity": "NP-hard",
+      "notes": "Product of flattened dims = product of output dims"
+    },
+    {
+      "name": "Unflatten",
+      "category": "reshape",
+      "constraint_fragment": "nonlinear",
+      "smt_logic": "QF_NIA",
+      "decidable": true,
+      "complexity": "NP-hard",
+      "notes": "Reverse of flatten, product equality"
+    },
+    {
+      "name": "view/reshape",
+      "category": "reshape",
+      "constraint_fragment": "nonlinear",
+      "smt_logic": "QF_NIA",
+      "decidable": true,
+      "complexity": "NP-hard",
+      "notes": "General product-equality: \u220finput_dims = \u220foutput_dims"
+    },
+    {
+      "name": "Sequential",
+      "category": "structural",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": "Container, delegates to children"
+    },
+    {
+      "name": "ModuleList",
+      "category": "structural",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": ""
+    },
+    {
+      "name": "ModuleDict",
+      "category": "structural",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": ""
+    },
+    {
+      "name": "ParameterList",
+      "category": "structural",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": ""
+    },
+    {
+      "name": "ParameterDict",
+      "category": "structural",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": ""
+    },
+    {
+      "name": "Identity",
+      "category": "structural",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": ""
+    },
+    {
+      "name": "Embedding",
+      "category": "embedding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Output = input_shape + (embedding_dim,)"
+    },
+    {
+      "name": "EmbeddingBag",
+      "category": "embedding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "LSTM",
+      "category": "recurrence",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "input[-1] == input_size, output[-1] = hidden_size (*2 if bidir)"
+    },
+    {
+      "name": "GRU",
+      "category": "recurrence",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "RNN",
+      "category": "recurrence",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "MultiheadAttention",
+      "category": "attention",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "embed_dim divisible by num_heads; Q,K,V dims match"
+    },
+    {
+      "name": "TransformerEncoderLayer",
+      "category": "transformer",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "TransformerDecoderLayer",
+      "category": "transformer",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "TransformerEncoder",
+      "category": "transformer",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "TransformerDecoder",
+      "category": "transformer",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "ZeroPad1d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "output_dim = input_dim + pad_left + pad_right"
+    },
+    {
+      "name": "ZeroPad2d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "ZeroPad3d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "ConstantPad1d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "ConstantPad2d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "ConstantPad3d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "ReflectionPad1d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "ReflectionPad2d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "ReflectionPad3d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "ReplicationPad1d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "ReplicationPad2d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "ReplicationPad3d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "CircularPad1d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "CircularPad2d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "CircularPad3d",
+      "category": "padding",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "PixelShuffle",
+      "category": "spatial",
+      "constraint_fragment": "nonlinear",
+      "smt_logic": "QF_NIA",
+      "decidable": true,
+      "complexity": "NP-hard",
+      "notes": "C_out = C_in / (r\u00b2), H_out = H*r \u2014 involves multiplication"
+    },
+    {
+      "name": "PixelUnshuffle",
+      "category": "spatial",
+      "constraint_fragment": "nonlinear",
+      "smt_logic": "QF_NIA",
+      "decidable": true,
+      "complexity": "NP-hard",
+      "notes": "Inverse of PixelShuffle, involves r\u00b2"
+    },
+    {
+      "name": "ChannelShuffle",
+      "category": "spatial",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Permutation, no dimension change"
+    },
+    {
+      "name": "Fold",
+      "category": "spatial",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "Unfold",
+      "category": "spatial",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "Upsample",
+      "category": "spatial",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "scale_factor * input_size (concrete factor)"
+    },
+    {
+      "name": "PairwiseDistance",
+      "category": "distance",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "CosineSimilarity",
+      "category": "distance",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "CrossEntropyLoss",
+      "category": "loss",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Input shape vs target shape compatibility"
+    },
+    {
+      "name": "MSELoss",
+      "category": "loss",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "L1Loss",
+      "category": "loss",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "NLLLoss",
+      "category": "loss",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "BCELoss",
+      "category": "loss",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": ""
+    },
+    {
+      "name": "matmul",
+      "category": "operation",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Inner dim equality: A.shape[-1] == B.shape[-2]"
+    },
+    {
+      "name": "add/sub",
+      "category": "operation",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Broadcasting: max semantics on each dim"
+    },
+    {
+      "name": "cat/concat",
+      "category": "operation",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "All dims equal except concat dim (sum)"
+    },
+    {
+      "name": "transpose",
+      "category": "operation",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": "Permutes dims, no constraints"
+    },
+    {
+      "name": "permute",
+      "category": "operation",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": ""
+    },
+    {
+      "name": "squeeze",
+      "category": "operation",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Removes dims of size 1"
+    },
+    {
+      "name": "unsqueeze",
+      "category": "operation",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Adds dim of size 1"
+    },
+    {
+      "name": "expand",
+      "category": "operation",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Broadcasting with target shape"
+    },
+    {
+      "name": "repeat",
+      "category": "operation",
+      "constraint_fragment": "nonlinear",
+      "smt_logic": "QF_NIA",
+      "decidable": true,
+      "complexity": "NP-hard",
+      "notes": "dim_out = dim_in * repeat_factor (multiplication)"
+    },
+    {
+      "name": "chunk/split",
+      "category": "operation",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Divides dim by num_chunks"
+    },
+    {
+      "name": "stack",
+      "category": "operation",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "All inputs same shape, adds new dim"
+    },
+    {
+      "name": "interpolate",
+      "category": "operation",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "output_size specified or scale_factor concrete"
+    },
+    {
+      "name": "einsum",
+      "category": "operation",
+      "constraint_fragment": "linear",
+      "smt_logic": "QF_LIA",
+      "decidable": true,
+      "complexity": "P",
+      "notes": "Subscript-directed dim matching"
+    },
+    {
+      "name": "contiguous",
+      "category": "operation",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": ""
+    },
+    {
+      "name": "detach",
+      "category": "operation",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": ""
+    },
+    {
+      "name": "to(device)",
+      "category": "operation",
+      "constraint_fragment": "passthrough",
+      "smt_logic": "none",
+      "decidable": true,
+      "complexity": "O(1)",
+      "notes": "Device change only"
+    }
+  ]
+}

@@ -3,47 +3,47 @@
     {
       "claim": "100% proof certificate coverage",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/proof_certificate.py, ProofCertificate class with verify_locally() and per-step replay via CertificateStrategy.REPLAY"
+      "evidence_path": "src/proof_certificate.py, ProofCertificate class with verify_locally() and per-step replay via CertificateStrategy.REPLAY"
     },
     {
       "claim": "IC3/PDR unbounded verification for all values of symbolic dimensions",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/ic3_pdr.py, ic3_verify() function and IC3Solver class"
+      "evidence_path": "src/ic3_pdr.py, ic3_verify() function and IC3Solver class"
     },
     {
       "claim": "IC3/PDR frame convergence: converges in \u22643 frames regardless of model depth (min=1, median=3, P95=3, max=3, correlation r=0.057)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/ic3_frame_distribution.json"
+      "evidence_path": "experiments/results/ic3_frame_distribution.json"
     },
     {
       "claim": "Five-theory product domain: Shape \u00d7 Device \u00d7 Phase \u00d7 Stride \u00d7 Permutation with Nelson-Oppen combination",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/smt/ directory: broadcast_theory.py, device_theory.py, phase_theory.py, stride_theory.py, permutation_theory.py, theory_combination.py"
+      "evidence_path": "src/smt/ directory: broadcast_theory.py, device_theory.py, phase_theory.py, stride_theory.py, permutation_theory.py, theory_combination.py"
     },
     {
       "claim": "Non-sequential assume-guarantee: 5 architectures (ResNet, U-Net, Transformer, Inception, FPN) tested with 3 decomposition strategies (branch_merge, layer_boundary, dag)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/assume_guarantee_nonsequential_results.json"
+      "evidence_path": "experiments/results/assume_guarantee_nonsequential_results.json"
     },
     {
       "claim": "Knowledge transfer: 2.0\u00d7 iteration speedup / 1.74\u00d7 wall-clock speedup on ResNet family (ResNet-18/34/50/101/152, cold_total=84107.6ms, warm_total=48282.5ms, cold_iters=10, warm_iters=5)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/.benchmarks/knowledge_transfer_results.json"
+      "evidence_path": ".benchmarks/knowledge_transfer_results.json"
     },
     {
       "claim": "F1=0.972 on 230 benchmarks (Precision=1.000, Recall=0.946)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/expanded_eval_results.json (tools.tensorguard.metrics: tp=105, fp=0, fn=6, tn=119, f1=0.9722)"
+      "evidence_path": "experiments/expanded_eval_results.json (tools.tensorguard.metrics: tp=105, fp=0, fn=6, tn=119, f1=0.9722)"
     },
     {
       "claim": "CVC5 concordance: 41/41 verdict agreement across 6 theory categories (broadcast, stride, device, phase, permutation, cross_category)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/cvc5_trust_boundary_analysis.json"
+      "evidence_path": "experiments/results/cvc5_trust_boundary_analysis.json"
     },
     {
       "claim": "CVC5 Craig interpolation via native getInterpolant",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/craig_interpolation.py (InterpolationPredicateDiscovery class, InterpolationMethod.CVC5_NATIVE); implementation/.benchmarks/cvc5_interpolation_results.json"
+      "evidence_path": "src/craig_interpolation.py (InterpolationPredicateDiscovery class, InterpolationMethod.CVC5_NATIVE); .benchmarks/cvc5_interpolation_results.json"
     },
     {
       "claim": "Lean 4 mechanization: 1,587 lines, zero sorry obligations",
@@ -53,187 +53,187 @@
     {
       "claim": "Mutation kill rate: 85/100 per-category (7 categories, overall 85%)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/mutation_category_results.json"
+      "evidence_path": "experiments/results/mutation_category_results.json"
     },
     {
       "claim": "Cluster-bootstrap CIs: F1 [0.73, 1.00] (ICC=0.033)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/.benchmarks/cluster_bootstrap_results.json (metrics.f1.cluster_ci_95: lower=0.7273, upper=1.0, icc=0.0327)"
+      "evidence_path": ".benchmarks/cluster_bootstrap_results.json (metrics.f1.cluster_ci_95: lower=0.7273, upper=1.0, icc=0.0327)"
     },
     {
       "claim": "K\u2218Z\u2218K idempotence: verified on 26 expressions (26/26 passed)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/kzk_idempotence_results.json"
+      "evidence_path": "experiments/results/kzk_idempotence_results.json"
     },
     {
       "claim": "Decidability fragment characterization: QF_LIA (P), QF_NIA concrete-symbolic (P), QF_NIA bounded-symbolic (NP-hard, decidable), QF_NIA unbounded (undecidable)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/decidability_analysis.json"
+      "evidence_path": "experiments/results/decidability_analysis.json"
     },
     {
       "claim": "Resolution RES analysis across verification modes and architecture categories",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/resolution_analysis_results.json"
+      "evidence_path": "experiments/results/resolution_analysis_results.json"
     },
     {
       "claim": "5,884 tests passing",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/tests/ (87 test files, pytest output: 5884 passed)"
+      "evidence_path": "tests/ (87 test files, pytest output: 5884 passed)"
     },
     {
       "claim": "CEGAR contract discovery via Houdini-style predicate accumulation",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/shape_cegar.py (ShapeCEGARLoop class, run_shape_cegar function)"
+      "evidence_path": "src/shape_cegar.py (ShapeCEGARLoop class, run_shape_cegar function)"
     },
     {
       "claim": "Knuth-Bendix completion for shape constraint normalization with RPO termination",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/knuth_bendix.py (knuth_bendix_completion, get_completed_rules, normalize_z3_expr, verify_confluence, verify_termination)"
+      "evidence_path": "src/knuth_bendix.py (knuth_bendix_completion, get_completed_rules, normalize_z3_expr, verify_confluence, verify_termination)"
     },
     {
       "claim": "IC3/PDR vs bounded checking: 31/32 agreement, 9.5x speedup",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/.benchmarks/ic3_comprehensive_results.json (summary.verdicts_agreed=31, summary.ic3_avg_speedup_over_bmc=9.46)"
+      "evidence_path": ".benchmarks/ic3_comprehensive_results.json (summary.verdicts_agreed=31, summary.ic3_avg_speedup_over_bmc=9.46)"
     },
     {
       "claim": "IC3 proves 10/10 safe with inductive invariants while BMC fails on 1, 18x speedup",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/ic3_vs_kinduction_results.json"
+      "evidence_path": "experiments/results/ic3_vs_kinduction_results.json"
     },
     {
       "claim": "Calibration: ECE=0.01, Brier=0.057",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/calibration_results.json"
+      "evidence_path": "experiments/results/calibration_results.json"
     },
     {
       "claim": "Dual-solver Z3/CVC5 cross-validation: 110/110 agreement on certificate-producing models",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/full_census_cvc5_results.json (193 unique models, 110 produce certificates, all agreement=true)"
+      "evidence_path": "experiments/full_census_cvc5_results.json (193 unique models, 110 produce certificates, all agreement=true)"
     },
     {
       "claim": "Explanation generation with human-readable verification reports",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/cegar_explanation.py (explain_verification, generate_explanation)"
+      "evidence_path": "src/cegar_explanation.py (explain_verification, generate_explanation)"
     },
     {
       "claim": "Nelson-Oppen/Tinelli-Zarba preconditions verified: stable infiniteness, polite witnessability, signature disjointness",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/smt/theory_combination.py (verify_combination_preconditions); implementation/src/theory_combination_analysis.py"
+      "evidence_path": "src/smt/theory_combination.py (verify_combination_preconditions); src/theory_combination_analysis.py"
     },
     {
       "claim": "Cross-session knowledge base with Plotkin-style anti-unification over proof schemas (save/load/merge/record/lookup API)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/knowledge_base.py (VerificationKnowledgeBase, anti_unify_proof_certificates, compute_arch_hash)"
+      "evidence_path": "src/knowledge_base.py (VerificationKnowledgeBase, anti_unify_proof_certificates, compute_arch_hash)"
     },
     {
       "claim": "Neuro-symbolic refinement: verify-explain-repair-re-verify loop with knowledge accumulation",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/neurosym_refinement.py (run_neurosym_refinement, NeurosymRefinementLoop)"
+      "evidence_path": "src/neurosym_refinement.py (run_neurosym_refinement, NeurosymRefinementLoop)"
     },
     {
       "claim": "TorchDynamo composition semantics: MONOLITHIC_SAFE / PER_SUBGRAPH_SAFE / UNKNOWN",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/dynamo_extractor.py (CompositionSemantics, _detect_cross_break_dependencies)"
+      "evidence_path": "src/dynamo_extractor.py (CompositionSemantics, _detect_cross_break_dependencies)"
     },
     {
       "claim": "PER_SUBGRAPH_SAFE gap analysis with risk assessment (LOW/MEDIUM/HIGH)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/dynamo_gap_analysis.py (analyze_per_subgraph_safe_gap)"
+      "evidence_path": "src/dynamo_gap_analysis.py (analyze_per_subgraph_safe_gap)"
     },
     {
       "claim": "Deployment cost analysis under asymmetric loss",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/deployment_cost_analysis.py (compute_deployment_cost, compute_full_deployment_analysis, compare_semantics_cost)"
+      "evidence_path": "src/deployment_cost_analysis.py (compute_deployment_cost, compute_full_deployment_analysis, compare_semantics_cost)"
     },
     {
       "claim": "CLI with text/JSON/SARIF output and CI exit codes (0=safe, 1=bug, 2=unknown)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/cli/ directory"
+      "evidence_path": "src/cli/ directory"
     },
     {
       "claim": "Dynamic architecture evaluation: 90% accuracy on 20 models",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/dynamic_arch_results.json (summary: total_benchmarks=20, correct=18, accuracy=0.9)"
+      "evidence_path": "experiments/dynamic_arch_results.json (summary: total_benchmarks=20, correct=18, accuracy=0.9)"
     },
     {
       "claim": "PyTea comparison: TensorGuard catches 5 compositional bugs PyTea misses",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/pytea_comparison_results.json (summary.tensorguard_catches_pytea_misses=5, total_benchmarks=19)"
+      "evidence_path": "experiments/pytea_comparison_results.json (summary.tensorguard_catches_pytea_misses=5, total_benchmarks=19)"
     },
     {
       "claim": "Permutation theory (5th SMT theory) enables 100% transpose_missing kill rate",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/smt/permutation_theory.py; implementation/.benchmarks/mutation_category_results.json (transpose_missing: 2/2 kill rate)"
+      "evidence_path": "src/smt/permutation_theory.py; .benchmarks/mutation_category_results.json (transpose_missing: 2/2 kill rate)"
     },
     {
       "claim": "145 nn.Module layer types supported across 10 categories",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/model_checker.py (_is_nn_layer function, LayerKind enum, _LAYER_PROPAGATORS dict)"
+      "evidence_path": "src/model_checker.py (_is_nn_layer function, LayerKind enum, _LAYER_PROPAGATORS dict)"
     },
     {
       "claim": "5,884 tests passing (updated)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/tests/ (87 test files, pytest output: 5884 passed)"
+      "evidence_path": "tests/ (87 test files, pytest output: 5884 passed)"
     },
     {
       "claim": "Expanded operator coverage: loss functions, GLU, Bilinear, EmbeddingBag, padding 1d/3d, pooling 3d, MaxUnpool, Lazy variants",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/expanded_operator_coverage_results.json (10/10 correct on expanded operator benchmark)"
+      "evidence_path": "experiments/expanded_operator_coverage_results.json (10/10 correct on expanded operator benchmark)"
     },
     {
       "claim": "Thread-modular graph-break composition: 10/10 models correct (Flanagan-Qadeer formalization)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/thread_modular.py (ThreadModularVerifier class); implementation/experiments/results/thread_modular_results.json"
+      "evidence_path": "src/thread_modular.py (ThreadModularVerifier class); experiments/results/thread_modular_results.json"
     },
     {
       "claim": "All 28 Knuth-Bendix critical pairs enumerated (7 self-overlaps + 21 inter-rule), 7 CPs found, all joinable under RPO",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/kb_critical_pairs_28.json; implementation/src/knuth_bendix.py (compute_critical_pairs function)"
+      "evidence_path": "experiments/results/kb_critical_pairs_28.json; src/knuth_bendix.py (compute_critical_pairs function)"
     },
     {
       "claim": "K\u2218Z\u2218K commutativity verified on 49 expressions",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/kb_critical_pairs_28.json (kzk_commutativity section)"
+      "evidence_path": "experiments/results/kb_critical_pairs_28.json (kzk_commutativity section)"
     },
     {
       "claim": "QF_UFLIA distinctness and totality axioms for 3 finite sorts, all verified tight (no spurious models)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/smt/distinctness_axioms.py (FiniteSortAxiomGenerator class); implementation/experiments/results/distinctness_axiom_verification.json"
+      "evidence_path": "src/smt/distinctness_axioms.py (FiniteSortAxiomGenerator class); experiments/results/distinctness_axiom_verification.json"
     },
     {
       "claim": "8/8 targeted spurious model prevention tests passed for finite sort axioms",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/distinctness_axiom_verification.json (spurious_model_tests section)"
+      "evidence_path": "experiments/results/distinctness_axiom_verification.json (spurious_model_tests section)"
     },
     {
       "claim": "Inter-break abstract transformers detect 5 categories of cross-break unsoundness",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/thread_modular.py (detect_non_monotonic_patterns function, TransformerType enum with IDENTITY, CONSERVATIVE, RESHAPE, DIMENSION_ROUTING, ACCUMULATOR)"
+      "evidence_path": "src/thread_modular.py (detect_non_monotonic_patterns function, TransformerType enum with IDENTITY, CONSERVATIVE, RESHAPE, DIMENSION_ROUTING, ACCUMULATOR)"
     },
     {
       "claim": "193 operator coverage (4.11x expansion from 47 to 193)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/stdlib/modern_ops.py (157 new ops); implementation/experiments/operator_coverage_expansion_results.json (original_total=47, modern_ops_added=157, total_ops_covered=193)"
+      "evidence_path": "src/stdlib/modern_ops.py (157 new ops); experiments/operator_coverage_expansion_results.json (original_total=47, modern_ops_added=157, total_ops_covered=193)"
     },
     {
       "claim": "AGM belief revision maintains 1.0 precision vs 0.50 baseline under schema drift",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/knowledge_base.py (contract, revise, invalidate_stale methods); implementation/experiments/agm_belief_revision_results.json"
+      "evidence_path": "src/knowledge_base.py (contract, revise, invalidate_stale methods); experiments/agm_belief_revision_results.json"
     },
     {
       "claim": "Contrastive explanations: 10/12 root-cause narratives, 1-line contrastive vs 26-line raw traces",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/contrastive_explanation.py; implementation/experiments/contrastive_explanation_results.json (root_cause_narrative_count=10, avg_contrastive_lines=1.0, avg_raw_trace_lines=25.8)"
+      "evidence_path": "src/contrastive_explanation.py; experiments/contrastive_explanation_results.json (root_cause_narrative_count=10, avg_contrastive_lines=1.0, avg_raw_trace_lines=25.8)"
     },
     {
       "claim": "Fragment-disaggregated F1: QF_LIA F1=0.986, QF_NIA F1=1.000, mixed F1=0.667",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/fragment_disaggregated_f1_results.json; implementation/src/decidability.py (classify_constraint_fragment function)"
+      "evidence_path": "experiments/fragment_disaggregated_f1_results.json; src/decidability.py (classify_constraint_fragment function)"
     },
     {
       "claim": "CEGAR adversarial convergence: max 2 iterations, O(k) tight bound, seed-to-final predicate ratio ~50%",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/cegar_adversarial_convergence_results.json (adversarial_max_iterations=2, adversarial_mean_coverage=0.5); implementation/src/cegar_convergence_theory.py"
+      "evidence_path": "experiments/cegar_adversarial_convergence_results.json (adversarial_max_iterations=2, adversarial_mean_coverage=0.5); src/cegar_convergence_theory.py"
     },
     {
       "claim": "CEGAR maintains F1=0.833 on zero-guard EAFP-style code, only 6.3% below high-guard modules",
@@ -345,27 +345,27 @@
     {
       "claim": "Telemetry-based confidence achieves Brier resolution RES=0.115 vs RES=0.000 for discrete confidence (AUC-ROC=0.78)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/telemetry_confidence_results.json, implementation/src/telemetry_confidence.py"
+      "evidence_path": "experiments/results/telemetry_confidence_results.json, src/telemetry_confidence.py"
     },
     {
       "claim": "Surviving mutant classification: 18 genuine escapes, 1 equivalent mutant, adjusted score 84.88%",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/mutant_classification.json"
+      "evidence_path": "experiments/results/mutant_classification.json"
     },
     {
       "claim": "Craig interpolation fallback rate: 0% across 18 benchmarks, O(k) CEGAR convergence bound holds for 10/10 benchmarks",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/craig_fallback_analysis.json"
+      "evidence_path": "experiments/results/craig_fallback_analysis.json"
     },
     {
       "claim": "Theory combination: 45/45 tests pass including 6 new cross-theory tests",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/tests/test_theory_combination.py"
+      "evidence_path": "tests/test_theory_combination.py"
     },
     {
       "claim": "Genuine escapes concentrated in wrong_out_features (11/18 = 61%): output dimension mutations that do not propagate shape errors backwards",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/experiments/results/mutant_classification.json"
+      "evidence_path": "experiments/results/mutant_classification.json"
     },
     {
       "claim": "Backward constraint propagation catches producer-consumer mismatches invisible to forward-only analysis (e.g. wrong_out_features mutations)",
@@ -455,37 +455,37 @@
     {
       "claim": "ECE = 0.05 with bootstrap 95% CI and adaptive ECE",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/calibration_analysis.py (expected_calibration_error, adaptive_ece, bootstrap_ece_ci functions); implementation/tests/test_calibration_analysis.py (49 tests)"
+      "evidence_path": "src/calibration_analysis.py (expected_calibration_error, adaptive_ece, bootstrap_ece_ci functions); tests/test_calibration_analysis.py (49 tests)"
     },
     {
       "claim": "Platt temperature scaling with optimal T for confidence calibration",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/calibration_analysis.py (find_optimal_temperature, apply_temperature functions)"
+      "evidence_path": "src/calibration_analysis.py (find_optimal_temperature, apply_temperature functions)"
     },
     {
       "claim": "Calibration curve data generation for reliability diagrams",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/calibration_analysis.py (calibration_curve_data function)"
+      "evidence_path": "src/calibration_analysis.py (calibration_curve_data function)"
     },
     {
       "claim": "Three-way comparison: IC3/PDR vs k-induction vs BMC with agreement verification",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/k_induction.py (compare_verification_methods, MethodComparison class); implementation/tests/test_k_induction.py (TestMethodComparison class, 4 tests)"
+      "evidence_path": "src/k_induction.py (compare_verification_methods, MethodComparison class); tests/test_k_induction.py (TestMethodComparison class, 4 tests)"
     },
     {
       "claim": "IC3/PDR and k-induction agree on all benchmark verdicts",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/tests/test_k_induction.py (TestKInductionVsIC3 class, 3 parametric tests)"
+      "evidence_path": "tests/test_k_induction.py (TestKInductionVsIC3 class, 3 parametric tests)"
     },
     {
       "claim": "Empirical knowledge transfer validation with speedup measurement",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/knowledge_base.py (run_transfer_experiment, TransferExperimentResult); implementation/tests/test_knowledge_transfer.py (TestTransferExperiment class, 3 tests)"
+      "evidence_path": "src/knowledge_base.py (run_transfer_experiment, TransferExperimentResult); tests/test_knowledge_transfer.py (TestTransferExperiment class, 3 tests)"
     },
     {
       "claim": "CrossTheoryDeductionPropagator soundness Z3 machine-checked (3/3 model-extraction lemma instances)",
       "evidence_type": "artifact",
-      "evidence_path": "implementation/src/composition_soundness.py (check_cross_theory_deduction_soundness with Z3 verification); implementation/tests/test_composition_soundness.py (3 tests)"
+      "evidence_path": "src/composition_soundness.py (check_cross_theory_deduction_soundness with Z3 verification); tests/test_composition_soundness.py (3 tests)"
     },
     {
       "claim": "State definition uses Z_{>=1} consistently (no negative/zero dimensions)",
@@ -496,6 +496,78 @@
       "claim": "IC3/PDR soundness proof: inductiveness via Z3 consecution queries, not circular frame convergence",
       "evidence_type": "proof",
       "evidence_path": "theory/paper.tex Theorem IC3/PDR Soundness proof sketch (line 1080+)"
+    },
+    {
+      "claim": "Baseline comparison: TensorGuard F1=0.900 vs TorchScript F1=0.714 vs mypy F1=0.000 on 18 benchmarks",
+      "evidence_type": "experiment",
+      "evidence_path": "experiments/results/baseline_real_comparison.json",
+      "reproduction": "python3 experiments/run_real_baseline_comparison.py"
+    },
+    {
+      "claim": "94.9% of operators (111/117) produce decidable QF_LIA constraints (polynomial time)",
+      "evidence_type": "analysis",
+      "evidence_path": "experiments/results/decidability_characterization.json",
+      "reproduction": "python3 experiments/run_decidability_characterization.py"
+    },
+    {
+      "claim": "6 operators produce NP-hard QF_NIA constraints: Flatten, Unflatten, view/reshape, PixelShuffle, PixelUnshuffle, repeat",
+      "evidence_type": "analysis",
+      "evidence_path": "experiments/results/decidability_characterization.json"
+    },
+    {
+      "claim": "NP-hardness of reshape via SUBSET-PRODUCT reduction (mechanized in Lean 4, reshape_np_hard theorem)",
+      "evidence_type": "proof",
+      "evidence_path": "lean/TheoryCombination.lean, lines 1030-1033 (reshape_np_hard \u2194 theorem)"
+    },
+    {
+      "claim": "Lean 4 mechanization: 1,587 lines, 71 theorems, 0 sorry obligations",
+      "evidence_type": "proof",
+      "evidence_path": "lean/TheoryCombination.lean"
+    },
+    {
+      "claim": "IC3/PDR is sound but incomplete for QF_NIA (reshape) constraints; complete for QF_LIA fragment",
+      "evidence_type": "formal_statement",
+      "evidence_path": "src/ic3_pdr.py, module docstring (Soundness and Completeness section)"
+    },
+    {
+      "claim": "TensorGuard 1 FP on complex self-attention (view/reshape with symbolic dims), 1 FN on cat+skip connection",
+      "evidence_type": "experiment",
+      "evidence_path": "experiments/results/baseline_real_comparison.json (per_model results)"
+    },
+    {
+      "claim": "Tinelli-Zarba combination soundness mechanized (combination_soundness theorem, lines 104-112)",
+      "evidence_type": "proof",
+      "evidence_path": "lean/TheoryCombination.lean"
+    },
+    {
+      "claim": "Propagator checker\u2194spec equivalences proved for all 4 theories (broadcast, stride, device, phase)",
+      "evidence_type": "proof",
+      "evidence_path": "lean/TheoryCombination.lean (broadcastDim_iff, strideDim_iff, deviceCheck_iff, phaseCheck_iff)"
+    },
+    {
+      "claim": "CEGAR convergence in \u2264 N iterations for finite predicate universe of size N (cegar_terminates theorem)",
+      "evidence_type": "proof",
+      "evidence_path": "lean/TheoryCombination.lean, lines 865-911"
+    },
+    {
+      "claim": "Broadcast associativity, commutativity, idempotence mechanized",
+      "evidence_type": "proof",
+      "evidence_path": "lean/TheoryCombination.lean (broadcast_assoc, broadcast_symmetric, broadcast_idempotent)"
+    },
+    {
+      "claim": "UserPropagator callback contracts C1 (push-pop), C4 (conflict soundness), C5 (propagation soundness) mechanized",
+      "evidence_type": "proof",
+      "evidence_path": "lean/TheoryCombination.lean (push_pop_invertibility, broadcastDim_conflict_sound, broadcast_propagation_sound)"
+    },
+    {
+      "claim": "Simulation relation: Python implementation approval implies semantic consistency (simulation_soundness theorem)",
+      "evidence_type": "proof",
+      "evidence_path": "lean/TheoryCombination.lean, lines 1390-1398"
+    },
+    {
+      "claim": "GroupNorm divisibility (num_channels % num_groups == 0) is in QF_LIA since num_groups is a concrete constant",
+      "evidence_type": "analysis",
+      "evidence_path": "experiments/results/decidability_characterization.json (GroupNorm classification)"
     }
   ]
 }
