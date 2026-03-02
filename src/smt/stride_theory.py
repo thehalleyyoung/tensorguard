@@ -34,6 +34,35 @@ Formal Specification
 **Soundness**: Propagated stride equalities follow directly from A1.
   Conflicts are raised only when concrete values violate A1.
 
+**Nelson-Oppen Combination Properties**:
+
+  Convexity:  T_stride is NOT convex.  A theory T is convex if, whenever
+    T |= (x₁ = y₁) ∨ (x₂ = y₂), then T |= (x₁ = y₁) or T |= (x₂ = y₂).
+    Counter-example: stride[0] = d₁ × d₂ with d₁ × d₂ = 6 entails
+    (d₁ = 2 ∧ d₂ = 3) ∨ (d₁ = 3 ∧ d₂ = 2) ∨ (d₁ = 1 ∧ d₂ = 6) ∨ ...
+    — a disjunction where no single disjunct is entailed.
+
+  Handling non-convexity: We use splitting-on-demand (Kroening & Strichman,
+    Decision Procedures, §10.4).  When the stride propagator detects a
+    non-convex implied equality disjunction, it returns all case splits
+    to the combination procedure, which explores each branch.  For
+    typical tensor shapes (bounded positive integers), the branching
+    factor is small.
+
+  Stale-completeness:  The stride theory is stale-complete: any
+    equality implied by T_stride over shared variables is eventually
+    propagated.  This is guaranteed because (1) shape dimensions are
+    bounded positive integers, (2) stride equalities are deterministic
+    once all shape dims are fixed, and (3) the propagator eagerly
+    computes strides on each assignment.
+
+  Politeness:  T_stride is polite (smooth + finitely witnessable).
+    Smoothness: adding fresh variables to stride constraints does not
+    cause new equalities between existing variables.  Finite
+    witnessability: for any satisfiable set of stride constraints,
+    we can construct a model with at most |vars| + |constraints|
+    distinct elements, since shape dimensions are bounded.
+
 This module provides:
   - A Z3 UserPropagateBase that eagerly propagates stride values
     when shape dimensions are fixed (simplex-like solver for

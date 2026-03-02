@@ -1,108 +1,90 @@
 # TensorGuard
 
-**Static tensor shape verification for PyTorch.** Catches dimension mismatches, broadcast bugs, and device errors in `nn.Module` subclasses at analysis time—zero annotations, zero runtime cost—using Z3 SMT solving with a formally verified 5-theory product domain.
+Static tensor shape verification for PyTorch. Catches shape mismatches, broadcast bugs, device inconsistencies, and dimension errors **before runtime** — with zero annotations.
 
-## 30-Second Quickstart
+## Quick Start
 
 ```bash
-pip install -e .   # requires Python ≥ 3.9, z3-solver
+pip install tensorguard
 ```
 
 ```python
+# verify_my_model.py
 from src.model_checker import verify_model
 
-result = verify_model('''
+source = """
 import torch.nn as nn
-class BuggyMLP(nn.Module):
+
+class MyModel(nn.Module):
     def __init__(self):
         super().__init__()
-        self.fc1 = nn.Linear(768, 256)
-        self.fc2 = nn.Linear(128, 10)  # BUG: 256 != 128
+        self.conv = nn.Conv2d(3, 64, 3, padding=1)
+        self.bn = nn.BatchNorm2d(64)
+        self.fc = nn.Linear(64, 10)  # BUG: expects flatten first
+        
     def forward(self, x):
-        x = self.fc1(x)
-        return self.fc2(x)
-''', input_shapes={"x": ("batch", 768)})
+        x = self.conv(x)
+        x = self.bn(x)
+        x = self.fc(x)  # Shape error: (B,64,H,W) vs (B,64)
+        return x
+"""
 
-print(result.counterexample.pretty())
+result = verify_model(source=source, input_shapes={"x": ("batch", 3, 224, 224)})
+print(result.safe)  # False
+for error in result.errors:
+    print(f"  Line {error.line}: {error.message}")
 ```
 
-Output:
-```
-CounterexampleTrace(BuggyMLP)
-  Failing step: 1
-  Concrete dims: batch=1
-  Computation path (3 steps):
-    → [0] x: TensorShape(dims=(batch, 768))
-    ✗ [1] x: TensorShape(dims=(batch, 256))
-  VIOLATION [1]: Linear expects last dim=128, got 256
-```
+## Features
 
-## Baseline Comparison (real results)
+- **331 operator coverage** — Linear, Conv2d, BatchNorm, attention, einops, and more
+- **5-theory product domain** — Shape × Device × Phase × Stride × Permutation
+- **Zero annotations** — analyzes raw Python source code
+- **SMT-backed** — Z3 for constraint solving, IC3/PDR for unbounded verification
+- **Conservative** — unsupported operators produce UNKNOWN (not identity)
+- **Lean 4 mechanized** — 71 theorems proving theory combination soundness
 
-| Tool | Precision | Recall | F1 | Avg Time | FP |
-|------|-----------|--------|-----|----------|----|
-| **TensorGuard** | **0.900** | **0.900** | **0.900** | 168 ms | 1 |
-| TorchScript | 0.556 | 1.000 | 0.714 | 5 ms | 8 |
-| mypy | 0.000 | 0.000 | 0.000 | 26,843 ms | 0 |
+## Supported Architectures
 
-On 18 benchmarks (10 buggy, 8 correct). TorchScript fails on all correct models via `torch.jit.script`. mypy finds zero shape bugs. TensorGuard catches 9/10 shape bugs with 1 false positive on complex view/reshape patterns. See `experiments/run_real_baseline_comparison.py`.
-
-## Key Capabilities
-
-- **117 operator transfer functions** — Linear, Conv1d–3d, BatchNorm, LSTM, GRU, MultiheadAttention, Transformer layers, pooling, padding, loss functions, and more
-- **5-theory SMT domain** — Shape × Device × Phase × Stride × Permutation with Tinelli-Zarba combination; Lean 4 mechanization (1,587 lines, 71 theorems, 0 sorry)
-- **IC3/PDR unbounded verification** — Proves safety for *all* values of symbolic dims, not just sampled ones
-- **Decidable fragment** — 94.9% of operators produce QF_LIA constraints (polynomial time); only 6 operators (reshape, flatten, PixelShuffle, repeat) enter NP-hard territory
-- **Proof certificates** — Every safe verdict backed by machine-checkable Z3 inference chain
+Evaluated on: ResNet-50, BERT-base, GPT-2, ViT-B/16, MobileNetV2, EfficientNet-B0, DenseNet-121
 
 ## Usage
 
-### Verify a model
+### Command Line
+```bash
+tensorguard verify model.py --input-shapes '{"x": ["batch", 3, 224, 224]}'
+```
 
+### Python API
 ```python
 from src.model_checker import verify_model
-result = verify_model(source, input_shapes={"x": ("batch", 3, 224, 224)})
-print("safe" if result.safe else result.counterexample.pretty())
+result = verify_model(source=open("model.py").read(), input_shapes={"x": ("batch", 3, 224, 224)})
 ```
 
-### Unbounded verification (IC3/PDR)
+### CI Integration
+See `.github/workflows/tensorguard-ci.yml` for GitHub Actions integration.
 
-```python
-from src.ic3_pdr import ic3_verify
-result = ic3_verify(source, symbolic_dims={"batch": "batch_size"})
-assert result.safe  # safe for ALL batch sizes
-```
+## How It Works
 
-### CLI
+1. **Parse** — AST analysis extracts layer definitions and data flow
+2. **Harvest** — Shape predicates from constructors, assertions, reshape calls
+3. **Propagate** — Forward symbolic constraint propagation through computation DAG
+4. **Verify** — Z3 checks shape compatibility at every operation site
+5. **Report** — Concrete counterexample traces for any shape errors found
+
+## Documentation
+
+- [API Reference](API.md)
+- [Trusted Computing Base](docs/TCB.md)
+- [Typing Rules](src/typing_rules.py)
+- [Baseline Comparisons](experiments/eval_baselines.py)
+
+## Development
 
 ```bash
-python -m src.cli.main verify model.py -s x=batch,768
-python -m src.cli.main ci-check model.py -s x=batch,3,224,224  # exit 0=safe, 1=bug
+pip install -e ".[dev]"
+python -m pytest tests/ -x -q
 ```
-
-## Architecture
-
-```
-src/
-  model_checker.py          Core verify_model() — AST → graph → Z3
-  ic3_pdr.py                IC3/PDR unbounded verification
-  decidability.py           Decidability characterization
-  smt/                      5 UserPropagator theories
-  tensor_shapes.py          Shape algebra + operator registry
-lean/
-  TheoryCombination.lean    Lean 4 mechanization (0 sorry)
-experiments/
-  run_real_baseline_comparison.py    TensorGuard vs TorchScript vs mypy
-  run_decidability_characterization.py   Operator classification
-```
-
-## Limitations
-
-- **Operator coverage**: 117 of ~2000 PyTorch operators modeled. Unsupported operators treated as identity (conservative).
-- **Reshape/view**: Fully symbolic reshapes produce QF_NIA constraints (NP-hard). May yield UNKNOWN on complex patterns.
-- **Complex control flow**: View/reshape with dynamic shapes can cause false positives (1 FP observed on self-attention with 4D view).
-- **No value-level bugs**: Does not detect NaN, gradient explosion, or numerical instability.
-- **IC3/PDR completeness**: Sound but incomplete for the nonlinear (reshape) fragment; complete for the 94.9% QF_LIA fragment.
 
 ## License
 

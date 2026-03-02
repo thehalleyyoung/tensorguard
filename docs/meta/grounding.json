@@ -1,0 +1,97 @@
+{
+  "claims": [
+    {
+      "claim": "5-theory product domain (Shape × Device × Phase × Stride × Permutation)",
+      "evidence_type": "implementation + lean",
+      "artifacts": [
+        "src/smt/theory_combination.py",
+        "src/smt/broadcast_theory.py",
+        "src/smt/device_theory.py",
+        "src/smt/phase_theory.py",
+        "src/smt/stride_theory.py",
+        "src/smt/permutation_theory.py",
+        "lean/TheoryCombination.lean"
+      ],
+      "tests": ["tests/test_theory_combination.py"],
+      "status": "implemented_and_lean_mechanized"
+    },
+    {
+      "claim": "331 operator coverage with transfer functions",
+      "evidence_type": "implementation",
+      "artifacts": ["src/stdlib/modern_ops.py", "src/tensor_shapes.py"],
+      "tests": ["tests/test_tensor_shapes.py"],
+      "verification": "python3 -c \"from src.stdlib.modern_ops import get_all_covered_ops; print(len(get_all_covered_ops()))\"",
+      "status": "implemented_and_tested"
+    },
+    {
+      "claim": "IC3/PDR for unbounded verification",
+      "evidence_type": "implementation + lean",
+      "artifacts": ["src/ic3_pdr.py", "lean/TheoryCombination.lean"],
+      "tests": ["tests/test_ic3_pdr.py"],
+      "status": "implemented_and_lean_mechanized"
+    },
+    {
+      "claim": "Zero-annotation static analysis",
+      "evidence_type": "implementation",
+      "artifacts": ["src/tensor_shapes.py", "src/model_checker.py"],
+      "tests": ["tests/test_tensor_shapes.py", "tests/test_model_checker.py"],
+      "status": "implemented_and_tested"
+    },
+    {
+      "claim": "Conservative handling of unsupported operators",
+      "evidence_type": "implementation",
+      "artifacts": ["src/model_checker.py"],
+      "tests": ["tests/test_model_checker.py"],
+      "status": "implemented_and_tested"
+    },
+    {
+      "claim": "Evaluation on real-world models (ResNet-50, BERT, GPT-2, ViT)",
+      "evidence_type": "experiment",
+      "artifacts": ["experiments/eval_real_models.py"],
+      "tests": ["tests/test_real_models.py"],
+      "status": "implemented_and_tested"
+    },
+    {
+      "claim": "Baseline comparison with jaxtyping, PyTEA, TorchScript, mypy, Pyright",
+      "evidence_type": "experiment",
+      "artifacts": ["experiments/eval_baselines.py"],
+      "tests": ["tests/test_baselines.py"],
+      "status": "implemented_and_tested"
+    },
+    {
+      "claim": "Formal typing rules (T-LINEAR, T-CONV2D, T-BROADCAST, T-RESHAPE, T-CAT, T-MATMUL)",
+      "evidence_type": "implementation",
+      "artifacts": ["src/typing_rules.py"],
+      "tests": ["tests/test_typing_rules.py"],
+      "status": "implemented_and_tested"
+    },
+    {
+      "claim": "Lean 4 mechanization: 71 theorems, zero sorry",
+      "evidence_type": "lean",
+      "artifacts": ["lean/TheoryCombination.lean"],
+      "verification": "grep -c 'theorem' lean/TheoryCombination.lean && grep -c 'sorry' lean/TheoryCombination.lean",
+      "status": "mechanized"
+    },
+    {
+      "claim": "Progress and preservation (soundness)",
+      "evidence_type": "conjecture",
+      "artifacts": ["src/typing_rules.py"],
+      "tests": ["tests/test_typing_rules.py"],
+      "status": "conjectured_with_testing",
+      "note": "Stated as conjectures, tested but not fully mechanized"
+    },
+    {
+      "claim": "Stride theory combination via Nelson-Oppen",
+      "evidence_type": "implementation + partial_lean",
+      "artifacts": ["src/smt/stride_theory.py", "src/smt/theory_combination.py"],
+      "tests": ["tests/test_theory_combination.py", "tests/test_nelson_oppen_preconditions.py"],
+      "status": "implemented_and_tested",
+      "note": "Stride theory is not convex; uses splitting-on-demand for Nelson-Oppen"
+    }
+  ],
+  "tcb_summary": {
+    "lean_mechanized": ["theory combination soundness", "product domain lattice", "IC3/PDR termination"],
+    "python_tested": ["transfer functions", "constraint generation", "Z3 encoding", "CEGAR loop"],
+    "assumed": ["Z3 correctness", "Python AST correctness", "PyTorch FX faithfulness"]
+  }
+}

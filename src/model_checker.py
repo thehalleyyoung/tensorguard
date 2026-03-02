@@ -461,6 +461,61 @@ class Confidence(Enum):
     LOW = "low"         # heuristic-based, missing stdlib models, or conservative
 
 
+class ShapeConfidence(Enum):
+    """Confidence level for an individual shape inference result."""
+    VERIFIED = auto()       # Shape fully determined by a transfer function
+    UNKNOWN = auto()        # Shape cannot be determined (unsupported op)
+    CONSERVATIVE = auto()   # Shape is an over-approximation
+
+
+class UnsupportedOpTracker:
+    """Tracks operators encountered without a shape transfer function.
+
+    Records which ops were unsupported during shape propagation so that
+    coverage gaps can be reported alongside verification results.
+    """
+
+    def __init__(self) -> None:
+        self._unsupported: Dict[str, int] = {}
+        self._total_ops: int = 0
+
+    def record(self, op_name: str) -> None:
+        """Record an unsupported operator encounter."""
+        self._unsupported[op_name] = self._unsupported.get(op_name, 0) + 1
+        self._total_ops += 1
+
+    def record_supported(self) -> None:
+        """Record a supported operator encounter."""
+        self._total_ops += 1
+
+    @property
+    def unsupported_ops(self) -> List[str]:
+        """Return list of unsupported operator names."""
+        return sorted(self._unsupported.keys())
+
+    @property
+    def unsupported_counts(self) -> Dict[str, int]:
+        """Return mapping of unsupported op names to encounter counts."""
+        return dict(self._unsupported)
+
+    def coverage_fraction(self) -> float:
+        """Return fraction of ops that were supported (0.0–1.0)."""
+        if self._total_ops == 0:
+            return 1.0
+        supported = self._total_ops - sum(self._unsupported.values())
+        return supported / self._total_ops
+
+    def pretty(self) -> str:
+        """Human-readable summary."""
+        pct = self.coverage_fraction() * 100
+        lines = [f"Op coverage: {pct:.1f}% ({self._total_ops} total ops)"]
+        if self._unsupported:
+            lines.append("Unsupported ops:")
+            for name in self.unsupported_ops:
+                lines.append(f"  • {name} (×{self._unsupported[name]})")
+        return "\n".join(lines)
+
+
 @dataclass
 class SafetyViolation:
     """A single safety-property violation."""
@@ -669,6 +724,7 @@ class VerificationResult:
     dynamic_feature_warnings: List[str] = field(default_factory=list)
     proof_certificate: Optional["ProofCertificate"] = None
     kripke_structure: Optional[KripkeStructure] = None
+    unsupported_op_tracker: Optional[UnsupportedOpTracker] = None
 
     def filter_by_confidence(self, min_level: Confidence = Confidence.MEDIUM) -> "VerificationResult":
         """Return a copy with violations below the confidence threshold removed."""
@@ -3719,7 +3775,16 @@ def _propagate_sequential(
             current, err = _propagate_flatten(current, 1)
             if current is None:
                 return None, f"Sequential sub-layer {sub.attr_name}: flatten failed"
-        # else: unknown sub-layer, conservatively preserve shape
+        else:
+            # Unknown sub-layer: mark output shape as UNKNOWN (fully symbolic)
+            logger.warning(
+                "Unsupported sequential sub-layer kind %s (%s): shape marked UNKNOWN",
+                sub.kind.name, sub.attr_name,
+            )
+            current = TensorShape(
+                tuple(ShapeDim(f"_unk_{sub.attr_name}_{i}")
+                      for i in range(current.ndim))
+            )
     return current, None
 
 
@@ -6627,10 +6692,16 @@ class ConstraintVerifier:
         elif layer.kind == LayerKind.SOFTMAX:
             state.shape_env[step.output] = inp_shape
         else:
-            # Record that we're making an unverified shape assumption
-            if hasattr(state, 'unverified_layers'):
-                state.unverified_layers.append(layer.attr_name)
-            state.shape_env[step.output] = inp_shape
+            # UNSOUND FIX: unsupported op → UNKNOWN shape (fully symbolic)
+            logger.warning(
+                "Unsupported layer kind %s (%s): output shape marked UNKNOWN",
+                layer.kind.name, layer.attr_name,
+            )
+            unknown_shape = TensorShape(
+                tuple(ShapeDim(f"_unk_{layer.attr_name}_{i}")
+                      for i in range(inp_shape.ndim))
+            )
+            state.shape_env[step.output] = unknown_shape
 
     def _apply_submodule_call(
         self,
@@ -7620,7 +7691,16 @@ class SymbolicShapePropagator:
                     if out:
                         env[step.output] = out
                     return
-                env[step.output] = inp_shape
+                # Unsupported layer: output shape UNKNOWN (fully symbolic)
+                logger.warning(
+                    "Unsupported layer kind %s (%s): output shape marked UNKNOWN",
+                    layer.kind.name,
+                    getattr(layer, 'attr_name', '?'),
+                )
+                env[step.output] = TensorShape(
+                    tuple(ShapeDim(f"_unk_{getattr(layer, 'attr_name', 'op')}_{i}")
+                          for i in range(inp_shape.ndim))
+                )
 
         elif step.op == OpKind.MATMUL:
             if len(step.inputs) >= 2:

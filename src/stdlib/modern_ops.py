@@ -804,6 +804,709 @@ def transfer_conv3d(
 
 
 # ═══════════════════════════════════════════════════════════════════════════
+# Linear algebra operators (torch.linalg)
+# ═══════════════════════════════════════════════════════════════════════════
+
+def transfer_linalg_square(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for square-matrix-preserving linalg ops (inv, pinv, cholesky, matrix_power).
+
+    Input:  (..., M, M)
+    Output: (..., M, M)
+    """
+    if input_shape.ndim < 2:
+        return None
+    return TensorShape(input_shape.dims)
+
+
+def transfer_linalg_det(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.linalg.det / matrix_rank.
+
+    Input:  (..., M, N)
+    Output: (...)  — removes last two dims.
+    """
+    if input_shape.ndim < 2:
+        return None
+    if input_shape.ndim == 2:
+        return TensorShape((ShapeDim(1),))
+    return TensorShape(input_shape.dims[:-2])
+
+
+def transfer_linalg_slogdet(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.linalg.slogdet.
+
+    Input:  (..., M, M)
+    Output: sign (...), logabsdet (...) — returns batch shape.
+    """
+    if input_shape.ndim < 2:
+        return None
+    if input_shape.ndim == 2:
+        return TensorShape((ShapeDim(1),))
+    return TensorShape(input_shape.dims[:-2])
+
+
+def transfer_linalg_svd(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.linalg.svd.
+
+    Input:  (..., M, N)
+    Output: U (..., M, K), S (..., K), Vh (..., K, N) where K = min(M, N).
+    Returns S shape (most common use case).
+    """
+    if input_shape.ndim < 2:
+        return None
+    m = input_shape.dims[-2]
+    n = input_shape.dims[-1]
+    batch = input_shape.dims[:-2]
+    if m.is_symbolic or n.is_symbolic:
+        k = ShapeDim("_svd_k")
+    else:
+        k = ShapeDim(min(m.value, n.value))
+    return TensorShape(batch + (k,))
+
+
+def transfer_linalg_qr(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.linalg.qr.
+
+    Input:  (..., M, N)
+    Output: Q (..., M, K), R (..., K, N) where K = min(M, N).
+    Returns Q shape.
+    """
+    if input_shape.ndim < 2:
+        return None
+    m = input_shape.dims[-2]
+    n = input_shape.dims[-1]
+    batch = input_shape.dims[:-2]
+    if m.is_symbolic or n.is_symbolic:
+        k = ShapeDim("_qr_k")
+    else:
+        k = ShapeDim(min(m.value, n.value))
+    return TensorShape(batch + (m, k))
+
+
+def transfer_linalg_solve(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.linalg.solve.
+
+    Input A: (..., M, M), B: (..., M, K) or (..., M)
+    Output: same shape as B.  Returns input_shape (representing B).
+    """
+    if input_shape.ndim < 1:
+        return None
+    return TensorShape(input_shape.dims)
+
+
+def transfer_linalg_eig(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.linalg.eig / eigvalsh.
+
+    Input:  (..., M, M)
+    Output eigenvalues: (..., M)
+    """
+    if input_shape.ndim < 2:
+        return None
+    return TensorShape(input_shape.dims[:-1])
+
+
+def transfer_linalg_lstsq(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.linalg.lstsq.
+
+    Input A: (..., M, N), B: (..., M, K)
+    Output solution: (..., N, K).  Returns input shape (B) as approximation.
+    """
+    if input_shape.ndim < 1:
+        return None
+    return TensorShape(input_shape.dims)
+
+
+def transfer_linalg_norm(
+    input_shape: TensorShape,
+    dim: Optional[int] = None,
+    keepdim: bool = False,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.linalg.norm.
+
+    If dim is None, reduces to scalar.  Otherwise reduces along dim.
+    """
+    if dim is None:
+        return TensorShape((ShapeDim(1),))
+    if dim < 0:
+        dim = input_shape.ndim + dim
+    if dim >= input_shape.ndim:
+        return None
+    result_dims = list(input_shape.dims)
+    if keepdim:
+        result_dims[dim] = ShapeDim(1)
+    else:
+        result_dims.pop(dim)
+    if not result_dims:
+        return TensorShape((ShapeDim(1),))
+    return TensorShape(tuple(result_dims))
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# FFT operators (torch.fft)
+# ═══════════════════════════════════════════════════════════════════════════
+
+def transfer_fft_c2c(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for complex-to-complex FFT (fft, ifft, fft2, ifft2, fftn, ifftn).
+
+    Output shape == input shape.
+    """
+    if input_shape.ndim < 1:
+        return None
+    return TensorShape(input_shape.dims)
+
+
+def transfer_rfft(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.fft.rfft.
+
+    Input:  (..., N)
+    Output: (..., N//2 + 1)
+    """
+    if input_shape.ndim < 1:
+        return None
+    last = input_shape.dims[-1]
+    prefix = input_shape.dims[:-1]
+    if last.is_symbolic:
+        return TensorShape(prefix + (ShapeDim("_rfft_n"),))
+    return TensorShape(prefix + (ShapeDim(last.value // 2 + 1),))
+
+
+def transfer_irfft(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.fft.irfft.
+
+    Input:  (..., N//2+1)
+    Output: (..., 2*(N//2+1)-2)
+    """
+    if input_shape.ndim < 1:
+        return None
+    last = input_shape.dims[-1]
+    prefix = input_shape.dims[:-1]
+    if last.is_symbolic:
+        return TensorShape(prefix + (ShapeDim("_irfft_n"),))
+    return TensorShape(prefix + (ShapeDim(2 * (last.value - 1)),))
+
+
+def transfer_rfft2(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.fft.rfft2.
+
+    Input:  (..., H, W)
+    Output: (..., H, W//2+1)
+    """
+    if input_shape.ndim < 2:
+        return None
+    last = input_shape.dims[-1]
+    prefix = input_shape.dims[:-1]
+    if last.is_symbolic:
+        return TensorShape(prefix + (ShapeDim("_rfft2_w"),))
+    return TensorShape(prefix + (ShapeDim(last.value // 2 + 1),))
+
+
+def transfer_irfft2(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.fft.irfft2.
+
+    Input:  (..., H, W//2+1)
+    Output: (..., H, W)
+    """
+    if input_shape.ndim < 2:
+        return None
+    last = input_shape.dims[-1]
+    prefix = input_shape.dims[:-1]
+    if last.is_symbolic:
+        return TensorShape(prefix + (ShapeDim("_irfft2_w"),))
+    return TensorShape(prefix + (ShapeDim(2 * (last.value - 1)),))
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Tensor manipulation ops
+# ═══════════════════════════════════════════════════════════════════════════
+
+def transfer_narrow(
+    input_shape: TensorShape,
+    dim: int,
+    length: int,
+) -> Optional[TensorShape]:
+    """Shape rule for Tensor.narrow — narrows dimension *dim* to *length*."""
+    if input_shape.ndim == 0:
+        return None
+    if dim < 0:
+        dim = input_shape.ndim + dim
+    if dim >= input_shape.ndim:
+        return None
+    result_dims = list(input_shape.dims)
+    result_dims[dim] = ShapeDim(length)
+    return TensorShape(tuple(result_dims))
+
+
+def transfer_select(
+    input_shape: TensorShape,
+    dim: int,
+) -> Optional[TensorShape]:
+    """Shape rule for Tensor.select — removes the selected dimension."""
+    if input_shape.ndim <= 1:
+        return None
+    if dim < 0:
+        dim = input_shape.ndim + dim
+    if dim >= input_shape.ndim:
+        return None
+    result_dims = list(input_shape.dims)
+    result_dims.pop(dim)
+    return TensorShape(tuple(result_dims))
+
+
+def transfer_movedim(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for movedim/moveaxis/swapaxes — preserves set of dims."""
+    return TensorShape(input_shape.dims) if input_shape.ndim >= 1 else None
+
+
+def transfer_tile(
+    input_shape: TensorShape,
+    reps: Tuple[int, ...],
+) -> Optional[TensorShape]:
+    """Shape rule for torch.tile — each dim multiplied by repeat factor."""
+    if input_shape.ndim == 0:
+        return None
+    ndim = max(input_shape.ndim, len(reps))
+    dims = list(input_shape.dims)
+    while len(dims) < ndim:
+        dims.insert(0, ShapeDim(1))
+    padded_reps = list(reps)
+    while len(padded_reps) < ndim:
+        padded_reps.insert(0, 1)
+    result = []
+    for d, r in zip(dims, padded_reps):
+        if d.is_symbolic:
+            result.append(ShapeDim(f"{d.value}_x{r}"))
+        else:
+            result.append(ShapeDim(d.value * r))
+    return TensorShape(tuple(result))
+
+
+def transfer_expand(
+    input_shape: TensorShape,
+    sizes: Tuple[int, ...],
+) -> Optional[TensorShape]:
+    """Shape rule for Tensor.expand / expand_as.
+
+    Each -1 in sizes means keep the original size.
+    """
+    result = []
+    for s in sizes:
+        if s == -1:
+            result.append(ShapeDim("_expand"))
+        else:
+            result.append(ShapeDim(s))
+    return TensorShape(tuple(result))
+
+
+def transfer_view_as_real(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.view_as_real: adds trailing dim of 2."""
+    if input_shape.ndim < 1:
+        return None
+    return TensorShape(input_shape.dims + (ShapeDim(2),))
+
+
+def transfer_view_as_complex(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.view_as_complex: removes trailing dim of 2."""
+    if input_shape.ndim < 2:
+        return None
+    return TensorShape(input_shape.dims[:-1])
+
+
+def transfer_reduction(
+    input_shape: TensorShape,
+    dim: Optional[int] = None,
+    keepdim: bool = False,
+) -> Optional[TensorShape]:
+    """Generic reduction transfer for argmax, argmin, all, any, etc."""
+    if dim is None:
+        return TensorShape((ShapeDim(1),))
+    if dim < 0:
+        dim = input_shape.ndim + dim
+    if dim >= input_shape.ndim:
+        return None
+    result_dims = list(input_shape.dims)
+    if keepdim:
+        result_dims[dim] = ShapeDim(1)
+    else:
+        result_dims.pop(dim)
+    if not result_dims:
+        return TensorShape((ShapeDim(1),))
+    return TensorShape(tuple(result_dims))
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Creation / like ops
+# ═══════════════════════════════════════════════════════════════════════════
+
+def transfer_like_create(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for *_like ops (zeros_like, ones_like, etc.) — same shape."""
+    return TensorShape(input_shape.dims)
+
+
+def transfer_new_tensor(
+    input_shape: TensorShape,
+    size: Tuple[int, ...],
+) -> Optional[TensorShape]:
+    """Shape rule for Tensor.new_zeros, new_ones, new_empty, new_full."""
+    return TensorShape(tuple(ShapeDim(s) for s in size))
+
+
+def transfer_linspace_create(
+    steps: int,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.linspace / logspace."""
+    return TensorShape((ShapeDim(steps),))
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Loss functions (scalar output)
+# ═══════════════════════════════════════════════════════════════════════════
+
+def transfer_scalar_loss(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for loss functions that reduce to scalar."""
+    return TensorShape((ShapeDim(1),))
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Spectral ops (STFT / ISTFT)
+# ═══════════════════════════════════════════════════════════════════════════
+
+def transfer_stft(
+    input_shape: TensorShape,
+    n_fft: int,
+    hop_length: Optional[int] = None,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.stft.
+
+    Input:  (B, L) or (L,)
+    Output: (B, n_fft//2+1, n_frames) or (n_fft//2+1, n_frames)
+    """
+    if input_shape.ndim < 1 or input_shape.ndim > 2:
+        return None
+    freq_bins = ShapeDim(n_fft // 2 + 1)
+    l_dim = input_shape.dims[-1]
+    hl = hop_length if hop_length else n_fft // 4
+    if l_dim.is_symbolic:
+        n_frames = ShapeDim("_stft_frames")
+    else:
+        n_frames = ShapeDim(l_dim.value // hl + 1)
+    if input_shape.ndim == 2:
+        return TensorShape((input_shape.dims[0], freq_bins, n_frames))
+    return TensorShape((freq_bins, n_frames))
+
+
+def transfer_istft(
+    input_shape: TensorShape,
+    n_fft: int,
+    hop_length: Optional[int] = None,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.istft.
+
+    Input:  (B, n_fft//2+1, n_frames) or (n_fft//2+1, n_frames)
+    Output: (B, signal_length) or (signal_length,)
+    """
+    if input_shape.ndim < 2 or input_shape.ndim > 3:
+        return None
+    n_frames = input_shape.dims[-1]
+    hl = hop_length if hop_length else n_fft // 4
+    if n_frames.is_symbolic:
+        sig_len = ShapeDim("_istft_len")
+    else:
+        sig_len = ShapeDim((n_frames.value - 1) * hl)
+    if input_shape.ndim == 3:
+        return TensorShape((input_shape.dims[0], sig_len))
+    return TensorShape((sig_len,))
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# nn.Module layer ops
+# ═══════════════════════════════════════════════════════════════════════════
+
+def transfer_rnn_cell(
+    input_shape: TensorShape,
+    hidden_size: int,
+) -> Optional[TensorShape]:
+    """Shape rule for nn.RNNCell / nn.GRUCell.
+
+    Input:  (B, input_size)
+    Output: (B, hidden_size)
+    """
+    if input_shape.ndim != 2:
+        return None
+    return TensorShape((input_shape.dims[0], ShapeDim(hidden_size)))
+
+
+def transfer_lstm_cell(
+    input_shape: TensorShape,
+    hidden_size: int,
+) -> Optional[TensorShape]:
+    """Shape rule for nn.LSTMCell.
+
+    Input:  (B, input_size)
+    Output: (h, c) each (B, hidden_size).  Returns h shape.
+    """
+    if input_shape.ndim != 2:
+        return None
+    return TensorShape((input_shape.dims[0], ShapeDim(hidden_size)))
+
+
+def transfer_transformer_layer(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for TransformerEncoderLayer / TransformerDecoderLayer.
+
+    Output shape == input shape.
+    """
+    if input_shape.ndim < 2:
+        return None
+    return TensorShape(input_shape.dims)
+
+
+def transfer_channel_shuffle(
+    input_shape: TensorShape,
+    groups: int,
+) -> Optional[TensorShape]:
+    """Shape rule for nn.ChannelShuffle — shape preserving."""
+    if input_shape.ndim < 3:
+        return None
+    return TensorShape(input_shape.dims)
+
+
+def transfer_adaptive_log_softmax(
+    input_shape: TensorShape,
+    n_classes: int,
+) -> Optional[TensorShape]:
+    """Shape rule for nn.AdaptiveLogSoftmaxWithLoss.
+
+    Input:  (B, in_features)
+    Output: (B, n_classes) log-probabilities.
+    """
+    if input_shape.ndim != 2:
+        return None
+    return TensorShape((input_shape.dims[0], ShapeDim(n_classes)))
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Broadcast binary ops / BLAS
+# ═══════════════════════════════════════════════════════════════════════════
+
+def transfer_addmm(
+    input_shape: TensorShape,
+    mat1_rows: int,
+    mat2_cols: int,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.addmm: alpha * (mat1 @ mat2) + beta * input."""
+    return TensorShape((ShapeDim(mat1_rows), ShapeDim(mat2_cols)))
+
+
+def transfer_addmv(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.addmv: mat (N, M) @ vec (M,) + input (N,) -> (N,)."""
+    return TensorShape(input_shape.dims) if input_shape.ndim >= 1 else None
+
+
+def transfer_addr(
+    vec1_shape: TensorShape,
+    vec2_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.addr: outer product vec1 (N,) x vec2 (M,) -> (N, M)."""
+    if vec1_shape.ndim != 1 or vec2_shape.ndim != 1:
+        return None
+    return TensorShape((vec1_shape.dims[0], vec2_shape.dims[0]))
+
+
+def transfer_baddbmm(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.baddbmm: batch matmul + bias, shape = input shape."""
+    if input_shape.ndim < 2:
+        return None
+    return TensorShape(input_shape.dims)
+
+
+def transfer_addbmm(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.addbmm: reduced batch matmul, returns (N, P)."""
+    if input_shape.ndim != 2:
+        return None
+    return TensorShape(input_shape.dims)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Misc: einsum, tensordot, outer, inner, kron, etc.
+# ═══════════════════════════════════════════════════════════════════════════
+
+def transfer_outer(
+    vec1_shape: TensorShape,
+    vec2_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.outer: (N,) x (M,) -> (N, M)."""
+    if vec1_shape.ndim != 1 or vec2_shape.ndim != 1:
+        return None
+    return TensorShape((vec1_shape.dims[0], vec2_shape.dims[0]))
+
+
+def transfer_inner(
+    input_shape: TensorShape,
+    other_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.inner: contracts last dim."""
+    if input_shape.ndim < 1 or other_shape.ndim < 1:
+        return None
+    out_dims = input_shape.dims[:-1] + other_shape.dims[:-1]
+    return TensorShape(out_dims) if out_dims else TensorShape((ShapeDim(1),))
+
+
+def transfer_vdot(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.vdot — dot product of flattened tensors → scalar."""
+    return TensorShape((ShapeDim(1),))
+
+
+def transfer_kron(
+    a_shape: TensorShape,
+    b_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.kron — Kronecker product."""
+    if a_shape.ndim == 0 or b_shape.ndim == 0:
+        return None
+    ndim = max(a_shape.ndim, b_shape.ndim)
+    a_dims = list(a_shape.dims)
+    b_dims = list(b_shape.dims)
+    while len(a_dims) < ndim:
+        a_dims.insert(0, ShapeDim(1))
+    while len(b_dims) < ndim:
+        b_dims.insert(0, ShapeDim(1))
+    result = []
+    for ad, bd in zip(a_dims, b_dims):
+        if ad.is_symbolic or bd.is_symbolic:
+            result.append(ShapeDim("_kron"))
+        else:
+            result.append(ShapeDim(ad.value * bd.value))
+    return TensorShape(tuple(result))
+
+
+def transfer_block_diag(
+    *shapes: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.block_diag — diagonal stacking of 2D matrices."""
+    total_rows = 0
+    total_cols = 0
+    any_symbolic = False
+    for s in shapes:
+        if s.ndim != 2:
+            return None
+        r, c = s.dims
+        if r.is_symbolic or c.is_symbolic:
+            any_symbolic = True
+        else:
+            total_rows += r.value
+            total_cols += c.value
+    if any_symbolic:
+        return TensorShape((ShapeDim("_blkdiag_r"), ShapeDim("_blkdiag_c")))
+    return TensorShape((ShapeDim(total_rows), ShapeDim(total_cols)))
+
+
+def transfer_tensordot(
+    a_shape: TensorShape,
+    b_shape: TensorShape,
+    dims: int = 2,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.tensordot — contracts last *dims* of a with first *dims* of b."""
+    if a_shape.ndim < dims or b_shape.ndim < dims:
+        return None
+    if dims > 0:
+        out_dims = a_shape.dims[:-dims] + b_shape.dims[dims:]
+    else:
+        out_dims = a_shape.dims + b_shape.dims
+    return TensorShape(out_dims) if out_dims else TensorShape((ShapeDim(1),))
+
+
+def transfer_einsum(
+    equation: str,
+    *operands: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.einsum — simplified subscript parser."""
+    if '->' not in equation:
+        return None
+    _, rhs = equation.split('->')
+    rhs = rhs.strip()
+    if not rhs:
+        return TensorShape((ShapeDim(1),))
+    return TensorShape(tuple(ShapeDim(f"_ein_{c}") for c in rhs if c.isalpha()))
+
+
+def transfer_cartesian_prod(
+    *shapes: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.cartesian_prod — N 1-D tensors → (product, N)."""
+    total = 1
+    any_symbolic = False
+    for s in shapes:
+        if s.ndim != 1:
+            return None
+        if s.dims[0].is_symbolic:
+            any_symbolic = True
+        else:
+            total *= s.dims[0].value
+    n = len(shapes)
+    if any_symbolic:
+        return TensorShape((ShapeDim("_cartprod"), ShapeDim(n)))
+    return TensorShape((ShapeDim(total), ShapeDim(n)))
+
+
+def transfer_size_tensor(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for Tensor.size() returning as IntTensor — (ndim,)."""
+    return TensorShape((ShapeDim(input_shape.ndim),))
+
+
+def transfer_numel_tensor(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for Tensor.numel() — returns scalar."""
+    return TensorShape((ShapeDim(1),))
+
+
+# ═══════════════════════════════════════════════════════════════════════════
 # Registry of all modern ops with their shape-op categories
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -987,6 +1690,157 @@ MODERN_TORCH_SHAPE_OPS = {
     "interpolate": "interpolate",
     "grid_sample": "grid_sample",
     "affine_grid": "affine_grid",
+    # ── torch.linalg ops ──
+    "linalg_svd": "linalg_svd",
+    "linalg_qr": "linalg_qr",
+    "linalg_cholesky": "linalg_square",
+    "linalg_solve": "linalg_solve",
+    "linalg_inv": "linalg_square",
+    "linalg_eig": "linalg_eig",
+    "linalg_eigvalsh": "linalg_eig",
+    "linalg_det": "linalg_det",
+    "linalg_slogdet": "linalg_slogdet",
+    "linalg_matrix_rank": "linalg_det",
+    "linalg_pinv": "linalg_square",
+    "linalg_lstsq": "linalg_lstsq",
+    "linalg_norm": "linalg_norm",
+    "linalg_cross": "elementwise",
+    "linalg_matrix_power": "linalg_square",
+    # ── torch.fft ops ──
+    "fft_fft": "fft_c2c",
+    "fft_ifft": "fft_c2c",
+    "fft_rfft": "rfft",
+    "fft_irfft": "irfft",
+    "fft_fft2": "fft_c2c",
+    "fft_ifft2": "fft_c2c",
+    "fft_rfft2": "rfft2",
+    "fft_irfft2": "irfft2",
+    "fft_fftn": "fft_c2c",
+    "fft_ifftn": "fft_c2c",
+    # ── Advanced indexing ──
+    "index_put": "elementwise",
+    "index_copy": "elementwise",
+    "scatter_reduce": "elementwise",
+    "index_add": "elementwise",
+    "index_fill": "elementwise",
+    # ── Tensor manipulation ──
+    "narrow": "narrow",
+    "select": "select",
+    "unbind": "select",
+    "movedim": "movedim",
+    "moveaxis": "movedim",
+    "swapaxes": "movedim",
+    "roll": "elementwise",
+    "rot90": "elementwise",
+    "flip": "elementwise",
+    "fliplr": "elementwise",
+    "flipud": "elementwise",
+    "tile": "tile",
+    "tensor_repeat": "tile",
+    "expand": "expand",
+    "expand_as": "expand",
+    "where_3arg": "broadcast",
+    "masked_scatter": "elementwise",
+    "take": "reduce",
+    "take_along_dim": "elementwise",
+    # ── Reduction variants ──
+    "argmax": "reduce",
+    "argmin": "reduce",
+    "all": "reduce",
+    "any": "reduce",
+    "count_nonzero": "reduce",
+    "nanmean": "reduce",
+    "nansum": "reduce",
+    "logsumexp": "reduce",
+    "aminmax": "reduction",
+    "amax": "reduce",
+    "amin": "reduce",
+    "median": "reduce",
+    "mode": "reduce",
+    "quantile": "reduce",
+    "std": "reduce",
+    "var": "reduce",
+    "var_mean": "reduction",
+    "std_mean": "reduction",
+    # ── Type / creation ops ──
+    "full_like": "like_create",
+    "empty_like": "like_create",
+    "rand_like": "like_create",
+    "new_zeros": "new_tensor",
+    "new_ones": "new_tensor",
+    "new_empty": "new_tensor",
+    "new_full": "new_tensor",
+    "scalar_tensor": "create",
+    "tensor_from_sequence": "create",
+    "logspace": "linspace",
+    # ── Loss functions ──
+    "focal_loss": "scalar_loss",
+    "dice_loss": "scalar_loss",
+    "ctc_loss": "scalar_loss",
+    "margin_ranking_loss": "scalar_loss",
+    "hinge_embedding_loss": "scalar_loss",
+    "cosine_embedding_loss": "scalar_loss",
+    "multi_margin_loss": "scalar_loss",
+    "multilabel_margin_loss": "scalar_loss",
+    "multilabel_soft_margin_loss": "scalar_loss",
+    "poisson_nll_loss": "scalar_loss",
+    # ── Spectral ops ──
+    "stft": "stft",
+    "istft": "istft",
+    # ── Tensor properties ──
+    "size_as_tensor": "size_tensor",
+    "numel_as_tensor": "numel_tensor",
+    # ── nn.Module layers ──
+    "transformer_encoder_layer": "transformer_layer",
+    "transformer_decoder_layer": "transformer_layer",
+    "rnn_cell": "rnn_cell",
+    "lstm_cell": "lstm_cell",
+    "gru_cell": "rnn_cell",
+    "channel_shuffle": "channel_shuffle",
+    "softmin": "elementwise",
+    "softmax2d": "elementwise",
+    "adaptive_log_softmax_with_loss": "adaptive_log_softmax",
+    # ── Comparison / broadcast binary ops ──
+    "atan2": "broadcast",
+    "fmod": "broadcast",
+    "remainder": "broadcast",
+    "pow": "broadcast",
+    "maximum": "broadcast",
+    "minimum": "broadcast",
+    "addmm": "addmm",
+    "addmv": "addmv",
+    "addr": "addr",
+    "baddbmm": "baddbmm",
+    "addbmm": "addbmm",
+    "lerp": "broadcast",
+    "xlogy": "broadcast",
+    "igamma": "broadcast",
+    "igammac": "broadcast",
+    "nextafter": "broadcast",
+    "copysign": "broadcast",
+    "heaviside": "broadcast",
+    "lcm": "broadcast",
+    "gcd": "broadcast",
+    "logaddexp": "broadcast",
+    "logaddexp2": "broadcast",
+    "hypot": "broadcast",
+    "bitwise_and": "broadcast",
+    "bitwise_or": "broadcast",
+    "bitwise_xor": "broadcast",
+    "bitwise_left_shift": "broadcast",
+    "bitwise_right_shift": "broadcast",
+    # ── Complex ops ──
+    "view_as_real": "view_as_real",
+    "view_as_complex": "view_as_complex",
+    # ── Misc ──
+    "einsum": "einsum",
+    "tensordot": "tensordot",
+    "outer": "outer",
+    "inner": "inner",
+    "vdot": "vdot",
+    "kron": "kron",
+    "block_diag": "block_diag",
+    "cartesian_prod": "cartesian_prod",
 }
 
 
@@ -1023,6 +1877,65 @@ MODERN_SHAPE_TRANSFERS = {
     "dropout": transfer_dropout,
     "stochastic_depth": transfer_stochastic_depth,
     "rms_norm": transfer_rms_norm,
+    # ── linalg ──
+    "linalg_square": transfer_linalg_square,
+    "linalg_det": transfer_linalg_det,
+    "linalg_slogdet": transfer_linalg_slogdet,
+    "linalg_svd": transfer_linalg_svd,
+    "linalg_qr": transfer_linalg_qr,
+    "linalg_solve": transfer_linalg_solve,
+    "linalg_eig": transfer_linalg_eig,
+    "linalg_lstsq": transfer_linalg_lstsq,
+    "linalg_norm": transfer_linalg_norm,
+    # ── fft ──
+    "fft_c2c": transfer_fft_c2c,
+    "rfft": transfer_rfft,
+    "irfft": transfer_irfft,
+    "rfft2": transfer_rfft2,
+    "irfft2": transfer_irfft2,
+    # ── manipulation ──
+    "narrow": transfer_narrow,
+    "select": transfer_select,
+    "movedim": transfer_movedim,
+    "tile": transfer_tile,
+    "expand": transfer_expand,
+    # ── reductions ──
+    "reduction": transfer_reduction,
+    # ── creation ──
+    "like_create": transfer_like_create,
+    "new_tensor": transfer_new_tensor,
+    "linspace": transfer_linspace_create,
+    # ── losses ──
+    "scalar_loss": transfer_scalar_loss,
+    # ── spectral ──
+    "stft": transfer_stft,
+    "istft": transfer_istft,
+    # ── modules ──
+    "rnn_cell": transfer_rnn_cell,
+    "lstm_cell": transfer_lstm_cell,
+    "transformer_layer": transfer_transformer_layer,
+    "channel_shuffle": transfer_channel_shuffle,
+    "adaptive_log_softmax": transfer_adaptive_log_softmax,
+    # ── blas ──
+    "addmm": transfer_addmm,
+    "addmv": transfer_addmv,
+    "addr": transfer_addr,
+    "baddbmm": transfer_baddbmm,
+    "addbmm": transfer_addbmm,
+    # ── complex ──
+    "view_as_real": transfer_view_as_real,
+    "view_as_complex": transfer_view_as_complex,
+    # ── misc ──
+    "outer": transfer_outer,
+    "inner": transfer_inner,
+    "vdot": transfer_vdot,
+    "kron": transfer_kron,
+    "block_diag": transfer_block_diag,
+    "tensordot": transfer_tensordot,
+    "einsum": transfer_einsum,
+    "cartesian_prod": transfer_cartesian_prod,
+    "size_tensor": transfer_size_tensor,
+    "numel_tensor": transfer_numel_tensor,
 }
 
 
@@ -1099,11 +2012,34 @@ def register_modern_ops(registry) -> None:
         registry.register(_SignatureModel(sig))
 
 
+UNSUPPORTED_OP_POLICY = "unknown"
+"""Policy tag for operators not in any shape registry.
+
+Callers should treat ``UNSUPPORTED_OP_POLICY`` as *shape unknown* (``None``)
+rather than silently assuming identity, which could mask dimension mismatches.
+"""
+
+
+def get_unsupported_op_shape(*_args: Any, **_kwargs: Any) -> None:
+    """Return ``None`` (UNKNOWN) for any op not in the registry."""
+    return None
+
+
 def get_all_covered_ops() -> Dict[str, str]:
-    """Return the merged dict of original + modern ops for counting."""
+    """Return the merged dict of original + modern ops for counting.
+
+    Also exposes ``get_unsupported_op_shape`` as an attribute so callers can
+    retrieve it from the same entry-point::
+
+        ops = get_all_covered_ops()
+        unknown = get_all_covered_ops.get_unsupported_op_shape
+    """
     from src.tensor_shapes import TORCH_SHAPE_OPS, NUMPY_SHAPE_OPS
     merged: Dict[str, str] = {}
     merged.update(TORCH_SHAPE_OPS)
     merged.update(NUMPY_SHAPE_OPS)
     merged.update(MODERN_TORCH_SHAPE_OPS)
     return merged
+
+
+get_all_covered_ops.get_unsupported_op_shape = get_unsupported_op_shape  # type: ignore[attr-defined]

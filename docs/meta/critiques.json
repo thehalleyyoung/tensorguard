@@ -1,53 +1,111 @@
 {
-  "project": "refinement-type-inference-dynamic-lang",
-  "title": "TensorGuard: Static Tensor Shape Verification for PyTorch",
-  "synthesis_date": "2026-03-02",
-  "average_score": 6.7,
-  "score_range": [6, 7],
+  "project": "TensorGuard",
+  "title": "Static Tensor Shape Verification via SMT Theory Combination",
+  "date": "2026-03-02",
   "reviewers": [
     {
-      "name": "Cesar Sanchez",
+      "name": "César Sánchez",
       "persona": "formal_verification_AI_researcher",
-      "score": 7,
-      "key_strength": "The 5-theory product domain with machine-checked Tinelli-Zarba composition soundness is a genuine contribution to domain-specific SMT verification.",
-      "key_weakness": "The IC3/PDR adaptation lacks a formal interpolation completeness argument for the shape constraint domain, making the unbounded verification heuristic rather than verified.",
-      "review_file": "review_cesar_sanchez.md"
+      "recommendation": "Weak Accept",
+      "confidence": 4,
+      "key_concern": "Gap between Lean mechanization and Python implementation undermines claimed soundness guarantees; theory combination with multiplicative Stride theory is underspecified; IC3/PDR cube generalization lacks formal justification."
     },
     {
       "name": "Roderick Bloem",
       "persona": "machine_learning_specification_safety_researcher",
-      "score": 7,
-      "key_strength": "Implicit specification approach with CI/CD integration (SARIF, exit codes) demonstrates deployment maturity rare in academic verification tools.",
-      "key_weakness": "No comparison with existing shape checking tools (TorchScript, mypy tensor plugins) makes it impossible to assess the marginal value of heavyweight SMT-based verification.",
-      "review_file": "review_roderick_bloem.md"
+      "recommendation": "Weak Accept",
+      "confidence": 4,
+      "key_concern": "117/2000 operator coverage is dangerously low for practical use; evaluation on 18 synthetic models is too small; missing comparisons with jaxtyping and PyTEA; no real-world model evaluation (ResNet, BERT, GPT-2)."
     },
     {
-      "name": "Vasco Vasconcelos",
+      "name": "Vasco T. Vasconcelos",
       "persona": "probabilistic_models_and_formal_methods_expert",
-      "score": 6,
-      "key_strength": "The refinement type structure with IC3/PDR reframed as inductive type inference and CEGAR as principal type inference is an elegant application of type-theoretic ideas.",
-      "key_weakness": "The decidability boundary of the refinement type system is uncharacterized, and Knuth-Bendix completion cannot succeed for the full shape algebra involving nonlinear integer arithmetic.",
-      "review_file": "review_vasco_vasconcelos.md"
+      "recommendation": "Borderline Accept",
+      "confidence": 3,
+      "key_concern": "No formal type system is presented despite the title referencing type inference; progress/preservation not addressed; 43 typing rules not shown or analyzed; relationship to Liquid Types and gradual typing is superficial."
     }
   ],
-  "consensus_strengths": [
-    "The 5-theory product domain (Shape×Device×Phase×Stride×Permutation) with verified Nelson-Oppen/Tinelli-Zarba composition soundness is a well-designed and formally grounded contribution to domain-specific verification.",
-    "IC3/PDR unbounded verification with 9.5–21.2× speedup provides genuine safety guarantees for all symbolic dimension values, not just sampled ones.",
-    "Zero false positives on 230 benchmarks with 100% proof certificate coverage meets the soundness standard required for CI gate deployment.",
-    "Comprehensive engineering effort — 193+ operators, 6,054 tests, SARIF integration, CLI tooling, TorchBench evaluation — demonstrates practical deployment maturity."
-  ],
-  "consensus_weaknesses": [
-    "The IC3/PDR adaptation to shape verification lacks formal justification: no Craig interpolation completeness argument for the shape domain, and correctness relies on empirical agreement rather than proof.",
-    "Composition soundness claims under Tinelli-Zarba are suspect for the Stride theory, which involves divisibility predicates that may violate the convexity precondition required for completeness.",
-    "The Lean 4 mechanization scope is ambiguous — it is unclear which theorems are fully mechanized versus stated as axioms, undermining the mechanization claims.",
-    "No comparison with existing shape checking tools (TorchScript, ShapeFlow, mypy/pyright tensor plugins) prevents assessment of the marginal value of SMT-based verification over simpler approaches.",
-    "The decidability boundary of the refinement type system is uncharacterized: nonlinear integer arithmetic arising from convolution formulas is undecidable, and the system may return 'unknown' for decidable instances."
-  ],
-  "actionable_recommendations": [
-    "Provide a formal argument or reference that the shape constraint domain admits Craig interpolation, ensuring IC3/PDR frame refinement completeness, or clearly state that the procedure is sound but incomplete.",
-    "Clarify the Lean 4 mechanization scope by listing which theorems are fully mechanized and which are admitted, and provide the Lean source for independent verification.",
-    "Add baseline comparisons against at least 2-3 existing shape checking tools (TorchScript, mypy tensor plugins, ShapeFlow) to quantify the marginal benefit of SMT-based verification.",
-    "Characterize the decidable fragment of integer arithmetic that arises from the 193+ transfer functions and document which operators produce nonlinear constraints that may cause 'unknown' verdicts.",
-    "Provide a formal adequacy theorem relating the denotational semantics of the shape algebra to PyTorch's runtime shape computation, at least for a representative subset of operators."
-  ]
+  "consensus_recommendation": "Weak Accept — conditional on addressing evaluation gaps and clarifying the boundary between proven and trusted components",
+  "synthesis": {
+    "summary": "All three reviewers agree that TensorGuard addresses a genuine and important problem — tensor shape errors are the most common class of runtime errors in deep learning code, and existing tools provide essentially no protection. The zero-annotation design and actionable counterexample traces are universally praised. However, all reviewers identify significant gaps between the paper's claims and what is actually delivered. Sánchez focuses on the formal verification gaps (Lean-to-Python disconnect, incomplete theory combination), Bloem focuses on practical utility gaps (operator coverage, benchmark size, missing baselines), and Vasconcelos focuses on type-theoretic gaps (no formal type system, no progress/preservation). The consensus is that the work is publishable but needs revisions to clearly separate proven guarantees from trusted assumptions, expand the evaluation to real-world models, and either formalize or disclaim the type-theoretic positioning.",
+    "agreed_strengths": [
+      "Zero-annotation static verification for PyTorch nn.Module subclasses is a practically significant contribution that removes the main adoption barrier for formal verification in ML",
+      "The 5-theory product domain (Shape × Device × Phase × Stride × Permutation) is well-structured with clean axiomatic specifications for each theory",
+      "Actionable counterexample traces with step-by-step computation paths and concrete dimension assignments are substantially better than any existing tool's error output",
+      "The Lean 4 mechanization (1,587 lines, 71 theorems) includes genuinely non-trivial results — broadcast soundness/completeness equivalence, broadcast associativity, and the non-tautological UserPropagatorSpec correction",
+      "IC3/PDR for unbounded verification addresses a real deployment need: proving safety for all values of symbolic dimensions, not just sampled concrete values",
+      "The decidability characterization (94.9% QF_LIA, 6 operators NP-hard) is technically careful and provides actionable information for users and framework designers",
+      "The extensive experimental infrastructure (200+ evaluation scripts) suggests serious empirical validation effort"
+    ],
+    "agreed_weaknesses": [
+      "The 117/~2000 operator coverage is critically low, and treating unsupported operators as identity (shape-preserving) is optimistic rather than conservative — it can cause false negatives when unknown operators change shapes",
+      "The evaluation benchmark (18 models, 10 buggy, 8 correct) is far too small for robust statistical conclusions, and the absence of standard ML architectures (ResNet, BERT, GPT-2, ViT) from the headline results is a major gap",
+      "There is a significant gap between the Lean mechanization (which proves properties of abstract specifications) and the Python implementation (which is trusted to satisfy those specifications) — the claimed 'zero sorry' does not imply end-to-end verification",
+      "The baseline comparison includes only TorchScript and mypy, omitting the most relevant competitors: jaxtyping, PyTEA, torchtyping, and beartype",
+      "The paper's theoretical machinery (Tinelli-Zarba, IC3/PDR, Craig interpolation, Knuth-Bendix, Kripke structures, Lean 4 mechanization) may be disproportionate to the actual verification performed, which is largely dimension matching between consecutive layers"
+    ],
+    "divergent_opinions": [
+      {
+        "topic": "Theoretical framing",
+        "sanchez_position": "The SMT theory combination approach is principled but has specific technical gaps (Stride theory convexity, IC3/PDR generalization) that need formal resolution",
+        "bloem_position": "The theoretical machinery is overkill for the practical verification performed — a simpler constraint propagation engine might achieve similar results with much less complexity",
+        "vasconcelos_position": "The work should either present a formal type system with proper metatheory (progress, preservation, principal types) or honestly position itself as a domain-specific model checker rather than a type inference system"
+      },
+      {
+        "topic": "Treatment of unsupported operators",
+        "sanchez_position": "Identity assumption is unsound — should use top (⊤) in the shape lattice to propagate uncertainty conservatively",
+        "bloem_position": "Should emit warnings when unsupported operators are encountered and clearly indicate which parts of the model are actually verified",
+        "vasconcelos_position": "Should adopt a gradual typing approach with a dynamic shape type (?_shape) that is consistent with any shape but emits precision warnings"
+      },
+      {
+        "topic": "Value of Lean mechanization",
+        "sanchez_position": "The mechanization is a genuine contribution but proves a weaker statement than the actual Tinelli-Zarba theorem (combined satisfiability defined as per-theory models consistent with the same arrangement, not a single combined model)",
+        "bloem_position": "The Lean mechanization is intellectually interesting but adds no practical value for ML practitioners — the effort would be better spent on operator coverage expansion",
+        "vasconcelos_position": "The mechanization of broadcast soundness/completeness and associativity is the strongest type-theoretic contribution, but the absence of progress/preservation proofs limits its significance"
+      },
+      {
+        "topic": "CEGAR loop design",
+        "sanchez_position": "Convergence is not guaranteed because the predicate space is countably infinite — needs finite ascending chain property",
+        "bloem_position": "The CEGAR loop is practically useful for discovering implicit shape contracts, but its interaction with the verification pipeline is not clearly evaluated",
+        "vasconcelos_position": "The CEGAR loop resembles Liquid Type inference but differs in that predicates are discovered iteratively rather than drawn from a fixed qualifier set — this distinction should be clarified"
+      }
+    ],
+    "actionable_recommendations": [
+      {
+        "priority": "critical",
+        "recommendation": "Expand evaluation to include standard ML architectures (ResNet-50, BERT-base, GPT-2, ViT-B/16) from torchvision and HuggingFace Transformers, reporting operator coverage fraction, verification time, false positive count, and comparison with jaxtyping and PyTEA",
+        "addressed_by": ["Bloem-W2", "Bloem-W3", "Bloem-W7", "Sanchez-W6"]
+      },
+      {
+        "priority": "critical",
+        "recommendation": "Replace the identity assumption for unsupported operators with a conservative approach: either report UNKNOWN when unsupported operators are encountered, or introduce an imprecise shape type that propagates uncertainty and lowers verdict confidence",
+        "addressed_by": ["Sanchez-W4", "Bloem-W1", "Vasconcelos-W6"]
+      },
+      {
+        "priority": "high",
+        "recommendation": "Clearly separate proven guarantees from trusted assumptions: create a formal Trusted Computing Base (TCB) document listing exactly what is mechanized in Lean, what is tested in Python, and what is assumed without evidence — particularly the operator transfer function correctness and the AST-to-constraint translation faithfulness",
+        "addressed_by": ["Sanchez-W1", "Sanchez-W7", "Vasconcelos-W4"]
+      },
+      {
+        "priority": "high",
+        "recommendation": "Formalize the core typing rules as inference rules in standard notation (at least for Linear, Conv2d, broadcasting, reshape, and cat), state the operational soundness guarantee connecting static verification to dynamic execution, and clarify the relationship to Liquid Types",
+        "addressed_by": ["Vasconcelos-W1", "Vasconcelos-W2", "Vasconcelos-W3", "Vasconcelos-W4"]
+      },
+      {
+        "priority": "medium",
+        "recommendation": "Address the Stride theory combination issue: either prove that Shape and Stride share a convex sub-theory (enabling Nelson-Oppen), or use Shiny's extension for non-disjoint signatures, or restructure Stride as an extension of the Shape theory rather than a separate theory",
+        "addressed_by": ["Sanchez-W2", "Sanchez-Q2"]
+      },
+      {
+        "priority": "medium",
+        "recommendation": "Provide operator coverage expansion roadmap with estimated effort per operator category, and consider automated transfer function extraction from PyTorch's C++ kernel shape inference functions or torch.jit.script annotations",
+        "addressed_by": ["Bloem-W1", "Bloem-Q1"]
+      },
+      {
+        "priority": "low",
+        "recommendation": "Add CI/CD integration examples (GitHub Actions workflow, pre-commit hook, VS Code extension) to demonstrate practical deployment readiness",
+        "addressed_by": ["Bloem-W7"]
+      }
+    ]
+  }
 }
