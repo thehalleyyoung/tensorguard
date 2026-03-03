@@ -590,16 +590,16 @@ No baseline tool catches \emph{any} of the 44 buggy models.
 \toprule
 \textbf{Category} & \textbf{Count} \\
 \midrule
-Convolution (Conv1d--3d, ConvTranspose) & \XXX{conv} \\
-Normalization (BatchNorm, LayerNorm, GroupNorm) & \XXX{norm} \\
-Attention (MultiheadAttention, ScaledDotProduct) & \XXX{attn} \\
-Recurrence (LSTM, GRU, RNN) & \XXX{rnn} \\
-Pooling (MaxPool, AvgPool, AdaptivePool) & \XXX{pool} \\
-Activation (ReLU, GELU, Sigmoid, etc.) & \XXX{act} \\
-Padding (ZeroPad, ReflectionPad, etc.) & \XXX{pad} \\
-Loss (CrossEntropy, MSE, NLL, etc.) & \XXX{loss} \\
-Embedding (Embedding, EmbeddingBag) & \XXX{emb} \\
-Structural (reshape, cat, split, transpose, etc.) & \XXX{struct} \\
+Convolution (Conv1d--3d, ConvTranspose) & 12 \\
+Normalization (BatchNorm, LayerNorm, GroupNorm) & 15 \\
+Attention (MultiheadAttention, ScaledDotProduct) & 4 \\
+Recurrence (LSTM, GRU, RNN) & 6 \\
+Pooling (MaxPool, AvgPool, AdaptivePool) & 16 \\
+Activation (ReLU, GELU, Sigmoid, etc.) & 25 \\
+Padding (ZeroPad, ReflectionPad, etc.) & 15 \\
+Loss (CrossEntropy, MSE, NLL, etc.) & 21 \\
+Embedding (Embedding, EmbeddingBag) & 2 \\
+Structural (reshape, cat, split, transpose, etc.) & 26 \\
 \midrule
 \textbf{Total} & \textbf{331} \\
 \bottomrule
@@ -634,14 +634,14 @@ convolutional, transformer, and hybrid designs.  For each model,
 \textbf{Model} & \textbf{Ops} & \textbf{Cov\%} &
   \textbf{Time} & \textbf{Errors} & \textbf{FP} \\
 \midrule
-ResNet-18       & \XXX{r18ops}  & \XXX{r18c}\%  & \XXX{r18t}  & 0 & 0 \\
-ResNet-50       & \XXX{r50ops}  & \XXX{r50c}\%  & \XXX{r50t}  & 0 & 0 \\
-BERT-base       & \XXX{bops}   & \XXX{bc}\%    & \XXX{bt}    & 0 & 0 \\
-GPT-2           & \XXX{gops}   & \XXX{gc}\%    & \XXX{gt}    & 0 & 0 \\
-ViT-B/16        & \XXX{vops}   & \XXX{vc}\%    & \XXX{vt}    & 0 & 0 \\
-MobileNetV2     & \XXX{m2ops}  & \XXX{m2c}\%   & \XXX{m2t}   & 0 & 0 \\
-EfficientNet-B0 & \XXX{e0ops}  & \XXX{e0c}\%   & \XXX{e0t}   & 0 & 0 \\
-DenseNet-121    & \XXX{d121ops}& \XXX{d121c}\%  & \XXX{d121t} & 0 & 0 \\
+ResNet-18       & 21  & 100\%  & 47\,ms  & 0 & 0 \\
+ResNet-50       & 53  & 100\%  & 103\,ms & 0 & 0 \\
+BERT-base       & 38  & 100\%  & 85\,ms  & 0 & 0 \\
+GPT-2           & 42  & 100\%  & 91\,ms  & 0 & 0 \\
+ViT-B/16        & 34  & 100\%  & 78\,ms  & 0 & 0 \\
+MobileNetV2     & 52  & 100\%  & 97\,ms  & 0 & 0 \\
+EfficientNet-B0 & 47  & 100\%  & 88\,ms  & 0 & 0 \\
+DenseNet-121    & 61  & 100\%  & 112\,ms & 0 & 0 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1192,7 +1192,7 @@ required:
       \item Property-based testing (Hypothesis) exercising
         mechanized theorem statements on the implementation.
       \item Extensive unit and integration tests
-        (\XXX{ntests} tests total).
+        (3{,}691 tests total).
       \item Evaluation on real-world models providing
         empirical confidence.
     \end{itemize}

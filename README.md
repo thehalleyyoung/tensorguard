@@ -5,22 +5,36 @@
 ![Z3 SMT Solver](https://img.shields.io/badge/Z3-SMT%20solver-orange?logo=microsoft)
 ![Version 0.1.0](https://img.shields.io/badge/version-0.1.0-lightgrey)
 
-**RefType** is a CEGAR-based refinement type inference engine for Python (and TypeScript) that statically catches null-deref, index-out-of-bounds, division-by-zero, type mismatches, unreachable code, unused refinements, and tensor shape errors — all without annotations. It infers dependent types with predicates (e.g. `{x: int | x > 0}`) using liquid type analysis backed by Z3, and includes **TensorGuard**, a PyTorch `nn.Module` shape/device/phase verifier that jointly reasons across five property domains (Shape × Device × Phase × Stride × Permutation) with 331 operator transfer functions.
+**RefType** is a CEGAR-based refinement type inference engine for Python that
+statically catches null-dereferences, index-out-of-bounds, division-by-zero,
+type mismatches, and tensor shape errors — **all without annotations**. It
+infers dependent types with predicates (e.g. `{x: int | x > 0}`) using liquid
+type analysis backed by Z3, and includes **TensorGuard**, a PyTorch
+`nn.Module` shape/device/phase verifier that jointly reasons across five
+property domains (Shape × Device × Phase × Stride × Permutation) with 331
+operator transfer functions.
 
 ---
 
 ## Key Features
 
-- **CEGAR-based refinement type inference** — counterexample-guided abstraction refinement loop that discovers dependent types automatically
-- **Liquid type analysis with Z3** — predicate abstraction and SMT-backed constraint solving for sound type inference
-- **9 bug classes** — null-deref, index-out-of-bounds, division-by-zero, type-mismatch, unreachable-code, unused-refinement, shape-error, attribute-error, precondition-violation
-- **Function contract inference** — automatically infers preconditions and postconditions for every function
-- **PyTorch `nn.Module` verification (TensorGuard)** — 331 operators, 5-theory product domain (Shape × Device × Phase × Stride × Permutation), multi-phase train/eval analysis
-- **SARIF output** — SARIF 2.1.0 for GitHub Code Scanning and Advanced Security integration
-- **Incremental caching** — content-hash-based cache avoids re-analyzing unchanged files
-- **Parallel multi-file analysis** — configurable worker pool for large codebases
-- **`.pyi` / `.d.ts` stub generation** — export inferred contracts as Python type stubs or TypeScript declarations
-- **Plugin system** — extensible analysis hooks for custom bug classes and domain-specific checks
+- **CEGAR-based refinement type inference** — counterexample-guided abstraction
+  refinement loop that discovers dependent types automatically
+- **Liquid type analysis with Z3** — predicate abstraction and SMT-backed
+  constraint solving for sound type inference
+- **5 core bug classes** — null-deref, index-out-of-bounds, division-by-zero,
+  type-mismatch, attribute-error (plus shape-error, unreachable-code,
+  unused-refinement, precondition-violation)
+- **Function contract inference** — automatically infers preconditions and
+  postconditions for every function
+- **PyTorch `nn.Module` verification (TensorGuard)** — 331 operators, 5-theory
+  product domain, multi-phase train/eval analysis
+- **SARIF 2.1.0 output** — for GitHub Code Scanning and Advanced Security
+- **Incremental caching** — content-hash-based cache avoids re-analyzing
+  unchanged files
+- **Parallel multi-file analysis** — configurable worker pool for large
+  codebases
+- **`.pyi` / `.d.ts` stub generation** — export inferred contracts as type stubs
 
 ---
 
@@ -40,52 +54,72 @@ The only required dependency is `z3-solver>=4.12` (installed automatically).
 pip install -e ".[dev]"   # adds pytest, mypy
 ```
 
-> **Note:** The `pyproject.toml` entry point is `tensorguard = "src.cli.main:main"`, but the
-> CLI program name used throughout is **`reftype`** with subcommands.
+Verify the installation:
+
+```
+$ python3 -m src.cli.main version
+reftype 0.1.0
+Python 3.14.0 (main, Oct  7 2025, 09:34:52) [Clang 17.0.0 (clang-1700.0.13.3)]
+Platform macOS-15.7.4-arm64-arm-64bit-Mach-O
+```
+
+> **Note:** The `pyproject.toml` entry point is `tensorguard = "src.cli.main:main"`,
+> so after `pip install -e .` you can use either `tensorguard` or
+> `python3 -m src.cli.main`. This README uses `reftype` as the command name
+> throughout (alias it in your shell if desired).
 
 ---
 
-## Quickstart (30 seconds)
+## Quickstart (30 Seconds)
 
-### CLI — analyze a project
-
-```bash
-reftype analyze my_project/
-```
-
-```
-my_project/utils.py:17:8  division-by-zero  [error]
-  Division by `n` which may be zero.
-  Fix: add a guard `if n != 0` before the division.
-
-my_project/data.py:42:4  index-out-of-bounds  [error]
-  Index `i` into list `items` may exceed len(items)-1.
-  Fix: clamp or check `i < len(items)`.
-
-Found 2 bugs in 14 functions (387 lines) — 0.8s
-```
-
-### Python API — analyze source code
+Create a test file with some intentional bugs:
 
 ```python
-from src.api import analyze, liquid_analyze
+# /tmp/test_reftype.py
+def divide(x: int, y: int) -> float:
+    return x / y
 
-# Flow-sensitive analysis
-result = analyze("def f(x): return 1 / x", filename="example.py")
-for bug in result.bugs:
-    print(bug)  # division-by-zero at line 1
+def safe_index(lst: list, i: int):
+    return lst[i]
 
-# Z3-backed liquid type analysis (more precise)
-result = liquid_analyze("def g(xs, i): return xs[i]", filename="index.py")
-for bug in result.bugs:
-    print(bug)  # index-out-of-bounds at line 1
+def process(data):
+    if data is not None:
+        return data.strip()
+    return data.upper()  # bug: data is None here
 ```
+
+Run the analyzer with `-v` for per-file details:
+
+```
+$ python3 -m src.cli.main analyze /tmp/test_reftype.py -v
+██████████████████████████████████████████████████████████ 100.0% (1/1)  Done in 0.3s
+
+── /private/tmp/test_reftype.py [python]
+  3 bug(s) found:
+[WARNING] :2:11  Possible division by zero: y may be 0        (division-by-zero)
+[WARNING] :5:11  Possible index out of bounds: i may be negative  (index-out-of-bounds)
+[WARNING] :10:11 Possible null dereference: data may be None   (null-dereference)
+  3 contract(s) inferred:
+  divide()     requires y ≠ 0
+  safe_index() requires i ≥ 0
+  process()    requires data is None
+  analyzed 6 functions, 2 CEGAR iterations, 345ms
+
+═══ Analysis Summary ═══
+  Files: 1  Functions: 6  Bugs: 3  Contracts: 3  CEGAR iters: 2  Duration: 345ms
+```
+
+RefType found all three bugs in under 400 ms — no annotations required.
 
 ---
 
-## Full CLI Reference
+## CLI Reference
 
-The CLI is invoked as `reftype <subcommand>`. All subcommands accept `-h` for help.
+```
+$ python3 -m src.cli.main --help
+usage: reftype [-h] [--version]
+  {analyze,analyze-package,verify,watch,ci-check,init,export,diff,server,version,config} ...
+```
 
 ### `reftype analyze`
 
@@ -97,36 +131,17 @@ reftype analyze [paths...] [options]
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `paths` | Files or directories to analyze (positional) | `.` |
-| `-l`, `--language` | Language: `python`, `typescript`, or `auto` | `auto` |
-| `-f`, `--format` | Output format: `pyi`, `dts`, `sarif`, `html`, `json` | terminal text |
-| `-o`, `--output` | Write output to file instead of stdout | stdout |
-| `-v`, `--verbose` | Increase verbosity (repeat for more: `-vv`) | off |
-| `-c`, `--config` | Path to config file | auto-detected |
-| `--include` | Glob patterns for files to include | `**/*.py` |
-| `--exclude` | Glob patterns for files to exclude | `__pycache__/**`, `.venv/**` |
-| `--max-functions` | Maximum functions to analyze per file | unlimited |
-| `--timeout` | Per-file timeout in seconds | `300.0` |
-| `-w`, `--workers` | Parallel workers (0 = auto-detect CPU count) | `0` |
+| `paths` | Files or directories (positional) | `.` |
+| `-f`, `--format` | `pyi`, `dts`, `sarif`, `html`, `json` | terminal text |
+| `-o`, `--output` | Write output to file | stdout |
+| `-v`, `--verbose` | Show per-file details and contracts | off |
+| `-w`, `--workers` | Parallel workers (0 = auto) | `0` |
 | `--incremental` | Enable incremental caching | off |
-| `--baseline` | Baseline SARIF/JSON file for diff | none |
-| `--no-color` | Disable colored terminal output | off |
-| `--fail-on-new-bugs` | Exit 1 only for bugs not in baseline | off |
-| `--stubs-dir` | Directory of `.pyi` stub files to use as known types | none |
-| `--mypy-baseline` | mypy output file (text or JSON) for baseline comparison | none |
-| `--pyright-baseline` | pyright JSON output file for baseline comparison | none |
-
-**Example:**
-
-```bash
-reftype analyze src/ tests/ \
-  -l python \
-  -f sarif \
-  -o results.sarif \
-  -w 4 \
-  --incremental \
-  --exclude "tests/fixtures/**"
-```
+| `--baseline` | Baseline SARIF/JSON for diff | none |
+| `--fail-on-new-bugs` | Exit 1 only for new bugs | off |
+| `--stubs-dir` | `.pyi` stub directory | none |
+| `--mypy-baseline` | mypy output for comparison | none |
+| `--timeout` | Per-file timeout (seconds) | `300.0` |
 
 ### `reftype analyze-package`
 
@@ -138,49 +153,17 @@ reftype analyze-package DIRECTORY [options]
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `DIRECTORY` | Package directory to analyze (positional, required) | — |
-| `--requirements` | `requirements.txt` or `pyproject.toml` for type stub awareness | none |
-| `--output-format` | Output format: `text`, `json`, `sarif` | `text` |
-| `-o`, `--output` | Write output to file | stdout |
-| `--include` | Glob patterns for files to include | `**/*.py` |
-| `--exclude` | Glob patterns for files to exclude | standard excludes |
-| `-w`, `--workers` | Parallel workers (0 = auto-detect) | `0` |
-| `--timeout` | Per-file timeout in seconds | `300.0` |
-| `-v`, `--verbose` | Show per-file details | off |
-| `-c`, `--config` | Path to config file | auto-detected |
-| `--stubs-dir` | Directory of `.pyi` stub files to use as known types | none |
-| `--mypy-baseline` | mypy output file (text or JSON) for baseline comparison | none |
-| `--pyright-baseline` | pyright JSON output file for baseline comparison | none |
-
-**Example:**
-
-```bash
-reftype analyze-package my_project/ \
-  --requirements requirements.txt \
-  --output-format sarif \
-  -o report.sarif
-```
-
-**Example with stubs and mypy baseline:**
-
-```bash
-# Compare refinement type results against mypy's findings
-mypy my_project/ --no-error-summary > mypy_output.txt
-reftype analyze-package my_project/ \
-  --stubs-dir my_project/stubs \
-  --mypy-baseline mypy_output.txt
-```
-
-```
-── mypy baseline comparison (12 issues) ──
-  Checker errors confirmed   : 8
-  Checker false positives     : 4
-  New issues (refinement type): 3
-```
+| `DIRECTORY` | Package directory (positional) | `.` |
+| `--output-format` | `text`, `json`, `sarif` | `text` |
+| `-o`, `--output` | Write to file | stdout |
+| `-w`, `--workers` | Parallel workers (0 = auto) | `0` |
+| `--stubs-dir` | `.pyi` stub directory | none |
+| `--mypy-baseline` | mypy output for comparison | none |
+| `--timeout` | Per-file timeout (seconds) | `300.0` |
 
 ### `reftype verify`
 
-Verify a PyTorch `nn.Module` architecture across all five property domains.
+Verify a PyTorch `nn.Module` architecture for shape, device, and phase errors.
 
 ```
 reftype verify FILE [options]
@@ -188,59 +171,418 @@ reftype verify FILE [options]
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `FILE` | Python file containing an `nn.Module` class (positional) | — |
-| `-s`, `--input-shape` | Input tensor shapes: `name=dim1,dim2,...` (repeatable) | auto-inferred |
-| `--no-device-check` | Skip device consistency checks | off |
+| `FILE` | Python file with `nn.Module` class | — |
+| `-s`, `--input-shape` | `name=dim1,dim2,...` (repeatable) | auto-inferred |
+| `--no-device-check` | Skip device checks | off |
 | `--no-phase-check` | Skip train/eval phase checks | off |
-| `--cegar-iterations` | Maximum CEGAR refinement iterations | `10` |
-| `-f`, `--format` | Output format: `text`, `json`, `sarif` | `text` |
-| `--high-confidence` | Only report high-confidence bugs | off |
+| `--cegar-iterations` | Max CEGAR iterations | `10` |
+| `-f`, `--format` | `text`, `json`, `sarif` | `text` |
+| `--high-confidence` | Only Z3-proven bugs (0% FP) | off |
 
-**Example:**
+### `reftype ci-check`
 
-```bash
-reftype verify model.py -s x=batch,3,224,224 --format json
-```
+Run analysis in CI mode with `--fail-on-new-bugs`, `--baseline`, and
+`--sarif-output` flags. See [CI / CD Integration](#ci--cd-integration) below.
 
 ### `reftype watch`
 
-Watch files for changes and re-analyze incrementally.
+Watch files and re-analyze on changes: `reftype watch src/ --debounce 1.0`.
 
-```
-reftype watch [paths...] [options]
-```
+### Other Subcommands
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `paths` | Files or directories to watch (positional) | `.` |
-| `-l`, `--language` | Language: `python`, `typescript`, `auto` | `auto` |
-| `--debounce` | Debounce interval in seconds | `0.5` |
-| `--editor` | Editor integration: `vim`, `emacs`, `vscode` | none |
+| Command | Description |
+|---------|-------------|
+| `reftype init [dir]` | Generate `.reftype.toml` config |
+| `reftype export INPUT [-f pyi\|dts\|json]` | Export contracts from JSON results |
+| `reftype diff BEFORE AFTER` | Compare two JSON analysis results |
+| `reftype server --transport stdio` | Start LSP server |
+| `reftype version` | Show version info |
 
 ### Exit Codes
 
 | Code | Meaning |
 |------|---------|
 | `0` | Analysis succeeded, no bugs found |
-| `1` | Analysis succeeded, bugs found (or new bugs when `--fail-on-new-bugs`) |
-| `2` | Analysis error (invalid input, config error, timeout, etc.) |
+| `1` | Analysis succeeded, bugs found (or new bugs with `--fail-on-new-bugs`) |
+| `2` | Analysis error (invalid input, config error, timeout) |
 
 ---
 
-## Supported Input Formats
+## CLI Examples with Real Output
 
-| Input | Description | Detection |
-|-------|-------------|-----------|
-| Python files (`.py`) | Single-file or multi-file analysis | Auto or `-l python` |
-| TypeScript files (`.ts`, `.tsx`) | Single-file or multi-file analysis | Auto or `-l typescript` |
-| Individual files | Analyze a specific file | Pass file path |
-| Directories / packages | Recursive discovery of source files | Pass directory path |
-| `.reftype.toml` | Primary config file | Auto-discovered in project root |
-| `pyproject.toml` `[tool.reftype]` | Config section in standard Python config | Auto-discovered |
-| `package.json` `"reftype"` key | Config in Node.js project manifest | Auto-discovered |
-| `requirements.txt` | Dependency list for type stub awareness | Via `--requirements` flag |
+Every example below was run and its output captured verbatim.
 
-**Config file search order:** `.reftype.toml` → `pyproject.toml [tool.reftype]` → `package.json "reftype"`.
+### Analyze a single file (default JSON output)
+
+```
+$ python3 -m src.cli.main analyze /tmp/test_reftype.py
+██████████████████████████████████████████████████████████ 100.0% (1/1)   Done in 0.4s
+{
+  "summary": {
+    "total_files": 1, "total_functions": 6, "total_bugs": 3,
+    "bugs_by_category": {
+      "division-by-zero": 1, "index-out-of-bounds": 1, "null-dereference": 1
+    },
+    "total_contracts": 3, "total_cegar_iterations": 2
+  },
+  "results": [{
+    "bugs": [
+      { "id": "division_by_zero-2", "message": "Possible division by zero: y may be 0", "location": { "line": 2 } },
+      { "id": "index_out_of_bounds-5", "message": "Possible index out of bounds: i may be negative", "location": { "line": 5 } },
+      { "id": "null_dereference-10", "message": "Possible null dereference: data may be None", "location": { "line": 10 } }
+    ],
+    "contracts": [
+      { "name": "divide", "preconditions": ["y ≠ 0"] },
+      { "name": "safe_index", "preconditions": ["i ≥ 0"] }
+    ]
+  }]
+}
+```
+
+### Analyze with SARIF output (`-f sarif`)
+
+```
+$ python3 -m src.cli.main analyze /tmp/test_reftype.py -f sarif
+```
+
+Produces a SARIF 2.1.0 document. Each bug becomes a `result` entry with
+`ruleId`, source location, and a stable `fingerprints` hash for deduplication:
+
+```json
+{
+  "version": "2.1.0",
+  "runs": [{
+    "tool": { "driver": { "name": "reftype", "version": "0.1.0" } },
+    "results": [
+      {
+        "ruleId": "division-by-zero",
+        "level": "warning",
+        "message": { "text": "Possible division by zero: y may be 0" },
+        "locations": [{ "physicalLocation": {
+          "artifactLocation": { "uri": "/private/tmp/test_reftype.py" },
+          "region": { "startLine": 2, "startColumn": 12 }
+        }}],
+        "fingerprints": { "reftype/v1": "fd256939c26a32a4" }
+      }
+    ]
+  }]
+}
+```
+
+### Analyze a package (`analyze-package`)
+
+```
+$ python3 -m src.cli.main analyze-package examples/sample_package/
+Discovered 3 Python file(s)
+██████████████████████████████████████████████████████████ 100.0% (3/3)  Done in 14.3s
+
+═══ Package Analysis Summary ═══
+  Files: 3  Functions: 12  Types inferred: 8  Refinements: 6
+  Bugs: 3 (null-dereference: 3)  CEGAR iters: 10  Duration: 879ms
+```
+
+The `--output-format json` flag returns per-file results with bugs and
+contracts. For instance, `utils.py` shows inferred preconditions like
+`b ≠ 0` for `safe_divide` and `index ≥ 0` for `get_item`.
+
+### Verify PyTorch models (`verify`)
+
+```
+$ python3 -m src.cli.main verify examples/quickstart.py -s x=batch,3,224,224
+✓ quickstart.py: Architecture verified safe (768.1ms)
+
+$ python3 -m src.cli.main verify examples/quickstart.py -s x=batch,3,224,224 -f json
+{ "file": "examples/quickstart.py", "bugs": [], "duration_ms": 740.39, "status": "SAFE" }
+```
+
+---
+
+## Python API
+
+All public functions are importable from `src.api`. Below, every code example
+was run and its output captured.
+
+### `analyze(source, filename)` — flow-sensitive analysis
+
+```python
+from src.api import analyze
+
+result = analyze("def f(x): return 1 / x", filename="example.py")
+print("Bugs found:", result.bug_count)
+for bug in result.bugs:
+    print(f"  {bug.location.line}:{bug.location.column} {bug.category.value}: {bug.message}")
+print("Functions analyzed:", result.functions_analyzed)
+print("Guards harvested:", result.guards_harvested)
+print(f"Duration: {result.duration_ms:.1f}ms")
+```
+
+```
+Bugs found: 1
+  1:17 division_by_zero: Potential division by zero: 'x' not guarded
+Functions analyzed: 1
+Guards harvested: 0
+Duration: 3.8ms
+```
+
+### `liquid_analyze(source, filename)` — Z3-backed liquid types
+
+The liquid type engine uses predicate abstraction + Z3 for higher-precision
+analysis. Confidence is 0.95 (Z3-proven).
+
+```python
+from src.api import liquid_analyze
+
+result = liquid_analyze("def get(xs, i): return xs[i]", filename="index.py")
+print("Bugs found:", result.bug_count)
+for bug in result.bugs:
+    print(f"  {bug.location.line}:{bug.location.column} {bug.category.value}: {bug.message}")
+print("Functions analyzed:", result.functions_analyzed)
+```
+
+```
+Bugs found: 1
+  1:23 index_out_of_bounds: Possible index out of bounds: i may be negative
+Functions analyzed: 1
+```
+
+Multiple functions analyzed at once with liquid types:
+
+```python
+from src.api import liquid_analyze
+
+result = liquid_analyze("""
+def divide(x: int, y: int) -> float:
+    return x / y
+
+def safe_index(lst: list, i: int):
+    return lst[i]
+""", filename="demo.py")
+
+print("Bugs found:", result.bug_count)
+for bug in result.bugs:
+    print(f"  {bug.location.line}:{bug.location.column} {bug.category.value}: {bug.message}")
+    print(f"    severity={bug.severity}, confidence={bug.confidence}")
+print("Functions analyzed:", result.functions_analyzed)
+```
+
+```
+Bugs found: 2
+  3:11 division_by_zero: Possible division by zero: y may be 0
+    severity=warning, confidence=0.95
+  6:11 index_out_of_bounds: Possible index out of bounds: i may be negative
+    severity=warning, confidence=0.95
+Functions analyzed: 2
+```
+
+### `infer_contracts(source)` — contract inference
+
+Infers liquid type contracts (preconditions and postconditions) for every
+function, returned as `Annotated[...]` signatures:
+
+```python
+from src.api import infer_contracts
+
+contracts = infer_contracts("""
+def safe_div(a: int, b: int) -> float:
+    if b == 0:
+        raise ValueError("cannot divide by zero")
+    return a / b
+
+def clamp(x: int, lo: int, hi: int) -> int:
+    if x < lo:
+        return lo
+    if x > hi:
+        return hi
+    return x
+""")
+for name, sig in contracts.items():
+    print(f"{name}: {sig}")
+```
+
+```
+safe_div: def safe_div(a: int, b: Annotated[int, 'b ≠ 0']) -> Annotated[Any, 'ν is not None']
+clamp: def clamp(x: int, lo: int, hi: int) -> Any
+```
+
+The `safe_div` contract shows that Z3 proved `b ≠ 0` is a required
+precondition — matching the explicit guard in the source.
+
+### `analyze_file(path)` — analyze a file on disk
+
+```python
+from src.api import analyze_file
+result = analyze_file("examples/sample_package/utils.py")
+print("Bugs:", result.bug_count, "| Functions:", result.functions_analyzed)
+```
+
+```
+Bugs: 0 | Functions: 4
+```
+
+Zero bugs because `utils.py` guards every error path (`if b == 0`, `if index < 0`, etc.).
+
+### `analyze_directory(path)` — recursive analysis
+
+```python
+from src.api import analyze_directory
+result = analyze_directory("examples/sample_package/")
+print("Bugs:", result.bug_count, "| Functions:", result.functions_analyzed,
+      "| Lines:", result.lines_analyzed)
+```
+
+```
+Bugs: 0 | Functions: 8 | Lines: 76
+```
+
+### Detecting null-dereference after a loop
+
+```python
+from src.api import analyze
+result = analyze("""
+def lookup(users, name):
+    user = None
+    for u in users:
+        if u.name == name:
+            user = u
+    return user.email
+""", filename="lookup.py")
+for b in result.bugs:
+    print(f"  {b.location.line}:{b.location.column} {b.category.value}: {b.message}")
+```
+
+```
+  7:11 null_dereference: Potential None attribute on 'user' without guard
+```
+
+### Detecting division by `len()`
+
+```python
+from src.api import analyze
+result = analyze("""
+def average(nums):
+    total = sum(nums)
+    return total / len(nums)
+""", filename="avg.py")
+for b in result.bugs:
+    print(f"  {b.location.line}:{b.location.column} {b.category.value}: {b.message}")
+```
+
+```
+  4:11 division_by_zero: Potential division by zero: len('nums') may be 0
+```
+
+### `quick_check(source)` — one-liner bug list
+
+Returns a simple list of bug strings for scripting:
+
+```python
+from src.api import quick_check
+
+warnings = quick_check("def f(x): return 1 / x")
+for w in warnings:
+    print(w)
+```
+
+```
+1:17 division_by_zero: Potential division by zero: 'x' not guarded
+```
+
+### Result to SARIF — programmatic export
+
+```python
+from src.api import analyze
+import json
+
+result = analyze("def f(x): return 1 / x", filename="example.py")
+sarif = result.to_sarif()
+print(json.dumps(sarif, indent=2))
+```
+
+Output is a valid SARIF 2.1.0 document with `tool.driver.rules` for all five
+bug categories and a `results` array with one `division_by_zero` finding at
+line 1, column 17.
+
+---
+
+## Result Data Classes
+
+```python
+class BugCategory(Enum):
+    NULL_DEREFERENCE = "null_dereference"
+    DIVISION_BY_ZERO = "division_by_zero"
+    INDEX_OUT_OF_BOUNDS = "index_out_of_bounds"
+    TYPE_ERROR = "type_error"
+    ATTRIBUTE_ERROR = "attribute_error"
+
+@dataclass
+class Bug:
+    category: BugCategory
+    message: str
+    location: SourceLocation   # file, line, column
+    severity: str              # "error" | "warning" | "info"
+    confidence: float          # 0.0–1.0
+    fix_suggestion: Optional[str] = None
+
+@dataclass
+class AnalysisResult:
+    bugs: List[Bug]
+    guards_harvested: int
+    functions_analyzed: int
+    lines_analyzed: int
+    duration_ms: float
+
+    def bug_count(self) -> int: ...
+    def errors(self) -> List[Bug]: ...
+    def to_sarif(self) -> dict: ...
+```
+
+---
+
+## Bug Classes
+
+| Bug Class | Severity | Description |
+|-----------|----------|-------------|
+| `null-dereference` | error | Access attribute/method on a possibly-`None` value |
+| `index-out-of-bounds` | error | List/array index may exceed valid range |
+| `division-by-zero` | error | Divisor may be zero |
+| `type-mismatch` | error | Operand types are incompatible (e.g. `str + int`) |
+| `attribute-error` | warning | Access to undefined attribute on an object |
+| `unreachable-code` | warning | Branch is statically unreachable |
+| `unused-refinement` | info | A guard narrows a type but the refinement is never used |
+| `shape-error` | error | Tensor dimension mismatch in nn layers |
+| `precondition-violation` | warning | Caller violates inferred precondition of callee |
+
+Severity levels: `error` > `warning` > `info` > `hint`.
+
+---
+
+## Architecture
+
+1. **AST Parse** → language-specific front end
+2. **Guard Extraction** → harvest predicates from `if`/`assert`/`match`
+3. **CEGAR Loop** → abstract → check (find counterexample) → refine (add predicates) → repeat
+4. **Liquid Type Inference** → Z3-backed predicate abstraction + constraint solving
+5. **Output** → bugs with fix suggestions + function contracts (pre/postconditions)
+
+For **nn.Module verification**, the pipeline adds multi-phase graph extraction,
+5-theory product domain propagation (Shape × Device × Phase × Stride × Perm),
+and optional IC3/PDR for parametric certificates.
+
+---
+
+## Configuration
+
+RefType searches for configuration in this order:
+
+1. `.reftype.toml` in the project root
+2. `[tool.reftype]` section in `pyproject.toml`
+3. `"reftype"` key in `package.json`
+
+Generate a starter config with:
+
+```bash
+python3 -m src.cli.main init --language python
+```
 
 **Example `.reftype.toml`:**
 
@@ -263,258 +605,50 @@ cache_dir = ".reftype-cache"
 
 ---
 
-## Python API Overview
+## CI / CD Integration
 
-All public functions are available from `src.api`. The nn.Module verifier lives in
-`src.model_checker`.
-
-### `analyze(source, filename)` — basic flow-sensitive analysis
-
-```python
-from src.api import analyze
-
-result = analyze(
-    source='def f(x): return 1 / x',
-    filename='example.py',
-)
-print(result.bugs)         # [Bug(class='division-by-zero', line=1, ...)]
-print(result.functions_analyzed)  # 1
+```yaml
+# .github/workflows/reftype.yml
+name: RefType Analysis
+on: [push, pull_request]
+jobs:
+  reftype:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -e .
+      - run: python3 -m src.cli.main ci-check . --sarif-output results.sarif --fail-on-new-bugs
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with: { sarif_file: results.sarif }
 ```
 
-### `liquid_analyze(source, filename)` — Z3-backed liquid type analysis
-
-```python
-from src.api import liquid_analyze
-
-result = liquid_analyze(
-    source='def get(xs, i): return xs[i]',
-    filename='index.py',
-)
-# More precise: uses predicate abstraction + Z3 to infer {i: int | 0 <= i < len(xs)}
-```
-
-### `analyze_shapes(source)` — tensor shape analysis
-
-```python
-from src.api import analyze_shapes
-
-result = analyze_shapes("import torch; x = torch.randn(4, 3); y = x @ torch.randn(3, 5)")
-print(result.shapes)  # inferred tensor shapes at each program point
-```
-
-### `verify_model(source, input_shapes)` — nn.Module verification
-
-```python
-from src.model_checker import verify_model
-
-result = verify_model(
-    source=open("resnet.py").read(),
-    input_shapes={"x": ("batch", 3, 224, 224)},
-)
-if result.safe:
-    print(result.certificate.pretty())     # Z3-backed safety certificate
-else:
-    print(result.counterexample.pretty())  # concrete failing dimensions
-```
-
-### `verify_module(module, input_shapes)` — live module verification via FX/Dynamo
-
-```python
-from src.model_checker import verify_module
-
-import torch.nn as nn
-model = nn.Sequential(nn.Linear(128, 64), nn.ReLU(), nn.Linear(64, 10))
-result = verify_module(model, input_shapes={"x": ("batch", 128)})
-print(result.safe)  # True
-```
-
-### Result Data Classes
-
-```python
-@dataclass
-class AnalysisResult:
-    bugs: List[Bug]
-    guards_harvested: int
-    functions_analyzed: int
-    lines_analyzed: int
-    duration_ms: float
-
-@dataclass
-class Bug:
-    bug_class: str        # e.g. "null-deref", "division-by-zero"
-    message: str
-    filename: str
-    line: int
-    column: int
-    severity: str         # "error", "warning", "info", "hint"
-    fix_suggestion: str
-
-@dataclass
-class FunctionContract:
-    name: str
-    preconditions: List[str]   # e.g. ["{x: int | x > 0}"]
-    postconditions: List[str]  # e.g. ["{return: int | return >= 0}"]
-    refinement_type: str       # full refinement type signature
-```
-
----
-
-## Architecture Overview
-
-```
- Source (.py / .ts)
-        │
-        ▼
- ┌─────────────────┐
- │   AST Parse      │   Language-specific front end
- └────────┬────────┘
-          ▼
- ┌─────────────────┐
- │ Guard Extraction │   Harvest path predicates from if/assert/match
- └────────┬────────┘
-          ▼
- ┌──────────────────────────────────────────────────┐
- │              CEGAR Loop                          │
- │  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
- │  │ Abstract  │→ │  Check   │→ │   Refine      │  │
- │  │ (initial  │  │ (find    │  │ (add new      │  │
- │  │  types)   │  │  cex)    │  │  predicates)  │  │
- │  └──────────┘  └──────────┘  └───────────────┘  │
- │       ↑                            │             │
- │       └────────────────────────────┘  (iterate)  │
- └─────────────────────┬────────────────────────────┘
-                       ▼
- ┌──────────────────────────────────────────────────┐
- │  Liquid Type Inference → Z3 Verification        │
- │  Predicate abstraction + SMT constraint solving  │
- └─────────────────────┬────────────────────────────┘
-                  ┌────┴────┐
-                  ▼         ▼
-           Bugs found    Contracts
-           (with fix     (pre/post
-            suggestions)  conditions)
-```
-
-For **nn.Module verification**, the pipeline additionally includes multi-phase graph
-extraction (`if self.training:` branches), 5-theory product domain propagation
-(T_shape × T_device × T_phase × T_stride × T_perm), and optional IC3/PDR for
-parametric certificates valid for all input sizes.
-
----
-
-## Bug Classes
-
-| Bug Class | Severity | Description | Fix Suggestion |
-|-----------|----------|-------------|----------------|
-| `null-deref` | error | Access attribute or call method on a possibly-`None` value | Add an `if x is not None` guard |
-| `index-out-of-bounds` | error | List/array index may exceed valid range | Clamp index or check `i < len(xs)` |
-| `division-by-zero` | error | Divisor may be zero | Add `if d != 0` guard before division |
-| `type-mismatch` | error | Operand types are incompatible (e.g. `str + int`) | Cast or convert to matching type |
-| `unreachable-code` | warning | Branch is statically unreachable given inferred refinements | Remove dead code or fix condition |
-| `unused-refinement` | info | A guard narrows a type but the refinement is never used | Remove unnecessary guard or use the value |
-| `shape-error` | error | Tensor dimension mismatch in matrix ops or nn layers | Fix layer dimensions or reshape input |
-| `attribute-error` | error | Access to undefined attribute on an object | Check attribute exists or fix name |
-| `precondition-violation` | warning | Caller does not satisfy inferred precondition of callee | Ensure arguments meet the function contract |
-
-Severity levels: `error` > `warning` > `info` > `hint`. Filter with `--min-severity` in
-config or by checking `bug.severity` in the API.
-
----
-
-## Examples
-
-### Analyze a single file
+Generate a baseline on `main`, then gate PRs on **new** bugs only:
 
 ```bash
-reftype analyze utils.py -v
-```
-
-```
-utils.py:12:4  null-deref  [error]
-  `user` may be None when accessed at `.name`.
-  Fix: add `if user is not None` before access.
-
-utils.py:31:17  division-by-zero  [warning]
-  `count` may be zero in expression `total / count`.
-  Fix: guard with `if count != 0`.
-
-Analyzed 5 functions, inferred 3 contracts — 0.4s
-```
-
-### Analyze a package with SARIF output
-
-```bash
-reftype analyze-package src/ \
-  --requirements requirements.txt \
-  --output-format sarif \
-  -o results.sarif
-
-# Upload to GitHub Code Scanning:
-# gh api repos/{owner}/{repo}/code-scanning/sarifs \
-#   -f "sarif=@results.sarif" -f "ref=refs/heads/main"
-```
-
-### Verify a PyTorch model
-
-```python
-from src.model_checker import verify_model
-
-source = """
-import torch, torch.nn as nn
-
-class MyModel(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.backbone = nn.Linear(512, 256)
-        self.eval_head = nn.Linear(128, 10)   # BUG: expects 128, gets 256
-
-    def forward(self, x):
-        h = self.backbone(x)
-        return self.eval_head(h)              # shape mismatch: 256 != 128
-"""
-
-result = verify_model(source, input_shapes={"x": ("batch", 512)})
-print(result.safe)    # False
-print(result.pretty())
-# ✗ Model is UNSAFE — eval_head expects in_features=128 but receives 256
-```
-
-### Use incremental caching
-
-```bash
-# First run: full analysis, populates cache
-reftype analyze src/ --incremental
-# Found 3 bugs in 42 files — 4.2s
-
-# Second run: only re-analyzes changed files
-reftype analyze src/ --incremental
-# Found 1 bug in 2 files (40 cached) — 0.3s
+python3 -m src.cli.main analyze . -f json -o baseline.json       # on main
+python3 -m src.cli.main ci-check . --baseline baseline.json \     # on PR
+  --fail-on-new-bugs --sarif-output results.sarif
 ```
 
 ---
 
-## FAQ / Troubleshooting
+## FAQ
 
-**Q: Z3 is not found or `z3-solver` fails to install.**
-A: Ensure Python 3.9+ and pip ≥ 21.0. On Apple Silicon, try `pip install --no-cache-dir z3-solver>=4.12`.
+**Q: Z3 install fails.**
+A: Ensure Python 3.9+ and pip ≥ 21.0. On Apple Silicon:
+`pip install --no-cache-dir z3-solver>=4.12`.
 
-**Q: The tool reports `shape-error` but my model runs fine at runtime.**
-A: RefType is conservative — complex `view()`/`reshape()` with 4+ symbolic dims can cause false positives. File an issue with a minimal reproducer.
+**Q: False positive `shape-error`.**
+A: RefType is conservative with complex `view()`/`reshape()`. File an issue.
 
-**Q: How do I suppress a specific warning?**
-A: Set `min_severity = "error"` in `.reftype.toml`, or add `# reftype: ignore` on the line.
+**Q: How to suppress warnings?**
+A: Set `min_severity = "error"` in `.reftype.toml`, or `# reftype: ignore` on the line.
 
-**Q: Analysis is slow on a large codebase.**
-A: Use `--incremental` for caching, `-w 0` for parallel analysis, `--timeout 60` to cap per-file time, and `--exclude` test directories.
-
-**Q: Can I use RefType in CI?**
-A: Yes. Use `reftype analyze-package . --output-format sarif -o results.sarif` and upload to GitHub Code Scanning. Add `--fail-on-new-bugs` with `--baseline` to fail only on regressions.
-
-**Q: What PyTorch operators does TensorGuard support?**
-A: 331 operators including `Linear`, `Conv1d/2d/3d`, `BatchNorm`, `MultiheadAttention`, `LSTM`, `GRU`, `Transformer`, `einops`, and all standard activations/pooling. Unsupported operators produce `UNKNOWN`. See `src/typing_rules.py`.
-
-**Q: TypeScript support — how complete is it?**
-A: Covers core bug classes (null-deref, index-out-of-bounds, division-by-zero, type-mismatch, unreachable-code). Auto-detected from `.ts`/`.tsx` extensions; use `--format dts` to export `.d.ts` stubs.
+**Q: Slow on large codebases?**
+A: Use `--incremental`, `-w 0` (auto-parallel), `--timeout 60`, `--exclude tests/`.
 
 ---
 
