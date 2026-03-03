@@ -296,7 +296,7 @@ class Diagnostic:
     range: Dict[str, Dict[str, int]]
     message: str
     severity: DiagnosticSeverity
-    source: str = "refinement-types"
+    source: str = "pytorch-code-checker"
     code: str = ""
     tags: List[int] = field(default_factory=list)
     related_information: List[DiagnosticRelatedInfo] = field(default_factory=list)
@@ -323,7 +323,7 @@ class Diagnostic:
 class LSPDiagnosticGenerator:
     """Generates LSP-compatible diagnostics from an AnalysisReport."""
 
-    def __init__(self, source_name: str = "refinement-types") -> None:
+    def __init__(self, source_name: str = "pytorch-code-checker") -> None:
         self._source = source_name
 
     def _tags_for(self, finding: Finding) -> List[int]:
@@ -424,7 +424,7 @@ class SARIFGenerator:
                     "defaultConfiguration": {
                         "level": self._SARIF_LEVEL[f.category.default_severity],
                     },
-                    "helpUri": f"https://refinement-types.dev/rules/{f.category.value}",
+                    "helpUri": f"https://pytorch-code-checker.dev/rules/{f.category.value}",
                 }
         return list(seen.values())
 
@@ -521,7 +521,7 @@ class SARIFGenerator:
                     "driver": {
                         "name": self._tool_name,
                         "version": report.tool_version,
-                        "informationUri": "https://refinement-types.dev",
+                        "informationUri": "https://pytorch-code-checker.dev",
                         "rules": rules,
                     }
                 },

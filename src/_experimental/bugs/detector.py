@@ -1090,7 +1090,7 @@ _SARIF_SCHEMA = (
 _SARIF_VERSION = "2.1.0"
 _TOOL_NAME = "refinement-type-bug-detector"
 _TOOL_VERSION = "0.1.0"
-_TOOL_INFO_URI = "https://github.com/example/refinement-types"
+_TOOL_INFO_URI = "https://github.com/example/pytorch-code-checker"
 
 _BUG_RULE_INDEX: Dict[BugClass, int] = {
     BugClass.ArrayOutOfBounds: 0,

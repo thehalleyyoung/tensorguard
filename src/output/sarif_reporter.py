@@ -39,7 +39,7 @@ SARIF_VERSION = "2.1.0"
 TOOL_NAME = "refinement-type-analyzer"
 TOOL_VERSION = "0.5.0"
 TOOL_SEMANTIC_VERSION = "0.5.0"
-TOOL_INFO_URI = "https://github.com/refinement-types/analyzer"
+TOOL_INFO_URI = "https://github.com/pytorch-code-checker/analyzer"
 TOOL_ORG = "Refinement Types Project"
 
 MAX_GITHUB_ANNOTATIONS_PER_CALL = 50
@@ -816,7 +816,7 @@ def _create_builtin_rules() -> List[SarifRule]:
     rules: List[SarifRule] = []
     for rule_id, name, short_desc, full_desc, level, cwe, rank, sec_sev in rule_defs:
         props = SarifPropertyBag()
-        tags: List[str] = ["refinement-types"]
+        tags: List[str] = ["pytorch-code-checker"]
         if cwe:
             tags.append("security")
             tags.append(f"external/cwe/{cwe.lower()}")
