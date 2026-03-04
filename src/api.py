@@ -79,6 +79,11 @@ class AnalysisResult:
     duration_ms: float = 0.0
 
     @property
+    def status(self) -> str:
+        """Return ``"SAFE"`` when no bugs were found, ``"UNSAFE"`` otherwise."""
+        return "SAFE" if not self.bugs else "UNSAFE"
+
+    @property
     def bug_count(self) -> int:
         return len(self.bugs)
 
@@ -701,6 +706,44 @@ def verify_architecture(
             pass
 
     return result
+
+
+def verify_module(
+    path: str,
+    input_shapes: Optional[Dict[str, tuple]] = None,
+    check_devices: bool = True,
+    check_phases: bool = True,
+    max_cegar_iterations: int = 10,
+    high_confidence_only: bool = False,
+) -> AnalysisResult:
+    """Verify an ``nn.Module`` from a file path.
+
+    Convenience wrapper around :func:`verify_architecture` that reads a
+    Python source file and passes its contents for verification.
+
+    Args:
+        path: Path to a ``.py`` file containing an ``nn.Module`` subclass.
+        input_shapes: Map from input names to shape tuples (symbolic dims
+            may be strings, e.g. ``{"x": ("batch", 3, 224, 224)}``).
+        check_devices: Whether to verify device consistency.
+        check_phases: Whether to check train/eval phase dependencies.
+        max_cegar_iterations: Max CEGAR refinement iterations.
+        high_confidence_only: Only report Z3-proven bugs.
+
+    Returns:
+        :class:`AnalysisResult` with ``status``, ``bugs``, and
+        ``duration_ms`` attributes.
+    """
+    source = Path(path).read_text()
+    return verify_architecture(
+        source,
+        input_shapes=input_shapes,
+        check_devices=check_devices,
+        check_phases=check_phases,
+        max_cegar_iterations=max_cegar_iterations,
+        filename=path,
+        high_confidence_only=high_confidence_only,
+    )
 
 
 def overwarn_analyze(source: str, filename: str = "<string>") -> AnalysisResult:

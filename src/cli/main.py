@@ -689,7 +689,7 @@ class ErrorHandler:
             ts = time.strftime("%Y%m%d-%H%M%S")
             path = d / f"crash-{ts}-{uuid.uuid4().hex[:8]}.txt"
             with open(path, "w") as fh:
-                fh.write(f"reftype {_VERSION} crash report\n")
+                fh.write(f"tensorguard {_VERSION} crash report\n")
                 fh.write(f"Time: {time.strftime('%Y-%m-%d %H:%M:%S %Z')}\n")
                 fh.write(f"Python: {sys.version}\n")
                 fh.write(f"Platform: {platform.platform()}\n")
@@ -2515,7 +2515,7 @@ class VersionCommand:
         if getattr(args, "as_json", False):
             sys.stdout.write(json.dumps(info, indent=2) + "\n")
         else:
-            sys.stdout.write(f"reftype {_VERSION}\n")
+            sys.stdout.write(f"tensorguard {_VERSION}\n")
             sys.stdout.write(f"Python {sys.version}\n")
             sys.stdout.write(f"Platform {platform.platform()}\n")
         return 0
@@ -3225,7 +3225,7 @@ class ReftypeCliApp:
             """),
         )
         parser.add_argument(
-            "--version", action="version", version=f"reftype {_VERSION}"
+            "--version", action="version", version=f"tensorguard {_VERSION}"
         )
 
         subparsers = parser.add_subparsers(dest="command", help="Available commands")
