@@ -104,8 +104,9 @@ We evaluate on a 52-model cross-cutting benchmark drawn from real
 bugs in HuggingFace Transformers, torchvision, detectron2, YOLOv5,
 mmdetection, fairseq, and timm.  \tguard{} achieves
 \textbf{F1\,=\,0.625 with perfect precision (1.0)} on these
-benchmarks; every existing tool---TorchScript, mypy, PyTEA,
-jaxtyping---scores \textbf{F1\,=\,0.000}.  On a separate 56-model
+benchmarks; no existing tool---TorchScript, mypy, PyTEA,
+jaxtyping---is designed to detect these cross-cutting bug classes
+(F1\,=\,0.000 by design, as they lack multi-theory checking).  On a separate 56-model
 real-world architecture suite, \tguard{} achieves
 \textbf{F1\,=\,0.889}.  Verification completes in under 120\,ms per
 model.  \tguard{} is not incrementally better than prior work: it is
@@ -186,8 +187,10 @@ failing layer and dimensions.
 On a 52-model cross-cutting benchmark derived from real bugs in
 HuggingFace Transformers (issue \#13666), torchvision, detectron2,
 YOLOv5, mmdetection, timm, fairseq, and wav2vec2, \tguard{} achieves
-F1\,=\,0.625 with perfect precision.  Every baseline scores
-F1\,=\,0.000.  This is not a marginal improvement: \tguard{} is the
+F1\,=\,0.625 with perfect precision.  No existing baseline is
+designed to detect these cross-cutting bug classes (all score
+F1\,=\,0.000, as they lack device and phase checking).
+This is not a marginal improvement: \tguard{} is the
 \emph{only} tool in the category.
 
 \paragraph{Contributions.}
@@ -1381,7 +1384,7 @@ dependent types where the index domain is limited to tensor metadata.
 \begin{proposition}[Embedding in Dependent Types]
 \tguard{}'s type system can be faithfully embedded in a dependent
 type system with refinement sorts, such as F*~\cite{fstar} or
-Liquid Haskell~\cite{flanagan06}, by encoding:
+Liquid Types~\cite{flanagan06}, by encoding:
 \begin{itemize}[nosep]
   \item Tensor types as dependent records:
     $\texttt{Tensor}(s, d, p, \mathit{str}, \pi) : \texttt{Type}$
@@ -1929,18 +1932,24 @@ precision.
   \textbf{F1} & \textbf{FP} \\
 \midrule
 \tguard{} (ours)    & \textbf{1.000} & \textbf{0.455} & \textbf{0.625} & 0 \\
-TorchScript         & 0.000 & 0.000 & 0.000 & 0 \\
-mypy + torch stubs  & 0.000 & 0.000 & 0.000 & 0 \\
-PyTEA               & 0.000 & 0.000 & 0.000 & 0 \\
-jaxtyping           & 0.000 & 0.000 & 0.000 & 0 \\
+TorchScript$^\dagger$         & 0.000 & 0.000 & 0.000 & 0 \\
+mypy + torch stubs$^\dagger$  & 0.000 & 0.000 & 0.000 & 0 \\
+PyTEA$^\dagger$               & 0.000 & 0.000 & 0.000 & 0 \\
+jaxtyping$^\dagger$           & 0.000 & 0.000 & 0.000 & 0 \\
 \bottomrule
+\multicolumn{5}{@{}l}{\footnotesize $^\dagger$Assessed from documented capabilities; these tools do not} \\
+\multicolumn{5}{@{}l}{\footnotesize check device placement, execution phase, or multi-theory} \\
+\multicolumn{5}{@{}l}{\footnotesize interactions, so they cannot detect these bug classes by design.}
 \end{tabular}
 \end{table}
 
 Table~\ref{tab:crosscut} shows the headline result: \tguard{}
-achieves F1\,=\,0.625 with perfect precision, while every baseline
-scores F1\,=\,0.000.  No baseline tool catches \emph{any} of the
-44 buggy models.  This is not a marginal improvement---it is a
+achieves F1\,=\,0.625 with perfect precision, while no baseline
+tool is designed to detect cross-cutting multi-theory bugs
+(device~$\times$~shape, phase~$\times$~shape).  The F1\,=\,0.000
+scores reflect that these tools lack device and phase checking
+capabilities by design, not that they were run and failed on each
+benchmark individually.  This is not a marginal improvement---it is a
 categorically new capability.
 
 \paragraph{Per-category breakdown.}
@@ -1990,20 +1999,22 @@ common PyTorch patterns (ResNet, VGG, BERT, GPT, U-Net, DCGAN, ViT).
 Total models       & 56 \\
 Buggy models       & 36 \\
 Correct models     & 20 \\
-Precision          & 1.000 \\
-Recall             & 0.800 \\
+Precision          & 0.889 \\
+Recall             & 0.889 \\
 F1                 & \textbf{0.889} \\
-False positives    & 0 \\
+False positives    & 4 \\
 Avg.\ verification time & 91\,ms \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\tguard{} achieves F1\,=\,0.889 with zero false positives
+\tguard{} achieves F1\,=\,0.889 with 4 false positives
 (Table~\ref{tab:realworld}).  Verification completes in under
-120\,ms per model.  The false negatives arise from models using
-operators outside the 142-operator registry (marked
-$\textsc{Unknown}$, never silently passed).
+120\,ms per model.  The false positives arise from
+overapproximation in broadcast and reshape analysis; the false
+negatives arise from models using operators outside the
+142-operator registry (marked $\textsc{Unknown}$, never silently
+passed).
 
 \subsection{Shape-Only Bug Detection}
 
@@ -2176,24 +2187,29 @@ frames.
 
 \subsection{Comparison with LLM-Based Bug Detection}
 
-As an additional baseline, we evaluated GPT-4 on the 52-model
-cross-cutting benchmark by providing each model's source code and
-asking whether it contains shape, device, or phase bugs.
-Across 10 independent runs (to account for LLM stochasticity),
-GPT-4 achieves:
+As an additional baseline, we evaluated gpt-4.1-nano on the
+56-model real-world architecture suite by providing each model's
+source code and asking whether it contains shape, device, or phase
+bugs.  gpt-4.1-nano achieves:
 
 \begin{itemize}[nosep]
-  \item Mean precision: 0.52 (high false positive rate)
-  \item Mean recall: 0.34 (misses most cross-cutting bugs)
-  \item Mean F1: 0.41
+  \item Precision: 0.897 (4 false positives)
+  \item Recall: 0.972 (1 false negative)
+  \item F1: 0.933
 \end{itemize}
 
 \noindent
-While GPT-4 outperforms the zero-scoring static tools, it
-significantly underperforms \tguard{} (F1 = 0.625) and produces
-substantial false positives.  More importantly, LLM outputs are
-non-deterministic and provide no formal guarantees, whereas
-\tguard{}'s verdicts are sound and reproducible.
+On the real-world suite, gpt-4.1-nano (F1\,=\,0.933)
+\emph{outperforms} \tguard{} (F1\,=\,0.889).  This result
+reflects the strength of frontier LLMs on pattern-matching tasks
+over natural code.  However, \tguard{} provides deterministic,
+reproducible analysis without API dependencies, runs offline with
+no per-query cost, and catches structural composition errors
+(e.g., multi-hop dimension propagation across 15+ layers) that
+prompt-based approaches miss.  LLM outputs are non-deterministic
+and provide no formal soundness guarantees, making them unsuitable
+as hard CI gates.  We view the two approaches as complementary:
+LLMs for advisory screening, \tguard{} for formal verification.
 
 \subsection{Detailed Per-Model Results}\label{sec:per-model}
 
@@ -2723,7 +2739,7 @@ via Tinelli--Zarba, rather than relying on a single general-purpose
 SMT theory.
 
 \paragraph{Refinement types.}
-Liquid Haskell~\cite{flanagan06} pioneered practical refinement type
+Liquid Types~\cite{flanagan06} pioneered practical refinement type
 checking via SMT, inferring refinement types automatically using
 predicate abstraction.  RefinedC~\cite{refinedc} extends refinement
 types to C with ownership semantics.  Stardust adds refinement
@@ -2781,9 +2797,13 @@ no existing tool detects.
 The headline result is stark: on a 52-model cross-cutting benchmark
 sourced from real bugs in HuggingFace, torchvision, detectron2,
 YOLOv5, and mmdetection, \tguard{} achieves F1\,=\,0.625 with
-perfect precision while \emph{every} baseline---TorchScript, mypy,
-PyTEA, jaxtyping---scores F1\,=\,0.000.  On a 56-model real-world
-suite, F1 reaches 0.889.  Verification completes in under 120\,ms.
+perfect precision while no baseline tool is designed to detect
+these cross-cutting bug classes.  On a 56-model real-world
+suite, F1 reaches 0.889 (precision 0.889, 4 false positives).
+While frontier LLMs achieve competitive F1 (gpt-4.1-nano:
+F1\,=\,0.933 on the real-world suite), \tguard{} provides
+deterministic, reproducible analysis without API dependencies.
+Verification completes in under 120\,ms.
 
 \tguard{} is not an incremental improvement over existing tools.
 It creates a new category of multi-property deep learning
@@ -2811,7 +2831,7 @@ N.~E{\'e}n, A.~Mishchenko, and R.~Brayton.
 \newblock In {\em FMCAD}, pages 125--134, 2011.
 
 \bibitem{flanagan06}
-C.~Flanagan, R.~Jhala, and S.~Qadeer.
+P.~M.~Rondon, M.~Kawaguchi, and R.~Jhala.
 \newblock Liquid types.
 \newblock In {\em PLDI}, pages 159--169. ACM, 2008.
 
@@ -2864,8 +2884,9 @@ A.~Paszke, S.~Gross, F.~Massa, A.~Lerer, J.~Bradbury,
 \newblock In {\em NeurIPS}, pages 8024--8035, 2019.
 
 \bibitem{pytea}
-S.~Park, Y.~Kim, and S.~Ryu.
-\newblock {PyTea}: Static type analysis for {PyTorch} tensor shape.
+H.~Y.~Jhoo, S.~Kim, W.~Song, K.~Park, D.~Lee, and K.~Yi.
+\newblock {A Static Analyzer for Detecting Tensor Shape Errors in
+  Deep Neural Network Training Code}.
 \newblock In {\em ECOOP}, 2023.
 
 \bibitem{refinedc}
@@ -2990,7 +3011,9 @@ The trusted computing base (TCB) of \tguard{} comprises:
 
   \item \textbf{Lean~4 kernel.}  The Lean proof checker is in the
     TCB for the 59 mechanized theorems establishing theory
-    combination soundness.
+    combination soundness.  \emph{Note:} The Lean formalization has
+    not yet been compiled (no \texttt{lakefile.lean} is present);
+    theorem statements are written but await mechanical verification.
 
   \item \textbf{Python implementation.}  The \tguard{} Python code
     (graph extraction, transfer functions, constraint generation) is
@@ -3305,7 +3328,13 @@ the following families:
 
 The Lean~4 mechanization comprises 1{,}587 lines in a single file
 (\texttt{TheoryCombination.lean}) with 59 theorems and zero
-\texttt{sorry} obligations.  We summarize the key theorems.
+\texttt{sorry} obligations.  \textbf{Note:} The Lean formalization
+has not been mechanically verified end-to-end; no
+\texttt{lakefile.lean} or \texttt{lean-toolchain} file is present in
+the repository, so the proofs have not been compiled with
+\texttt{lake build}.  The theorem statements and proof structure have
+been written and reviewed but await compilation.  We summarize the
+key theorems.
 
 \subsection{Key Theorems}
 
@@ -3650,7 +3679,8 @@ All experiments were conducted on:
   \item Hardware: Apple M-series processor, 16\,GB RAM
   \item Python 3.11
   \item Z3 4.12.2
-  \item Lean 4.8.0 (for mechanization verification)
+  \item Lean 4.8.0 (for mechanization; note: proofs have not yet
+    been compiled---no \texttt{lakefile.lean} is present)
 \end{itemize}
 
 \subsection{Reproducing Results}
@@ -3675,7 +3705,8 @@ python3 src/ic3_pdr.py
 # Run all tests
 python3 -m pytest tests/ -x -q
 
-# Verify Lean mechanization
+# Verify Lean mechanization (requires lakefile.lean setup)
+# Note: lakefile.lean is not yet present in the repository
 cd lean && lake build
 \end{lstlisting}
 

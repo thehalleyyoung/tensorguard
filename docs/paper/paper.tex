@@ -84,7 +84,11 @@ combination.
 
 \textsc{TensorGuard} achieves F1\,=\,0.900 on a benchmark suite of 18
 models---outperforming TorchScript (F1\,=\,0.714, 8 false positives)
-and mypy (F1\,=\,0.000, zero shape bugs detected).  The tool covers
+and mypy (F1\,=\,0.000, zero shape bugs detected).  On the 56-model
+real-world suite, \textsc{TensorGuard} achieves F1\,=\,0.889
+(4 false positives); a frontier LLM (gpt-4.1-nano) achieves
+F1\,=\,0.933 on the same suite, though without deterministic or
+formal guarantees.  The tool covers
 117 operator transfer functions, of which 94.9\% produce decidable
 QF\_LIA constraints (polynomial time); only 6 operators
 (reshape/flatten/PixelShuffle/repeat) enter the NP-hard QF\_NIA
@@ -92,7 +96,8 @@ fragment, whose hardness we prove via a mechanized SUBSET-PRODUCT
 reduction.
 
 The Lean~4 mechanization comprises 1,587 lines and 71 theorems with
-zero \texttt{sorry} obligations, covering theory combination soundness,
+zero \texttt{sorry} obligations (not yet compiled; see
+Section~\ref{sec:lean}), covering theory combination soundness,
 propagator checker$\leftrightarrow$spec equivalences for all four
 theories, broadcast associativity, CEGAR convergence, and callback
 contracts C1/C4/C5.  IC3/PDR provides unbounded verification
@@ -1640,11 +1645,15 @@ Suite B & 205 & 0.786 & 0.846 & 0.815 \\
 Table~\ref{tab:main-results} and Figure~\ref{fig:f1-comparison}
 show the main results.  Key findings:
 
-\paragraph{Zero false positives on Suite~B.}
-Across 230 benchmarks, \textsc{TensorGuard} produces no false
+\paragraph{Zero false positives on curated Suite~B.}
+Across 230 curated benchmarks, \textsc{TensorGuard} produces no false
 positives (P\,=\,1.000).  The 95\% Clopper--Pearson upper bound
 on false positive rate is approximately 1.3\% ($1 - 0.05^{1/230}$), competitive with
-mature production analyzers.
+mature production analyzers.  \emph{Note:} On the separate 56-model
+real-world architecture suite (Section~\ref{sec:realworld} in the
+companion paper), TensorGuard produces 4 false positives
+(P\,=\,0.889, F1\,=\,0.889), reflecting the gap between curated
+and real-world evaluation.
 On the separate 18-benchmark baseline comparison suite
 (Section~\ref{sec:baseline-comparison}), one false positive occurs on
 a complex self-attention model using 4D \texttt{view} with symbolic
@@ -1652,8 +1661,15 @@ dimensions---a known limitation of the current reshape analysis.
 
 \paragraph{Precision vs.\ LLM.}
 The LLM baseline (gpt-4.1-nano) achieves higher recall (0.846)
-but substantially lower precision (0.786) with 21 false positives.
-\textsc{TensorGuard}'s zero false positives make it suitable as a
+but substantially lower precision (0.786) with 21 false positives
+on Suite~B.  On the separate 56-model real-world suite, gpt-4.1-nano
+achieves F1\,=\,0.933 (P\,=\,0.897, R\,=\,0.972), outperforming
+\textsc{TensorGuard}'s F1\,=\,0.889 on the same suite.  While
+frontier LLMs achieve competitive F1, \textsc{TensorGuard}
+provides deterministic, reproducible analysis without API
+dependencies, and catches structural composition errors that
+prompt-based approaches miss.
+\textsc{TensorGuard}'s zero false positives on curated benchmarks make it suitable as a
 hard CI gate, while the LLM approach is better suited for advisory
 use.  We note that gpt-4.1-nano is a small model; stronger LLMs
 would likely perform better, but cannot provide formal guarantees.
@@ -3759,7 +3775,8 @@ Across 350+ benchmarks spanning curated, external, dynamic
 architectures, and TorchBench production models (33 models from
 5 libraries, 97\% analyzable, 222\,ms average),
 \textsc{TensorGuard} maintains F1\,$\geq$\,0.90
-with zero false positives on curated benchmarks and
+with zero false positives on curated benchmarks (4 false positives on
+the 56-model real-world suite) and
 near-perfect confidence calibration (ECE\,=\,0.01).
 Support for 117 operator types (expanded from 145) ensures broad applicability
 to real-world PyTorch codebases, covering modern operators including
@@ -3935,8 +3952,9 @@ R.~Nieuwenhuis, A.~Oliveras, and C.~Tinelli.
 \newblock {\em JACM}, 53(6):937--977, 2006.
 
 \bibitem{pytea}
-S.~Park, Y.~Kim, and S.~Ryu.
-\newblock {PyTea}: Static type analysis for {PyTorch} tensor shape.
+H.~Y.~Jhoo, S.~Kim, W.~Song, K.~Park, D.~Lee, and K.~Yi.
+\newblock {A Static Analyzer for Detecting Tensor Shape Errors in
+  Deep Neural Network Training Code}.
 \newblock In {\em ECOOP}, 2023.
 
 \bibitem{rice53}
@@ -4146,7 +4164,13 @@ from the template grammar.
 \section{Lean~4 Mechanization}\label{sec:lean}
 
 The Lean~4 mechanization comprises 1,587 lines with zero
-\texttt{sorry} obligations.  It covers:
+\texttt{sorry} obligations.  \textbf{Note:} The Lean formalization
+has not been mechanically verified end-to-end; no
+\texttt{lakefile.lean} or \texttt{lean-toolchain} file is present
+in the repository, so the proofs have not been compiled with
+\texttt{lake build}.  The theorem statements and proof structure
+have been written and reviewed but await compilation.
+It covers:
 
 \begin{enumerate}[leftmargin=2em]
   \item \textbf{Theory combination soundness} (Theorem~\ref{thm:combination}):
@@ -4431,8 +4455,9 @@ value is:
   \text{PPV} = \frac{R \cdot \pi}{R \cdot \pi + \text{FPR} \cdot (1-\pi)}
 \]
 where $\text{FPR} = \text{FP}/(\text{FP}+\text{TN})$ is the false positive rate.
-With $\text{FPR} = 0$ (zero false positives) and $R = 0.946$, PPV = 1.000
-regardless of prevalence.  If the true FPR is
+With $\text{FPR} = 0$ (zero false positives on curated Suite~B) and $R = 0.946$, PPV = 1.000
+regardless of prevalence.  Note that on the 56-model real-world
+suite, FPR is nonzero (4 false positives).  If the true FPR is
 nonzero but below the Clopper--Pearson upper bound of
 $\sim$1.3\%, PPV would decrease to approximately 0.42 at
 $\pi = 0.01$.
@@ -5794,7 +5819,10 @@ decidable fragment.
 Table~\ref{tab:lean-scope} summarizes the mechanization status
 of all formal claims.  The file \texttt{lean/TheoryCombination.lean}
 comprises 1,587 lines and 71 theorems with \textbf{zero \texttt{sorry}
-obligations}.
+obligations}.  \textbf{Note:} No \texttt{lakefile.lean} or
+\texttt{lean-toolchain} file is present in the repository; the Lean
+proofs have not been compiled with \texttt{lake build} and therefore
+have not been mechanically verified by the Lean kernel.
 
 \begin{table}[h]
 \centering

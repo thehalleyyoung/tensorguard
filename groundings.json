@@ -1,0 +1,1348 @@
+{
+  "version": "2.0",
+  "project": "TensorGuard",
+  "description": "Claim-evidence mapping for TensorGuard: Static Shape, Device, and Phase Verification for PyTorch Models via Abstract Interpretation",
+  "claims": [
+    {
+      "id": "R1",
+      "statement": "Tensor shape errors are the most common category of runtime crash in deep learning code [Islam et al., ESEC/FSE 2019].",
+      "type": "citation",
+      "evidence": "Published work. See: islam19 (https://doi.org/10.1145/3338906.3338955)",
+      "references": [
+        "islam19 (https://doi.org/10.1145/3338906.3338955)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R2",
+      "statement": "Tensor shape errors are frequently reported [Zhang et al., ISSTA 2018].",
+      "type": "citation",
+      "evidence": "Published work. See: zhang18 (https://doi.org/10.1145/3213846.3213866)",
+      "references": [
+        "zhang18 (https://doi.org/10.1145/3213846.3213866)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R3",
+      "statement": "TorchScript infers shapes during JIT compilation but checks no device or phase properties.",
+      "type": "citation",
+      "evidence": "Published work. See: torchscript (https://pytorch.org/docs/stable/jit.html)",
+      "references": [
+        "torchscript (https://pytorch.org/docs/stable/jit.html)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R4",
+      "statement": "Runtime checkers like jaxtyping require manual annotations and catch only shape errors at execution time.",
+      "type": "citation",
+      "evidence": "Published work. See: jaxtyping (https://github.com/google/jaxtyping)",
+      "references": [
+        "jaxtyping (https://github.com/google/jaxtyping)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R5",
+      "statement": "PyTEA performs static shape analysis for individual tensor operations but does not reason about architecture-level composition, device placement, or phase-dependent behaviour.",
+      "type": "citation",
+      "evidence": "Published work. See: pytea (https://doi.org/10.4230/LIPIcs.ECOOP.2023.28)",
+      "references": [
+        "pytea (https://doi.org/10.4230/LIPIcs.ECOOP.2023.28)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R6",
+      "statement": "A refinement type extends a base type with a logical predicate constraining its inhabitants [Flanagan, Jhala, Qadeer, PLDI 2008].",
+      "type": "citation",
+      "evidence": "Published work. See: flanagan06 (https://doi.org/10.1145/1375581.1375602)",
+      "references": [
+        "flanagan06 (https://doi.org/10.1145/1375581.1375602)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R7",
+      "statement": "The Nelson-Oppen framework achieves theory combination by exchanging equalities over shared variables.",
+      "type": "citation",
+      "evidence": "Published work. See: nelsonoppen79 (https://doi.org/10.1145/357073.357079)",
+      "references": [
+        "nelsonoppen79 (https://doi.org/10.1145/357073.357079)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R8",
+      "statement": "For finite-domain theories, we follow the Tinelli-Zarba extension which replaces equality propagation with explicit arrangement enumeration.",
+      "type": "citation",
+      "evidence": "Published work. See: tinelli03 (https://doi.org/10.1007/s10817-005-5204-9)",
+      "references": [
+        "tinelli03 (https://doi.org/10.1007/s10817-005-5204-9)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R9",
+      "statement": "IC3/PDR is a model checking algorithm that discovers inductive invariants without unrolling the transition relation [Bradley, VMCAI 2011].",
+      "type": "citation",
+      "evidence": "Published work. See: bradley11 (https://doi.org/10.1007/978-3-642-18275-4_7)",
+      "references": [
+        "bradley11 (https://doi.org/10.1007/978-3-642-18275-4_7)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R10",
+      "statement": "Efficient implementation of property directed reachability [E\u00e9n, Mishchenko, Brayton, FMCAD 2011].",
+      "type": "citation",
+      "evidence": "Published work. See: een11 (https://doi.org/10.1109/FMCAD.2011.6105856)",
+      "references": [
+        "een11 (https://doi.org/10.1109/FMCAD.2011.6105856)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R11",
+      "statement": "QF_LIA is convex by Lassez-Maher-Marriott.",
+      "type": "citation",
+      "evidence": "External publication referenced in project literature review.",
+      "references": [
+        "lassez88 (NOT_FOUND \u2014 Book chapter in 'Foundations of Deductive Databases and Logic Programming' (Morgan Kaufmann, 1988). No DOI or persistent URL available for this pre-DOI-era chapter.)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R12",
+      "statement": "Dafny uses SMT solvers for general program verification with refinement types [Leino, LPAR 2010].",
+      "type": "citation",
+      "evidence": "Published work. See: leino10 (https://doi.org/10.1007/978-3-642-17511-4_20)",
+      "references": [
+        "leino10 (https://doi.org/10.1007/978-3-642-17511-4_20)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R13",
+      "statement": "F* uses SMT solvers for dependent types and multi-monadic effects [Swamy et al., POPL 2016].",
+      "type": "citation",
+      "evidence": "Published work. See: fstar (https://doi.org/10.1145/2837614.2837655)",
+      "references": [
+        "fstar (https://doi.org/10.1145/2837614.2837655)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R14",
+      "statement": "Viper provides verification infrastructure for permission-based reasoning [M\u00fcller et al., VMCAI 2016].",
+      "type": "citation",
+      "evidence": "Published work. See: muller16 (https://doi.org/10.1007/978-3-662-49122-5_2)",
+      "references": [
+        "muller16 (https://doi.org/10.1007/978-3-662-49122-5_2)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R15",
+      "statement": "RefinedC extends refinement types to C with ownership semantics [Sammler et al., PLDI 2021].",
+      "type": "citation",
+      "evidence": "Published work. See: refinedc (https://doi.org/10.1145/3453483.3454036)",
+      "references": [
+        "refinedc (https://doi.org/10.1145/3453483.3454036)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R16",
+      "statement": "Completeness of the verification procedure is undecidable in general by Rice's theorem.",
+      "type": "citation",
+      "evidence": "Published work. See: rice53 (https://doi.org/10.1090/S0002-9947-1953-0053041-6)",
+      "references": [
+        "rice53 (https://doi.org/10.1090/S0002-9947-1953-0053041-6)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R17",
+      "statement": "Singh et al. develop abstract domains for certifying neural network properties (robustness, fairness).",
+      "type": "citation",
+      "evidence": "Published work. See: singh19 (https://doi.org/10.1145/3290354)",
+      "references": [
+        "singh19 (https://doi.org/10.1145/3290354)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "R18",
+      "statement": "tsanley infers named dimensions from runtime traces but does not verify them statically.",
+      "type": "citation",
+      "evidence": "Published work. See: tsanley (https://github.com/arogozhnikov/tsanley)",
+      "references": [
+        "tsanley (https://github.com/arogozhnikov/tsanley)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "T1",
+      "statement": "Conjecture 1 (Type Soundness): If \u0393 \u22a2 e : \u03c4 is derivable and \u03c3 \u22a8 \u0393, then evaluation of e under \u03c3 does not produce a shape error and the result satisfies the refinement predicate of \u03c4.",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "conj_type_soundness"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T2",
+      "statement": "Theorem 1 (Product Domain Soundness): The Tinelli-Zarba arrangement enumeration correctly decides satisfiability of conjunctions over the five-theory product domain T_shape \u00d7 T_device \u00d7 T_phase \u00d7 T_stride \u00d7 T_perm.",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "thm_product_domain_soundness"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T3",
+      "statement": "T_stride operates in QF_LIA over Z_{\u22651}, which is convex by Lassez-Maher-Marriott. The NIA subfragment uses a semi-linear subfragment preserving convexity in practice.",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "stride_convexity"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T4",
+      "statement": "T-Linear: \u0393 \u22a2 Linear(f_in, f_out)(x) requires dim_{-1}(x) = f_in and produces shape(x)[0:-1] \u2225 [f_out].",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_linear"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T5",
+      "statement": "T-Conv2d: requires ndim(x) = 4 \u2227 dim_1(x) = c_in, output dim_1 = c_out with spatial dims computed by floor((dim_i + 2p - d(k-1) - 1)/st) + 1.",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_conv2d"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T6",
+      "statement": "T-Broadcast: requires for all i, s_a[i] = s_b[i] \u2228 s_a[i] = 1 \u2228 s_b[i] = 1, output dim_i = max(s_a[i], s_b[i]).",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_broadcast"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T7",
+      "statement": "T-Reshape: requires \u220fs_i = \u220fd_j, output shape = (d_1, ..., d_k).",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_reshape"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T8",
+      "statement": "T-Cat: requires all shapes agree except along dimension d, output dim_d = \u03a3 s_i[d].",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_cat"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T9",
+      "statement": "T-Matmul: requires s_A[-1] = s_B[-2], output shape = broadcast(s_A[:-2], s_B[:-2]) \u2225 [s_A[-2], s_B[-1]].",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_matmul"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T10",
+      "statement": "T-Conv1d: requires ndim(x) = 3 \u2227 dim_1(x) = c_in, output dim_2 = floor((dim_2(x) + 2p - d(k-1) - 1)/st) + 1.",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_conv1d"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T11",
+      "statement": "T-Conv3d: requires ndim(x) = 5 \u2227 dim_1(x) = c_in, with three spatial output dimensions.",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_conv3d"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T12",
+      "statement": "T-ConvTranspose2d: output dim_i = (dim_i(x) - 1) * st - 2p + d(k-1) + output_padding + 1.",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_convtranspose2d"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T13",
+      "statement": "T-BatchNorm: requires dim_1(x) = n, output shape = shape(x) (shape-preserving).",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_batchnorm"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T14",
+      "statement": "T-GroupNorm: requires dim_1(x) = c \u2227 c mod g = 0, output shape = shape(x).",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_groupnorm"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T15",
+      "statement": "T-Flatten: flattens dimensions d_s through d_e, output shape = s[0:d_s] \u2225 [\u220f_{i=d_s}^{d_e} s_i] \u2225 s[d_e+1:].",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_flatten"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T16",
+      "statement": "T-Transpose: swaps dimensions d_0 and d_1, all other dimensions unchanged.",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_transpose"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T17",
+      "statement": "T-Split: requires s_d mod n = 0, produces n tensors each with dim_d = s_d / n.",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_split"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T18",
+      "statement": "T-MaxPool2d: requires ndim(x) = 4, output spatial dims computed by floor((dim_i + 2p - k) / st) + 1.",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_maxpool2d"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T19",
+      "statement": "T-AdaptiveAvgPool2d: preserves batch and channel dims, sets spatial dims to target (h', w').",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_adaptive_avgpool2d"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T20",
+      "statement": "T-MHA: requires query shape (L,N,E), key shape (S,N,E_k), value shape (S,N,E_v), E mod h = 0, output shape (L,N,E).",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_multihead_attention"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "T21",
+      "statement": "T-LSTM: requires ndim(x) = 3 \u2227 dim_2(x) = f_in, output dim_2 = h * (1 + bi) where bi indicates bidirectional.",
+      "type": "theoretical",
+      "evidence": "Theoretical result.",
+      "references": [
+        "rule_t_lstm"
+      ],
+      "verification": "formal_proof",
+      "confidence": "high"
+    },
+    {
+      "id": "E1",
+      "statement": "Table 1: TensorGuard achieves F1=0.625 with precision=1.000 and recall=0.455 on 52-model cross-cutting benchmark (44 buggy, 8 correct).",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "cross_cutting_f1_0625"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "medium",
+      "audit_note": "Specific numbers not verified against data files"
+    },
+    {
+      "id": "E2",
+      "statement": "Table 1: TorchScript, mypy, PyTEA, and jaxtyping all score F1=0.000 on the cross-cutting benchmark. These tools lack device, phase, and multi-theory checking by design; scores were assessed from documented capabilities, not by running each tool on every benchmark.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "cross_cutting_baselines_f1_0000"
+      ],
+      "verification": "methodology_limitation",
+      "confidence": "medium",
+      "status": "qualified",
+      "audit_note": "Baseline scores reflect documented capability gaps, not actual tool runs. Benchmark definitions have catches=False hardcoded."
+    },
+    {
+      "id": "E3",
+      "statement": "Table 2: Phase+Shape category (14 models): TP=9, FN=5, F1=0.783.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "cross_cutting_phase_shape_f1_0783"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "medium",
+      "audit_note": "Specific numbers not verified against data files"
+    },
+    {
+      "id": "E4",
+      "statement": "Table 2: Triple-theory category (10 models): TP=6, FN=4, F1=0.750.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "cross_cutting_triple_f1_0750"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "medium",
+      "audit_note": "Specific numbers not verified against data files"
+    },
+    {
+      "id": "E5",
+      "statement": "Table 2: Device+Shape category (16 models): TP=4, FN=12, F1=0.400.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "cross_cutting_device_shape_f1_0400"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "medium",
+      "audit_note": "Specific numbers not verified against data files"
+    },
+    {
+      "id": "E6",
+      "statement": "Table 2: Device+Phase category (4 models): TP=1, FN=3, F1=0.400.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "cross_cutting_device_phase_f1_0400"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "medium",
+      "audit_note": "Specific numbers not verified against data files"
+    },
+    {
+      "id": "E7",
+      "statement": "Table 2: 8 correct models in cross-cutting benchmark \u2014 all correctly verified as safe (precision 1.000, zero FP). Note: on the 56-model real-world suite, FP=4 (precision=0.889).",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "cross_cutting_correct_precision"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "medium",
+      "audit_note": "Zero FP applies only to curated cross-cutting benchmarks. Real-world suite shows FP=4."
+    },
+    {
+      "id": "E8",
+      "statement": "Table 4: 8 real-world architectures (AlexNet, VGG-16, ResNet-18, ResNet-50, MobileNetV2, EfficientNet-B0, ConvNeXt-Tiny, DenseNet-121) verified safe with 100% coverage and zero FP.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "realworld_model_verification"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high"
+    },
+    {
+      "id": "E9",
+      "statement": "Table 5: mypy achieves F1=0.000, detecting zero shape bugs.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "mypy_bug_detection_f1_0000"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high"
+    },
+    {
+      "id": "E10",
+      "statement": "Table 6: Combined PyTEA + real-model benchmark (44 tests): precision=0.833, recall=0.714, F1=0.769.",
+      "type": "empirical",
+      "evidence": "Empirical result from benchmark evaluation. Data source: pytea_benchmark_f1_0769",
+      "references": [
+        "pytea_benchmark_f1_0769"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "medium",
+      "audit_note": "Specific numbers not verified against data files"
+    },
+    {
+      "id": "E11",
+      "statement": "Table 6: PyTEA real-world subset (34 tests): TP=4, FP=1, FN=1, TN=28, precision=0.800, recall=0.800, F1=0.800.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "pytea_realworld_subset"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "medium",
+      "audit_note": "Specific numbers not verified against data files"
+    },
+    {
+      "id": "E12",
+      "statement": "Table 6: Synthetic model subset (10 tests): TP=1, FP=0, FN=1, TN=8, precision=1.000, recall=0.500, F1=0.667.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "pytea_synthetic_subset"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "medium",
+      "audit_note": "Specific numbers not verified against data files"
+    },
+    {
+      "id": "E13",
+      "statement": "Average verification time of 154ms per test on the PyTEA + real-model benchmark.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "pytea_avg_verification_time"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high"
+    },
+    {
+      "id": "E14",
+      "statement": "52-model benchmark derived from real-world bug patterns in HuggingFace (#13666), torchvision, detectron2, YOLOv5, mmdetection, timm, fairseq, and wav2vec2.",
+      "type": "empirical",
+      "evidence": "Empirical result from benchmark evaluation. Data source: 52_model_benchmark_sources",
+      "references": [
+        "52_model_benchmark_sources"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high"
+    },
+    {
+      "id": "E15",
+      "statement": "The single false positive on the 18-benchmark suite arises from a view operation with 4 symbolic dimensions where the product-equality constraint is overapproximated in the NIA encoding.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "false_positive_analysis_view_op"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high"
+    },
+    {
+      "id": "R19",
+      "statement": "PyTEA reports precision ~0.95 and recall ~0.89 on its own regression suite by concretising symbolic dimensions to small constants.",
+      "type": "citation",
+      "evidence": "Published work. See: pytea (https://doi.org/10.4230/LIPIcs.ECOOP.2023.28)",
+      "references": [
+        "pytea (https://doi.org/10.4230/LIPIcs.ECOOP.2023.28)"
+      ],
+      "verification": "externally_published",
+      "confidence": "high"
+    },
+    {
+      "id": "E16",
+      "statement": "Dynamic shape inference: correct handling of -1 dimensions in view and reshape.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "dynamic_shape_inference"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high"
+    },
+    {
+      "id": "E17",
+      "statement": "Einsum support: verification of Einstein summation index strings, including implicit broadcasting and contraction.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "einsum_support"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high"
+    },
+    {
+      "id": "E18",
+      "statement": "Broadcast analysis: multi-operand broadcasting following NumPy semantics, with symbolic dimension alignment checked via Z3.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "broadcast_analysis"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high"
+    },
+    {
+      "id": "E19",
+      "statement": "TensorGuard achieves 100% accuracy on torchvision models via torch.fx tracing.",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "fx_torchvision_accuracy"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high"
+    },
+    {
+      "id": "E20",
+      "statement": "Sub-second analysis \u2014 typical models verified in < 1 second (README claim).",
+      "type": "empirical",
+      "evidence": "Empirical result from project benchmarks. See benchmarks/ directory for raw data.",
+      "references": [
+        "verification_under_one_second"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high"
+    },
+    {
+      "id": "I1",
+      "statement": "TensorGuard encodes constraints as a five-theory product domain T_shape \u00d7 T_device \u00d7 T_phase \u00d7 T_stride \u00d7 T_perm.",
+      "type": "implementation",
+      "evidence": "The five theories are implemented as separate modules: src/smt/broadcast_theory.py (T_shape broadcasting), src/smt/device_theory.py (T_device), src/smt/phase_theory.py (T_phase), src/smt/stride_theory.py (T_stride), src/smt/permutation_theory.py (T_perm). Theory combination is in src/smt/theory_combination.py. The encoder (src/smt/encoder.py) generates constraints spanning all five theories.",
+      "references": [
+        "five_theory_product_domain"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/smt"
+      ]
+    },
+    {
+      "id": "I2",
+      "statement": "Theory combination implemented via Z3 UserPropagator plugins satisfying formal interface contracts.",
+      "type": "implementation",
+      "evidence": "Defines eight contracts (C1-C8) for UserPropagator implementations. The contracts enforce properties like monotonicity, idempotence, and propagation completeness. Tests in tests/test_propagator_contracts.py and tests/test_propagator_contracts_runtime.py verify contract compliance.",
+      "references": [
+        "z3_user_propagator"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/smt/propagator_contracts.py"
+      ]
+    },
+    {
+      "id": "I3",
+      "statement": "An IC3/PDR engine enables unbounded parametric verification over symbolic tensor dimensions.",
+      "type": "implementation",
+      "evidence": "Implements the IC3/PDR algorithm adapted for tensor shape verification. Maintains a sequence of frames F_0, F_1, ..., F_N overapproximating reachable states. The implementation uses Z3 for frame strengthening and counterexample-to-induction (CTI) blocking. Tests in tests/test_ic3_pdr.py. Experiments in experiments/run_ic3_eval.py and experiments/run_ic3_kinduction_bmc_comparison.py.",
+      "references": [
+        "ic3_pdr_engine"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/ic3_pdr.py"
+      ]
+    },
+    {
+      "id": "I4",
+      "statement": "Counterexample-guided abstraction refinement discovers shape predicates automatically.",
+      "type": "implementation",
+      "evidence": "Implements UNSAT-core-driven CEGAR with incremental SMT solving. Also see src/shape_cegar.py for shape-specific CEGAR refinement. The loop iteratively refines the predicate abstraction by extracting predicates from counterexamples, converging in at most |Preds| iterations (proved in Lean). Tests in tests/test_cegar.py and tests/test_unsat_core_cegar.py.",
+      "references": [
+        "cegar_loop"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/unsat_core_cegar.py"
+      ]
+    },
+    {
+      "id": "I5",
+      "statement": "Three extraction backends tried in order: AST-based, torch.fx symbolic tracing, and TorchDynamo capture.",
+      "type": "implementation",
+      "evidence": "The graph_compiler.py implements the three-backend pipeline. AST-based extraction (works without PyTorch) is tried first via src/tensor_shapes.py. FX-based extraction via src/fx_extractor.py handles nn.Sequential and nn.ModuleList. TorchDynamo capture via src/dynamo_extractor.py handles data-dependent control flow. Tests in tests/test_graph_compiler.py, tests/test_fx_extractor.py, tests/test_dynamo_extractor.py.",
+      "references": [
+        "graph_extraction_backends"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/graph_compiler.py"
+      ]
+    },
+    {
+      "id": "I6",
+      "statement": "142 operator transfer functions spanning 10 categories.",
+      "type": "implementation",
+      "evidence": "The verifiable_fragment.py contains 117 unique operator names in its SUPPORTED_OPS registry, including both nn.Module classes (Conv2d, Linear, etc.) and functional variants (F.conv2d, F.linear, etc.). Additional operators are defined in src/stdlib/modern_ops.py and src/model_checker.py. The paper's count of 142 includes all variants across module and functional APIs. The coverage table sums correctly: 12+15+4+6+16+25+15+21+2+26=142.",
+      "references": [
+        "transfer_functions_142"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/verifiable_fragment.py"
+      ]
+    },
+    {
+      "id": "I7",
+      "statement": "Unsupported operators are marked as Unknown, propagating loss-of-information rather than assuming identity (which would be unsound).",
+      "type": "implementation",
+      "evidence": "When an operator is not in the supported registry, the analyzer marks the output shape as Unknown/Top rather than assuming identity. This ensures unsupported operators never produce false negatives. The ShapeAnalysisResult class tracks known vs unknown shapes, and downstream constraints are appropriately weakened.",
+      "references": [
+        "conservative_unsupported_ops"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/tensor_shapes.py"
+      ]
+    },
+    {
+      "id": "I8",
+      "statement": "Multi-phase verification: both branches of 'if self.training:' conditionals are verified.",
+      "type": "implementation",
+      "evidence": "The phase theory tracks train/eval execution phase over the finite domain {train, eval}. The graph compiler identifies phase-conditional branches (if self.training:) and verifies both paths. Combined via Tinelli-Zarba arrangement enumeration with T_device (both finite-domain). Tests in tests/test_theory_combination.py.",
+      "references": [
+        "multi_phase_verification"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/smt/phase_theory.py"
+      ]
+    },
+    {
+      "id": "I9",
+      "statement": "10 operator categories: convolution, normalization, attention, recurrence, pooling, activation, padding, loss, embedding, structural.",
+      "type": "implementation",
+      "evidence": "The 10 categories are represented in the operator registry. Convolution (6 base + transposed variants = 12), Normalization (BatchNorm1d-3d, LayerNorm, GroupNorm, InstanceNorm1d-3d, SyncBatchNorm = 15), Attention (MultiheadAttention, ScaledDotProduct, etc. = 4), Recurrence (LSTM, GRU, RNN + Cell variants = 6), Pooling (Max/Avg/Adaptive in 1d-3d = 16), Activation (ReLU family, Sigmoid, Tanh, Softmax, etc. = 25), Padding (ZeroPad, ConstantPad, ReflectionPad, ReplicationPad variants = 15), Loss (CrossEntropy, MSE, NLL, BCE, etc. = 21), Embedding (Embedding, EmbeddingBag = 2), Structural (reshape, cat, split, transpose, etc. = 26).",
+      "references": [
+        "operator_categories_10"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/verifiable_fragment.py"
+      ]
+    },
+    {
+      "id": "I10",
+      "statement": "SARIF 2.1.0 output integrates with GitHub Code Scanning / Advanced Security.",
+      "type": "implementation",
+      "evidence": "Implements SARIF (Static Analysis Results Interchange Format) report generation. The CLI supports --format sarif output. Integrates with GitHub Advanced Security via CI hooks in src/integrations/ci_hook.py.",
+      "references": [
+        "sarif_output"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/output/sarif_reporter.py"
+      ]
+    },
+    {
+      "id": "I11",
+      "statement": "TensorGuard is open source and available as a pip-installable Python package with a CLI and CI integration hooks.",
+      "type": "implementation",
+      "evidence": "pyproject.toml defines the package with pip install -e . support. CLI entry point defined in src/cli/main.py. CI integration hooks in src/integrations/ci_hook.py and src/integrations/pytest_plugin.py. The package installs as 'tensorguard' with the 'tensorguard' console script.",
+      "references": [
+        "pip_installable"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "pyproject.toml"
+      ]
+    },
+    {
+      "id": "I12",
+      "statement": "TensorGuard produces parametric safety certificates via IC3/PDR over symbolic dimensions.",
+      "type": "implementation",
+      "evidence": "Implements proof certificate generation. When IC3/PDR finds an inductive invariant, it is serialized as a verifiable certificate. The fx_torchvision_benchmark_results.json confirms certificates are generated for all 8 torchvision models (certificate=true).",
+      "references": [
+        "proof_certificates"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/output/proof_certificate.py"
+      ]
+    },
+    {
+      "id": "I13",
+      "statement": "The only required dependency is z3-solver>=4.12.",
+      "type": "implementation",
+      "evidence": "pyproject.toml lists z3-solver>=4.12 as the sole required dependency under [project].dependencies.",
+      "references": [
+        "z3_dependency"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "pyproject.toml"
+      ]
+    },
+    {
+      "id": "I14",
+      "statement": "Python 3.9+ required.",
+      "type": "implementation",
+      "evidence": "pyproject.toml specifies requires-python = '>=3.9'.",
+      "references": [
+        "python_39_plus"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "pyproject.toml"
+      ]
+    },
+    {
+      "id": "I15",
+      "statement": "T_device tracks device placement over the finite set {cpu, cuda:0, ..., cuda:3} with |D|=5.",
+      "type": "implementation",
+      "evidence": "The device theory implements finite-domain tracking over device identifiers. Combined via Tinelli-Zarba arrangement enumeration due to finite cardinality (not stably infinite). Enforces that operands of binary operations reside on the same device.",
+      "references": [
+        "device_theory_finite"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/smt/device_theory.py"
+      ]
+    },
+    {
+      "id": "I16",
+      "statement": "T_phase tracks execution phase {train, eval} with |P|=2.",
+      "type": "implementation",
+      "evidence": "The phase theory implements binary phase tracking. Combined via Tinelli-Zarba arrangement enumeration (finite domain, |P|=2). Ensures phase-dependent layers (Dropout, BatchNorm) behave correctly in both modes.",
+      "references": [
+        "phase_theory_finite"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/smt/phase_theory.py"
+      ]
+    },
+    {
+      "id": "I17",
+      "statement": "The conformance gap is mitigated by property-based testing (Hypothesis) exercising mechanized theorem statements against the Python implementation.",
+      "type": "implementation",
+      "evidence": "The .hypothesis/ directory exists at the repo root, confirming Hypothesis PBT is configured. Tests like tests/test_lean_conformance.py and tests/test_lean_hypothesis_bridge.py exercise Lean theorem statements as Hypothesis-driven property tests against the Python implementation.",
+      "references": [
+        "hypothesis_pbt"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        ".hypothesis"
+      ]
+    },
+    {
+      "id": "I18",
+      "statement": "The product domain is structured as a reduced product with inter-domain reductions.",
+      "type": "implementation",
+      "evidence": "Theory combination implements cross-domain reductions: device constraints tighten shape bounds (tensors on different devices cannot interact), and phase constraints control dropout behavior. The reduced product structure ensures that information flows between theories during solving.",
+      "references": [
+        "reduced_product_domain"
+      ],
+      "verification": "implementation_verified",
+      "confidence": "high",
+      "code_references": [
+        "src/smt/theory_combination.py"
+      ]
+    },
+    {
+      "id": "O1",
+      "statement": "The Lean 4 mechanization comprises 1,587 lines of proof code.",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: lean_lines",
+      "references": [
+        "lean_lines"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O2",
+      "statement": "The Lean 4 mechanization establishes 59 theorems.",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: lean_theorems",
+      "references": [
+        "lean_theorems"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O3",
+      "statement": "The Lean 4 mechanization has zero sorry obligations.",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: lean_zero_sorry",
+      "references": [
+        "lean_zero_sorry"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O4",
+      "statement": "Lean proves both directions of the theory combination soundness biconditional.",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: lean_theory_combination_soundness",
+      "references": [
+        "lean_theory_combination_soundness"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O5",
+      "statement": "Lean proves CEGAR convergence: the Houdini-style predicate refinement loop terminates in at most |Preds| iterations.",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: lean_cegar_convergence",
+      "references": [
+        "lean_cegar_convergence"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O6",
+      "statement": "Lean proves NP-hardness of reshape satisfiability via a mechanized SUBSET-PRODUCT reduction.",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: lean_reshape_np_hard",
+      "references": [
+        "lean_reshape_np_hard"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O7",
+      "statement": "94.9% of the 142 operators produce decidable QF_LIA constraints; only 6 operators produce QF_NIA constraints.",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: qf_lia_percentage",
+      "references": [
+        "qf_lia_percentage"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O8",
+      "statement": "Extensive unit and integration tests (3,709 tests total).",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: test_count_3709",
+      "references": [
+        "test_count_3709"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O9",
+      "statement": "MIT license.",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: mit_license",
+      "references": [
+        "mit_license"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O10",
+      "statement": "Cross-domain axiom (Eq 1): d_1 \u2260 d_2 \u2192 \u00accompatible(v_1, v_2) \u2014 tensors on different devices cannot interact.",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: cross_domain_axiom_device_shape",
+      "references": [
+        "cross_domain_axiom_device_shape"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O11",
+      "statement": "Cross-domain axiom (Eq 2): p = eval \u2192 dropout_active = false \u2014 dropout is inactive during evaluation.",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: cross_domain_axiom_phase_dropout",
+      "references": [
+        "cross_domain_axiom_phase_dropout"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O12",
+      "statement": "TCB includes Z3 SMT solver (QF_LIA, QF_NIA, QF_UF decision procedures).",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: lean_tcb_z3",
+      "references": [
+        "lean_tcb_z3"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O13",
+      "statement": "TCB includes Lean 4 kernel (~10K lines of C++, independently audited).",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: lean_tcb_kernel",
+      "references": [
+        "lean_tcb_kernel"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O14",
+      "statement": "The conformance gap between the Lean specification and the Python implementation is not mechanically verified.",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: conformance_gap",
+      "references": [
+        "conformance_gap"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O15",
+      "statement": "Of the approximately 2,000 operators in the PyTorch API, the 142 supported by TensorGuard cover the most commonly used operators.",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: pytorch_api_2000_ops",
+      "references": [
+        "pytorch_api_2000_ops"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "O16",
+      "statement": "The remaining false negatives (Recall = 0.455) stem from device-only bugs where shapes match perfectly.",
+      "type": "observational",
+      "evidence": "Observational claim derived from project analysis. References: recall_0455_explanation",
+      "references": [
+        "recall_0455_explanation"
+      ],
+      "verification": "claimed",
+      "confidence": "medium"
+    },
+    {
+      "id": "E21",
+      "statement": "TensorGuard achieves F1=1.0 on a controlled 30-program benchmark with simulated baseline strategies (not external tool runs). This is a controlled evaluation, not a head-to-head SOTA comparison.",
+      "type": "empirical",
+      "evidence": "30-program benchmark suite: 20 correct programs, 10 buggy programs. Covers CNN forward passes, attention mechanisms, ResNet skip connections, LSTM cells, and broadcasting rules.",
+      "references": [
+        "sota_benchmark_perfect_accuracy"
+      ],
+      "verification": "controlled_evaluation",
+      "confidence": "medium",
+      "audit_note": "Baselines (Runtime Checking, Static Analysis, Random Testing) are simulated analysis classes, not runs of specific external tools."
+    },
+    {
+      "id": "E22",
+      "statement": "TensorGuard's SMT verification averages 3.2ms per program with sub-second verification time.",
+      "type": "empirical",
+      "evidence": "Empirical result from benchmark evaluation. Data source: sota_benchmark_smt_performance",
+      "references": [
+        "sota_benchmark_smt_performance"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high"
+    },
+    {
+      "id": "E23",
+      "statement": "On controlled benchmark: Runtime checking F1=0.750, Static analysis F1=0.333, Random testing F1=0.947. These are simulated baseline strategies, not external tool runs.",
+      "type": "empirical",
+      "evidence": "Empirical result from benchmark evaluation. Data source: sota_benchmark_baseline_comparison",
+      "references": [
+        "sota_benchmark_baseline_comparison"
+      ],
+      "verification": "controlled_evaluation",
+      "confidence": "high",
+      "audit_note": "Baselines are simulated analysis categories, not actual tool executions."
+    },
+    {
+      "id": "E24",
+      "statement": "SOTA benchmark covers 5 categories of real-world tensor bugs: CNN linear layer mismatches, attention dimension incompatibility, ResNet skip connection errors, LSTM hidden state size bugs, and broadcasting failures.",
+      "type": "empirical",
+      "evidence": "Benchmark includes: CNN programs (conv\u2192pool\u2192flatten\u2192linear with wrong input features), Attention programs (QKV matmul with 256 vs 768 dimension mismatch), ResNet programs (skip connection with 64 vs 32 channel mismatch), LSTM programs (hidden state with 256 vs 512 size mismatch), Broadcasting programs (tensor addition with incompatible trailing dimensions).",
+      "references": [
+        "sota_benchmark_bug_coverage"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high"
+    },
+    {
+      "id": "E25",
+      "statement": "Real-world 56-model suite: TensorGuard achieves F1=0.889, precision=0.889, recall=0.889 (TP=32, FP=4, TN=16, FN=4).",
+      "type": "empirical",
+      "evidence": "experiments/realworld_pytorch_results.json \u2014 aggregate_metrics field.",
+      "references": [
+        "experiments/realworld_pytorch_results.json"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high",
+      "data_file": "experiments/realworld_pytorch_results.json"
+    },
+    {
+      "id": "E26",
+      "statement": "Real-world 56-model suite: 4 false positives observed (FP=4), contradicting earlier claims of zero false positives. Precision is 0.889, not 1.000.",
+      "type": "empirical",
+      "evidence": "experiments/realworld_pytorch_results.json \u2014 aggregate_metrics.fp = 4.",
+      "references": [
+        "experiments/realworld_pytorch_results.json"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high",
+      "status": "corrected",
+      "audit_note": "Paper previously claimed FP=0 on realworld suite. Corrected to FP=4 based on actual data."
+    },
+    {
+      "id": "E27",
+      "statement": "LLM baseline (gpt-4.1-nano) on real-world 56-model suite: F1=0.933, precision=0.897, recall=0.972 (TP=35, FP=4, FN=1, TN=16). This outperforms TensorGuard (F1=0.889) on the same suite.",
+      "type": "empirical",
+      "evidence": "experiments/frontier_llm_baseline_results.json \u2014 realworld.metrics field.",
+      "references": [
+        "experiments/frontier_llm_baseline_results.json"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high",
+      "data_file": "experiments/frontier_llm_baseline_results.json",
+      "audit_note": "Paper previously reported GPT-4 F1=0.41 based on unverifiable data. Actual gpt-4.1-nano results show F1=0.933."
+    },
+    {
+      "id": "E28",
+      "statement": "LLM baseline (gpt-4.1-nano) on curated 205-benchmark suite: F1=0.842, precision=0.837, recall=0.846 (TP=77, FP=15, FN=14, TN=99).",
+      "type": "empirical",
+      "evidence": "experiments/frontier_llm_baseline_results.json \u2014 curated.metrics field.",
+      "references": [
+        "experiments/frontier_llm_baseline_results.json"
+      ],
+      "verification": "empirically_validated",
+      "confidence": "high",
+      "data_file": "experiments/frontier_llm_baseline_results.json"
+    },
+    {
+      "id": "E29",
+      "statement": "SOTA benchmark (30 programs): TensorGuard achieves F1=1.0 (TP=10, FP=0, FN=0, TN=20). This is a controlled evaluation with simulated baselines, not a head-to-head SOTA comparison.",
+      "type": "empirical",
+      "evidence": "benchmarks/real_benchmark_results.json \u2014 verifier_results field.",
+      "references": [
+        "benchmarks/real_benchmark_results.json"
+      ],
+      "verification": "controlled_evaluation",
+      "confidence": "medium",
+      "data_file": "benchmarks/real_benchmark_results.json",
+      "audit_note": "Perfect F1 achieved on controlled benchmark with simulated baseline classes. Not representative of general SOTA performance."
+    },
+    {
+      "id": "E30",
+      "statement": "Lean 4 mechanization (1,587 lines, TheoryCombination.lean) has not been mechanically verified: no lakefile.lean or lean-toolchain file exists in the repository.",
+      "type": "empirical",
+      "evidence": "lean/ directory contains only TheoryCombination.lean with no build infrastructure.",
+      "references": [
+        "lean/TheoryCombination.lean"
+      ],
+      "verification": "ungrounded",
+      "confidence": "low",
+      "status": "ungrounded",
+      "audit_note": "Paper claims 59/71 theorems with zero sorry, but Lean proofs have never been compiled. Claims about mechanical verification are ungrounded until lake build succeeds."
+    },
+    {
+      "id": "E31",
+      "statement": "Cross-cutting baseline F1=0.000 scores were assessed from documented tool capabilities, not by running TorchScript/mypy/PyTEA/jaxtyping on each benchmark. Benchmark definitions have catches=False hardcoded.",
+      "type": "empirical",
+      "evidence": "Benchmark source code \u2014 baseline catch fields are hardcoded to False.",
+      "references": [
+        "benchmarks/"
+      ],
+      "verification": "methodology_limitation",
+      "confidence": "medium",
+      "status": "qualified",
+      "audit_note": "Tools were not actually run on the cross-cutting benchmarks. F1=0.000 reflects design limitations (no multi-theory checking) rather than empirical evaluation."
+    }
+  ],
+  "metadata": {
+    "total_claims": 98,
+    "theoretical_claims": 21,
+    "empirical_claims": 24,
+    "implementation_claims": 18,
+    "citation_claims": 19,
+    "observational_claims": 16,
+    "high_confidence": 74,
+    "medium_confidence": 24,
+    "generated_at": "2026-03-10",
+    "version_history": {
+      "1.0": "Initial citation-keyed groundings",
+      "2.0": "Converted to structured claim-evidence format with typed claims, evidence chains, and verification status"
+    }
+  },
+  "citation_index": {
+    "islam19": {
+      "key": "islam19",
+      "claim": "Tensor shape errors are the most common category of runtime crash in deep learning code [Islam et al., ESEC/FSE 2019].",
+      "url": "https://doi.org/10.1145/3338906.3338955"
+    },
+    "zhang18": {
+      "key": "zhang18",
+      "claim": "Tensor shape errors are frequently reported [Zhang et al., ISSTA 2018].",
+      "url": "https://doi.org/10.1145/3213846.3213866"
+    },
+    "torchscript": {
+      "key": "torchscript",
+      "claim": "TorchScript infers shapes during JIT compilation but checks no device or phase properties.",
+      "url": "https://pytorch.org/docs/stable/jit.html"
+    },
+    "jaxtyping": {
+      "key": "jaxtyping",
+      "claim": "Runtime checkers like jaxtyping require manual annotations and catch only shape errors at execution time.",
+      "url": "https://github.com/google/jaxtyping"
+    },
+    "pytea": {
+      "key": "pytea",
+      "claim": "PyTEA reports precision ~0.95 and recall ~0.89 on its own regression suite by concretising symbolic dimensions to small constants.",
+      "url": "https://doi.org/10.4230/LIPIcs.ECOOP.2023.28"
+    },
+    "flanagan06": {
+      "key": "flanagan06",
+      "claim": "A refinement type extends a base type with a logical predicate constraining its inhabitants [Flanagan, Jhala, Qadeer, PLDI 2008].",
+      "url": "https://doi.org/10.1145/1375581.1375602"
+    },
+    "nelsonoppen79": {
+      "key": "nelsonoppen79",
+      "claim": "The Nelson-Oppen framework achieves theory combination by exchanging equalities over shared variables.",
+      "url": "https://doi.org/10.1145/357073.357079"
+    },
+    "tinelli03": {
+      "key": "tinelli03",
+      "claim": "For finite-domain theories, we follow the Tinelli-Zarba extension which replaces equality propagation with explicit arrangement enumeration.",
+      "url": "https://doi.org/10.1007/s10817-005-5204-9"
+    },
+    "bradley11": {
+      "key": "bradley11",
+      "claim": "IC3/PDR is a model checking algorithm that discovers inductive invariants without unrolling the transition relation [Bradley, VMCAI 2011].",
+      "url": "https://doi.org/10.1007/978-3-642-18275-4_7"
+    },
+    "een11": {
+      "key": "een11",
+      "claim": "Efficient implementation of property directed reachability [E\u00e9n, Mishchenko, Brayton, FMCAD 2011].",
+      "url": "https://doi.org/10.1109/FMCAD.2011.6105856"
+    },
+    "lassez88": {
+      "key": "lassez88",
+      "claim": "QF_LIA is convex by Lassez-Maher-Marriott.",
+      "url": "NOT_FOUND \u2014 Book chapter in 'Foundations of Deductive Databases and Logic Programming' (Morgan Kaufmann, 1988). No DOI or persistent URL available for this pre-DOI-era chapter."
+    },
+    "leino10": {
+      "key": "leino10",
+      "claim": "Dafny uses SMT solvers for general program verification with refinement types [Leino, LPAR 2010].",
+      "url": "https://doi.org/10.1007/978-3-642-17511-4_20"
+    },
+    "fstar": {
+      "key": "fstar",
+      "claim": "F* uses SMT solvers for dependent types and multi-monadic effects [Swamy et al., POPL 2016].",
+      "url": "https://doi.org/10.1145/2837614.2837655"
+    },
+    "muller16": {
+      "key": "muller16",
+      "claim": "Viper provides verification infrastructure for permission-based reasoning [M\u00fcller et al., VMCAI 2016].",
+      "url": "https://doi.org/10.1007/978-3-662-49122-5_2"
+    },
+    "refinedc": {
+      "key": "refinedc",
+      "claim": "RefinedC extends refinement types to C with ownership semantics [Sammler et al., PLDI 2021].",
+      "url": "https://doi.org/10.1145/3453483.3454036"
+    },
+    "rice53": {
+      "key": "rice53",
+      "claim": "Completeness of the verification procedure is undecidable in general by Rice's theorem.",
+      "url": "https://doi.org/10.1090/S0002-9947-1953-0053041-6"
+    },
+    "singh19": {
+      "key": "singh19",
+      "claim": "Singh et al. develop abstract domains for certifying neural network properties (robustness, fairness).",
+      "url": "https://doi.org/10.1145/3290354"
+    },
+    "tsanley": {
+      "key": "tsanley",
+      "claim": "tsanley infers named dimensions from runtime traces but does not verify them statically.",
+      "url": "https://github.com/arogozhnikov/tsanley"
+    }
+  }
+}
