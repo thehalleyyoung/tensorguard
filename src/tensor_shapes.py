@@ -95,6 +95,65 @@ class TensorShape:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
+# Symbolic dimension support
+# ═══════════════════════════════════════════════════════════════════════════
+
+class SymbolicDimension:
+    """Represents a symbolic tensor dimension (e.g., seq_len, batch_size).
+
+    Used for tracking dynamic shapes through transformer attention.
+    Supports arithmetic: seq_len * num_heads, batch_size // world_size, etc.
+    """
+
+    def __init__(self, name: str, constraints: Optional[List] = None):
+        self.name = name
+        self.constraints: List = constraints or []
+
+    def __mul__(self, other: Union[int, "SymbolicDimension"]) -> "SymbolicDimension":
+        if isinstance(other, int):
+            return SymbolicDimension(f"({self.name}*{other})", self.constraints)
+        return SymbolicDimension(f"({self.name}*{other.name})",
+                                 self.constraints + other.constraints)
+
+    def __rmul__(self, other: int) -> "SymbolicDimension":
+        return SymbolicDimension(f"({other}*{self.name})", self.constraints)
+
+    def __floordiv__(self, other: Union[int, "SymbolicDimension"]) -> "SymbolicDimension":
+        if isinstance(other, int):
+            return SymbolicDimension(f"({self.name}//{other})", self.constraints)
+        return SymbolicDimension(f"({self.name}//{other.name})",
+                                 self.constraints + other.constraints)
+
+    def __add__(self, other: Union[int, "SymbolicDimension"]) -> "SymbolicDimension":
+        if isinstance(other, int):
+            return SymbolicDimension(f"({self.name}+{other})", self.constraints)
+        return SymbolicDimension(f"({self.name}+{other.name})",
+                                 self.constraints + other.constraints)
+
+    def __sub__(self, other: Union[int, "SymbolicDimension"]) -> "SymbolicDimension":
+        if isinstance(other, int):
+            return SymbolicDimension(f"({self.name}-{other})", self.constraints)
+        return SymbolicDimension(f"({self.name}-{other.name})",
+                                 self.constraints + other.constraints)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, SymbolicDimension):
+            return self.name == other.name
+        if isinstance(other, int):
+            return False
+        return NotImplemented
+
+    def __hash__(self) -> int:
+        return hash(self.name)
+
+    def __repr__(self) -> str:
+        return f"SymDim({self.name})"
+
+    def to_shape_dim(self) -> ShapeDim:
+        return ShapeDim(self.name)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
 # Shape error types
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -135,6 +194,72 @@ class ShapeError:
             "severity": self.severity,
         }
 
+class DetailedShapeError:
+    """Enhanced shape error with full reshape chain context.
+
+    When a shape mismatch is found, shows:
+    1. The full chain of reshape operations that led to the error
+    2. The expected vs actual shape at the point of mismatch
+    3. Which dimension specifically failed
+    4. Suggested fix (if deterministic)
+    """
+
+    def __init__(self, expected: Optional[TensorShape], actual: Optional[TensorShape],
+                 operation: str, chain: Optional[List] = None):
+        self.expected = expected
+        self.actual = actual
+        self.operation = operation
+        self.chain = chain or []
+
+    def format_message(self) -> str:
+        parts = [f"Shape mismatch at {self.operation}:"]
+        if self.expected:
+            parts.append(f"  expected: {self.expected.pretty()}")
+        if self.actual:
+            parts.append(f"  actual:   {self.actual.pretty()}")
+        mismatched = self._find_mismatched_dims()
+        if mismatched:
+            parts.append(f"  mismatched dims: {mismatched}")
+        if self.chain:
+            parts.append("  reshape chain:")
+            for step in self.chain:
+                parts.append(f"    {step.get('op', '?')}: "
+                             f"{step.get('input_shape', '?')} → "
+                             f"{step.get('output_shape', '?')}")
+        fix = self.suggest_fix()
+        if fix:
+            parts.append(f"  suggested fix: {fix}")
+        return "\n".join(parts)
+
+    def suggest_fix(self) -> Optional[str]:
+        if not self.expected or not self.actual:
+            return None
+        if self.expected.ndim != self.actual.ndim:
+            diff = self.expected.ndim - self.actual.ndim
+            if diff > 0:
+                return f"Add {diff} dimension(s) with unsqueeze"
+            return f"Remove {-diff} dimension(s) with squeeze or index"
+        for i in range(min(self.expected.ndim, self.actual.ndim)):
+            ed = self.expected.dims[i]
+            ad = self.actual.dims[i]
+            if (not ed.is_symbolic and not ad.is_symbolic
+                    and ed.value != ad.value):
+                return (f"Dimension {i} is {ad.value} but should be "
+                        f"{ed.value}")
+        return None
+
+    def _find_mismatched_dims(self) -> List[int]:
+        if not self.expected or not self.actual:
+            return []
+        result = []
+        for i in range(min(self.expected.ndim, self.actual.ndim)):
+            ed = self.expected.dims[i]
+            ad = self.actual.dims[i]
+            if (not ed.is_symbolic and not ad.is_symbolic
+                    and ed.value != ad.value):
+                result.append(i)
+        return result
+
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Shape environment: maps variables to their known shapes
@@ -165,6 +290,47 @@ class ShapeEnv:
                 if self._bindings[var] == other._bindings[var]:
                     result[var] = self._bindings[var]
         return ShapeEnv(result)
+
+
+class ReshapeChainTracker:
+    """Track sequences of view/reshape/permute/transpose operations.
+
+    The #1 source of real shape bugs is long chains like:
+    x.view(B, S, H, D).permute(0, 2, 1, 3).contiguous().view(B*H, S, D)
+
+    This tracker maintains the full chain so errors can show WHERE in the
+    chain the mismatch occurred, not just that the final shape is wrong.
+    """
+
+    def __init__(self):
+        self._chain: List[Dict[str, Any]] = []
+
+    def record_op(self, op_name: str, input_shape: Optional[TensorShape],
+                  output_shape: Optional[TensorShape], args: Any = None) -> None:
+        self._chain.append({
+            "op": op_name,
+            "input_shape": input_shape.pretty() if input_shape else "unknown",
+            "output_shape": output_shape.pretty() if output_shape else "unknown",
+            "args": str(args) if args else None,
+        })
+
+    def get_chain(self) -> List[Dict]:
+        return list(self._chain)
+
+    def format_error_chain(self) -> str:
+        if not self._chain:
+            return "(no reshape chain recorded)"
+        lines = ["Reshape chain:"]
+        for i, step in enumerate(self._chain):
+            lines.append(
+                f"  [{i}] {step['op']}: {step['input_shape']} "
+                f"→ {step['output_shape']}"
+                + (f"  args={step['args']}" if step.get("args") else "")
+            )
+        return "\n".join(lines)
+
+    def clear(self) -> None:
+        self._chain.clear()
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -395,6 +561,32 @@ def compute_reshape_shape(
             inferred = input_total // specified_product
             result_dims[neg_one_idx] = ShapeDim(inferred)
 
+    # Compute inferred dim when symbolic dims are accounted for via sentinel copies
+    if neg_one_idx >= 0 and not all_input_concrete and original.ndim > 0:
+        concrete_input = 1
+        all_sym_copied = True
+        for j, d in enumerate(original.dims):
+            if d.is_symbolic:
+                if j not in copied_symbolic:
+                    all_sym_copied = False
+                    break
+            else:
+                concrete_input *= d.value
+        if all_sym_copied and concrete_input > 0:
+            concrete_output = 1
+            can_infer = True
+            for j, rd in enumerate(result_dims):
+                if j == neg_one_idx or j in copied_symbolic:
+                    continue
+                if rd.is_symbolic:
+                    can_infer = False
+                    break
+                concrete_output *= rd.value
+            if (can_infer and concrete_output > 0
+                    and concrete_input % concrete_output == 0):
+                result_dims[neg_one_idx] = ShapeDim(
+                    concrete_input // concrete_output)
+
     return TensorShape(tuple(result_dims))
 
 
@@ -486,6 +678,10 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
         self._layer_shapes: Dict[str, Dict[str, Any]] = {}
         # Track shape predicates for liquid integration
         self._shape_preds: List[Pred] = []
+        # Track class self.attr = value assignments from __init__
+        self._class_attrs: Dict[str, Any] = {}
+        # Track __init__ parameter defaults for attribute resolution
+        self._init_param_defaults: Dict[str, Any] = {}
 
     def analyze_source(self, source: str) -> ShapeAnalysisResult:
         """Analyze Python source for tensor shape errors."""
@@ -637,6 +833,19 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
 
     def _analyze_module_init(self, func: ast.FunctionDef, class_name: str):
         """Extract layer shapes from __init__ (nn.Linear, nn.Conv2d, etc.)."""
+        # Collect __init__ parameter defaults for attribute resolution
+        self._init_param_defaults = {}
+        defaults = func.args.defaults
+        args = func.args.args
+        n_defaults = len(defaults)
+        n_args = len(args)
+        for i, default in enumerate(defaults):
+            arg_idx = n_args - n_defaults + i
+            if arg_idx >= 0 and arg_idx < n_args:
+                val = self._eval_const_expr(default)
+                if val is not None:
+                    self._init_param_defaults[args[arg_idx].arg] = val
+
         for stmt in func.body:
             if isinstance(stmt, ast.Assign):
                 for target in stmt.targets:
@@ -648,6 +857,15 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                         if layer_info:
                             key = f"{class_name}.{layer_name}"
                             self._layer_shapes[key] = layer_info
+                        # Track self.attr = value for attribute consistency checks
+                        val = self._eval_const_expr(stmt.value)
+                        if val is not None:
+                            self._class_attrs[layer_name] = val
+                        elif isinstance(stmt.value, ast.Name):
+                            pname = stmt.value.id
+                            if pname in self._init_param_defaults:
+                                self._class_attrs[layer_name] = (
+                                    self._init_param_defaults[pname])
 
     def _extract_layer_info(self, node: ast.expr) -> Optional[Dict[str, Any]]:
         """Extract layer parameters from nn.Linear(in, out) etc."""
@@ -666,15 +884,42 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                 if in_f is not None and out_f is not None:
                     return {"type": "Linear", "in_features": in_f, "out_features": out_f}
 
-        # nn.Conv2d(in_channels, out_channels, kernel_size)
+        # nn.Conv2d(in_channels, out_channels, kernel_size) or keyword args
         if func_name in ("Conv2d", "nn.Conv2d"):
-            if len(node.args) >= 3:
+            in_c = None
+            out_c = None
+            ks = None
+            stride = 1
+            padding = 0
+            if len(node.args) >= 2:
                 in_c = self._const_or_name(node.args[0])
                 out_c = self._const_or_name(node.args[1])
+            if len(node.args) >= 3:
                 ks = self._const_or_name(node.args[2])
-                if in_c is not None and out_c is not None:
-                    return {"type": "Conv2d", "in_channels": in_c,
-                            "out_channels": out_c, "kernel_size": ks}
+            for kw in node.keywords:
+                if kw.arg == "kernel_size":
+                    ks = self._const_or_name(kw.value)
+                elif kw.arg == "stride":
+                    v = self._const_val(kw.value)
+                    if v is not None:
+                        stride = v
+                elif kw.arg == "padding":
+                    v = self._const_val(kw.value)
+                    if v is not None:
+                        padding = v
+            if in_c is not None and out_c is not None:
+                return {"type": "Conv2d", "in_channels": in_c,
+                        "out_channels": out_c, "kernel_size": ks,
+                        "stride": stride, "padding": padding}
+
+        # nn.Linear with constant expression args (e.g., 64 * 14 * 14)
+        if func_name in ("Linear", "nn.Linear"):
+            if len(node.args) >= 2:
+                in_f = self._eval_const_expr(node.args[0])
+                out_f = self._eval_const_expr(node.args[1])
+                if in_f is not None and out_f is not None:
+                    return {"type": "Linear", "in_features": in_f,
+                            "out_features": out_f}
 
         # nn.BatchNorm2d(num_features)
         if func_name in ("BatchNorm2d", "nn.BatchNorm2d"):
@@ -682,6 +927,56 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                 n = self._const_or_name(node.args[0])
                 if n is not None:
                     return {"type": "BatchNorm2d", "num_features": n}
+
+        # nn.AdaptiveAvgPool2d(output_size)
+        if func_name in ("AdaptiveAvgPool2d", "nn.AdaptiveAvgPool2d"):
+            out_size = None
+            if node.args:
+                arg = node.args[0]
+                if isinstance(arg, (ast.Tuple, ast.List)):
+                    vals = [self._const_val(e) for e in arg.elts]
+                    if all(v is not None for v in vals):
+                        out_size = tuple(vals)
+                elif isinstance(arg, ast.Constant) and isinstance(arg.value, int):
+                    out_size = (arg.value, arg.value)
+            if out_size:
+                return {"type": "AdaptiveAvgPool2d", "output_size": out_size}
+
+        # nn.MultiheadAttention(embed_dim, num_heads, ..., batch_first=...)
+        if func_name in ("MultiheadAttention", "nn.MultiheadAttention"):
+            embed_dim = self._const_or_name(node.args[0]) if node.args else None
+            num_heads = self._const_or_name(node.args[1]) if len(node.args) >= 2 else None
+            batch_first = False
+            for kw in node.keywords:
+                if kw.arg == "batch_first":
+                    if isinstance(kw.value, ast.Constant):
+                        batch_first = bool(kw.value.value)
+            if embed_dim is not None:
+                return {"type": "MultiheadAttention", "embed_dim": embed_dim,
+                        "num_heads": num_heads, "batch_first": batch_first}
+
+        # nn.LayerNorm(normalized_shape)
+        if func_name in ("LayerNorm", "nn.LayerNorm"):
+            if node.args:
+                n = self._const_or_name(node.args[0])
+                if n is not None:
+                    return {"type": "LayerNorm", "normalized_shape": n}
+
+        # nn.Dropout(p)
+        if func_name in ("Dropout", "nn.Dropout"):
+            return {"type": "Dropout"}
+
+        # nn.MaxPool2d(kernel_size, stride)
+        if func_name in ("MaxPool2d", "nn.MaxPool2d"):
+            ks = self._const_or_name(node.args[0]) if node.args else None
+            stride = self._const_or_name(node.args[1]) if len(node.args) >= 2 else ks
+            return {"type": "MaxPool2d", "kernel_size": ks, "stride": stride}
+
+        # nn.ReLU, nn.GELU, nn.SiLU — shape-preserving activations
+        if func_name in ("ReLU", "nn.ReLU", "GELU", "nn.GELU",
+                         "SiLU", "nn.SiLU", "Sigmoid", "nn.Sigmoid",
+                         "Tanh", "nn.Tanh"):
+            return {"type": "Activation"}
 
         return None
 
@@ -733,7 +1028,9 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
         if base_name in ("reshape", "view"):
             if isinstance(node.func, ast.Attribute) and node.args:
                 obj_shape = self._infer_shape(node.func.value)
-                new_dims = self._extract_shape_args(node)
+                new_dims = self._extract_shape_args_enhanced(node, obj_shape)
+                if new_dims is None:
+                    new_dims = self._extract_shape_args(node)
                 if obj_shape and new_dims:
                     return compute_reshape_shape(obj_shape, new_dims)
             elif node.args:
@@ -943,7 +1240,85 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                     new_dims.extend(ShapeDim("_interp") for _ in range(inp_shape.ndim - 2))
                     return TensorShape(tuple(new_dims))
 
-        # nn.Linear: self.fc(x) where fc is Linear(in_f, out_f)
+         # permute: x.permute(0, 2, 1, 3)
+        if base_name == "permute":
+            if isinstance(node.func, ast.Attribute):
+                obj_shape = self._infer_shape(node.func.value)
+                if obj_shape:
+                    perm = [self._const_val(a) for a in node.args]
+                    if all(p is not None for p in perm) and len(perm) == obj_shape.ndim:
+                        new_dims = tuple(obj_shape.dims[p] for p in perm)
+                        return TensorShape(new_dims)
+
+        # contiguous: shape-preserving
+        if base_name == "contiguous":
+            if isinstance(node.func, ast.Attribute):
+                return self._infer_shape(node.func.value)
+
+        # expand: x.expand(batch_size, -1, -1) — -1 means keep that dim
+        if base_name == "expand":
+            if isinstance(node.func, ast.Attribute):
+                obj_shape = self._infer_shape(node.func.value)
+                if obj_shape:
+                    new_dims = []
+                    for i, arg in enumerate(node.args):
+                        v = self._const_val(arg)
+                        if v is not None and v == -1 and i < obj_shape.ndim:
+                            new_dims.append(obj_shape.dims[i])
+                        elif v is not None:
+                            new_dims.append(ShapeDim(v))
+                        else:
+                            cn = self._const_or_name(arg)
+                            new_dims.append(ShapeDim(cn if cn else "_expand"))
+                    return TensorShape(tuple(new_dims))
+
+        # split: x.split(size, dim) → returns tuple, take first
+        if base_name == "split":
+            if isinstance(node.func, ast.Attribute):
+                obj_shape = self._infer_shape(node.func.value)
+                if obj_shape and node.args:
+                    return obj_shape
+
+        # size / shape access: x.size() returns shape, x.size(dim) returns int
+        if base_name == "size":
+            if isinstance(node.func, ast.Attribute):
+                return None  # Returns int, not tensor
+
+        # Functional ops: F.softmax, F.relu, F.gelu, F.dropout, F.layer_norm
+        if base_name in ("softmax", "log_softmax", "relu", "gelu", "silu",
+                         "leaky_relu", "tanh", "sigmoid", "dropout",
+                         "layer_norm", "batch_norm", "group_norm",
+                         "instance_norm"):
+            return self._analyze_functional_call(node, base_name)
+
+        # F.linear(input, weight, bias) — skip self.linear (handled by layer forward)
+        if base_name == "linear":
+            is_self_call = (isinstance(node.func, ast.Attribute)
+                            and isinstance(getattr(node.func, 'value', None), ast.Name)
+                            and node.func.value.id == "self")
+            if not is_self_call and node.args:
+                inp_shape = self._infer_shape(node.args[0])
+                if inp_shape and inp_shape.ndim >= 1 and len(node.args) >= 2:
+                    w_shape = self._infer_shape(node.args[1])
+                    if w_shape and w_shape.ndim == 2:
+                        new_dims = list(inp_shape.dims[:-1]) + [w_shape.dims[0]]
+                        return TensorShape(tuple(new_dims))
+                if inp_shape:
+                    return inp_shape
+
+        # F.cross_entropy(input, target) → scalar
+        if base_name == "cross_entropy":
+            return TensorShape(())
+
+        # F.embedding(input, weight) → (*input_shape, embedding_dim)
+        if base_name == "embedding":
+            if len(node.args) >= 2:
+                inp_shape = self._infer_shape(node.args[0])
+                w_shape = self._infer_shape(node.args[1])
+                if inp_shape and w_shape and w_shape.ndim == 2:
+                    return TensorShape(inp_shape.dims + (w_shape.dims[1],))
+
+        # nn.Module layers: self.layer(x) — Conv2d, Pool, BN, MHA, etc.
         if isinstance(node.func, ast.Attribute):
             if isinstance(node.func.value, ast.Name) and node.func.value.id == "self":
                 layer_attr = node.func.attr
@@ -956,6 +1331,68 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                                 out_f = info["out_features"]
                                 new_dims = list(x_shape.dims[:-1]) + [ShapeDim(out_f)]
                                 return TensorShape(tuple(new_dims))
+
+                        if info["type"] == "Conv2d" and node.args:
+                            x_shape = self._infer_shape(node.args[0])
+                            out_c = info["out_channels"]
+                            if x_shape and x_shape.ndim == 4:
+                                new_dims = [x_shape.dims[0], ShapeDim(out_c),
+                                            x_shape.dims[2], x_shape.dims[3]]
+                                return TensorShape(tuple(new_dims))
+                            elif isinstance(out_c, int):
+                                return TensorShape((
+                                    ShapeDim("_batch"), ShapeDim(out_c),
+                                    ShapeDim("_h"), ShapeDim("_w")))
+
+                        if info["type"] == "AdaptiveAvgPool2d" and node.args:
+                            x_shape = self._infer_shape(node.args[0])
+                            oh, ow = info["output_size"]
+                            if x_shape and x_shape.ndim == 4:
+                                new_dims = [x_shape.dims[0], x_shape.dims[1],
+                                            ShapeDim(oh), ShapeDim(ow)]
+                                return TensorShape(tuple(new_dims))
+                            elif x_shape and x_shape.ndim >= 2:
+                                return TensorShape((
+                                    x_shape.dims[0], x_shape.dims[1],
+                                    ShapeDim(oh), ShapeDim(ow)))
+                            else:
+                                return TensorShape((
+                                    ShapeDim("_batch"), ShapeDim("_ch"),
+                                    ShapeDim(oh), ShapeDim(ow)))
+
+                        if info["type"] == "BatchNorm2d" and node.args:
+                            return self._infer_shape(node.args[0])
+
+                        if info["type"] in ("Dropout", "Activation",
+                                            "LayerNorm") and node.args:
+                            return self._infer_shape(node.args[0])
+
+                        if info["type"] == "MaxPool2d" and node.args:
+                            x_shape = self._infer_shape(node.args[0])
+                            if x_shape and x_shape.ndim == 4:
+                                ks = info.get("kernel_size", 2)
+                                stride = info.get("stride", ks)
+                                if isinstance(ks, int) and isinstance(stride, int):
+                                    h = x_shape.dims[2]
+                                    w = x_shape.dims[3]
+                                    if not h.is_symbolic and not w.is_symbolic:
+                                        nh = h.value // stride
+                                        nw = w.value // stride
+                                        return TensorShape((
+                                            x_shape.dims[0], x_shape.dims[1],
+                                            ShapeDim(nh), ShapeDim(nw)))
+                                return TensorShape((
+                                    x_shape.dims[0], x_shape.dims[1],
+                                    ShapeDim("_pool_h"), ShapeDim("_pool_w")))
+
+                        if info["type"] == "MultiheadAttention" and node.args:
+                            return self._infer_shape(node.args[0])
+
+        # nn.Sequential: self.block(x) — just pass through
+        if isinstance(node.func, ast.Attribute):
+            if isinstance(node.func.value, ast.Name) and node.func.value.id == "self":
+                if node.args:
+                    return self._infer_shape(node.args[0])
 
         # Modern ops: element-wise activations and shape-preserving ops
         if base_name in TORCH_SHAPE_OPS:
@@ -1137,6 +1574,8 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
         else:
             # Use Z3 for symbolic broadcast checking
             self._check_broadcast_z3(node, left, right)
+            # Check for suspicious ndim mismatch (potential missing unsqueeze)
+            self._check_broadcast_ndim_mismatch(node, left, right)
         self.constraints_checked += 1
 
     def _check_broadcast_z3(self, node: ast.BinOp,
@@ -1199,6 +1638,42 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
             # Broadcasting always holds — OK
             return
         # If sat or unknown, don't report (might be valid for some assignments)
+
+    def _check_broadcast_ndim_mismatch(self, node: ast.BinOp,
+                                        a: TensorShape, b: TensorShape):
+        """Check for suspicious ndim mismatch in broadcast operations.
+
+        When a 2D tensor with leading dim=1 (e.g., torch.zeros(1, hidden))
+        is added to a 3D+ tensor, this often indicates a missing unsqueeze
+        or incorrect tensor construction.
+        """
+        if a.ndim == b.ndim:
+            return
+        smaller, larger = (a, b) if a.ndim < b.ndim else (b, a)
+        ndim_diff = larger.ndim - smaller.ndim
+        if ndim_diff < 1:
+            return
+        # Flag if the smaller tensor has a leading dimension of 1
+        # This suggests the programmer was thinking about batch dim
+        # but forgot intermediate dimensions
+        if (smaller.ndim >= 2
+                and not smaller.dims[0].is_symbolic
+                and smaller.dims[0].value == 1):
+            self.errors.append(ShapeError(
+                kind=ShapeErrorKind.BROADCAST_FAIL,
+                line=getattr(node, "lineno", 0),
+                col=getattr(node, "col_offset", 0),
+                message=(
+                    f"Suspicious broadcast: {smaller.pretty()} ({smaller.ndim}D) "
+                    f"with {larger.pretty()} ({larger.ndim}D). "
+                    f"Leading dim=1 in the smaller tensor suggests a missing "
+                    f"dimension — consider unsqueeze or reshape"),
+                function=self.func_name,
+                variable="",
+                actual_shape=smaller,
+                expected_shape=larger,
+                severity="warning",
+            ))
 
     def _check_call_shapes(self, node: ast.Call):
         """Check shape constraints at function call sites."""
@@ -1282,6 +1757,88 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                                 elif last_dim.is_symbolic and isinstance(in_f, int):
                                     self._check_linear_z3(
                                         node, x_shape, last_dim, in_f, layer_attr)
+
+                        # MultiheadAttention: check batch_first format
+                        if info["type"] == "MultiheadAttention":
+                            if not info.get("batch_first", False):
+                                self.constraints_generated += 1
+                                self.errors.append(ShapeError(
+                                    kind=ShapeErrorKind.DIM_MISMATCH,
+                                    line=getattr(node, "lineno", 0),
+                                    col=getattr(node, "col_offset", 0),
+                                    message=(
+                                        "MultiheadAttention has batch_first=False "
+                                        "but input may be batch-first (batch, seq, dim). "
+                                        "Pass batch_first=True or transpose input to "
+                                        "(seq, batch, dim)"),
+                                    function=self.func_name,
+                                    variable=layer_attr,
+                                ))
+                                self.constraints_checked += 1
+
+        # Identity permute detection: x.permute(0, 1, 2, ...) is a no-op
+        if base_name == "permute":
+            if isinstance(node.func, ast.Attribute):
+                perm_args = [self._const_val(a) for a in node.args]
+                if all(p is not None for p in perm_args):
+                    identity = list(range(len(perm_args)))
+                    if perm_args == identity:
+                        self.constraints_generated += 1
+                        self.errors.append(ShapeError(
+                            kind=ShapeErrorKind.DIM_MISMATCH,
+                            line=getattr(node, "lineno", 0),
+                            col=getattr(node, "col_offset", 0),
+                            message=(
+                                f"No-op permute{tuple(perm_args)}: this permutation "
+                                f"does not rearrange any dimensions. Did you mean "
+                                f"permute(0, 2, 1, 3) to move heads before sequence?"),
+                            function=self.func_name,
+                            variable="",
+                        ))
+                        self.constraints_checked += 1
+
+        # Reshape inconsistency with tracked class attributes
+        if base_name in ("reshape", "view"):
+            self._check_reshape_attribute_consistency(node)
+
+    def _check_reshape_attribute_consistency(self, node: ast.Call):
+        """Check if reshape literals are inconsistent with class attributes.
+
+        Detects patterns like: self.num_heads=12 but reshape uses 8 for
+        the heads dimension. Common bug in multi-head attention implementations.
+        """
+        if not self._class_attrs:
+            return
+
+        reshape_literals = set()
+        for arg in node.args:
+            v = self._const_val(arg)
+            if v is not None and v > 1:
+                reshape_literals.add(v)
+
+        head_attrs = {k: v for k, v in self._class_attrs.items()
+                      if any(tok in k.lower() for tok in
+                             ("head", "nhead", "n_head", "num_head"))}
+        for attr_name, attr_val in head_attrs.items():
+            if not isinstance(attr_val, int) or attr_val <= 1:
+                continue
+            for lit in reshape_literals:
+                if lit != attr_val and lit > 1:
+                    if lit < attr_val * 3 and attr_val < lit * 3:
+                        self.constraints_generated += 1
+                        self.errors.append(ShapeError(
+                            kind=ShapeErrorKind.RESHAPE_INVALID,
+                            line=getattr(node, "lineno", 0),
+                            col=getattr(node, "col_offset", 0),
+                            message=(
+                                f"Reshape uses {lit} but self.{attr_name}="
+                                f"{attr_val}. The reshape dimension may be "
+                                f"inconsistent with the number of attention heads"),
+                            function=self.func_name,
+                            variable=attr_name,
+                        ))
+                        self.constraints_checked += 1
+                        return
 
     def _check_linear_z3(self, node: ast.Call, x_shape: TensorShape,
                           last_dim: ShapeDim, in_f: int, layer_attr: str):
@@ -1613,6 +2170,94 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
             if isinstance(node.operand, ast.Constant) and isinstance(node.operand.value, int):
                 return -node.operand.value
         return None
+
+    @staticmethod
+    def _eval_const_expr(node: ast.expr) -> Optional[int]:
+        """Evaluate a constant arithmetic expression (e.g., 64 * 14 * 14).
+
+        Handles int constants, unary minus, and binary +, -, *, //, **, %.
+        Returns None if the expression contains non-constant parts.
+        """
+        if isinstance(node, ast.Constant) and isinstance(node.value, int):
+            return node.value
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
+            inner = TensorShapeAnalyzer._eval_const_expr(node.operand)
+            return -inner if inner is not None else None
+        if isinstance(node, ast.BinOp):
+            left = TensorShapeAnalyzer._eval_const_expr(node.left)
+            right = TensorShapeAnalyzer._eval_const_expr(node.right)
+            if left is None or right is None:
+                return None
+            if isinstance(node.op, ast.Add):
+                return left + right
+            if isinstance(node.op, ast.Sub):
+                return left - right
+            if isinstance(node.op, ast.Mult):
+                return left * right
+            if isinstance(node.op, ast.FloorDiv) and right != 0:
+                return left // right
+            if isinstance(node.op, ast.Pow):
+                return left ** right
+            if isinstance(node.op, ast.Mod) and right != 0:
+                return left % right
+        if isinstance(node, ast.Name):
+            return None
+        return None
+
+    def _analyze_functional_call(self, node: ast.Call,
+                                 func_name: str) -> Optional[TensorShape]:
+        """Handle torch.nn.functional calls: F.linear, F.conv2d, F.softmax,
+        F.layer_norm, F.relu, F.gelu, F.dropout, F.cross_entropy, etc.
+
+        These are NOT tracked by nn.Module-based analysis but are widely used.
+        """
+        # Shape-preserving ops: F.relu, F.gelu, F.softmax, F.dropout, etc.
+        shape_preserving = {
+            "softmax", "log_softmax", "relu", "gelu", "silu",
+            "leaky_relu", "tanh", "sigmoid", "dropout",
+            "layer_norm", "batch_norm", "group_norm", "instance_norm",
+        }
+        if func_name in shape_preserving:
+            if node.args:
+                return self._infer_shape(node.args[0])
+            if isinstance(node.func, ast.Attribute):
+                return self._infer_shape(node.func.value)
+        return None
+
+    def _extract_shape_args_enhanced(self, node: ast.Call,
+                                     obj_shape: Optional[TensorShape]
+                                     ) -> Optional[Tuple]:
+        """Enhanced reshape/view arg extraction.
+
+        Handles x.size(i) and x.shape[i] by mapping them to sentinel 0
+        (copy from input dim).
+        """
+        if not node.args:
+            return None
+        dims: list = []
+        for arg in node.args:
+            v = self._const_or_name(arg)
+            if v is not None:
+                dims.append(v)
+            elif self._is_size_call(arg, obj_shape):
+                dims.append(0)  # sentinel: copy from input
+            else:
+                dims.append("_unknown")
+        return tuple(dims)
+
+    @staticmethod
+    def _is_size_call(node: ast.expr,
+                      obj_shape: Optional[TensorShape] = None) -> bool:
+        """Check if node is x.size(i) or x.shape[i]."""
+        if isinstance(node, ast.Call):
+            if (isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "size"):
+                return True
+        if isinstance(node, ast.Subscript):
+            if (isinstance(node.value, ast.Attribute)
+                    and node.value.attr == "shape"):
+                return True
+        return False
 
 
 # ═══════════════════════════════════════════════════════════════════════════

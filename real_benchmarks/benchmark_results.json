@@ -1,0 +1,751 @@
+{
+  "summary": {
+    "total_tests": 44,
+    "true_positives": 5,
+    "false_positives": 1,
+    "true_negatives": 36,
+    "false_negatives": 2,
+    "precision": 0.8333,
+    "recall": 0.7143,
+    "f1_score": 0.7692,
+    "total_time_ms": 6754.08,
+    "mean_time_ms": 153.5
+  },
+  "feature_tests": [
+    {
+      "test": "dynamic_reshape_neg1",
+      "passed": true,
+      "detail": "(2, 60)"
+    },
+    {
+      "test": "dynamic_reshape_neg1_second",
+      "passed": true,
+      "detail": "(2, 60)"
+    },
+    {
+      "test": "dynamic_reshape_3d",
+      "passed": true,
+      "detail": "(6, 4, 5)"
+    },
+    {
+      "test": "dynamic_reshape_multi_neg1",
+      "passed": true,
+      "detail": "Correctly rejected"
+    },
+    {
+      "test": "einsum_parse_basic",
+      "passed": true,
+      "detail": "inputs=['bij', 'bjk'], out=bik"
+    },
+    {
+      "test": "einsum_shape_inference",
+      "passed": true,
+      "detail": "(4, 8, 32)"
+    },
+    {
+      "test": "einsum_dimension_mismatch",
+      "passed": true,
+      "detail": "einsum subscript 'j' has mismatched dimensions: {4, 5}"
+    },
+    {
+      "test": "broadcast_compatible",
+      "passed": true,
+      "detail": "(4, 5, 3)"
+    },
+    {
+      "test": "broadcast_incompatible",
+      "passed": true,
+      "detail": "Broadcast failure at dimension 1: 3 vs 4 (neither is 1)"
+    },
+    {
+      "test": "matmul_broadcast_batched",
+      "passed": true,
+      "detail": "(2, 3, 5)"
+    },
+    {
+      "test": "matmul_inner_dim_mismatch",
+      "passed": true,
+      "detail": "matmul inner dimension mismatch: a has 4, b has 5"
+    },
+    {
+      "test": "z3_reshape_constraint",
+      "passed": true,
+      "detail": "Z3 constraint generated"
+    },
+    {
+      "test": "z3_einsum_constraint",
+      "passed": true,
+      "detail": "Z3 einsum constraint generated"
+    },
+    {
+      "test": "z3_broadcast_constraint",
+      "passed": true,
+      "detail": "Z3 broadcast constraint generated"
+    }
+  ],
+  "per_test_results": [
+    {
+      "name": "basics/scratch",
+      "category": "basics",
+      "has_known_bug": true,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": false,
+      "false_negative": true,
+      "errors_found": [],
+      "verification_time_ms": 0.58,
+      "notes": "Missed bug: Bug indicator at line 15: # fail"
+    },
+    {
+      "name": "benchmarks/SimCLR/resnet_train",
+      "category": "SimCLR",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 1083.51,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/dcgan/main",
+      "category": "dcgan",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 39.78,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/fast_neural_style/neural_style/neural_style",
+      "category": "fast_neural_style",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 2.08,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/fast_neural_style/neural_style/transformer_net",
+      "category": "fast_neural_style",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 789.31,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/fast_neural_style/neural_style/utils",
+      "category": "fast_neural_style",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 0.42,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/fast_neural_style/neural_style/vgg",
+      "category": "fast_neural_style",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 32.69,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/imagenet/main",
+      "category": "imagenet",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 3.35,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/mnist/main",
+      "category": "mnist",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 646.47,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/mnist_hogwild/main",
+      "category": "mnist_hogwild",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 279.42,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/mnist_hogwild/train",
+      "category": "mnist_hogwild",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 0.57,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/snli/model",
+      "category": "snli",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 199.2,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/snli/train",
+      "category": "snli",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 1.32,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/stochastic-resnet/augmentations",
+      "category": "stochastic-resnet",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 1.65,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/stochastic-resnet/model",
+      "category": "stochastic-resnet",
+      "has_known_bug": false,
+      "tensorguard_found_bug": true,
+      "true_positive": false,
+      "false_positive": true,
+      "true_negative": false,
+      "false_negative": false,
+      "errors_found": [
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=9, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc), message='Z3 violation (shape_incompatible) at step 9:\\n  dev_x_s7 = CPU_20\\n  grad_x_s0 = False\\n  grad_x_s5 = True\\n  dev_x_s2 = CPU_20\\n  dev_x_s5 = CPU_20\\n  dev_x_s3 = CPU_20\\n  dev_x_s4 = CPU_20\\n  phase_s3 = TRAIN_20\\n  phase_s7 = TRAIN_20\\n  _C_conv = 1\\n  phase_s8 = TRAIN_20\\n  grad_x_s8 = False\\n  grad_x_s1 = True\\n  grad_x_s7 = False\\n  phase_s9 = TRAIN_20\\n  _flat = 1\\n  grad_x_s6 = False\\n  dev_x_s9 = CPU_20\\n  dev_x_s6 = CPU_20\\n  phase_s2 = TRAIN_20\\n  grad_x_s9 = False\\n  phase_s4 = TRAIN_20\\n  grad_x_s3 = True\\n  grad_x_s4 = True\\n  batch = 1\\n  dev_x_s1 = CPU_20\\n  phase_s1 = TRAIN_20\\n  phase_s6 = TRAIN_20\\n  grad_x_s2 = True\\n  phase_s0 = TRAIN_20\\n  phase_s5 = TRAIN_20\\n  dev_x_s0 = CPU_20\\n  dev_x_s8 = CPU_20', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=9, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc), message='Z3 violation (shape_incompatible) at step 9:\\n  dev_x_s2 = CPU_22\\n  dev_x_s5 = CPU_22\\n  phase_s7 = TRAIN_22\\n  dev_x_s3 = CPU_22\\n  dev_x_s4 = CPU_22\\n  phase_s8 = TRAIN_22\\n  grad_x_s0 = False\\n  grad_x_s5 = True\\n  phase_s9 = TRAIN_22\\n  _C_conv = 1\\n  phase_s2 = TRAIN_22\\n  grad_x_s8 = False\\n  phase_s4 = TRAIN_22\\n  grad_x_s1 = True\\n  dev_x_s6 = CPU_22\\n  grad_x_s7 = False\\n  phase_s6 = TRAIN_22\\n  _flat = 1\\n  phase_s1 = TRAIN_22\\n  dev_x_s9 = CPU_22\\n  phase_s0 = TRAIN_22\\n  dev_x_s1 = CPU_22\\n  phase_s5 = TRAIN_22\\n  grad_x_s6 = False\\n  dev_x_s0 = CPU_22\\n  grad_x_s9 = False\\n  dev_x_s8 = CPU_22\\n  grad_x_s3 = True\\n  grad_x_s4 = True\\n  batch = 1\\n  grad_x_s2 = True\\n  dev_x_s7 = CPU_22\\n  phase_s3 = TRAIN_22', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        }
+      ],
+      "verification_time_ms": 680.15,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/stochastic-resnet/train",
+      "category": "stochastic-resnet",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 1.08,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/stochastic-resnet/utils",
+      "category": "stochastic-resnet",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 1.43,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/super_resolution/data",
+      "category": "super_resolution",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 0.38,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/super_resolution/dataset",
+      "category": "super_resolution",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 0.18,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/super_resolution/main",
+      "category": "super_resolution",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 0.71,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/super_resolution/model",
+      "category": "super_resolution",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 86.5,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/super_resolution/super_resolve",
+      "category": "super_resolution",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 0.45,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/time_sequence_prediction/generate_sine_wave",
+      "category": "time_sequence_prediction",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 0.17,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/time_sequence_prediction/train",
+      "category": "time_sequence_prediction",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 280.86,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/transformer/main",
+      "category": "transformer",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 1.17,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/transformer/transformers/activations",
+      "category": "transformer",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 0.4,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/transformer/transformers/modeling_bert",
+      "category": "transformer",
+      "has_known_bug": true,
+      "tensorguard_found_bug": true,
+      "true_positive": true,
+      "false_positive": false,
+      "true_negative": false,
+      "false_negative": false,
+      "errors_found": [
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=0, step=Step(SUBSCRIPT, in=['hidden_states'], out=first_token_tensor, layer=None), message='Z3 violation (shape_incompatible) at step 0:\\n  grad_hidden_states_s0 = False\\n  dev_hidden_states_s0 = CPU_27\\n  batch = 1\\n  phase_s0 = TRAIN_27', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['first_token_tensor'], out=pooled_output, layer=dense), message='Linear out_features unknown', tensor_a='first_token_tensor', tensor_b=None, shape_a=TensorShape(dims=(batch,)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=0, step=Step(SUBSCRIPT, in=['hidden_states'], out=first_token_tensor, layer=None), message='Z3 violation (shape_incompatible) at step 0:\\n  grad_hidden_states_s0 = False\\n  phase_s0 = TRAIN_29\\n  batch = 1\\n  dev_hidden_states_s0 = CPU_29', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['first_token_tensor'], out=pooled_output, layer=dense), message='Linear out_features unknown', tensor_a='first_token_tensor', tensor_b=None, shape_a=TensorShape(dims=(batch,)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=0, step=Step(SUBSCRIPT, in=['hidden_states'], out=first_token_tensor, layer=None), message='Z3 violation (shape_incompatible) at step 0:\\n  grad_hidden_states_s0 = False\\n  dev_hidden_states_s0 = CPU_30\\n  phase_s0 = TRAIN_30\\n  batch = 1', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['first_token_tensor'], out=pooled_output, layer=dense), message='Linear out_features unknown', tensor_a='first_token_tensor', tensor_b=None, shape_a=TensorShape(dims=(batch,)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=0, step=Step(SUBSCRIPT, in=['hidden_states'], out=first_token_tensor, layer=None), message='Z3 violation (shape_incompatible) at step 0:\\n  grad_hidden_states_s0 = False\\n  phase_s0 = TRAIN_33\\n  batch = 1\\n  dev_hidden_states_s0 = CPU_33', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['first_token_tensor'], out=pooled_output, layer=dense), message='Linear out_features unknown', tensor_a='first_token_tensor', tensor_b=None, shape_a=TensorShape(dims=(batch,)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        }
+      ],
+      "verification_time_ms": 380.28,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/transformer/transformers/modeling_utils",
+      "category": "transformer",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 3.49,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/transformer/transformers/optimization",
+      "category": "transformer",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 0.42,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/vae/main",
+      "category": "vae",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 147.68,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/word_language_model/data",
+      "category": "word_language_model",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 0.17,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/word_language_model/generate",
+      "category": "word_language_model",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 2.14,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/word_language_model/main",
+      "category": "word_language_model",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 1.88,
+      "notes": ""
+    },
+    {
+      "name": "benchmarks/word_language_model/model",
+      "category": "word_language_model",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 212.01,
+      "notes": ""
+    },
+    {
+      "name": "mlp_correct",
+      "category": "synthetic_mlp",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 60.0,
+      "notes": ""
+    },
+    {
+      "name": "mlp_bug_wrong_reshape",
+      "category": "synthetic_mlp",
+      "has_known_bug": true,
+      "tensorguard_found_bug": true,
+      "true_positive": true,
+      "false_positive": false,
+      "true_negative": false,
+      "false_negative": false,
+      "errors_found": [
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=0, step=Step(RESHAPE, in=['x'], out=x, layer=None), message='Reshape incompatible: cannot reshape TensorShape(dims=(batch, 1, 28, 28)) to (-1, 512)', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 1, 28, 28)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc1), message='Linear expects last dim=784, got 28', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 1, 28, 28)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=2, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc2), message='Linear expects last dim=256, got 28', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 1, 28, 28)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=3, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc3), message='Linear expects last dim=128, got 28', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 1, 28, 28)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        }
+      ],
+      "verification_time_ms": 127.79,
+      "notes": ""
+    },
+    {
+      "name": "cnn_correct",
+      "category": "synthetic_cnn",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 220.96,
+      "notes": ""
+    },
+    {
+      "name": "cnn_bug_wrong_linear",
+      "category": "synthetic_cnn",
+      "has_known_bug": true,
+      "tensorguard_found_bug": true,
+      "true_positive": true,
+      "false_positive": false,
+      "true_negative": false,
+      "false_negative": false,
+      "errors_found": [
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=6, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc1), message='Linear expects last dim=1024, got 9216', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 9216)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=6, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc1), message='Z3 violation (shape_incompatible) at step 6:\\n  dev_x_s1 = CPU_42\\n  dev_x_s4 = CPU_42\\n  phase_s1 = TRAIN_42\\n  dev_x_s5 = CPU_42\\n  phase_s0 = TRAIN_42\\n  dev_x_s6 = CPU_42\\n  phase_s5 = TRAIN_42\\n  grad_x_s0 = False\\n  phase_s6 = TRAIN_42\\n  grad_x_s6 = False\\n  dev_x_s0 = CPU_42\\n  grad_x_s5 = False\\n  grad_x_s3 = True\\n  grad_x_s4 = True\\n  batch = 1\\n  grad_x_s2 = True\\n  dev_x_s2 = CPU_42\\n  phase_s2 = TRAIN_42\\n  phase_s4 = TRAIN_42\\n  dev_x_s3 = CPU_42\\n  grad_x_s1 = True\\n  phase_s3 = TRAIN_42', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=8, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc2), message='Linear expects last dim=128, got 9216', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, 9216)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        }
+      ],
+      "verification_time_ms": 151.54,
+      "notes": ""
+    },
+    {
+      "name": "lstm_correct",
+      "category": "synthetic_rnn",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 153.75,
+      "notes": ""
+    },
+    {
+      "name": "lstm_bug_wrong_fc",
+      "category": "synthetic_rnn",
+      "has_known_bug": true,
+      "tensorguard_found_bug": true,
+      "true_positive": true,
+      "false_positive": false,
+      "true_negative": false,
+      "false_negative": false,
+      "errors_found": [
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=4, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc), message='Linear expects last dim=128, got 256', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(seq_len, 256)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        },
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=4, step=Step(LAYER_CALL, in=['x'], out=x, layer=fc), message='Z3 violation (shape_incompatible) at step 4:\\n  phase_s2 = TRAIN_44\\n  phase_s4 = TRAIN_44\\n  grad_x_s0 = False\\n  phase_s1 = TRAIN_44\\n  phase_s0 = TRAIN_44\\n  seq_len = 1\\n  dev_x_s1 = CPU_44\\n  grad_h_n_s4 = True\\n  dev_h_n_s3 = CPU_44\\n  grad_output_s2 = True\\n  dev_x_s0 = CPU_44\\n  grad_h_n_s3 = True\\n  grad_x_s1 = True\\n  phase_s3 = TRAIN_44\\n  dev_x_s2 = CPU_44\\n  dev_x_s3 = CPU_44\\n  dev_x_s4 = CPU_44\\n  dev_output_s4 = CPU_44\\n  dev_h_n_s4 = CPU_44\\n  grad_output_s3 = True\\n  grad_x_s3 = True\\n  grad_x_s4 = True\\n  batch = 1\\n  dev_output_s2 = CPU_44\\n  dev_output_s3 = CPU_44\\n  grad_output_s4 = True\\n  grad_x_s2 = True', tensor_a=None, tensor_b=None, shape_a=None, shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        }
+      ],
+      "verification_time_ms": 212.87,
+      "notes": ""
+    },
+    {
+      "name": "transformer_correct",
+      "category": "synthetic_transformer",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 76.02,
+      "notes": ""
+    },
+    {
+      "name": "transformer_bug_wrong_head",
+      "category": "synthetic_transformer",
+      "has_known_bug": true,
+      "tensorguard_found_bug": true,
+      "true_positive": true,
+      "false_positive": false,
+      "true_negative": false,
+      "false_negative": false,
+      "errors_found": [
+        {
+          "kind": "shape_incompatible",
+          "message": "SafetyViolation(kind='shape_incompatible', step_index=1, step=Step(LAYER_CALL, in=['x'], out=x, layer=encoder), message='TransformerEncoder: d_model=512 is not divisible by nhead=7', tensor_a='x', tensor_b=None, shape_a=TensorShape(dims=(batch, seq_len, 512)), shape_b=None, device_a=None, device_b=None, confidence=<Confidence.HIGH: 'high'>, fp_category=None)"
+        }
+      ],
+      "verification_time_ms": 172.69,
+      "notes": ""
+    },
+    {
+      "name": "attention_correct",
+      "category": "synthetic_attention",
+      "has_known_bug": false,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": true,
+      "false_negative": false,
+      "errors_found": [],
+      "verification_time_ms": 468.03,
+      "notes": ""
+    },
+    {
+      "name": "attention_bug_wrong_transpose",
+      "category": "synthetic_attention",
+      "has_known_bug": true,
+      "tensorguard_found_bug": false,
+      "true_positive": false,
+      "false_positive": false,
+      "true_negative": false,
+      "false_negative": true,
+      "errors_found": [],
+      "verification_time_ms": 228.55,
+      "notes": "Missed: Missing transpose on k, matmul inner dims mismatch"
+    }
+  ],
+  "comparison": {
+    "pytea": "Symbolic execution based; catches subset of shape errors",
+    "mypy_pyright": "No tensor shape support; 0 shape bugs detected",
+    "tensorguard": "Refinement types + Z3; static verification with CEGAR"
+  }
+}

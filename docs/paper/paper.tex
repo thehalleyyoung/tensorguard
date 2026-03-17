@@ -92,16 +92,16 @@ formal guarantees.  The tool covers
 117 operator transfer functions, of which 94.9\% produce decidable
 QF\_LIA constraints (polynomial time); only 6 operators
 (reshape/flatten/PixelShuffle/repeat) enter the NP-hard QF\_NIA
-fragment, whose hardness we prove via a mechanized SUBSET-PRODUCT
-reduction.
+fragment, whose hardness we justify via a SUBSET-PRODUCT reduction
+captured in the draft Lean artifact.
 
-The Lean~4 mechanization comprises 1,587 lines and 71 theorems with
-zero \texttt{sorry} obligations (not yet compiled; see
-Section~\ref{sec:lean}), covering theory combination soundness,
-propagator checker$\leftrightarrow$spec equivalences for all four
-theories, broadcast associativity, CEGAR convergence, and callback
-contracts C1/C4/C5.  IC3/PDR provides unbounded verification
-(sound for all fragments; complete for the 94.9\% QF\_LIA fragment).
+The repository also contains a 1,587-line Lean~4 formalization draft
+with 71 stated theorems and zero \texttt{sorry} obligations, but it is
+not yet packaged as a compilable Lean project (see
+Section~\ref{sec:lean}). We therefore treat it as supporting
+formalization work rather than a completed machine-checked result.
+IC3/PDR provides unbounded verification (sound for all fragments;
+complete for the 94.9\% QF\_LIA fragment).
 \end{abstract}
 
 
@@ -204,7 +204,8 @@ degrade on deep compositions.
   \item \textbf{QF\_UFLIA distinctness and totality axioms} for all
     three finite sorts, proved tight with 8/8 spurious model
     prevention tests and bidirectional simulation verification.
-  \item Lean~4 mechanization (1,587 lines, 0 \texttt{sorry}).
+  \item Draft Lean~4 formalization artifact (1,587 lines, 0
+    \texttt{sorry}; not yet compiled as a checked project).
   \item \textbf{Operator coverage expansion} from 145 to 117 classified
     operators ($1.33\times$ more shape transfer functions),
     adding scaled dot-product attention, RoPE, einops rearrange/repeat/reduce,
@@ -525,7 +526,7 @@ The shape theory produces constraints in quantifier-free linear
 integer arithmetic (QF\_LIA) for most operations.  Reshape
 operations introduce nonlinear constraints (product equality);
 reshape satisfiability is NP-hard via a SUBSET-PRODUCT reduction
-mechanized in Lean~4 (Appendix~\ref{app:reshape-hardness}).
+captured in the draft Lean~4 artifact (Appendix~\ref{app:reshape-hardness}).
 
 \subsection{Theories of Devices and Phases}
 
@@ -723,8 +724,9 @@ $B(4,5) \times B(2,2) \times B(3,24) = 15 \times 2 \times 5 = 150$ arrangements.
 This is $O(1)$ in practice.
 
 By the Tinelli--Zarba theorem~\cite{tinelli03}, soundness and completeness
-follow from P1--P5.  The theorem is mechanized in Lean~4
-(Appendix~\ref{sec:lean}). \qed
+follow from P1--P5. A draft Lean~4 development records this argument
+(Appendix~\ref{sec:lean}), but the proof artifact is not yet compiled as
+a checked project. \qed
 \end{proof}
 
 \paragraph{Improved cross-theory constraint propagation.}
@@ -1478,8 +1480,8 @@ either no predicates are removed (the loop terminates with $P_i$ as an
 inductive invariant) or at least one predicate is removed ($|P_{i+1}| <
 |P_i|$).  Since $|P_i| \geq 0$ for all $i$, the loop terminates in at
 most $|P_0|$ iterations.  This is a standard Houdini termination
-argument~\cite{flanagan01} and is mechanized in Lean~4 as
-\texttt{cegar\_terminates}.
+argument~\cite{flanagan01} and is recorded in the draft Lean~4
+development as \texttt{cegar\_terminates}.
 \end{proof}
 
 \paragraph{Tighter practical bound.}
@@ -3315,7 +3317,8 @@ proof object.
     padding are expressiveness limitations of shape-level analysis
     (see per-category analysis in
     Table~\ref{tab:mutation-category}).
-  \item \textbf{Completeness:} Soundness is mechanized in Lean~4;
+  \item \textbf{Completeness:} Soundness is formalized in the draft
+    Lean~4 development;
     completeness is not formally established. We prove relative
     completeness for the QF\_LIA fragment
     (Appendix~\ref{app:completeness-proof}).
@@ -3437,7 +3440,8 @@ An internal depth assessment identified several limitations that
 we address transparently:
 \begin{itemize}[leftmargin=2em]
   \item \textbf{CEGAR convergence:} The CEGAR loop is guaranteed
-    to terminate in $\leq |P_0|$ iterations (mechanized in Lean~4),
+    to terminate in $\leq |P_0|$ iterations (formalized in the draft
+    Lean~4 development),
     but the practical bound is $O(k)$ where $k = |P_{\mathit{final}}
     \setminus P_{\mathit{seed}}|$.  In adversarial experiments,
     cold-start convergence required at most 2 iterations across all
@@ -4081,7 +4085,8 @@ $\bigcup_i \mathcal{T}_i$ by identifying elements in the same
 equivalence class.  For stably-infinite theories, the model can
 always be extended to accommodate the required cardinality; for
 finite-domain theories, the arrangement respects the domain bound.
-The full proof is mechanized in Lean~4.
+A draft Lean~4 formalization records the full proof, but that artifact
+is not yet compiled as a checked project.
 \end{proof}
 
 
@@ -4163,13 +4168,13 @@ from the template grammar.
 %% ============================================================
 \section{Lean~4 Mechanization}\label{sec:lean}
 
-The Lean~4 mechanization comprises 1,587 lines with zero
-\texttt{sorry} obligations.  \textbf{Note:} The Lean formalization
-has not been mechanically verified end-to-end; no
-\texttt{lakefile.lean} or \texttt{lean-toolchain} file is present
-in the repository, so the proofs have not been compiled with
-\texttt{lake build}.  The theorem statements and proof structure
-have been written and reviewed but await compilation.
+The repository contains a 1,587-line Lean~4 formalization draft with zero
+\texttt{sorry} obligations. \textbf{However,} no \texttt{lakefile.lean}
+or \texttt{lean-toolchain} file is present in the repository, so the
+artifact has not been compiled with \texttt{lake build}. We therefore do
+not describe it as a completed machine-checked mechanization; it is a
+reviewed draft formalization that still awaits project setup and
+compilation.
 It covers:
 
 \begin{enumerate}[leftmargin=2em]
@@ -5801,8 +5806,9 @@ all generated constraints lie in
 QF\_LIA $+$ finite-domain (device, phase), and verification is
 decidable in polynomial time via the Tinelli--Zarba combination
 procedure.  NP-hardness for the reshape fragment is proved via
-SUBSET-PRODUCT reduction (mechanized in Lean~4,
-\texttt{reshape\_np\_hard} theorem, zero sorry obligations).
+SUBSET-PRODUCT reduction (captured in the draft Lean~4 artifact as the
+\texttt{reshape\_np\_hard} theorem, with zero sorry obligations but no
+compiled project setup yet).
 
 \paragraph{GroupNorm divisibility.}
 GroupNorm requires $\texttt{num\_channels} \bmod \texttt{num\_groups} = 0$.
@@ -5816,17 +5822,18 @@ decidable fragment.
 %% ============================================================
 \section{Lean 4 Mechanization Scope}\label{app:lean-scope}
 
-Table~\ref{tab:lean-scope} summarizes the mechanization status
-of all formal claims.  The file \texttt{lean/TheoryCombination.lean}
-comprises 1,587 lines and 71 theorems with \textbf{zero \texttt{sorry}
-obligations}.  \textbf{Note:} No \texttt{lakefile.lean} or
-\texttt{lean-toolchain} file is present in the repository; the Lean
-proofs have not been compiled with \texttt{lake build} and therefore
-have not been mechanically verified by the Lean kernel.
+Table~\ref{tab:lean-scope} summarizes the status of the draft
+formalization claims. The file \texttt{lean/TheoryCombination.lean}
+comprises 1,587 lines and 71 stated theorems with \textbf{zero
+\texttt{sorry} obligations}. \textbf{However,} no
+\texttt{lakefile.lean} or \texttt{lean-toolchain} file is present in
+the repository, so the Lean artifact has not been compiled with
+\texttt{lake build} and has not yet been checked end-to-end by the Lean
+kernel.
 
 \begin{table}[h]
 \centering
-\caption{Lean 4 mechanization scope (zero sorry).}
+\caption{Lean 4 draft formalization scope (uncompiled; zero sorry).}
 \label{tab:lean-scope}
 \small
 \begin{tabular}{@{}p{5.5cm}ll@{}}

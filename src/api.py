@@ -224,6 +224,85 @@ def _file_result_to_analysis_result(fr, filename: str) -> AnalysisResult:
     )
 
 
+# ── Shape analysis integration ─────────────────────────────────────────
+
+def _filter_init_param_div_by_zero(source: str, bugs: List[Bug]) -> List[Bug]:
+    """Filter false positive division-by-zero bugs for __init__ parameters.
+
+    In nn.Module __init__ methods, patterns like ``hidden_size // num_heads``
+    use constructor parameters that have non-zero integer defaults. These are
+    not actual division-by-zero risks.
+    """
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return bugs
+
+    # Collect all __init__ parameters with non-zero integer defaults
+    safe_divisors: set = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name == "__init__":
+            defaults = node.args.defaults
+            args = node.args.args
+            n_defaults = len(defaults)
+            n_args = len(args)
+            for i, default in enumerate(defaults):
+                arg_idx = n_args - n_defaults + i
+                if arg_idx >= 0 and arg_idx < n_args:
+                    arg_name = args[arg_idx].arg
+                    if (isinstance(default, ast.Constant)
+                            and isinstance(default.value, (int, float))
+                            and default.value != 0):
+                        safe_divisors.add(arg_name)
+
+    if not safe_divisors:
+        return bugs
+
+    filtered = []
+    for bug in bugs:
+        if bug.category == BugCategory.DIVISION_BY_ZERO:
+            # Check if the message references a safe divisor
+            is_false_positive = False
+            for name in safe_divisors:
+                if f"'{name}'" in bug.message:
+                    is_false_positive = True
+                    break
+            if is_false_positive:
+                continue
+        filtered.append(bug)
+    return filtered
+
+
+def _run_shape_analysis(source: str, filename: str) -> List[Bug]:
+    """Run tensor shape analysis and convert shape errors to Bug objects."""
+    try:
+        from .tensor_shapes import TensorShapeAnalyzer, ShapeErrorKind
+    except Exception:
+        return []
+
+    try:
+        analyzer = TensorShapeAnalyzer(timeout_ms=3000)
+        shape_result = analyzer.analyze_source(source)
+    except Exception:
+        return []
+
+    bugs = []
+    for err in shape_result.errors:
+        bugs.append(Bug(
+            category=BugCategory.TYPE_ERROR,
+            message=err.message,
+            location=SourceLocation(
+                file=filename,
+                line=err.line,
+                column=err.col,
+            ),
+            severity=err.severity if err.severity else "warning",
+            confidence=0.85,
+            fix_suggestion=None,
+        ))
+    return bugs
+
+
 # ── Public API ─────────────────────────────────────────────────────────
 
 def analyze(source: str, filename: str = "<string>",
@@ -232,6 +311,7 @@ def analyze(source: str, filename: str = "<string>",
 
     Harvests existing guards (isinstance, is not None, comparisons) as
     implicit refinement types, then performs flow-sensitive analysis.
+    Also runs tensor shape verification to catch shape mismatches.
 
     Args:
         source: Python source code string.
@@ -247,7 +327,16 @@ def analyze(source: str, filename: str = "<string>",
 
     from .real_analyzer import analyze_source
     fr = analyze_source(source, filename=filename, use_cegar=True)
-    return _file_result_to_analysis_result(fr, filename)
+    result = _file_result_to_analysis_result(fr, filename)
+
+    # Filter false positive division-by-zero for __init__ params with non-zero defaults
+    result.bugs = _filter_init_param_div_by_zero(source, result.bugs)
+
+    # Run tensor shape analysis and merge shape bugs
+    shape_bugs = _run_shape_analysis(source, filename)
+    result.bugs.extend(shape_bugs)
+
+    return result
 
 
 def analyze_file(path: str) -> AnalysisResult:

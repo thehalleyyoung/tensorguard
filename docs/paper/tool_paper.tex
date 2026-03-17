@@ -60,6 +60,7 @@
 
 \date{}
 
+\author{halley-labs}
 \begin{document}
 
 \maketitle
@@ -84,8 +85,7 @@ dimensions, proving safety for all valid inputs rather than for
 concrete test shapes alone.  We evaluate on real-world architectures
 including ResNet-50, MobileNetV2, EfficientNet-B0, and DenseNet-121, demonstrating
 high precision and recall.
-A Lean~4 mechanization (1,587 lines, 59 theorems, zero \texttt{sorry})
-establishes soundness of the theory combination procedure.
+The repository also contains a 1,587-line Lean~4 formalization draft (59 theorem statements/proofs, zero \texttt{sorry}) for the theory-combination development, but it is not yet packaged as a compilable Lean project, so we do not treat it as a completed machine-checked result.
 \end{abstract}
 
 %% ============================================================
@@ -122,10 +122,12 @@ graph, performs \textbf{multi-phase verification} (checking both
 safety constraints via Z3.  On a 52-model benchmark of cross-cutting
 bugs drawn from real HuggingFace, torchvision, detectron2, YOLOv5,
 and fairseq patterns, \tguard{} achieves \textbf{F1\,=\,0.625 with
-perfect precision (1.0)}, while no other tool---TorchScript,
-mypy, PyTEA, jaxtyping---is designed to detect these cross-cutting
-bug classes (\textbf{F1\,=\,0.000} by design, as they lack
-multi-theory checking).
+perfect precision (1.0)}. For TorchScript, mypy, PyTEA, and jaxtyping
+we report capability-based lower bounds rather than measured end-to-end
+benchmark scores on every case: because these tools do not model the
+device/phase interactions that define this benchmark, their comparison
+row should be read as a missing-capability baseline, not as a fully run
+head-to-head experiment.
 
 \paragraph{Contributions.}
 \begin{enumerate}[leftmargin=2em]
@@ -150,7 +152,8 @@ multi-theory checking).
   \item A \textbf{52-model cross-cutting benchmark} derived from
     real-world bug patterns in HuggingFace, torchvision, detectron2,
     YOLOv5, mmdetection, timm, fairseq, and wav2vec2, demonstrating
-    that \tguard{} is the first and only tool that detects these bugs.
+    that \tguard{} targets a cross-cutting bug class that the compared
+    baseline tools do not currently model.
 \end{enumerate}
 
 \paragraph{Availability.}  \tguard{} is open source and available as
@@ -495,7 +498,7 @@ satisfiability of conjunctions $\varphi_{\mathit{shape}} \land
 \end{theorem}
 
 \noindent
-This theorem is mechanized in Lean~4; see Section~\ref{sec:lean}.
+A draft Lean~4 development records this theorem; see Section~\ref{sec:lean} for the current proof-status caveat.
 
 \paragraph{Stride theory convexity.}
 Nelson--Oppen combination requires convexity (or completeness of
@@ -534,7 +537,8 @@ theories to detect.
 \begin{table}[t]
 \centering
 \caption{Cross-cutting multi-theory bug detection.  \tguard{} is the
-  first and only tool with non-zero recall on these benchmarks.}
+  only evaluated tool in this paper with measured non-zero recall; the
+  other rows are capability-based lower bounds rather than full per-case reruns.}
 \label{tab:crosscut}
 \small
 \begin{tabular}{@{}lcccc@{}}
@@ -548,8 +552,8 @@ mypy + torch stubs$^\dagger$  & 0.000 & 0.000 & 0.000 & 0 \\
 PyTEA$^\dagger$               & 0.000 & 0.000 & 0.000 & 0 \\
 jaxtyping$^\dagger$           & 0.000 & 0.000 & 0.000 & 0 \\
 \bottomrule
-\multicolumn{5}{@{}l}{\footnotesize $^\dagger$Assessed from documented capabilities; these tools lack} \\
-\multicolumn{5}{@{}l}{\footnotesize device/phase checking and were not individually run on each benchmark.}
+\multicolumn{5}{@{}l}{\footnotesize $^\dagger$Capability-based lower bound only: these tools were not individually rerun on every case.} \\
+\multicolumn{5}{@{}l}{\footnotesize They lack device/phase reasoning, so the zero row reflects missing capability rather than measured failure traces.}
 \end{tabular}
 \end{table}
 
@@ -617,8 +621,9 @@ supported by \tguard{} cover the operators most commonly used in
 standard neural network architectures.  94.9\% of these produce
 decidable QF\_LIA constraints; only 6 operators (reshape, flatten,
 PixelShuffle, repeat, and variants) produce QF\_NIA constraints,
-for which satisfiability is NP-hard (mechanized via Lean~4 reduction
-from SUBSET-PRODUCT).
+for which satisfiability is NP-hard (captured in a draft Lean~4
+reduction from SUBSET-PRODUCT, pending compilation of that proof
+artifact).
 
 \subsection{Real-World Model Verification}
 
@@ -915,13 +920,13 @@ bugs).
 %% ============================================================
 \section{Lean~4 Mechanization}\label{sec:lean}
 
-The Lean~4 mechanization comprises 1,587 lines of proof code with
-zero \texttt{sorry} obligations.  \textbf{Note:} The Lean
-formalization has not been mechanically verified end-to-end; no
-\texttt{lakefile.lean} or \texttt{lean-toolchain} file is present,
-so the proofs have not been compiled with \texttt{lake build}.
-The theorem statements and proof structure have been written and
-reviewed but await compilation.  It establishes 59 theorems
+The repository contains a 1,587-line Lean~4 formalization draft with
+zero \texttt{sorry} obligations. \textbf{However,} no
+\texttt{lakefile.lean} or \texttt{lean-toolchain} file is present, so
+this artifact has not been compiled with \texttt{lake build} and should
+not be described as a completed machine-checked proof. The theorem
+statements and proof structure have been written and reviewed, and the
+current draft covers 59 stated theorems
 covering three components:
 
 \begin{enumerate}[leftmargin=2em]
@@ -1014,15 +1019,17 @@ device, phase, stride, and permutation---to catch cross-cutting
 bugs that no existing tool detects.  On a 52-model benchmark of
 multi-theory bugs sourced from real-world issues (HuggingFace
 \#13666, torchvision ResNet, detectron2, YOLOv5, mmdetection),
-\tguard{} achieves F1 = 0.625 with perfect precision while
-no existing baseline is designed to detect these cross-cutting
-bug classes (TorchScript, mypy, jaxtyping, PyTEA lack device and
-phase checking).  The tool supports 142 operator
-transfer functions, covers real-world architectures (ResNet, VGG,
-MobileNetV2, EfficientNet, DenseNet), and produces parametric safety certificates via
-IC3/PDR over symbolic dimensions.  A Lean~4 mechanization
-(1,587 lines, 59 theorems) establishes soundness of the theory
-combination.
+\tguard{} achieves F1 = 0.625 with perfect precision. The baseline
+rows in this comparison should be read as capability lower bounds,
+not full per-case reruns: TorchScript, mypy, jaxtyping, and PyTEA
+lack the device/phase reasoning that defines these cross-cutting
+bug classes. The tool supports 142 operator transfer functions,
+covers real-world architectures (ResNet, VGG, MobileNetV2,
+EfficientNet, DenseNet), and produces parametric safety
+certificates via IC3/PDR over symbolic dimensions. The repository
+also includes a draft Lean~4 formalization (1,587 lines, 59 stated
+theorems) of the theory-combination argument, but that artifact is
+not yet compiled as a checked project.
 
 The primary limitation is the conformance gap between the
 mechanized specification and the Python implementation.
@@ -1362,10 +1369,11 @@ required:
     procedures for QF\_LIA, QF\_NIA, and QF\_UF.  Z3 is
     widely used and extensively tested, but bugs are possible.
 
-  \item \textbf{Lean~4 kernel.}  The Lean proof checker is
-    in the TCB for all mechanized theorems.  Its kernel is
-    small (${\sim}$10K lines of C++) and has been independently
-    audited.
+  \item \textbf{Lean~4 draft proofs.}  A Lean proof checker would
+    enter the TCB only after the current draft formalization is
+    packaged and compiled. At present, the draft artifact is
+    informative evidence, not an active machine-checked dependency
+    of the implementation.
 
   \item \textbf{Python implementation.}  The \tguard{} Python
     code (graph extraction, transfer functions, constraint
@@ -1374,7 +1382,7 @@ required:
     Python implementation is mitigated by:
     \begin{itemize}[nosep]
       \item Property-based testing (Hypothesis) exercising
-        mechanized theorem statements on the implementation.
+        drafted theorem statements on the implementation.
       \item Extensive unit and integration tests
         (3{,}709 tests total).
       \item Evaluation on real-world models providing

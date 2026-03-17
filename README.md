@@ -16,7 +16,7 @@ runtime errors in ML codebases before any code runs.
 
 ## Key Features
 
-- **331 operator transfer functions** — covers `matmul`, `conv2d`, `cat`,
+- **142 operator transfer functions** — covers `matmul`, `conv2d`, `cat`,
   `view`, `reshape`, `transpose`, `permute`, `einsum`, `bmm`, attention
   patterns, and more
 - **5-theory product domain** — jointly reasons over
@@ -146,7 +146,7 @@ tensorguard verify FILE [options]
    `nn.Conv2d(...)`, `torch.randn(...)`, input shape flags, and reshape calls
 3. **5-Theory Product Domain Propagation** — propagate
    **(Shape × Device × Phase × Stride × Permutation)** through every
-   operation using 331 transfer functions
+   operation using 142 transfer functions
 4. **Z3 Constraint Solving** — at each operation site, generate and discharge
    shape compatibility constraints via Z3
 5. **CEGAR Refinement** — if the initial abstraction is too coarse, discover

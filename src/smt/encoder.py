@@ -1503,6 +1503,73 @@ def make_solver(
 
 
 # ---------------------------------------------------------------------------
+# Functional operation shape rules for SMT encoding
+# ---------------------------------------------------------------------------
+
+def _conv2d_output_shape(input_shape, weight_shape, stride=(1, 1),
+                         padding=(0, 0), dilation=(1, 1)):
+    """Compute Conv2d output shape from input and weight shapes."""
+    if len(input_shape) != 4 or len(weight_shape) != 4:
+        return None
+    N, _C_in, H_in, W_in = input_shape
+    C_out, _C_in_w, kH, kW = weight_shape
+    sH, sW = stride if isinstance(stride, tuple) else (stride, stride)
+    pH, pW = padding if isinstance(padding, tuple) else (padding, padding)
+    dH, dW = dilation if isinstance(dilation, tuple) else (dilation, dilation)
+    H_out = (H_in + 2 * pH - dH * (kH - 1) - 1) // sH + 1
+    W_out = (W_in + 2 * pW - dW * (kW - 1) - 1) // sW + 1
+    return (N, C_out, H_out, W_out)
+
+
+FUNCTIONAL_SHAPE_RULES = {
+    # F.linear(input, weight, bias?) → (*input[:-1], weight[0])
+    'F.linear': lambda input_shape, weight_shape: (
+        (*input_shape[:-1], weight_shape[0])
+    ),
+    # F.conv2d(input, weight, bias?, stride, padding, dilation, groups)
+    'F.conv2d': _conv2d_output_shape,
+    # Shape-preserving operations
+    'F.softmax': lambda input_shape, dim=None: input_shape,
+    'F.log_softmax': lambda input_shape, dim=None: input_shape,
+    'F.layer_norm': lambda input_shape, normalized_shape=None: input_shape,
+    'F.batch_norm': lambda input_shape, *args, **kwargs: input_shape,
+    'F.group_norm': lambda input_shape, *args, **kwargs: input_shape,
+    'F.instance_norm': lambda input_shape, *args, **kwargs: input_shape,
+    'F.relu': lambda input_shape: input_shape,
+    'F.relu6': lambda input_shape: input_shape,
+    'F.gelu': lambda input_shape: input_shape,
+    'F.silu': lambda input_shape: input_shape,
+    'F.leaky_relu': lambda input_shape, negative_slope=0.01: input_shape,
+    'F.tanh': lambda input_shape: input_shape,
+    'F.sigmoid': lambda input_shape: input_shape,
+    'F.dropout': lambda input_shape, p=0.5, training=True: input_shape,
+    # Scalar-producing operations
+    'F.cross_entropy': lambda input_shape, target_shape: (),
+    'F.mse_loss': lambda input_shape, target_shape: (),
+    'F.l1_loss': lambda input_shape, target_shape: (),
+    'F.nll_loss': lambda input_shape, target_shape: (),
+    'F.binary_cross_entropy': lambda input_shape, target_shape: (),
+    # F.embedding(input, weight) → (*input, weight[1])
+    'F.embedding': lambda input_shape, weight_shape: (
+        (*input_shape, weight_shape[1])
+    ),
+    # Interpolation (output spatial dims are dynamic)
+    'F.interpolate': lambda input_shape, size=None, scale_factor=None: (
+        input_shape  # placeholder — real shape depends on size/scale_factor
+    ),
+    # Adaptive pooling
+    'F.adaptive_avg_pool2d': lambda input_shape, output_size: (
+        (*input_shape[:2], *output_size)
+    ),
+    'F.adaptive_max_pool2d': lambda input_shape, output_size: (
+        (*input_shape[:2], *output_size)
+    ),
+    # Normalization (shape-preserving)
+    'F.normalize': lambda input_shape, p=2, dim=1: input_shape,
+}
+
+
+# ---------------------------------------------------------------------------
 # Module-level exports
 # ---------------------------------------------------------------------------
 
@@ -1521,4 +1588,5 @@ __all__ = [
     "SMTLIBExporter",
     "CachingSMTSolver",
     "make_solver",
+    "FUNCTIONAL_SHAPE_RULES",
 ]

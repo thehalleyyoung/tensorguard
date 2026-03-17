@@ -93,8 +93,9 @@ and axis permutation---as a combined SMT theory
 $\Tprod = \Tshape \times \Tdevice \times \Tphase \times \Tstride
 \times \Tperm$ and discharges safety obligations via Z3.  Theory
 combination follows Tinelli--Zarba for finite-domain sorts and
-Nelson--Oppen for stably-infinite sorts, with soundness mechanized in
-Lean~4 (59 theorems, zero \texttt{sorry}).  \tguard{} requires zero
+Nelson--Oppen for stably-infinite sorts, with a draft Lean~4
+formalization (59 stated theorems, zero \texttt{sorry}) that is not
+yet packaged as a compilable checked project.  \tguard{} requires zero
 annotations, supports 142 PyTorch operator transfer functions, and
 verifies both training and evaluation branches of phase-dependent
 control flow.  An IC3/PDR engine proves shape safety parametrically
@@ -104,9 +105,10 @@ We evaluate on a 52-model cross-cutting benchmark drawn from real
 bugs in HuggingFace Transformers, torchvision, detectron2, YOLOv5,
 mmdetection, fairseq, and timm.  \tguard{} achieves
 \textbf{F1\,=\,0.625 with perfect precision (1.0)} on these
-benchmarks; no existing tool---TorchScript, mypy, PyTEA,
-jaxtyping---is designed to detect these cross-cutting bug classes
-(F1\,=\,0.000 by design, as they lack multi-theory checking).  On a separate 56-model
+benchmarks. The TorchScript/mypy/PyTEA/jaxtyping row should be read as
+a capability-based lower bound, not as a full rerun of every tool on
+every case: these systems do not model the device/phase interactions
+that define the benchmark. On a separate 56-model
 real-world architecture suite, \tguard{} achieves
 \textbf{F1\,=\,0.889}.  Verification completes in under 120\,ms per
 model.  \tguard{} is not incrementally better than prior work: it is
@@ -187,20 +189,21 @@ failing layer and dimensions.
 On a 52-model cross-cutting benchmark derived from real bugs in
 HuggingFace Transformers (issue \#13666), torchvision, detectron2,
 YOLOv5, mmdetection, timm, fairseq, and wav2vec2, \tguard{} achieves
-F1\,=\,0.625 with perfect precision.  No existing baseline is
-designed to detect these cross-cutting bug classes (all score
-F1\,=\,0.000, as they lack device and phase checking).
-This is not a marginal improvement: \tguard{} is the
-\emph{only} tool in the category.
+F1\,=\,0.625 with perfect precision. The baseline rows are
+capability-based lower bounds rather than end-to-end reruns: these
+systems lack device and phase checking, so the zero entries indicate a
+missing feature set rather than measured failure traces on every case.
+This still highlights that \tguard{} targets a distinct multi-theory
+bug class.
 
 \paragraph{Contributions.}
 \begin{enumerate}[leftmargin=2em]
   \item A \textbf{five-theory product domain}
     $\Tshape \times \Tdevice \times \Tphase \times \Tstride \times
     \Tperm$ with Tinelli--Zarba theory combination for finite-domain
-    sorts and Nelson--Oppen for stably-infinite sorts, verified by
-    59 mechanized Lean~4 theorems
-    (\S\ref{sec:theory}).
+    sorts and Nelson--Oppen for stably-infinite sorts, accompanied by
+    a draft Lean~4 formalization with 59 stated theorems
+    (\S\ref{sec:theory}) that is not yet compiled as a checked project.
 
   \item \textbf{Multi-phase verification}: both branches of
     \texttt{if self.training:} are symbolically explored, catching
@@ -575,9 +578,9 @@ $\varphi_{\mathit{shape}} \land \varphi_{\mathit{device}} \land
 \varphi_{\mathit{perm}}$.
 \end{theorem}
 
-This theorem is mechanized in Lean~4 (59 theorems, 1{,}587 lines,
-zero \texttt{sorry} obligations), establishing both directions of
-the soundness biconditional.
+A draft Lean~4 development (59 stated theorems, 1{,}587 lines, zero
+\texttt{sorry} obligations) records this soundness argument, but the
+artifact is not yet compiled as a checked Lean project.
 
 \paragraph{Cross-domain reductions.}
 The product domain includes inter-domain axioms that tighten
@@ -3009,11 +3012,11 @@ The trusted computing base (TCB) of \tguard{} comprises:
   \item \textbf{Z3 SMT solver.}  We trust Z3's decision procedures
     for QF\_LIA, QF\_NIA, and QF\_UF.
 
-  \item \textbf{Lean~4 kernel.}  The Lean proof checker is in the
-    TCB for the 59 mechanized theorems establishing theory
-    combination soundness.  \emph{Note:} The Lean formalization has
-    not yet been compiled (no \texttt{lakefile.lean} is present);
-    theorem statements are written but await mechanical verification.
+  \item \textbf{Lean~4 draft proofs.}  A Lean proof checker would enter
+    the TCB only after the current formalization draft is packaged and
+    compiled. At present, no \texttt{lakefile.lean} is present, so the
+    theorem statements and proof terms should be read as an uncompiled
+    supplementary artifact rather than a completed machine-checked proof.
 
   \item \textbf{Python implementation.}  The \tguard{} Python code
     (graph extraction, transfer functions, constraint generation) is
@@ -3326,14 +3329,13 @@ the following families:
 
 \section{Lean Mechanization Details}\label{app:lean}
 
-The Lean~4 mechanization comprises 1{,}587 lines in a single file
-(\texttt{TheoryCombination.lean}) with 59 theorems and zero
-\texttt{sorry} obligations.  \textbf{Note:} The Lean formalization
-has not been mechanically verified end-to-end; no
-\texttt{lakefile.lean} or \texttt{lean-toolchain} file is present in
-the repository, so the proofs have not been compiled with
-\texttt{lake build}.  The theorem statements and proof structure have
-been written and reviewed but await compilation.  We summarize the
+The repository contains a 1{,}587-line Lean~4 formalization draft in
+\texttt{TheoryCombination.lean} with 59 stated theorems and zero
+\texttt{sorry} obligations. \textbf{However,} no \texttt{lakefile.lean}
+or \texttt{lean-toolchain} file is present, so the draft has not been
+compiled with \texttt{lake build} and should not be described as a
+completed machine-checked development. The theorem statements and proof
+structure have been written and reviewed; we summarize the
 key theorems.
 
 \subsection{Key Theorems}

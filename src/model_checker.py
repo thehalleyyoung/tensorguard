@@ -809,6 +809,8 @@ def _const_value(node: ast.expr, param_map: Optional[Dict[str, Any]] = None) -> 
                 return left - right
             if isinstance(node.op, ast.FloorDiv) and isinstance(left, int) and isinstance(right, int) and right != 0:
                 return left // right
+            if isinstance(node.op, ast.Pow) and isinstance(left, int) and isinstance(right, int) and right >= 0:
+                return left ** right
     if isinstance(node, ast.Tuple):
         vals = [_const_value(e, param_map) for e in node.elts]
         if all(v is not None for v in vals):
@@ -1755,12 +1757,18 @@ class _InitExtractor(ast.NodeVisitor):
     When *class_map* is provided, submodule instantiations like
     ``self.layer1 = BasicBlock(64, 64)`` are recognised and their inner
     layers are extracted with prefixed attribute names.
+
+    Local variables assigned to nn.Layer constructors are tracked so
+    that patterns like ``enc_layer = nn.TransformerEncoderLayer(...);
+    self.encoder = nn.TransformerEncoder(enc_layer, ...)`` correctly
+    propagate parameters.
     """
 
     def __init__(self, class_map: Optional[Dict[str, ast.ClassDef]] = None) -> None:
         self.layers: Dict[str, LayerDef] = {}
         self._param_map: Dict[str, Any] = {}  # param_name -> default value
         self._class_map = class_map or {}
+        self._local_layer_calls: Dict[str, ast.Call] = {}  # local_var -> Call node
 
     def extract(self, init_fn: ast.FunctionDef) -> None:
         """Extract layers, first building param_map from defaults."""
@@ -1780,6 +1788,12 @@ class _InitExtractor(ast.NodeVisitor):
 
     def visit_Assign(self, node: ast.Assign) -> None:
         for target in node.targets:
+            # Track local variable assignments of layer constructors
+            if isinstance(target, ast.Name) and isinstance(node.value, ast.Call):
+                fname = _name_or_attr(node.value.func)
+                is_layer, _ = _is_nn_layer(fname)
+                if is_layer:
+                    self._local_layer_calls[target.id] = node.value
             self._try_extract(target, node.value)
         self.generic_visit(node)
 
@@ -1796,7 +1810,20 @@ class _InitExtractor(ast.NodeVisitor):
         is_layer, kind = _is_nn_layer(func_name)
 
         if is_layer:
-            layer = _extract_layer_params(kind, value, self._param_map)
+            # Before extracting params, substitute local variable references
+            # in the call args. E.g., nn.TransformerEncoder(encoder_layer, ...)
+            # where encoder_layer is a local that holds a layer Call node.
+            patched_call = value
+            if (kind in (LayerKind.TRANSFORMER_ENCODER,
+                         LayerKind.TRANSFORMER_DECODER)
+                    and value.args
+                    and isinstance(value.args[0], ast.Name)
+                    and value.args[0].id in self._local_layer_calls):
+                import copy as _copy
+                patched_call = _copy.copy(value)
+                patched_call.args = list(patched_call.args)
+                patched_call.args[0] = self._local_layer_calls[value.args[0].id]
+            layer = _extract_layer_params(kind, patched_call, self._param_map)
             layer.attr_name = attr
             self.layers[attr] = layer
             return
@@ -1877,6 +1904,104 @@ _FUNCTIONAL_OPS: Dict[str, OpKind] = {
     "unfold": OpKind.LAYER_CALL,
     "upsample": OpKind.INTERPOLATE,
 }
+
+# Mapping from functional call names to LayerKind, used to create synthetic
+# LayerDef objects so that shape propagation works for F.max_pool2d etc.
+_FUNC_LAYER_KIND: Dict[str, "LayerKind"] = {
+    "max_pool1d": LayerKind.MAXPOOL1D,
+    "max_pool2d": LayerKind.MAXPOOL2D,
+    "max_pool3d": LayerKind.MAXPOOL3D,
+    "avg_pool1d": LayerKind.AVGPOOL1D,
+    "avg_pool2d": LayerKind.AVGPOOL2D,
+    "avg_pool3d": LayerKind.AVGPOOL3D,
+    "adaptive_avg_pool1d": LayerKind.ADAPTIVE_AVGPOOL1D,
+    "adaptive_avg_pool2d": LayerKind.ADAPTIVE_AVGPOOL2D,
+    "adaptive_max_pool1d": LayerKind.ADAPTIVE_MAXPOOL1D,
+    "adaptive_max_pool2d": LayerKind.ADAPTIVE_MAXPOOL2D,
+    "linear": LayerKind.LINEAR,
+    "conv1d": LayerKind.CONV1D,
+    "conv2d": LayerKind.CONV2D,
+    "conv3d": LayerKind.CONV3D,
+    "batch_norm": LayerKind.BATCHNORM1D,
+    "layer_norm": LayerKind.LAYERNORM,
+    "group_norm": LayerKind.GROUPNORM,
+    "instance_norm": LayerKind.INSTANCENORM2D,
+    "embedding": LayerKind.EMBEDDING,
+    "pixel_shuffle": OpKind.LAYER_CALL,
+    "pixel_unshuffle": OpKind.LAYER_CALL,
+}
+
+
+def _make_functional_layer(
+    func_name: str,
+    call_node: ast.Call,
+) -> Optional["LayerDef"]:
+    """Create a synthetic LayerDef for a functional call (e.g. F.max_pool2d).
+
+    Extracts kernel_size, stride, padding, output_size etc. from the call
+    arguments so that the shape propagation functions can operate normally.
+    """
+    kind = _FUNC_LAYER_KIND.get(func_name)
+    if kind is None:
+        return None
+
+    # The first positional arg is the input tensor; parameters start at arg[1].
+    pos_args = call_node.args[1:]  # skip input tensor
+    kw = {k.arg: _const_value(k.value) for k in call_node.keywords if k.arg}
+
+    layer = LayerDef(attr_name=f"__func_{func_name}", kind=kind, params=dict(kw))
+
+    if kind in (LayerKind.MAXPOOL2D, LayerKind.AVGPOOL2D,
+                LayerKind.MAXPOOL1D, LayerKind.AVGPOOL1D,
+                LayerKind.MAXPOOL3D, LayerKind.AVGPOOL3D):
+        # F.max_pool2d(input, kernel_size, stride=None, padding=0, ...)
+        ks = _const_value(pos_args[0]) if pos_args else kw.get("kernel_size", 2)
+        if isinstance(ks, int):
+            ks = (ks, ks) if "2d" in func_name else (ks,)
+        layer.kernel_size = ks if isinstance(ks, tuple) else (ks, ks)
+        stride = (_const_value(pos_args[1]) if len(pos_args) > 1
+                  else kw.get("stride", None))
+        if stride is None:
+            stride = layer.kernel_size
+        elif isinstance(stride, int):
+            stride = (stride, stride) if "2d" in func_name else (stride,)
+        layer.params["stride"] = stride
+        padding = (_const_value(pos_args[2]) if len(pos_args) > 2
+                   else kw.get("padding", 0))
+        if isinstance(padding, int):
+            padding = (padding, padding) if "2d" in func_name else (padding,)
+        layer.params["padding"] = padding
+
+    elif kind in (LayerKind.ADAPTIVE_AVGPOOL2D, LayerKind.ADAPTIVE_MAXPOOL2D):
+        # F.adaptive_avg_pool2d(input, output_size)
+        out_sz = _const_value(pos_args[0]) if pos_args else kw.get("output_size")
+        if isinstance(out_sz, int):
+            out_sz = (out_sz, out_sz)
+        layer.output_size = out_sz
+
+    elif kind in (LayerKind.ADAPTIVE_AVGPOOL1D, LayerKind.ADAPTIVE_MAXPOOL1D):
+        out_sz = _const_value(pos_args[0]) if pos_args else kw.get("output_size")
+        if isinstance(out_sz, int):
+            out_sz = (out_sz,)
+        layer.output_size = out_sz
+
+    elif kind == LayerKind.LINEAR:
+        # F.linear(input, weight, bias) — we can't easily know in/out features
+        # from the weight tensor name alone, so skip shape constraints.
+        pass
+
+    elif kind in (LayerKind.CONV2D, LayerKind.CONV1D, LayerKind.CONV3D):
+        # F.conv2d(input, weight, bias, stride, padding, dilation, groups)
+        # Without concrete weight shape, we can't infer out_channels.
+        pass
+
+    elif kind in (LayerKind.BATCHNORM1D, LayerKind.LAYERNORM,
+                  LayerKind.GROUPNORM, LayerKind.INSTANCENORM2D):
+        # Normalization ops preserve shape
+        pass
+
+    return layer
+
 
 _METHOD_OPS: Dict[str, OpKind] = {
     "view": OpKind.RESHAPE,
@@ -2327,107 +2452,113 @@ class _ForwardExtractor(ast.NodeVisitor):
         if isinstance(func, ast.Attribute):
             method = func.attr
             if method in _METHOD_OPS:
-                base = self._resolve_arg(func.value)
-                params: Dict[str, Any] = {}
+                # Skip if the base is a well-known module (torch, F, nn) —
+                # e.g. ``torch.flatten(x, 1)`` should be handled as a
+                # function call, not as a method on the ``torch`` object.
+                base_name = _name_or_attr(func.value)
+                if base_name not in ("torch", "F", "nn", "np",
+                                     "torch.nn", "torch.nn.functional"):
+                    base = self._resolve_arg(func.value)
+                    params: Dict[str, Any] = {}
 
-                if method in ("view", "reshape"):
-                    dims = [_const_value(a) for a in node.args]
-                    # Detect x.size(dim) or x.shape[dim] patterns
-                    size_dim_indices = []
-                    for idx, (d, a) in enumerate(zip(dims, node.args)):
-                        if d is None:
-                            if isinstance(a, ast.Call):
-                                # x.size(dim) → mark as "keep from input"
-                                size_dim_indices.append(idx)
-                            elif isinstance(a, ast.Subscript):
-                                # x.shape[dim] → mark as "keep from input"
-                                size_dim_indices.append(idx)
-                            dims[idx] = -1
-                    # Common pattern: view(x.size(0), -1) → flatten(1)
-                    if (size_dim_indices and len(dims) == 2
-                            and dims[0] == -1 and dims[1] == -1
-                            and 0 in size_dim_indices):
-                        self.steps.append(ComputationStep(
-                            op=OpKind.FLATTEN,
-                            inputs=[base],
-                            output=target,
-                            params={"start_dim": 1},
-                            line=line, col=col,
-                        ))
-                        return
-                    # For x.size(dim) args, use sentinel 0 (keep from input)
-                    # to allow the reshape logic to copy that dim from input
-                    for idx in size_dim_indices:
-                        dims[idx] = 0
-                    params["dims"] = tuple(
-                        d if d is not None else -1 for d in dims
-                    )
-                elif method == "flatten":
-                    sd = _const_value(node.args[0]) if node.args else 1
-                    params["start_dim"] = sd
-                elif method in ("squeeze", "unsqueeze"):
-                    if node.args:
-                        params["dim"] = _const_value(node.args[0])
-                elif method == "transpose":
-                    if len(node.args) >= 2:
-                        params["dim0"] = _const_value(node.args[0])
-                        params["dim1"] = _const_value(node.args[1])
-                elif method == "permute":
-                    params["dims"] = tuple(
-                        _const_value(a) for a in node.args
-                    )
-                elif method == "to":
-                    if node.args:
-                        params["device"] = _const_value(node.args[0])
-                    for kw in node.keywords:
-                        if kw.arg == "device":
-                            params["device"] = _const_value(kw.value)
-                elif method == "cuda":
-                    params["device"] = "cuda:0"
-                elif method == "cpu":
-                    params["device"] = "cpu"
-                elif method == "expand":
-                    params["dims"] = tuple(
-                        _const_value(a) for a in node.args
-                    )
-                elif method in ("expand_as", "repeat_interleave"):
-                    pass  # shape-preserving approximation
-                elif method == "repeat":
-                    params["dims"] = tuple(
-                        _const_value(a) for a in node.args
-                    )
-                elif method in ("mean", "sum", "max", "min",
-                                "norm", "std", "var"):
-                    if node.args:
-                        params["dim"] = _const_value(node.args[0])
-                    for kw_node in node.keywords:
-                        if kw_node.arg == "dim":
-                            params["dim"] = _const_value(kw_node.value)
-                        elif kw_node.arg == "keepdim":
-                            params["keepdim"] = _const_value(kw_node.value)
-                elif method in ("chunk", "split"):
-                    if node.args:
-                        params["chunks"] = _const_value(node.args[0])
-                    if len(node.args) > 1:
-                        params["dim"] = _const_value(node.args[1])
-                    for kw_node in node.keywords:
-                        if kw_node.arg == "dim":
-                            params["dim"] = _const_value(kw_node.value)
-                elif method in ("softmax", "log_softmax"):
-                    if node.args:
-                        params["dim"] = _const_value(node.args[0])
-                    for kw_node in node.keywords:
-                        if kw_node.arg == "dim":
-                            params["dim"] = _const_value(kw_node.value)
+                    if method in ("view", "reshape"):
+                        dims = [_const_value(a) for a in node.args]
+                        # Detect x.size(dim) or x.shape[dim] patterns
+                        size_dim_indices = []
+                        for idx, (d, a) in enumerate(zip(dims, node.args)):
+                            if d is None:
+                                if isinstance(a, ast.Call):
+                                    # x.size(dim) → mark as "keep from input"
+                                    size_dim_indices.append(idx)
+                                elif isinstance(a, ast.Subscript):
+                                    # x.shape[dim] → mark as "keep from input"
+                                    size_dim_indices.append(idx)
+                                dims[idx] = -1
+                        # Common pattern: view(x.size(0), -1) → flatten(1)
+                        if (size_dim_indices and len(dims) == 2
+                                and dims[0] == -1 and dims[1] == -1
+                                and 0 in size_dim_indices):
+                            self.steps.append(ComputationStep(
+                                op=OpKind.FLATTEN,
+                                inputs=[base],
+                                output=target,
+                                params={"start_dim": 1},
+                                line=line, col=col,
+                            ))
+                            return
+                        # For x.size(dim) args, use sentinel 0 (keep from input)
+                        # to allow the reshape logic to copy that dim from input
+                        for idx in size_dim_indices:
+                            dims[idx] = 0
+                        params["dims"] = tuple(
+                            d if d is not None else -1 for d in dims
+                        )
+                    elif method == "flatten":
+                        sd = _const_value(node.args[0]) if node.args else 1
+                        params["start_dim"] = sd
+                    elif method in ("squeeze", "unsqueeze"):
+                        if node.args:
+                            params["dim"] = _const_value(node.args[0])
+                    elif method == "transpose":
+                        if len(node.args) >= 2:
+                            params["dim0"] = _const_value(node.args[0])
+                            params["dim1"] = _const_value(node.args[1])
+                    elif method == "permute":
+                        params["dims"] = tuple(
+                            _const_value(a) for a in node.args
+                        )
+                    elif method == "to":
+                        if node.args:
+                            params["device"] = _const_value(node.args[0])
+                        for kw in node.keywords:
+                            if kw.arg == "device":
+                                params["device"] = _const_value(kw.value)
+                    elif method == "cuda":
+                        params["device"] = "cuda:0"
+                    elif method == "cpu":
+                        params["device"] = "cpu"
+                    elif method == "expand":
+                        params["dims"] = tuple(
+                            _const_value(a) for a in node.args
+                        )
+                    elif method in ("expand_as", "repeat_interleave"):
+                        pass  # shape-preserving approximation
+                    elif method == "repeat":
+                        params["dims"] = tuple(
+                            _const_value(a) for a in node.args
+                        )
+                    elif method in ("mean", "sum", "max", "min",
+                                    "norm", "std", "var"):
+                        if node.args:
+                            params["dim"] = _const_value(node.args[0])
+                        for kw_node in node.keywords:
+                            if kw_node.arg == "dim":
+                                params["dim"] = _const_value(kw_node.value)
+                            elif kw_node.arg == "keepdim":
+                                params["keepdim"] = _const_value(kw_node.value)
+                    elif method in ("chunk", "split"):
+                        if node.args:
+                            params["chunks"] = _const_value(node.args[0])
+                        if len(node.args) > 1:
+                            params["dim"] = _const_value(node.args[1])
+                        for kw_node in node.keywords:
+                            if kw_node.arg == "dim":
+                                params["dim"] = _const_value(kw_node.value)
+                    elif method in ("softmax", "log_softmax"):
+                        if node.args:
+                            params["dim"] = _const_value(node.args[0])
+                        for kw_node in node.keywords:
+                            if kw_node.arg == "dim":
+                                params["dim"] = _const_value(kw_node.value)
 
-                self.steps.append(ComputationStep(
-                    op=_METHOD_OPS[method],
-                    inputs=[base],
-                    output=target,
-                    params=params,
-                    line=line, col=col,
-                ))
-                return
+                    self.steps.append(ComputationStep(
+                        op=_METHOD_OPS[method],
+                        inputs=[base],
+                        output=target,
+                        params=params,
+                        line=line, col=col,
+                    ))
+                    return
 
         # --- F.<func>(...) or torch.<func>(...) ------------------------------
         func_name = _name_or_attr(func)
@@ -2446,11 +2577,28 @@ class _ForwardExtractor(ast.NodeVisitor):
                 for kw in node.keywords:
                     if kw.arg:
                         params_dict[kw.arg] = _const_value(kw.value)
+
+                # For functional calls that map to LAYER_CALL, create a
+                # synthetic LayerDef so shape propagation actually works.
+                layer_ref_name: Optional[str] = None
+                if op == OpKind.LAYER_CALL and short in _FUNC_LAYER_KIND:
+                    syn_layer = _make_functional_layer(short, node)
+                    if syn_layer is not None:
+                        syn_name = f"__func_{short}_{self._tmp_counter}"
+                        self._tmp_counter += 1
+                        syn_layer.attr_name = syn_name
+                        self.layers[syn_name] = syn_layer
+                        layer_ref_name = syn_name
+                        # For functional calls, first input is the tensor;
+                        # the rest are parameters — only keep the tensor.
+                        inputs = inputs[:1]
+
                 self.steps.append(ComputationStep(
                     op=_FUNCTIONAL_OPS[short],
                     inputs=inputs,
                     output=target,
                     params=params_dict,
+                    layer_ref=layer_ref_name,
                     line=line, col=col,
                 ))
                 return
@@ -3486,7 +3634,35 @@ def _propagate_conv2d(
 
     out_c = layer.out_channels
     if out_c is None:
-        return None, "Conv2d out_channels unknown"
+        # Unknown out_channels — propagate symbolic channel dim rather than
+        # erroring, since this is not a user bug (just an unresolvable param).
+        ks = layer.kernel_size or (3, 3)
+        stride = layer.params.get("stride", (1, 1))
+        if isinstance(stride, int):
+            stride = (stride, stride)
+        padding = layer.params.get("padding", (0, 0))
+        if isinstance(padding, int):
+            padding = (padding, padding)
+        dilation = layer.params.get("dilation", (1, 1))
+        if isinstance(dilation, int):
+            dilation = (dilation, dilation)
+        h_in = input_shape.dims[2]
+        w_in = input_shape.dims[3]
+        if not h_in.is_symbolic and not w_in.is_symbolic:
+            h_out = (h_in.value + 2 * padding[0] - dilation[0] * (ks[0] - 1) - 1) // stride[0] + 1
+            w_out = (w_in.value + 2 * padding[1] - dilation[1] * (ks[1] - 1) - 1) // stride[1] + 1
+            return TensorShape((
+                input_shape.dims[0],
+                ShapeDim(f"_C_{layer.attr_name}"),
+                ShapeDim(h_out),
+                ShapeDim(w_out),
+            )), None
+        return TensorShape((
+            input_shape.dims[0],
+            ShapeDim(f"_C_{layer.attr_name}"),
+            ShapeDim("H_out"),
+            ShapeDim("W_out"),
+        )), None
 
     # Compute output spatial dims:
     # H' = floor((H + 2*pad - dilation*(kernel-1) - 1) / stride + 1)
@@ -3930,11 +4106,23 @@ def _propagate_transformer_encoder_layer(
     """nn.TransformerEncoderLayer(d_model, nhead) preserves shape.
 
     Input: (seq, batch, d_model) or (batch, seq, d_model) → same.
+    Also validates that d_model is divisible by nhead.
     """
     if input_shape.ndim < 2:
         return None, "TransformerEncoderLayer requires at least 2D input"
 
     d_model = layer.in_features
+    nhead = layer.num_heads
+
+    # Check d_model % nhead == 0  (required by MultiheadAttention)
+    if (d_model is not None and nhead is not None
+            and isinstance(d_model, int) and isinstance(nhead, int)
+            and nhead > 0 and d_model % nhead != 0):
+        return None, (
+            f"TransformerEncoderLayer: d_model={d_model} is not divisible "
+            f"by nhead={nhead}"
+        )
+
     last = input_shape.dims[-1]
     if d_model is not None and not last.is_symbolic:
         if last.value != d_model:
@@ -3966,11 +4154,24 @@ def _propagate_transformer_decoder_layer(
 def _propagate_transformer_encoder(
     input_shape: TensorShape, layer: LayerDef
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """nn.TransformerEncoder preserves shape (stacks N encoder layers)."""
+    """nn.TransformerEncoder preserves shape (stacks N encoder layers).
+
+    Also validates d_model % nhead == 0 (inherited from the sub-layer).
+    """
     if input_shape.ndim < 2:
         return None, "TransformerEncoder requires at least 2D input"
 
     d_model = layer.in_features
+    nhead = layer.num_heads
+
+    if (d_model is not None and nhead is not None
+            and isinstance(d_model, int) and isinstance(nhead, int)
+            and nhead > 0 and d_model % nhead != 0):
+        return None, (
+            f"TransformerEncoder: d_model={d_model} is not divisible "
+            f"by nhead={nhead}"
+        )
+
     last = input_shape.dims[-1]
     if d_model is not None and not last.is_symbolic:
         if last.value != d_model:
@@ -4134,7 +4335,13 @@ def _propagate_pixel_shuffle(
         return None, f"PixelShuffle expects 4D, got {input_shape.ndim}D"
     r = layer.params.get("upscale_factor")
     if r is None:
-        return None, "upscale_factor unknown"
+        # Unknown upscale_factor — propagate symbolic shape
+        return TensorShape((
+            input_shape.dims[0],
+            ShapeDim("_c_ps"),
+            ShapeDim("_h_ps"),
+            ShapeDim("_w_ps"),
+        )), None
     c_in = input_shape.dims[1]
     if not c_in.is_symbolic:
         if c_in.value % (r * r) != 0:
@@ -7454,32 +7661,72 @@ class ConstraintVerifier:
 
         return violations
 
+    # Common module-level names that are always in scope (imports/builtins).
+    _ALWAYS_DEFINED = frozenset({
+        "self", "torch", "F", "nn", "np", "math", "None", "True", "False",
+        "print", "len", "range", "int", "float", "list", "tuple", "dict",
+        "isinstance", "type", "enumerate", "zip", "map", "filter", "sorted",
+        "super", "object", "str", "bool", "set", "frozenset", "getattr",
+    })
+
     def _check_use_before_def(self) -> List[SafetyViolation]:
         """Check for variables used before they are defined.
 
         This catches swap_layers mutations where layer call order is
         reversed, causing variables to be referenced before assignment.
+
+        Only flags a variable when it IS defined later in the step list
+        (indicating reordering), not when it is never defined at all.
+        Variables that never appear as outputs are likely from control flow
+        (tuple unpacking, method calls, conditionals) that the extractor
+        does not model.
         """
         violations: List[SafetyViolation] = []
         defined: set = set(self.graph.input_names)
-        # Also consider 'self' attributes as always-defined
+
+        # Collect all variable names that are eventually defined (outputs)
+        all_outputs = {step.output for step in self.graph.steps if step.output}
+
         for step in self.graph.steps:
             for inp in step.inputs:
-                if (inp not in defined
-                        and not inp.startswith("__")
-                        and not inp.startswith("self.")
-                        and not inp.startswith("_attr")
-                        and not inp.startswith("_tensor")
-                        and inp not in ("self",)):
-                    violations.append(SafetyViolation(
-                        kind="use_before_def",
-                        step_index=-1,
-                        step=step,
-                        message=(
-                            f"Variable '{inp}' used before definition "
-                            f"at line {step.line}"
-                        ),
-                    ))
+                if inp in defined:
+                    continue
+                # Skip internal variables and self attributes
+                if (inp.startswith("__") or inp.startswith("self.")
+                        or inp.startswith("_attr") or inp.startswith("_tensor")):
+                    continue
+                # Skip dotted attribute access — the base object is usually
+                # a parameter or a known variable (e.g. batch.premise)
+                if "." in inp:
+                    base = inp.split(".")[0]
+                    if base in defined or base in self._ALWAYS_DEFINED:
+                        continue
+                # Skip common imports and builtins
+                if inp in self._ALWAYS_DEFINED:
+                    continue
+                # Skip numeric-looking arguments (constant pool entries)
+                try:
+                    float(inp)
+                    continue
+                except (ValueError, TypeError):
+                    pass
+                # Only flag if this variable IS defined later (reordered),
+                # not if it's simply absent from the graph (unmodeled flow).
+                if inp not in all_outputs:
+                    continue
+                # Skip self-referencing steps (e.g. outputs = outputs + [x])
+                # which are loop accumulators, not use-before-def errors.
+                if inp == step.output:
+                    continue
+                violations.append(SafetyViolation(
+                    kind="use_before_def",
+                    step_index=-1,
+                    step=step,
+                    message=(
+                        f"Variable '{inp}' used before definition "
+                        f"at line {step.line}"
+                    ),
+                ))
             if step.output:
                 defined.add(step.output)
         return violations
