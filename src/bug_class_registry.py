@@ -116,7 +116,7 @@ class BugClassRegistry:
         self._by_id: Dict[int, BugClassDef] = {}
 
         if bugclasses_path is None:
-            bugclasses_path = Path(__file__).parent.parent.parent / "bugclasses.jsonl"
+            bugclasses_path = Path(__file__).parent.parent / "bugclasses.jsonl"
 
         if bugclasses_path.exists():
             self._load(bugclasses_path)

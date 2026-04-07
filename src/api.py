@@ -763,6 +763,34 @@ def verify_architecture(
             fix_suggestion=None,
         ))
 
+    # Convert counterexample violations to Bug objects
+    if vr.counterexample is not None:
+        for violation in vr.counterexample.violations:
+            kind = violation.kind  # e.g. "shape_incompatible", "device_mismatch"
+            category_map = {
+                "shape_incompatible": BugCategory.TYPE_ERROR,
+                "device_mismatch": BugCategory.TYPE_ERROR,
+                "phase_error": BugCategory.TYPE_ERROR,
+                "dead_output": BugCategory.TYPE_ERROR,
+            }
+            category = category_map.get(kind, BugCategory.TYPE_ERROR)
+            line = getattr(violation.step, "line", 0) if violation.step else 0
+            col = getattr(violation.step, "col", 0) if violation.step else 0
+            confidence_val = getattr(violation.confidence, "value", str(violation.confidence))
+            severity = "error" if confidence_val == "high" else "warning"
+            result.bugs.append(Bug(
+                category=category,
+                message=f"[{kind.upper().replace('_', '-')}] {violation.message}",
+                location=SourceLocation(
+                    file=filename,
+                    line=line,
+                    column=col,
+                ),
+                severity=severity,
+                confidence=0.99 if confidence_val == "high" else 0.80,
+                fix_suggestion=None,
+            ))
+
     # Run CEGAR if available
     if _HAS_SHAPE_CEGAR and max_cegar_iterations > 0:
         cegar_result = run_shape_cegar(

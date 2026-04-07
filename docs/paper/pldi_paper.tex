@@ -274,7 +274,7 @@ errors at runtime.
 \tguard{} detects this bug in 34\,ms:
 \begin{lstlisting}[style=noline]
 $ tensorguard verify transfer_bug.py \
-    --input-shapes '{"x": ["batch", 512]}'
+    -s x=batch,512
 UNSAFE [eval mode] at step 4:
   eval_head expects in_features=128
   but receives tensor with 256 features
@@ -2538,15 +2538,12 @@ code 1 for unsafe models, supporting use as a pre-merge gate:
 
 \begin{lstlisting}[style=noline]
 # GitHub Actions / GitLab CI
-tensorguard verify models/ --recursive \
-    --input-shapes config.json \
-    --exit-on-first-error
+tensorguard ci-check models/ --sarif-output results.sarif
 \end{lstlisting}
 
-The \texttt{--recursive} flag scans all Python files for
-\texttt{nn.Module} subclasses.  The \texttt{--input-shapes} flag
-accepts a JSON configuration mapping model classes to their expected
-input shapes.
+The \texttt{ci-check} command scans all Python files for
+\texttt{nn.Module} subclasses and produces SARIF output for
+integration with code scanning tools.
 
 
 % ============================================================================

@@ -74,10 +74,10 @@ Run TensorGuard:
 ```
 $ tensorguard verify model.py -s x=batch,3,224,224
 
-  ✗ model.py: 1 shape error found (243ms)
+  ✗ model.py: 1 verification errors (243ms)
 
-  [ERROR] :15:15  Shape mismatch at nn.Linear: input has 788544 features,
-                  expected 400                                  (shape-error)
+  L15: Shape mismatch at nn.Linear: input has 788544 features,
+       expected 400                                  (shape-error)
 ```
 
 Verify a correct model:
@@ -104,14 +104,13 @@ tensorguard verify FILE [options]
 | `--cegar-iterations` | Max CEGAR refinement iterations | `10` |
 | `-f`, `--format` | `text`, `json`, `sarif` | `text` |
 | `--high-confidence` | Only report Z3-proven bugs (0% FP) | off |
-| `--timeout` | Per-file timeout (seconds) | `300.0` |
 
 ### Additional Commands
 
 | Command | Description |
 |---------|-------------|
-| `tensorguard ci-check FILE --sarif-output out.sarif` | CI mode with SARIF output |
-| `tensorguard watch DIR` | Watch and re-verify on changes |
+| `tensorguard ci-check [PATHS...] --sarif-output out.sarif` | CI mode with SARIF output |
+| `tensorguard watch [PATHS...]` | Watch and re-verify on changes |
 | `tensorguard version` | Show version info |
 
 ### Exit Codes
@@ -119,8 +118,7 @@ tensorguard verify FILE [options]
 | Code | Meaning |
 |------|---------|
 | `0` | Verification succeeded — no shape/device/phase errors |
-| `1` | Errors found |
-| `2` | Analysis error (invalid input, timeout) |
+| `1` | Errors found or analysis error (invalid input, file not found) |
 
 ---
 
@@ -197,22 +195,16 @@ jobs:
 
 ## Configuration
 
-TensorGuard reads configuration from `.tensorguard.toml` or `[tool.tensorguard]`
+TensorGuard reads configuration from `.reftype.toml` or `[tool.reftype]`
 in `pyproject.toml`:
 
 ```toml
-[tensorguard]
+[reftype]
 include = ["models/**/*.py"]
 exclude = ["tests/**"]
-timeout = 300.0
 
-[tensorguard.cegar]
+[reftype.cegar]
 max_iterations = 10
-
-[tensorguard.checks]
-device = true
-phase = true
-stride = true
 ```
 
 ---
@@ -225,11 +217,12 @@ A: Ensure Python 3.9+ and pip ≥ 21.0. On Apple Silicon:
 
 **Q: False positive on complex `view()`/`reshape()`.**
 A: TensorGuard is conservative with dynamic reshapes. Use `--high-confidence`
-to suppress heuristic findings, or add `# tensorguard: ignore` on the line.
+to suppress heuristic findings.
 
 **Q: How fast is it?**
-A: Typical single-model verification completes in < 1 second. Large
-codebases benefit from `--timeout` and parallel `--workers`.
+A: Typical single-model verification completes in < 1 second. The
+`ci-check` and `analyze` commands support `--timeout` and `--workers` for
+large codebases.
 
 ---
 

@@ -440,10 +440,13 @@ def compute_reshape_shape(
 ) -> Optional[TensorShape]:
     """Compute result shape of reshape(original, new_dims).
 
-    Sentinel value 0 means "copy this dimension from the corresponding
-    input dim" (used when x.size(dim) appears in view/reshape args).
+    Sentinel values:
+      0         — copy this dimension from the corresponding input dim (same index).
+      ≤ -2      — copy from input dim (-d - 2).  Encoding: -k-2 means dim k.
+                  Used for "B, C, H, W = x.shape; x.view(B, ...)" patterns.
+      -1        — infer this dimension (standard PyTorch -1 in view/reshape).
     """
-    # Resolve sentinel 0 values by copying from input
+    # Resolve sentinel 0 and ≤ -2 values by copying from input
     resolved = list(new_dims)
     copied_symbolic = {}
     for i, d in enumerate(resolved):
@@ -452,13 +455,61 @@ def compute_reshape_shape(
             if not inp_d.is_symbolic:
                 resolved[i] = inp_d.value
             else:
-                # Keep symbolic dim name; mark so it's not counted as -1
                 copied_symbolic[i] = inp_d
+        elif isinstance(d, int) and d <= -2:
+            # Extended sentinel: copy from source dim k = -d - 2
+            src_k = -d - 2
+            if src_k < original.ndim:
+                inp_d = original.dims[src_k]
+                if not inp_d.is_symbolic:
+                    resolved[i] = inp_d.value
+                else:
+                    copied_symbolic[i] = inp_d
+            else:
+                resolved[i] = -1  # out-of-bounds → treat as unknown
 
     # Count -1's (exclude sentinel-resolved positions)
     neg_ones = sum(1 for i, d in enumerate(resolved) if d == -1 and i not in copied_symbolic)
     if neg_ones > 1:
-        return None  # Invalid: at most one -1
+        # Multiple -1s arise when view() args are runtime shape vars that
+        # could not be resolved to copy-from-dim sentinels (e.g. variables
+        # from a different tensor's shape).  We cannot infer each dim
+        # independently, but we CAN check concrete product compatibility.
+        concrete_input_product = 1
+        for d in original.dims:
+            if not d.is_symbolic:
+                concrete_input_product *= d.value
+        specified_product = 1
+        all_specified = True
+        for i, d in enumerate(resolved):
+            if i in copied_symbolic:
+                if not copied_symbolic[i].is_symbolic:
+                    specified_product *= copied_symbolic[i].value
+                else:
+                    all_specified = False
+            elif isinstance(d, int) and d > 0:
+                specified_product *= d
+            elif d == -1:
+                pass  # unknown — skip
+            else:
+                all_specified = False
+        if all_specified and specified_product > 0 and concrete_input_product > 0:
+            if concrete_input_product % specified_product != 0:
+                return None  # Concrete dims incompatible
+        # Return shape with symbolic dims for all unresolved positions
+        result_dims = []
+        for i, d in enumerate(resolved):
+            if i in copied_symbolic:
+                result_dims.append(copied_symbolic[i])
+            elif isinstance(d, int) and d > 0:
+                result_dims.append(ShapeDim(d))
+            elif d == -1:
+                result_dims.append(ShapeDim("_unknown"))
+            elif isinstance(d, str):
+                result_dims.append(ShapeDim(d))
+            else:
+                result_dims.append(ShapeDim("_unknown"))
+        return TensorShape(tuple(result_dims))
 
     # Validate element count compatibility when all dims are concrete
     all_input_concrete = all(not d.is_symbolic for d in original.dims)
