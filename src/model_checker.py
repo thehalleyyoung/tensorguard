@@ -382,6 +382,7 @@ class ComputationGraph:
         steps:        ordered list of ComputationStep in forward().
         input_names:  names of the tensors received by forward().
         output_names: names of the tensors returned by forward().
+        buffer_shapes: shapes of registered buffers (from register_buffer).
         dynamic_features: detected dynamic patterns (torch.compile, autocast, etc.)
     """
     class_name: str
@@ -389,6 +390,7 @@ class ComputationGraph:
     steps: List[ComputationStep] = field(default_factory=list)
     input_names: List[str] = field(default_factory=list)
     output_names: List[str] = field(default_factory=list)
+    buffer_shapes: Dict[str, "TensorShape"] = field(default_factory=dict)
     dynamic_features: Dict[str, Any] = field(default_factory=dict)
 
     # Convenience ----------------------------------------------------------
@@ -1745,6 +1747,100 @@ def _extract_layer_params(kind: LayerKind, call: ast.Call,
     return layer
 
 
+def _extract_tensor_shape(
+    node: ast.expr,
+    param_map: Optional[Dict[str, Any]] = None,
+) -> Optional["TensorShape"]:
+    """Extract a concrete TensorShape from a tensor-factory AST call.
+
+    Handles torch.randn(d0, d1, ...), torch.zeros(d0, d1, ...) etc.
+    Also handles torch.arange(n) → shape (n,) and method chains like
+    .unsqueeze(dim) / .view(...) / .reshape(...) applied to a recognised
+    tensor expression.
+    Returns None when the shape cannot be statically determined.
+    """
+    from src.tensor_shapes import TensorShape, ShapeDim
+    if not isinstance(node, ast.Call):
+        return None
+
+    # --- Handle method chains: expr.unsqueeze(dim), expr.view(...), etc. ---
+    if (isinstance(node.func, ast.Attribute)
+            and node.func.attr in ("unsqueeze", "view", "reshape", "expand")
+            and isinstance(node.func.value, ast.Call)):
+        base_shape = _extract_tensor_shape(node.func.value, param_map)
+        if base_shape is None:
+            return None
+        method = node.func.attr
+        if method == "unsqueeze" and len(node.args) == 1:
+            dim_val = _const_value(node.args[0], param_map)
+            if dim_val is None:
+                return None
+            dim_val = int(dim_val)
+            dims_list = list(base_shape.dims)
+            if dim_val < 0:
+                dim_val = len(dims_list) + 1 + dim_val
+            if 0 <= dim_val <= len(dims_list):
+                dims_list.insert(dim_val, ShapeDim(1))
+                return TensorShape(tuple(dims_list))
+        elif method in ("view", "reshape"):
+            new_dims: List[Optional[int]] = []
+            for a in node.args:
+                v = _const_value(a, param_map)
+                if isinstance(v, int):
+                    new_dims.append(v)
+                else:
+                    return None
+            if new_dims:
+                return TensorShape(tuple(ShapeDim(int(d)) for d in new_dims))
+        return None
+
+    func_name = _name_or_attr(node.func)
+
+    # --- Handle torch.arange(n) → shape (n,) ---
+    _ARANGE_FNS = frozenset({"torch.arange", "arange"})
+    if func_name in _ARANGE_FNS:
+        if len(node.args) >= 1:
+            n = _const_value(node.args[0], param_map)
+            if isinstance(n, int):
+                if len(node.args) == 1:
+                    return TensorShape((ShapeDim(n),))
+                elif len(node.args) == 2:
+                    end = _const_value(node.args[1], param_map)
+                    if isinstance(end, int):
+                        return TensorShape((ShapeDim(end - n),))
+        return None
+
+    # --- Handle torch.linspace/logspace(start, end, steps) → shape (steps,) ---
+    _LINSPACE_FNS = frozenset({"torch.linspace", "torch.logspace", "linspace", "logspace"})
+    if func_name in _LINSPACE_FNS:
+        if len(node.args) >= 3:
+            steps = _const_value(node.args[2], param_map)
+            if isinstance(steps, int):
+                return TensorShape((ShapeDim(steps),))
+        return None
+
+    _FACTORY_FNS = frozenset({
+        "torch.randn", "torch.zeros", "torch.ones", "torch.rand",
+        "torch.empty", "torch.full", "randn", "zeros", "ones", "rand", "empty",
+    })
+    if func_name not in _FACTORY_FNS:
+        return None
+    # Shape can be positional args or a single tuple/list arg
+    dims: List[Optional[int]] = []
+    if len(node.args) == 1 and isinstance(node.args[0], (ast.Tuple, ast.List)):
+        for elt in node.args[0].elts:
+            dims.append(_const_value(elt, param_map))
+    else:
+        for a in node.args:
+            # Skip keyword-only args like device=, dtype=
+            v = _const_value(a, param_map)
+            if isinstance(v, int):
+                dims.append(v)
+    if not dims or any(d is None for d in dims):
+        return None
+    return TensorShape(tuple(ShapeDim(int(d)) for d in dims))
+
+
 # --- _InitExtractor: walks __init__ to find layer definitions -------------
 
 class _InitExtractor(ast.NodeVisitor):
@@ -1766,6 +1862,7 @@ class _InitExtractor(ast.NodeVisitor):
 
     def __init__(self, class_map: Optional[Dict[str, ast.ClassDef]] = None) -> None:
         self.layers: Dict[str, LayerDef] = {}
+        self.buffer_shapes: Dict[str, "TensorShape"] = {}
         self._param_map: Dict[str, Any] = {}  # param_name -> default value
         self._class_map = class_map or {}
         self._local_layer_calls: Dict[str, ast.Call] = {}  # local_var -> Call node
@@ -1795,6 +1892,33 @@ class _InitExtractor(ast.NodeVisitor):
                 if is_layer:
                     self._local_layer_calls[target.id] = node.value
             self._try_extract(target, node.value)
+        self.generic_visit(node)
+
+    def visit_Expr(self, node: ast.Expr) -> None:
+        """Detect self.register_buffer('name', tensor) calls in __init__."""
+        if not isinstance(node.value, ast.Call):
+            self.generic_visit(node)
+            return
+        call = node.value
+        # self.register_buffer('name', tensor_expr)
+        if not (isinstance(call.func, ast.Attribute)
+                and call.func.attr == "register_buffer"
+                and isinstance(call.func.value, ast.Name)
+                and call.func.value.id == "self"):
+            self.generic_visit(node)
+            return
+        if len(call.args) < 2:
+            self.generic_visit(node)
+            return
+        name_arg = call.args[0]
+        tensor_arg = call.args[1]
+        if not (isinstance(name_arg, ast.Constant) and isinstance(name_arg.value, str)):
+            self.generic_visit(node)
+            return
+        buf_name = name_arg.value
+        shape = _extract_tensor_shape(tensor_arg, self._param_map)
+        if shape is not None:
+            self.buffer_shapes[buf_name] = shape
         self.generic_visit(node)
 
     def _try_extract(self, target: ast.expr, value: ast.expr) -> None:
@@ -2045,6 +2169,11 @@ class _ForwardExtractor(ast.NodeVisitor):
         self._tmp_counter = 0
         self._current_names: Dict[int, str] = {}  # ast node id → tensor name
         self._aliases: Dict[str, str] = {}  # variable alias tracking
+        # Maps variable name → (tensor_name, dim_index) for shape dim aliases.
+        # Populated by "B, C, H, W = x.shape" unpacking.  Used to replace
+        # symbolic view() args with copy-from-dim sentinels (≤ -2).
+        # Encoding: sentinel -k-2 means "copy from source dim k".
+        self._shape_dim_map: Dict[str, Tuple[str, int]] = {}
 
     def _fresh(self, hint: str = "t") -> str:
         self._tmp_counter += 1
@@ -2097,6 +2226,18 @@ class _ForwardExtractor(ast.NodeVisitor):
                     target_name = self._fresh("tuple")
                 # Map all named elements to the same output for shape tracking
                 self._current_names[id(target)] = target_name
+
+                # Detect "B, C, H, W = x.shape" and record each variable as a
+                # shape-dim alias so that view(B, 9, 20, H, W) can be resolved
+                # to concrete copy-from-dim sentinels rather than opaque -1s.
+                if (isinstance(node.value, ast.Attribute)
+                        and node.value.attr == "shape"):
+                    src_tensor = self._resolve_name(node.value.value)
+                    for dim_i, elt in enumerate(target.elts):
+                        if isinstance(elt, ast.Name) and elt.id != "_":
+                            self._shape_dim_map[elt.id] = (src_tensor, dim_i)
+                    self.generic_visit(node)
+                    return
 
                 # Handle nested tuple for LSTM hidden state extraction:
                 #   _, (h, _) = self.lstm(x)  or  output, (h_n, c_n) = self.lstm(x)
@@ -2473,6 +2614,13 @@ class _ForwardExtractor(ast.NodeVisitor):
                                 elif isinstance(a, ast.Subscript):
                                     # x.shape[dim] → mark as "keep from input"
                                     size_dim_indices.append(idx)
+                                elif isinstance(a, ast.Name):
+                                    # Check if variable comes from "B, C, H, W = base.shape"
+                                    alias = self._shape_dim_map.get(a.id)
+                                    if alias is not None and alias[0] == base:
+                                        # Encode as sentinel -k-2 meaning "copy from dim k"
+                                        dims[idx] = -alias[1] - 2
+                                        continue
                                 dims[idx] = -1
                         # Common pattern: view(x.size(0), -1) → flatten(1)
                         if (size_dim_indices and len(dims) == 2
@@ -2857,6 +3005,7 @@ def extract_computation_graph(source: str) -> ComputationGraph:
         extractor = _InitExtractor(class_map=class_map)
         extractor.extract(init_fn)
         graph.layers = extractor.layers
+        graph.buffer_shapes = extractor.buffer_shapes
 
     # --- forward: extract steps ---
     fwd_fn = _find_method(root_cls, "forward")
@@ -5402,6 +5551,14 @@ class ConstraintVerifier:
             state.shape_env[name] = TensorShape(tuple(dims))
             state.device_map[name] = self.default_device
             state.gradient_status[name] = False
+        # Pre-populate buffer shapes from register_buffer() calls in __init__.
+        # Buffers are always registered on CPU (torch.randn / torch.zeros etc.
+        # default to CPU).  They move with the model when .cuda() is called, but
+        # the *static* device at registration time is CPU, which is the right
+        # annotation for detecting "buffer stays on CPU" bugs.
+        for buf_name, buf_shape in self.graph.buffer_shapes.items():
+            state.shape_env[f"self.{buf_name}"] = buf_shape
+            state.device_map[f"self.{buf_name}"] = Device.CPU
         return state
 
     # ------------------------------------------------------------------
@@ -7731,6 +7888,69 @@ class ConstraintVerifier:
                 defined.add(step.output)
         return violations
 
+    def _check_dead_outputs(self) -> List[SafetyViolation]:
+        """Check for tensors computed inside conditional branches but never used.
+
+        Detects patterns like:
+            if not self.training:
+                output = torch.cat([cls, anchors], dim=2)  # computed
+            return cls                                       # 'output' discarded
+
+        Only checks within conditional (if/else) branches, not the top-level
+        forward steps.  Top-level "unused" variables (e.g. q, k projections
+        whose attention math isn't fully extracted) produce too many false
+        positives because the extractor doesn't model all PyTorch ops.
+        """
+        violations: List[SafetyViolation] = []
+        output_names = set(self.graph.output_names)
+
+        # Collect all tensor names that are consumed anywhere in the graph
+        consumed: set = set()
+        def _collect_consumed(steps: List[ComputationStep]) -> None:
+            for step in steps:
+                consumed.update(inp for inp in step.inputs
+                                if not inp.startswith("self."))
+                if step.true_branch:
+                    _collect_consumed(step.true_branch)
+                if step.false_branch:
+                    _collect_consumed(step.false_branch)
+        _collect_consumed(self.graph.steps)
+        consumed.update(output_names)
+
+        def _check_branch(steps: List[ComputationStep]) -> None:
+            """Check steps that are inside a conditional branch for dead outputs."""
+            for step in steps:
+                if step.op == OpKind.RETURN:
+                    continue
+                if step.output and not step.output.startswith("__"):
+                    if step.output not in consumed:
+                        violations.append(SafetyViolation(
+                            kind="dead_output",
+                            step_index=step.line,
+                            step=step,
+                            message=(
+                                f"Result '{step.output}' is computed "
+                                f"but never used or returned"
+                            ),
+                            confidence=Confidence.HIGH,
+                        ))
+                if step.true_branch:
+                    _check_branch(step.true_branch)
+                if step.false_branch:
+                    _check_branch(step.false_branch)
+
+        # Only scan inside conditional branches at the top level, not top-level steps
+        # themselves.  This avoids false positives for projections whose downstream
+        # ops (e.g. attention matmul) aren't fully extracted.
+        for top_step in self.graph.steps:
+            if top_step.op == OpKind.CONDITIONAL:
+                if top_step.true_branch:
+                    _check_branch(top_step.true_branch)
+                if top_step.false_branch:
+                    _check_branch(top_step.false_branch)
+
+        return violations
+
     # ======================================================================
     # Top-level verify()
     # ======================================================================
@@ -7767,6 +7987,10 @@ class ConstraintVerifier:
         if not all_viols:
             ubd_viols = self._check_use_before_def()
             all_viols.extend(ubd_viols)
+
+        # Phase 1.6: dead-output check (computed in branch but never used/returned)
+        dead_viols = self._check_dead_outputs()
+        all_viols.extend(dead_viols)
 
         # Phase 2: inductive step (Z3 with free variables)
         # Inductive violations indicate proof incompleteness, not unsafety.
@@ -8639,6 +8863,68 @@ def verify_model(
     )
 
     result = checker.verify()
+
+    # ----------------------------------------------------------------
+    # Buffer-device pass: if any buffers were registered, re-verify
+    # with default_device=CUDA_0 to catch "buffer stays on CPU" bugs.
+    # (register_buffer tensors are pinned to CPU in _build_initial_state;
+    # if inputs/layer-outputs are on CUDA the cat/add will fail at runtime.)
+    # ----------------------------------------------------------------
+    if graph.buffer_shapes and default_device == Device.CPU:
+        cuda_checker = ConstraintVerifier(
+            graph,
+            input_shapes=input_shapes or {},
+            default_device=Device.CUDA_0,
+            default_phase=default_phase,
+            max_k=max_k,
+            constraints=constraints,
+            produce_certificates=False,
+            use_kb_normalization=use_kb_normalization,
+        )
+        cuda_result = cuda_checker.verify()
+        # Only import device_mismatch violations that involve a buffer
+        if not cuda_result.safe and cuda_result.counterexample:
+            buf_keys = {f"self.{n}" for n in graph.buffer_shapes}
+            for viol in cuda_result.counterexample.violations:
+                if viol.kind == "device_mismatch":
+                    step = viol.step
+                    involves_buffer = step is not None and any(
+                        inp in buf_keys for inp in (step.inputs or [])
+                    )
+                    if involves_buffer:
+                        # Re-tag so the message is informative
+                        viol = SafetyViolation(
+                            kind="device_mismatch",
+                            step_index=viol.step_index,
+                            step=viol.step,
+                            message=(
+                                viol.message
+                                + " (buffer registered on CPU may mismatch CUDA input)"
+                            ),
+                            tensor_a=viol.tensor_a,
+                            tensor_b=viol.tensor_b,
+                            device_a=Device.CPU,
+                            device_b=Device.CUDA_0,
+                            confidence=Confidence.HIGH,
+                        )
+                        if result.safe:
+                            # Demote the main result from safe to unsafe
+                            result = VerificationResult(
+                                safe=False,
+                                counterexample=CounterexampleTrace(
+                                    model_name=graph.class_name,
+                                    violations=[viol],
+                                    failing_step=viol.step_index,
+                                    states=[],
+                                ),
+                                graph=graph,
+                                errors=result.errors,
+                                verification_time_ms=result.verification_time_ms,
+                                confidence=result.confidence,
+                            )
+                        elif result.counterexample:
+                            result.counterexample.violations.append(viol)
+
     if high_confidence_only:
         result = result.filter_by_confidence(Confidence.HIGH)
     if return_kripke:
