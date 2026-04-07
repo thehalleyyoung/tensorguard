@@ -77,6 +77,7 @@ class AnalysisResult:
     functions_analyzed: int = 0
     lines_analyzed: int = 0
     duration_ms: float = 0.0
+    counterexample: Optional[Dict[str, Any]] = None  # Z3 witness assignment
 
     @property
     def status(self) -> str:
@@ -765,13 +766,24 @@ def verify_architecture(
 
     # Convert counterexample violations to Bug objects
     if vr.counterexample is not None:
-        for violation in vr.counterexample.violations:
+        # Expose structured counterexample (Z3 witness) in the result
+        ce = vr.counterexample
+        result.counterexample = {
+            "concrete_dims": getattr(ce, "concrete_dims", {}),
+            "violations": [
+                {"kind": v.kind, "message": v.message,
+                 "line": getattr(v.step, "line", 0) if v.step else 0}
+                for v in ce.violations
+            ],
+        }
+        for violation in ce.violations:
             kind = violation.kind  # e.g. "shape_incompatible", "device_mismatch"
             category_map = {
                 "shape_incompatible": BugCategory.TYPE_ERROR,
                 "device_mismatch": BugCategory.TYPE_ERROR,
                 "phase_error": BugCategory.TYPE_ERROR,
                 "dead_output": BugCategory.TYPE_ERROR,
+                "gradient_broken": BugCategory.TYPE_ERROR,
             }
             category = category_map.get(kind, BugCategory.TYPE_ERROR)
             line = getattr(violation.step, "line", 0) if violation.step else 0

@@ -383,6 +383,7 @@ class ComputationGraph:
         input_names:  names of the tensors received by forward().
         output_names: names of the tensors returned by forward().
         buffer_shapes: shapes of registered buffers (from register_buffer).
+        param_shapes:  shapes of nn.Parameter tensors (move with model, no device mismatch).
         dynamic_features: detected dynamic patterns (torch.compile, autocast, etc.)
     """
     class_name: str
@@ -391,6 +392,7 @@ class ComputationGraph:
     input_names: List[str] = field(default_factory=list)
     output_names: List[str] = field(default_factory=list)
     buffer_shapes: Dict[str, "TensorShape"] = field(default_factory=dict)
+    param_shapes: Dict[str, "TensorShape"] = field(default_factory=dict)
     dynamic_features: Dict[str, Any] = field(default_factory=dict)
 
     # Convenience ----------------------------------------------------------
@@ -824,6 +826,11 @@ def _const_value(node: ast.expr, param_map: Optional[Dict[str, Any]] = None) -> 
     # Resolve parameter references (e.g., in_channels from __init__)
     if isinstance(node, ast.Name) and param_map and node.id in param_map:
         return param_map[node.id]
+    # Resolve self.<attr> references (e.g., self.n_heads, self.d_k)
+    if (isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name)
+            and node.value.id == "self" and param_map
+            and f"self.{node.attr}" in param_map):
+        return param_map[f"self.{node.attr}"]
     return None
 
 
@@ -1866,6 +1873,11 @@ class _InitExtractor(ast.NodeVisitor):
         self._param_map: Dict[str, Any] = {}  # param_name -> default value
         self._class_map = class_map or {}
         self._local_layer_calls: Dict[str, ast.Call] = {}  # local_var -> Call node
+        # Track scalar instance attributes: self.x = <const_expr>
+        # e.g. self.d_k = d_model // n_heads → {"d_k": 64}
+        self.scalar_attrs: Dict[str, Any] = {}
+        # Parameter shapes (nn.Parameter) — move with model, no device mismatch
+        self.param_shapes: Dict[str, "TensorShape"] = {}
 
     def extract(self, init_fn: ast.FunctionDef) -> None:
         """Extract layers, first building param_map from defaults."""
@@ -1922,15 +1934,28 @@ class _InitExtractor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def _try_extract(self, target: ast.expr, value: ast.expr) -> None:
-        # self.<attr> = nn.<Layer>(...)
+        # self.<attr> = nn.<Layer>(...) or self.<attr> = scalar_expr
         if not (isinstance(target, ast.Attribute) and
                 isinstance(target.value, ast.Name) and
                 target.value.id == "self"):
             return
         attr = target.attr
         if not isinstance(value, ast.Call):
+            # Try to evaluate as a scalar constant (e.g. self.d_k = d_model // n_heads)
+            val = _const_value(value, self._param_map)
+            if val is not None and isinstance(val, (int, float)):
+                self.scalar_attrs[attr] = val
             return
         func_name = _name_or_attr(value.func)
+
+        # Handle nn.Parameter(torch.randn/zeros/ones(...)) → extract shape
+        if func_name in ("nn.Parameter", "torch.nn.Parameter", "Parameter"):
+            if value.args:
+                shape = _extract_tensor_shape(value.args[0], self._param_map)
+                if shape is not None:
+                    self.param_shapes[attr] = shape
+            return
+
         is_layer, kind = _is_nn_layer(func_name)
 
         if is_layer:
@@ -2161,7 +2186,8 @@ _METHOD_OPS: Dict[str, OpKind] = {
 class _ForwardExtractor(ast.NodeVisitor):
     """Extracts computation steps from an nn.Module's ``forward()``."""
 
-    def __init__(self, layers: Dict[str, LayerDef]) -> None:
+    def __init__(self, layers: Dict[str, LayerDef],
+                 scalar_attrs: Optional[Dict[str, Any]] = None) -> None:
         self.layers = layers
         self.steps: List[ComputationStep] = []
         self.input_names: List[str] = []
@@ -2174,6 +2200,11 @@ class _ForwardExtractor(ast.NodeVisitor):
         # symbolic view() args with copy-from-dim sentinels (≤ -2).
         # Encoding: sentinel -k-2 means "copy from source dim k".
         self._shape_dim_map: Dict[str, Tuple[str, int]] = {}
+        # Scalar instance attributes: {"self.d_k": 64, "self.n_heads": 8}
+        self._scalar_attrs: Dict[str, Any] = {}
+        if scalar_attrs:
+            for k, v in scalar_attrs.items():
+                self._scalar_attrs[f"self.{k}"] = v
 
     def _fresh(self, hint: str = "t") -> str:
         self._tmp_counter += 1
@@ -2603,7 +2634,7 @@ class _ForwardExtractor(ast.NodeVisitor):
                     params: Dict[str, Any] = {}
 
                     if method in ("view", "reshape"):
-                        dims = [_const_value(a) for a in node.args]
+                        dims = [_const_value(a, self._scalar_attrs) for a in node.args]
                         # Detect x.size(dim) or x.shape[dim] patterns
                         size_dim_indices = []
                         for idx, (d, a) in enumerate(zip(dims, node.args)):
@@ -2950,7 +2981,7 @@ def _extract_submodule_graph(
     # Extract forward steps
     fwd_fn = _find_method(cls_node, "forward")
     if fwd_fn:
-        fwd_ext = _ForwardExtractor(graph.layers)
+        fwd_ext = _ForwardExtractor(graph.layers, scalar_attrs=extractor.scalar_attrs)
         fwd_ext.extract(fwd_fn)
         graph.steps = fwd_ext.steps
         graph.input_names = fwd_ext.input_names
@@ -3001,11 +3032,14 @@ def extract_computation_graph(source: str) -> ComputationGraph:
 
     # --- __init__: extract layers (with submodule awareness) ---
     init_fn = _find_method(root_cls, "__init__")
+    scalar_attrs: Dict[str, Any] = {}
     if init_fn:
         extractor = _InitExtractor(class_map=class_map)
         extractor.extract(init_fn)
         graph.layers = extractor.layers
         graph.buffer_shapes = extractor.buffer_shapes
+        graph.param_shapes = extractor.param_shapes
+        scalar_attrs = extractor.scalar_attrs
 
     # --- forward: extract steps ---
     fwd_fn = _find_method(root_cls, "forward")
@@ -3016,7 +3050,7 @@ def extract_computation_graph(source: str) -> ComputationGraph:
             if dec_name in ("torch.compile", "compile"):
                 graph.dynamic_features["torch_compile_forward"] = True
 
-        fwd_ext = _ForwardExtractor(graph.layers)
+        fwd_ext = _ForwardExtractor(graph.layers, scalar_attrs=scalar_attrs)
         fwd_ext.extract(fwd_fn)
         graph.steps = fwd_ext.steps
         graph.input_names = fwd_ext.input_names
@@ -5559,6 +5593,10 @@ class ConstraintVerifier:
         for buf_name, buf_shape in self.graph.buffer_shapes.items():
             state.shape_env[f"self.{buf_name}"] = buf_shape
             state.device_map[f"self.{buf_name}"] = Device.CPU
+        # Pre-populate nn.Parameter shapes (these move with the model,
+        # so no device mismatch — only seed shape, not device).
+        for param_name, param_shape in self.graph.param_shapes.items():
+            state.shape_env[f"self.{param_name}"] = param_shape
         return state
 
     # ------------------------------------------------------------------
@@ -6855,6 +6893,18 @@ class ConstraintVerifier:
                 new_state.shape_env[step.output] = (
                     state.shape_env[step.inputs[0]]
                 )
+            # Warn if detach kills gradient from a trainable input
+            if step.inputs:
+                inp = step.inputs[0]
+                if state.gradient_status.get(inp, False):
+                    violations.append(SafetyViolation(
+                        kind="gradient_broken",
+                        step_index=-1, step=step,
+                        message=(
+                            f"Gradient flow broken: '{inp}' requires grad but "
+                            f".detach() kills gradient to downstream parameters"
+                        ),
+                    ))
             new_state.gradient_status[step.output] = False
         elif step.op == OpKind.RETURN:
             pass
@@ -6879,14 +6929,27 @@ class ConstraintVerifier:
         elif step.op == OpKind.STACK:
             self._apply_stack(new_state, step, violations)
         elif step.op == OpKind.WHERE:
-            # torch.where: output shape is broadcast of inputs
-            self._apply_add(new_state, step, violations)
+            # torch.where(cond, x, y): broadcast all three pairwise
+            self._apply_where(new_state, step, violations)
         elif step.op in (OpKind.CHUNK, OpKind.SPLIT):
-            # chunk/split returns first chunk — shape-preserving approximation
+            # chunk/split: divide the split dimension
             if step.inputs and step.inputs[0] in state.shape_env:
-                new_state.shape_env[step.output] = (
-                    state.shape_env[step.inputs[0]]
-                )
+                inp_shape = state.shape_env[step.inputs[0]]
+                chunks = step.params.get("chunks")
+                dim = step.params.get("dim", 0)
+                if (chunks is not None and isinstance(chunks, int)
+                        and chunks > 0
+                        and isinstance(dim, int)
+                        and 0 <= dim < inp_shape.ndim
+                        and not inp_shape.dims[dim].is_symbolic
+                        and not inp_shape.dims[dim].is_symbolic):
+                    new_dims = list(inp_shape.dims)
+                    orig = inp_shape.dims[dim].value
+                    chunk_size = (orig + chunks - 1) // chunks
+                    new_dims[dim] = ShapeDim(chunk_size)
+                    new_state.shape_env[step.output] = TensorShape(tuple(new_dims))
+                else:
+                    new_state.shape_env[step.output] = inp_shape
         elif step.op == OpKind.EXPAND:
             if step.inputs and step.inputs[0] in state.shape_env:
                 inp_shape = state.shape_env[step.inputs[0]]
@@ -6963,14 +7026,31 @@ class ConstraintVerifier:
                 parts = equation.replace(" ", "").split("->")
                 if len(parts) == 2:
                     output_spec = parts[1]
-                    dim_sizes = {}
+                    dim_sizes: Dict[str, "ShapeDim"] = {}
                     input_specs = parts[0].split(",")
                     for inp_idx, spec in enumerate(input_specs):
                         if inp_idx < len(step.inputs) and step.inputs[inp_idx] in state.shape_env:
                             inp_shape = state.shape_env[step.inputs[inp_idx]]
                             for dim_idx, char in enumerate(spec):
                                 if dim_idx < inp_shape.ndim:
-                                    dim_sizes[char] = inp_shape.dims[dim_idx]
+                                    cur_dim = inp_shape.dims[dim_idx]
+                                    if char in dim_sizes:
+                                        prev = dim_sizes[char]
+                                        # Check contracted dimension consistency
+                                        if (not prev.is_symbolic
+                                                and not cur_dim.is_symbolic
+                                                and prev.value != cur_dim.value):
+                                            violations.append(SafetyViolation(
+                                                kind="shape_incompatible",
+                                                step_index=-1, step=step,
+                                                message=(
+                                                    f"einsum '{equation}': dimension "
+                                                    f"'{char}' has size {prev.value} "
+                                                    f"in one input but {cur_dim.value} "
+                                                    f"in another"
+                                                ),
+                                            ))
+                                    dim_sizes[char] = cur_dim
                     out_dims = []
                     for char in output_spec:
                         if char in dim_sizes:
@@ -7001,6 +7081,21 @@ class ConstraintVerifier:
                 state.gradient_status.get(inp, False)
                 for inp in step.inputs
             )
+            # Layer calls with trainable parameters produce grad=True outputs
+            if (not any_grad and step.op == OpKind.LAYER_CALL
+                    and step.layer_ref):
+                layer = self.graph.layers.get(step.layer_ref)
+                if layer and layer.kind in (
+                    LayerKind.LINEAR, LayerKind.CONV1D, LayerKind.CONV2D,
+                    LayerKind.CONV3D, LayerKind.CONVTRANSPOSE1D,
+                    LayerKind.CONVTRANSPOSE2D, LayerKind.CONVTRANSPOSE3D,
+                    LayerKind.EMBEDDING, LayerKind.MULTIHEAD_ATTENTION,
+                    LayerKind.LSTM, LayerKind.GRU, LayerKind.RNN,
+                    LayerKind.BATCHNORM1D, LayerKind.BATCHNORM2D,
+                    LayerKind.BATCHNORM3D, LayerKind.LAYERNORM,
+                    LayerKind.GROUPNORM, LayerKind.BILINEAR,
+                ):
+                    any_grad = True
             new_state.gradient_status[step.output] = any_grad
 
         return new_state, violations
@@ -7180,6 +7275,58 @@ class ConstraintVerifier:
             ))
         else:
             state.shape_env[step.output] = result
+
+    def _apply_where(
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        violations: List[SafetyViolation],
+    ) -> None:
+        """torch.where(cond, x, y) — broadcast all three inputs pairwise."""
+        if len(step.inputs) < 3:
+            # Fallback: single-arg torch.where(cond) → indices, treat as _apply_add
+            self._apply_add(state, step, violations)
+            return
+        cond_name, x_name, y_name = step.inputs[0], step.inputs[1], step.inputs[2]
+        cond_shape = state.shape_env.get(cond_name)
+        x_shape = state.shape_env.get(x_name)
+        y_shape = state.shape_env.get(y_name)
+        # Check x vs y broadcast compatibility (most common bug)
+        if x_shape is not None and y_shape is not None:
+            xy_result = compute_broadcast_shape(x_shape, y_shape)
+            if xy_result is None:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible", step_index=-1, step=step,
+                    message=(
+                        f"torch.where: cannot broadcast x {x_shape.pretty()} and "
+                        f"y {y_shape.pretty()}"
+                    ),
+                    tensor_a=x_name, tensor_b=y_name,
+                    shape_a=x_shape, shape_b=y_shape,
+                ))
+                return
+            # Also check cond vs xy
+            if cond_shape is not None:
+                final = compute_broadcast_shape(cond_shape, xy_result)
+                if final is None:
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible", step_index=-1, step=step,
+                        message=(
+                            f"torch.where: cannot broadcast condition "
+                            f"{cond_shape.pretty()} with value shape "
+                            f"{xy_result.pretty()}"
+                        ),
+                        tensor_a=cond_name, tensor_b=x_name,
+                        shape_a=cond_shape, shape_b=xy_result,
+                    ))
+                    return
+                state.shape_env[step.output] = final
+            else:
+                state.shape_env[step.output] = xy_result
+        elif x_shape is not None:
+            state.shape_env[step.output] = x_shape
+        elif y_shape is not None:
+            state.shape_env[step.output] = y_shape
 
     def _apply_reshape(
         self, state: ModelState, step: ComputationStep,
