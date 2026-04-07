@@ -254,6 +254,9 @@ nav .name { color: #888; font-weight: 600; margin-right: auto; }
 .tag-dead { background: #231730; color: #b392f0; }
 .tag-cat { background: #17292d; color: #56d4dd; }
 .tag-broadcast { background: #2d2d17; color: #e3db71; }
+.tag-gradient { background: #2d1730; color: #e871b8; }
+.tag-einsum { background: #17302d; color: #71e8c4; }
+.tag-attr { background: #302d17; color: #e8d171; }
 
 footer {
   padding: 40px 0;
@@ -305,14 +308,18 @@ footer {
     <tr><td>Shape</td><td>Tensor dimensions and sizes through every op</td><td>Linear/Conv channel mismatches, bad reshapes, cat dimension errors, broadcast failures</td></tr>
     <tr><td>Device</td><td>CPU vs. CUDA placement of every tensor</td><td>Buffers stuck on CPU when the model moves to GPU</td></tr>
     <tr><td>Phase</td><td><code>self.training</code> flag across branches</td><td>Layers sized correctly in train but wrong in eval (or vice versa)</td></tr>
-    <tr><td>Gradient</td><td><code>requires_grad</code> flow</td><td>Frozen parameters fed to grad-requiring ops</td></tr>
+    <tr><td>Gradient</td><td><code>requires_grad</code> flow</td><td>Frozen parameters, <code>.detach()</code> killing gradient to trainable layers</td></tr>
     <tr><td>Liveness</td><td>Use/def chains</td><td>Dead outputs, unreachable code</td></tr>
   </table>
 
   <p>All five analyses run in a single pass over a <em>computation DAG</em>
   extracted from the AST. The shape analysis uses CEGAR
   (counterexample-guided abstraction refinement) to stay both
-  precise and decidable.</p>
+  precise and decidable. Instance attributes like
+  <code>self.d_k&nbsp;=&nbsp;d_model&nbsp;//&nbsp;n_heads</code> are resolved
+  symbolically, and operations like <code>einsum</code> and
+  <code>torch.where</code> have dedicated transfer functions that
+  verify dimension consistency across all operands.</p>
 </div>
 </section>
 
@@ -398,6 +405,42 @@ footer {
   <div class="math-block">
     <p>The refinement loop:</p>
     $$\text{AbstractCheck}(\phi) \xrightarrow{\text{UNSAFE}} \text{Concretize}(\phi, \vec{v}) \xrightarrow{\text{check}} \begin{cases} \text{UNSAFE} & \text{real bug} \\ \text{SAFE} & \text{refine } \phi \end{cases}$$
+  </div>
+
+  <h3>Einsum dimension verification</h3>
+  <p>For an einsum with subscript string $\sigma$, we parse the index
+  letters and check that every shared index has consistent size across
+  all operands. Given <code>einsum("bi,ij-&gt;bj", A, W)</code> where
+  $A \in \mathbb{R}^{B \times d_1}$ and $W \in \mathbb{R}^{d_2 \times k}$:</p>
+  <div class="math-block">
+    $$\frac{\Gamma \vdash A : [B, d_1] \quad \Gamma \vdash W : [d_2, k] \quad \sigma(i) \mapsto \{A_1, W_0\}}
+    {\Gamma \vdash \texttt{einsum}(\sigma, A, W) : [B, k]} \quad \text{only if } d_1 = d_2$$
+    <p>Contracted indices (those appearing in inputs but not the output)
+    generate equality constraints between their corresponding dimensions.</p>
+  </div>
+
+  <h3>Instance attribute resolution</h3>
+  <p>When a constructor computes <code>self.d_k = d_model // n_heads</code>,
+  TensorGuard resolves this symbolically and checks downstream uses.
+  For a reshape <code>x.view(B, S, h, d_k)</code>, the analysis verifies:</p>
+  <div class="math-block">
+    $$h \cdot d_k = D \quad \text{where } d_k = \lfloor D / h \rfloor$$
+    <p>If $h \nmid D$, then $h \cdot \lfloor D/h \rfloor < D$ and the reshape is
+    provably invalid. For example, $h=10, D=768$: $\lfloor 768/10 \rfloor = 76$
+    but $10 \times 76 = 760 \neq 768$.</p>
+  </div>
+
+  <h3>Gradient flow analysis</h3>
+  <p>The gradient domain tracks $\text{grad} \in \{\texttt{true}, \texttt{false}\}$ for
+  each tensor, propagating through the computation graph. Layers with
+  trainable parameters produce outputs with $\text{grad} = \texttt{true}$. If
+  <code>.detach()</code> is applied to such a tensor, the gradient chain is
+  broken:</p>
+  <div class="math-block">
+    $$\frac{\Gamma \vdash e : \tau[\text{grad}=\texttt{true}]}
+    {\Gamma \vdash e.\texttt{detach}() : \tau[\text{grad}=\texttt{false}]} \quad \text{with warning: gradient killed}$$
+    <p>This catches a common bug where an encoder's output is detached before
+    being fed to a decoder, silently preventing the encoder from training.</p>
   </div>
 
   <h3>Soundness</h3>
@@ -769,6 +812,160 @@ Result: <span class="bug">UNSAFE</span>  (78ms)</div>
     diagnosis in a single 78ms analysis.</p>
   </div>
 
+  <!-- ─── Example 10: Instance attribute arithmetic ─── -->
+  <div class="example">
+    <h3>
+      <span class="tag tag-attr">attribute</span>
+      <span class="tag tag-shape">shape</span>
+      Multi-head attention with indivisible head dimension
+    </h3>
+    <p>A multi-head attention layer computes
+    <code>self.d_k&nbsp;=&nbsp;d_model&nbsp;//&nbsp;n_heads</code> in the
+    constructor. If <code>n_heads</code> doesn't evenly divide
+    <code>d_model</code>, the reshape loses information:
+    $10 \times 76 = 760 \neq 768$. TensorGuard resolves instance
+    attributes symbolically and detects the reshape product mismatch.</p>
+    <div class="code-block">
+      <span class="label">attention.py</span>
+      <pre><code class="language-python">class MultiHeadAttention(nn.Module):
+    def __init__(self, d_model=768, n_heads=10):
+        super().__init__()
+        self.n_heads = n_heads
+        self.d_k = d_model // n_heads   # 768//10 = 76
+        self.q_proj = nn.Linear(d_model, d_model)
+        self.k_proj = nn.Linear(d_model, d_model)
+
+    def forward(self, x):
+        B, S, D = x.shape
+        q = self.q_proj(x).view(B, S, self.n_heads, self.d_k)
+        k = self.k_proj(x).view(B, S, self.n_heads, self.d_k)
+        return torch.matmul(q, k.transpose(-2, -1))</code></pre>
+      <div class="output">&#36; tensorguard verify attention.py -s x=B,128,768
+
+<span class="bug">[SHAPE-INCOMPATIBLE]</span> Reshape incompatible: cannot reshape (B, 128, 768)
+  to (-1, -1, 10, 76) — product 760 ≠ 768
+Counterexample: B=1
+
+Result: <span class="bug">UNSAFE</span>  (456ms)</div>
+    </div>
+    <p>The key insight: TensorGuard traces
+    <code>self.n_heads&nbsp;=&nbsp;10</code> and
+    <code>self.d_k&nbsp;=&nbsp;768&nbsp;//&nbsp;10&nbsp;=&nbsp;76</code>
+    from the constructor, then checks
+    $10 \times 76 = 760$ against the input dimension $768$.
+    This is exactly the kind of bug that integer division hides&mdash;the
+    code <em>looks</em> correct but silently drops 8 features.</p>
+  </div>
+
+  <!-- ─── Example 11: torch.where broadcast ─── -->
+  <div class="example">
+    <h3>
+      <span class="tag tag-broadcast">broadcast</span>
+      <span class="tag tag-shape">shape</span>
+      Conditional merge with mismatched branch shapes
+    </h3>
+    <p><code>torch.where(cond, x, y)</code> requires that all three tensors
+    are broadcast-compatible. When two branches produce different feature
+    dimensions, the merge crashes. TensorGuard checks all three operands pairwise.</p>
+    <div class="code-block">
+      <span class="label">conditional.py</span>
+      <pre><code class="language-python">class ConditionalMerge(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.branch_a = nn.Linear(512, 256)
+        self.branch_b = nn.Linear(512, 128)
+
+    def forward(self, x, gate):
+        a = self.branch_a(x)   # [B, 256]
+        b = self.branch_b(x)   # [B, 128]
+        return torch.where(gate, a, b)  # BUG: 256 vs 128</code></pre>
+      <div class="output">&#36; tensorguard verify conditional.py -s x=B,512 gate=B,1
+
+<span class="bug">[SHAPE-INCOMPATIBLE]</span> torch.where: cannot broadcast x (B, 256)
+  and y (B, 128)
+
+Result: <span class="bug">UNSAFE</span>  (51ms)</div>
+    </div>
+    <p>Before this fix, TensorGuard only checked the condition against
+    the first value tensor. Now it verifies all three pairwise:
+    condition vs. x, condition vs. y, and x vs. y.</p>
+  </div>
+
+  <!-- ─── Example 12: Einsum dimension check ─── -->
+  <div class="example">
+    <h3>
+      <span class="tag tag-einsum">einsum</span>
+      <span class="tag tag-shape">shape</span>
+      Bilinear model with contracted dimension mismatch
+    </h3>
+    <p>Einstein summation is powerful but error-prone. The subscript
+    <code>"bi,ij-&gt;bj"</code> contracts over index <code>i</code>,
+    requiring the last dimension of the first operand to equal the first
+    dimension of the second. TensorGuard parses the subscript and
+    generates equality constraints for every shared index.</p>
+    <div class="code-block">
+      <span class="label">bilinear.py</span>
+      <pre><code class="language-python">class BilinearModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.encoder = nn.Linear(512, 32)
+        self.weight = nn.Parameter(torch.randn(64, 128))
+
+    def forward(self, x):
+        h = self.encoder(x)        # [B, 32]
+        return torch.einsum("bi,ij->bj", h, self.weight)  # 32 ≠ 64</code></pre>
+      <div class="output">&#36; tensorguard verify bilinear.py -s x=B,512
+
+<span class="bug">[SHAPE-INCOMPATIBLE]</span> einsum 'bi,ij->bj': dimension 'i' has size
+  32 in one input but 64 in another
+Counterexample: B=1
+
+Result: <span class="bug">UNSAFE</span>  (118ms)</div>
+    </div>
+    <p>The <code>nn.Parameter</code> shape is extracted from the
+    <code>torch.randn(64,&nbsp;128)</code> call in the constructor, giving
+    <code>self.weight</code> shape <code>(64, 128)</code>. The einsum
+    then needs $32 = 64$ for the contracted index <code>i</code>, which fails.</p>
+  </div>
+
+  <!-- ─── Example 13: Gradient flow ─── -->
+  <div class="example">
+    <h3>
+      <span class="tag tag-gradient">gradient</span>
+      Encoder gradient killed by .detach() before decoder
+    </h3>
+    <p>A common pattern in VAEs and transfer learning: an encoder produces
+    latent representations that are passed to a decoder. If
+    <code>.detach()</code> is called on the encoder's output, the encoder's
+    parameters receive no gradient&mdash;it silently stops training.
+    TensorGuard tracks gradient flow through the computation graph and
+    warns when trainable outputs are detached.</p>
+    <div class="code-block">
+      <span class="label">vae.py</span>
+      <pre><code class="language-python">class BrokenGradientVAE(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.encoder = nn.Linear(512, 256)
+        self.decoder = nn.Linear(256, 512)
+
+    def forward(self, x):
+        z = self.encoder(x)
+        z = z.detach()              # kills gradient to encoder
+        return self.decoder(z)</code></pre>
+      <div class="output">&#36; tensorguard verify vae.py -s x=B,512
+
+<span class="bug">[GRADIENT-BROKEN]</span> Gradient flow broken: 'z' requires grad but
+  .detach() kills gradient to downstream parameters
+Counterexample: B=1
+
+Result: <span class="bug">UNSAFE</span>  (205ms)</div>
+    </div>
+    <p>This is a silent correctness bug&mdash;the model trains, the loss
+    decreases (the decoder still learns), but the encoder's weights are
+    frozen. No runtime error, no shape mismatch. Only the gradient
+    theory catches it.</p>
+  </div>
+
   <!-- ─── Example 10: Correct ─── -->
   <div class="example">
     <h3>
@@ -826,6 +1023,10 @@ No bugs found. Model is verified for all inputs of shape (batch, 64, 32, 32).</d
     <tr><td>CNN (flatten)</td><td style="color:#f97583">UNSAFE</td><td>Reshape product</td><td>43ms</td></tr>
     <tr><td>TransformerBlock (residual)</td><td style="color:#f97583">UNSAFE</td><td>Residual shape</td><td>68ms</td></tr>
     <tr><td>DetectionHead (3 bugs)</td><td style="color:#f97583">UNSAFE</td><td>Phase + Device + Shape</td><td>78ms</td></tr>
+    <tr><td>MultiHeadAttention (d_k)</td><td style="color:#f97583">UNSAFE</td><td>Instance attr + Reshape</td><td>456ms</td></tr>
+    <tr><td>ConditionalMerge (where)</td><td style="color:#f97583">UNSAFE</td><td>torch.where broadcast</td><td>51ms</td></tr>
+    <tr><td>BilinearModel (einsum)</td><td style="color:#f97583">UNSAFE</td><td>Contracted dim mismatch</td><td>118ms</td></tr>
+    <tr><td>BrokenGradientVAE</td><td style="color:#f97583">UNSAFE</td><td>Gradient flow broken</td><td>205ms</td></tr>
   </table>
 
   <p>False positive rate: <strong>0%</strong> on all tested correct
@@ -880,7 +1081,13 @@ result = verify_module("model.py",
 print(result.status)      # "SAFE" or "UNSAFE"
 print(result.duration_ms) # analysis time
 for bug in result.bugs:
-    print(bug.message)</code></pre>
+    print(bug.message)
+
+# Proof certificates: when UNSAFE, a Z3 witness is returned
+if result.counterexample:
+    print(result.counterexample["concrete_dims"])  # e.g. {"batch": 1}
+    for v in result.counterexample["violations"]:
+        print(f"  {v['kind']} at line {v['line']}: {v['message']}")</code></pre>
   </div>
 </div>
 </section>
