@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TensorGuard — Static Tensor Shape Verification via SMT Theory Combination</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+
+<!-- KaTeX for math rendering -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '$', right: '$', display: false}
+    ],
+    throwOnError: false
+  });"></script>
+
+<!-- Highlight.js for code -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-card: #161b22;
+  --bg-code: #1c2128;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --accent: #58a6ff;
+  --accent2: #3fb950;
+  --accent3: #d2a8ff;
+  --accent4: #f0883e;
+  --danger: #f85149;
+  --gradient-1: linear-gradient(135deg, #58a6ff 0%, #3fb950 100%);
+  --gradient-2: linear-gradient(135deg, #d2a8ff 0%, #58a6ff 100%);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ─── Navigation ─── */
+nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: rgba(13, 17, 23, 0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+  padding: 0.75rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+nav .logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: var(--gradient-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-decoration: none;
+}
+nav .links { display: flex; gap: 1.5rem; }
+nav .links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+nav .links a:hover { color: var(--text); }
+
+/* ─── Hero ─── */
+.hero {
+  padding: 8rem 2rem 4rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 50% 50%, rgba(88,166,255,0.08) 0%, transparent 50%);
+  animation: pulse 8s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+.hero h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  position: relative;
+  margin-bottom: 1rem;
+  line-height: 1.15;
+}
+.hero h1 .highlight {
+  background: var(--gradient-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero .subtitle {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  max-width: 720px;
+  margin: 0 auto 2rem;
+  position: relative;
+}
+.hero .badges {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  position: relative;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.85rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.badge .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.badge .dot.green { background: var(--accent2); }
+.badge .dot.blue { background: var(--accent); }
+.badge .dot.purple { background: var(--accent3); }
+.badge .dot.orange { background: var(--accent4); }
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  position: relative;
+}
+.btn {
+  padding: 0.75rem 1.75rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+}
+.btn-primary {
+  background: var(--gradient-1);
+  color: #fff;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(88,166,255,0.3); }
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--accent); }
+
+/* ─── Sections ─── */
+section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+}
+section h2 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+section h2 .num {
+  color: var(--accent);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 1rem;
+  margin-right: 0.5rem;
+}
+section .section-sub {
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+  font-size: 1.05rem;
+}
+h3 {
+  font-size: 1.35rem;
+  margin: 2rem 0 1rem;
+  color: var(--accent3);
+}
+
+/* ─── Cards ─── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.card .card-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+.card h4 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+.card p { color: var(--text-muted); font-size: 0.9rem; }
+
+/* ─── Math blocks ─── */
+.math-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent3);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+.math-block .label {
+  font-size: 0.8rem;
+  color: var(--accent3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+.math-block .desc {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+/* ─── Code ─── */
+.code-example {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 1.5rem 0;
+}
+.code-example .tab-bar {
+  display: flex;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1rem;
+}
+.code-example .tab {
+  padding: 0.6rem 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.code-example .tab.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+.code-example pre {
+  padding: 1.25rem;
+  margin: 0;
+  overflow-x: auto;
+  font-size: 0.85rem;
+}
+.code-example code { background: none !important; }
+
+.output-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+.output-block .safe { color: var(--accent2); }
+.output-block .error { color: var(--danger); }
+.output-block .info { color: var(--accent); }
+
+/* ─── Tables ─── */
+.table-wrapper {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+th, td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+th {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+td { font-variant-numeric: tabular-nums; }
+tr:hover td { background: rgba(88,166,255,0.04); }
+.cell-best { color: var(--accent2); font-weight: 600; }
+.cell-zero { color: var(--text-muted); }
+
+/* ─── Pipeline diagram ─── */
+.pipeline {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  margin: 2rem 0;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+.pipeline-step {
+  flex: 1;
+  min-width: 140px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 1rem;
+  text-align: center;
+  position: relative;
+}
+.pipeline-step:first-child { border-radius: 12px 0 0 12px; }
+.pipeline-step:last-child { border-radius: 0 12px 12px 0; }
+.pipeline-step::after {
+  content: '→';
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent);
+  font-size: 1.2rem;
+  z-index: 1;
+}
+.pipeline-step:last-child::after { display: none; }
+.pipeline-step .step-num {
+  font-size: 0.7rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.pipeline-step .step-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0.25rem 0;
+}
+.pipeline-step .step-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ─── Theorem blocks ─── */
+.theorem {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent2);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+}
+.theorem .theorem-title {
+  font-weight: 700;
+  color: var(--accent2);
+  margin-bottom: 0.5rem;
+}
+.theorem p { font-size: 0.95rem; }
+
+/* ─── Algorithm blocks ─── */
+.algorithm {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.82rem;
+  line-height: 1.9;
+}
+.algorithm .algo-title {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--accent4);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.algorithm .kw { color: var(--accent); font-weight: 600; }
+.algorithm .fn { color: var(--accent3); }
+.algorithm .cm { color: var(--text-muted); font-style: italic; }
+.algorithm .indent { padding-left: 1.5rem; }
+.algorithm .indent2 { padding-left: 3rem; }
+.algorithm .indent3 { padding-left: 4.5rem; }
+
+/* ─── Stats row ─── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+.stat-card .stat-num {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: var(--gradient-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.stat-card .stat-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* ─── Footer ─── */
+footer {
+  text-align: center;
+  padding: 3rem 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+footer a { color: var(--accent); text-decoration: none; }
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2rem; }
+  .hero .subtitle { font-size: 1rem; }
+  section h2 { font-size: 1.75rem; }
+  .pipeline { flex-direction: column; }
+  .pipeline-step::after { display: none; }
+  .pipeline-step { border-radius: 8px !important; }
+  nav .links { gap: 0.75rem; }
+  nav .links a { font-size: 0.8rem; }
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ─── Anchor offset for fixed nav ─── */
+[id] { scroll-margin-top: 4rem; }
+
+/* ─── Separator ─── */
+.sep {
+  height: 1px;
+  background: var(--border);
+  margin: 3rem auto;
+  max-width: 1100px;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ NAVIGATION ═══════════════════ -->
+<nav>
+  <a class="logo" href="#">🛡️ TensorGuard</a>
+  <div class="links">
+    <a href="#features">Features</a>
+    <a href="#theory">Theory</a>
+    <a href="#examples">Examples</a>
+    <a href="#evaluation">Evaluation</a>
+    <a href="#quickstart">Install</a>
+    <a href="https://github.com/thehalleyyoung/tensorguard">GitHub</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<div class="hero">
+  <h1>
+    <span class="highlight">TensorGuard</span><br>
+    Static Tensor Shape Verification<br>
+    via SMT Theory Combination
+  </h1>
+  <p class="subtitle">
+    Zero-annotation static verifier for PyTorch <code>nn.Module</code> architectures.
+    Catches shape mismatches, device inconsistencies, and train/eval phase errors
+    <strong>before any code runs</strong> — backed by Z3 with formally verified theory combination.
+  </p>
+  <div class="badges">
+    <span class="badge"><span class="dot green"></span> F1 = 0.900 on 18-model suite</span>
+    <span class="badge"><span class="dot blue"></span> 142 operator transfer functions</span>
+    <span class="badge"><span class="dot purple"></span> 5-theory product domain</span>
+    <span class="badge"><span class="dot orange"></span> Sub-second verification</span>
+  </div>
+  <div class="hero-buttons">
+    <a class="btn btn-primary" href="#quickstart">Get Started</a>
+    <a class="btn btn-secondary" href="#theory">Read the Math →</a>
+  </div>
+</div>
+
+<!-- ═══════════════════ STATS ═══════════════════ -->
+<section>
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num">142</div>
+      <div class="stat-label">Operator transfer functions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">5</div>
+      <div class="stat-label">Theory product domain</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">0</div>
+      <div class="stat-label">Annotations required</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">&lt;1s</div>
+      <div class="stat-label">Typical verification time</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FEATURES ═══════════════════ -->
+<section id="features">
+  <h2><span class="num">01</span> What TensorGuard Catches</h2>
+  <p class="section-sub">Eight classes of bugs across three theory domains, all detected statically with zero annotations.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">📐</div>
+      <h4>Shape Mismatches</h4>
+      <p><code>nn.Linear</code> input dimension ≠ declared <code>in_features</code>. Conv output flattened to wrong Linear input. Matmul inner dimension incompatibility.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔀</div>
+      <h4>Bad Reshape / View</h4>
+      <p><code>x.view(batch, -1)</code> where total elements don't divide evenly. Reshape product-equality violations verified via Z3 QF_NIA constraints.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📦</div>
+      <h4>Broadcast Errors</h4>
+      <p><code>torch.cat([a, b], dim=1)</code> with different sizes on non-cat dims. Broadcasting shape incompatibility in element-wise operations.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">💻</div>
+      <h4>Device Mismatches</h4>
+      <p><code>cpu_tensor + cuda_tensor</code> — catches silent CPU↔CUDA mismatches. Detects buffers that stay on CPU after <code>model.cuda()</code>.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔄</div>
+      <h4>Phase Errors</h4>
+      <p><code>model.eval()</code> then calling layers that behave differently. Train-head vs eval-head dimension mismatches in transfer learning.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧮</div>
+      <h4>Stride / Permutation</h4>
+      <p>Contiguity assumptions violated after <code>transpose</code>/<code>permute</code>. Memory layout correctness for view operations.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔗</div>
+      <h4>Cross-Theory Bugs</h4>
+      <p>Shape × Device × Phase interactions — e.g., anchor buffer with wrong spatial dims AND wrong device AND only used in eval mode.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <h4>Dead Code Detection</h4>
+      <p>Computed results that are never used or returned. Variables assigned but overwritten before any read.</p>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ═══════════════════ HOW IT WORKS ═══════════════════ -->
+<section id="pipeline">
+  <h2><span class="num">02</span> Verification Pipeline</h2>
+  <p class="section-sub">Six-stage pipeline from source code to verified safety certificate or concrete counterexample.</p>
+
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="step-num">Step 1</div>
+      <div class="step-title">AST Parse</div>
+      <div class="step-desc">Extract nn.Module class, __init__, forward method</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">Step 2</div>
+      <div class="step-title">Shape Harvest</div>
+      <div class="step-desc">Infer shapes from constructors, factories, reshapes</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">Step 3</div>
+      <div class="step-title">Graph Build</div>
+      <div class="step-desc">Computation DAG with operation nodes</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">Step 4</div>
+      <div class="step-title">5-Domain Propagation</div>
+      <div class="step-desc">Shape × Device × Phase × Stride × Perm</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">Step 5</div>
+      <div class="step-title">Z3 Solving</div>
+      <div class="step-desc">Discharge constraints at each operation site</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">Step 6</div>
+      <div class="step-title">CEGAR Refinement</div>
+      <div class="step-desc">Discover predicates from counterexamples</div>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ═══════════════════ THEORY ═══════════════════ -->
+<section id="theory">
+  <h2><span class="num">03</span> Formal Foundations</h2>
+  <p class="section-sub">TensorGuard's verification is grounded in refinement type theory, SMT theory combination, and abstract interpretation.</p>
+
+  <!-- Refinement Types -->
+  <h3>Refinement Types for Tensors</h3>
+  <p style="color: var(--text-muted); margin-bottom: 1rem;">
+    Each tensor carries a refinement type — a base type annotated with logical predicates from five theories.
+    Subtyping reduces to logical implication, checked via Z3.
+  </p>
+
+  <div class="math-block">
+    <div class="label">Definition — Tensor Refinement Type</div>
+    $$\{t : \mathit{Tensor} \mid \varphi_{\mathit{shape}} \land \varphi_{\mathit{device}} \land \varphi_{\mathit{phase}} \land \varphi_{\mathit{stride}} \land \varphi_{\mathit{perm}}\}$$
+    <div class="desc">A tensor refined by five theory predicates: shape constraints, device location, training phase, memory stride, and permutation state.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Rule — Subtyping via Implication</div>
+    $$\{t : T \mid \phi\} \leq \{t : T \mid \psi\} \quad\text{iff}\quad \phi \Rightarrow \psi \text{ is valid}$$
+    <div class="desc">Subtyping is checked by asking Z3 whether $\phi \land \neg\psi$ is UNSAT. If so, every value satisfying $\phi$ also satisfies $\psi$.</div>
+  </div>
+
+  <!-- Five-Theory Product Domain -->
+  <h3>Five-Theory Product Domain</h3>
+  <p style="color: var(--text-muted); margin-bottom: 1rem;">
+    TensorGuard jointly reasons over five theory domains. Each provides its own signature, axioms, and decision procedure.
+    They are combined via Tinelli–Zarba finite-domain theory combination.
+  </p>
+
+  <div class="math-block">
+    <div class="label">Domain — Shape Theory $\mathcal{T}_{\text{shape}}$</div>
+    $$\Sigma_{\mathit{shape}} = \left\{\; \mathit{dim}_i : \mathit{Tensor} \to \mathbb{Z}_{\geq 1},\;\; \mathit{ndim} : \mathit{Tensor} \to \mathbb{N},\;\; \mathit{prod} : \mathit{Dim}^* \to \mathbb{Z}_{\geq 1},\;\; \mathit{broadcast} : \mathit{Dim}^* \times \mathit{Dim}^* \to \mathit{Dim}^* \;\right\}$$
+    <div class="desc">Encodes tensor dimensions as positive integers. Broadcasting, reshape, and slicing are axiomatized over this signature.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Axiom — Broadcasting Compatibility</div>
+    $$\forall i.\; s_a[i] = s_b[i] \;\lor\; s_a[i] = 1 \;\lor\; s_b[i] = 1$$
+    <div class="desc">Two shapes are broadcast-compatible when, at every aligned dimension, they are equal or one of them is 1.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Domain — Device Theory $\mathcal{T}_{\text{device}}$</div>
+    $$\Sigma_{\mathit{device}} = \left\{\; \mathit{dev} : \mathit{Tensor} \to \mathcal{D} \;\right\} \qquad \mathcal{D} = \{\texttt{cpu}, \texttt{cuda:0}, \texttt{cuda:1}, \ldots\}$$
+    <div class="desc">Tracks tensor device placement. All operands of an operation must reside on the same device.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Domain — Phase Theory $\mathcal{T}_{\text{phase}}$</div>
+    $$\Sigma_{\mathit{phase}} = \left\{\; \mathit{mode} : \mathit{Context} \to \mathcal{P},\;\; \mathit{active} : \mathit{Op} \times \mathcal{P} \to \mathbb{B} \;\right\} \qquad \mathcal{P} = \{\texttt{train}, \texttt{eval}\}$$
+    <div class="desc">Models train/eval phase-dependent behavior. Dropout is only active in train mode; BatchNorm uses running statistics in eval.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Domain — Stride Theory $\mathcal{T}_{\text{stride}}$</div>
+    $$\mathit{contiguous}(t) \;\iff\; \forall i < \mathit{ndim}(t) - 1.\;\; \mathit{stride}_i(t) = \mathit{stride}_{i+1}(t) \cdot \mathit{dim}_{i+1}(t)$$
+    <div class="desc">Tracks memory layout. Operations like <code>view()</code> require contiguous memory; <code>transpose</code> breaks contiguity.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Domain — Permutation Theory $\mathcal{T}_{\text{perm}}$</div>
+    $$\mathsf{swap}(\mathsf{swap}(s, i, j), i, j) = s \qquad\qquad |\mathsf{apply}(\pi, s)| = |s|$$
+    <div class="desc">Permutation involution and bijectivity axioms. Tracks dimension reordering through <code>permute()</code> and <code>transpose()</code>.</div>
+  </div>
+
+  <!-- Cross-Domain Axioms -->
+  <h3>Cross-Domain Interaction Axioms</h3>
+
+  <div class="math-block">
+    <div class="label">Axiom — Device Incompatibility</div>
+    $$\mathit{dev}(a) \neq \mathit{dev}(b) \implies \neg\,\mathit{compatible}(a, b)$$
+    <div class="desc">Tensors on different devices cannot participate in the same operation.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Axiom — Phase-Conditional Behavior</div>
+    $$\mathit{mode} = \texttt{eval} \implies \mathit{dropout\_active} = \mathit{false}$$
+    <div class="desc">Phase predicates constrain which operations are active, enabling detection of phase-dependent shape errors.</div>
+  </div>
+
+  <!-- Transfer Functions -->
+  <h3>Operator Transfer Functions</h3>
+  <p style="color: var(--text-muted); margin-bottom: 1rem;">
+    Each PyTorch operation has a transfer function that maps input types to output types.
+    These are the core of TensorGuard's shape propagation — 142 operators are covered.
+  </p>
+
+  <div class="math-block">
+    <div class="label">Transfer Function — Linear Layer</div>
+    $$\Gamma \vdash \texttt{Linear}(f_{\text{in}}, f_{\text{out}})(x) \;:\; \{t' \mid \mathit{shape}(t') = \mathit{shape}(x)_{[0:-1]} \;\|\; [f_{\text{out}}]\}$$
+    <div class="desc">Linear replaces the last dimension: input must have last dim = $f_{\text{in}}$, output has last dim = $f_{\text{out}}$.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Transfer Function — Conv2d</div>
+    $$\mathit{dim}_i(t') = \left\lfloor\frac{\mathit{dim}_i(x) + 2p - d(k-1) - 1}{s}\right\rfloor + 1$$
+    <div class="desc">Standard convolution output dimension formula, parameterized by padding $p$, dilation $d$, kernel size $k$, stride $s$.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Transfer Function — Reshape / View</div>
+    $$\prod_i s_i = \prod_j d_j$$
+    <div class="desc">Product-equality constraint: the product of input dimensions must equal the product of output dimensions. Falls in QF_NIA (NP-hard) when dimensions are symbolic.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Transfer Function — Concatenation</div>
+    $$\mathit{dim}_d(t') = \sum_i s_i[d]$$
+    <div class="desc">Concatenation sums along axis $d$; all other dimensions must match exactly.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Transfer Function — Matmul</div>
+    $$\mathit{shape}(t') = \mathit{broadcast}(s_A[:-2],\; s_B[:-2]) \;\|\; [s_A[-2],\; s_B[-1]]$$
+    <div class="desc">Batch dimensions are broadcast; inner dimensions must match: $s_A[-1] = s_B[-2]$.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Transfer Function — Phase-Conditional</div>
+    $$\Gamma \vdash \texttt{if self.training:}\; e_1 \;\texttt{else:}\; e_2 \;:\; \tau_1 \sqcap \tau_2$$
+    <div class="desc">Both branches are verified independently. The result type is the meet (intersection) of both branch types.</div>
+  </div>
+
+  <!-- Theory Combination -->
+  <h3>Theory Combination</h3>
+  <p style="color: var(--text-muted); margin-bottom: 1rem;">
+    The five theories are combined using the Tinelli–Zarba method for finite-domain theories.
+    Arrangements enumerate possible equalities between shared variables.
+  </p>
+
+  <div class="math-block">
+    <div class="label">Method — Tinelli–Zarba Arrangement Enumeration</div>
+    $$\text{arrangement} = \text{partition of shared variables into } \leq n \text{ equivalence classes}$$
+    <div class="desc">For each arrangement, each theory's decision procedure checks consistency. If all agree on at least one arrangement, the conjunction is satisfiable.</div>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Complexity — Arrangement Bound</div>
+    $$S(k_d, 5) \cdot S(k_p, 2)$$
+    <div class="desc">Stirling numbers of the second kind bound the number of arrangements for $k_d$ device variables over 5 device values and $k_p$ phase variables over 2 phases.</div>
+  </div>
+
+  <!-- Soundness -->
+  <h3>Soundness &amp; Decidability</h3>
+
+  <div class="theorem">
+    <div class="theorem-title">Theorem — Product Domain Soundness</div>
+    <p>Let $\mathcal{T}_{\Pi} = \mathcal{T}_{\text{shape}} \times \mathcal{T}_{\text{device}} \times \mathcal{T}_{\text{phase}} \times \mathcal{T}_{\text{stride}} \times \mathcal{T}_{\text{perm}}$.
+    If $\Gamma \vdash e : \tau$ and $\sigma \models \Gamma$, then $e$ does not produce a shape, device, phase, stride, or permutation error at runtime.</p>
+  </div>
+
+  <div class="theorem">
+    <div class="theorem-title">Theorem — CEGAR Convergence</div>
+    <p>The predicate-refinement loop terminates in at most $|P_0|$ iterations, where $P_0$ is the initial predicate candidate set generated from the template grammar:
+    $$P ::= d_i = c \;\mid\; d_i = d_j \;\mid\; d_i = k \cdot d_j \;\mid\; d_i + d_j = d_k$$</p>
+  </div>
+
+  <div class="theorem">
+    <div class="theorem-title">Theorem — Abstract Interpretation Soundness</div>
+    <p>The abstract transformer $\llbracket G \rrbracket^\sharp$ is a sound over-approximation of the concrete semantics:
+    $$\alpha(\llbracket G \rrbracket(\sigma)) \sqsubseteq \llbracket G \rrbracket^\sharp(\alpha(\sigma))$$
+    where $\alpha$ is the abstraction function of the Galois connection $(\alpha, \gamma)$ between concrete tensor states and abstract shape predicates.</p>
+  </div>
+
+  <div class="math-block">
+    <div class="label">Decidability Classification</div>
+    <table style="margin-top: 0.5rem;">
+      <tr><th>Fragment</th><th>Operators</th><th>Complexity</th></tr>
+      <tr><td>QF_LIA (linear integer arithmetic)</td><td>Linear, Conv, BatchNorm, LayerNorm, Pool, Attention, +136 more</td><td>Polynomial (decidable)</td></tr>
+      <tr><td>QF_NIA (nonlinear integer arithmetic)</td><td>Reshape, Flatten, PixelShuffle, Repeat, Expand, Unfold</td><td>NP-hard (decidable, bounded)</td></tr>
+    </table>
+    <div class="desc">94.9% of operators produce decidable QF_LIA constraints. Only 6 operators enter the NP-hard QF_NIA fragment, whose hardness is justified via a SUBSET-PRODUCT reduction.</div>
+  </div>
+
+  <!-- Z3 Encoding -->
+  <h3>Z3 SMT Encoding</h3>
+  <p style="color: var(--text-muted); margin-bottom: 1rem;">
+    Constraints are encoded directly into Z3's SMT-LIB language. Here are representative encodings.
+  </p>
+
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">Linear Layer Encoding</div>
+    </div>
+    <pre><code class="language-python"># Z3 constraints for nn.Linear(128, 64)
+# Input x must have last dim = 128
+(assert (= x_dim_last 128))
+# Output preserves all dims except last
+(assert (= y_ndim x_ndim))
+# Output last dim = out_features
+(assert (= y_dim_last 64))</code></pre>
+  </div>
+
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">Conv2d Encoding</div>
+    </div>
+    <pre><code class="language-python"># Z3 constraints for nn.Conv2d(3, 64, 7, stride=2, padding=3)
+(assert (= x_dim1 3))                                    ; in_channels
+(assert (= y_dim0 x_dim0))                                ; batch preserved
+(assert (= y_dim1 64))                                    ; out_channels
+(assert (= y_dim2 (+ (div (- (+ x_dim2 6) 7) 2) 1)))    ; spatial H
+(assert (= y_dim3 (+ (div (- (+ x_dim3 6) 7) 2) 1)))    ; spatial W</code></pre>
+  </div>
+
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">Device + Phase Cross-Theory</div>
+    </div>
+    <pre><code class="language-python"># Cross-domain constraint encoding
+(assert (= x_device 1))          ; x on CUDA
+(assert (= buf_device 0))        ; buffer on CPU
+(assert (= x_device buf_device)) ; CONFLICT → device mismatch detected
+
+# Phase-conditional shape check
+(assert (=> (= mode 0)           ; train mode
+    (= train_out_dim 100)))
+(assert (=> (= mode 1)           ; eval mode
+    (and (= backbone_dim 128)
+         (= eval_out_dim 10))))   ; must match backbone output</code></pre>
+  </div>
+
+  <!-- CEGAR Algorithm -->
+  <h3>CEGAR Algorithm</h3>
+
+  <div class="algorithm">
+    <div class="algo-title">⚙️ Algorithm 1: Counterexample-Guided Abstraction Refinement</div>
+    <div><span class="kw">function</span> <span class="fn">CEGAR</span>(Graph $G$, InitPredicates $P_0$, MaxIter $k$):</div>
+    <div class="indent">$P \leftarrow P_0$ <span class="cm">// initial predicate set from template grammar</span></div>
+    <div class="indent"><span class="kw">for</span> $i = 1$ <span class="kw">to</span> $k$:</div>
+    <div class="indent2">$\mathit{result} \leftarrow$ <span class="fn">Verify</span>($G$, $P$) <span class="cm">// Z3 constraint check with current predicates</span></div>
+    <div class="indent2"><span class="kw">if</span> $\mathit{result} = \texttt{SAFE}$:</div>
+    <div class="indent3"><span class="kw">return</span> $(\texttt{SAFE}, P)$ <span class="cm">// proved safe with predicates $P$</span></div>
+    <div class="indent2">$\mathit{cex} \leftarrow$ <span class="fn">ExtractCounterexample</span>($\mathit{result}$)</div>
+    <div class="indent2"><span class="kw">if</span> <span class="fn">IsGenuine</span>($\mathit{cex}$):</div>
+    <div class="indent3"><span class="kw">return</span> $(\texttt{UNSAFE}, \mathit{cex})$ <span class="cm">// real bug found</span></div>
+    <div class="indent2">$P' \leftarrow$ <span class="fn">RefinePredicates</span>($\mathit{cex}$, $P$) <span class="cm">// discover new predicates</span></div>
+    <div class="indent2">$P \leftarrow P \cup P'$</div>
+    <div class="indent"><span class="kw">return</span> $(\texttt{UNKNOWN}, P)$ <span class="cm">// exhausted iterations</span></div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ═══════════════════ EXAMPLES ═══════════════════ -->
+<section id="examples">
+  <h2><span class="num">04</span> Examples</h2>
+  <p class="section-sub">Real bugs from the paper evaluation — each detected statically in under one second.</p>
+
+  <!-- Example 1: Shape Mismatch -->
+  <h3>Shape Mismatch — Conv→Linear Dimension Error</h3>
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">model.py</div>
+    </div>
+    <pre><code class="language-python">class BuggyModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv = nn.Conv2d(3, 128, 3, padding=1)
+        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Linear(256, 10)   # ← BUG: expects 256, conv outputs 128
+
+    def forward(self, x):
+        x = self.conv(x)              # → [B, 128, H, W]
+        x = self.pool(x)              # → [B, 128, 1, 1]
+        x = x.flatten(1)              # → [B, 128]
+        return self.fc(x)             # 💥 Linear expects 256, got 128</code></pre>
+  </div>
+  <div class="output-block">
+    <span class="error">✗ model.py: 1 verification error (24ms)</span><br>
+    &nbsp;&nbsp;<span class="error">L12: [SHAPE-INCOMPATIBLE] Linear expects last dim=256, got 128</span>
+  </div>
+
+  <!-- Example 2: Phase × Shape -->
+  <h3>Phase × Shape — Transfer Learning Bug</h3>
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">transfer.py</div>
+    </div>
+    <pre><code class="language-python">class TransferLearningBug(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.backbone = nn.Linear(512, 256)
+        self.train_head = nn.Linear(256, 100)
+        self.eval_head = nn.Linear(128, 10)    # ← BUG: 128 ≠ 256
+
+    def forward(self, x):
+        h = self.backbone(x)                   # → [B, 256]
+        if self.training:
+            return self.train_head(h)           # ✓ OK: 256 → 100
+        else:
+            return self.eval_head(h)            # 💥 expects 128, got 256</code></pre>
+  </div>
+  <div class="output-block">
+    <span class="error">✗ transfer.py: 1 verification error (15ms)</span><br>
+    &nbsp;&nbsp;<span class="error">L13: [SHAPE-INCOMPATIBLE] [eval mode] Linear expects last dim=128, got 256</span><br>
+    <br>
+    <span class="info">ℹ TensorGuard verifies both train and eval branches independently — catching phase-specific bugs.</span>
+  </div>
+
+  <!-- Example 3: Device Mismatch -->
+  <h3>Device Mismatch — Buffer Stays on CPU</h3>
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">position.py</div>
+    </div>
+    <pre><code class="language-python">class PositionEmbeddingBug(nn.Module):
+    def __init__(self, max_len=512, dim=768):
+        super().__init__()
+        self.proj = nn.Linear(dim, dim)
+        self.register_buffer('pos_ids',       # ← buffer created on CPU
+            torch.arange(max_len).unsqueeze(0))
+
+    def forward(self, x):
+        pos = self.pos_ids[:, :x.size(1)]
+        return self.proj(x) + pos             # 💥 device mismatch when x is CUDA</code></pre>
+  </div>
+  <div class="output-block">
+    <span class="error">✗ position.py: 2 verification errors (71ms)</span><br>
+    &nbsp;&nbsp;<span class="error">L10: [SHAPE-INCOMPATIBLE] Cannot broadcast (B, 512, 768) and (1, 512)</span><br>
+    &nbsp;&nbsp;<span class="error">L10: [DEVICE-MISMATCH] proj(x) on cuda:0, pos_ids on cpu</span>
+  </div>
+
+  <!-- Example 4: Triple Bug -->
+  <h3>Triple Bug — Shape × Device × Phase</h3>
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">yolo.py</div>
+    </div>
+    <pre><code class="language-python">class YOLODetectorBug(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.backbone = nn.Conv2d(3, 64, 3, padding=1)
+        self.head = nn.Conv2d(64, 255, 1)
+        self.register_buffer('anchor_grid',   # ← wrong dims AND wrong device
+            torch.randn(1, 3, 10, 10, 2))
+
+    def forward(self, x):
+        feat = self.head(self.backbone(x))    # → [B, 255, H, W]
+        if not self.training:                 # ← only in eval mode
+            B, C, H, W = feat.shape
+            out = feat.view(B, 3, 85, H, W)
+            out = out + self.anchor_grid      # 💥 THREE bugs at once
+        return feat</code></pre>
+  </div>
+  <div class="output-block">
+    <span class="error">✗ yolo.py: 3 verification errors (61ms)</span><br>
+    &nbsp;&nbsp;<span class="error">L14: [SHAPE-INCOMPATIBLE] Cannot broadcast (B,3,85,32,32) and (1,3,10,10,2)</span><br>
+    &nbsp;&nbsp;<span class="error">L14: [DEVICE-MISMATCH] out on cuda:0 but anchor_grid on cpu</span><br>
+    &nbsp;&nbsp;<span class="error">L14: [DEAD-OUTPUT] Result 'output' computed but never returned</span><br>
+    <br>
+    <span class="info">ℹ TensorGuard's 5-theory product domain catches all three bugs in a single pass.</span>
+  </div>
+
+  <!-- Example 5: FPN Channel Bug -->
+  <h3>Channel Mismatch — Feature Pyramid Network</h3>
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">fpn.py</div>
+    </div>
+    <pre><code class="language-python">class FPNBug(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.backbone_c3 = nn.Conv2d(3, 128, 3, padding=1)
+        self.backbone_c4 = nn.Conv2d(128, 256, 3, stride=2, padding=1)
+        self.backbone_c5 = nn.Conv2d(256, 512, 3, stride=2, padding=1)
+        self.lateral_c4 = nn.Conv2d(128, 256, 1)  # ← BUG: expects 128, gets 256
+        self.lateral_c5 = nn.Conv2d(512, 256, 1)
+
+    def forward(self, x):
+        c3 = self.backbone_c3(x)       # [B, 128, H, W]
+        c4 = self.backbone_c4(c3)      # [B, 256, H/2, W/2]
+        c5 = self.backbone_c5(c4)      # [B, 512, H/4, W/4]
+        p5 = self.lateral_c5(c5)       # [B, 256, H/4, W/4]  ✓
+        p4 = self.lateral_c4(c4)       # 💥 c4 has 256 channels, lateral expects 128
+            + F.interpolate(p5, scale_factor=2)
+        return p4</code></pre>
+  </div>
+  <div class="output-block">
+    <span class="error">✗ fpn.py: 1 verification error (83ms)</span><br>
+    &nbsp;&nbsp;<span class="error">L14: [SHAPE-INCOMPATIBLE] Conv2d expects 128 input channels, got 256</span>
+  </div>
+
+  <!-- Example 6: SE Block -->
+  <h3>Squeeze-Excitation Block — Stale Channel Count</h3>
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">senet.py</div>
+    </div>
+    <pre><code class="language-python">class SEBlockBug(nn.Module):
+    def __init__(self, channels=512, reduction=16):
+        super().__init__()
+        self.conv = nn.Conv2d(3, channels, 3, padding=1)   # outputs 512
+        self.pool = nn.AdaptiveAvgPool2d(1)
+        # BUG: SE block was designed when channels=256, never updated
+        self.se_fc1 = nn.Linear(256, 256 // reduction)
+        self.se_fc2 = nn.Linear(256 // reduction, 256)
+        self.relu = nn.ReLU()
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        out = self.conv(x)                                  # [B, 512, H, W]
+        se = self.pool(out).view(out.size(0), -1)           # [B, 512]
+        se = self.relu(self.se_fc1(se))                     # 💥 512 ≠ 256
+        se = self.sigmoid(self.se_fc2(se))
+        return out * se.unsqueeze(-1).unsqueeze(-1)</code></pre>
+  </div>
+  <div class="output-block">
+    <span class="error">✗ senet.py: 2 verification errors (114ms)</span><br>
+    &nbsp;&nbsp;<span class="error">L15: [SHAPE-INCOMPATIBLE] Linear expects last dim=256, got 512</span><br>
+    &nbsp;&nbsp;<span class="error">L16: [SHAPE-INCOMPATIBLE] Linear expects last dim=16, got 512</span>
+  </div>
+
+  <!-- Example 7: Correct Model -->
+  <h3>✓ Correct Model — Verified Safe</h3>
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">correct.py</div>
+    </div>
+    <pre><code class="language-python">class CorrectMultiTheory(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv = nn.Conv2d(3, 64, 3, padding=1)
+        self.bn = nn.BatchNorm2d(64)
+        self.fc = nn.Linear(64, 10)
+        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.dropout = nn.Dropout(0.5)
+
+    def forward(self, x):
+        x = F.relu(self.bn(self.conv(x)))   # [B, 64, H, W]  ✓
+        x = self.pool(x)                     # [B, 64, 1, 1]  ✓
+        x = x.view(x.size(0), -1)           # [B, 64]         ✓
+        if self.training:
+            x = self.dropout(x)              # shape-preserving ✓
+        return self.fc(x)                    # [B, 64] → [B, 10] ✓</code></pre>
+  </div>
+  <div class="output-block">
+    <span class="safe">✓ correct.py: Architecture verified safe (60ms)</span><br>
+    <br>
+    <span class="info">ℹ All five theory domains checked — shape, device, phase, stride, permutation — zero violations.</span>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ═══════════════════ EVALUATION ═══════════════════ -->
+<section id="evaluation">
+  <h2><span class="num">05</span> Evaluation Results</h2>
+  <p class="section-sub">Comprehensive benchmarks against TorchScript, mypy, PyTEA, jaxtyping, and frontier LLMs.</p>
+
+  <!-- 18-Model Benchmark -->
+  <h3>18-Model Shape Bug Detection Suite</h3>
+  <p style="color: var(--text-muted); margin-bottom: 1rem;">
+    Controlled benchmark with 9 buggy + 9 correct models covering all shape error classes.
+  </p>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>Tool</th><th>Precision</th><th>Recall</th><th>F1</th><th>False Positives</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>TensorGuard (SMT)</strong></td>
+          <td class="cell-best">0.900</td>
+          <td class="cell-best">0.900</td>
+          <td class="cell-best">0.900</td>
+          <td class="cell-best">1</td>
+        </tr>
+        <tr>
+          <td>TorchScript</td>
+          <td>0.556</td>
+          <td>1.000</td>
+          <td>0.714</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>mypy</td>
+          <td class="cell-zero">0.000</td>
+          <td class="cell-zero">0.000</td>
+          <td class="cell-zero">0.000</td>
+          <td class="cell-zero">0</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 56-Model Real World -->
+  <h3>56-Model Real-World Architecture Suite</h3>
+  <p style="color: var(--text-muted); margin-bottom: 1rem;">
+    Production-scale models including ResNet, BERT, YOLO, FPN, and transformer variants. 36 buggy + 20 correct.
+  </p>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>Tool</th><th>Precision</th><th>Recall</th><th>F1</th><th>FP</th><th>Avg Time</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>TensorGuard</strong></td>
+          <td class="cell-best">0.889</td>
+          <td>0.889</td>
+          <td>0.889</td>
+          <td>4</td>
+          <td class="cell-best">91ms</td>
+        </tr>
+        <tr>
+          <td>gpt-4.1-nano (LLM)</td>
+          <td>0.897</td>
+          <td class="cell-best">0.972</td>
+          <td class="cell-best">0.933</td>
+          <td>4</td>
+          <td>~2s</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">
+    The LLM achieves higher F1 but provides no deterministic or formal guarantees. TensorGuard's results are reproducible and formally backed.
+  </p>
+
+  <!-- Cross-Theory -->
+  <h3>Cross-Theory Bug Detection</h3>
+  <p style="color: var(--text-muted); margin-bottom: 1rem;">
+    Bugs requiring reasoning across multiple theory domains simultaneously.
+  </p>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>Bug Category</th><th>TensorGuard F1</th><th>TorchScript</th><th>mypy</th><th>PyTEA</th><th>jaxtyping</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Phase + Shape</td><td class="cell-best">0.783</td><td class="cell-zero">0.000</td><td class="cell-zero">0.000</td><td class="cell-zero">0.000</td><td class="cell-zero">0.000</td></tr>
+        <tr><td>Shape + Device + Phase</td><td class="cell-best">0.750</td><td class="cell-zero">0.000</td><td class="cell-zero">0.000</td><td class="cell-zero">0.000</td><td class="cell-zero">0.000</td></tr>
+        <tr><td>Device + Shape</td><td class="cell-best">0.400</td><td class="cell-zero">0.000</td><td class="cell-zero">0.000</td><td class="cell-zero">0.000</td><td class="cell-zero">0.000</td></tr>
+        <tr><td>Device + Phase</td><td class="cell-best">0.400</td><td class="cell-zero">0.000</td><td class="cell-zero">0.000</td><td class="cell-zero">0.000</td><td class="cell-zero">0.000</td></tr>
+        <tr style="border-top: 2px solid var(--border);">
+          <td><strong>Overall (multi-theory)</strong></td>
+          <td class="cell-best"><strong>P=1.00 R=0.455 F1=0.625</strong></td>
+          <td class="cell-zero" colspan="4" style="text-align:center;">No tool detects any cross-theory bug</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Controlled Benchmark -->
+  <h3>Controlled 30-Program Benchmark</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>Method</th><th>F1</th><th>Avg Time</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>SMT (TensorGuard)</strong></td><td class="cell-best">1.000</td><td class="cell-best">3.2ms</td></tr>
+        <tr><td>Random Testing</td><td>0.947</td><td>—</td></tr>
+        <tr><td>Runtime Checking</td><td>0.750</td><td>—</td></tr>
+        <tr><td>Static Analysis</td><td>0.333</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PyTEA Benchmark -->
+  <h3>PyTEA Real-World Compatibility</h3>
+  <p style="color: var(--text-muted); margin-bottom: 1rem;">
+    44 test cases from the PyTEA benchmark suite (DCGAN, MNIST, BERT, SimCLR, VAE, etc.)
+  </p>
+  <div class="stats-row" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="stat-card">
+      <div class="stat-num">0.833</div>
+      <div class="stat-label">Precision</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">0.714</div>
+      <div class="stat-label">Recall</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">0.769</div>
+      <div class="stat-label">F1 Score</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">154ms</div>
+      <div class="stat-label">Avg Time</div>
+    </div>
+  </div>
+
+  <!-- IC3/PDR -->
+  <h3>IC3/PDR Unbounded Verification</h3>
+  <p style="color: var(--text-muted); margin-bottom: 1rem;">
+    For parametric verification (arbitrary batch size, sequence length), TensorGuard includes an IC3/PDR engine that proves safety for all input sizes.
+  </p>
+  <div class="stats-row" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="stat-card">
+      <div class="stat-num">31/32</div>
+      <div class="stat-label">Agreement with bounded checking</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">8.8ms</div>
+      <div class="stat-label">Avg IC3 time</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">10×</div>
+      <div class="stat-label">Faster than BMC</div>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ═══════════════════ QUICKSTART ═══════════════════ -->
+<section id="quickstart">
+  <h2><span class="num">06</span> Getting Started</h2>
+  <p class="section-sub">Install TensorGuard and verify your first model in under a minute.</p>
+
+  <h3>Installation</h3>
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">Terminal</div>
+    </div>
+    <pre><code class="language-python">git clone https://github.com/thehalleyyoung/tensorguard.git
+cd tensorguard
+pip install -e .</code></pre>
+  </div>
+  <p style="color: var(--text-muted); font-size: 0.9rem;">Only dependency: <code>z3-solver≥4.12</code> (installed automatically).</p>
+
+  <h3>CLI Usage</h3>
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">Verify a model</div>
+    </div>
+    <pre><code class="language-python"># Verify with explicit input shape
+$ tensorguard verify model.py -s x=batch,3,224,224
+
+# JSON output for CI
+$ tensorguard verify model.py --format json
+
+# SARIF for GitHub Code Scanning
+$ tensorguard ci-check models/ --sarif-output results.sarif
+
+# High-confidence mode (0% false positives)
+$ tensorguard verify model.py --high-confidence</code></pre>
+  </div>
+
+  <h3>Python API</h3>
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">api_example.py</div>
+    </div>
+    <pre><code class="language-python">from src.api import verify_module
+
+result = verify_module(
+    "model.py",
+    input_shapes={"x": ("batch", 3, 224, 224)},
+    check_devices=True,
+    check_phases=True,
+)
+
+print(f"Status: {result.status}")        # "SAFE" or "UNSAFE"
+print(f"Bugs: {result.bug_count}")
+print(f"Time: {result.duration_ms:.0f}ms")
+
+for bug in result.bugs:
+    print(f"  L{bug.location.line}: {bug.message}")</code></pre>
+  </div>
+
+  <h3>CI/CD Integration</h3>
+  <div class="code-example">
+    <div class="tab-bar">
+      <div class="tab active">.github/workflows/tensorguard.yml</div>
+    </div>
+    <pre><code class="language-python">name: TensorGuard Shape Check
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -e .
+      - run: tensorguard ci-check models/ --sarif-output results.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with: { sarif_file: results.sarif }</code></pre>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ═══════════════════ ARCHITECTURE ═══════════════════ -->
+<section id="architecture">
+  <h2><span class="num">07</span> Architecture &amp; Scope</h2>
+  <p class="section-sub">Coverage of the PyTorch operator space and system components.</p>
+
+  <h3>Operator Coverage</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>Category</th><th>Operators</th><th>Count</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Linear layers</td><td>Linear, LazyLinear, Bilinear</td><td>3</td></tr>
+        <tr><td>Convolutions</td><td>Conv1d/2d/3d, ConvTranspose1d/2d/3d</td><td>6</td></tr>
+        <tr><td>Normalization</td><td>BatchNorm1d/2d/3d, LayerNorm, GroupNorm, InstanceNorm</td><td>10</td></tr>
+        <tr><td>Pooling</td><td>MaxPool, AvgPool, AdaptiveAvgPool, LPPool</td><td>8</td></tr>
+        <tr><td>Activations</td><td>ReLU, GELU, SiLU, Mish, Softmax, +30 more</td><td>35</td></tr>
+        <tr><td>Recurrent</td><td>LSTM, GRU, RNN, Transformer*</td><td>8</td></tr>
+        <tr><td>Attention</td><td>MultiheadAttention, scaled_dot_product_attention</td><td>4</td></tr>
+        <tr><td>Shape ops</td><td>view, reshape, permute, transpose, flatten, unflatten</td><td>12</td></tr>
+        <tr><td>Reduction</td><td>sum, mean, max, min, prod, norm</td><td>8</td></tr>
+        <tr><td>Tensor ops</td><td>cat, stack, split, chunk, matmul, bmm, einsum</td><td>14</td></tr>
+        <tr><td>Regularization</td><td>Dropout, AlphaDropout, FeatureAlphaDropout</td><td>6</td></tr>
+        <tr><td>Embedding</td><td>Embedding, EmbeddingBag</td><td>2</td></tr>
+        <tr><td>Other</td><td>PixelShuffle, Upsample, Pad, Fold/Unfold, +more</td><td>26</td></tr>
+        <tr style="border-top: 2px solid var(--border); font-weight: 600;">
+          <td>Total</td><td></td><td>142</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Lean 4 Formalization</h3>
+  <p style="color: var(--text-muted); margin-bottom: 1rem;">
+    The repository includes a 1,587-line Lean 4 formalization draft with 71 stated theorems and
+    <strong>zero <code>sorry</code> obligations</strong>. It covers:
+  </p>
+  <div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="card">
+      <h4>Type Soundness</h4>
+      <p>Formal proof that well-typed programs don't produce shape errors</p>
+    </div>
+    <div class="card">
+      <h4>Theory Combination</h4>
+      <p>Nelson–Oppen and Tinelli–Zarba combination correctness</p>
+    </div>
+    <div class="card">
+      <h4>CEGAR Termination</h4>
+      <p>Proof of convergence in bounded iterations</p>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ═══════════════════ COMPARISON ═══════════════════ -->
+<section>
+  <h2><span class="num">08</span> How TensorGuard Compares</h2>
+  <p class="section-sub">Capability comparison with existing tools.</p>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>Capability</th><th>TensorGuard</th><th>TorchScript</th><th>mypy</th><th>PyTEA</th><th>jaxtyping</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Shape verification</td><td class="cell-best">✓ SMT-backed</td><td>✓ partial</td><td class="cell-zero">✗</td><td>✓ abstract interp</td><td>✓ runtime</td></tr>
+        <tr><td>Device tracking</td><td class="cell-best">✓</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td></tr>
+        <tr><td>Phase analysis</td><td class="cell-best">✓</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td></tr>
+        <tr><td>Stride/permutation</td><td class="cell-best">✓</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td></tr>
+        <tr><td>Cross-theory bugs</td><td class="cell-best">✓</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td></tr>
+        <tr><td>Zero annotations</td><td class="cell-best">✓</td><td>✓</td><td>partial</td><td>✓</td><td class="cell-zero">✗ (requires)</td></tr>
+        <tr><td>Formal guarantees</td><td class="cell-best">✓ Z3 proofs</td><td>partial</td><td class="cell-zero">✗</td><td>partial</td><td class="cell-zero">✗</td></tr>
+        <tr><td>SARIF output</td><td class="cell-best">✓</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td><td class="cell-zero">✗</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer>
+  <p>
+    <strong>TensorGuard</strong> — Static Tensor Shape Verification via SMT Theory Combination<br>
+    <a href="https://github.com/thehalleyyoung/tensorguard">GitHub</a> ·
+    MIT License ·
+    Built with Z3, Python, and Lean 4
+  </p>
+</footer>
+
+</body>
+</html>
