@@ -1,0 +1,551 @@
+{
+  "meta": {
+    "generated_by": "v8/build_modern_subset.py",
+    "pytea_catalogue_ops": [
+      "matmul/mm/bmm",
+      "conv2d/conv_transpose2d",
+      "nn.Linear",
+      "view/reshape",
+      "transpose (2D+, with dim check)",
+      "unsqueeze/squeeze",
+      "cat/stack",
+      "broadcast/elementwise (tensor.__add__ etc.)",
+      "BatchNorm2d (rank-4 only)",
+      "Embedding (shape, no index bounds)",
+      "pool2d",
+      "layer_norm",
+      "flatten",
+      "expand/expand_as",
+      "narrow",
+      "pad",
+      "reduce/topk",
+      "cross_entropy/nll_loss/mse_loss"
+    ],
+    "catalogue_gaps_in_corpus": [
+      "einsum (5 bugs: 013,022,031,050 + misrouted 040)",
+      "Conv1d/Conv3d (3 bugs: 017,026,060)",
+      "BatchNorm1d/GroupNorm/InstanceNorm (3 bugs: 024,033,054)",
+      "SDPA/MHA-2x (2 bugs: 001,012)",
+      "swapaxes/movedim (2 bugs: 032,041)",
+      "torch.where (1 bug: 029)",
+      "torch.dot (1 bug: 065)",
+      "torch.linalg.* (1 bug: 067)",
+      "repeat_interleave (1 bug: 069)",
+      "torch.add functional (1 bug: 048)",
+      "torch.maximum functional (1 bug: 059)",
+      "index_select (1 bug: 064)",
+      "gather (1 bug: 051)",
+      "scatter_ (1 bug: 052)",
+      "split-with-list-sum (1 bug: 058)",
+      "F.embedding functional (1 bug: 055)",
+      "isclose (1 bug: 002)"
+    ]
+  },
+  "corpus_partition": {
+    "total_bugs": 60,
+    "modern_subset_size": 34,
+    "not_modern_size": 26
+  },
+  "modern_subset_results": {
+    "tg_refuted": 32,
+    "tg_total": 34,
+    "tg_detection_rate": 0.941,
+    "pytea_refuted": 25,
+    "pytea_total": 34,
+    "pytea_detection_rate": 0.735,
+    "tg_advantage_within_modern": 7
+  },
+  "not_modern_subset_results": {
+    "tg_refuted": 24,
+    "tg_total": 26,
+    "pytea_refuted": 2,
+    "pytea_total": 26
+  },
+  "full_corpus_results": {
+    "tg_refuted": 56,
+    "pytea_refuted": 27,
+    "total": 60
+  },
+  "per_bug": [
+    {
+      "id": "bug_001",
+      "modern": false,
+      "primary_op": "F.scaled_dot_product_attention",
+      "note": "SDPA \u2014 PyTorch-2.x, no Pytea handler",
+      "tg_verdict": "Verified",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_002",
+      "modern": false,
+      "primary_op": "torch.isclose",
+      "note": "isclose \u2014 not in Pytea catalogue",
+      "tg_verdict": "Verified",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_003",
+      "modern": true,
+      "primary_op": "Tensor.view",
+      "note": "view \u2014 index.ts:1165",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_004",
+      "modern": true,
+      "primary_op": "Tensor.view",
+      "note": "view with empty tensor \u2014 index.ts:1165",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_005",
+      "modern": true,
+      "primary_op": "broadcast (param + tensor)",
+      "note": "broadcast \u2014 index.ts:331",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_006",
+      "modern": true,
+      "primary_op": "nn.CrossEntropyLoss",
+      "note": "cross_entropy \u2014 index.ts:1912",
+      "tg_verdict": "Verified",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_007",
+      "modern": true,
+      "primary_op": "F.conv2d (dtype check)",
+      "note": "conv2d \u2014 index.ts:1338 (dtype mismatch surfaced by shape)",
+      "tg_verdict": "Verified",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_008",
+      "modern": true,
+      "primary_op": "nn.Conv2d",
+      "note": "conv2d channel mismatch \u2014 index.ts:1338",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_009",
+      "modern": true,
+      "primary_op": "nn.Linear",
+      "note": "linear in/out mismatch \u2014 via matmul chain",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_010",
+      "modern": true,
+      "primary_op": "Tensor.view",
+      "note": "view total size \u2014 index.ts:1165",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_011",
+      "modern": true,
+      "primary_op": "broadcast (a + b)",
+      "note": "broadcast \u2014 index.ts:331",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_012",
+      "modern": false,
+      "primary_op": "nn.MultiheadAttention",
+      "note": "MHA embed_dim divisibility \u2014 PyTorch-2.x redesign, no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_013",
+      "modern": false,
+      "primary_op": "torch.einsum",
+      "note": "einsum \u2014 no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_014",
+      "modern": true,
+      "primary_op": "Tensor.transpose",
+      "note": "transpose dim OOR \u2014 index.ts:923 has dim-range check",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_015",
+      "modern": true,
+      "primary_op": "nn.BatchNorm2d",
+      "note": "batchnorm2d num_features \u2014 index.ts:1871",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_016",
+      "modern": true,
+      "primary_op": "nn.Embedding",
+      "note": "embedding index OOB \u2014 handler exists, bounds check absent (symbolic_fragment)",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_017",
+      "modern": false,
+      "primary_op": "nn.Conv1d",
+      "note": "Conv1d \u2014 no Pytea handler (only Conv2d)",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_018",
+      "modern": true,
+      "primary_op": "matmul (@ operator)",
+      "note": "matmul mismatch \u2014 Pytea frontend_parse_failed on bare @ stmt",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "N/A"
+    },
+    {
+      "id": "bug_019",
+      "modern": true,
+      "primary_op": "Tensor.reshape",
+      "note": "reshape total size \u2014 delegated to view handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_020",
+      "modern": true,
+      "primary_op": "torch.cat",
+      "note": "cat shape mismatch \u2014 index.ts:1984",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_022",
+      "modern": false,
+      "primary_op": "torch.einsum",
+      "note": "einsum \u2014 no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_024",
+      "modern": false,
+      "primary_op": "nn.BatchNorm1d",
+      "note": "BatchNorm1d \u2014 no Pytea handler (only BatchNorm2d)",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_026",
+      "modern": false,
+      "primary_op": "nn.Conv3d",
+      "note": "Conv3d \u2014 no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_027",
+      "modern": true,
+      "primary_op": "torch.bmm",
+      "note": "bmm \u2014 index.ts:518",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_028",
+      "modern": true,
+      "primary_op": "Tensor.view (wildcard -1)",
+      "note": "view with -1 wildcard \u2014 index.ts:1165",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_029",
+      "modern": false,
+      "primary_op": "torch.where",
+      "note": "where \u2014 no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_031",
+      "modern": false,
+      "primary_op": "torch.einsum",
+      "note": "einsum \u2014 no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_032",
+      "modern": false,
+      "primary_op": "torch.swapaxes",
+      "note": "swapaxes \u2014 no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_033",
+      "modern": false,
+      "primary_op": "nn.GroupNorm",
+      "note": "GroupNorm \u2014 no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_034",
+      "modern": true,
+      "primary_op": "nn.Embedding",
+      "note": "embedding negative-index OOB \u2014 same symbolic_fragment weakness",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_035",
+      "modern": true,
+      "primary_op": "nn.ConvTranspose2d",
+      "note": "conv_transpose2d \u2014 index.ts:1502",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_037",
+      "modern": true,
+      "primary_op": "flatten + view",
+      "note": "flatten+view total size \u2014 both handlers present",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_038",
+      "modern": true,
+      "primary_op": "torch.stack",
+      "note": "stack shape mismatch \u2014 index.ts:2081",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_039",
+      "modern": true,
+      "primary_op": "F.softmax",
+      "note": "softmax dim OOR \u2014 handler present, no dim-range check (symbolic_fragment)",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_040",
+      "modern": true,
+      "primary_op": "matmul (@ operator, batched)",
+      "note": "batched matmul mismatch \u2014 Pytea frontend_parse_failed on bare @ stmt",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "N/A"
+    },
+    {
+      "id": "bug_041",
+      "modern": false,
+      "primary_op": "torch.movedim",
+      "note": "movedim \u2014 no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_042",
+      "modern": true,
+      "primary_op": "nn.CrossEntropyLoss",
+      "note": "cross_entropy target-length \u2014 index.ts:1912",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_043",
+      "modern": true,
+      "primary_op": "nn.MSELoss",
+      "note": "mse_loss shape mismatch \u2014 cross_entropy handler path",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_044",
+      "modern": true,
+      "primary_op": "nn.NLLLoss",
+      "note": "nll_loss class-index OOB \u2014 handler exists, bounds absent (symbolic_fragment)",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_045",
+      "modern": true,
+      "primary_op": "nn.Conv2d",
+      "note": "conv2d kernel too large \u2014 index.ts:1338",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_047",
+      "modern": true,
+      "primary_op": "Tensor.unsqueeze",
+      "note": "unsqueeze dim OOR \u2014 index.ts:2175",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_048",
+      "modern": false,
+      "primary_op": "torch.add (functional)",
+      "note": "torch.add functional \u2014 no Pytea handler; only tensor.__add__ handled",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_049",
+      "modern": true,
+      "primary_op": "F.layer_norm",
+      "note": "layer_norm normalized_shape mismatch \u2014 index.ts:2561",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_050",
+      "modern": false,
+      "primary_op": "torch.einsum",
+      "note": "einsum \u2014 no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_051",
+      "modern": false,
+      "primary_op": "torch.gather",
+      "note": "gather \u2014 no Pytea TS handler (index.ts grep empty)",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_052",
+      "modern": false,
+      "primary_op": "Tensor.scatter_",
+      "note": "scatter_ \u2014 no Pytea TS handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_053",
+      "modern": true,
+      "primary_op": "Tensor.expand",
+      "note": "expand incompatible dims \u2014 index.ts:738",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_054",
+      "modern": false,
+      "primary_op": "nn.InstanceNorm2d",
+      "note": "InstanceNorm2d \u2014 stub has no num_features check; not in catalogue",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_055",
+      "modern": false,
+      "primary_op": "F.embedding (functional)",
+      "note": "F.embedding \u2014 not in nn/functional.py stubs; unimpl",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_056",
+      "modern": true,
+      "primary_op": "nn.Conv2d",
+      "note": "conv2d groups divisibility \u2014 index.ts:1338",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_057",
+      "modern": true,
+      "primary_op": "torch.mm",
+      "note": "mm rank/shape \u2014 index.ts:470",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_058",
+      "modern": false,
+      "primary_op": "torch.split (list)",
+      "note": "split with list \u2014 symbolic sum() not evaluated; unimpl",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_059",
+      "modern": false,
+      "primary_op": "torch.maximum (functional)",
+      "note": "torch.maximum \u2014 no Pytea handler (only tensor ops)",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_060",
+      "modern": false,
+      "primary_op": "nn.Conv1d",
+      "note": "Conv1d \u2014 no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_063",
+      "modern": true,
+      "primary_op": "Tensor.view (post-transpose)",
+      "note": "view after transpose \u2014 handler present, no contiguity check (symbolic_fragment)",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_064",
+      "modern": false,
+      "primary_op": "torch.index_select",
+      "note": "index_select \u2014 no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_065",
+      "modern": false,
+      "primary_op": "torch.dot",
+      "note": "dot \u2014 no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_067",
+      "modern": false,
+      "primary_op": "torch.linalg.inv",
+      "note": "linalg.inv \u2014 no Pytea handler; no linalg subpackage",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    },
+    {
+      "id": "bug_068",
+      "modern": true,
+      "primary_op": "nn.MaxPool2d",
+      "note": "pool2d kernel too large \u2014 index.ts:1719",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Refuted"
+    },
+    {
+      "id": "bug_069",
+      "modern": false,
+      "primary_op": "torch.repeat_interleave",
+      "note": "repeat_interleave \u2014 no Pytea handler",
+      "tg_verdict": "Refuted",
+      "pytea_verdict": "Verified"
+    }
+  ]
+}

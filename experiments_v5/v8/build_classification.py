@@ -1,0 +1,425 @@
+"""
+Build pytea_miss_classification.json for the 29 Pytea misses.
+Sources consulted:
+  - experiments_v5/_pytea_src/packages/pytea/src/pylibImplements/torch/index.ts
+  - experiments_v5/_pytea_src/bin/dist/pylib/torch/{functional,nn/functional,nn/modules/}.py
+  - Bug repros in experiments_v5/bug_repros/
+"""
+import json, os
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.join(HERE, "..")
+
+# Per-miss classification.
+# Keys: id (short, bug_NNN), category, pytea_verdict, has_unimpl_api,
+#       miss_cause: one of operator_catalogue | symbolic_fragment | design_decision | other
+#       basis: why
+MISS_CLASSIFICATION = [
+    {
+        "id": "bug_013",
+        "category": "einsum_dim",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.einsum",
+        "basis": (
+            "No einsum handler anywhere in _pytea_src/packages/pytea/src/pylibImplements/torch/index.ts"
+            " (grep returns empty). Pytea cannot check subscript-dimension consistency for any einsum."
+            " has_unimpl_api=True confirms the call was silently skipped."
+        ),
+    },
+    {
+        "id": "bug_016",
+        "category": "embedding_index",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": False,
+        "miss_cause": "symbolic_fragment",
+        "missing_op": "nn.Embedding.forward (index bounds)",
+        "basis": (
+            "Pytea ships an Embedding stub in bin/dist/pylib/torch/nn/modules/embedding.py."
+            " forward() does: shape = LibCall.shape.repeat(...) — no check that max(input) < num_embeddings."
+            " The TS handler at index.ts also contains no require_lt call for index bounds."
+            " Pytea has the op but the symbolic constraint for index-range is absent."
+        ),
+    },
+    {
+        "id": "bug_017",
+        "category": "conv_channel_mismatch",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "nn.Conv1d",
+        "basis": (
+            "Only Conv2d is catalogued in conv.py and index.ts (export function conv2d)."
+            " No Conv1d class or handler exists in the pylib stubs or TS index."
+            " has_unimpl_api=True confirms Pytea encountered an unimplemented API."
+        ),
+    },
+    {
+        "id": "bug_018",
+        "category": "linear_inout_mismatch",
+        "pytea_verdict": "N/A",
+        "has_unimpl_api": False,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "standalone `a @ b` expression",
+        "basis": (
+            "Pytea returned reason=frontend_parse_failed (not an analysis verdict)."
+            " The repro uses `a @ b` as a bare expression statement; Pytea's Python frontend"
+            " (based on a 2022 pyright fork) fails to parse or evaluate a standalone BinaryOp(@)"
+            " that discards its result. Matmul is catalogued as a method/function but not as a"
+            " bare `@` statement. Effectively a missing surface-syntax handler."
+        ),
+    },
+    {
+        "id": "bug_022",
+        "category": "einsum_dim",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.einsum",
+        "basis": (
+            "Same as bug_013: no einsum handler in index.ts. The batch-dimension mismatch"
+            " ('bij,bjk->bik' with a=(2,3,4) b=(3,4,5): batch dim 2≠3) cannot be detected."
+        ),
+    },
+    {
+        "id": "bug_024",
+        "category": "batchnorm_features",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "nn.BatchNorm1d",
+        "basis": (
+            "Pytea's TS handler (index.ts:batchnorm2d) hard-codes rank==4 check."
+            " There is no BatchNorm1d class or batchnorm1d TS handler in the pylib stubs"
+            " (grepping batchnorm.py shows only BatchNorm2d.forward). BatchNorm1d requires"
+            " rank==2 or rank==3 and num_features==input.shape[1]."
+        ),
+    },
+    {
+        "id": "bug_026",
+        "category": "conv_channel_mismatch",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "nn.Conv3d",
+        "basis": (
+            "Only Conv2d is catalogued. No Conv3d class in conv.py stubs; grep returns empty."
+            " has_unimpl_api=True confirms the forward call was skipped."
+        ),
+    },
+    {
+        "id": "bug_029",
+        "category": "broadcasting",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.where",
+        "basis": (
+            "No torch.where entry in index.ts (grep returns empty) and no where() stub in"
+            " functional.py. The three-way broadcast-shape check cannot be performed."
+        ),
+    },
+    {
+        "id": "bug_031",
+        "category": "einsum_dim",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.einsum",
+        "basis": (
+            "Same as bug_013/022: no einsum handler."
+            " Subscript 'abc,acd->abd' with a=(2,3,4) b=(2,5,6): c dim 4≠5 mismatch undetectable."
+        ),
+    },
+    {
+        "id": "bug_032",
+        "category": "transpose_axes",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.swapaxes",
+        "basis": (
+            "No swapaxes handler in index.ts (grep empty). Pytea has a transpose() handler"
+            " (index.ts:923) but swapaxes is a distinct function not routed to it."
+            " has_unimpl_api=True confirms the skip."
+        ),
+    },
+    {
+        "id": "bug_033",
+        "category": "batchnorm_features",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "nn.GroupNorm",
+        "basis": (
+            "GroupNorm is absent from normalization.py stubs and index.ts (grep empty)."
+            " LayerNorm is implemented but GroupNorm (which validates num_channels) is not."
+        ),
+    },
+    {
+        "id": "bug_034",
+        "category": "embedding_index",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": False,
+        "miss_cause": "symbolic_fragment",
+        "missing_op": "nn.Embedding.forward (negative index bounds)",
+        "basis": (
+            "Same handler weakness as bug_016: forward() returns shape without any index-range"
+            " check. Negative indices (-3 < 0) and large indices are both silently accepted."
+        ),
+    },
+    {
+        "id": "bug_039",
+        "category": "attention_dim",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": False,
+        "miss_cause": "symbolic_fragment",
+        "missing_op": "F.softmax (dim-range validation)",
+        "basis": (
+            "Pytea's functional.py has a softmax stub (line 425) and nn/functional.py has"
+            " one (line 162) — both return identityShape with no check that"
+            " -input.ndim <= dim < input.ndim. The TS handler (index.ts) has no softmax entry."
+            " Pytea passes dim=5 for a 3-D tensor silently."
+        ),
+    },
+    {
+        "id": "bug_040",
+        "category": "einsum_dim",
+        "pytea_verdict": "N/A",
+        "has_unimpl_api": False,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "batched `a @ b` expression (4D×3D)",
+        "basis": (
+            "Same frontend_parse_failed reason as bug_018. Bare `a @ b` expression statement"
+            " not parsed by Pytea frontend. Even if parsed, Pytea's matmul handler"
+            " (index.ts:362) does not handle 4D×3D batch-matmul broadcasting."
+        ),
+    },
+    {
+        "id": "bug_041",
+        "category": "transpose_axes",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.movedim",
+        "basis": (
+            "No movedim handler in index.ts (grep empty). Like swapaxes, movedim is not"
+            " routed to the transpose handler. has_unimpl_api=True."
+        ),
+    },
+    {
+        "id": "bug_044",
+        "category": "other",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "symbolic_fragment",
+        "missing_op": "NLLLoss / cross_entropy (class-index bounds)",
+        "basis": (
+            "Pytea has a cross_entropy TS handler (index.ts:1912) that checks input/target"
+            " *shape* compatibility but never validates that target values are in [0, C)."
+            " NLLLoss.forward delegates to F.nll_loss → LibCall.torch.cross_entropy."
+            " has_unimpl_api=True likely from torch.log_softmax being weakly stubbed;"
+            " the root miss is the absent class-index-bounds constraint."
+        ),
+    },
+    {
+        "id": "bug_048",
+        "category": "broadcasting",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.add (functional)",
+        "basis": (
+            "No torch.add functional entry in index.ts or functional.py stubs."
+            " The tensor __add__ method delegates to broadcast handler, but the standalone"
+            " torch.add() call is unimplemented (has_unimpl_api=True)."
+        ),
+    },
+    {
+        "id": "bug_050",
+        "category": "einsum_dim",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.einsum",
+        "basis": (
+            "Same as bug_013/022/031: no einsum handler."
+            " Output subscript 'z' absent from both input subscripts — invalid spec."
+        ),
+    },
+    {
+        "id": "bug_051",
+        "category": "other",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": False,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.gather (shape / index-size check)",
+        "basis": (
+            "No gather handler in index.ts (grep empty). Pytea silently passes the call"
+            " as an identity (has_unimpl_api=False means Pytea's fallback did not flag it;"
+            " it simply produced no constraint on the output shape, so the size mismatch"
+            " between src=(3,4) and idx=(3,5) is invisible)."
+        ),
+    },
+    {
+        "id": "bug_052",
+        "category": "other",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": False,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "Tensor.scatter_ (index bounds)",
+        "basis": (
+            "No scatter_ handler in index.ts (grep empty). In-place scatter_ with"
+            " idx=[[0,1,2,5]] and out=(3,4) should fail at index 5 >= dim-0 size 3."
+            " has_unimpl_api=False because Pytea's fallback treats the call as a no-op."
+        ),
+    },
+    {
+        "id": "bug_054",
+        "category": "batchnorm_features",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": False,
+        "miss_cause": "symbolic_fragment",
+        "missing_op": "nn.InstanceNorm2d (num_features check)",
+        "basis": (
+            "Pytea ships an InstanceNorm2d stub (modules/instancenorm.py) whose forward()"
+            " returns LibCall.torch.identityShape(input) with no check that"
+            " input.shape[1] == num_features. The TS handler has no instancenorm entry."
+        ),
+    },
+    {
+        "id": "bug_055",
+        "category": "embedding_index",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "F.embedding (functional API)",
+        "basis": (
+            "F.embedding (torch.nn.functional.embedding) is not in the nn/functional.py stubs."
+            " Only the nn.Embedding *class* is stubbed (with the same no-bounds-check weakness)."
+            " has_unimpl_api=True confirms the functional call was unrecognised."
+        ),
+    },
+    {
+        "id": "bug_058",
+        "category": "view_reshape_total_size",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.split with list-of-sizes (symbolic sum)",
+        "basis": (
+            "Pytea's split stub (functional.py:467) calls require_eq(sum(split), datalen)."
+            " However, the symbolic evaluator cannot reduce sum([2,2,3]) over a concrete list"
+            " to the integer 7, so the constraint is never emitted (has_unimpl_api=True)."
+            " The core catalogue gap is that sum() on a literal list is not symbolically"
+            " evaluated in Pytea's Python-subset interpreter."
+        ),
+    },
+    {
+        "id": "bug_060",
+        "category": "attention_dim",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "nn.Conv1d (rank/ndim check)",
+        "basis": (
+            "Same as bug_017: no Conv1d stub or TS handler. The bug exposes that Conv1d"
+            " passed a 4-D input (expects 3-D) — but since Pytea skips Conv1d entirely,"
+            " neither the channel mismatch nor the rank check can fire."
+        ),
+    },
+    {
+        "id": "bug_063",
+        "category": "view_reshape_total_size",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": False,
+        "miss_cause": "symbolic_fragment",
+        "missing_op": "Tensor.view (non-contiguous / stride check)",
+        "basis": (
+            "Pytea's view handler (index.ts:1165) checks total element count equality but"
+            " tracks no contiguity / stride state. x.transpose(0,1) for x=(2,3,4) yields"
+            " a non-contiguous (3,2,4) view; the subsequent .view(2,12) would raise at"
+            " runtime but Pytea sees numel=24==24 and emits no error."
+        ),
+    },
+    {
+        "id": "bug_064",
+        "category": "broadcasting",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.index_select (dim-range check)",
+        "basis": (
+            "No index_select handler in index.ts or functional.py (grep empty)."
+            " has_unimpl_api=True. The dim=5 out-of-range for a 2-D tensor is undetectable."
+        ),
+    },
+    {
+        "id": "bug_065",
+        "category": "other",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.dot (1D-rank check)",
+        "basis": (
+            "No torch.dot handler in index.ts (grep empty). torch.dot requires both inputs"
+            " to be 1-D; passing 2-D tensors (3,3) should raise, but Pytea skips the call."
+        ),
+    },
+    {
+        "id": "bug_067",
+        "category": "other",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.linalg.inv (square-matrix check)",
+        "basis": (
+            "No linalg subpackage handler in Pytea (the pylib stubs have no torch/linalg/ directory"
+            " and index.ts has no linalg entry). torch.linalg.inv of a non-square (3,4) matrix"
+            " should raise; Pytea skips the entire linalg namespace."
+        ),
+    },
+    {
+        "id": "bug_069",
+        "category": "other",
+        "pytea_verdict": "Verified",
+        "has_unimpl_api": True,
+        "miss_cause": "operator_catalogue",
+        "missing_op": "torch.repeat_interleave (repeats-length check)",
+        "basis": (
+            "No repeat_interleave handler in index.ts (grep empty). The bug requires that"
+            " len(repeats)==len(input) (2≠3). has_unimpl_api=True confirms the skip."
+        ),
+    },
+]
+
+# Counts
+from collections import Counter
+counts = Counter(m["miss_cause"] for m in MISS_CLASSIFICATION)
+
+output = {
+    "meta": {
+        "generated_by": "v8/build_classification.py",
+        "pytea_last_release": "2022-04-26",
+        "pytea_src_path": "experiments_v5/_pytea_src",
+        "total_tg_refuted": 56,
+        "total_pytea_refuted": 27,
+        "total_pytea_misses_analysed": len(MISS_CLASSIFICATION),
+    },
+    "counts": {
+        "operator_catalogue": counts.get("operator_catalogue", 0),
+        "symbolic_fragment": counts.get("symbolic_fragment", 0),
+        "design_decision": counts.get("design_decision", 0),
+        "other": counts.get("other", 0),
+    },
+    "per_bug": MISS_CLASSIFICATION,
+}
+
+OUT = os.path.join(HERE, "pytea_miss_classification.json")
+with open(OUT, "w") as f:
+    json.dump(output, f, indent=2)
+
+print("Counts:", output["counts"])
+print("Total analysed:", len(MISS_CLASSIFICATION))
+print("Written to", OUT)

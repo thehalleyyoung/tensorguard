@@ -1,0 +1,89 @@
+{
+  "version": "v8",
+  "build_status": "success",
+  "lean_version": "4.14.0",
+  "mathlib": false,
+  "sorry_sites_total": 11,
+  "sorry_sites_eliminated": 10,
+  "sorry_sites_remaining": 1,
+  "eliminated": [
+    {
+      "file": "lean/TensorGuard/V5OperatorRules.lean",
+      "theorem": "matmul_sound_eqbatch",
+      "original_line": 118,
+      "proof_technique": "Induction on `rest`. Base case: simp. Inductive case: rcases List.exists_cons_of_ne_nil to expose concrete cons structure, enabling match reduction to the `_, _` branch of `matmul`; then helper lemmas bcast_self_refl, get!_append_fst/snd, take_append_two discharge the arithmetic and list goals.",
+      "helper_lemmas_added": ["bcast_self_refl", "get!_append_fst", "get!_append_snd", "take_append_two"]
+    },
+    {
+      "file": "lean/TensorGuard/V5OperatorRules.lean",
+      "theorem": "conv1d_sound",
+      "original_line": 163,
+      "statement_fixed": true,
+      "statement_fix_description": "Input changed from [n, cin, cout] to [n, cin, l] (cout was used incorrectly as spatial dim); conclusion changed from some [n, cout, l] to some [n, cout, l_out].",
+      "proof_technique": "simp only with if_neg for groups≠0 and cin=cinG*groups conditions, then hSp rewrites convSpatial result."
+    },
+    {
+      "file": "lean/TensorGuard/V5OperatorRules.lean",
+      "theorem": "conv2d_some_iff",
+      "original_line": 184,
+      "proof_technique": "simp only [conv2d] unfolds the definition; have hcond1 proves ¬(groups=0 ∨ kH≠kH ∨ kW≠kW) by contradiction; have hC' proves ¬(cin≠cinG*groups) from hC; simp only [if_neg hcond1, if_neg hC', h1, h2] closes."
+    },
+    {
+      "file": "lean/TensorGuard/V5OperatorRules.lean",
+      "theorem": "broadcast_to_eq",
+      "original_line": 336,
+      "proof_technique": "by_cases on length condition; generalize Bool expression; cases Bool closes contradiction (none=some) or extracts value."
+    },
+    {
+      "file": "lean/TensorGuard/V5OperatorRules.lean",
+      "theorem": "gather_eq",
+      "original_line": 423,
+      "proof_technique": "by_cases on axis/length conditions; generalize Bool ok; cases Bool closes."
+    },
+    {
+      "file": "lean/TensorGuard/V5OperatorRules.lean",
+      "theorem": "scatter_eq",
+      "original_line": 436,
+      "proof_technique": "Nested by_cases on axis, length mismatches; generalize Bool ok; cases Bool closes."
+    },
+    {
+      "file": "lean/TensorGuard/V5OperatorRules.lean",
+      "theorem": "layer_norm_id",
+      "original_line": 479,
+      "proof_technique": "by_cases on normalized.length > input.length; by_cases on suffix=normalized; simp+Option.some.inj extracts value."
+    },
+    {
+      "file": "lean/TensorGuard/V5OperatorRules.lean",
+      "theorem": "rms_norm_id",
+      "original_line": 487,
+      "proof_technique": "by_cases on k > input.length ∨ k = 0; Option.some.inj extracts value from some input = some out."
+    },
+    {
+      "file": "lean/TensorGuard/Parity.lean",
+      "theorem": "layerNorm_identity",
+      "original_line": 121,
+      "proof_technique": "by_cases on normalized_dims ≤ shape.length; simp extracts value."
+    },
+    {
+      "file": "lean/TensorGuard/Extended.lean",
+      "theorem": "conv1dOut_monotone",
+      "original_line": 117,
+      "proof_technique": "by_cases on stride=0 (contradiction), eff>h₁+2*pad (contradiction), eff>h₂+2*pad (omega). Inline hdiv lemma proves a/c ≤ b/c via Nat.le_div_iff_mul_le with Nat.succ_pos. omega closes final linear arithmetic."
+    }
+  ],
+  "remaining_sorry": [
+    {
+      "file": "lean/TensorGuard/Extended.lean",
+      "theorem": "permList_compose",
+      "reason": "Statement is false as written. Counterexample: p=[], q=[0], dims=[5] gives LHS=[0], RHS=[5]. The default value 0 used for out-of-range indices breaks the composition identity when q has indices not in range of p. A correct statement would require a hypothesis that all indices in q are within bounds of p.",
+      "action": "Left with sorry + explanatory comment documenting the falsity."
+    }
+  ],
+  "lean_tactics_used": [
+    "induction", "rcases", "by_cases", "generalize", "cases",
+    "simp only", "simp", "rw", "if_neg", "omega",
+    "exact", "Nat.le_div_iff_mul_le", "Nat.succ_pos",
+    "Option.some.inj", "List.exists_cons_of_ne_nil"
+  ],
+  "notes": "No mathlib used. All proofs use Lean 4 core tactics only. The rcases List.exists_cons_of_ne_nil trick was key to forcing match reduction in matmul_sound_eqbatch: by exposing that the tail list has a concrete cons structure, Lean's kernel could discriminate the singleton pattern arms and reduce to the catch-all branch."
+}
