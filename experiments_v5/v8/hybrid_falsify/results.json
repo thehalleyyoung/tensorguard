@@ -1,0 +1,601 @@
+{
+  "blocks": [
+    {
+      "id": "blk_01_hardcoded_batch8",
+      "category": "A_symbolic_shape",
+      "reason": "Hardcoded view(8,-1): TG with symbolic batch refutes; FT with batch=8 succeeds.",
+      "tg_shape_verdict": "Refuted",
+      "tg_bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 1:\n  phase_s1 = TRAIN_1\n  phase_s0 = TRAIN_1\n  batch = 1\n  dev_x_s0 = CPU_1\n  grad_x_s0 = False\n  _inferred = 8\n  dev_x_s1 = CPU_1\n  grad_x_s1 = False",
+          "severity": "error"
+        }
+      ],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_02_hardcoded_batch16",
+      "category": "A_symbolic_shape",
+      "reason": "Hardcoded view(16,-1): requires batch*16=16*64 so batch must be 64. TG symbolic batch refutes; FT with batch=64 gives view(16,64)->Linear(64,10) OK.",
+      "tg_shape_verdict": "Refuted",
+      "tg_bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 1:\n  phase_s1 = TRAIN_3\n  batch = 1\n  phase_s0 = TRAIN_3\n  dev_x_s0 = CPU_3\n  grad_x_s0 = False\n  _inferred = 1\n  dev_x_s1 = CPU_3\n  grad_x_s1 = False",
+          "severity": "error"
+        }
+      ],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_03_else_branch_linear32",
+      "category": "A_symbolic_shape",
+      "reason": "Else-branch bug: TG checks all branches; FT with batch=8>4 takes safe branch.",
+      "tg_shape_verdict": "Refuted",
+      "tg_bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Linear expects last dim=32, got 64",
+          "severity": "error"
+        }
+      ],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_04_if_branch_conv_wrong",
+      "category": "A_symbolic_shape",
+      "reason": "If-branch wrong conv (16 in but x has 3 channels). FT with batch=2<5 takes else.",
+      "tg_shape_verdict": "Refuted",
+      "tg_bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Conv2d expects 16 input channels, got 3",
+          "severity": "error"
+        }
+      ],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_05_hardcoded_spatial_flatten",
+      "category": "A_symbolic_shape",
+      "reason": "Hardcoded view(4,-1) for batch dim; FT with batch=4 happens to match.",
+      "tg_shape_verdict": "Refuted",
+      "tg_bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 1:\n  dev_x_s1 = CPU_9\n  batch = 1\n  phase_s1 = TRAIN_9\n  grad_x_s0 = False\n  phase_s0 = TRAIN_9\n  dev_x_s0 = CPU_9\n  _inferred = 4\n  grad_x_s1 = False",
+          "severity": "error"
+        }
+      ],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_06_else_branch_wrong_embed",
+      "category": "A_symbolic_shape",
+      "reason": "Else branch wrong embed dim. FT with seq=16>8 takes safe branch.",
+      "tg_shape_verdict": "Refuted",
+      "tg_bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Linear expects last dim=64, got 32",
+          "severity": "error"
+        }
+      ],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_07_hardcoded_batch32_fc",
+      "category": "A_symbolic_shape",
+      "reason": "Hardcoded reshape(32,-1); FT with batch=32 succeeds.",
+      "tg_shape_verdict": "Refuted",
+      "tg_bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 1:\n  dev_x_s1 = CPU_13\n  batch = 1\n  phase_s1 = TRAIN_13\n  grad_x_s0 = False\n  phase_s0 = TRAIN_13\n  dev_x_s0 = CPU_13\n  _inferred = 1\n  grad_x_s1 = False",
+          "severity": "error"
+        }
+      ],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_08_else_wrong_linear_seq",
+      "category": "A_symbolic_shape",
+      "reason": "Else-branch with wrong Linear(8,10); FT with seq=32>16 takes safe branch.",
+      "tg_shape_verdict": "Refuted",
+      "tg_bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Linear expects last dim=8, got 16",
+          "severity": "error"
+        }
+      ],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_09_hardcoded_pool_view",
+      "category": "A_symbolic_shape",
+      "reason": "Hardcoded view(8,-1): valid only when batch*4/8=16, i.e. batch=32. TG symbolic batch refutes; FT with batch=32 gives view(8,16)->Linear(16,10) OK.",
+      "tg_shape_verdict": "Refuted",
+      "tg_bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(batch, 4)) to (8, -1)",
+          "severity": "error"
+        },
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Linear expects last dim=16, got 4",
+          "severity": "error"
+        },
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 1:\n  dev_x_s0 = CPU_17\n  batch = 8\n  grad_x_s0 = False\n  dev_x_s1 = CPU_17\n  phase_s1 = TRAIN_17\n  phase_s0 = TRAIN_17\n  grad_x_s1 = False",
+          "severity": "error"
+        }
+      ],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_10_if_branch_wrong_fc_size",
+      "category": "A_symbolic_shape",
+      "reason": "If-branch wrong Linear(32,10); FT with batch=2<=4 takes else (safe).",
+      "tg_shape_verdict": "Refuted",
+      "tg_bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Linear expects last dim=32, got 64",
+          "severity": "error"
+        }
+      ],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_11_hardcoded_batch4_transformer",
+      "category": "A_symbolic_shape",
+      "reason": "Hardcoded view(4,-1): requires batch*32/4=32, i.e. batch=4. TG symbolic batch refutes; FT with batch=4 gives view(4,32)->Linear(32,10) OK.",
+      "tg_shape_verdict": "Refuted",
+      "tg_bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 1:\n  phase_s1 = TRAIN_21\n  phase_s0 = TRAIN_21\n  batch = 1\n  dev_x_s0 = CPU_21\n  grad_x_s0 = False\n  _inferred = 8\n  dev_x_s1 = CPU_21\n  grad_x_s1 = False",
+          "severity": "error"
+        }
+      ],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_12_else_branch_wrong_conv_channels",
+      "category": "A_symbolic_shape",
+      "reason": "Else-branch wrong Conv2d(4,16) when C=8 (8>8 is False \u2192 else). TG with concrete C=8 catches mismatch; FT with C=16>8 takes safe branch.",
+      "tg_shape_verdict": "Refuted",
+      "tg_bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Conv2d expects 16 input channels, got 8",
+          "severity": "error"
+        },
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Conv2d expects 4 input channels, got 8",
+          "severity": "error"
+        }
+      ],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_13_no_grad_trunk_b1",
+      "category": "B_grad_flag",
+      "reason": "Trunk runs inside no_grad; trunk params silently get None grad.",
+      "tg_shape_verdict": "Verified",
+      "tg_bugs": [],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "Refuted",
+      "tg_grad_issues": [
+        {
+          "kind": "B1",
+          "param": "trunk.weight",
+          "detail": "silently-None grad: not reachable from loss (possibly inside no_grad or after .detach())"
+        },
+        {
+          "kind": "B1",
+          "param": "trunk.bias",
+          "detail": "silently-None grad: not reachable from loss (possibly inside no_grad or after .detach())"
+        }
+      ],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_14_detach_kills_grad_b1",
+      "category": "B_grad_flag",
+      "reason": "x.detach() before fc severs all parameter gradients.",
+      "tg_shape_verdict": "Verified",
+      "tg_bugs": [],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "Refuted",
+      "tg_grad_issues": [
+        {
+          "kind": "B1",
+          "param": "fc.weight",
+          "detail": "silently-None grad: not reachable from loss (possibly inside no_grad or after .detach())"
+        },
+        {
+          "kind": "B1",
+          "param": "fc.bias",
+          "detail": "silently-None grad: not reachable from loss (possibly inside no_grad or after .detach())"
+        }
+      ],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_15_frozen_param_b2",
+      "category": "B_grad_flag",
+      "reason": "fc.weight.requires_grad_(False) on a parameter expected to learn.",
+      "tg_shape_verdict": "Verified",
+      "tg_bugs": [],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "Refuted",
+      "tg_grad_issues": [
+        {
+          "kind": "B1",
+          "param": "fc.weight",
+          "detail": "silently-None grad: requires_grad=False"
+        },
+        {
+          "kind": "B2",
+          "param": "fc.weight",
+          "detail": "requires_grad=False on a tensor used in forward path"
+        }
+      ],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_16_inplace_relu_leaf_b3",
+      "category": "B_grad_flag",
+      "reason": "weight.data.zero_() in forward: in-place op on leaf with requires_grad=True. FT forward succeeds (data= bypasses autograd check); TG grad-flag verifier catches B3 (in-place on leaf parameter).",
+      "tg_shape_verdict": "Verified",
+      "tg_bugs": [],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "Refuted",
+      "tg_grad_issues": [
+        {
+          "kind": "B3",
+          "param": "fc.weight",
+          "detail": "in-place op 'zero_' on leaf with requires_grad=True (autograd will raise RuntimeError)"
+        }
+      ],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_17_no_rg_leaf_b4",
+      "category": "B_grad_flag",
+      "reason": "All parameters have requires_grad=False; .backward() precondition violated.",
+      "tg_shape_verdict": "Verified",
+      "tg_bugs": [],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "Refuted",
+      "tg_grad_issues": [
+        {
+          "kind": "B4",
+          "param": "<graph>",
+          "detail": ".backward() precondition violated: no leaf has requires_grad=True"
+        },
+        {
+          "kind": "B1",
+          "param": "fc.weight",
+          "detail": "silently-None grad: requires_grad=False"
+        },
+        {
+          "kind": "B2",
+          "param": "fc.weight",
+          "detail": "requires_grad=False on a tensor used in forward path"
+        },
+        {
+          "kind": "B1",
+          "param": "fc.bias",
+          "detail": "silently-None grad: requires_grad=False"
+        },
+        {
+          "kind": "B2",
+          "param": "fc.bias",
+          "detail": "requires_grad=False on a tensor used in forward path"
+        }
+      ],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_18_nested_no_grad_b1",
+      "category": "B_grad_flag",
+      "reason": "Two layers nested inside no_grad; head sees no grads downstream.",
+      "tg_shape_verdict": "Verified",
+      "tg_bugs": [],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "Refuted",
+      "tg_grad_issues": [
+        {
+          "kind": "B1",
+          "param": "l1.weight",
+          "detail": "silently-None grad: not reachable from loss (possibly inside no_grad or after .detach())"
+        },
+        {
+          "kind": "B1",
+          "param": "l1.bias",
+          "detail": "silently-None grad: not reachable from loss (possibly inside no_grad or after .detach())"
+        },
+        {
+          "kind": "B1",
+          "param": "l2.weight",
+          "detail": "silently-None grad: not reachable from loss (possibly inside no_grad or after .detach())"
+        },
+        {
+          "kind": "B1",
+          "param": "l2.bias",
+          "detail": "silently-None grad: not reachable from loss (possibly inside no_grad or after .detach())"
+        }
+      ],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_19_frozen_backbone_b2",
+      "category": "B_grad_flag",
+      "reason": "Backbone params frozen by requires_grad_(False); user expects them to learn.",
+      "tg_shape_verdict": "Verified",
+      "tg_bugs": [],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "Refuted",
+      "tg_grad_issues": [
+        {
+          "kind": "B1",
+          "param": "backbone.weight",
+          "detail": "silently-None grad: requires_grad=False"
+        },
+        {
+          "kind": "B2",
+          "param": "backbone.weight",
+          "detail": "requires_grad=False on a tensor used in forward path"
+        },
+        {
+          "kind": "B1",
+          "param": "backbone.bias",
+          "detail": "silently-None grad: requires_grad=False"
+        },
+        {
+          "kind": "B2",
+          "param": "backbone.bias",
+          "detail": "requires_grad=False on a tensor used in forward path"
+        }
+      ],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_20_detach_skip_b1",
+      "category": "B_grad_flag",
+      "reason": "Skip connection routes through detach; residual params get no grad.",
+      "tg_shape_verdict": "Refuted",
+      "tg_bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[GRADIENT-BROKEN] Gradient flow broken: '__inner_1' requires grad but .detach() kills gradient to downstream parameters",
+          "severity": "error"
+        },
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[CEGAR-REAL-BUG] Gradient flow broken: '__inner_1' requires grad but .detach() kills gradient to downstream parameters",
+          "severity": "error"
+        }
+      ],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "Refuted",
+      "tg_grad_issues": [
+        {
+          "kind": "B1",
+          "param": "proj.weight",
+          "detail": "silently-None grad: not reachable from loss (possibly inside no_grad or after .detach())"
+        },
+        {
+          "kind": "B1",
+          "param": "proj.bias",
+          "detail": "silently-None grad: not reachable from loss (possibly inside no_grad or after .detach())"
+        }
+      ],
+      "tg_verdict": "Refuted",
+      "ft_verdict": "Verified",
+      "ft_error": null,
+      "cell": "TG-only"
+    },
+    {
+      "id": "blk_21_view_size0_wrong_fc",
+      "category": "C_ft_only",
+      "reason": "size(0)/view(b,-1) arithmetic: TG misses; FT runs concretely and refutes.",
+      "tg_shape_verdict": "Verified",
+      "tg_bugs": [],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Verified",
+      "ft_verdict": "Refuted",
+      "ft_error": "a and b must have same reduction dim, but got [2, 64] X [100, 10].",
+      "cell": "FT-only"
+    },
+    {
+      "id": "blk_22_shape_product_wrong_fc",
+      "category": "C_ft_only",
+      "reason": "shape arithmetic d=shape[1]*shape[2]; TG misses, FT refutes.",
+      "tg_shape_verdict": "Verified",
+      "tg_bugs": [],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Verified",
+      "ft_verdict": "Refuted",
+      "ft_error": "a and b must have same reduction dim, but got [2, 64] X [100, 10].",
+      "cell": "FT-only"
+    },
+    {
+      "id": "blk_23_halved_slice_wrong_fc",
+      "category": "C_ft_only",
+      "reason": "half = shape[1]//2 slice; TG misses // arithmetic; FT refutes.",
+      "tg_shape_verdict": "Verified",
+      "tg_bugs": [],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Verified",
+      "ft_verdict": "Refuted",
+      "ft_error": "a and b must have same reduction dim, but got [2, 16] X [32, 10].",
+      "cell": "FT-only"
+    },
+    {
+      "id": "blk_24_list_stack_mean_wrong_fc",
+      "category": "C_ft_only",
+      "reason": "Dynamic half-slice: half=x.size(1)//2=16; fc expects 32 but gets 16. TG cannot track integer-divide of dynamic size; FT traces concretely and refutes.",
+      "tg_shape_verdict": "Verified",
+      "tg_bugs": [],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Verified",
+      "ft_verdict": "Refuted",
+      "ft_error": "a and b must have same reduction dim, but got [2, 16] X [32, 10].",
+      "cell": "FT-only"
+    },
+    {
+      "id": "blk_25_adaptive_pool_size0_wrong_fc",
+      "category": "C_ft_only",
+      "reason": "b=x.size(0) view(-1): view(b,-1) flattens to (2,64) but fc expects 100. TG cannot evaluate x.size(0) assigned to variable; FT traces concretely and refutes.",
+      "tg_shape_verdict": "Verified",
+      "tg_bugs": [],
+      "tg_shape_error": null,
+      "tg_grad_verdict": "N/A",
+      "tg_grad_issues": [],
+      "tg_verdict": "Verified",
+      "ft_verdict": "Refuted",
+      "ft_error": "a and b must have same reduction dim, but got [2, 64] X [100, 10].",
+      "cell": "FT-only"
+    }
+  ],
+  "contingency": {
+    "TG-only": 20,
+    "Both": 0,
+    "FT-only": 5,
+    "Neither": 0,
+    "Other": 0
+  },
+  "by_category": {
+    "A_symbolic_shape": {
+      "TG-only": 12,
+      "Both": 0,
+      "FT-only": 0,
+      "Neither": 0,
+      "Other": 0
+    },
+    "B_grad_flag": {
+      "TG-only": 8,
+      "Both": 0,
+      "FT-only": 0,
+      "Neither": 0,
+      "Other": 0
+    },
+    "C_ft_only": {
+      "TG-only": 0,
+      "Both": 0,
+      "FT-only": 5,
+      "Neither": 0,
+      "Other": 0
+    }
+  },
+  "summary": "TG-only=20, Both=0, FT-only=5, Neither=0, Other=0"
+}
