@@ -147,7 +147,21 @@ training-script population, $\le 0.04\!\cdot\!0.25 = 1.0\%$ on
 the regex-screened inference-script population, and
 $\le (1/42)\!\cdot\!0.25 = 0.60\%$ on the held-out
 \textsc{PyTorch}-examples sub-population (using the held-out
-$1/42$ prevalence rather than the regex ceiling). The
+$1/42$ prevalence rather than the regex ceiling).
+\textbf{Why the product is an upper bound.} The decomposition is
+$P(F)=P(F\!\mid\!C)P(C)+P(F\!\mid\!\neg C)P(\neg C)$. By
+construction, the gradient lattice is sound on every input outside
+the construct family $C$ (tied/renamed-attribute parameter sharing
+or \texttt{checkpoint} recomputation), since the lattice is
+provably correct for the first-order \texttt{requires\_grad}
+propagation that those inputs only exercise; therefore the second
+term is $0$ and the inequality reduces to the displayed product.
+The two estimates need not be independent --- they are bounds on
+two factors of the same conditional decomposition, with the
+support of $F$ confined to $C$. The construct-family conditional
+rate $P(F\!\mid\!C)\!\le\!2/8$ and the regex-screened prevalence
+$P(C)\!\le\!0.12$ are therefore multiplied without an
+independence assumption. The
 prevalence-weighted bound is what we ask the soundness reader
 to use as the deployment-side false-Verified bound on the
 backward verifier; the $25\%$ worst-case figure is a

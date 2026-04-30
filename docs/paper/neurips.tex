@@ -50,12 +50,16 @@ $p{=}0.0156$), and it returns \textsc{Refuted-Proof} on $9/9$
 naturally-occurring shape bugs transcribed from upstream
 HuggingFace issues across Llama, Qwen2, Mistral, Phi-3, and
 Gemma~$2$.
-On unreduced real-source class code, the analyser returns
-$26$ unconditional \textsc{Refuted-Proof} verdicts on the
-$356$-block subset whose contract obligation is empty (Wilson
-$95\%$ CI $[5.0\%, 10.5\%]$), of which $5$ fire inside the
-audited handler footprint; on the unrestricted $488$-block
-corpus the unconditional count is $15/488$.
+On unreduced real-source class code, the same Z3-discharged
+verdict regime as Table~\ref{tab:headline} returns
+$0/488$ \textsc{Refuted-Proof} on the unrestricted block
+corpus and $26/356$ on its empty-$\mathit{assume}_M$ subset
+(the blocks whose synthesised caller-rely obligation is
+trivially satisfied; Wilson $95\%$ CI $[5.0\%, 10.5\%]$),
+of which $5$ fire inside the audited handler footprint.
+All headline counts in this paper are computed at a single
+named code snapshot, with a per-block audit table released
+alongside the implementation.
 The contribution is the joint shape-plus-grad analysis on
 un-instantiated class source, together with an assume/guarantee
 discipline at the class boundary and a calibration package that

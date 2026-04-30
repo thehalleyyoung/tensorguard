@@ -386,3 +386,72 @@ cell, giving $b{=}10$, $c{=}0$ and McNemar exact two-sided
 $p{=}0.00195$. Both numbers are released so the choice of
 convention is auditable; the $25/34$ headline used in the
 abstract and body is the conservative one.
+
+\paragraph{Deterministic $60{\to}34$ filter rule.}
+The $34$-row subset is the deterministic image of the
+following one-line rule applied to the $60$-bug corpus:
+\emph{a bug is in the fragment-fair subset iff its primary
+failing operator has an implementation in Pytea's $2022$
+TypeScript operator catalogue} (the
+\texttt{torchOpHandler\_*} table at the snapshot tagged
+\texttt{c536515}, dated $2022\text{-}04\text{-}26$, the
+last commit of upstream Pytea before the project went dormant).
+The rule is mechanical: for each of the $60$ bugs, the primary
+failing operator is recorded in the bug's \textsc{json} stub at
+corpus-build time; that string is looked up against the
+catalogue, and the bug is included iff the lookup returns a
+handler. The classifier is therefore independent of TG's own
+verdict and predates the head-to-head: it cannot select for
+TG-favourable bugs. The $26$ excluded bugs are the bugs whose
+primary operator is not in the $2022$ catalogue, listed exhaustively in
+Table~\ref{tab:pytea-excluded} together with the catalogue-miss
+reason. Of the $26$, $5$ are \texttt{einsum}, $3$ are PyTorch-2.x
+attention APIs (SDPA, MHA-2.x), $3$ are \texttt{Conv1d}/\texttt{Conv3d},
+$3$ are non-2D normalisation (BatchNorm1d, GroupNorm,
+InstanceNorm2d), and the remaining $12$ are scattered ops with no
+Pytea handler at all (\texttt{where}, \texttt{gather},
+\texttt{scatter\_}, functional \texttt{torch.add},
+\texttt{linalg.inv}, \dots).
+
+\begin{table}[h]
+\centering\scriptsize
+\setlength{\tabcolsep}{3pt}
+\caption{The $26$ bugs excluded from the fragment-fair subset
+($60-34=26$). Each row's primary operator has no implementation
+in the Pytea $2022$ TypeScript operator catalogue; including
+these bugs would penalise Pytea for being structurally inapplicable.
+Each exclusion is independent of TG's verdict on the bug.}
+\label{tab:pytea-excluded}
+\begin{tabular}{r l l l}
+\toprule
+\# & Bug & Primary op & Catalogue-miss reason \\
+\midrule
+1  & bug\_001 & \texttt{F.scaled\_dot\_product\_attention} & SDPA: PyTorch-2.x, no handler \\
+2  & bug\_002 & \texttt{torch.isclose}                     & \texttt{isclose}: not in catalogue \\
+3  & bug\_012 & \texttt{nn.MultiheadAttention}             & MHA-2.x redesign, no handler \\
+4  & bug\_013 & \texttt{torch.einsum}                      & einsum: no handler \\
+5  & bug\_017 & \texttt{nn.Conv1d}                         & Conv1d: only Conv2d catalogued \\
+6  & bug\_022 & \texttt{torch.einsum}                      & einsum: no handler \\
+7  & bug\_024 & \texttt{nn.BatchNorm1d}                    & BatchNorm1d: only BN2d catalogued \\
+8  & bug\_026 & \texttt{nn.Conv3d}                         & Conv3d: no handler \\
+9  & bug\_029 & \texttt{torch.where}                       & \texttt{where}: no handler \\
+10 & bug\_031 & \texttt{torch.einsum}                      & einsum: no handler \\
+11 & bug\_032 & \texttt{torch.swapaxes}                    & \texttt{swapaxes}: no handler \\
+12 & bug\_033 & \texttt{nn.GroupNorm}                      & GroupNorm: no handler \\
+13 & bug\_041 & \texttt{torch.movedim}                     & \texttt{movedim}: no handler \\
+14 & bug\_048 & \texttt{torch.add} (functional)            & functional add: only tensor.\_\_add\_\_ catalogued \\
+15 & bug\_050 & \texttt{torch.einsum}                      & einsum: no handler \\
+16 & bug\_051 & \texttt{torch.gather}                      & \texttt{gather}: no handler \\
+17 & bug\_052 & \texttt{Tensor.scatter\_}                  & \texttt{scatter\_}: no handler \\
+18 & bug\_054 & \texttt{nn.InstanceNorm2d}                 & InstanceNorm: stub lacks num\_features check \\
+19 & bug\_055 & \texttt{F.embedding} (functional)          & functional embedding: not in stubs \\
+20 & bug\_058 & \texttt{torch.split} (list)                & list-arg split: symbolic sum not evaluated \\
+21 & bug\_059 & \texttt{torch.maximum} (functional)        & functional maximum: only tensor ops catalogued \\
+22 & bug\_060 & \texttt{nn.Conv1d}                         & Conv1d: only Conv2d catalogued \\
+23 & bug\_064 & \texttt{torch.index\_select}               & \texttt{index\_select}: no handler \\
+24 & bug\_065 & \texttt{torch.dot}                         & \texttt{dot}: no handler \\
+25 & bug\_067 & \texttt{torch.linalg.inv}                  & \texttt{linalg.*}: no subpackage \\
+26 & bug\_069 & \texttt{torch.repeat\_interleave}          & \texttt{repeat\_interleave}: no handler \\
+\bottomrule
+\end{tabular}
+\end{table}

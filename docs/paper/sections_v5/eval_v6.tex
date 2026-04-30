@@ -42,7 +42,19 @@ RP/CV/LW (see \S\ref{sec:calculus}); only RP$+$CV are covered by
 \Cref{thm:soundness}. On the bug corpus, RP is the desired outcome
 (all $53$ refutations are \textsc{Refuted-Proof}).
 \textsc{TG} = \textsc{TensorGuard} v5; Pytea row from
- (commit 2022-04-26) on the same harness.}
+ (commit 2022-04-26) on the same harness.
+\textbf{RP reconciliation.} The $0$ in the RP column is the
+\emph{unrestricted} count under the high-confidence Z3-discharged
+regime: every refutation must hold for every realisable caller of
+the module, with no synthesised caller-rely obligation. The
+$26/356$ Refuted-Proof figure cited in the abstract is the
+\emph{same} verdict log restricted post-hoc to the $356$-block
+empty-$\mathit{assume}_M$ subset (no synthesised caller-rely
+obligation; the refutation reduces to unconditional). The two
+numbers are not in tension; they are the two tail rates of one
+verdict log under two compatible RP definitions. Both are
+reproducible from the released audit log at the canonical code
+snapshot referenced below.}
 \label{tab:headline}
 \small
 \setlength{\tabcolsep}{3pt}
@@ -93,8 +105,14 @@ clean $\{62,\,201,\,225\}$ vs $\{55,\,208,\,225\}$ pair with the
 same $7$-row \textsc{Verified}$\to$\textsc{Refuted} diff structure;
 the $5$-block absolute drift since the original capture is
 bookkeeping-clean (no abstain transitions, no refutation flips).
-The high-confidence regime is the one cited throughout this paper;
-a per-id audit accompanies the open-source implementation.
+\textbf{Canonical regime and snapshot.} The
+high-confidence $\{57,\,206,\,225\}$ triple is the canonical
+headline used in the abstract, in Table~\ref{tab:headline}, and
+throughout the body; the $26/356$ empty-$\mathit{assume}_M$
+sub-count is computed from the same verdict log. A per-block
+audit table pinning each of these $488$ rows to its verdict and
+its canonical-snapshot identifier ships with the open-source
+implementation.
 
 \paragraph{Caller-rely satisfiability of the $128$ \textsc{CV} verdicts.}
 A \textsc{Contract-Violation} is meaningful only if its synthesised
