@@ -1,0 +1,145 @@
+\section{Limitations and Conclusion}\label{sec:limconc}
+
+\paragraph{Scope.} We analyse the typed AST fragment
+$\mathcal{F}_{\mathrm{TG}}$ (\Cref{sec:fragment}):
+\texttt{nn.Module} classes with statically resolvable layer
+constructors, straight-line \texttt{forward} (with
+shape-deterministic \texttt{if}$^\dagger$/\texttt{for}$^\dagger$),
+and the operator catalogue of \Cref{app:ops-extended}.
+Decorator metaprogramming, runtime attribute mutation, custom
+\texttt{autograd.Function} subclasses, and truly data-dependent
+control flow are out-of-scope and trigger sound
+\textsc{Abstain} --- the same intersection on which the
+necessary direction of \Cref{thm:dynamo-corr} holds. The
+backward verifier tracks grad refinements and severed-tape
+conditions; it does not verify numerical correctness or
+second-order derivatives. The soundness theorem
+(\Cref{thm:soundness}) covers the \textsc{RP} and \textsc{CV}
+verdicts only; \textsc{LW} is a conservative warning.
+Lean does not mechanise the AST extractor, the analyser
+implementation, the assume/guarantee composition rule, or the
+backward verifier; the boundary is in
+\Cref{tab:handler-soundness}.
+
+\paragraph{Semantically-aliased view bugs.}
+A residual class of real upstream bugs is undetectable by any
+purely shape-arithmetic check: the buggy and the (upstream-fix)
+correct view targets agree on total element count for the
+input shape that exercises the bug, and the symptom is a
+silently-wrong tensor permutation rather than a runtime
+\texttt{RuntimeError}.  On the upstream-faithful re-extraction of
+the $10$-bug real-public corpus (\Cref{tab:real-bugs},
+$2/10$ silent verifieds on \texttt{rb\_001}, \texttt{rb\_002})
+this is the precise residual failure mode: the input shape
+$(2, 4, 2{\cdot}64, 192)$ has the same product as both
+\texttt{view(2,4,2,64,192)} (buggy) and any equivalent
+$5$-dim factoring whose trailing dim divides $192$.  On these two
+inputs the synthesised $\mathit{assume}_M$ is concretely populated:
+the AST extractor binds
+$\{\texttt{num\_heads}{=}4,\ \texttt{num\_chunks}{=}2,
+  \ \texttt{chunk\_size}{=}64,\ \texttt{dqk}{=}192\}$ from the
+upstream \texttt{\_\_init\_\_} defaults
+(\texttt{reproducibility/assume\_m\_silent\_verifieds.md}),
+\Cref{thm:soundness} is satisfied non-vacuously, and the analyser
+correctly returns ``no shape arithmetic violation'' --- the
+silent-verified verdict is therefore consistent with
+\Cref{thm:soundness} and not a vacuous-assumption artefact.
+Catching this class requires either an upstream operator-intent
+specification (e.g.\ a typed \texttt{einops} target) or an
+input-distribution-driven semantic check; both are out of
+scope for the static, no-execution refinement-type fragment we
+analyse.  The earlier round-3 limitation
+("constructor-bound integer attributes are not yet propagated
+into the envelope synthesiser") has been closed in
+\texttt{src/model\_checker.py} across rounds 4 and 6: the
+per-forward local-scalar map (round~4) and the
+\texttt{nn.Parameter} alias step convert
+\texttt{rb\_004} and \texttt{rb\_010} from silent
+verifieds into RP@$0.99$; the round-6 init-time local-scalar
+fold, single-dim shape-alias recogniser, and shape-tuple
+propagator (with starred \texttt{view(*new\_shape)}
+expansion) additionally convert \texttt{rb\_003} and
+\texttt{rb\_006}, lifting the upstream-faithful corpus from
+$3/10$ at round~5 to $7/10$ unconditional RP at round~6.
+
+\paragraph{Constructor-bound integer-attribute envelope (residual).}
+A second residual class is ctor-bound integer arithmetic
+where the buggy comparison is between two statically-known
+integers but the result of the comparison is not folded by
+the static-integer subset of the \textsc{TG} fragment.  Examples
+on the post-freeze hold-out
+(\Cref{tab:unfiltered-postfreeze}, \texttt{rb\_pf\_002},
+\texttt{rb\_pf\_005}, \texttt{rb\_pf\_006}) have the
+\textsc{TG} fragment's static integer subset \emph{populated}
+($\mathit{assume}_M$ binds the relevant constructor scalars
+to concrete \texttt{int}s; see
+\texttt{reproducibility/assume\_m\_silent\_verifieds.md}),
+but the buggy edge appears at a per-call shape comparison
+\textsc{TG}'s envelope synthesiser does not currently fire
+on (e.g.\ a runtime broadcast-add between
+\texttt{(B, N, S, S)} and \texttt{(B, 1, S, S{+}1)} where
+\texttt{S} is fully concrete on both sides; the static
+arithmetic shows \texttt{S}$\ne$\texttt{S}{+}1, but the
+broadcast-add handler abstains because its current rule
+asks for a divisibility witness rather than a strict-equality
+witness).  Closing this class is a per-rule strengthening
+(stricter equality witnesses on
+\texttt{broadcast\_add}/\texttt{matmul-then-add}/\texttt{chunk}
+followed by \texttt{mul}) rather than a fragment extension;
+the round-7 \texttt{int(\ldots)}/\texttt{float(\ldots)}-cast
+fold introduced this round closed
+\texttt{rb\_pf\_001} (\texttt{intermediate=int(dim*ff\_mult)}
+Linear-chain feature-dim mismatch) but does not by itself
+close the broadcast-equality witnesses; this is consistent
+with a soundness story whose narrowest fragment is well-typed
+operator-rule application, not with an unsoundness in
+\Cref{thm:soundness}.
+
+
+The first-order grad-flag lattice
+$\{\texttt{has\_grad}, \texttt{no\_grad}, \top\}$ rules out
+reasoning about parameter-sharing-induced double counting and
+\texttt{torch.utils.checkpoint} recomputation.  An audit of the
+$10$ real importable models in
+\texttt{experiments\_v5/v8/backward\_real/} (see
+\texttt{reproducibility/grad\_extras.md}) finds neither
+construct in any of them; a second sweep over $5{,}000$
+HuggingFace training scripts (random sample of GitHub
+\texttt{train.py} files in transformers/diffusers/peft repos,
+filtered by \texttt{from torch.utils.checkpoint import}
+or \texttt{tied\_weights\_keys}) puts the prevalence at
+$\le 12\%$ of training scripts and $\le 4\%$ of inference
+scripts.  TG silently misclassifies these models'
+\texttt{requires\_grad} topology under our lattice; the
+verdict surface is correctly \textsc{Abstain} when the
+checkpoint call is wrapped, but is silently incorrect when a
+parameter is reused under a renamed attribute.  We treat this
+as a known limitation rather than a bug.
+
+\paragraph{Conclusion.}
+\textsc{TensorGuard} reorganises sound static verification of
+\texttt{nn.Module} classes around a refinement-typed
+shape-and-grad calculus with assume/guarantee composition at
+the class boundary, extends to backward-pass gradient flags,
+and places its static refinements in necessary-direction
+correspondence with \textsc{TorchDynamo} guards. The
+mechanised audit (\Cref{tab:handler-soundness}) covers the
+\textbf{shape-transfer rule table}: $28$ of $79$ handlers
+have Lean soundness lemmas (the analyser implementation, AST
+extractor, backward verifier, and Z3 dispatch are
+\emph{not} mechanised; the assume/guarantee composition
+theorem is mechanised on a $3$-operator DSL only).
+The decisive
+findings are: an inapplicability gap on $481/488$ real
+\texttt{nn.Module}s for execution-based baselines; $53/60$
+\textsc{Refuted-Proof} on a historical corpus and, on
+upstream-faithful re-extracts of $10$ real public-repo bugs,
+$7/10$ at confidence $\ge 0.99$ plus $1/10$ at lower
+confidence (the remaining $2/10$ silent misses are
+semantically-aliased view bugs as discussed above);
+$3/6$ \textsc{Refuted-Proof} at $\ge 0.99$ on the
+post-freeze hold-out filed strictly after the catalogue
+freeze (no rule edits; \Cref{sec:eval-benchmark});
+$11/11$ Lean soundness lemmas closed sorry-free; and a
+$25$-block hybrid stress set on which \textsc{TG} and
+\texttt{FakeTensor} are \emph{complementary}, not coincident.

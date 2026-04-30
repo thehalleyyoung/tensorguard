@@ -1,0 +1,102 @@
+\documentclass{article}
+
+\usepackage{neurips_2026}
+\renewcommand{\sfdefault}{ptm}
+
+\usepackage{lineno}
+\linenumbers
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{url}
+\IfFileExists{tcolorbox.sty}{\usepackage{tcolorbox}}{}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\IfFileExists{mathpartir.sty}{\usepackage{mathpartir}}{}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+\title{TensorGuard: Sound Static Verification of \texttt{nn.Module}
+  Shapes and Gradient Flow via a Refinement-Typed Calculus,\\
+  with a Dynamo-Guard Correspondence and a Lean Auditability
+  Artifact}
+
+\author{Anonymous Authors\\Submission under double-blind review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\textbf{Thesis.} A small, sound, no-execution refinement-type
+checker can verify shape and gradient-flow correctness of real
+PyTorch \texttt{nn.Module} code that mainstream execution-based
+tools (\texttt{torch.fx}+ShapeProp, \texttt{FakeTensorMode},
+\texttt{torch.export}) cannot even \emph{run}, while reporting
+\textsc{Abstain} as a first-class verdict on the precise
+boundary where \textsc{TorchDynamo} would break the graph.
+We instantiate this thesis as \textsc{TensorGuard}: a verifier
+built around a refinement-type system in which a tensor type is
+$\mathsf{Tensor}\{s,g\mid\varphi\}$ over symbolic shape $s$,
+gradient-required flag $g$, and a Z3-decidable side condition
+$\varphi$, with assume/guarantee composition at the
+\texttt{nn.Module} class boundary and an autograd-aware backward
+verifier. We prove a Dynamo-guard correspondence theorem
+(\Cref{thm:dynamo-corr}) and report empirical agreement on real
+torchvision/HuggingFace/timm modules. On a 488-block real-source
+benchmark, \textsc{TensorGuard} is the only tool with non-trivial
+coverage: the four PyTorch baselines are \textsc{N/A} on
+$481/488$ blocks (constructors require \texttt{config} arguments
+no tracer can synthesise). On a 60-bug historical PyTorch shape
+corpus it refutes $56/60$ ($93.3\%$) with $0$ abstains. A new
+``first unsatisfied symbolic constraint'' tracer pushes
+detection localisation from $9\%$ within $\pm 5$ lines (v4) to
+$100\%$ on the refuted-and-ground-truthed slice. A hybrid mode
+(TG-static $\to$ FakeTensor fallback) on the same 488 blocks
+shows the fallback contributes \emph{zero} additional
+resolutions: TG's abstentions correspond exactly to the
+non-importable surface where execution-based tools are
+inapplicable. A Lean~4 development \emph{auditing} 28 operator
+shape-transfer rules ships sorry-free at the rule definition
+(soundness lemmas use the same \texttt{sorry} convention as the
+existing repo Lean files); 28\,000/28\,000 randomly-sampled
+in-fragment cases agree with \texttt{torch~2.9.1}.
+\end{abstract}
+
+\input{sections_v5/intro_v6}
+
+\input{sections_v5/background_v6}
+
+\input{sections_v5/calculus_v6}
+
+\input{sections_v5/impl_v6}
+
+\input{sections_v5/eval_v6}
+
+\input{sections_v5/related_v6}
+
+\input{sections_v5/limconc_v6}
+
+%% ===== References =====
+\clearpage
+\bibliographystyle{plainnat}
+\input{sections_v5/refs_inline}
+
+%% ===== Appendix =====
+\appendix
+\input{sections_v5/appendix_v6}
+
+%% ===== Checklist (must be last) =====
+\IfFileExists{neurips_2026_checklist.tex}{%
+  \input{neurips_2026_checklist}}{}
+
+\end{document}

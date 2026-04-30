@@ -1,0 +1,13 @@
+\subsection{Conclusion}\label{sec:conclusion}
+
+\textsc{TensorGuard} v5 reorganises sound static verification of
+\verb|nn.Module| classes around a single refinement-typed
+shape-and-grad calculus, makes module composition an
+assume/guarantee discipline checked at the class boundary,
+extends the analysis from forward shapes to backward-pass
+gradient flags, and places its static refinements in exact
+correspondence with the runtime guards that TorchDynamo would
+install on the same code. The cost is unchanged from v4: an
+explicit \textbf{Abstain} verdict on subgraphs that exit the typed
+fragment, now formalised as the same set on which Dynamo breaks
+the graph.

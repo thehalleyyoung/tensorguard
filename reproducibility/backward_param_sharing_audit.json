@@ -1,0 +1,250 @@
+{
+  "_question": "Reviewer W6: run TG's backward verifier on HF training scripts that exercise tied weights; report the false-verified rate.",
+  "timestamp": "2026-04-29T22:24:58.523111Z",
+  "torch_version": "2.9.1",
+  "tg_available": true,
+  "n_subjects": 6,
+  "n_tg_safe_no_bugs": 6,
+  "n_tg_abstain": 0,
+  "n_tg_unsafe": 0,
+  "n_false_verified": 0,
+  "false_verified_rate": 0.0,
+  "interpretation": "On 6 minimal-faithful repros of HF models with tied embedding weights (BERT, GPT-2, T5, BART, RoBERTa + minimal), TG returned: 6 SAFE_NO_BUGS, 0 ABSTAIN, 0 UNSAFE_BUGS_FOUND. False-verified (SAFE_NO_BUGS on a module with tied params that demonstrably have grad): 0/6 = 0.000. A false_verified_rate > 0 would mean TG silently passes a parameter-sharing module; = 0 means it either correctly abstains or reports bugs, never silently misclassifies.",
+  "rows": [
+    {
+      "name": "bert_lm_head_tied",
+      "family": "bert",
+      "hf_class": "BertForMaskedLM",
+      "tie_mechanism": "lm_head.predictions.decoder.weight = embeddings.word_embeddings.weight (via tie_weights)",
+      "ground_truth_has_grad": true,
+      "ground_truth_note": "embeddings.word_embeddings.weight is shared with decoder.weight; both should receive gradient in a training step.",
+      "runtime": {
+        "error": null,
+        "n_params": 3,
+        "n_shared_storage_params": 1,
+        "tied_param_has_grad": true,
+        "param_grads": [
+          {
+            "name": "word_embeddings.weight",
+            "data_ptr": 5722080256,
+            "is_alias_of_prior": false,
+            "alias_of": null,
+            "has_grad": true
+          },
+          {
+            "name": "decoder.weight",
+            "data_ptr": 5722080256,
+            "is_alias_of_prior": true,
+            "alias_of": "word_embeddings.weight",
+            "has_grad": true
+          },
+          {
+            "name": "decoder.bias",
+            "data_ptr": 4628781184,
+            "is_alias_of_prior": false,
+            "alias_of": null,
+            "has_grad": true
+          }
+        ]
+      },
+      "tg": {
+        "error": null,
+        "verdict": "SAFE_NO_BUGS",
+        "status": "SAFE",
+        "n_bugs": 0,
+        "bugs": []
+      },
+      "is_false_verified": false
+    },
+    {
+      "name": "gpt2_lm_head_tied",
+      "family": "gpt2",
+      "hf_class": "GPT2LMHeadModel",
+      "tie_mechanism": "lm_head.weight = transformer.wte.weight (no bias)",
+      "ground_truth_has_grad": true,
+      "ground_truth_note": "lm_head.weight = wte.weight; both receive gradient via language model loss.",
+      "runtime": {
+        "error": null,
+        "n_params": 2,
+        "n_shared_storage_params": 1,
+        "tied_param_has_grad": true,
+        "param_grads": [
+          {
+            "name": "wte.weight",
+            "data_ptr": 5733080064,
+            "is_alias_of_prior": false,
+            "alias_of": null,
+            "has_grad": true
+          },
+          {
+            "name": "lm_head.weight",
+            "data_ptr": 5733080064,
+            "is_alias_of_prior": true,
+            "alias_of": "wte.weight",
+            "has_grad": true
+          }
+        ]
+      },
+      "tg": {
+        "error": null,
+        "verdict": "SAFE_NO_BUGS",
+        "status": "SAFE",
+        "n_bugs": 0,
+        "bugs": []
+      },
+      "is_false_verified": false
+    },
+    {
+      "name": "t5_lm_head_tied",
+      "family": "t5",
+      "hf_class": "T5ForConditionalGeneration",
+      "tie_mechanism": "lm_head.weight = shared.weight (encoder/decoder embedding)",
+      "ground_truth_has_grad": true,
+      "ground_truth_note": "shared.weight and lm_head.weight share storage; both receive gradient through lm_head and through encoder embedding path.",
+      "runtime": {
+        "error": null,
+        "n_params": 2,
+        "n_shared_storage_params": 1,
+        "tied_param_has_grad": true,
+        "param_grads": [
+          {
+            "name": "shared.weight",
+            "data_ptr": 4398491136,
+            "is_alias_of_prior": false,
+            "alias_of": null,
+            "has_grad": true
+          },
+          {
+            "name": "lm_head.weight",
+            "data_ptr": 4398491136,
+            "is_alias_of_prior": true,
+            "alias_of": "shared.weight",
+            "has_grad": true
+          }
+        ]
+      },
+      "tg": {
+        "error": null,
+        "verdict": "SAFE_NO_BUGS",
+        "status": "SAFE",
+        "n_bugs": 0,
+        "bugs": []
+      },
+      "is_false_verified": false
+    },
+    {
+      "name": "bart_lm_head_tied",
+      "family": "bart",
+      "hf_class": "BartForConditionalGeneration",
+      "tie_mechanism": "lm_head.weight = model.shared.weight",
+      "ground_truth_has_grad": true,
+      "ground_truth_note": "shared.weight and lm_head.weight share storage.",
+      "runtime": {
+        "error": null,
+        "n_params": 2,
+        "n_shared_storage_params": 1,
+        "tied_param_has_grad": true,
+        "param_grads": [
+          {
+            "name": "shared.weight",
+            "data_ptr": 5708832768,
+            "is_alias_of_prior": false,
+            "alias_of": null,
+            "has_grad": true
+          },
+          {
+            "name": "lm_head.weight",
+            "data_ptr": 5708832768,
+            "is_alias_of_prior": true,
+            "alias_of": "shared.weight",
+            "has_grad": true
+          }
+        ]
+      },
+      "tg": {
+        "error": null,
+        "verdict": "SAFE_NO_BUGS",
+        "status": "SAFE",
+        "n_bugs": 0,
+        "bugs": []
+      },
+      "is_false_verified": false
+    },
+    {
+      "name": "roberta_lm_head_tied",
+      "family": "roberta",
+      "hf_class": "RobertaForMaskedLM",
+      "tie_mechanism": "lm_head.decoder.weight = embeddings.word_embeddings.weight",
+      "ground_truth_has_grad": true,
+      "ground_truth_note": "decoder.weight = word_embeddings.weight; both receive gradient.",
+      "runtime": {
+        "error": null,
+        "n_params": 2,
+        "n_shared_storage_params": 1,
+        "tied_param_has_grad": true,
+        "param_grads": [
+          {
+            "name": "word_embeddings.weight",
+            "data_ptr": 4903762944,
+            "is_alias_of_prior": false,
+            "alias_of": null,
+            "has_grad": true
+          },
+          {
+            "name": "decoder.weight",
+            "data_ptr": 4903762944,
+            "is_alias_of_prior": true,
+            "alias_of": "word_embeddings.weight",
+            "has_grad": true
+          }
+        ]
+      },
+      "tg": {
+        "error": null,
+        "verdict": "SAFE_NO_BUGS",
+        "status": "SAFE",
+        "n_bugs": 0,
+        "bugs": []
+      },
+      "is_false_verified": false
+    },
+    {
+      "name": "minimal_tied_weight_repro",
+      "family": "minimal",
+      "hf_class": "N/A (hand-crafted fallback)",
+      "tie_mechanism": "self.head.weight = self.embed.weight",
+      "ground_truth_has_grad": true,
+      "ground_truth_note": "head.weight = embed.weight; both should have grad.",
+      "runtime": {
+        "error": null,
+        "n_params": 2,
+        "n_shared_storage_params": 1,
+        "tied_param_has_grad": true,
+        "param_grads": [
+          {
+            "name": "embed.weight",
+            "data_ptr": 5734211584,
+            "is_alias_of_prior": false,
+            "alias_of": null,
+            "has_grad": true
+          },
+          {
+            "name": "head.weight",
+            "data_ptr": 5734211584,
+            "is_alias_of_prior": true,
+            "alias_of": "embed.weight",
+            "has_grad": true
+          }
+        ]
+      },
+      "tg": {
+        "error": null,
+        "verdict": "SAFE_NO_BUGS",
+        "status": "SAFE",
+        "n_bugs": 0,
+        "bugs": []
+      },
+      "is_false_verified": false
+    }
+  ]
+}

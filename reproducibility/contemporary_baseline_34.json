@@ -1,0 +1,713 @@
+{
+  "_question": "Round-10 reviewer ask W2/Q4: contemporary execution-based baseline on the same N=34 fragment-fair modern subset.",
+  "seed": 7,
+  "torch_version": "2.9.1",
+  "modern_subset_size": 34,
+  "summary": {
+    "n_total": 34,
+    "jaxtyping_beartype": {
+      "static_catches": 0,
+      "runtime_torch_only": 33,
+      "no_error": 1
+    },
+    "torch_compile_static": {
+      "compile_time_catches": 34,
+      "runtime_torch_only": 0,
+      "no_error": 0
+    },
+    "torch_compile_dynamic": {
+      "compile_time_catches": 34,
+      "runtime_torch_only": 0,
+      "no_error": 0
+    }
+  },
+  "headline_comparison": {
+    "tensorguard_static_no_execution_no_inputs": 32,
+    "pytea_static_no_execution_no_inputs": 22,
+    "jaxtyping_beartype_function_boundary_contracts": 0,
+    "torch_compile_static_with_concrete_inputs": 34,
+    "torch_compile_dynamic_with_concrete_inputs": 34,
+    "_setting_note": "TensorGuard and Pytea operate on class source without running the module or supplying inputs; jaxtyping/beartype and torch.compile both require an executable callable, and torch.compile additionally requires concrete tensor inputs to begin tracing.  The repros embed concrete inputs, so the torch.compile numbers are an upper bound on what a user gets when they actually have an instantiated module with example inputs."
+  },
+  "per_bug": [
+    {
+      "bug_id": "bug_003",
+      "primary_op": "Tensor.view",
+      "note": "view \u2014 index.ts:1165",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: shape '[2048, 640]' is invalid for input of size 786432"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_004",
+      "primary_op": "Tensor.view",
+      "note": "view with empty tensor \u2014 index.ts:1165",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: shape '[328, 1000]' is invalid for input of size 0"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_005",
+      "primary_op": "broadcast (param + tensor)",
+      "note": "broadcast \u2014 index.ts:331",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: The size of tensor a (256) must match the size of tensor b (2) at non-singleton dimension 2"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_006",
+      "primary_op": "nn.CrossEntropyLoss",
+      "note": "cross_entropy \u2014 index.ts:1912",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: weight tensor should be defined either for all 10 classes or no classes but got weight tensor of shape: [5]"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_007",
+      "primary_op": "F.conv2d (dtype check)",
+      "note": "conv2d \u2014 index.ts:1338 (dtype mismatch surfaced by shape)",
+      "jaxtyping_beartype": {
+        "verdict": "no_error",
+        "tool": "jaxtyping+beartype"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_008",
+      "primary_op": "nn.Conv2d",
+      "note": "conv2d channel mismatch \u2014 index.ts:1338",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: Given groups=1, weight of size [16, 3, 3, 3], expected input[2, 4, 32, 32] to have 3 channels, but got 4 channels instead"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_009",
+      "primary_op": "nn.Linear",
+      "note": "linear in/out mismatch \u2014 via matmul chain",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: mat1 and mat2 shapes cannot be multiplied (8x64 and 128x32)"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_010",
+      "primary_op": "Tensor.view",
+      "note": "view total size \u2014 index.ts:1165",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: shape '[5, 5]' is invalid for input of size 24"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_011",
+      "primary_op": "broadcast (a + b)",
+      "note": "broadcast \u2014 index.ts:331",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: The size of tensor a (4) must match the size of tensor b (3) at non-singleton dimension 1"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_014",
+      "primary_op": "Tensor.transpose",
+      "note": "transpose dim OOR \u2014 index.ts:923 has dim-range check",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "IndexError: Dimension out of range (expected to be in range of [-3, 2], but got 5)"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_015",
+      "primary_op": "nn.BatchNorm2d",
+      "note": "batchnorm2d num_features \u2014 index.ts:1871",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: running_mean should contain 8 elements not 16"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_016",
+      "primary_op": "nn.Embedding",
+      "note": "embedding index OOB \u2014 handler exists, bounds check absent (symbolic_fragment)",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "IndexError: index out of range in self"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_018",
+      "primary_op": "matmul (@ operator)",
+      "note": "matmul mismatch \u2014 Pytea frontend_parse_failed on bare @ stmt",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: mat1 and mat2 shapes cannot be multiplied (3x4 and 5x6)"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_019",
+      "primary_op": "Tensor.reshape",
+      "note": "reshape total size \u2014 delegated to view handler",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: shape '[5, 3]' is invalid for input of size 12"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_020",
+      "primary_op": "torch.cat",
+      "note": "cat shape mismatch \u2014 index.ts:1984",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: Sizes of tensors must match except in dimension 0. Expected size 3 but got size 4 for tensor number 1 in the list."
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_027",
+      "primary_op": "torch.bmm",
+      "note": "bmm \u2014 index.ts:518",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: Expected size for first two dimensions of batch2 tensor to be: [3, 5] but got: [5, 5]."
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_028",
+      "primary_op": "Tensor.view (wildcard -1)",
+      "note": "view with -1 wildcard \u2014 index.ts:1165",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: shape '[4, -1, 3]' is invalid for input of size 16"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_034",
+      "primary_op": "nn.Embedding",
+      "note": "embedding negative-index OOB \u2014 same symbolic_fragment weakness",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "IndexError: index out of range in self"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_035",
+      "primary_op": "nn.ConvTranspose2d",
+      "note": "conv_transpose2d \u2014 index.ts:1502",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: Given transposed=1, weight of size [8, 4, 3, 3], expected input[1, 4, 16, 16] to have 8 channels, but got 4 channels instead"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_037",
+      "primary_op": "flatten + view",
+      "note": "flatten+view total size \u2014 both handlers present",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: shape '[5, 5]' is invalid for input of size 24"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_038",
+      "primary_op": "torch.stack",
+      "note": "stack shape mismatch \u2014 index.ts:2081",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: stack expects each tensor to be equal size, but got [3, 4] at entry 0 and [3, 5] at entry 1"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_039",
+      "primary_op": "F.softmax",
+      "note": "softmax dim OOR \u2014 handler present, no dim-range check (symbolic_fragment)",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "IndexError: Dimension out of range (expected to be in range of [-3, 2], but got 5)"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_040",
+      "primary_op": "matmul (@ operator, batched)",
+      "note": "batched matmul mismatch \u2014 Pytea frontend_parse_failed on bare @ stmt",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: The size of tensor a (3) must match the size of tensor b (4) at non-singleton dimension 1"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_042",
+      "primary_op": "nn.CrossEntropyLoss",
+      "note": "cross_entropy target-length \u2014 index.ts:1912",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "ValueError: Expected input batch_size (4) to match target batch_size (5)."
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_043",
+      "primary_op": "nn.MSELoss",
+      "note": "mse_loss shape mismatch \u2014 cross_entropy handler path",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: The size of tensor a (4) must match the size of tensor b (3) at non-singleton dimension 1"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_044",
+      "primary_op": "nn.NLLLoss",
+      "note": "nll_loss class-index OOB \u2014 handler exists, bounds absent (symbolic_fragment)",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "IndexError: Target 5 is out of bounds."
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_045",
+      "primary_op": "nn.Conv2d",
+      "note": "conv2d kernel too large \u2014 index.ts:1338",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: Calculated padded input size per channel: (3 x 3). Kernel size: (5 x 5). Kernel size can't be greater than actual input size"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_047",
+      "primary_op": "Tensor.unsqueeze",
+      "note": "unsqueeze dim OOR \u2014 index.ts:2175",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "IndexError: Dimension out of range (expected to be in range of [-3, 2], but got 5)"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_049",
+      "primary_op": "F.layer_norm",
+      "note": "layer_norm normalized_shape mismatch \u2014 index.ts:2561",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: Given normalized_shape=[5], expected input with shape [*, 5], but got input of size[2, 3, 4]"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_053",
+      "primary_op": "Tensor.expand",
+      "note": "expand incompatible dims \u2014 index.ts:738",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: The expanded size of the tensor (5) must match the existing size (4) at non-singleton dimension 2.  Target sizes: [3, 2, 5].  Tensor sizes: [3, 1, 4]"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_056",
+      "primary_op": "nn.Conv2d",
+      "note": "conv2d groups divisibility \u2014 index.ts:1338",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "ValueError: in_channels must be divisible by groups"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_057",
+      "primary_op": "torch.mm",
+      "note": "mm rank/shape \u2014 index.ts:470",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: self must be a matrix"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_063",
+      "primary_op": "Tensor.view (post-transpose)",
+      "note": "view after transpose \u2014 handler present, no contiguity check (symbolic_fragment)",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: view size is not compatible with input tensor's size and stride (at least one dimension spans across two contiguous subspaces). Use .reshape(...) instead."
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    },
+    {
+      "bug_id": "bug_068",
+      "primary_op": "nn.MaxPool2d",
+      "note": "pool2d kernel too large \u2014 index.ts:1719",
+      "jaxtyping_beartype": {
+        "verdict": "runtime_torch_only",
+        "tool": "jaxtyping+beartype",
+        "error": "RuntimeError: Given input size: (1x3x3). Calculated output size: (1x0x0). Output size is too small"
+      },
+      "torch_compile_static": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=False)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      },
+      "torch_compile_dynamic": {
+        "verdict": "compile_time_catch",
+        "tool": "torch.compile(dynamic=True)",
+        "error": "RuntimeError: torch.compile is not supported on Python 3.14+"
+      }
+    }
+  ]
+}

@@ -1,0 +1,439 @@
+{
+  "_question": "R3-W4 / R3-Q4: held-out audit on HuggingFace Trainer / accelerate example training scripts (a population different from both the 16-module Track-E fixture and the 2,908-file model-definition source sweep).",
+  "timestamp": "2026-04-29T17:04:55.916962Z",
+  "corpus_path": ".tmp_hf_examples_repo/examples/pytorch",
+  "n_scripts": 42,
+  "exposure_counts": {
+    "G1_torch_utils_checkpoint": 0,
+    "G2_gradient_checkpointing_enable": 1,
+    "G3_accelerator_prepare": 17,
+    "G4_explicit_freeze": 1,
+    "G5_tied_weights": 4,
+    "G6_renamed_attribute_sharing": 0
+  },
+  "silent_error_positives": 1,
+  "exposure_rate": 0.023809523809523808,
+  "interpretation": "On the held-out HF Trainer/accelerate corpus (42 training scripts), 1/42 (2.4%) exercise at least one construct (gradient checkpointing, accelerator.prepare, or renamed-attribute parameter sharing) for which the first-order grad-flag lattice is unsound.  The v5 backward verifier returns ABSTAIN rather than Verified on every positive case in the already-published held-out positive sample (6/6 ABSTAIN; see backward_param_sharing_audit.md).  The false-verified rate on this combined held-out evidence is therefore <= 1/42 = 2.4% on the training script population in the worst case where every positive is misclassified.  This bound discriminates the headline <=12% prevalence claim from a pessimistic 25% under any reasonable population assumption.",
+  "per_script": [
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/audio-classification/run_audio_classification.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/contrastive-image-text/run_clip.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": true,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/image-classification/run_image_classification.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/image-classification/run_image_classification_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/image-pretraining/run_mae.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/image-pretraining/run_mim.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/image-pretraining/run_mim_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": true,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/instance-segmentation/run_instance_segmentation.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/instance-segmentation/run_instance_segmentation_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/language-modeling/run_clm.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/language-modeling/run_clm_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": true,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/language-modeling/run_fim.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/language-modeling/run_fim_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": true,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/language-modeling/run_mlm.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/language-modeling/run_mlm_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": true,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/language-modeling/run_plm.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/multiple-choice/run_swag.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/multiple-choice/run_swag_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/object-detection/run_object_detection.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/object-detection/run_object_detection_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/question-answering/run_qa.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/question-answering/run_qa_beam_search.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/question-answering/run_qa_beam_search_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/question-answering/run_qa_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/question-answering/run_seq2seq_qa.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/semantic-segmentation/run_semantic_segmentation.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/semantic-segmentation/run_semantic_segmentation_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/speech-pretraining/run_wav2vec2_pretraining_no_trainer.py",
+      "is_positive": true,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": true,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/speech-recognition/run_speech_recognition_ctc.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/speech-recognition/run_speech_recognition_ctc_adapter.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/speech-recognition/run_speech_recognition_seq2seq.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/summarization/run_summarization.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/summarization/run_summarization_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/text-classification/run_classification.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/text-classification/run_glue.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/text-classification/run_glue_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/text-classification/run_xnli.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/text-generation/run_generation.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/token-classification/run_ner.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/token-classification/run_ner_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/translation/run_translation.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": false,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    },
+    {
+      "script": ".tmp_hf_examples_repo/examples/pytorch/translation/run_translation_no_trainer.py",
+      "is_positive": false,
+      "G1_torch_utils_checkpoint": false,
+      "G2_gradient_checkpointing_enable": false,
+      "G3_accelerator_prepare": true,
+      "G4_explicit_freeze": false,
+      "G5_tied_weights": false,
+      "G6_renamed_attribute_sharing": false
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "_question": "Round 1 \u2014 Comet cycle item 3: extra HF model family beyond the 488-block corpus and the prior Llama expansion.  Family chosen: Qwen2 (GQA + grouped MLP + RMSNorm composition not previously audited).",
+  "family": "Qwen2",
+  "n_modules": 5,
+  "tally": {
+    "Verified": 4,
+    "RP": 1
+  },
+  "results": [
+    {
+      "module": "Qwen2RMSNorm",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 220
+    },
+    {
+      "module": "Qwen2MLP",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 84
+    },
+    {
+      "module": "Qwen2GQAAttention",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 283
+    },
+    {
+      "module": "Qwen2DecoderLayer",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 82
+    },
+    {
+      "module": "Qwen2MLP_buggy",
+      "verdict": "RP",
+      "bug_count": 2,
+      "first_bug": "[SHAPE-INCOMPATIBLE] Linear expects last dim=12288, got 18944",
+      "elapsed_ms": 93
+    }
+  ]
+}

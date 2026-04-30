@@ -1,0 +1,101 @@
+\documentclass{article}
+
+\usepackage{neurips_2026}
+\renewcommand{\sfdefault}{ptm}
+
+\usepackage{lineno}
+\linenumbers
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{url}
+\IfFileExists{tcolorbox.sty}{\usepackage{tcolorbox}}{}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\IfFileExists{mathpartir.sty}{\usepackage{mathpartir}}{}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{remark}[theorem]{Remark}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+\title{TensorGuard: Refinement-Type Verification of \texttt{nn.Module}
+  Shapes and Gradient Flow with a Lean-Audited Operator-Rule Table}
+
+\author{Anonymous Authors\\Submission under double-blind review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\textsc{TensorGuard} is a no-execution refinement-type checker for
+PyTorch \texttt{nn.Module} forward methods that verifies tensor
+shapes and gradient flow statically from class source, without
+instantiating the module or tracing it; the contribution is the
+joint shape-plus-grad analysis on un-instantiated class source,
+together with an assume/guarantee discipline at the class
+boundary and a calibration package whose verdicts are
+partitioned by a Lean-audited soundness footprint.
+On a curated $60$-bug historical corpus it returns
+\textsc{Refuted-Proof} on $53/60$ ($88.3\%$, Wilson 95\% CI
+$[77.8\%, 94.2\%]$), of which $46/56$ ($82.1\%$) of the
+high-confidence RP catches lie entirely inside the
+$44$-handler proof-grade sub-catalogue
+$\mathrm{Cat}_{\mathrm{sound}}$ (the rest touch tested-only
+handlers); on the $N{=}34$ fragment-fair head-to-head with Pytea,
+$32/34$ vs.\ $25/34$ (McNemar exact $p{=}0.0156$).
+The rule table is mechanised in Lean~$4$ ($28$ of $79$
+shape-transfer handlers with $11/11$ soundness lemmas closed
+sorry-free, plus the assume/guarantee composition theorem on a
+$17$-operator DSL with $15$ per-operator lemmas and $2$
+explicit operator-agnostic obligations); the full project,
+including the \texttt{parity\_runner} executable, builds
+green end-to-end. The proof-grade soundness theorem is
+restricted to the $44$-handler sub-catalogue
+$\mathrm{Cat}_{\mathrm{sound}}$; the analyser implementation,
+AST extractor, backward verifier, and Z3 dispatch remain in
+the trusted computing base, and the backward verifier's
+deployment-side false-Verified rate is bounded by $\le 3.0\%$
+on the regex-screened training-script population.
+On $9$ naturally-occurring shape bugs transcribed from public
+upstream HuggingFace \texttt{transformers} bug-fix issues
+across Llama, Qwen2, Mistral, Phi-3, and Gemma~$2$,
+\textsc{TG} returns \textsc{Refuted-Proof} on $9/9$. An open-source implementation accompanies the paper.
+\end{abstract}
+
+\input{sections_v5/intro_v6}
+
+
+\input{sections_v5/calculus_v6}
+
+\input{sections_v5/impl_v6}
+
+\input{sections_v5/eval_v6}
+
+\input{sections_v5/related_v6}
+
+\input{sections_v5/limconc_v6}
+
+%% ===== References =====
+\clearpage
+\bibliographystyle{plainnat}
+\input{sections_v5/refs_inline}
+
+%% ===== Appendix =====
+\appendix
+\input{sections_v5/appendix_v6}
+
+%% ===== Checklist (must be last) =====
+\input{neurips_2026_checklist}
+
+\end{document}

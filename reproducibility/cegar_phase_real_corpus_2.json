@@ -1,0 +1,54 @@
+{
+  "_question": "Round 1 — Comet cycle W6: confirm CEGAR and phase-check are 0-delta on every measured corpus and position them as defensive/future features.",
+  "freeze_commit": "040f6f3",
+  "corpora_checked": [
+    {
+      "name": "60-bug historical",
+      "n": 60,
+      "delta_when_cegar_disabled": 0,
+      "delta_when_phase_disabled": 0,
+      "discriminating_cases": []
+    },
+    {
+      "name": "488-block real-source",
+      "n": 488,
+      "delta_when_cegar_disabled": 0,
+      "delta_when_phase_disabled": 0,
+      "discriminating_cases": []
+    },
+    {
+      "name": "N=15 unfiltered post-freeze",
+      "n": 15,
+      "delta_when_cegar_disabled": 0,
+      "delta_when_phase_disabled": 0,
+      "discriminating_cases": []
+    },
+    {
+      "name": "10-bug upstream-faithful real corpus",
+      "n": 10,
+      "delta_when_cegar_disabled": 0,
+      "delta_when_phase_disabled": 0,
+      "discriminating_cases": []
+    },
+    {
+      "name": "25-case stress benchmark",
+      "n": 25,
+      "delta_when_cegar_disabled": 0,
+      "delta_when_phase_disabled": 0,
+      "discriminating_cases": [],
+      "note": "Stress benchmark was constructed so each feature would discriminate; CEGAR and phase still produce zero verdict-touching changes on this synthesised set, confirming they are no-ops on every corpus measured to date."
+    }
+  ],
+  "search_for_discriminating_cases": {
+    "searched_directories": ["experiments_v5/", "benchmarks/", "tests/"],
+    "search_method": "Greppable cross-references against test fixtures explicitly designed to exercise CEGAR or phase predicates; also a verdict-diff sweep where the analyser is run with each feature both enabled and disabled.",
+    "discriminating_cases_found": 0,
+    "interpretation": "No measured case in the repository discriminates on CEGAR or phase.  CEGAR's internal predicates are stored as metadata but never surfaced as Bug objects (architectural gap between the CEGAR loop and the verdict pipeline).  The phase-check encodes Or(TRAIN, EVAL), which is always satisfiable."
+  },
+  "positioning": "CEGAR and phase are shipped as defensive features for future extension.  They are zero-delta on every corpus measured to date and contribute zero discrimination to the headline numbers.  We position them in the Limitations as defensive/future-extension features, not as part of the ablation contribution.",
+  "paper_claims_cited": [
+    "Eval section ablation paragraph",
+    "Per-feature stress benchmark table caption",
+    "Limitations paragraph (new sentence positioning CEGAR and phase as defensive)"
+  ]
+}

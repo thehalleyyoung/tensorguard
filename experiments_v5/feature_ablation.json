@@ -1,0 +1,175 @@
+{
+  "meta": {
+    "timestamp": "2026-04-28T15:45:08Z",
+    "torch_version": "2.9.1",
+    "python_version": "3.11.15",
+    "total_elapsed_s": 601.7,
+    "feature_definitions": {
+      "L0": "base fragment only (high-confidence, no CEGAR, no secondary checks)",
+      "L1": "+ CEGAR (3 iterations, predicates-only)",
+      "L2": "+ device consistency check (check_devices=True)",
+      "L3": "+ train/eval phase check (check_phases=True)",
+      "L4": "+ gradient flow check (check_gradients=True)",
+      "L5": "full (high_confidence_only=False \u2014 adds low-confidence violations)"
+    },
+    "notes": "ABLATION STRATEGY: verify_architecture kwargs gating (Honest Fallback). v5 modules are not invoked by verify_architecture; Track C delta = {VERIFIED:0, REFUTED:0, ABSTAIN:0} confirmed no change from importing them. The two functional knobs in verify_architecture are: (1) high_confidence_only \u2014 forwarded to verify_model.filter_by_confidence(HIGH); (2) max_cegar_iterations \u2014 gates run_shape_cegar, but CEGAR predicates are stored as metadata only (not fed back as Bug objects). check_devices, check_phases, check_gradients are accepted by the API but NOT forwarded to verify_model in the current implementation; L2/L3/L4 rows therefore replicate L1 verdict counts and document this no-op behaviour."
+  },
+  "ladder": [
+    {
+      "level": "L0",
+      "label": "base fragment only (high-confidence, no CEGAR, no secondary checks)",
+      "feature_kwargs": {
+        "high_confidence_only": true,
+        "max_cegar_iterations": 0,
+        "check_devices": false,
+        "check_phases": false,
+        "check_gradients": false
+      },
+      "bug_corpus": {
+        "refuted": 56,
+        "silent_miss": 4,
+        "abstain": 0,
+        "exception": 0,
+        "n": 60
+      },
+      "block_corpus": {
+        "verified": 57,
+        "refuted": 206,
+        "abstain": 225,
+        "abstain_rate": 0.4611,
+        "n": 488
+      },
+      "elapsed_s": 53.5
+    },
+    {
+      "level": "L1",
+      "label": "+ CEGAR (3 iterations, predicates-only)",
+      "feature_kwargs": {
+        "high_confidence_only": true,
+        "max_cegar_iterations": 3,
+        "check_devices": false,
+        "check_phases": false,
+        "check_gradients": false
+      },
+      "bug_corpus": {
+        "refuted": 56,
+        "silent_miss": 4,
+        "abstain": 0,
+        "exception": 0,
+        "n": 60
+      },
+      "block_corpus": {
+        "verified": 57,
+        "refuted": 206,
+        "abstain": 225,
+        "abstain_rate": 0.4611,
+        "n": 488
+      },
+      "elapsed_s": 131.4
+    },
+    {
+      "level": "L2",
+      "label": "+ device consistency check (check_devices=True)",
+      "feature_kwargs": {
+        "high_confidence_only": true,
+        "max_cegar_iterations": 3,
+        "check_devices": true,
+        "check_phases": false,
+        "check_gradients": false
+      },
+      "bug_corpus": {
+        "refuted": 56,
+        "silent_miss": 4,
+        "abstain": 0,
+        "exception": 0,
+        "n": 60
+      },
+      "block_corpus": {
+        "verified": 57,
+        "refuted": 206,
+        "abstain": 225,
+        "abstain_rate": 0.4611,
+        "n": 488
+      },
+      "elapsed_s": 77.6
+    },
+    {
+      "level": "L3",
+      "label": "+ train/eval phase check (check_phases=True)",
+      "feature_kwargs": {
+        "high_confidence_only": true,
+        "max_cegar_iterations": 3,
+        "check_devices": true,
+        "check_phases": true,
+        "check_gradients": false
+      },
+      "bug_corpus": {
+        "refuted": 56,
+        "silent_miss": 4,
+        "abstain": 0,
+        "exception": 0,
+        "n": 60
+      },
+      "block_corpus": {
+        "verified": 57,
+        "refuted": 206,
+        "abstain": 225,
+        "abstain_rate": 0.4611,
+        "n": 488
+      },
+      "elapsed_s": 87.8
+    },
+    {
+      "level": "L4",
+      "label": "+ gradient flow check (check_gradients=True)",
+      "feature_kwargs": {
+        "high_confidence_only": true,
+        "max_cegar_iterations": 3,
+        "check_devices": true,
+        "check_phases": true,
+        "check_gradients": true
+      },
+      "bug_corpus": {
+        "refuted": 56,
+        "silent_miss": 4,
+        "abstain": 0,
+        "exception": 0,
+        "n": 60
+      },
+      "block_corpus": {
+        "verified": 57,
+        "refuted": 206,
+        "abstain": 225,
+        "abstain_rate": 0.4611,
+        "n": 488
+      },
+      "elapsed_s": 113.2
+    },
+    {
+      "level": "L5",
+      "label": "full (high_confidence_only=False \u2014 adds low-confidence violations)",
+      "feature_kwargs": {
+        "high_confidence_only": false,
+        "max_cegar_iterations": 3,
+        "check_devices": true,
+        "check_phases": true,
+        "check_gradients": true
+      },
+      "bug_corpus": {
+        "refuted": 56,
+        "silent_miss": 4,
+        "abstain": 0,
+        "exception": 0,
+        "n": 60
+      },
+      "block_corpus": {
+        "verified": 57,
+        "refuted": 206,
+        "abstain": 225,
+        "abstain_rate": 0.4611,
+        "n": 488
+      },
+      "elapsed_s": 138.2
+    }
+  ]
+}

@@ -1,0 +1,567 @@
+{
+  "meta": {
+    "generated_by": "reproducibility/pytea_fragment_fair.py",
+    "command": "python3 reproducibility/pytea_fragment_fair.py",
+    "inputs": [
+      "experiments_v5/pytea_baseline_results.json",
+      "experiments_v5/v5_benchmark_results.json"
+    ],
+    "subset_definition": "A bug is in the fragment-fair subset iff its primary failing operator is implemented in Pytea's 2022 TS operator catalogue (packages/pytea/src/ts/index.ts at commit c536515; see experiments_v5/v8/build_modern_subset.py for the per-bug TS handler line cite). The 26 out-of-subset bugs touch ops with no Pytea handler (SDPA/MHA-2.x, einsum, Conv1d/Conv3d, BatchNorm1d, GroupNorm/InstanceNorm, swapaxes, movedim, torch.where, torch.dot, linalg.*, repeat_interleave, F.embedding, gather, scatter_, isclose, split-with-list-sum, torch.add functional, torch.maximum functional, index_select).",
+    "n_subset": 34,
+    "n_full_corpus": 60,
+    "contingency_table": {
+      "both_refute": 25,
+      "tg_only": 7,
+      "pytea_only": 0,
+      "neither": 2
+    },
+    "tensorguard_refuted": 32,
+    "pytea_refuted": 25,
+    "tensorguard_detection_rate": 0.9412,
+    "pytea_detection_rate": 0.7353,
+    "mcnemar_exact_two_sided_p": 0.015625,
+    "paper_claim_supported": "TG 32/34 vs Pytea 25/34, McNemar exact two-sided p = 0.0156"
+  },
+  "per_bug": [
+    {
+      "id": "bug_001",
+      "in_fragment_fair_subset": false,
+      "primary_op": "F.scaled_dot_product_attention",
+      "catalogue_note": "SDPA \u2014 PyTorch-2.x, no Pytea handler",
+      "tensorguard_verdict": "Verified",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_002",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.isclose",
+      "catalogue_note": "isclose \u2014 not in Pytea catalogue",
+      "tensorguard_verdict": "Verified",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_003",
+      "in_fragment_fair_subset": true,
+      "primary_op": "Tensor.view",
+      "catalogue_note": "view \u2014 index.ts:1165",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_004",
+      "in_fragment_fair_subset": true,
+      "primary_op": "Tensor.view",
+      "catalogue_note": "view with empty tensor \u2014 index.ts:1165",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_005",
+      "in_fragment_fair_subset": true,
+      "primary_op": "broadcast (param + tensor)",
+      "catalogue_note": "broadcast \u2014 index.ts:331",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_006",
+      "in_fragment_fair_subset": true,
+      "primary_op": "nn.CrossEntropyLoss",
+      "catalogue_note": "cross_entropy \u2014 index.ts:1912",
+      "tensorguard_verdict": "Verified",
+      "pytea_verdict": "Verified",
+      "agreement": "neither"
+    },
+    {
+      "id": "bug_007",
+      "in_fragment_fair_subset": true,
+      "primary_op": "F.conv2d (dtype check)",
+      "catalogue_note": "conv2d \u2014 index.ts:1338 (dtype mismatch surfaced by shape)",
+      "tensorguard_verdict": "Verified",
+      "pytea_verdict": "Verified",
+      "agreement": "neither"
+    },
+    {
+      "id": "bug_008",
+      "in_fragment_fair_subset": true,
+      "primary_op": "nn.Conv2d",
+      "catalogue_note": "conv2d channel mismatch \u2014 index.ts:1338",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_009",
+      "in_fragment_fair_subset": true,
+      "primary_op": "nn.Linear",
+      "catalogue_note": "linear in/out mismatch \u2014 via matmul chain",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_010",
+      "in_fragment_fair_subset": true,
+      "primary_op": "Tensor.view",
+      "catalogue_note": "view total size \u2014 index.ts:1165",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_011",
+      "in_fragment_fair_subset": true,
+      "primary_op": "broadcast (a + b)",
+      "catalogue_note": "broadcast \u2014 index.ts:331",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_012",
+      "in_fragment_fair_subset": false,
+      "primary_op": "nn.MultiheadAttention",
+      "catalogue_note": "MHA embed_dim divisibility \u2014 PyTorch-2.x redesign, no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_013",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.einsum",
+      "catalogue_note": "einsum \u2014 no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_014",
+      "in_fragment_fair_subset": true,
+      "primary_op": "Tensor.transpose",
+      "catalogue_note": "transpose dim OOR \u2014 index.ts:923 has dim-range check",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_015",
+      "in_fragment_fair_subset": true,
+      "primary_op": "nn.BatchNorm2d",
+      "catalogue_note": "batchnorm2d num_features \u2014 index.ts:1871",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_016",
+      "in_fragment_fair_subset": true,
+      "primary_op": "nn.Embedding",
+      "catalogue_note": "embedding index OOB \u2014 handler exists, bounds check absent (symbolic_fragment)",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_017",
+      "in_fragment_fair_subset": false,
+      "primary_op": "nn.Conv1d",
+      "catalogue_note": "Conv1d \u2014 no Pytea handler (only Conv2d)",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_018",
+      "in_fragment_fair_subset": true,
+      "primary_op": "matmul (@ operator)",
+      "catalogue_note": "matmul mismatch \u2014 Pytea frontend_parse_failed on bare @ stmt",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "N/A",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_019",
+      "in_fragment_fair_subset": true,
+      "primary_op": "Tensor.reshape",
+      "catalogue_note": "reshape total size \u2014 delegated to view handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_020",
+      "in_fragment_fair_subset": true,
+      "primary_op": "torch.cat",
+      "catalogue_note": "cat shape mismatch \u2014 index.ts:1984",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_022",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.einsum",
+      "catalogue_note": "einsum \u2014 no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_024",
+      "in_fragment_fair_subset": false,
+      "primary_op": "nn.BatchNorm1d",
+      "catalogue_note": "BatchNorm1d \u2014 no Pytea handler (only BatchNorm2d)",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_026",
+      "in_fragment_fair_subset": false,
+      "primary_op": "nn.Conv3d",
+      "catalogue_note": "Conv3d \u2014 no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_027",
+      "in_fragment_fair_subset": true,
+      "primary_op": "torch.bmm",
+      "catalogue_note": "bmm \u2014 index.ts:518",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_028",
+      "in_fragment_fair_subset": true,
+      "primary_op": "Tensor.view (wildcard -1)",
+      "catalogue_note": "view with -1 wildcard \u2014 index.ts:1165",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_029",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.where",
+      "catalogue_note": "where \u2014 no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_031",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.einsum",
+      "catalogue_note": "einsum \u2014 no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_032",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.swapaxes",
+      "catalogue_note": "swapaxes \u2014 no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_033",
+      "in_fragment_fair_subset": false,
+      "primary_op": "nn.GroupNorm",
+      "catalogue_note": "GroupNorm \u2014 no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_034",
+      "in_fragment_fair_subset": true,
+      "primary_op": "nn.Embedding",
+      "catalogue_note": "embedding negative-index OOB \u2014 same symbolic_fragment weakness",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_035",
+      "in_fragment_fair_subset": true,
+      "primary_op": "nn.ConvTranspose2d",
+      "catalogue_note": "conv_transpose2d \u2014 index.ts:1502",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_037",
+      "in_fragment_fair_subset": true,
+      "primary_op": "flatten + view",
+      "catalogue_note": "flatten+view total size \u2014 both handlers present",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_038",
+      "in_fragment_fair_subset": true,
+      "primary_op": "torch.stack",
+      "catalogue_note": "stack shape mismatch \u2014 index.ts:2081",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_039",
+      "in_fragment_fair_subset": true,
+      "primary_op": "F.softmax",
+      "catalogue_note": "softmax dim OOR \u2014 handler present, no dim-range check (symbolic_fragment)",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_040",
+      "in_fragment_fair_subset": true,
+      "primary_op": "matmul (@ operator, batched)",
+      "catalogue_note": "batched matmul mismatch \u2014 Pytea frontend_parse_failed on bare @ stmt",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "N/A",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_041",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.movedim",
+      "catalogue_note": "movedim \u2014 no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_042",
+      "in_fragment_fair_subset": true,
+      "primary_op": "nn.CrossEntropyLoss",
+      "catalogue_note": "cross_entropy target-length \u2014 index.ts:1912",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_043",
+      "in_fragment_fair_subset": true,
+      "primary_op": "nn.MSELoss",
+      "catalogue_note": "mse_loss shape mismatch \u2014 cross_entropy handler path",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_044",
+      "in_fragment_fair_subset": true,
+      "primary_op": "nn.NLLLoss",
+      "catalogue_note": "nll_loss class-index OOB \u2014 handler exists, bounds absent (symbolic_fragment)",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_045",
+      "in_fragment_fair_subset": true,
+      "primary_op": "nn.Conv2d",
+      "catalogue_note": "conv2d kernel too large \u2014 index.ts:1338",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_047",
+      "in_fragment_fair_subset": true,
+      "primary_op": "Tensor.unsqueeze",
+      "catalogue_note": "unsqueeze dim OOR \u2014 index.ts:2175",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_048",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.add (functional)",
+      "catalogue_note": "torch.add functional \u2014 no Pytea handler; only tensor.__add__ handled",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_049",
+      "in_fragment_fair_subset": true,
+      "primary_op": "F.layer_norm",
+      "catalogue_note": "layer_norm normalized_shape mismatch \u2014 index.ts:2561",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_050",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.einsum",
+      "catalogue_note": "einsum \u2014 no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_051",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.gather",
+      "catalogue_note": "gather \u2014 no Pytea TS handler (index.ts grep empty)",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_052",
+      "in_fragment_fair_subset": false,
+      "primary_op": "Tensor.scatter_",
+      "catalogue_note": "scatter_ \u2014 no Pytea TS handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_053",
+      "in_fragment_fair_subset": true,
+      "primary_op": "Tensor.expand",
+      "catalogue_note": "expand incompatible dims \u2014 index.ts:738",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_054",
+      "in_fragment_fair_subset": false,
+      "primary_op": "nn.InstanceNorm2d",
+      "catalogue_note": "InstanceNorm2d \u2014 stub has no num_features check; not in catalogue",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_055",
+      "in_fragment_fair_subset": false,
+      "primary_op": "F.embedding (functional)",
+      "catalogue_note": "F.embedding \u2014 not in nn/functional.py stubs; unimpl",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_056",
+      "in_fragment_fair_subset": true,
+      "primary_op": "nn.Conv2d",
+      "catalogue_note": "conv2d groups divisibility \u2014 index.ts:1338",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_057",
+      "in_fragment_fair_subset": true,
+      "primary_op": "torch.mm",
+      "catalogue_note": "mm rank/shape \u2014 index.ts:470",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_058",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.split (list)",
+      "catalogue_note": "split with list \u2014 symbolic sum() not evaluated; unimpl",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_059",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.maximum (functional)",
+      "catalogue_note": "torch.maximum \u2014 no Pytea handler (only tensor ops)",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_060",
+      "in_fragment_fair_subset": false,
+      "primary_op": "nn.Conv1d",
+      "catalogue_note": "Conv1d \u2014 no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_063",
+      "in_fragment_fair_subset": true,
+      "primary_op": "Tensor.view (post-transpose)",
+      "catalogue_note": "view after transpose \u2014 handler present, no contiguity check (symbolic_fragment)",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_064",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.index_select",
+      "catalogue_note": "index_select \u2014 no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_065",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.dot",
+      "catalogue_note": "dot \u2014 no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_067",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.linalg.inv",
+      "catalogue_note": "linalg.inv \u2014 no Pytea handler; no linalg subpackage",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    },
+    {
+      "id": "bug_068",
+      "in_fragment_fair_subset": true,
+      "primary_op": "nn.MaxPool2d",
+      "catalogue_note": "pool2d kernel too large \u2014 index.ts:1719",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_069",
+      "in_fragment_fair_subset": false,
+      "primary_op": "torch.repeat_interleave",
+      "catalogue_note": "repeat_interleave \u2014 no Pytea handler",
+      "tensorguard_verdict": "Refuted",
+      "pytea_verdict": "Verified",
+      "agreement": "out_of_subset"
+    }
+  ]
+}

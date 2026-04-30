@@ -1,0 +1,446 @@
+{
+  "build_time": "2026-04-28T15:02:33Z",
+  "total": 60,
+  "schema_errors": [],
+  "category_distribution": {
+    "attention_dim": 5,
+    "broadcasting": 9,
+    "view_reshape_total_size": 9,
+    "other": 11,
+    "conv_channel_mismatch": 6,
+    "linear_inout_mismatch": 4,
+    "einsum_dim": 5,
+    "transpose_axes": 4,
+    "batchnorm_features": 4,
+    "embedding_index": 3
+  },
+  "per_repro": [
+    {
+      "id": "bug_001",
+      "sha256": "fd12147ecf0318631a20d120adb70f2617796a8e5c3175cc396aea5c3de5d77d",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "Error: The size of tensor a (8) must match the size of tensor b (2) at non-singleton dimension 1\n"
+    },
+    {
+      "id": "bug_002",
+      "sha256": "61c3c7253ec4cf88dae18a5e8751100f274c59ecadbe05fb6d3a49009e0d9a14",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "Error: output with shape [] doesn't match the broadcast shape [13, 2, 12]\n"
+    },
+    {
+      "id": "bug_003",
+      "sha256": "d832fb6f476e1f38658ef8dc4807d8be32b8a539c7426111baac058f16f04b52",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "Error: shape '[2048, 640]' is invalid for input of size 786432\n"
+    },
+    {
+      "id": "bug_004",
+      "sha256": "01320bbaa7c4c9aa429af79cce97091b0c4914bbc28fcc91d49decd2a81bc519",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "Error: shape '[328, 1000]' is invalid for input of size 0\n"
+    },
+    {
+      "id": "bug_005",
+      "sha256": "d8ca970723222434dbd1f2ff9f57d85303f257d7ce9bc8ee82103542148643db",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "Error: The size of tensor a (256) must match the size of tensor b (2) at non-singleton dimension 2\n"
+    },
+    {
+      "id": "bug_006",
+      "sha256": "851603ef4b97618ba94ea05a3f0962277cb2e7189c855441a686007f59fee48f",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "Error: weight tensor should be defined either for all 10 classes or no classes but got weight tensor of shape: [5]\n"
+    },
+    {
+      "id": "bug_007",
+      "sha256": "d5e12362a6dfa143bc363e51de89d3b42a75e4b12eb9fcc04495daa5e3cda2d7",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "Error: expected scalar type BFloat16 but found Float\n"
+    },
+    {
+      "id": "bug_008",
+      "sha256": "a951b133be8b63e506c5af108f661dddbd5162cc3a589704213384865625296b",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: Given groups=1, weight of size [16, 3, 3, 3], expected input[2, 4, 32, 32] to have 3 channels, but got 4 channels instead\n"
+    },
+    {
+      "id": "bug_009",
+      "sha256": "e030b229b235cfe55990d3b39fb87b96002acc8d929e2de83c61b31fab06718a",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: mat1 and mat2 shapes cannot be multiplied (8x64 and 128x32)\n"
+    },
+    {
+      "id": "bug_010",
+      "sha256": "0293024f6c688e91d774ca429ce38f8eee858a00e8bbef6c3ead6fa20c1df276",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: shape '[5, 5]' is invalid for input of size 24\n"
+    },
+    {
+      "id": "bug_011",
+      "sha256": "fb6e5a5ccaea6f8f184e53ab95c5b37848b571c2c11cf9e3b35959c40f855a44",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: The size of tensor a (4) must match the size of tensor b (3) at non-singleton dimension 1\n"
+    },
+    {
+      "id": "bug_012",
+      "sha256": "a0dac7ae1a97f3f1fffa07fb2c1b34904df9ffc677e580c84d4f5925552b464d",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "AssertionError: embed_dim must be divisible by num_heads\n"
+    },
+    {
+      "id": "bug_013",
+      "sha256": "c190ff60c11688094995da09745d250492ab0c2cb790e95627fac28143eb7cae",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: einsum(): subscript j has size 5 for operand 1 which does not broadcast with previously seen size 4\n"
+    },
+    {
+      "id": "bug_014",
+      "sha256": "e087b7b8ffd8f767ff207a1ccb5c0373d7473cf97236dc2258861e14b9138491",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "IndexError: Dimension out of range (expected to be in range of [-3, 2], but got 5)\n"
+    },
+    {
+      "id": "bug_015",
+      "sha256": "50758c5390f6ffdf24f1e8de8a72f7c70a64c40a8f033e4541b0ded73c48bfec",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: running_mean should contain 8 elements not 16\n"
+    },
+    {
+      "id": "bug_016",
+      "sha256": "2148bd47904aa6be3edb497e50ce86ce21768a8db2fd894e0f7ab7e0408b9f8f",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "IndexError: index out of range in self\n"
+    },
+    {
+      "id": "bug_017",
+      "sha256": "52b783142ae08fcef5745609c3ed0c719ea8de3c9b048dfe7f9c502b435c5e1b",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: Given groups=1, weight of size [4, 8, 3], expected input[2, 4, 20] to have 8 channels, but got 4 channels instead\n"
+    },
+    {
+      "id": "bug_018",
+      "sha256": "ce57b1a576c7657e711bbb6f964931699345abdc134f1e3dfc61c7e231e1553a",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: mat1 and mat2 shapes cannot be multiplied (3x4 and 5x6)\n"
+    },
+    {
+      "id": "bug_019",
+      "sha256": "1d5003eadb53b3296988e8a7f1e75f33581be4328fd80397a72c33d250cce288",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: shape '[5, 3]' is invalid for input of size 12\n"
+    },
+    {
+      "id": "bug_020",
+      "sha256": "c29e20efb7cb73c8d8278d9f066592df311aa998c31a06603cc9dffcd28e9fb7",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: Sizes of tensors must match except in dimension 0. Expected size 3 but got size 4 for tensor number 1 in the list.\n"
+    },
+    {
+      "id": "bug_022",
+      "sha256": "ee3e48483e60a14ee4e18d68c8e96a4dbb6900d3f3c9c51d796d7162f06eb6f2",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: einsum(): subscript b has size 3 for operand 1 which does not broadcast with previously seen size 2\n"
+    },
+    {
+      "id": "bug_024",
+      "sha256": "4fe1e51e1763168f75a1b47ef136b210ac05b8b29e40b3ca306c54052f148356",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: running_mean should contain 16 elements not 32\n"
+    },
+    {
+      "id": "bug_026",
+      "sha256": "8670978bb441c5f42227106960eb6d61d7ad5182573e89a310c21a5095021423",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: Given groups=1, weight of size [4, 2, 3, 3, 3], expected input[1, 5, 8, 8, 8] to have 2 channels, but got 5 channels instead\n"
+    },
+    {
+      "id": "bug_027",
+      "sha256": "de3478713955d93a8bf0fcb4b18c8f072fa1c857a8521dd71a6a3176dbe3a549",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: Expected size for first two dimensions of batch2 tensor to be: [3, 5] but got: [5, 5].\n"
+    },
+    {
+      "id": "bug_028",
+      "sha256": "fdb8b3b7c11a49182f7f498edc15aa02cd95d0d5db7905c3f1cef0ae4df0aabb",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: shape '[4, -1, 3]' is invalid for input of size 16\n"
+    },
+    {
+      "id": "bug_029",
+      "sha256": "59f5f87fce7fca0811d46e5f851e133b0ef01d9ed55fe6ec724f12033b4188fc",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: The size of tensor a (3) must match the size of tensor b (5) at non-singleton dimension 0\n"
+    },
+    {
+      "id": "bug_031",
+      "sha256": "ea002f7df0cf408af937e826b681b220a968d297d69103ae39762c98ed34cdaf",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: einsum(): subscript c has size 5 for operand 1 which does not broadcast with previously seen size 4\n"
+    },
+    {
+      "id": "bug_032",
+      "sha256": "a1c82c1b5194ab00be0af16c5b6580b8dfff97cf0f0966baf1a89b535756e0cd",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "IndexError: Dimension out of range (expected to be in range of [-2, 1], but got 5)\n"
+    },
+    {
+      "id": "bug_033",
+      "sha256": "4cd941d748a47164b30eea157311908417867d20d14cc0e4e4dda66ae40bdc4a",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: Expected weight to be a vector of size equal to the number of channels in input, but got weight of shape [16] and input of shape [2, 8, 5, 5]\n"
+    },
+    {
+      "id": "bug_034",
+      "sha256": "2838e71c4a522a8dc55c4e2e534fdbc39e8be134a96a08f2c9e7bdcf5503313b",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "IndexError: index out of range in self\n"
+    },
+    {
+      "id": "bug_035",
+      "sha256": "e253ded6135ca575bef6add028ed447f34116fe59a4859d3d8df384520adc136",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: Given transposed=1, weight of size [8, 4, 3, 3], expected input[1, 4, 16, 16] to have 8 channels, but got 4 channels instead\n"
+    },
+    {
+      "id": "bug_037",
+      "sha256": "1e5ccb166d6e5c1f036d42fa0559527949d1825ed5b3b0573f7112d773c216f3",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: shape '[5, 5]' is invalid for input of size 24\n"
+    },
+    {
+      "id": "bug_038",
+      "sha256": "554e800c804343891e46693b22c0f36ad816741787e36f829ae7b4bce91ce5a9",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: stack expects each tensor to be equal size, but got [3, 4] at entry 0 and [3, 5] at entry 1\n"
+    },
+    {
+      "id": "bug_039",
+      "sha256": "cb44dda92566238c40be532323def69d1c15780506bc85ad7874cc7bb18ad223",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "IndexError: Dimension out of range (expected to be in range of [-3, 2], but got 5)\n"
+    },
+    {
+      "id": "bug_040",
+      "sha256": "4ab15ede5530012cb08b8d5ea6aa89c87fe9686f8f966aa42a6b3a9401ec5145",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: The size of tensor a (3) must match the size of tensor b (4) at non-singleton dimension 1\n"
+    },
+    {
+      "id": "bug_041",
+      "sha256": "55bbe1a39a21327d97d67b582a1d5123c106500dc5905d603e1050c73f3fe4e6",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "IndexError: Dimension out of range (expected to be in range of [-3, 2], but got 5)\n"
+    },
+    {
+      "id": "bug_042",
+      "sha256": "0ee207faccbdabaeb3c5172df50fd28c4f255f1237fb22c163312b0d25a27c75",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "ValueError: Expected input batch_size (4) to match target batch_size (5).\n"
+    },
+    {
+      "id": "bug_043",
+      "sha256": "f8096672c5daacd59a77c57a9a1d8fe2cb4a4b9fc3513b26eae2218aef9f6850",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "nn/modules/loss.py:634: UserWarning: Using a target size (torch.Size([4, 3])) that is different to the input size (torch.Size([3, 4])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.\n  return F.mse_loss(input, target, reduction=self.reduction)\n"
+    },
+    {
+      "id": "bug_044",
+      "sha256": "37832b8b4a958ad47971bac8d24ac36fdac92c9538cc6abe3bc91ad986fb6ee5",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "IndexError: Target 5 is out of bounds.\n"
+    },
+    {
+      "id": "bug_045",
+      "sha256": "60e98b01c716fbfd74d66085075ee0769d6be241f36b0cfa712dd51d06bebd71",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: Calculated padded input size per channel: (3 x 3). Kernel size: (5 x 5). Kernel size can't be greater than actual input size\n"
+    },
+    {
+      "id": "bug_047",
+      "sha256": "a789f56d913fdb9a3606ec6537a825a8f2fe949532212b79ae949985268d1713",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "IndexError: Dimension out of range (expected to be in range of [-3, 2], but got 5)\n"
+    },
+    {
+      "id": "bug_048",
+      "sha256": "b07a0618174e3a87c9c4679ba6567f9e716dc82192e657bee7bde195806bab0b",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: The size of tensor a (3) must match the size of tensor b (5) at non-singleton dimension 1\n"
+    },
+    {
+      "id": "bug_049",
+      "sha256": "24876b97ccf6c5eb296ae7e2befdd74a81c99d602f6579522d3d1adda321d789",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: Given normalized_shape=[5], expected input with shape [*, 5], but got input of size[2, 3, 4]\n"
+    },
+    {
+      "id": "bug_050",
+      "sha256": "c941dfce8ead4bc18552603881f161226a8d8bedd8597e7d5ea4c390cb69b486",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: einsum(): output subscript z does not appear in the equation for any input operand\n"
+    },
+    {
+      "id": "bug_051",
+      "sha256": "e8fe93ad72bf8e4a1f8f0723932477482042f07b72d88bc1c7e94b5d83e0bcc7",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: Size does not match at dimension 1 expected index [3, 5] to be no larger than self [3, 4] apart from dimension 0\n"
+    },
+    {
+      "id": "bug_052",
+      "sha256": "8e700ebd1cb72a64b61b0e069efb35f764032049c8cd0b34a649c215eddf52f2",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: index 5 is out of bounds for dimension 0 with size 3\n"
+    },
+    {
+      "id": "bug_053",
+      "sha256": "5c64020b640fb0e1294a82f08f6e4b0a8950c5e27814ec78b8aab8ff67da7434",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: The expanded size of the tensor (5) must match the existing size (4) at non-singleton dimension 2.  Target sizes: [3, 2, 5].  Tensor sizes: [3, 1, 4]\n"
+    },
+    {
+      "id": "bug_054",
+      "sha256": "aead08180463ced98bcb2a40e573f61913fd67a03038edf5fc1a0cd208a00b00",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "ValueError: expected input's size at dim=1 to match num_features (8), but got: 4.\n"
+    },
+    {
+      "id": "bug_055",
+      "sha256": "620bce9c44fe78be969b70b8347a45aee5f61894729d41f944c80e2f9ab5e6c7",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "IndexError: index out of range in self\n"
+    },
+    {
+      "id": "bug_056",
+      "sha256": "6048a72754141dbe22e66f0282a1e0c4505a0f98417658b1bec476c56245d6c3",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "ValueError: in_channels must be divisible by groups\n"
+    },
+    {
+      "id": "bug_057",
+      "sha256": "ff74e7c6ddcb76a4ef91db13dc0f4b2678e134d7391b9bbf7b29e62296a78f6f",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: self must be a matrix\n"
+    },
+    {
+      "id": "bug_058",
+      "sha256": "4e01938e04fc60904cb680b53b5dabd08ce099646ee150fab22035ac0da4300f",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: split_with_sizes expects split_sizes to sum exactly to 6 (input tensor's size at dimension 0), but got split_sizes=[2, 2, 3]\n"
+    },
+    {
+      "id": "bug_059",
+      "sha256": "a8829c8ea621f7ae570f7f9fb6f2bb75cd68ac7e3cb17963f888f7774830b0e7",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: The size of tensor a (3) must match the size of tensor b (5) at non-singleton dimension 0\n"
+    },
+    {
+      "id": "bug_060",
+      "sha256": "7c46d30e4093905e85fe78ef465f62204bfb18fbe4fa97b9be8bdc51b335a779",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: Expected 2D (unbatched) or 3D (batched) input to conv1d, but got input of size: [2, 3, 5, 5]\n"
+    },
+    {
+      "id": "bug_063",
+      "sha256": "bde0981e3592dea507f4d8b401b21334bc5fff2e30c5494bdc052dcb3038c52d",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: view size is not compatible with input tensor's size and stride (at least one dimension spans across two contiguous subspaces). Use .reshape(...) instead.\n"
+    },
+    {
+      "id": "bug_064",
+      "sha256": "b56b3750c3e5836fb0fa52346eb6c7d6184b47f26ea528310ebee5ea2b75d97d",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "IndexError: Dimension out of range (expected to be in range of [-2, 1], but got 5)\n"
+    },
+    {
+      "id": "bug_065",
+      "sha256": "5ef5596d5d6110450765324c88d912d9bf5b461824b17d07706fb73a44dc7ad0",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: 1D tensors expected, but got 2D and 2D tensors\n"
+    },
+    {
+      "id": "bug_067",
+      "sha256": "45532c3a754337889e8c7c28a85310533ac08bac2640d714cc25b0b51ccda8b9",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: linalg.inv: A must be batches of square matrices, but they are 3 by 4 matrices\n"
+    },
+    {
+      "id": "bug_068",
+      "sha256": "518e6d56ce4bedf73da38a81bba10e8d3d1f841a42c7669f06a3c89e1431f2c9",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: Given input size: (1x3x3). Calculated output size: (1x0x0). Output size is too small\n"
+    },
+    {
+      "id": "bug_069",
+      "sha256": "50cf8e2742ab40934497be60a2edfcd68e9118255a4742402ef8e3f4d8bd8b23",
+      "exit_code": 0,
+      "raises_expected": true,
+      "tail": "RuntimeError: repeats must have the same size as input along dim, but got repeats.size(0) = 2 and input.size(0) = 3\n"
+    }
+  ],
+  "summary": {
+    "valid": 60,
+    "broken_schema": 0,
+    "raises_expected": 60,
+    "no_raise_or_wrong_msg": 0
+  },
+  "elapsed_s": 88.8
+}

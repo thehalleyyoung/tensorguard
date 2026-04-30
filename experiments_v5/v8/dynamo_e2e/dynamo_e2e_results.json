@@ -1,0 +1,260 @@
+{
+  "summary": {
+    "n_subjects": 5,
+    "n_tg_safe": 5,
+    "n_dynamo_in_contract_zero_recompile": 0,
+    "torch_version": "2.9.1"
+  },
+  "rows": [
+    {
+      "name": "tv_resnet_BasicBlock",
+      "family": "torchvision.resnet",
+      "tg_contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              64,
+              "H",
+              "W"
+            ]
+          ]
+        ],
+        "sym_ranges": {
+          "B": [
+            1,
+            8
+          ],
+          "H": [
+            16,
+            64
+          ],
+          "W": [
+            16,
+            64
+          ]
+        },
+        "dtype": "torch.float32"
+      },
+      "tg": {
+        "status": "SAFE",
+        "n_bugs": 0,
+        "duration_s": 0.17360997200012207,
+        "bugs_head": []
+      },
+      "dynamo": {
+        "n_in_contract": 24,
+        "in_contract_runs_ok": 24,
+        "in_contract_runtime_errors": 0,
+        "in_contract_recompile_count_observed": 2,
+        "in_contract_error_examples": [],
+        "oos_results": {
+          "rank": "violation:ValueError: expected 4D input (got 3D input)",
+          "channel": "violation:RuntimeError: Given groups=1, weight of size [64, 64, 3, 3], expected input[1, 65, 16, 16] to have 64 channels, but got 65 channels instead",
+          "dtype": "violation:RuntimeError: expected scalar type Double but found Float"
+        },
+        "wall_s": 7.28
+      }
+    },
+    {
+      "name": "tv_resnet_Bottleneck",
+      "family": "torchvision.resnet",
+      "tg_contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              64,
+              "H",
+              "W"
+            ]
+          ]
+        ],
+        "sym_ranges": {
+          "B": [
+            1,
+            8
+          ],
+          "H": [
+            16,
+            64
+          ],
+          "W": [
+            16,
+            64
+          ]
+        },
+        "dtype": "torch.float32"
+      },
+      "tg": {
+        "status": "SAFE",
+        "n_bugs": 0,
+        "duration_s": 0.08828496932983398,
+        "bugs_head": []
+      },
+      "dynamo": {
+        "n_in_contract": 24,
+        "in_contract_runs_ok": 24,
+        "in_contract_runtime_errors": 0,
+        "in_contract_recompile_count_observed": 2,
+        "in_contract_error_examples": [],
+        "oos_results": {
+          "rank": "violation:ValueError: expected 4D input (got 3D input)",
+          "channel": "violation:RuntimeError: Given groups=1, weight of size [16, 64, 1, 1], expected input[1, 65, 16, 16] to have 64 channels, but got 65 channels instead",
+          "dtype": "violation:RuntimeError: expected scalar type Double but found Float"
+        },
+        "wall_s": 3.04
+      }
+    },
+    {
+      "name": "tv_mnv2_InvertedResidual",
+      "family": "torchvision.mobilenetv2",
+      "tg_contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              32,
+              "H",
+              "W"
+            ]
+          ]
+        ],
+        "sym_ranges": {
+          "B": [
+            1,
+            8
+          ],
+          "H": [
+            16,
+            64
+          ],
+          "W": [
+            16,
+            64
+          ]
+        },
+        "dtype": "torch.float32"
+      },
+      "tg": {
+        "status": "SAFE",
+        "n_bugs": 0,
+        "duration_s": 0.010006189346313477,
+        "bugs_head": []
+      },
+      "dynamo": {
+        "n_in_contract": 24,
+        "in_contract_runs_ok": 24,
+        "in_contract_runtime_errors": 0,
+        "in_contract_recompile_count_observed": 1,
+        "in_contract_error_examples": [],
+        "oos_results": {
+          "rank": "violation:ValueError: expected 4D input (got 3D input)",
+          "channel": "violation:RuntimeError: Given groups=1, weight of size [64, 32, 1, 1], expected input[1, 33, 16, 16] to have 32 channels, but got 33 channels instead",
+          "dtype": "violation:RuntimeError: expected scalar type Double but found Float"
+        },
+        "wall_s": 3.03
+      }
+    },
+    {
+      "name": "tv_squeezenet_Fire",
+      "family": "torchvision.squeezenet",
+      "tg_contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              64,
+              "H",
+              "W"
+            ]
+          ]
+        ],
+        "sym_ranges": {
+          "B": [
+            1,
+            8
+          ],
+          "H": [
+            16,
+            64
+          ],
+          "W": [
+            16,
+            64
+          ]
+        },
+        "dtype": "torch.float32"
+      },
+      "tg": {
+        "status": "SAFE",
+        "n_bugs": 0,
+        "duration_s": 0.13361001014709473,
+        "bugs_head": []
+      },
+      "dynamo": {
+        "n_in_contract": 24,
+        "in_contract_runs_ok": 24,
+        "in_contract_runtime_errors": 0,
+        "in_contract_recompile_count_observed": 2,
+        "in_contract_error_examples": [],
+        "oos_results": {
+          "rank": "violated_no_error",
+          "channel": "violation:TorchRuntimeError: Dynamo failed to run FX node with fake tensors: call_function <built-in method conv2d of type object at 0x10865f4e8>(*(FakeTensor(..., size=(",
+          "dtype": "violation:TorchRuntimeError: Dynamo failed to run FX node with fake tensors: call_function <built-in method conv2d of type object at 0x10865f4e8>(*(FakeTensor(..., size=("
+        },
+        "wall_s": 3.72
+      }
+    },
+    {
+      "name": "timm_vit_Block",
+      "family": "timm.vit",
+      "tg_contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              "S",
+              128
+            ]
+          ]
+        ],
+        "sym_ranges": {
+          "B": [
+            1,
+            4
+          ],
+          "S": [
+            8,
+            64
+          ]
+        },
+        "dtype": "torch.float32"
+      },
+      "tg": {
+        "status": "SAFE",
+        "n_bugs": 0,
+        "duration_s": 0.11535477638244629,
+        "bugs_head": []
+      },
+      "dynamo": {
+        "n_in_contract": 24,
+        "in_contract_runs_ok": 24,
+        "in_contract_runtime_errors": 0,
+        "in_contract_recompile_count_observed": 1,
+        "in_contract_error_examples": [],
+        "oos_results": {
+          "rank": "violation:ValueError: not enough values to unpack (expected 3, got 2)",
+          "channel": "violation:TorchRuntimeError: Dynamo failed to run FX node with fake tensors: call_function <function layer_norm at 0x10bacae80>(*(FakeTensor(..., size=(1, s27, s53)), (12",
+          "dtype": "violation:RuntimeError: expected m1 and m2 to have the same dtype, but got: double != float"
+        },
+        "wall_s": 5.93
+      }
+    }
+  ]
+}

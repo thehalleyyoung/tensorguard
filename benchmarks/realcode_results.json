@@ -1,0 +1,493 @@
+{
+  "summary": {
+    "n_files": 33,
+    "verdict_counts": {
+      "verified-safe": 27,
+      "false-positive": 1,
+      "real-bug-found": 5
+    },
+    "n_buggy_groundtruth": 5
+  },
+  "files": [
+    {
+      "file": "01_simple_mlp.py",
+      "input_shape": [
+        32,
+        784
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 123.43,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "02_cnn_classifier.py",
+      "input_shape": [
+        8,
+        3,
+        32,
+        32
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 221.07,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "03_resnet_block.py",
+      "input_shape": [
+        4,
+        64,
+        16,
+        16
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 196.82,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "04_unet_block.py",
+      "input_shape": [
+        2,
+        3,
+        64,
+        64
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 389.39,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "05_encoder_decoder.py",
+      "input_shape": [
+        4,
+        3,
+        32,
+        32
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 399.14,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "06_transformer_block.py",
+      "input_shape": [
+        16,
+        32,
+        128
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 472.86,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "07_multihead_attention.py",
+      "input_shape": [
+        4,
+        16,
+        64
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 967.1,
+      "analyzer_bugs": [
+        {
+          "line": 13,
+          "msg": "Potential division by zero: 'n_heads' not guarded"
+        }
+      ],
+      "functions_analyzed": 1,
+      "verdict": "false-positive"
+    },
+    {
+      "file": "08_rnn_classifier.py",
+      "input_shape": [
+        8,
+        20,
+        16
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 37.58,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "09_lstm_seq.py",
+      "input_shape": [
+        4,
+        30,
+        8
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 72.21,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "10_gru_lm.py",
+      "input_shape": [
+        4,
+        16
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 58.97,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "11_autoencoder.py",
+      "input_shape": [
+        32,
+        784
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 176.71,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "12_vae_encoder.py",
+      "input_shape": [
+        16,
+        1,
+        28,
+        28
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 84.2,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "13_gan_discriminator.py",
+      "input_shape": [
+        8,
+        3,
+        64,
+        64
+      ],
+      "ground_truth_buggy": true,
+      "duration_ms": 192.06,
+      "analyzer_bugs": [
+        {
+          "line": 24,
+          "msg": "[SHAPE-INCOMPATIBLE] Linear expects last dim=4096, got 16384"
+        },
+        {
+          "line": 24,
+          "msg": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 9:\n  phase_s5 = TRAIN_25\n  dev_x_s7 = CPU_25\n  grad___inner_7_s6 = True\n  grad___inner_1_s4 = True\n  dev_x_s2 = CPU_25\n  grad___inner_4_s"
+        }
+      ],
+      "functions_analyzed": 1,
+      "verdict": "real-bug-found"
+    },
+    {
+      "file": "14_gan_generator.py",
+      "input_shape": [
+        8,
+        100
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 125.89,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "15_depthwise_separable.py",
+      "input_shape": [
+        4,
+        32,
+        16,
+        16
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 45.01,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "16_dilated_conv_stack.py",
+      "input_shape": [
+        2,
+        16,
+        64,
+        64
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 156.56,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "17_residual_mlp.py",
+      "input_shape": [
+        32,
+        128
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 113.75,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "18_gated_mlp.py",
+      "input_shape": [
+        16,
+        64
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 66.44,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "19_moe_router.py",
+      "input_shape": [
+        8,
+        16,
+        64
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 75.83,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "20_bert_block.py",
+      "input_shape": [
+        4,
+        32,
+        256
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 145.27,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "21_vit_patch_embed.py",
+      "input_shape": [
+        2,
+        3,
+        224,
+        224
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 47.65,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "22_audio_conv1d.py",
+      "input_shape": [
+        4,
+        1,
+        16000
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 128.61,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "23_timeseries_lstm.py",
+      "input_shape": [
+        16,
+        50,
+        5
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 39.97,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "24_attention_pool.py",
+      "input_shape": [
+        8,
+        32,
+        128
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 63.35,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "25_siamese_encoder.py",
+      "input_shape": [
+        8,
+        1,
+        28,
+        28
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 127.93,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "26_triplet_net.py",
+      "input_shape": [
+        8,
+        3,
+        32,
+        32
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 258.03,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "27_segmentation_head.py",
+      "input_shape": [
+        2,
+        256,
+        16,
+        16
+      ],
+      "ground_truth_buggy": true,
+      "duration_ms": 132.2,
+      "analyzer_bugs": [
+        {
+          "line": 22,
+          "msg": "[SHAPE-INCOMPATIBLE] Conv2d expects 32 input channels, got 64"
+        },
+        {
+          "line": 22,
+          "msg": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 7:\n  dev_x_s6 = CPU_53\n  grad___inner_1_s4 = True\n  grad___inner_2_s5 = True\n  dev_x_s0 = CPU_53\n  dev___inner_1_s3 = CPU_53\n  dev___inne"
+        }
+      ],
+      "functions_analyzed": 1,
+      "verdict": "real-bug-found"
+    },
+    {
+      "file": "28_pixel_shuffle_upsampler.py",
+      "input_shape": [
+        2,
+        64,
+        32,
+        32
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 56.35,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "29_flow_coupling.py",
+      "input_shape": [
+        16,
+        8
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 108.3,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "30_simple_gnn.py",
+      "input_shape": [
+        32,
+        16
+      ],
+      "ground_truth_buggy": false,
+      "duration_ms": 41.79,
+      "analyzer_bugs": [],
+      "functions_analyzed": 1,
+      "verdict": "verified-safe"
+    },
+    {
+      "file": "31_linear_dim_bug.py",
+      "input_shape": [
+        4,
+        32
+      ],
+      "ground_truth_buggy": true,
+      "duration_ms": 13.43,
+      "analyzer_bugs": [
+        {
+          "line": 15,
+          "msg": "[SHAPE-INCOMPATIBLE] Linear expects last dim=64, got 32"
+        },
+        {
+          "line": 15,
+          "msg": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 0:\n  dev_x_s0 = CPU_61\n  phase_s0 = TRAIN_61\n  grad_x_s0 = False"
+        }
+      ],
+      "functions_analyzed": 1,
+      "verdict": "real-bug-found"
+    },
+    {
+      "file": "32_matmul_no_transpose_bug.py",
+      "input_shape": [
+        4,
+        16,
+        8
+      ],
+      "ground_truth_buggy": true,
+      "duration_ms": 15.8,
+      "analyzer_bugs": [
+        {
+          "line": 15,
+          "msg": "[SHAPE-INCOMPATIBLE] matmul dimension mismatch: a has inner dim 8, b has inner dim 16"
+        },
+        {
+          "line": 15,
+          "msg": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 0:\n  dev_x_s0 = CPU_63\n  phase_s0 = TRAIN_63\n  grad_x_s0 = False"
+        }
+      ],
+      "functions_analyzed": 1,
+      "verdict": "real-bug-found"
+    },
+    {
+      "file": "33_cat_dim_bug.py",
+      "input_shape": [
+        2,
+        3,
+        64,
+        64
+      ],
+      "ground_truth_buggy": true,
+      "duration_ms": 40.32,
+      "analyzer_bugs": [
+        {
+          "line": 18,
+          "msg": "[SHAPE-INCOMPATIBLE] cat: dimension 1 mismatch: 32 vs 64 (cat along dim=2)"
+        }
+      ],
+      "functions_analyzed": 1,
+      "verdict": "real-bug-found"
+    }
+  ]
+}

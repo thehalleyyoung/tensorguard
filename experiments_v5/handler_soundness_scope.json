@@ -1,0 +1,518 @@
+{
+  "meta": {
+    "timestamp": "2026-04-28T15:26:26.431091+00:00",
+    "lean_verified_set": [
+      "matmul",
+      "bmm",
+      "batched_matmul",
+      "conv1d",
+      "conv2d",
+      "conv3d",
+      "conv_transpose2d",
+      "view",
+      "reshape",
+      "permute",
+      "transpose",
+      "expand",
+      "repeat",
+      "broadcast_to",
+      "cat",
+      "stack",
+      "split",
+      "chunk",
+      "unbind",
+      "gather",
+      "scatter",
+      "index_select",
+      "narrow",
+      "embed",
+      "layer_norm",
+      "rms_norm",
+      "scaled_dot_product_attention",
+      "linear"
+    ],
+    "method": "Lean-verified: operator appears in experiments_v5/lean_parity_v5_results.json lean_registry AND has a zero-sorry theorem in lean/TensorGuard/V5OperatorRules.lean. Pen-and-paper: handler has a module-level Soundness Conjecture covering it (src/typing_rules.py:16) or is cited by name in docs/paper/sections_v5/A_refinement_types.tex with a formal typing rule, but has no Lean theorem. Tested-only: handler appears in a canonical dispatch table (SHAPE_RULES, TORCH_SHAPE_OPS, MODERN_TORCH_SHAPE_OPS, FUNCTIONAL_SHAPE_RULES, or the typing_rules T-rule dict) with associated unit/property tests in tests/, but has no soundness statement or Lean proof."
+  },
+  "handlers": [
+    {
+      "name": "matmul",
+      "module": "src/typing_rules.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 115"
+    },
+    {
+      "name": "bmm",
+      "module": "src/v5/backward_shape.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 127"
+    },
+    {
+      "name": "batched_matmul",
+      "module": "src/v5/backward_shape.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 133"
+    },
+    {
+      "name": "conv1d",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 157"
+    },
+    {
+      "name": "conv2d",
+      "module": "src/typing_rules.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 177"
+    },
+    {
+      "name": "conv3d",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 201"
+    },
+    {
+      "name": "conv_transpose2d",
+      "module": "src/tensor_shapes.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 228"
+    },
+    {
+      "name": "view",
+      "module": "src/refinement/reshape.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 238"
+    },
+    {
+      "name": "reshape",
+      "module": "src/refinement/reshape.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 263"
+    },
+    {
+      "name": "permute",
+      "module": "src/tensor_shapes.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 276"
+    },
+    {
+      "name": "transpose",
+      "module": "src/tensor_shapes.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 287"
+    },
+    {
+      "name": "expand",
+      "module": "src/tensor_shapes.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 308"
+    },
+    {
+      "name": "repeat",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 320"
+    },
+    {
+      "name": "broadcast_to",
+      "module": "src/tensor_shapes.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 334"
+    },
+    {
+      "name": "cat",
+      "module": "src/tensor_shapes.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 353"
+    },
+    {
+      "name": "stack",
+      "module": "src/tensor_shapes.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 365"
+    },
+    {
+      "name": "split",
+      "module": "src/refinement/qkv.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 383"
+    },
+    {
+      "name": "chunk",
+      "module": "src/refinement/qkv.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 397"
+    },
+    {
+      "name": "unbind",
+      "module": "src/refinement/qkv.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 410"
+    },
+    {
+      "name": "gather",
+      "module": "src/tensor_shapes.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 421"
+    },
+    {
+      "name": "scatter",
+      "module": "src/tensor_shapes.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 434"
+    },
+    {
+      "name": "index_select",
+      "module": "src/tensor_shapes.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 443"
+    },
+    {
+      "name": "narrow",
+      "module": "src/tensor_shapes.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 458"
+    },
+    {
+      "name": "embed",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 466"
+    },
+    {
+      "name": "layer_norm",
+      "module": "src/refinement/norms.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 477"
+    },
+    {
+      "name": "rms_norm",
+      "module": "src/refinement/norms.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 485"
+    },
+    {
+      "name": "scaled_dot_product_attention",
+      "module": "src/refinement/attention.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 497"
+    },
+    {
+      "name": "linear",
+      "module": "src/typing_rules.py",
+      "scope": "lean_verified",
+      "evidence": "lean/TensorGuard/V5OperatorRules.lean line 507"
+    },
+    {
+      "name": "elementwise_binary",
+      "module": "src/typing_rules.py",
+      "scope": "pen_and_paper",
+      "evidence": "T-BROADCAST formal rule in docs/paper/sections_v5/A_refinement_types.tex lines 95-100; module-level Soundness Conjecture in src/typing_rules.py:16"
+    },
+    {
+      "name": "reduce",
+      "module": "src/typing_rules.py",
+      "scope": "pen_and_paper",
+      "evidence": "T-REDUCE rule in src/typing_rules.py dispatch table line 536; Soundness Conjecture covers it (src/typing_rules.py:16)"
+    },
+    {
+      "name": "einsum",
+      "module": "src/tensor_shapes.py",
+      "scope": "pen_and_paper",
+      "evidence": "Named in docs/paper/sections_v5/A_refinement_types.tex lines 81,145 as part of formalized handler set; shape inference via _infer_einsum_shape"
+    },
+    {
+      "name": "batch_norm",
+      "module": "src/refinement/norms.py",
+      "scope": "tested_only",
+      "evidence": "tests/test_typing_rules.py (runtime conv2d/linear suite touches BN)"
+    },
+    {
+      "name": "group_norm",
+      "module": "src/refinement/norms.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_group_norm; category exercised by test_completeness.py::test_layernorm_in_fragment"
+    },
+    {
+      "name": "instance_norm",
+      "module": "src/refinement/norms.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_instance_norm; no dedicated Lean rule"
+    },
+    {
+      "name": "multihead_attention",
+      "module": "src/refinement/attention.py",
+      "scope": "tested_only",
+      "evidence": "tests/test_config_qkv_upgrade.py; test_tensor_shapes.py::test_transformer_attention_shape_error"
+    },
+    {
+      "name": "conv_transpose1d",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_conv_transpose1d; no Lean theorem"
+    },
+    {
+      "name": "squeeze",
+      "module": "src/tensor_shapes.py",
+      "scope": "pen_and_paper",
+      "evidence": "tests/test_tensor_shapes.py::test_squeeze_unsqueeze; pen-and-paper soundness sketch in reproducibility/handler_pen_and_paper_round17.md"
+    },
+    {
+      "name": "unsqueeze",
+      "module": "src/tensor_shapes.py",
+      "scope": "pen_and_paper",
+      "evidence": "tests/test_tensor_shapes.py::test_squeeze_unsqueeze; pen-and-paper soundness sketch in reproducibility/handler_pen_and_paper_round17.md"
+    },
+    {
+      "name": "flatten",
+      "module": "src/tensor_shapes.py",
+      "scope": "pen_and_paper",
+      "evidence": "tests/test_tensor_shapes.py::test_flatten; tests/test_typing_rules.py::test_flatten; pen-and-paper soundness sketch in reproducibility/handler_pen_and_paper_round17.md"
+    },
+    {
+      "name": "softmax",
+      "module": "src/v5/backward_shape.py",
+      "scope": "pen_and_paper",
+      "evidence": "tests/test_intent_bugs.py::test_softmax_dim_zero; pen-and-paper soundness sketch in reproducibility/handler_pen_and_paper_round17.md"
+    },
+    {
+      "name": "relu",
+      "module": "src/v5/backward_shape.py",
+      "scope": "pen_and_paper",
+      "evidence": "tests/test_intent_bugs.py::test_inplace_relu; backward_shape SHAPE_RULES; pen-and-paper soundness sketch in reproducibility/handler_pen_and_paper_round17.md"
+    },
+    {
+      "name": "gelu",
+      "module": "src/v5/backward_shape.py",
+      "scope": "pen_and_paper",
+      "evidence": "src/v5/backward_shape.py SHAPE_RULES; exercised by MLP test suite; pen-and-paper soundness sketch in reproducibility/handler_pen_and_paper_round17.md"
+    },
+    {
+      "name": "silu",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "pen_and_paper",
+      "evidence": "src/stdlib/modern_ops.py::MODERN_TORCH_SHAPE_OPS elementwise; pen-and-paper soundness sketch in reproducibility/handler_pen_and_paper_round17.md"
+    },
+    {
+      "name": "tanh",
+      "module": "src/v5/backward_shape.py",
+      "scope": "pen_and_paper",
+      "evidence": "src/v5/backward_shape.py SHAPE_RULES; pen-and-paper soundness sketch in reproducibility/handler_pen_and_paper_round17.md"
+    },
+    {
+      "name": "sigmoid",
+      "module": "src/v5/backward_shape.py",
+      "scope": "pen_and_paper",
+      "evidence": "src/v5/backward_shape.py SHAPE_RULES; pen-and-paper soundness sketch in reproducibility/handler_pen_and_paper_round17.md"
+    },
+    {
+      "name": "dropout",
+      "module": "src/v5/backward_shape.py",
+      "scope": "pen_and_paper",
+      "evidence": "tests/test_assume_guarantee.py::test_dropout_model_safe; pen-and-paper soundness sketch in reproducibility/handler_pen_and_paper_round17.md"
+    },
+    {
+      "name": "cross_entropy",
+      "module": "src/tensor_shapes.py",
+      "scope": "tested_only",
+      "evidence": "src/tensor_shapes.py line 1482; src/smt/encoder.py FUNCTIONAL_SHAPE_RULES"
+    },
+    {
+      "name": "interpolate",
+      "module": "src/tensor_shapes.py",
+      "scope": "tested_only",
+      "evidence": "src/tensor_shapes.py lines 1384-1413; src/stdlib/modern_ops.py::MODERN_TORCH_SHAPE_OPS"
+    },
+    {
+      "name": "pixel_shuffle",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_pixel_shuffle"
+    },
+    {
+      "name": "pixel_unshuffle",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_pixel_unshuffle"
+    },
+    {
+      "name": "topk",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_topk"
+    },
+    {
+      "name": "glu",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_glu"
+    },
+    {
+      "name": "unfold",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_unfold"
+    },
+    {
+      "name": "fold",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_fold"
+    },
+    {
+      "name": "repeat_interleave",
+      "module": "src/tensor_shapes.py",
+      "scope": "tested_only",
+      "evidence": "src/tensor_shapes.py lines 1765-1802; src/stdlib/modern_ops.py::transfer_repeat_interleave"
+    },
+    {
+      "name": "where",
+      "module": "src/tensor_shapes.py",
+      "scope": "pen_and_paper",
+      "evidence": "src/tensor_shapes.py lines 1360-1375; pen-and-paper soundness sketch in reproducibility/handler_pen_and_paper_round17.md"
+    },
+    {
+      "name": "masked_select",
+      "module": "src/tensor_shapes.py",
+      "scope": "tested_only",
+      "evidence": "src/tensor_shapes.py line 1722; MODERN_TORCH_SHAPE_OPS masked_select"
+    },
+    {
+      "name": "take_along_dim",
+      "module": "src/tensor_shapes.py",
+      "scope": "tested_only",
+      "evidence": "src/tensor_shapes.py lines 1725-1738"
+    },
+    {
+      "name": "roll_flip",
+      "module": "src/tensor_shapes.py",
+      "scope": "tested_only",
+      "evidence": "src/tensor_shapes.py lines 1758-1763; shape-preserving"
+    },
+    {
+      "name": "adaptive_avg_pool",
+      "module": "src/tensor_shapes.py",
+      "scope": "tested_only",
+      "evidence": "src/tensor_shapes.py lines 1519-1533 (nn.AdaptiveAvgPool2d); src/stdlib/modern_ops.py::transfer_adaptive_avg_pool"
+    },
+    {
+      "name": "max_pool2d",
+      "module": "src/tensor_shapes.py",
+      "scope": "tested_only",
+      "evidence": "src/tensor_shapes.py lines 1542-1558 (nn.MaxPool2d); no Lean rule"
+    },
+    {
+      "name": "avg_pool2d",
+      "module": "src/tensor_shapes.py",
+      "scope": "tested_only",
+      "evidence": "src/tensor_shapes.py lines 1613-1627 (nn.AvgPool2d)"
+    },
+    {
+      "name": "linalg_svd",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_linalg_svd; MODERN_TORCH_SHAPE_OPS linalg_svd"
+    },
+    {
+      "name": "linalg_qr",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_linalg_qr"
+    },
+    {
+      "name": "linalg_solve",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_linalg_solve"
+    },
+    {
+      "name": "linalg_eig",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_linalg_eig"
+    },
+    {
+      "name": "rotary_embedding",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_rotary_embedding"
+    },
+    {
+      "name": "einops_rearrange",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_rearrange"
+    },
+    {
+      "name": "stft",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_stft"
+    },
+    {
+      "name": "creation_ops",
+      "module": "src/tensor_shapes.py",
+      "scope": "tested_only",
+      "evidence": "src/tensor_shapes.py lines 1185-1189 (zeros/ones/randn/rand/empty/full); tests/test_tensor_shapes.py::test_creation"
+    },
+    {
+      "name": "detach",
+      "module": "src/v5/backward_shape.py",
+      "scope": "pen_and_paper",
+      "evidence": "src/v5/backward_shape.py::_detach (SHAPE_RULES); grad-flow break handled as special case; pen-and-paper soundness sketch in reproducibility/handler_pen_and_paper_round17.md"
+    },
+    {
+      "name": "pad",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "pen_and_paper",
+      "evidence": "src/stdlib/modern_ops.py MODERN_TORCH_SHAPE_OPS pad; pen-and-paper soundness sketch in reproducibility/handler_pen_and_paper_round17.md"
+    },
+    {
+      "name": "scatter_add",
+      "module": "src/tensor_shapes.py",
+      "scope": "tested_only",
+      "evidence": "src/tensor_shapes.py line 1676 (scatter_add/scatter_ variants)"
+    },
+    {
+      "name": "addmm",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_addmm"
+    },
+    {
+      "name": "baddbmm",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_baddbmm"
+    },
+    {
+      "name": "outer",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_outer"
+    },
+    {
+      "name": "tensordot",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_tensordot"
+    },
+    {
+      "name": "grid_sample",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py MODERN_TORCH_SHAPE_OPS grid_sample"
+    },
+    {
+      "name": "checkpoint",
+      "module": "src/stdlib/modern_ops.py",
+      "scope": "tested_only",
+      "evidence": "src/stdlib/modern_ops.py::transfer_checkpoint (shape-passthrough)"
+    }
+  ],
+  "summary": {
+    "lean_verified": 28,
+    "pen_and_paper": 3,
+    "tested_only": 48,
+    "total": 79
+  }
+}

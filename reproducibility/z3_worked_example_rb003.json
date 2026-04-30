@@ -1,0 +1,119 @@
+{
+  "_question": "Reviewer end-to-end worked example: trace the refinement-type derivation, the actual Z3 query, and the Refuted-Proof witness for rb_003 (GPT-NeoX QKV view dim) end-to-end.",
+  "timestamp": "2026-04-30T03:18:00.002111Z",
+  "bug": {
+    "id": "rb_003",
+    "name": "GPT-NeoX odd attention heads view mismatch",
+    "table": "Table 3 (real-PR upstream-faithful)",
+    "module_config": {
+      "hidden_size": 1024,
+      "num_heads": 12,
+      "head_size_floor": 85,
+      "per_token_qkv_out": 3072,
+      "per_token_view": 3060
+    },
+    "repro_path": "experiments_v5/v8/real_bugs/rb_003_gptneox_odd_heads.py"
+  },
+  "a_refinement_type_ledger": {
+    "module_config_symbols": {
+      "H": 1024,
+      "N": 12,
+      "head_size_floor": 85,
+      "B": 1,
+      "T": 5
+    },
+    "T-Input  [x]": {
+      "rule": "param-shape",
+      "shape": [
+        1,
+        5,
+        1024
+      ],
+      "type": "Tensor{shape = (B, T, H)}"
+    },
+    "T-Linear [qkv = self.qkv(x)]": {
+      "rule": "T-Linear : in_features = H \u2713; out_features = 3*H replaces last dim",
+      "in_features": 1024,
+      "out_features": 3072,
+      "shape": [
+        1,
+        5,
+        3072
+      ],
+      "type": "Tensor{shape = (B, T, 3*H)}"
+    },
+    "T-View   [qkv.view(1, 5, 12, 255)]": {
+      "rule": "T-View : prod(input_shape) == prod(target_shape)",
+      "input_shape": [
+        1,
+        5,
+        3072
+      ],
+      "target_shape": [
+        1,
+        5,
+        12,
+        255
+      ],
+      "obligation": "B*T*(3*H) == B*T*N*(3*(H//N))   \u21d4   N | H  (per-head divisibility)",
+      "input_numel": 15360,
+      "target_numel": 15300
+    }
+  },
+  "b_z3_query_concrete": {
+    "what": "Solver setup mirrored from src/refinement/reshape.py::validate_reshape_with_z3 with rb_003's concrete (input, target) shapes; the production function is also called for cross-check.",
+    "smt2": "; benchmark generated from python API\n(set-info :status unknown)\n(assert\n (let ((?x19 (* (* (* (* 1 1) 5) 12) 255)))\n(let ((?x13 (* (* 1 1) 5)))\n(let ((?x15 (* ?x13 3072)))\n(= ?x15 ?x19)))))\n(check-sat)\n",
+    "verdict": "unsat",
+    "production_call": [
+      false,
+      "Reshape incompatible: input and target element counts cannot be equal"
+    ]
+  },
+  "b_z3_query_symbolic": {
+    "what": "Symbolic version with module-config symbols H (hidden_size), N (num_heads), hd (head_size = H // N) and the per-head divisibility / numel obligation reified.  The buggy guard (H=1024, N=12) is asserted alongside the negation of the T-View obligation; if Z3 returns sat the satisfying assignment IS the Refuted-Proof witness.",
+    "smt2": "; benchmark generated from python API\n(set-info :status unknown)\n(declare-fun B () Int)\n(declare-fun T () Int)\n(declare-fun H () Int)\n(declare-fun N () Int)\n(declare-fun head_size () Int)\n(declare-fun in_numel () Int)\n(declare-fun tgt_numel () Int)\n(assert\n (>= B 1))\n(assert\n (>= T 1))\n(assert\n (>= H 1))\n(assert\n (>= N 1))\n(assert\n (>= head_size 0))\n(assert\n (let ((?x43 (* N head_size)))\n (<= ?x43 H)))\n(assert\n (< H (* N (+ head_size 1))))\n(assert\n (= in_numel (* (* (* B T) 3) H)))\n(assert\n (= tgt_numel (* (* (* (* B T) N) 3) head_size)))\n(assert\n (= H 1024))\n(assert\n (= N 12))\n(assert\n (= B 1))\n(assert\n (= T 5))\n(assert\n (and (distinct in_numel tgt_numel) true))\n(check-sat)\n",
+    "verdict": "sat",
+    "refuted_proof_witness": {
+      "in_numel": 15360,
+      "H": 1024,
+      "N": 12,
+      "B": 1,
+      "T": 5,
+      "tgt_numel": 15300,
+      "head_size": 85
+    },
+    "fixed_guard_check": {
+      "fixed_guard": {
+        "H": 1024,
+        "N": 16
+      },
+      "fixed_verdict": "unsat",
+      "fixed_witness_or_none": null
+    }
+  },
+  "c_witness_summary": {
+    "buggy_guard": {
+      "H": 1024,
+      "N": 12,
+      "head_size_floor": 85,
+      "input_numel_per_token": 3072,
+      "target_numel_per_token": 3060,
+      "residual": 12,
+      "predicate": "input_numel == target_numel",
+      "predicate_verdict": "FALSE",
+      "z3_verdict": "sat"
+    },
+    "fixed_guard": {
+      "H": 1024,
+      "N": 16,
+      "head_size_floor": 64,
+      "input_numel_per_token": 3072,
+      "target_numel_per_token": 3072,
+      "residual": 0,
+      "predicate": "input_numel == target_numel",
+      "predicate_verdict": "TRUE",
+      "z3_verdict": "unsat"
+    }
+  },
+  "why_not_pure_ast_pattern": "An AST-only matcher can spot a `view(...)` call but cannot decide whether the resulting per-head divisibility obligation `N | H` holds without arithmetic reasoning over module-config symbols.  rb_003 has H=1024, N=12, head_size = H // N = 85 (Python integer division silently drops the remainder).  The shape mismatch (3072 vs 3060 per-token) is a function of an integer-divisibility predicate over the module's constructor symbols; deciding it requires an SMT-style calculus that can multiply, divide and compare integer expressions, which is exactly what the rule-driven Z3 path above does."
+}

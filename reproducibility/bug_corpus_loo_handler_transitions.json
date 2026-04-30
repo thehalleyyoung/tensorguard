@@ -1,0 +1,282 @@
+{
+  "_question": "Reviewer round-5 Q2: how does the LOO support per-category handler sensitivity if the global RP count never moves? The answer is that the silent->err transition counts the bugs that the held-out handlers were responsible for analysing (rather than for catching). The RP-resilience to single-category LOO is itself a finding: catalogue handlers form a redundant network, so a single category's removal does not drop catches but does drop coverage.",
+  "transitions": {
+    "view_reshape_total_size": {
+      "disabled_handlers": [
+        "view",
+        "reshape"
+      ],
+      "global": {
+        "rp_full": 53,
+        "rp_loo": 53,
+        "silent_full": 7,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 7,
+        "silent_to_err": 7,
+        "rp_to_err": 0,
+        "rp_preserved": 53
+      },
+      "category_internal": {
+        "n": 9,
+        "rp_full": 7,
+        "rp_loo": 7,
+        "silent_full": 2,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 2,
+        "silent_to_err": 2,
+        "rp_to_err": 0,
+        "rp_preserved": 7,
+        "err_introduced": 2
+      }
+    },
+    "broadcasting": {
+      "disabled_handlers": [
+        "broadcast",
+        "add",
+        "mul",
+        "sub",
+        "div"
+      ],
+      "global": {
+        "rp_full": 53,
+        "rp_loo": 53,
+        "silent_full": 7,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 7,
+        "silent_to_err": 7,
+        "rp_to_err": 0,
+        "rp_preserved": 53
+      },
+      "category_internal": {
+        "n": 9,
+        "rp_full": 7,
+        "rp_loo": 7,
+        "silent_full": 2,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 2,
+        "silent_to_err": 2,
+        "rp_to_err": 0,
+        "rp_preserved": 7,
+        "err_introduced": 2
+      }
+    },
+    "conv_channel_mismatch": {
+      "disabled_handlers": [
+        "conv1d",
+        "conv2d",
+        "conv3d"
+      ],
+      "global": {
+        "rp_full": 53,
+        "rp_loo": 53,
+        "silent_full": 7,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 7,
+        "silent_to_err": 7,
+        "rp_to_err": 0,
+        "rp_preserved": 53
+      },
+      "category_internal": {
+        "n": 6,
+        "rp_full": 6,
+        "rp_loo": 6,
+        "silent_full": 0,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 0,
+        "silent_to_err": 0,
+        "rp_to_err": 0,
+        "rp_preserved": 6,
+        "err_introduced": 0
+      }
+    },
+    "linear_inout_mismatch": {
+      "disabled_handlers": [
+        "linear"
+      ],
+      "global": {
+        "rp_full": 53,
+        "rp_loo": 53,
+        "silent_full": 7,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 7,
+        "silent_to_err": 7,
+        "rp_to_err": 0,
+        "rp_preserved": 53
+      },
+      "category_internal": {
+        "n": 4,
+        "rp_full": 4,
+        "rp_loo": 4,
+        "silent_full": 0,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 0,
+        "silent_to_err": 0,
+        "rp_to_err": 0,
+        "rp_preserved": 4,
+        "err_introduced": 0
+      }
+    },
+    "einsum_dim": {
+      "disabled_handlers": [
+        "einsum",
+        "matmul",
+        "bmm"
+      ],
+      "global": {
+        "rp_full": 53,
+        "rp_loo": 53,
+        "silent_full": 7,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 7,
+        "silent_to_err": 7,
+        "rp_to_err": 0,
+        "rp_preserved": 53
+      },
+      "category_internal": {
+        "n": 5,
+        "rp_full": 5,
+        "rp_loo": 5,
+        "silent_full": 0,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 0,
+        "silent_to_err": 0,
+        "rp_to_err": 0,
+        "rp_preserved": 5,
+        "err_introduced": 0
+      }
+    },
+    "transpose_axes": {
+      "disabled_handlers": [
+        "transpose",
+        "permute"
+      ],
+      "global": {
+        "rp_full": 53,
+        "rp_loo": 53,
+        "silent_full": 7,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 7,
+        "silent_to_err": 7,
+        "rp_to_err": 0,
+        "rp_preserved": 53
+      },
+      "category_internal": {
+        "n": 4,
+        "rp_full": 4,
+        "rp_loo": 4,
+        "silent_full": 0,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 0,
+        "silent_to_err": 0,
+        "rp_to_err": 0,
+        "rp_preserved": 4,
+        "err_introduced": 0
+      }
+    },
+    "attention_dim": {
+      "disabled_handlers": [
+        "scaled_dot_product_attention",
+        "matmul",
+        "bmm",
+        "softmax",
+        "multihead_attention"
+      ],
+      "global": {
+        "rp_full": 53,
+        "rp_loo": 53,
+        "silent_full": 7,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 7,
+        "silent_to_err": 7,
+        "rp_to_err": 0,
+        "rp_preserved": 53
+      },
+      "category_internal": {
+        "n": 5,
+        "rp_full": 4,
+        "rp_loo": 4,
+        "silent_full": 1,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 1,
+        "silent_to_err": 1,
+        "rp_to_err": 0,
+        "rp_preserved": 4,
+        "err_introduced": 1
+      }
+    },
+    "batchnorm_features": {
+      "disabled_handlers": [
+        "batch_norm"
+      ],
+      "global": {
+        "rp_full": 53,
+        "rp_loo": 53,
+        "silent_full": 7,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 7,
+        "silent_to_err": 7,
+        "rp_to_err": 0,
+        "rp_preserved": 53
+      },
+      "category_internal": {
+        "n": 4,
+        "rp_full": 4,
+        "rp_loo": 4,
+        "silent_full": 0,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 0,
+        "silent_to_err": 0,
+        "rp_to_err": 0,
+        "rp_preserved": 4,
+        "err_introduced": 0
+      }
+    },
+    "embedding_index": {
+      "disabled_handlers": [
+        "embed",
+        "index_select",
+        "gather"
+      ],
+      "global": {
+        "rp_full": 53,
+        "rp_loo": 53,
+        "silent_full": 7,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 7,
+        "silent_to_err": 7,
+        "rp_to_err": 0,
+        "rp_preserved": 53
+      },
+      "category_internal": {
+        "n": 3,
+        "rp_full": 3,
+        "rp_loo": 3,
+        "silent_full": 0,
+        "silent_loo": 0,
+        "err_full": 0,
+        "err_loo": 0,
+        "silent_to_err": 0,
+        "rp_to_err": 0,
+        "rp_preserved": 3,
+        "err_introduced": 0
+      }
+    }
+  }
+}

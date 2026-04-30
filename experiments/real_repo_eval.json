@@ -1,0 +1,214 @@
+{
+  "summary": {
+    "n_files_fetched": 6,
+    "n_files_total": 6,
+    "tensorguard": {
+      "verified": 0,
+      "rejected": 0,
+      "abstain": 5,
+      "unknown": 0,
+      "skipped": 1
+    },
+    "dynamic": {
+      "import_ok": 1,
+      "fx_ok": 0,
+      "meta_ok": 1
+    }
+  },
+  "rows": [
+    {
+      "label": "nanoGPT_model",
+      "url": "https://raw.githubusercontent.com/karpathy/nanoGPT/master/model.py",
+      "path": "/Users/halleyyoung/Documents/div/mathdivergence/halley-labs/tensorguard/experiments/.cache/real_repo/nanoGPT_model.py",
+      "fetched": true,
+      "bytes": 16345,
+      "notes": "instantiated with tiny config",
+      "input_shape": [
+        1,
+        16
+      ],
+      "tensorguard": {
+        "verdict": "abstain",
+        "time_s": 0.6868970394134521,
+        "returncode": 1,
+        "n_bugs": 1,
+        "n_shape_bugs": 0,
+        "abstained": true,
+        "opaque_layer_count": 1,
+        "first_bug": "[DEAD-OUTPUT] Result 'loss' is computed but never used or returned",
+        "first_shape_bug": "",
+        "stderr_tail": ""
+      },
+      "dynamic": {
+        "import_ok": true,
+        "build_ok": true,
+        "fx_ok": false,
+        "meta_ok": true,
+        "err": "fx: TraceError: symbolically traced variables cannot be used as inputs to control flow",
+        "t_import": 3.8666651248931885,
+        "t_build": 0.05141496658325195,
+        "t_fx": 0.0,
+        "t_meta": 0.07484006881713867
+      }
+    },
+    {
+      "label": "minGPT_model",
+      "url": "https://raw.githubusercontent.com/karpathy/minGPT/master/mingpt/model.py",
+      "path": "/Users/halleyyoung/Documents/div/mathdivergence/halley-labs/tensorguard/experiments/.cache/real_repo/minGPT_model.py",
+      "fetched": true,
+      "bytes": 14686,
+      "notes": "patched to tiny config (vocab_size=50,n_layer=2,n_head=2,n_embd=64,block_size=64)",
+      "input_shape": [
+        1,
+        16
+      ],
+      "tensorguard": {
+        "verdict": "abstain",
+        "time_s": 0.5819721221923828,
+        "returncode": 1,
+        "n_bugs": 3,
+        "n_shape_bugs": 0,
+        "abstained": true,
+        "opaque_layer_count": 1,
+        "first_bug": "[DEVICE-MISMATCH] Z3 violation (device_mismatch) at step 9:\n  grad_b_s3 = False\n  grad_pos_emb_s5 = False\n  grad___inner_1_s4 = False\n  dev_x_s2 = CPU_1\n  dev_x_s3 = CPU_1\n  grad_pos_s4 = False\n  grad",
+        "first_shape_bug": "",
+        "stderr_tail": "Update check failed: HTTP Error 404: Not Found\n"
+      },
+      "dynamic": {
+        "import_ok": false,
+        "build_ok": false,
+        "fx_ok": false,
+        "meta_ok": false,
+        "err": "import: ModuleNotFoundError: No module named 'mingpt'",
+        "t_import": 0.0,
+        "t_build": 0.0,
+        "t_fx": 0.0,
+        "t_meta": 0.0
+      }
+    },
+    {
+      "label": "mae_models",
+      "url": "https://raw.githubusercontent.com/facebookresearch/mae/main/models_mae.py",
+      "path": "/Users/halleyyoung/Documents/div/mathdivergence/halley-labs/tensorguard/experiments/.cache/real_repo/mae_models.py",
+      "fetched": true,
+      "bytes": 9742,
+      "notes": "imports timm; import-only -> FX/Meta expected to fail to load",
+      "input_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tensorguard": {
+        "verdict": "abstain",
+        "time_s": 0.4998929500579834,
+        "returncode": 0,
+        "n_bugs": 0,
+        "n_shape_bugs": 0,
+        "abstained": true,
+        "opaque_layer_count": 6,
+        "first_bug": "",
+        "first_shape_bug": "",
+        "stderr_tail": ""
+      },
+      "dynamic": {
+        "note": "static-only",
+        "import_ok": false,
+        "build_ok": false,
+        "fx_ok": false,
+        "meta_ok": false
+      }
+    },
+    {
+      "label": "unet_model",
+      "url": "https://raw.githubusercontent.com/milesial/Pytorch-UNet/master/unet/unet_model.py",
+      "path": "/Users/halleyyoung/Documents/div/mathdivergence/halley-labs/tensorguard/experiments/.cache/real_repo/unet_model.py",
+      "fetched": true,
+      "bytes": 1721,
+      "notes": "requires unet_parts.py (also fetched into the same dir)",
+      "input_shape": [
+        1,
+        3,
+        256,
+        256
+      ],
+      "tensorguard": {
+        "verdict": "abstain",
+        "time_s": 0.6498072147369385,
+        "returncode": 0,
+        "n_bugs": 0,
+        "n_shape_bugs": 0,
+        "abstained": true,
+        "opaque_layer_count": 12,
+        "first_bug": "",
+        "first_shape_bug": "",
+        "stderr_tail": "hape marked UNKNOWN\nUnsupported layer kind UNKNOWN (up4): output shape marked UNKNOWN\nUnsupported layer kind UNKNOWN (outc): output shape marked UNKNOWN\nUpdate check failed: HTTP Error 404: Not Found\n"
+      },
+      "dynamic": {
+        "import_ok": false,
+        "build_ok": false,
+        "fx_ok": false,
+        "meta_ok": false,
+        "err": "import: ImportError: attempted relative import with no known parent package",
+        "t_import": 0.0,
+        "t_build": 0.0,
+        "t_fx": 0.0,
+        "t_meta": 0.0
+      }
+    },
+    {
+      "label": "unet_parts",
+      "url": "https://raw.githubusercontent.com/milesial/Pytorch-UNet/master/unet/unet_parts.py",
+      "path": "/Users/halleyyoung/Documents/div/mathdivergence/halley-labs/tensorguard/experiments/.cache/real_repo/unet_parts.py",
+      "fetched": true,
+      "bytes": 2602,
+      "notes": "module dependency of unet_model",
+      "input_shape": null,
+      "tensorguard": {
+        "verdict": "skip",
+        "reason": "no input shape (helper module)"
+      },
+      "dynamic": {
+        "note": "static-only",
+        "import_ok": false,
+        "build_ok": false,
+        "fx_ok": false,
+        "meta_ok": false
+      }
+    },
+    {
+      "label": "labml_mha",
+      "url": "https://raw.githubusercontent.com/labmlai/annotated_deep_learning_paper_implementations/master/labml_nn/transformers/mha.py",
+      "path": "/Users/halleyyoung/Documents/div/mathdivergence/halley-labs/tensorguard/experiments/.cache/real_repo/labml_mha.py",
+      "fetched": true,
+      "bytes": 7445,
+      "notes": "multi-head attention; instantiation requires labml; static analyze only",
+      "input_shape": [
+        16,
+        1,
+        64
+      ],
+      "tensorguard": {
+        "verdict": "abstain",
+        "time_s": 0.7243390083312988,
+        "returncode": 1,
+        "n_bugs": 2,
+        "n_shape_bugs": 0,
+        "abstained": true,
+        "opaque_layer_count": 9,
+        "first_bug": "[DEVICE-MISMATCH] Z3 violation (device_mismatch) at step 12:\n  phase_s12 = TRAIN_1\n  grad_value_s4 = False\n  grad_value_s7 = False\n  grad___cond_1_s2 = False\n  grad___cond_1_s6 = False\n  grad_value_s1",
+        "first_shape_bug": "",
+        "stderr_tail": "Update check failed: HTTP Error 404: Not Found\n"
+      },
+      "dynamic": {
+        "note": "static-only",
+        "import_ok": false,
+        "build_ok": false,
+        "fx_ok": false,
+        "meta_ok": false
+      }
+    }
+  ],
+  "python": "/opt/homebrew/bin/python3.11",
+  "repo": "/Users/halleyyoung/Documents/div/mathdivergence/halley-labs/tensorguard"
+}

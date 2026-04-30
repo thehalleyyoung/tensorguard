@@ -1,0 +1,162 @@
+\section{Refinement-Typed Calculus and Module Composition}
+\label{sec:calculus}
+
+We formalise \textsc{TensorGuard}'s abstract domain as a
+refinement-type system over a \texttt{torch.fx}-style IR. The
+type of a tensor is
+\[
+  \mathsf{Tensor}\bigl[\tau,\;\varphi_{\mathsf{shape}}(d_1,\dots,d_k),\;\varphi_{\mathsf{grad}}\bigr],
+\]
+where $\tau$ is a dtype, $\varphi_{\mathsf{shape}}$ is a
+quantifier-free predicate over symbolic dim variables in
+$\mathcal{T}_{\mathsf{shape}}=\mathrm{LIA}\cup\mathrm{Div}\cup\mathrm{BMul}$
+(linear integer arithmetic, divisibility, and bounded
+nonlinear multiplication restricted to syntactically-known
+factors), and the grad refinement
+$\varphi_{\mathsf{grad}}\in\{\mathsf{has\_grad},\mathsf{no\_grad},\top\}$
+abstracts $\mathtt{requires\_grad}\wedge\mathtt{is\_on\_tape}$.
+The grad lattice is flat: $\mathsf{has\_grad}$ and
+$\mathsf{no\_grad}$ are incomparable, joined to $\top$. A
+typing context $\Gamma$ binds variables to refinement types,
+accumulates path predicates, and tracks a grad-context flag
+$G\in\{\mathsf{on},\mathsf{off}\}$ recording whether the cursor
+is inside \texttt{torch.no\_grad()}. The entailment
+$\Gamma\models\varphi$ is discharged by Z3 on the shape
+projection and by the lattice on the grad component.
+
+\paragraph{Representative typing rules.}
+We give five rules; the full set (matmul, conv1d/2d/3d,
+broadcast, view, reshape, split, chunk, unbind, cat, stack,
+permute, transpose, einsum, indexing, slicing, scatter,
+gather, repeat, expand, SDPA, LayerNorm, RMSNorm,
+\texttt{detach}, \texttt{no\_grad} context, optimizer step) is in
+\Cref{app:typing-rules}, with pen-and-paper soundness in
+\Cref{app:soundness}.
+
+{\small
+\begin{mathpar}
+\inferrule*[lab=\textsc{T-Matmul}]
+{\Gamma\vdash a:\mathsf{Tensor}[\tau,(\bar B,m,k),\varphi_a]\\
+ \Gamma\vdash b:\mathsf{Tensor}[\tau,(\bar B',k,n),\varphi_b]\\
+ \Gamma\models\mathrm{broadcast}(\bar B,\bar B')=\bar C}
+{\Gamma\vdash a@b:\mathsf{Tensor}[\tau,(\bar C,m,n),g(a,b)]}
+\and
+\inferrule*[lab=\textsc{T-View($-1$)}]
+{\Gamma\vdash x:\mathsf{Tensor}[\tau,(d_1,\dots,d_n),\varphi_x]\\
+ \bar s=(s_1,\dots,s_{j-1},-1,s_{j+1},\dots,s_m)\\
+ P=\textstyle\prod d_i,\;\;Q=\textstyle\prod_{i\neq j}s_i\\
+ \Gamma\models Q\mid P}
+{\Gamma\vdash x.\mathrm{view}(\bar s):\mathsf{Tensor}[\tau,(s_1,\dots,P/Q,\dots,s_m),\varphi_x]}
+\and
+\inferrule*[lab=\textsc{T-Detach}]
+{\Gamma\vdash x:\mathsf{Tensor}[\tau,\varphi_s,\varphi_g]}
+{\Gamma\vdash x.\mathrm{detach}():\mathsf{Tensor}[\tau,\varphi_s,\mathsf{no\_grad}]}
+\end{mathpar}}
+
+\paragraph{Verdicts.} The verifier emits one of five verdicts:
+\textsc{Verified}, \textsc{Refuted-Proof} (RP, an unconditional
+witness), \textsc{Contract-Violation} (CV, sound under the
+caller-rely $\mathit{assume}_e$), \textsc{Library-Warn} (LW, a
+conservative warning on dispatch outside the modeled fragment),
+and \textsc{Abstain}. The soundness theorem
+(\Cref{thm:soundness}) covers RP and CV; LW and \textsc{Abstain}
+make no claim.
+
+\input{sections_v5/fragment_v8}
+
+\noindent The fragment-level statement (Thm.~\ref{thm:fragment-soundness})
+specialises Thm.~\ref{thm:soundness} to whole programs.
+
+\begin{theorem}[Soundness of the proof-grade verdicts]
+\label{thm:soundness}
+For any closed $e$ in the supported fragment and any heap
+$\sigma\models\Gamma$:
+(i) if $\mathsf{Verify}(e)=\textsc{Verified}$, no reduction
+sequence from $\langle e,\sigma,\mathsf{on}\rangle$ raises a
+shape-mismatch exception, and the grad-flag claim holds at
+every \texttt{loss.backward()} site;
+(ii) if $\mathsf{Verify}(e)=\textsc{Refuted-Proof}$, every
+reduction sequence raises a shape- or grad-flag exception at
+the witnessed subterm;
+(iii) if $\mathsf{Verify}(e)=\textsc{Contract-Violation}$, (ii)
+holds under the assumption that every caller supplies inputs
+satisfying $\mathit{assume}_e$;
+(iv) if $\mathsf{Verify}(e)\in\{\textsc{Library-Warn},\textsc{Abstain}\}$,
+no claim is made.
+\end{theorem}
+The proof (induction on reductions; full case analysis in
+\Cref{app:soundness}) reduces (i),(ii) to per-operator
+preservation lemmas already covered by the Lean rule audit
+(\Cref{sec:eval-lean}), and (iii) to the same argument inside
+the rely envelope $\mathit{assume}_e$.
+
+\smallskip\noindent\textbf{Subject reduction and progress.}
+The classical Preservation and Progress theorems for $\mathcal{F}_{\mathrm{TG}}$
+are established in \Cref{app:subject-reduction}
+(\Cref{thm:preservation,thm:progress}).
+Together they yield \Cref{cor:soundness}: well-typed programs in
+$\mathcal{F}_{\mathrm{TG}}$ whose operator preconditions hold in $\sigma$ raise no
+shape-mismatch exception on any reduction sequence.
+Theorem~\ref{thm:soundness} is the abstract-interpretation specialisation of this
+classical pair to the verdict lattice; the verdict \textsc{Verified} corresponds
+to Z3 discharging all preconditions symbolically.
+
+\subsection{Assume/Guarantee Composition}
+\label{sec:assume-guarantee}
+
+For each \texttt{nn.Module} class $M$ we synthesise a contract
+$C(M)=(\mathit{assume}_M,\mathit{guarantee}_M)$, with
+$\mathit{assume}_M$ a refinement on input types and
+$\mathit{guarantee}_M$ a refinement on output types. Sequential
+composition (e.g.\ \texttt{nn.Sequential}) discharges
+$\mathit{guarantee}_{M_1}\!\Rightarrow\!\mathit{assume}_{M_2}$
+locally; parallel composition (residual sums, QKV split) treats
+each sibling independently and joins the guarantees:
+
+{\small
+\begin{mathpar}
+\inferrule[\textsc{Seq}]
+{\vdash C(M_1)=(A_1,G_1)\\
+ \vdash C(M_2)=(A_2,G_2)\\
+ \models G_1\Rightarrow A_2}
+{\vdash C(M_2\circ M_1)=(A_1,G_2)}
+\and
+\inferrule[\textsc{Sub}]
+{C(M)=(A,G)\\ M'<:M\\
+ \models A_M\Rightarrow A_{M'}\quad\text{(contravariant)}\\
+ \models G_{M'}\Rightarrow G_M\quad\text{(covariant)}}
+{\vdash C(M')=(A_{M'},G_{M'})\text{ refines }C(M)}
+\end{mathpar}}
+
+\noindent The subclassing rule is a syntactic obligation: a
+subclass that overrides \texttt{forward} in a way that violates
+the parent's guarantee is rejected statically rather than
+silently re-analysed.
+
+\begin{theorem}[Compositional soundness; mechanised fragment]\label{thm:ag-sound}
+\emph{Scope.} The theorem as stated is mechanised in
+\texttt{lean/TensorGuard/AssumeGuarantee.lean} on the same
+$3$-operator DSL (\texttt{matmul}/\texttt{view}/\texttt{add})
+as \texttt{Soundness.lean}; it does \emph{not} cover the full
+$79$-handler operator surface of \Cref{tab:handler-soundness},
+the AST extractor, or the Python analyser implementation.
+If every leaf module in the call tree of an
+$\mathcal{F}_{\mathrm{TG}}^{3}$ program is contract-verified
+in the mechanised fragment and every composition obligation
+is discharged by Z3, then the whole-program verdict given by
+the inductive use of \textsc{Seq}, \textsc{Par}, and
+\textsc{Sub} is sound in the sense of \Cref{thm:soundness}
+restricted to the same fragment.
+\end{theorem}
+
+\begin{theorem}[Monotonicity of refinement]\label{thm:monotonicity}
+Strengthening any single contract $C(M_0)$ to $C'(M_0)\sqsubseteq
+C(M_0)$ never turns a \textsc{Verified} root into
+\textsc{Refuted-Proof}; the new verdict is in
+$\{\textsc{Verified},\textsc{Contract-Violation},
+\textsc{Library-Warn},\textsc{Abstain}\}$.
+\end{theorem}
+
+Proofs (and the rely/guarantee axiom of fresh refutation
+witnesses needed to make \Cref{thm:monotonicity} hold) are in
+\Cref{app:ag-proofs}.

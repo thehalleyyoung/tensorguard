@@ -1,0 +1,695 @@
+{
+  "meta": {
+    "command": "PYTHONPATH=. python3 reproducibility/reproduce_headline_60bug.py",
+    "manifest": "experiments_v5/bug_corpus_manifest.json",
+    "input_shapes_corpus": "experiments_v5/v5_bug_corpus.jsonl",
+    "high_confidence_threshold": 0.99,
+    "elapsed_s": 0.53,
+    "n": 60
+  },
+  "headline_regime": {
+    "description": "verify_architecture(src) with defaults; RP = max-bug-confidence >= 0.99",
+    "refuted_proof_high_confidence": 53,
+    "refuted_low_confidence": 0,
+    "silent_miss": 7,
+    "abstain": 0,
+    "error": 0
+  },
+  "raw_refute_regime": {
+    "description": "verify_architecture(src, input_shapes=lifted, max_cegar_iterations=3) -- mirrors the regime used by experiments_v5/feature_ablation.json and experiments_v5/v5_benchmark_results.json",
+    "raw_refute_count": 56,
+    "raw_refute_high_confidence_subcount": 56,
+    "silent_miss": 4,
+    "abstain": 0,
+    "error": 0
+  },
+  "by_category": {
+    "attention_dim": {
+      "n": 5,
+      "headline_rp": 4,
+      "raw_refute": 4,
+      "silent": 1
+    },
+    "broadcasting": {
+      "n": 9,
+      "headline_rp": 7,
+      "raw_refute": 8,
+      "silent": 2
+    },
+    "view_reshape_total_size": {
+      "n": 9,
+      "headline_rp": 7,
+      "raw_refute": 9,
+      "silent": 2
+    },
+    "other": {
+      "n": 11,
+      "headline_rp": 9,
+      "raw_refute": 9,
+      "silent": 2
+    },
+    "conv_channel_mismatch": {
+      "n": 6,
+      "headline_rp": 6,
+      "raw_refute": 6,
+      "silent": 0
+    },
+    "linear_inout_mismatch": {
+      "n": 4,
+      "headline_rp": 4,
+      "raw_refute": 4,
+      "silent": 0
+    },
+    "einsum_dim": {
+      "n": 5,
+      "headline_rp": 5,
+      "raw_refute": 5,
+      "silent": 0
+    },
+    "transpose_axes": {
+      "n": 4,
+      "headline_rp": 4,
+      "raw_refute": 4,
+      "silent": 0
+    },
+    "batchnorm_features": {
+      "n": 4,
+      "headline_rp": 4,
+      "raw_refute": 4,
+      "silent": 0
+    },
+    "embedding_index": {
+      "n": 3,
+      "headline_rp": 3,
+      "raw_refute": 3,
+      "silent": 0
+    }
+  },
+  "per_item": [
+    {
+      "id": "bug_001",
+      "category": "attention_dim",
+      "headline_verdict": "SILENT_MISS",
+      "headline_max_conf": 0.0,
+      "headline_bugs": 0,
+      "raw_verdict": "SILENT_MISS",
+      "raw_max_conf": 0.0,
+      "raw_bugs": 0
+    },
+    {
+      "id": "bug_002",
+      "category": "broadcasting",
+      "headline_verdict": "SILENT_MISS",
+      "headline_max_conf": 0.0,
+      "headline_bugs": 0,
+      "raw_verdict": "SILENT_MISS",
+      "raw_max_conf": 0.0,
+      "raw_bugs": 0
+    },
+    {
+      "id": "bug_003",
+      "category": "view_reshape_total_size",
+      "headline_verdict": "SILENT_MISS",
+      "headline_max_conf": 0.0,
+      "headline_bugs": 0,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_004",
+      "category": "view_reshape_total_size",
+      "headline_verdict": "SILENT_MISS",
+      "headline_max_conf": 0.0,
+      "headline_bugs": 0,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 2
+    },
+    {
+      "id": "bug_005",
+      "category": "broadcasting",
+      "headline_verdict": "SILENT_MISS",
+      "headline_max_conf": 0.0,
+      "headline_bugs": 0,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 2
+    },
+    {
+      "id": "bug_006",
+      "category": "other",
+      "headline_verdict": "SILENT_MISS",
+      "headline_max_conf": 0.0,
+      "headline_bugs": 0,
+      "raw_verdict": "SILENT_MISS",
+      "raw_max_conf": 0.0,
+      "raw_bugs": 0
+    },
+    {
+      "id": "bug_007",
+      "category": "other",
+      "headline_verdict": "SILENT_MISS",
+      "headline_max_conf": 0.0,
+      "headline_bugs": 0,
+      "raw_verdict": "SILENT_MISS",
+      "raw_max_conf": 0.0,
+      "raw_bugs": 0
+    },
+    {
+      "id": "bug_008",
+      "category": "conv_channel_mismatch",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_009",
+      "category": "linear_inout_mismatch",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_010",
+      "category": "view_reshape_total_size",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_011",
+      "category": "broadcasting",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_012",
+      "category": "attention_dim",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_013",
+      "category": "einsum_dim",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_014",
+      "category": "transpose_axes",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_015",
+      "category": "batchnorm_features",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_016",
+      "category": "embedding_index",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_017",
+      "category": "conv_channel_mismatch",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_018",
+      "category": "linear_inout_mismatch",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_019",
+      "category": "view_reshape_total_size",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_020",
+      "category": "broadcasting",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_022",
+      "category": "einsum_dim",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_024",
+      "category": "batchnorm_features",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_026",
+      "category": "conv_channel_mismatch",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_027",
+      "category": "linear_inout_mismatch",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_028",
+      "category": "view_reshape_total_size",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_029",
+      "category": "broadcasting",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_031",
+      "category": "einsum_dim",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_032",
+      "category": "transpose_axes",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_033",
+      "category": "batchnorm_features",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_034",
+      "category": "embedding_index",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_035",
+      "category": "conv_channel_mismatch",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_037",
+      "category": "view_reshape_total_size",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_038",
+      "category": "broadcasting",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_039",
+      "category": "attention_dim",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_040",
+      "category": "einsum_dim",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_041",
+      "category": "transpose_axes",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_042",
+      "category": "other",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_043",
+      "category": "other",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_044",
+      "category": "other",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_045",
+      "category": "conv_channel_mismatch",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_047",
+      "category": "view_reshape_total_size",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_048",
+      "category": "broadcasting",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_049",
+      "category": "attention_dim",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_050",
+      "category": "einsum_dim",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_051",
+      "category": "other",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_052",
+      "category": "other",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_053",
+      "category": "transpose_axes",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_054",
+      "category": "batchnorm_features",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_055",
+      "category": "embedding_index",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_056",
+      "category": "conv_channel_mismatch",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_057",
+      "category": "linear_inout_mismatch",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_058",
+      "category": "view_reshape_total_size",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_059",
+      "category": "broadcasting",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_060",
+      "category": "attention_dim",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_063",
+      "category": "view_reshape_total_size",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_064",
+      "category": "broadcasting",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_065",
+      "category": "other",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_067",
+      "category": "other",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_068",
+      "category": "other",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    },
+    {
+      "id": "bug_069",
+      "category": "other",
+      "headline_verdict": "REFUTED_PROOF",
+      "headline_max_conf": 0.99,
+      "headline_bugs": 1,
+      "raw_verdict": "REFUTED_PROOF",
+      "raw_max_conf": 0.99,
+      "raw_bugs": 1
+    }
+  ],
+  "paper_claims_resolved": {
+    "53/60_refuted_proof_paper_headline": 53,
+    "56/60_raw_refuted_in_feature_ablation": 56,
+    "interpretation": "The paper's headline 'Refuted-Proof on N/60' is the high-confidence sub-count of the headline regime. The 'refuted' field in feature_ablation.json counts any flagged bug under the input-shape-lifted regime (which the per-feature ablation runs with max_cegar_iterations=3 and the per-bug INPUT_SHAPES). Both numbers are emitted by this single command, removing the apparent 53/56 inconsistency: they are two different verdicts on two different (clearly labelled) regimes."
+  }
+}

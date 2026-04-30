@@ -1,0 +1,3933 @@
+{
+  "meta": {
+    "timestamp": "2026-04-28T15:26:20Z",
+    "torch_version": "2.9.1",
+    "n_blocks": 488,
+    "elapsed_s": 95.9,
+    "notes": "FakeTensor 'Verified' means the symbolic forward pass completed without a shape/size RuntimeError. It does NOT prove correctness of the logic \u2014 only that tensor shapes are consistent with the declared input shapes. This may inflate Verified counts for blocks whose shape bugs are only triggered by specific runtime values, not by shape alone."
+  },
+  "tg_only": {
+    "Verified": 57,
+    "Refuted": 206,
+    "Abstain": 225
+  },
+  "hybrid": {
+    "Verified": 57,
+    "Refuted": 206,
+    "Abstain": 225
+  },
+  "fallback_breakdown": {
+    "abstain_to_verified": 0,
+    "abstain_to_refuted": 0,
+    "abstain_remained": 0,
+    "abstain_unimportable": 225,
+    "_ctor_failed": 155,
+    "_exec_failed": 70
+  },
+  "per_item": [
+    {
+      "id": "torchvision__BasicBlock__facb2b2e",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BasicBlock.__init__() missing 2 required positional arguments: 'inplanes' and 'planes'"
+    },
+    {
+      "id": "torchvision__Bottleneck__6e509c98",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: Bottleneck.__init__() missing 2 required positional arguments: 'inplanes' and 'planes'"
+    },
+    {
+      "id": "torchvision__ResNet__c58f6c46",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ResNet.__init__() missing 2 required positional arguments: 'block' and 'layers'"
+    },
+    {
+      "id": "torchvision__InvertedResidual__8b858391",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__MobileNetV2__6436dda3",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: NameError: name '_log_api_usage_once' is not defined"
+    },
+    {
+      "id": "torchvision__InvertedResidual__c8095521",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'partial' is not defined"
+    },
+    {
+      "id": "torchvision__MobileNetV3__ac65cce2",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MobileNetV3.__init__() missing 2 required positional arguments: 'inverted_residual_setting' and 'last_channel'"
+    },
+    {
+      "id": "torchvision__EfficientNet__9f84b703",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: EfficientNet.__init__() missing 2 required positional arguments: 'inverted_residual_setting' and 'dropout'"
+    },
+    {
+      "id": "torchvision__FusedMBConv__ecebccff",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: FusedMBConv.__init__() missing 3 required positional arguments: 'cnf', 'stochastic_depth_prob', and 'norm_layer'"
+    },
+    {
+      "id": "torchvision__MBConv__f527375d",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'SqueezeExcitation' is not defined"
+    },
+    {
+      "id": "torchvision__DenseNet__a093c450",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__AnyStage__8a5bd23f",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__BottleneckTransform__3e2052e8",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__RegNet__6f370d88",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: RegNet.__init__() missing 1 required positional argument: 'block_params'"
+    },
+    {
+      "id": "torchvision__ResBottleneckBlock__87f0d2c0",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ResBottleneckBlock.__init__() missing 5 required positional arguments: 'width_in', 'width_out', 'stride', 'norm_layer', "
+    },
+    {
+      "id": "torchvision__SimpleStemIN__0d58277f",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__InvertedResidual__06250e16",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__ShuffleNetV2__fe61469b",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'InvertedResidual' is not defined"
+    },
+    {
+      "id": "torchvision__MNASNet__46e9b1aa",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__Fire__0a834437",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__SqueezeNet__0a56d689",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__Encoder__b1234776",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'partial' is not defined"
+    },
+    {
+      "id": "torchvision__EncoderBlock__baabd083",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'partial' is not defined"
+    },
+    {
+      "id": "torchvision__MLPBlock__0bb7878a",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__VisionTransformer__475440d2",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'partial' is not defined"
+    },
+    {
+      "id": "torchvision__PatchMerging__b97a5f6d",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: PatchMerging.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "torchvision__PatchMergingV2__81d9e2b7",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: PatchMergingV2.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "torchvision__ShiftedWindowAttention__8455e6fe",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ShiftedWindowAttention.__init__() missing 4 required positional arguments: 'dim', 'window_size', 'shift_size', and 'num_"
+    },
+    {
+      "id": "torchvision__ShiftedWindowAttentionV2__22e6dcee",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__SwinTransformer__406f0da6",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'PatchMerging' is not defined"
+    },
+    {
+      "id": "torchvision__SwinTransformerBlock__ddab822f",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'ShiftedWindowAttention' is not defined"
+    },
+    {
+      "id": "torchvision__SwinTransformerBlockV2__2cf95697",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__CNBlock__9d3f5aaf",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: CNBlock.__init__() missing 3 required positional arguments: 'dim', 'layer_scale', and 'stochastic_depth_prob'"
+    },
+    {
+      "id": "torchvision__ConvNeXt__9165120f",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ConvNeXt.__init__() missing 1 required positional argument: 'block_setting'"
+    },
+    {
+      "id": "torchvision__LayerNorm2d__5e6edc17",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__MBConv__152e669c",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__MaxVit__ce854b10",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__MaxVitBlock__c35855fb",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MaxVitBlock.__init__() missing 14 required positional arguments: 'in_channels', 'out_channels', 'squeeze_ratio', 'expans"
+    },
+    {
+      "id": "torchvision__MaxVitLayer__b533ec97",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__PartitionAttentionLayer__e27baac3",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: PartitionAttentionLayer.__init__() missing 11 required positional arguments: 'in_channels', 'head_dim', 'partition_size'"
+    },
+    {
+      "id": "torchvision__RelativePositionalMultiHeadAttention__53fc0512",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: RelativePositionalMultiHeadAttention.__init__() missing 3 required positional arguments: 'feat_dim', 'head_dim', and 'ma"
+    },
+    {
+      "id": "torchvision__SwapAxes__13291fa5",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__WindowDepartition__4c859ec3",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__WindowPartition__35b9db0d",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__BasicBlock__1f3c4ff7",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BasicBlock.__init__() missing 3 required positional arguments: 'inplanes', 'planes', and 'conv_builder'"
+    },
+    {
+      "id": "torchvision__BasicStem__a9744e0a",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__Bottleneck__8d213acd",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: Bottleneck.__init__() missing 3 required positional arguments: 'inplanes', 'planes', and 'conv_builder'"
+    },
+    {
+      "id": "torchvision__Conv2Plus1D__04cb4bbf",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__Conv3DNoTemporal__84cca75c",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__Conv3DSimple__d388d7d1",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__R2Plus1dStem__cae0e078",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__VideoResNet__ada67880",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: VideoResNet.__init__() missing 4 required positional arguments: 'block', 'conv_makers', 'layers', and 'stem'"
+    },
+    {
+      "id": "torchvision__ASPP__8f03f871",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__ASPPConv__b2767128",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__ASPPPooling__5baa6bca",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__DeepLabHead__41d22de9",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__DeepLabV3__2bdf590b",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__FCN__f4f78ed2",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__FCNHead__0dd9f67b",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__LRASPP__57ba7a9b",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: LRASPP.__init__() missing 4 required positional arguments: 'backbone', 'low_channels', 'high_channels', and 'num_classes"
+    },
+    {
+      "id": "torchvision__LRASPPHead__fe203cd4",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__Conv2dNormActivation__157d8fd4",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__Conv3dNormActivation__e2222bf1",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__ConvNormActivation__31ac3cfd",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__FrozenBatchNorm2d__6045250e",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__MLP__14e1a24d",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__Permute__c578fee9",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__SqueezeExcitation__9cf01ef0",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: SqueezeExcitation.__init__() missing 2 required positional arguments: 'input_channels' and 'squeeze_channels'"
+    },
+    {
+      "id": "torchvision__ExtraFPNBlock__3db74521",
+      "library": "torchvision",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__FeaturePyramidNetwork__0ad405dd",
+      "library": "torchvision",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: FeaturePyramidNetwork.__init__() missing 2 required positional arguments: 'in_channels_list' and 'out_channels'"
+    },
+    {
+      "id": "torchvision__LastLevelMaxPool__8cfe9276",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "torchvision__LastLevelP6P7__3cc67870",
+      "library": "torchvision",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__BasicBlock__0c23b6cb",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BasicBlock.__init__() missing 2 required positional arguments: 'inplanes' and 'planes'"
+    },
+    {
+      "id": "timm__Bottleneck__d8963bbe",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: Bottleneck.__init__() missing 2 required positional arguments: 'inplanes' and 'planes'"
+    },
+    {
+      "id": "timm__ResNet__bfd20515",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ResNet.__init__() missing 2 required positional arguments: 'block' and 'layers'"
+    },
+    {
+      "id": "timm__Block__3bb5a41e",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm' is not defined"
+    },
+    {
+      "id": "timm__DiffParallelScalingBlock__8a54b29d",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm' is not defined"
+    },
+    {
+      "id": "timm__ParallelScalingBlock__d7876d3b",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm' is not defined"
+    },
+    {
+      "id": "timm__ParallelThingsBlock__61fc9e7f",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__ResPostBlock__77d8eb34",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm' is not defined"
+    },
+    {
+      "id": "timm__VisionTransformer__4a5613ac",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'PatchEmbed' is not defined"
+    },
+    {
+      "id": "timm__PatchMerging__6aa19f74",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: PatchMerging.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "timm__SwinTransformer__0f191eae",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'PatchEmbed' is not defined"
+    },
+    {
+      "id": "timm__SwinTransformerBlock__64269d53",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: SwinTransformerBlock.__init__() missing 2 required positional arguments: 'dim' and 'input_resolution'"
+    },
+    {
+      "id": "timm__SwinTransformerStage__519ea9c1",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__WindowAttention__2cfdd149",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: WindowAttention.__init__() missing 2 required positional arguments: 'dim' and 'num_heads'"
+    },
+    {
+      "id": "timm__PatchMerging__fbc82ca8",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: PatchMerging.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "timm__SwinTransformerV2__a165096c",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: NameError: name 'PatchEmbed' is not defined"
+    },
+    {
+      "id": "timm__SwinTransformerV2Block__bbc6501d",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: SwinTransformerV2Block.__init__() missing 3 required positional arguments: 'dim', 'input_resolution', and 'num_heads'"
+    },
+    {
+      "id": "timm__SwinTransformerV2Stage__a8ddb1b3",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__WindowAttention__c308c59d",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: WindowAttention.__init__() missing 3 required positional arguments: 'dim', 'window_size', and 'num_heads'"
+    },
+    {
+      "id": "timm__ConvNeXt__5b52696a",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: NameError: name 'to_ntuple' is not defined"
+    },
+    {
+      "id": "timm__ConvNeXtBlock__e48fc330",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ConvNeXtBlock.__init__() missing 1 required positional argument: 'in_chs'"
+    },
+    {
+      "id": "timm__ConvNeXtStage__0b95344a",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__Downsample__60802c6d",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__Affine__8f1d3b4a",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__MixerBlock__aa30e6b1",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'Mlp' is not defined"
+    },
+    {
+      "id": "timm__MlpMixer__df86273c",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'MixerBlock' is not defined"
+    },
+    {
+      "id": "timm__ResBlock__ae71b868",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'Mlp' is not defined"
+    },
+    {
+      "id": "timm__SpatialGatingBlock__732b4766",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'GatedMlp' is not defined"
+    },
+    {
+      "id": "timm__SpatialGatingUnit__cddb36f2",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: SpatialGatingUnit.__init__() missing 2 required positional arguments: 'dim' and 'seq_len'"
+    },
+    {
+      "id": "timm__Attention__003a0971",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: Attention.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "timm__Beit__6997245c",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm' is not defined"
+    },
+    {
+      "id": "timm__Block__22c64202",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm' is not defined"
+    },
+    {
+      "id": "timm__RelativePositionBias__1c05d937",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__Cait__c540b873",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerScaleBlock' is not defined"
+    },
+    {
+      "id": "timm__ClassAttn__65cd4dd4",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ClassAttn.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "timm__LayerScaleBlock__de8bbf28",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'TalkingHeadAttn' is not defined"
+    },
+    {
+      "id": "timm__LayerScaleBlockClassAttn__a04ec1f5",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'ClassAttn' is not defined"
+    },
+    {
+      "id": "timm__TalkingHeadAttn__72c0467a",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__CoaT__21d9ba11",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm' is not defined"
+    },
+    {
+      "id": "timm__ConvPosEnc__46471a50",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__ConvRelPosEnc__12b18106",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__FactorAttnConvRelPosEnc__96fb8120",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: FactorAttnConvRelPosEnc.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "timm__ParallelBlock__8968d2ec",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ParallelBlock.__init__() missing 2 required positional arguments: 'dims' and 'num_heads'"
+    },
+    {
+      "id": "timm__SerialBlock__c9b429f0",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: SerialBlock.__init__() missing 2 required positional arguments: 'dim' and 'num_heads'"
+    },
+    {
+      "id": "timm__DownsampleAvg__b4e662f0",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'ScaledStdConv2d' is not defined"
+    },
+    {
+      "id": "timm__GammaAct__4efebfe6",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: NameError: name 'get_act_fn' is not defined"
+    },
+    {
+      "id": "timm__NormFreeBlock__9b86f571",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'register_notrace_module' is not defined"
+    },
+    {
+      "id": "timm__NormFreeNet__f8ec1497",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: NormFreeNet.__init__() missing 1 required positional argument: 'cfg'"
+    },
+    {
+      "id": "timm__Bottleneck__77e095f8",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: Bottleneck.__init__() missing 2 required positional arguments: 'in_chs' and 'out_chs'"
+    },
+    {
+      "id": "timm__PreBottleneck__99ad5d36",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: PreBottleneck.__init__() missing 2 required positional arguments: 'in_chs' and 'out_chs'"
+    },
+    {
+      "id": "timm__RegNet__d55c9518",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: RegNet.__init__() missing 1 required positional argument: 'cfg'"
+    },
+    {
+      "id": "timm__RegStage__0f4a69de",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'Bottleneck' is not defined"
+    },
+    {
+      "id": "timm__ClassAttentionBlock__724bc7b8",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ClassAttentionBlock.__init__() missing 2 required positional arguments: 'dim' and 'num_heads'"
+    },
+    {
+      "id": "timm__ConvPatchEmbed__208dd6fd",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: NameError: name 'to_2tuple' is not defined"
+    },
+    {
+      "id": "timm__LPI__d0666c5f",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: LPI.__init__() missing 1 required positional argument: 'in_features'"
+    },
+    {
+      "id": "timm__PositionalEncodingFourier__03ca7b4f",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__XCA__14db1190",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: XCA.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "timm__XCABlock__1aa9c779",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: XCABlock.__init__() missing 2 required positional arguments: 'dim' and 'num_heads'"
+    },
+    {
+      "id": "timm__Xcit__d8f8dfd8",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: NameError: name 'to_2tuple' is not defined"
+    },
+    {
+      "id": "timm__Attention2d__b573c895",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: Attention2d.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "timm__AttentionCl__81d4b162",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: AttentionCl.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "timm__ConvNeXtBlock__7ac76913",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'MaxxVitConvCfg' is not defined"
+    },
+    {
+      "id": "timm__Downsample2d__f53cda31",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: Downsample2d.__init__() missing 2 required positional arguments: 'dim' and 'dim_out'"
+    },
+    {
+      "id": "timm__MaxxVit__2c4deb67",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MaxxVit.__init__() missing 1 required positional argument: 'cfg'"
+    },
+    {
+      "id": "timm__MaxxVitBlock__fbb3879c",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'MaxxVitConvCfg' is not defined"
+    },
+    {
+      "id": "timm__MaxxVitStage__71291cd4",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__MbConvBlock__01ae95fd",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'MaxxVitConvCfg' is not defined"
+    },
+    {
+      "id": "timm__ParallelMaxxVitBlock__16c23033",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'MaxxVitConvCfg' is not defined"
+    },
+    {
+      "id": "timm__ParallelPartitionAttention__2c8fbbd5",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'MaxxVitTransformerCfg' is not defined"
+    },
+    {
+      "id": "timm__PartitionAttention2d__01e392ca",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'MaxxVitTransformerCfg' is not defined"
+    },
+    {
+      "id": "timm__PartitionAttentionCl__aeba57a3",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'MaxxVitTransformerCfg' is not defined"
+    },
+    {
+      "id": "timm__Stem__11b2bbe5",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: Stem.__init__() missing 2 required positional arguments: 'in_chs' and 'out_chs'"
+    },
+    {
+      "id": "timm__TransformerBlock2d__51206f56",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'MaxxVitTransformerCfg' is not defined"
+    },
+    {
+      "id": "timm__Downsample__3e663d77",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: Downsample.__init__() missing 2 required positional arguments: 'in_chs' and 'out_chs'"
+    },
+    {
+      "id": "timm__FocalModulation__90fdcf49",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm2d' is not defined"
+    },
+    {
+      "id": "timm__FocalNet__7032a739",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'partial' is not defined"
+    },
+    {
+      "id": "timm__FocalNetBlock__0ab5fc43",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm2d' is not defined"
+    },
+    {
+      "id": "timm__FocalNetStage__80643dac",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__ChannelAttention__1ba2cfb8",
+      "library": "timm",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__ChannelAttentionV2__eea03f08",
+      "library": "timm",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__ChannelBlock__2289a984",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ChannelBlock.__init__() missing 2 required positional arguments: 'dim' and 'num_heads'"
+    },
+    {
+      "id": "timm__ConvPosEnc__8c9449a2",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ConvPosEnc.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "timm__DaVit__aba3fde4",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: NameError: name 'partial' is not defined"
+    },
+    {
+      "id": "timm__DaVitStage__5abae383",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__Downsample__6415ce59",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm2d' is not defined"
+    },
+    {
+      "id": "timm__SpatialBlock__f859e43f",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: SpatialBlock.__init__() missing 2 required positional arguments: 'dim' and 'num_heads'"
+    },
+    {
+      "id": "timm__Stem__1a50d7df",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm2d' is not defined"
+    },
+    {
+      "id": "timm__WindowAttention__cf6bfdd8",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: WindowAttention.__init__() missing 3 required positional arguments: 'dim', 'window_size', and 'num_heads'"
+    },
+    {
+      "id": "timm__MultiScaleAttention__e287ef74",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MultiScaleAttention.__init__() missing 3 required positional arguments: 'dim', 'dim_out', and 'feat_size'"
+    },
+    {
+      "id": "timm__MultiScaleAttentionPoolFirst__0cb0500f",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MultiScaleAttentionPoolFirst.__init__() missing 3 required positional arguments: 'dim', 'dim_out', and 'feat_size'"
+    },
+    {
+      "id": "timm__MultiScaleBlock__9124bb4e",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MultiScaleBlock.__init__() missing 4 required positional arguments: 'dim', 'dim_out', 'num_heads', and 'feat_size'"
+    },
+    {
+      "id": "timm__MultiScaleVit__1fdce1df",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MultiScaleVit.__init__() missing 1 required positional argument: 'cfg'"
+    },
+    {
+      "id": "timm__MultiScaleVitStage__59c4e020",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__PatchEmbed__7f433b21",
+      "library": "timm",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__CrossAttention__4bacd45e",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__CrossAttentionBlock__50699d9e",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: CrossAttentionBlock.__init__() missing 2 required positional arguments: 'dim' and 'num_heads'"
+    },
+    {
+      "id": "timm__CrossVit__f8a3d9e3",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'partial' is not defined"
+    },
+    {
+      "id": "timm__MultiScaleBlock__d9e6cc4a",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MultiScaleBlock.__init__() missing 5 required positional arguments: 'dim', 'patches', 'depth', 'num_heads', and 'mlp_rat"
+    },
+    {
+      "id": "timm__PatchEmbed__9a45599b",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: NameError: name 'to_2tuple' is not defined"
+    },
+    {
+      "id": "timm__Downsample2d__381e6ea5",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm2d' is not defined"
+    },
+    {
+      "id": "timm__FeatureBlock__bf60f135",
+      "library": "timm",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__GlobalContextVit__5296a802",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: NameError: name 'get_act_layer' is not defined"
+    },
+    {
+      "id": "timm__GlobalContextVitBlock__8683a178",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'WindowAttentionGlobal' is not defined"
+    },
+    {
+      "id": "timm__GlobalContextVitStage__1906878a",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm2d' is not defined"
+    },
+    {
+      "id": "timm__MbConvBlock__983d42de",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MbConvBlock.__init__() missing 1 required positional argument: 'in_chs'"
+    },
+    {
+      "id": "timm__Stem__8e32d116",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'LayerNorm2d' is not defined"
+    },
+    {
+      "id": "timm__WindowAttentionGlobal__ad24c494",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: WindowAttentionGlobal.__init__() missing 3 required positional arguments: 'dim', 'num_heads', and 'window_size'"
+    },
+    {
+      "id": "timm__VisionTransformerDistilled__032a9d92",
+      "library": "timm",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__BasicBlock__e2998185",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BasicBlock.__init__() missing 2 required positional arguments: 'in_chs' and 'out_chs'"
+    },
+    {
+      "id": "timm__BottleneckBlock__fd1e0bab",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BottleneckBlock.__init__() missing 2 required positional arguments: 'in_chs' and 'out_chs'"
+    },
+    {
+      "id": "timm__ByobNet__491ffc69",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ByobNet.__init__() missing 1 required positional argument: 'cfg'"
+    },
+    {
+      "id": "timm__DarkBlock__375bb54f",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: DarkBlock.__init__() missing 2 required positional arguments: 'in_chs' and 'out_chs'"
+    },
+    {
+      "id": "timm__DownsampleAvg__b958740c",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: DownsampleAvg.__init__() missing 2 required positional arguments: 'in_chs' and 'out_chs'"
+    },
+    {
+      "id": "timm__EdgeBlock__f4ebfba3",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: EdgeBlock.__init__() missing 2 required positional arguments: 'in_chs' and 'out_chs'"
+    },
+    {
+      "id": "timm__MobileOneBlock__a9033e51",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MobileOneBlock.__init__() missing 2 required positional arguments: 'in_chs' and 'out_chs'"
+    },
+    {
+      "id": "timm__RepVggBlock__02fa50d1",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: RepVggBlock.__init__() missing 2 required positional arguments: 'in_chs' and 'out_chs'"
+    },
+    {
+      "id": "timm__SelfAttnBlock__57172128",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: SelfAttnBlock.__init__() missing 2 required positional arguments: 'in_chs' and 'out_chs'"
+    },
+    {
+      "id": "timm__Stem__0600ee42",
+      "library": "timm",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "timm__Attention2d__2e12b46f",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: Attention2d.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "timm__MultiQueryAttention2d__1d79bcf5",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MultiQueryAttention2d.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "timm__MultiQueryAttentionV2__2999ef94",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MultiQueryAttentionV2.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "timm__ConvMlp__320a5cbb",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ConvMlp.__init__() missing 1 required positional argument: 'in_features'"
+    },
+    {
+      "id": "timm__GatedMlp__07760a6e",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: GatedMlp.__init__() missing 1 required positional argument: 'in_features'"
+    },
+    {
+      "id": "timm__GlobalResponseNormMlp__3557ad2e",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: GlobalResponseNormMlp.__init__() missing 1 required positional argument: 'in_features'"
+    },
+    {
+      "id": "timm__GluMlp__85ab5720",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: GluMlp.__init__() missing 1 required positional argument: 'in_features'"
+    },
+    {
+      "id": "timm__Mlp__62c90bd4",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: Mlp.__init__() missing 1 required positional argument: 'in_features'"
+    },
+    {
+      "id": "timm__SwiGLU__84a8d923",
+      "library": "timm",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: SwiGLU.__init__() missing 1 required positional argument: 'in_features'"
+    },
+    {
+      "id": "transformers__BertAttention__6252bb14",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__BertEmbeddings__69ffff18",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BertEmbeddings.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__BertEncoder__1ec24e83",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BertEncoder.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__BertForMaskedLM__f07c0986",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertForMultipleChoice__e6a23721",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertForNextSentencePrediction__ddcf8ce2",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertForPreTraining__fb4fc487",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertForQuestionAnswering__bfcb478d",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertForSequenceClassification__b7751332",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertForTokenClassification__b3e3f097",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertIntermediate__312fa54a",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BertIntermediate.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__BertLMHeadModel__ec7a8f20",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertLMPredictionHead__239cfa65",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BertLMPredictionHead.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__BertLayer__123bf444",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertModel__9e1eaedc",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertOnlyMLMHead__65f3818b",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BertOnlyMLMHead.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__BertOnlyNSPHead__b5da51c7",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertOutput__dc6ffac8",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertPooler__658a36e2",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertPreTrainedModel__f1864b27",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertPreTrainingHeads__c2e782bc",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BertPreTrainingHeads.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__BertPredictionHeadTransform__cd7753b8",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BertPredictionHeadTransform.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__BertSdpaSelfAttention__29bd0f03",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BertSelfAttention__fc15b00b",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__BertSelfOutput__d24a0336",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPT2Attention__35907b71",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__GPT2Block__5a2da440",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPT2DoubleHeadsModel__5882ffd8",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPT2ForQuestionAnswering__30e06c36",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPT2ForSequenceClassification__26ea2284",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPT2ForTokenClassification__abb65812",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPT2LMHeadModel__f7dd424c",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPT2MLP__198760b0",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: GPT2MLP.__init__() missing 2 required positional arguments: 'intermediate_size' and 'config'"
+    },
+    {
+      "id": "transformers__GPT2Model__3940f67c",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPT2PreTrainedModel__7452c372",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPT2SequenceSummary__d6c4589c",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: GPT2SequenceSummary.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__T5Attention__e925d4be",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__T5Block__1480b6f9",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__T5ClassificationHead__bfd32115",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__T5DenseActDense__9f886322",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: T5DenseActDense.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__T5DenseGatedActDense__494ec975",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: T5DenseGatedActDense.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__T5EncoderModel__1c87733d",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__T5ForConditionalGeneration__da9445ce",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__T5ForQuestionAnswering__10c6b9c0",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__T5ForSequenceClassification__9276522e",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__T5ForTokenClassification__94d40192",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__T5LayerCrossAttention__8e29c5ad",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__T5LayerFF__6420723a",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: T5LayerFF.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__T5LayerNorm__f2d13050",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__T5LayerSelfAttention__e603b033",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__T5Model__a2aaa18c",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__T5PreTrainedModel__9585803b",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__T5Stack__3c5b9f6a",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__LlamaAttention__44665150",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__LlamaDecoderLayer__fd4ea02c",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__LlamaForCausalLM__509afe82",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__LlamaForQuestionAnswering__09da66a6",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__LlamaForSequenceClassification__7339e740",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__LlamaForTokenClassification__f972e4a9",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__LlamaMLP__8e486096",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: LlamaMLP.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__LlamaModel__3fb478fa",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__LlamaPreTrainedModel__b255e18b",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__LlamaRMSNorm__3d26a92d",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__LlamaRotaryEmbedding__fbfd2bd8",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'dynamic_rope_update' is not defined"
+    },
+    {
+      "id": "transformers__ViTAttention__bf90faa3",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ViTAttention.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ViTEmbeddings__8cff6acb",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ViTEmbeddings.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ViTEncoder__856aaef3",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ViTEncoder.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ViTForImageClassification__adc20c40",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ViTForMaskedImageModeling__062602cb",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ViTIntermediate__bf39eb56",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ViTIntermediate.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ViTLayer__a25f9cd5",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ViTModel__81e12b22",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ViTOutput__f793a8e0",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ViTPatchEmbeddings__ff83e5e8",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ViTPatchEmbeddings.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ViTPooler__f219ee12",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ViTPooler.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ViTPreTrainedModel__d86c5588",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ViTSelfAttention__b1e54a36",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ViTSelfAttention.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ViTSelfOutput__de6f238c",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__WhisperAttention__a202e02a",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__WhisperDecoder__f2b1f17b",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__WhisperDecoderLayer__7b88f11a",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__WhisperDecoderWrapper__f16eb33b",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__WhisperEncoder__ca6bd151",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__WhisperEncoderLayer__02c95568",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__WhisperForAudioClassification__5c48a77a",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__WhisperForCausalLM__49d54f15",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__WhisperForConditionalGeneration__ed440ec8",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__WhisperModel__2cb724a8",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__WhisperPositionalEmbedding__f3c92931",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__WhisperPreTrainedModel__aac856a9",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartAttention__872534b2",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__BartClassificationHead__91ada2db",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartDecoder__37b31304",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartDecoderLayer__964c0068",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartDecoderWrapper__145bd043",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartEncoder__9ecbfcaa",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartEncoderLayer__22379aa0",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartForCausalLM__badc2db2",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartForConditionalGeneration__31f5e997",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartForQuestionAnswering__11e5505f",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartForSequenceClassification__7b1a4896",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartLearnedPositionalEmbedding__543fc3df",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartModel__27886110",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartPreTrainedModel__e2854e5b",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartPretrainedModel__04fdcfe2",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BartScaledWordEmbedding__2ebe704c",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__PretrainedBartModel__90ec4e88",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DistilBertFlashAttention2__9971185e",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DistilBertForMaskedLM__074cc05b",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DistilBertForMultipleChoice__894eda84",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DistilBertForQuestionAnswering__e9a36da2",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DistilBertForSequenceClassification__2980befd",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DistilBertForTokenClassification__bd1d20db",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DistilBertModel__e1631f00",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DistilBertPreTrainedModel__1f6d3674",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DistilBertSdpaAttention__96b383dd",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__Embeddings__a64ca064",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__FFN__883768e0",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: FFN.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__MultiHeadSelfAttention__56723522",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MultiHeadSelfAttention.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__Transformer__1a302bc3",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__TransformerBlock__d7eea714",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__CLIPAttention__400df1d0",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: CLIPAttention.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__CLIPEncoder__7de3a90a",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: CLIPEncoder.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__CLIPEncoderLayer__907c2486",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__CLIPForImageClassification__53204b83",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__CLIPMLP__d12a982d",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: CLIPMLP.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__CLIPModel__13d2dfa6",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__CLIPPreTrainedModel__592bf875",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__CLIPTextEmbeddings__317a8260",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__CLIPTextModel__fec7faa7",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__CLIPTextModelWithProjection__7f89d913",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__CLIPTextTransformer__031c0e29",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'auto_docstring' is not defined"
+    },
+    {
+      "id": "transformers__CLIPVisionEmbeddings__e11586d7",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: CLIPVisionEmbeddings.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__CLIPVisionModel__f9612f8b",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__CLIPVisionModelWithProjection__42d64006",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__CLIPVisionTransformer__89db1fbd",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'auto_docstring' is not defined"
+    },
+    {
+      "id": "transformers__MistralAttention__8ac29b08",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__MistralDecoderLayer__e784c786",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__MistralForCausalLM__2460b16a",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__MistralForQuestionAnswering__8b18fca6",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__MistralForSequenceClassification__575cee26",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__MistralForTokenClassification__f6513bc5",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__MistralMLP__77a47fec",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: MistralMLP.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__MistralModel__a8738ef2",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__MistralPreTrainedModel__c5a3ee26",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__MistralRMSNorm__fada1fa7",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__MistralRotaryEmbedding__fafa13a1",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'dynamic_rope_update' is not defined"
+    },
+    {
+      "id": "transformers__GemmaAttention__dd2e41bc",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__GemmaDecoderLayer__6502abe9",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GemmaForCausalLM__64e45a7d",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GemmaForSequenceClassification__834f8664",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GemmaForTokenClassification__284b1df0",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GemmaMLP__c43d07a7",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: GemmaMLP.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__GemmaModel__a5eac09f",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GemmaPreTrainedModel__bea9489b",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GemmaRMSNorm__3af82dcc",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: GemmaRMSNorm.__init__() missing 1 required positional argument: 'dim'"
+    },
+    {
+      "id": "transformers__GemmaRotaryEmbedding__73305142",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'dynamic_rope_update' is not defined"
+    },
+    {
+      "id": "transformers__FalconAttention__9742bf57",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: FalconAttention.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__FalconDecoderLayer__6582cbfb",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__FalconFlashAttention2__c64fa866",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__FalconForCausalLM__0bd2b170",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__FalconForQuestionAnswering__4a8af66e",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__FalconForSequenceClassification__53df6fb0",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__FalconForTokenClassification__ed8d05f2",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__FalconLinear__11c4d60e",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__FalconMLP__6b8bea33",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: FalconMLP.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__FalconModel__15321937",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__FalconPreTrainedModel__55936532",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__FalconRotaryEmbedding__0d3de369",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'dynamic_rope_update' is not defined"
+    },
+    {
+      "id": "transformers__GPTNeoXAttention__0cfba163",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: GPTNeoXAttention.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__GPTNeoXDecoderLayer__fdd10742",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPTNeoXForCausalLM__303baee1",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPTNeoXForQuestionAnswering__a03baec2",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPTNeoXForSequenceClassification__71a009c6",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPTNeoXForTokenClassification__86a22a5b",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPTNeoXLayer__e0f32bd0",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPTNeoXMLP__80844091",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: GPTNeoXMLP.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__GPTNeoXModel__1d753983",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPTNeoXPreTrainedModel__9eda7029",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPTNeoXRMSNorm__d653611b",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__GPTNeoXRotaryEmbedding__a44abc41",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'dynamic_rope_update' is not defined"
+    },
+    {
+      "id": "transformers__Qwen2Attention__bd67b6c8",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__Qwen2DecoderLayer__87203a27",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__Qwen2ForCausalLM__8bbd0043",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__Qwen2ForQuestionAnswering__a8a5c2d4",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__Qwen2ForSequenceClassification__6433ca29",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__Qwen2ForTokenClassification__37e86321",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__Qwen2MLP__847e5083",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: Qwen2MLP.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__Qwen2Model__58bb107f",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__Qwen2PreTrainedModel__a311ac62",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__Qwen2RMSNorm__795d458c",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__Qwen2RotaryEmbedding__c9b7a59b",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'dynamic_rope_update' is not defined"
+    },
+    {
+      "id": "transformers__RobertaAttention__e006f377",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__RobertaClassificationHead__d31ced3e",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaEmbeddings__27d0f198",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: RobertaEmbeddings.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__RobertaEncoder__320be8e6",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: RobertaEncoder.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__RobertaForCausalLM__bd93edfc",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaForMaskedLM__6e029774",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaForMultipleChoice__0324395b",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaForQuestionAnswering__e34c038b",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaForSequenceClassification__38529e03",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaForTokenClassification__a9785151",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaIntermediate__9da9fb8b",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: RobertaIntermediate.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__RobertaLMHead__dc339265",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaLayer__a95c30ac",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaModel__e903ada9",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaOutput__85cdfff1",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaPooler__43433f8b",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaPreTrainedModel__e616dcd3",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaSdpaSelfAttention__cc16368b",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__RobertaSelfAttention__56085e50",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__RobertaSelfOutput__4b1851b0",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__AlbertAttention__9691e747",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: AlbertAttention.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__AlbertEmbeddings__aa5a3981",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: AlbertEmbeddings.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__AlbertForMaskedLM__444a57ae",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__AlbertForMultipleChoice__3d721e99",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__AlbertForPreTraining__0bc1b159",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__AlbertForQuestionAnswering__4a242c13",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__AlbertForSequenceClassification__fd9bb76c",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__AlbertForTokenClassification__a514ef32",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__AlbertLayer__50bc51d0",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: AlbertLayer.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__AlbertLayerGroup__ef35f8f2",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__AlbertMLMHead__8a0fa150",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: AlbertMLMHead.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__AlbertModel__f4b637f2",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__AlbertPreTrainedModel__6b90b824",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__AlbertSOPHead__016ff313",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__AlbertSdpaAttention__6c7a75f6",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__AlbertTransformer__5a849827",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: AlbertTransformer.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__OPTAttention__46b5daf0",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__OPTDecoder__c91a52f0",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__OPTDecoderLayer__24a4c9cc",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__OPTForCausalLM__2b15a250",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__OPTForQuestionAnswering__b4351cc4",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__OPTForSequenceClassification__5365eb03",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__OPTLearnedPositionalEmbedding__6fb6e1e7",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__OPTModel__bb5f30a8",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__OPTPreTrainedModel__8d7cca0c",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BloomAttention__4ab351a5",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BloomAttention.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__BloomBlock__3a17894c",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BloomForCausalLM__36a60c67",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BloomForQuestionAnswering__7994d60e",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BloomForSequenceClassification__81e125ad",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BloomForTokenClassification__057bf6a0",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BloomGelu__8ee84096",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BloomMLP__43666c6d",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: BloomMLP.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__BloomModel__f089388c",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__BloomPreTrainedModel__4a772e64",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ContextPooler__8ee8f94f",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ContextPooler.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__DebertaAttention__ad76f1a3",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: DebertaAttention.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__DebertaEmbeddings__a04a0e1f",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: DebertaEmbeddings.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__DebertaEncoder__233bff42",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: DebertaEncoder.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__DebertaForMaskedLM__bdf0c81c",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DebertaForQuestionAnswering__dbb32f9f",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DebertaForSequenceClassification__f3f064d8",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DebertaForTokenClassification__db2b551a",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DebertaIntermediate__0eab50bc",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: DebertaIntermediate.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__DebertaLMPredictionHead__eda030a3",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: DebertaLMPredictionHead.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__DebertaLayer__a1667b76",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DebertaLayerNorm__fb3b5814",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DebertaModel__d4dcd33c",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DebertaOnlyMLMHead__d2057fff",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: DebertaOnlyMLMHead.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__DebertaOutput__984d5f9f",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: DebertaOutput.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__DebertaPreTrainedModel__81744cba",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__DebertaSelfOutput__89334fca",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: DebertaSelfOutput.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__DisentangledSelfAttention__b8334cec",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: DisentangledSelfAttention.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__LegacyDebertaLMPredictionHead__c60fb93e",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: LegacyDebertaLMPredictionHead.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__LegacyDebertaOnlyMLMHead__230311ab",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: LegacyDebertaOnlyMLMHead.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__LegacyDebertaPredictionHeadTransform__32cb6d4e",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: LegacyDebertaPredictionHeadTransform.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ElectraAttention__5759530c",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__ElectraClassificationHead__4afaea88",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ElectraClassificationHead.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ElectraDiscriminatorPredictions__3e27518e",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ElectraDiscriminatorPredictions.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ElectraEmbeddings__42cd8d0b",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ElectraEmbeddings.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ElectraEncoder__5529778a",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ElectraEncoder.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ElectraForCausalLM__096d250d",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ElectraForMaskedLM__d15e3e41",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ElectraForMultipleChoice__6fbdbe6b",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ElectraForPreTraining__74bdacae",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ElectraForQuestionAnswering__389f4d6e",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ElectraForSequenceClassification__af15f28d",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ElectraForTokenClassification__12722bf3",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ElectraGeneratorPredictions__5ad5a190",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ElectraGeneratorPredictions.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ElectraIntermediate__84a0c6ce",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ElectraIntermediate.__init__() missing 1 required positional argument: 'config'"
+    },
+    {
+      "id": "transformers__ElectraLayer__e8b525e7",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ElectraModel__12079a7f",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ElectraOutput__6cf5d663",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ElectraPreTrainedModel__1e4993ba",
+      "library": "transformers",
+      "tg_verdict": "Refuted",
+      "hybrid_verdict": "Refuted",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ElectraSelfAttention__3f68d2e7",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "exec_failed: NameError: name 'deprecate_kwarg' is not defined"
+    },
+    {
+      "id": "transformers__ElectraSelfOutput__ddfbfff8",
+      "library": "transformers",
+      "tg_verdict": "Verified",
+      "hybrid_verdict": "Verified",
+      "fallback_used": false,
+      "fallback_error": null
+    },
+    {
+      "id": "transformers__ElectraSequenceSummary__fa325a69",
+      "library": "transformers",
+      "tg_verdict": "Abstain",
+      "hybrid_verdict": "Abstain",
+      "fallback_used": true,
+      "fallback_error": "ctor_failed: TypeError: ElectraSequenceSummary.__init__() missing 1 required positional argument: 'config'"
+    }
+  ]
+}

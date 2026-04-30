@@ -1,0 +1,58 @@
+⚠ [2/9] Built TensorGuard.Soundness
+warning: ././././TensorGuard/Soundness.lean:105:31: unused variable `hk`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [3/9] Built TensorGuard.AssumeGuarantee
+warning: ././././TensorGuard/AssumeGuarantee.lean:105:22: unused variable `s`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+warning: ././././TensorGuard/AssumeGuarantee.lean:105:37: unused variable `s`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+✖ [4/9] Building TensorGuard.Extended
+trace: .> LEAN_PATH=././.lake/build/lib DYLD_LIBRARY_PATH= /Users/halleyyoung/.elan/toolchains/leanprover--lean4---v4.14.0/bin/lean ././././TensorGuard/Extended.lean -R ./././. -o ././.lake/build/lib/TensorGuard/Extended.olean -i ././.lake/build/lib/TensorGuard/Extended.ilean -c ././.lake/build/ir/TensorGuard/Extended.c --json
+warning: ././././TensorGuard/Extended.lean:123:6: `List.get?_map` has been deprecated, use `List.getElem?_map` instead
+error: ././././TensorGuard/Extended.lean:129:11: unsolved goals
+case h.some
+p q dims : List Nat
+_hp : Inrange p dims
+hpq : Inrange q (permList p dims)
+j : Nat
+hj : j ∈ q
+hjlen : j < p.length
+i : Nat
+hpj : p.get? j = some i
+⊢ dims[i]?.getD 0 = dims[p[j]?.getD 0]?.getD 0
+error: Lean exited with code 1
+✔ [6/9] Built TensorGuard.V5OperatorRules
+✖ [7/9] Building TensorGuard.AssumeGuaranteeExtended
+trace: .> LEAN_PATH=././.lake/build/lib DYLD_LIBRARY_PATH= /Users/halleyyoung/.elan/toolchains/leanprover--lean4---v4.14.0/bin/lean ././././TensorGuard/AssumeGuaranteeExtended.lean -R ./././. -o ././.lake/build/lib/TensorGuard/AssumeGuaranteeExtended.olean -i ././.lake/build/lib/TensorGuard/AssumeGuaranteeExtended.ilean -c ././.lake/build/ir/TensorGuard/AssumeGuaranteeExtended.c --json
+warning: ././././TensorGuard/AssumeGuaranteeExtended.lean:141:19: unused variable `m`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+warning: ././././TensorGuard/AssumeGuaranteeExtended.lean:141:28: unused variable `k`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+warning: ././././TensorGuard/AssumeGuaranteeExtended.lean:163:15: unused variable `vocab`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+warning: ././././TensorGuard/AssumeGuaranteeExtended.lean:165:15: unused variable `vocab`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+error: ././././TensorGuard/AssumeGuaranteeExtended.lean:364:11: simp made no progress
+error: ././././TensorGuard/AssumeGuaranteeExtended.lean:367:15: simp made no progress
+error: ././././TensorGuard/AssumeGuaranteeExtended.lean:372:14: no goals to be solved
+error: ././././TensorGuard/AssumeGuaranteeExtended.lean:375:24: simp made no progress
+error: ././././TensorGuard/AssumeGuaranteeExtended.lean:386:2: no goals to be solved
+error: ././././TensorGuard/AssumeGuaranteeExtended.lean:400:11: simp made no progress
+error: ././././TensorGuard/AssumeGuaranteeExtended.lean:403:15: simp made no progress
+error: ././././TensorGuard/AssumeGuaranteeExtended.lean:408:14: no goals to be solved
+error: ././././TensorGuard/AssumeGuaranteeExtended.lean:411:24: simp made no progress
+error: ././././TensorGuard/AssumeGuaranteeExtended.lean:423:17: tactic 'assumption' failed
+case link
+s : Shape
+a✝ : contract_relu_identity.guarantee s
+⊢ contract_sum_reduce_rank.assume s
+error: ././././TensorGuard/AssumeGuaranteeExtended.lean:427:27: function expected at
+  this
+term has type
+  contract_relu_identity.assume s
+error: ././././TensorGuard/AssumeGuaranteeExtended.lean:427:9: rcases tactic failed: x✝ : ?m.48406 is not an inductive datatype
+error: Lean exited with code 1
+Some required builds logged failures:
+- TensorGuard.Extended
+- TensorGuard.AssumeGuaranteeExtended
+error: build failed

@@ -1,0 +1,52 @@
+{
+  "family": "Llama (LlamaAttention, LlamaMLP, LlamaRMSNorm, LlamaRotaryEmbedding, LlamaDecoderLayer)",
+  "n_modules": 6,
+  "tally": {
+    "Verified": 4,
+    "RP": 2
+  },
+  "results": [
+    {
+      "module": "LlamaMLP",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 369
+    },
+    {
+      "module": "LlamaRMSNorm",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 139
+    },
+    {
+      "module": "LlamaRotaryEmbedding",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 17
+    },
+    {
+      "module": "LlamaAttention",
+      "verdict": "RP",
+      "bug_count": 1,
+      "first_bug": "Potential division by zero: 'num_heads' not guarded",
+      "elapsed_ms": 614
+    },
+    {
+      "module": "LlamaDecoderLayer",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 215
+    },
+    {
+      "module": "LlamaMLP_buggy",
+      "verdict": "RP",
+      "bug_count": 2,
+      "first_bug": "[SHAPE-INCOMPATIBLE] Linear expects last dim=8192, got 11008",
+      "elapsed_ms": 134
+    }
+  ]
+}

@@ -23,16 +23,53 @@ runtime errors in ML codebases before any code runs.
   **Shape × Device × Phase × Stride × Permutation** for each tensor
 - **Zero annotations required** — shapes are inferred from constructors,
   `torch.randn`, `nn.Linear(in, out)`, reshapes, and data flow
-- **Multi-phase train/eval analysis** — detects `BatchNorm` / `Dropout`
-  misuse across phases
+- **Train/eval phase tagging** — every tensor is annotated with the
+  phase context in which it is produced; `BatchNorm` / `Dropout`
+  misuse patterns can be detected from the resulting trace.  Note:
+  the `--no-phase-check` CLI flag is currently a metadata gate
+  (the phase predicates are computed and stored on every tensor but
+  are not yet promoted into the verdict pipeline as `Bug` objects);
+  see *Known limitations* below.
 - **Device tracking** — catches silent CPU ↔ CUDA mismatches before they
   become runtime errors
-- **CEGAR loop** — counterexample-guided abstraction refinement discovers
-  shape predicates automatically; no manual specification needed
+- **CEGAR predicate discovery** — a counterexample-guided refinement
+  loop discovers shape predicates automatically and stores them as
+  `cegar_predicates` metadata on the verifier result, available for
+  downstream consumers (no manual specification needed).  Note: the
+  discovered predicates are recorded as metadata only; they are not
+  re-injected into the refutation set as additional `Bug` objects in
+  the current implementation, so the headline RP count does not depend
+  on `--cegar-iterations` (the per-feature ablation in
+  `experiments_v5/feature_ablation.json` confirms this).  See
+  *Known limitations* below.
 - **Z3-backed** — all shape constraints are discharged by the Z3 SMT solver
   for soundness (0% false positives in `--high-confidence` mode)
 - **SARIF 2.1.0 output** — integrates with GitHub Code Scanning / Advanced Security
 - **Sub-second analysis** — typical models verified in < 1 second
+
+---
+
+## Known limitations of the shipped CLI
+
+These are deliberately surfaced here so downstream users do not over-read
+the feature list above.
+
+* **`--no-phase-check`, `--no-device-check`, `--no-grad-check` are
+  accepted by the CLI but currently do not affect the verdict count.**
+  The corresponding `check_phases`, `check_devices`, `check_gradients`
+  keyword arguments are accepted by the Python API
+  (`src.api.verify_architecture`) but are not yet forwarded to the
+  underlying `verify_model` invocation.  As a result, levels L2–L4 of
+  the per-feature ablation in
+  `experiments_v5/feature_ablation.json` reproduce the L1 verdict
+  counts identically.  Tracking this as a known no-op rather than a
+  hidden behavioural difference; planned for the v9 release.
+* **`--cegar-iterations N` controls how many refinement rounds run,
+  but the discovered predicates are stored as metadata only.**  They
+  are not promoted to additional `Bug` objects, so the headline RP
+  count is invariant to N for N ≥ 1; see the L0 vs L1 row of the
+  same ablation JSON.  A future release will surface unsatisfiable
+  predicates as `Bug(category=cegar_refined_contract)` entries.
 
 ---
 
@@ -229,3 +266,76 @@ large codebases.
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
+
+---
+
+## Reproducing the NeurIPS evaluation
+
+The released benchmark artefacts and reproducibility scripts live
+under `experiments_v5/` and `reproducibility/`.
+
+### One-command reproduction of the headline RP figure
+
+The paper headline "**Refuted-Proof on 53/60** historical bugs" and
+the related "raw refute count = 56/60" reported by the per-feature
+ablation are emitted by **a single command**:
+
+```bash
+PYTHONPATH=. python3 reproducibility/reproduce_headline_60bug.py
+```
+
+This runs the full 60-bug historical corpus end-to-end against the
+current `main` branch verifier and prints **both** numbers, with the
+per-item verdict pair written to
+`reproducibility/reproduce_headline_60bug.json`.  The two numbers
+correspond to two clearly-labelled regimes (free-symbolic vs
+per-bug `INPUT_SHAPES` lifted), see
+`reproducibility/reproduce_headline_60bug.md` for the full
+explanation.
+
+### Lean build (sorry-free)
+
+The Lean proof corpus is built per-module to keep the harness
+happy:
+
+```bash
+cd lean
+for m in TensorGuard.Soundness TensorGuard.AssumeGuarantee \
+         TensorGuard.AssumeGuaranteeExtended TensorGuard.Extended \
+         TensorGuard.Parity TensorGuard.V5OperatorRules; do
+  lake build "$m"
+done
+lake build parity_runner
+```
+
+Captured log: `experiments_v5/v8/lean_build_v8.log` (and the
+identical `lean_build_v9.log`).  The log contains zero
+`declaration uses 'sorry'` warnings; the only `sorry` substrings
+in `lean/TensorGuard/` live inside docstring comments.
+
+### Other artefacts
+
+| Artefact                                                       | Script                                                  |
+|----------------------------------------------------------------|---------------------------------------------------------|
+| 488-block + 60-bug headline triple                             | `experiments_v5/run_v5_benchmark.py`                    |
+| 60-bug headline RP reproducer (single command)                 | `reproducibility/reproduce_headline_60bug.py`           |
+| Verdict reclassification (RP / CV / LW)                        | `experiments_v5/run_verdict_reclassification.py`        |
+| 10-bug real-public corpus                                      | `experiments_v5/v8/verify_real_bugs.py`                 |
+| Real-public corpus selection protocol                          | `experiments_v5/v8/REAL_BUG_SELECTION_PROTOCOL.md`      |
+| Real-public corpus freeze invariant                            | `experiments_v5/v8/verify_corpus_freeze.py`             |
+| User-visible (no-synthesised-assume) RP report                 | `experiments_v5/v8/build_user_visible_rp.py`            |
+| Backward verifier on 10 real importable models                 | `experiments_v5/v8/backward_real/run_backward_real.py`  |
+| Lean operator-rule audit (28 rules)                            | `lean/TensorGuard/V5OperatorRules.lean`                 |
+| Lean assume/guarantee composition (Theorem 3, weak form)       | `lean/TensorGuard/AssumeGuarantee.lean`                 |
+| CEGAR / phase-encoder dead-code TCB confirmation               | `reproducibility/cegar_phase_deletion_tcb.py`           |
+| Grad-lattice runtime holdout (round-5 rewrite, 10 self-contained subjects) | `reproducibility/grad_lattice_runtime_holdout.py` |
+| 60-bug ablation: rule-driven only (parser-marker excluded)     | `reproducibility/bug_corpus_no_parser_marker.py`        |
+| Post-freeze N=15 power analysis (Fisher exact, 80% power)      | `reproducibility/postfreeze_power_analysis.py`          |
+| Cross-family static analysis: Llama 2/3 (6 modules)            | `reproducibility/hf_extra_model_family.py`              |
+| Cross-family static analysis: Qwen2 (5 modules)                | `reproducibility/hf_extra_family_round_comet1.py`       |
+| Cross-family static analysis: Mistral / Gemma / Phi-3 (15 modules) | `reproducibility/hf_extra_families_round11.py`      |
+| Naturally-occurring cross-family bugs (7 upstream PRs/issues, Llama/Qwen2/Mistral/Phi-3) | `reproducibility/cross_family_natural_bugs.py` |
+| 488-block headline-triple regime reconciliation (HCO=True vs HCO=False) | `reproducibility/block_corpus_488_reconciliation.py` |
+
+Round-by-round reviewer responses live under `.comet_neurips/` and
+the latest is `review_response.md` at the repo root.

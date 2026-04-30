@@ -1,0 +1,41 @@
+{
+  "regime": "no_synthesised_assume_M",
+  "n_total": 488,
+  "_question": "Q3 in round01_improver.md — how many of the 128 CV refutations would survive if every self.config.X were treated as a free symbolic variable with no synthesised upper-bound assume?",
+  "headline_with_assume": {
+    "Verified": 57,
+    "Refuted_Proof": 0,
+    "Contract_Violation": 128,
+    "Library_Warn": 78,
+    "Abstain": 225
+  },
+  "no_assume_breakdown_of_128_CV": {
+    "_method": "for each of the 128 CV blocks, re-run TG with the synthesised config-envelope assume disabled. classify the new verdict.",
+    "becomes_RP_unconditionally": 0,
+    "becomes_LW_conservative": 128,
+    "becomes_Verified_no_assume_needed": 0,
+    "becomes_Abstain": 0,
+    "_interpretation": "all 128 CV refutations are downgraded to LW (conservative library-warn) under the no-assume regime. None survive as unconditional RP. The 128 CV count is therefore fully explained by the synthesised caller-rely assume; the 'sound, unconditional refutation' count on the 488-block real corpus, with no assume synthesis, is 0."
+  },
+  "no_assume_breakdown_of_78_LW": {
+    "_method": "the 78 LW are by definition outside the soundness theorem and do not depend on the assume.",
+    "unchanged": 78,
+    "becomes_RP": 0,
+    "becomes_Verified": 0,
+    "becomes_Abstain": 0
+  },
+  "no_assume_breakdown_of_57_Verified": {
+    "_method": "for each of the 57 V blocks, re-run TG with config-envelope assume disabled.",
+    "stays_Verified": 34,
+    "becomes_Abstain_due_to_unbounded_config": 23,
+    "becomes_RP_or_LW": 0
+  },
+  "user_visible_triple_no_assume": {
+    "Verified": 34,
+    "Refuted_Proof": 0,
+    "Contract_Violation": 0,
+    "Library_Warn": 206,
+    "Abstain": 248
+  },
+  "interpretation": "Reviewer Q3: of the 128 CV refutations in the headline, 0 survive as unconditional RP under the no-assume regime; all 128 collapse into LW. The 78 LW count is unchanged (LW is by definition not assume-dependent). The 57 V splits 34 still-V / 23 new-Abstain. This is a stronger restatement of the existing user_visible_rp.json triple, with the per-bin breakdown the reviewer asked for."
+}

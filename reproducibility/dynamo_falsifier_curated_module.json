@@ -1,0 +1,16 @@
+{
+  "module_name": "ShapeGuardModule",
+  "fixture_path_relative": "reproducibility/dynamo_falsifier_curated_module_fixture.py",
+  "catalogue_M": [
+    "x.shape[0]",
+    "self.linear.weight.shape[0]",
+    "self.linear.weight.shape[1]"
+  ],
+  "custom_op_reads": [
+    "x.shape[-1]"
+  ],
+  "falsifier_evaluable_on_event_of_kind_SHAPE": true,
+  "necessary_direction_holds": true,
+  "necessary_direction_witness": "Every analyser refinement variable on this module is in catalogue(M) (the three entries above); the custom op's x.shape[-1] read is the strict-subset witness, not a counterexample to the necessary direction.",
+  "note": "This is a curated single-module falsifier-evaluable fixture (round-4 W6 / Q6).  The 14-module CNN-only audit and the 55-module population audit remain in the paper as the in-population evidence; this fixture only certifies that the falsification predicate is non-vacuously evaluable on something of kind != INT."
+}

@@ -1,0 +1,412 @@
+{
+  "_question": "Reviewer W4: extend the 17-module Dynamo necessary-direction audit to >=100 modules. Falsifier rate = #(SHAPE/DTYPE/RANK guards outside TG catalogue) / #(in-contract recompiles).",
+  "timestamp": "2026-04-29T19:48:06.361957Z",
+  "torch_version": "2.9.1",
+  "python_version": "3.11.15 (main, Mar  3 2026, 00:52:57) [Clang 17.0.0 (clang-1700.6.4.2)]",
+  "seed": 0,
+  "n_candidates": 107,
+  "n_successful_modules": 16,
+  "n_excluded": 10,
+  "exclusion_breakdown": {
+    "ok": 16,
+    "warmup_failed": 4,
+    "subproc_timeout": 6
+  },
+  "n_in_contract_recompiles_total": 19,
+  "by_guard_kind_aggregate": {
+    "INT": 19
+  },
+  "n_shape_dtype_rank_recompiles": 0,
+  "n_recompiles_outside_catalogue": 0,
+  "falsifier_rate": 0.0,
+  "n_modules_falsifying_theorem5": 0,
+  "interpretation": "Over 16 successfully-instantiated modules (excluding 10 build/warmup/timeout failures), there were 19 in-contract recompiles. Of these, 0 were SHAPE/DTYPE/RANK guards. Of those, 0 were outside the TG operator-rule catalogue (falsifier predicate = True). Falsifier rate = 0/19 = 0.0000. Theorem 5 is falsified iff this rate > 0 and the recompiles name a shape/dtype/rank bit not in the catalogue.",
+  "per_module": [
+    {
+      "name": "tv_mobilenet_v3_s",
+      "family": "torchvision",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 2,
+      "by_guard_kind": {
+        "INT": 2
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 232.35
+    },
+    {
+      "name": "tv_convnext_tiny",
+      "family": "torchvision",
+      "status": "warmup_failed",
+      "note": "RuntimeError: Calculated padded input size per channel: (1 x 2). Kernel size: (2 x 2). Kernel size can't be greater than actual input ",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 191.35
+    },
+    {
+      "name": "tv_alexnet",
+      "family": "torchvision",
+      "status": "warmup_failed",
+      "note": "RuntimeError: Given input size: (192x1x1). Calculated output size: (192x0x0). Output size is too small",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 99.56
+    },
+    {
+      "name": "tv_resnet_basic",
+      "family": "torchvision",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 139.18
+    },
+    {
+      "name": "tv_shufflenetv2_ir",
+      "family": "torchvision",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 131.67
+    },
+    {
+      "name": "hf_distilbert_tiny",
+      "family": "transformers",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 78.91
+    },
+    {
+      "name": "hf_deberta_tiny",
+      "family": "transformers",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 53.58
+    },
+    {
+      "name": "timm_resnet34",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 3,
+      "by_guard_kind": {
+        "INT": 3
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 127.77
+    },
+    {
+      "name": "timm_mobilenetv3_small_100",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 3,
+      "by_guard_kind": {
+        "INT": 3
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 234.29
+    },
+    {
+      "name": "timm_mnasnet_100",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 198.55
+    },
+    {
+      "name": "timm_vit_small_patch32_224",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 65.16
+    },
+    {
+      "name": "timm_resmlp_12_224",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 49.04
+    },
+    {
+      "name": "timm_xcit_small_12_p16_224",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 169.59
+    },
+    {
+      "name": "timm_swin_tiny_patch4_window7_224",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 101.94
+    },
+    {
+      "name": "timm_botnet26t_256",
+      "family": "timm",
+      "status": "subproc_timeout",
+      "note": "hard kill after 240s",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 240.07
+    },
+    {
+      "name": "timm_resnest14d",
+      "family": "timm",
+      "status": "subproc_timeout",
+      "note": "hard kill after 240s",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 240.08
+    },
+    {
+      "name": "timm_dla46_c",
+      "family": "timm",
+      "status": "warmup_failed",
+      "note": "RuntimeError: Sizes of tensors must match except in dimension 1. Expected size 2 but got size 1 for tensor number 2 in the list.",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 94.87
+    },
+    {
+      "name": "timm_regnetx_002",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 172.7
+    },
+    {
+      "name": "timm_repvgg_a0",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 2,
+      "by_guard_kind": {
+        "INT": 2
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 160.25
+    },
+    {
+      "name": "timm_ghostnet_050",
+      "family": "timm",
+      "status": "subproc_timeout",
+      "note": "hard kill after 240s",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 240.08
+    },
+    {
+      "name": "timm_lambda_resnet26t",
+      "family": "timm",
+      "status": "subproc_timeout",
+      "note": "hard kill after 240s",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 240.05
+    },
+    {
+      "name": "timm_legacy_seresnet18",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 3,
+      "by_guard_kind": {
+        "INT": 3
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 226.58
+    },
+    {
+      "name": "timm_nf_resnet26",
+      "family": "timm",
+      "status": "subproc_timeout",
+      "note": "hard kill after 240s",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 240.08
+    },
+    {
+      "name": "timm_levit_192",
+      "family": "timm",
+      "status": "warmup_failed",
+      "note": "RuntimeError: The size of tensor a (4) must match the size of tensor b (196) at non-singleton dimension 3",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 58.95
+    },
+    {
+      "name": "timm_rexnet_100",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 205.24
+    },
+    {
+      "name": "timm_dm_nfnet_f0",
+      "family": "timm",
+      "status": "subproc_timeout",
+      "note": "hard kill after 240s",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 240.34
+    }
+  ]
+}

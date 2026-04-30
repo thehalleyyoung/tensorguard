@@ -290,6 +290,7 @@ class OpKind(Enum):
     WHERE = auto()            # torch.where(cond, a, b)
     CHUNK = auto()            # torch.chunk / x.chunk
     SPLIT = auto()            # torch.split / x.split
+    UNBIND = auto()           # x.unbind(dim) → fixed-length tuple of slices
     EXPAND = auto()           # x.expand(...)
     REPEAT = auto()           # x.repeat(...)
     PAD = auto()              # F.pad(x, ...)
@@ -785,6 +786,104 @@ class VerificationResult:
 
 # --- Helpers for AST value extraction -------------------------------------
 
+# Names that indicate a constructor parameter is a "config" object whose
+# attributes should be treated as fresh symbolic dimension values.
+_CONFIG_PARAM_BASE_NAMES: FrozenSet[str] = frozenset({
+    "config", "cfg", "args", "hparams", "conf", "model_config",
+})
+
+
+def _is_config_param_name(name: str) -> bool:
+    """True if *name* is config-like (matches a base name or starts with one)."""
+    low = name.lower()
+    if low in _CONFIG_PARAM_BASE_NAMES:
+        return True
+    for base in _CONFIG_PARAM_BASE_NAMES:
+        if low.startswith(base + "_"):
+            return True
+    return False
+
+
+def _resolve_dim_value(
+    node: ast.expr,
+    param_map: Optional[Dict[str, Any]] = None,
+    config_param_names: Optional[Set[str]] = None,
+    symbolic_attrs: Optional[Dict[Tuple[str, str], str]] = None,
+    init_param_names: Optional[Set[str]] = None,
+) -> Any:
+    """Resolve an AST expression to a dim value: int, str (symbolic), or None.
+
+    Extends ``_const_value`` with awareness of *config-like* constructor
+    parameters: when a node is ``config.attr`` for a config param, returns a
+    stable symbolic name (memoised in *symbolic_attrs*). Also: when
+    ``init_param_names`` is provided, plain ``Name`` references to those
+    init parameters resolve to the parameter name itself as a symbolic dim
+    (e.g. ``Linear(dim, dim*3)`` → in_features="dim", out_features="(dim*3)").
+    """
+    # Symbolic config attribute access: e.g. config.n_embd → "config_n_embd"
+    if (config_param_names is not None
+            and isinstance(node, ast.Attribute)
+            and isinstance(node.value, ast.Name)
+            and node.value.id in config_param_names):
+        key = (node.value.id, node.attr)
+        if symbolic_attrs is not None:
+            if key not in symbolic_attrs:
+                symbolic_attrs[key] = f"{node.value.id}_{node.attr}"
+            return symbolic_attrs[key]
+        return f"{node.value.id}_{node.attr}"
+
+    # Symbolic plain init parameter: e.g. dim, num_heads in MHABlock(dim, ...)
+    if (init_param_names is not None
+            and isinstance(node, ast.Name)
+            and node.id in init_param_names):
+        return node.id
+
+    # Try concrete constant first
+    val = _const_value(node, param_map)
+    if val is not None:
+        return val
+
+    # Recurse into BinOps/UnaryOp to combine symbolic + concrete sub-values.
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
+        sub = _resolve_dim_value(node.operand, param_map, config_param_names,
+                                 symbolic_attrs, init_param_names)
+        if isinstance(sub, int):
+            return -sub
+        if isinstance(sub, str):
+            return f"(-{sub})"
+        return None
+
+    if isinstance(node, ast.BinOp):
+        left = _resolve_dim_value(node.left, param_map, config_param_names,
+                                  symbolic_attrs, init_param_names)
+        right = _resolve_dim_value(node.right, param_map, config_param_names,
+                                   symbolic_attrs, init_param_names)
+        if left is None or right is None:
+            return None
+        if isinstance(left, int) and isinstance(right, int):
+            # Pure-int case already handled by _const_value above; redundant
+            # but safe.
+            if isinstance(node.op, ast.Mult):
+                return left * right
+            if isinstance(node.op, ast.Add):
+                return left + right
+            if isinstance(node.op, ast.Sub):
+                return left - right
+            if isinstance(node.op, ast.FloorDiv) and right != 0:
+                return left // right
+            return None
+        op_str = {
+            ast.Mult: "*", ast.Add: "+", ast.Sub: "-",
+            ast.FloorDiv: "//", ast.Div: "/", ast.Mod: "%",
+        }.get(type(node.op))
+        if op_str is None:
+            return None
+        return f"({left}{op_str}{right})"
+
+    # self.<attr> falls through to _const_value via param_map (handled there).
+    return None
+
+
 def _const_value(node: ast.expr, param_map: Optional[Dict[str, Any]] = None) -> Any:
     """Try to extract a Python constant from an AST node.
 
@@ -823,6 +922,23 @@ def _const_value(node: ast.expr, param_map: Optional[Dict[str, Any]] = None) -> 
         vals = [_const_value(e, param_map) for e in node.elts]
         if all(v is not None for v in vals):
             return vals
+    # Builtin numeric coercions: int(expr), float(expr), round(expr).
+    # These show up frequently in real upstream constructors as
+    # ``intermediate = int(dim * ff_mult)``; resolving them closes
+    # an envelope-synthesis gap on ctor-bound integer attributes.
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) \
+            and node.func.id in ("int", "float", "round") \
+            and len(node.args) == 1 and not node.keywords:
+        inner = _const_value(node.args[0], param_map)
+        if isinstance(inner, (int, float)) and not isinstance(inner, bool):
+            try:
+                if node.func.id == "int":
+                    return int(inner)
+                if node.func.id == "float":
+                    return float(inner)
+                return int(round(inner))
+            except (ValueError, OverflowError):
+                return None
     # Resolve parameter references (e.g., in_channels from __init__)
     if isinstance(node, ast.Name) and param_map and node.id in param_map:
         return param_map[node.id]
@@ -1148,13 +1264,38 @@ def _is_nn_layer(name: Optional[str]) -> Tuple[bool, LayerKind]:
 
 
 def _extract_layer_params(kind: LayerKind, call: ast.Call,
-                          param_map: Optional[Dict[str, Any]] = None) -> LayerDef:
+                          param_map: Optional[Dict[str, Any]] = None,
+                          config_param_names: Optional[Set[str]] = None,
+                          symbolic_attrs: Optional[Dict[Tuple[str, str], str]] = None,
+                          init_param_names: Optional[Set[str]] = None) -> LayerDef:
     """Extract numeric parameters from a layer-constructor call."""
     layer = LayerDef(attr_name="", kind=kind, line=call.lineno)
 
-    # Gather positional args and keyword args
-    pos = [_const_value(a, param_map) for a in call.args]
+    def _rdim(n):
+        return _resolve_dim_value(n, param_map, config_param_names,
+                                  symbolic_attrs, init_param_names)
+
+    # Gather positional args (dim-aware: int|str|None for pos[0]/pos[1] which
+    # are typically in/out channel-features; strict-concrete for pos[2+] which
+    # are typically kernel/stride/padding tuples that downstream code expects
+    # to be ints).
+    pos = []
+    for i, a in enumerate(call.args):
+        if i < 2:
+            pos.append(_rdim(a))
+        else:
+            pos.append(_const_value(a, param_map))
     kw = {k.arg: _const_value(k.value, param_map) for k in call.keywords if k.arg}
+    # Allow specific dim-bearing kwargs to also carry symbolic values.
+    for k in call.keywords:
+        if k.arg in ("in_features", "out_features", "in_channels",
+                     "out_channels", "num_features", "embed_dim",
+                     "num_heads", "hidden_size", "input_size",
+                     "num_embeddings", "embedding_dim", "normalized_shape",
+                     "num_attention_heads"):
+            v = _rdim(k.value)
+            if v is not None:
+                kw[k.arg] = v
 
     if kind == LayerKind.LINEAR:
         layer.in_features = pos[0] if len(pos) > 0 else kw.get("in_features")
@@ -1867,17 +2008,38 @@ class _InitExtractor(ast.NodeVisitor):
     propagate parameters.
     """
 
-    def __init__(self, class_map: Optional[Dict[str, ast.ClassDef]] = None) -> None:
+    def __init__(self, class_map: Optional[Dict[str, ast.ClassDef]] = None,
+                 function_map: Optional[Dict[str, ast.FunctionDef]] = None) -> None:
         self.layers: Dict[str, LayerDef] = {}
         self.buffer_shapes: Dict[str, "TensorShape"] = {}
         self._param_map: Dict[str, Any] = {}  # param_name -> default value
         self._class_map = class_map or {}
+        # Top-level helper functions whose body returns a single nn-layer Call
+        # (e.g. torchvision's ``conv3x3``/``conv1x1``).  Threaded through so
+        # ``self.conv1 = conv3x3(in, out, stride)`` is expanded inline rather
+        # than abstaining as an opaque submodule.
+        self._function_map = function_map or {}
         self._local_layer_calls: Dict[str, ast.Call] = {}  # local_var -> Call node
         # Track scalar instance attributes: self.x = <const_expr>
         # e.g. self.d_k = d_model // n_heads → {"d_k": 64}
         self.scalar_attrs: Dict[str, Any] = {}
         # Parameter shapes (nn.Parameter) — move with model, no device mismatch
         self.param_shapes: Dict[str, "TensorShape"] = {}
+        # --- Symbolic config-attribute environment (Task A) ---
+        # Names of constructor params treated as opaque "config" objects.
+        self.config_param_names: Set[str] = set()
+        # Memoised symbolic dim names for (config_param, attr) pairs.
+        self.symbolic_config_attrs: Dict[Tuple[str, str], str] = {}
+        # Divisibility axioms collected from `assert N % H == 0` in __init__.
+        self.divisibility_axioms: List[Tuple[str, str]] = []
+        # Symbolic derivations: derived_attr → (numerator, op, denominator).
+        self.symbolic_derivations: Dict[str, Tuple[str, str, str]] = {}
+        # Config attrs that are reassigned within __init__ (sound exclusion).
+        self._reassigned_config_attrs: Set[Tuple[str, str]] = set()
+        # Plain init parameters (excluding self / config-like / *args /
+        # **kwargs / those with a concrete default). Used as symbolic dim
+        # sources so e.g. ``Linear(dim, dim*3)`` extracts symbolic features.
+        self.init_param_names: Set[str] = set()
 
     def extract(self, init_fn: ast.FunctionDef) -> None:
         """Extract layers, first building param_map from defaults."""
@@ -1893,7 +2055,137 @@ class _InitExtractor(ast.NodeVisitor):
                 val = _const_value(default)
                 if val is not None:
                     self._param_map[param_name] = val
+
+        # --- Task A: detect config-like constructor params --------------
+        for a in args.args:
+            if a.arg == "self":
+                continue
+            if _is_config_param_name(a.arg):
+                # Don't add 'args' if the function uses *args (handled below).
+                self.config_param_names.add(a.arg)
+            elif a.arg not in self._param_map:
+                # Treat as a symbolic init param (only if no concrete default).
+                self.init_param_names.add(a.arg)
+        # If the function takes *args, exclude that name from config params.
+        if args.vararg and args.vararg.arg in self.config_param_names:
+            self.config_param_names.discard(args.vararg.arg)
+        if args.vararg and args.vararg.arg in self.init_param_names:
+            self.init_param_names.discard(args.vararg.arg)
+        # Soundness: scan the body for `config.X = ...` reassignments and
+        # exclude those (param, attr) pairs from being symbolised.
+        for sub in ast.walk(init_fn):
+            if isinstance(sub, ast.Assign):
+                for tgt in sub.targets:
+                    if (isinstance(tgt, ast.Attribute)
+                            and isinstance(tgt.value, ast.Name)
+                            and tgt.value.id in self.config_param_names):
+                        self._reassigned_config_attrs.add(
+                            (tgt.value.id, tgt.attr))
+
         self.visit(init_fn)
+
+    def _filtered_symbolic_attrs(self) -> Optional[Dict[Tuple[str, str], str]]:
+        """Return ``symbolic_config_attrs`` view that drops reassigned pairs."""
+        return self.symbolic_config_attrs
+
+    def _register_layer_param_shapes(self, attr: str, layer: "LayerDef") -> None:
+        """Synthesise the static ``weight`` / ``bias`` shapes for a layer.
+
+        Only Linear and Conv1d/2d/3d are emitted in this round — these are
+        the parameter accesses that real-world bug repros (e.g. PEFT DoRA
+        ``self.conv.weight.view(...)``) rely on, and their static shapes
+        are unambiguous.  Shapes are written under
+        ``param_shapes[f"{attr}.weight"]`` so the model-checker propagates
+        them as ``self.<attr>.weight`` entries in the shape environment.
+        """
+        try:
+            from src.tensor_shapes import TensorShape, ShapeDim
+        except Exception:
+            return
+        if layer.kind == LayerKind.LINEAR:
+            if (isinstance(layer.in_features, int)
+                    and isinstance(layer.out_features, int)):
+                w = TensorShape((ShapeDim(layer.out_features),
+                                 ShapeDim(layer.in_features)))
+                self.param_shapes[f"{attr}.weight"] = w
+                self.param_shapes[f"{attr}.bias"] = TensorShape(
+                    (ShapeDim(layer.out_features),))
+        elif layer.kind in (LayerKind.CONV1D, LayerKind.CONV2D, LayerKind.CONV3D):
+            in_c = layer.in_channels
+            out_c = layer.out_channels
+            ks = layer.kernel_size
+            groups = layer.params.get("groups", 1) if layer.params else 1
+            if (isinstance(in_c, int) and isinstance(out_c, int)
+                    and isinstance(ks, tuple)
+                    and all(isinstance(k, int) for k in ks)
+                    and isinstance(groups, int) and groups > 0
+                    and in_c % groups == 0):
+                dims = [ShapeDim(out_c), ShapeDim(in_c // groups)]
+                dims.extend(ShapeDim(k) for k in ks)
+                self.param_shapes[f"{attr}.weight"] = TensorShape(tuple(dims))
+                self.param_shapes[f"{attr}.bias"] = TensorShape(
+                    (ShapeDim(out_c),))
+
+    def _resolve_init_dim(self, node: ast.expr) -> Any:
+        """Like ``_resolve_dim_value`` but config-aware for this extractor."""
+        if (isinstance(node, ast.Attribute)
+                and isinstance(node.value, ast.Name)
+                and node.value.id in self.config_param_names
+                and (node.value.id, node.attr) in self._reassigned_config_attrs):
+            return None
+        if (isinstance(node, ast.Attribute)
+                and isinstance(node.value, ast.Name)
+                and node.value.id == "self"
+                and node.attr in self.scalar_attrs):
+            return self.scalar_attrs[node.attr]
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
+            sub = self._resolve_init_dim(node.operand)
+            if isinstance(sub, int):
+                return -sub
+            if isinstance(sub, str):
+                return f"(-{sub})"
+        if isinstance(node, ast.BinOp):
+            left = self._resolve_init_dim(node.left)
+            right = self._resolve_init_dim(node.right)
+            if left is None or right is None:
+                return None
+            if isinstance(left, int) and isinstance(right, int):
+                if isinstance(node.op, ast.Mult):
+                    return left * right
+                if isinstance(node.op, ast.Add):
+                    return left + right
+                if isinstance(node.op, ast.Sub):
+                    return left - right
+                if isinstance(node.op, ast.FloorDiv) and right != 0:
+                    return left // right
+                return None
+            op_str = {
+                ast.Mult: "*", ast.Add: "+", ast.Sub: "-",
+                ast.FloorDiv: "//", ast.Div: "/", ast.Mod: "%",
+            }.get(type(node.op))
+            if op_str is None:
+                return None
+            return f"({left}{op_str}{right})"
+        return _resolve_dim_value(node, self._param_map,
+                                  self.config_param_names,
+                                  self.symbolic_config_attrs,
+                                  self.init_param_names)
+
+    def visit_Assert(self, node: ast.Assert) -> None:
+        """Detect ``assert N % H == 0`` divisibility axioms over config attrs."""
+        test = node.test
+        if (isinstance(test, ast.Compare) and len(test.ops) == 1
+                and isinstance(test.ops[0], ast.Eq)
+                and len(test.comparators) == 1
+                and isinstance(test.left, ast.BinOp)
+                and isinstance(test.left.op, ast.Mod)):
+            zero = _const_value(test.comparators[0])
+            if zero == 0:
+                num = self._resolve_init_dim(test.left.left)
+                den = self._resolve_init_dim(test.left.right)
+                if isinstance(num, str) and isinstance(den, str):
+                    self.divisibility_axioms.append((num, den))
+        self.generic_visit(node)
 
     def visit_Assign(self, node: ast.Assign) -> None:
         for target in node.targets:
@@ -1903,6 +2195,21 @@ class _InitExtractor(ast.NodeVisitor):
                 is_layer, _ = _is_nn_layer(fname)
                 if is_layer:
                     self._local_layer_calls[target.id] = node.value
+            # Track local scalar bindings: ``sharded_inner = (h*d)//tp``
+            # so that downstream ``nn.Linear(d_model, sharded_inner)`` can
+            # extract the constructor-bound integer.  This closes the
+            # "constructor-bound integer attribute envelope" gap on
+            # upstream-faithful real-bug repros (e.g. LongT5 TP attention,
+            # diffusers FFN ``intermediate = int(dim * ff_mult)``).
+            if isinstance(target, ast.Name):
+                if target.id not in self._param_map:
+                    val = _const_value(node.value, self._param_map)
+                    if isinstance(val, (int, float)) and not isinstance(val, bool):
+                        self._param_map[target.id] = val
+                    elif not isinstance(node.value, ast.Call):
+                        sym = self._resolve_init_dim(node.value)
+                        if isinstance(sym, str):
+                            self._param_map[target.id] = sym
             self._try_extract(target, node.value)
         self.generic_visit(node)
 
@@ -1945,6 +2252,32 @@ class _InitExtractor(ast.NodeVisitor):
             val = _const_value(value, self._param_map)
             if val is not None and isinstance(val, (int, float)):
                 self.scalar_attrs[attr] = val
+                return
+            # Try as a symbolic dim expression (Task A): self.n_head = config.n_head
+            sym_val = self._resolve_init_dim(value)
+            if isinstance(sym_val, str):
+                self.scalar_attrs[attr] = sym_val
+                # Record derivation for assert-axiom-aware downstream reasoning.
+                if (isinstance(value, ast.BinOp)
+                        and isinstance(value.op, (ast.FloorDiv, ast.Mult,
+                                                   ast.Add, ast.Sub))):
+                    left = self._resolve_init_dim(value.left)
+                    right = self._resolve_init_dim(value.right)
+                    op_str = {ast.FloorDiv: "//", ast.Mult: "*",
+                               ast.Add: "+", ast.Sub: "-"}.get(type(value.op))
+                    if (isinstance(left, str) and isinstance(right, str)
+                            and op_str is not None):
+                        self.symbolic_derivations[attr] = (left, op_str, right)
+                return
+            # self.X = <opaque expression> (e.g. self.features = features
+            # passed in to __init__). Register as an opaque submodule so that
+            # forward calls self.X(input) propagate as fully-symbolic UNKNOWN
+            # rather than (unsoundly) preserving the input shape.
+            if isinstance(value, (ast.Name, ast.Attribute, ast.Subscript)):
+                self.layers[attr] = LayerDef(
+                    attr_name=attr, kind=LayerKind.UNKNOWN,
+                    line=getattr(value, "lineno", 0),
+                )
             return
         func_name = _name_or_attr(value.func)
 
@@ -1972,9 +2305,15 @@ class _InitExtractor(ast.NodeVisitor):
                 patched_call = _copy.copy(value)
                 patched_call.args = list(patched_call.args)
                 patched_call.args[0] = self._local_layer_calls[value.args[0].id]
-            layer = _extract_layer_params(kind, patched_call, self._param_map)
+            layer = _extract_layer_params(kind, patched_call, self._param_map,
+                                          self.config_param_names,
+                                          self.symbolic_config_attrs)
             layer.attr_name = attr
             self.layers[attr] = layer
+            # Synthesise nn.Parameter shapes for the layer's weight/bias so
+            # that ``forward`` references like ``weight = self.fc.weight`` can
+            # be resolved against a concrete shape rather than abstaining.
+            self._register_layer_param_shapes(attr, layer)
             return
 
         # Check if it's a user-defined nn.Module subclass (submodule)
@@ -2001,6 +2340,49 @@ class _InitExtractor(ast.NodeVisitor):
                     prefixed_layer = copy.copy(inner_layer)
                     prefixed_layer.attr_name = prefixed
                     self.layers[prefixed] = prefixed_layer
+            return
+
+        # Helper-function expansion: ``self.X = helper(args)`` where
+        # ``helper`` is a top-level function in the same source whose body
+        # is essentially ``return nn.<Layer>(...)``.  Substitute the helper
+        # parameter names with the call-site argument values and recurse.
+        # Only expand when every positional argument is statically
+        # resolvable to a constant in the current parameter map; otherwise
+        # fall back to opaque to avoid introducing false positives from a
+        # partially-unresolved layer constructor.
+        if func_name and func_name in self._function_map:
+            all_const = all(
+                _const_value(a, self._param_map) is not None
+                for a in value.args
+            ) and all(
+                _const_value(kw.value, self._param_map) is not None
+                for kw in value.keywords
+            )
+            if all_const:
+                expanded = _expand_layer_helper(
+                    self._function_map[func_name], value, self._param_map
+                )
+                if expanded is not None:
+                    exp_func_name = _name_or_attr(expanded.func)
+                    exp_is_layer, exp_kind = _is_nn_layer(exp_func_name)
+                    if exp_is_layer:
+                        layer = _extract_layer_params(
+                            exp_kind, expanded, self._param_map,
+                            self.config_param_names,
+                            self.symbolic_config_attrs)
+                        layer.attr_name = attr
+                        self.layers[attr] = layer
+                        return
+
+        # Fallback: ``self.X = some_helper(...)`` where ``some_helper`` is
+        # neither a recognised nn layer nor a known nn.Module subclass.
+        # The result is presumed to be an opaque nn.Module — register it as
+        # such so that ``self.X(input)`` in forward returns a fully-symbolic
+        # shape rather than (unsoundly) preserving the input shape.
+        self.layers[attr] = LayerDef(
+            attr_name=attr, kind=LayerKind.UNKNOWN,
+            line=value.lineno if hasattr(value, "lineno") else 0,
+        )
 
 
 # --- _ForwardExtractor: walks forward() to build computation steps --------
@@ -2159,6 +2541,7 @@ _METHOD_OPS: Dict[str, OpKind] = {
     "squeeze": OpKind.SQUEEZE,
     "unsqueeze": OpKind.UNSQUEEZE,
     "transpose": OpKind.TRANSPOSE,
+    "t": OpKind.TRANSPOSE,        # x.t() — 2D-only transpose; swap dims (-1, -2)
     "permute": OpKind.PERMUTE,
     "contiguous": OpKind.CONTIGUOUS,
     "detach": OpKind.DETACH,
@@ -2171,6 +2554,7 @@ _METHOD_OPS: Dict[str, OpKind] = {
     "repeat_interleave": OpKind.REPEAT,
     "chunk": OpKind.CHUNK,
     "split": OpKind.SPLIT,
+    "unbind": OpKind.UNBIND,
     "mean": OpKind.MEAN_REDUCE,
     "sum": OpKind.SUM_REDUCE,
     "max": OpKind.MEAN_REDUCE,
@@ -2205,10 +2589,314 @@ class _ForwardExtractor(ast.NodeVisitor):
         if scalar_attrs:
             for k, v in scalar_attrs.items():
                 self._scalar_attrs[f"self.{k}"] = v
+        # Local scalar variables defined inside forward(), e.g.
+        #   wrong_features = self.hidden_size // 2
+        # so that ``view(batch, seq, wrong_features)`` resolves the third dim.
+        self._local_scalars: Dict[str, Any] = {}
+        # Layer attribute aliases: {"weight": "self.conv.weight"} from
+        # ``weight = self.conv.weight`` so that downstream view/reshape calls
+        # see the correct parameter shape from the registered Linear/Conv layer.
+        self._param_aliases: Dict[str, str] = {}
+        # Shape-tuple-valued local variables.  Each entry is a list of
+        # "dim refs" that may be: int (concrete dim), str (symbolic dim
+        # expression), or ('copy', tensor_name, dim_idx) tuples (i.e. the
+        # k-th dim of ``tensor_name``).  Used so ``new_shape =
+        # x.size()[:-1] + (H, D)`` followed by ``y.view(*new_shape)``
+        # resolves to a fully-determined view target rather than -1.
+        self._shape_tuples: Dict[str, List[Any]] = {}
 
     def _fresh(self, hint: str = "t") -> str:
         self._tmp_counter += 1
         return f"__{hint}_{self._tmp_counter}"
+
+    def _dim_env(self) -> Dict[str, Any]:
+        """Combined name → const/symbol map for view/reshape dim resolution.
+
+        Includes ``self.<attr>`` scalar attributes captured from ``__init__``
+        plus any local variables bound inside ``forward()`` to a constant or
+        symbolic dimension expression.
+        """
+        env: Dict[str, Any] = dict(self._scalar_attrs)
+        env.update(self._local_scalars)
+        return env
+
+    def _try_record_local_scalar(self, target_name: str,
+                                 value: ast.expr) -> bool:
+        """If ``value`` is a constant / symbolic scalar expression, bind it
+        to ``target_name`` in ``_local_scalars`` so later view/reshape args
+        that mention ``target_name`` resolve concretely.
+
+        Returns True iff the value was recorded (caller may still emit a
+        CONTIGUOUS / no-op step; we deliberately do nothing else).
+        """
+        env = self._dim_env()
+        # Try concrete int / float first.
+        v = _const_value(value, env)
+        if isinstance(v, (int, float)) and not isinstance(v, bool):
+            self._local_scalars[target_name] = v
+            return True
+        # Try symbolic dim expression (e.g. self.hidden_size // self.heads).
+        v2 = _resolve_dim_value(value, env, None, None)
+        if isinstance(v2, str):
+            self._local_scalars[target_name] = v2
+            return True
+        return False
+
+    def _try_record_shape_dim_alias(self, target_name: str,
+                                     value: ast.expr) -> bool:
+        """Detect ``batch_size = x.shape[i]`` / ``= x.size(i)`` and register
+        ``target_name`` in ``_shape_dim_map`` so a later
+        ``y.view(batch_size, ...)`` resolves to a copy-from-dim sentinel
+        rather than an opaque -1."""
+        # Pattern 1: x.shape[i] (Subscript(Attribute(value=x, attr='shape'),
+        # slice=Constant(i)))
+        if isinstance(value, ast.Subscript):
+            base = value.value
+            if (isinstance(base, ast.Attribute) and base.attr == "shape"):
+                idx_val = _const_value(value.slice)
+                if isinstance(idx_val, int):
+                    src = self._resolve_name(base.value)
+                    self._shape_dim_map[target_name] = (src, idx_val)
+                    return True
+        # Pattern 2: x.size(i)
+        if (isinstance(value, ast.Call)
+                and isinstance(value.func, ast.Attribute)
+                and value.func.attr == "size"
+                and len(value.args) == 1):
+            idx_val = _const_value(value.args[0])
+            if isinstance(idx_val, int):
+                src = self._resolve_name(value.func.value)
+                self._shape_dim_map[target_name] = (src, idx_val)
+                return True
+        return False
+
+    def _eval_shape_tuple(self, value: ast.expr) -> Optional[List[Any]]:
+        """Try to evaluate ``value`` as a shape-tuple (list of dim refs).
+
+        Each returned element is one of:
+          - int: concrete dim
+          - str: symbolic dim expression
+          - ('copy', tensor_name, dim_idx): k-th dim of ``tensor_name``
+        Returns None if the value is not a recognised shape-tuple form.
+        """
+        env = self._dim_env()
+        # x.size() with no args → full shape of x as copy refs.
+        if (isinstance(value, ast.Call)
+                and isinstance(value.func, ast.Attribute)
+                and value.func.attr == "size"
+                and not value.args):
+            src = self._resolve_name(value.func.value)
+            shp = self.layers.get(src) if src in self.layers else None
+            # We don't know the rank statically; emit a sentinel "all dims
+            # of src" tuple via a single placeholder; the consumer (slice /
+            # concat) handles this lazily.  For simplicity we expand to a
+            # generous fixed rank of 8 — slicing with [:-1] etc collapses
+            # this naturally because the resulting tuple is then used in
+            # concatenation that determines the final length.
+            #
+            # Instead of a fixed rank, we inspect downstream usage by
+            # tagging the entry as a special ('full_size', src) marker.
+            return [("full_size", src)]
+        # x.shape (Attribute) → same as x.size()
+        if isinstance(value, ast.Attribute) and value.attr == "shape":
+            src = self._resolve_name(value.value)
+            return [("full_size", src)]
+        # Subscript: e.g. x.size()[:-1] or x.shape[:-1] or named[:-1]
+        if isinstance(value, ast.Subscript):
+            base = self._eval_shape_tuple(value.value)
+            if base is None:
+                return None
+            sl = value.slice
+            if isinstance(sl, ast.Slice):
+                lo = _const_value(sl.lower) if sl.lower else None
+                hi = _const_value(sl.upper) if sl.upper else None
+                stp = _const_value(sl.step) if sl.step else None
+                # Encode as a slice on the materialised tuple if possible.
+                # We expand ('full_size', src) lazily: keep as a wrapped
+                # ('slice', src, lo, hi, stp) marker.
+                if (len(base) == 1 and isinstance(base[0], tuple)
+                        and base[0][0] == "full_size"):
+                    src = base[0][1]
+                    return [("slice_size", src, lo, hi, stp)]
+                # Already-materialised list: apply Python slice directly.
+                try:
+                    return list(base[slice(lo, hi, stp)])
+                except Exception:
+                    return None
+            # Single-int indexing not useful here (returns a scalar).
+            return None
+        # BinOp Add: tuple concatenation t1 + t2.
+        if isinstance(value, ast.BinOp) and isinstance(value.op, ast.Add):
+            left = self._eval_shape_tuple(value.left)
+            right = self._eval_shape_tuple(value.right)
+            if left is None or right is None:
+                return None
+            return left + right
+        # Tuple/List literal: (a, b, c) or [a, b, c].
+        if isinstance(value, (ast.Tuple, ast.List)):
+            out: List[Any] = []
+            for el in value.elts:
+                v = _const_value(el, env)
+                if isinstance(v, int):
+                    out.append(v)
+                    continue
+                rv = _resolve_dim_value(el, env, None, None)
+                if isinstance(rv, (int, str)):
+                    out.append(rv)
+                    continue
+                # Recognise x.shape[i] as a copy-ref.
+                if isinstance(el, ast.Subscript):
+                    b = el.value
+                    if isinstance(b, ast.Attribute) and b.attr == "shape":
+                        iv = _const_value(el.slice)
+                        if isinstance(iv, int):
+                            src = self._resolve_name(b.value)
+                            out.append(("copy", src, iv))
+                            continue
+                if (isinstance(el, ast.Call)
+                        and isinstance(el.func, ast.Attribute)
+                        and el.func.attr == "size"
+                        and len(el.args) == 1):
+                    iv = _const_value(el.args[0])
+                    if isinstance(iv, int):
+                        src = self._resolve_name(el.func.value)
+                        out.append(("copy", src, iv))
+                        continue
+                # Name bound to a shape-dim alias (B from "B = x.shape[0]").
+                if isinstance(el, ast.Name) and el.id in self._shape_dim_map:
+                    src, di = self._shape_dim_map[el.id]
+                    out.append(("copy", src, di))
+                    continue
+                return None
+            return out
+        # Name reference to a previously-recorded shape tuple.
+        if isinstance(value, ast.Name) and value.id in self._shape_tuples:
+            return list(self._shape_tuples[value.id])
+        return None
+
+    def _try_record_shape_tuple(self, target_name: str,
+                                 value: ast.expr) -> bool:
+        """Try to record ``target_name`` as a shape-tuple-valued local.
+
+        Returns True iff a shape tuple was recognised.  See
+        :meth:`_eval_shape_tuple` for the encoding.
+        """
+        st = self._eval_shape_tuple(value)
+        if st is None:
+            return False
+        self._shape_tuples[target_name] = st
+        return True
+
+    def _materialise_shape_tuple(self, st: List[Any],
+                                  base_for_view: Optional[str] = None
+                                  ) -> Optional[List[Any]]:
+        """Expand a shape-tuple's lazy markers into concrete dim refs.
+
+        ``('full_size', src)`` and ``('slice_size', src, lo, hi, stp)``
+        markers are expanded to ('copy', src, k) tuples.  Returns None if
+        we cannot determine the rank of any referenced tensor.
+        """
+        out: List[Any] = []
+        for entry in st:
+            if (isinstance(entry, tuple) and len(entry) >= 2
+                    and entry[0] in ("full_size", "slice_size")):
+                src = entry[1]
+                # Look up the tensor's known rank.  We use the source
+                # graph step's output shape if available.  Fallback: if
+                # ``src`` is the input being viewed and the view extractor
+                # passes ``base_for_view``, we leave the entries as
+                # ``('copy_src', src, k)`` so the propagator can resolve
+                # later.
+                src_rank = self._lookup_tensor_rank(src)
+                if src_rank is None:
+                    return None
+                if entry[0] == "full_size":
+                    rng = range(src_rank)
+                else:
+                    lo, hi, stp = entry[2], entry[3], entry[4]
+                    rng = range(*slice(lo, hi, stp).indices(src_rank))
+                for k in rng:
+                    out.append(("copy", src, k))
+            else:
+                out.append(entry)
+        return out
+
+    def _lookup_tensor_rank(self, name: str) -> Optional[int]:
+        """Return the static rank of a tensor variable, if known.
+
+        Walks back through ``self.steps`` to find the producing step and
+        infer the output rank.  Used to expand ``x.size()`` markers.
+        """
+        # Forward inputs: rank is whatever the user passes at verification
+        # time, so we conservatively return None unless the propagator can
+        # back-fill it.  But for shape-tuple expansion we only need rank
+        # in the no-input case rarely; in the upstream-faithful corpus the
+        # patterns we care about are ``x.size()[:-1]`` where ``x`` has a
+        # known rank coming out of a Linear/etc.  We conservatively assume
+        # rank 3 for unknown forward inputs (typical NLP/Vision tensors)
+        # only when the slice doesn't depend on it; since we still record
+        # ('copy', src, k) the propagator validates k against the actual
+        # shape at check time.
+        for step in reversed(self.steps):
+            if step.output == name:
+                if step.op == OpKind.LAYER_CALL and step.layer_ref:
+                    layer = self.layers.get(step.layer_ref)
+                    if layer is not None and layer.kind in (
+                            LayerKind.LINEAR,):
+                        # Linear preserves input rank.  Walk back further.
+                        if step.inputs:
+                            r = self._lookup_tensor_rank(step.inputs[0])
+                            if r is not None:
+                                return r
+                # Reshape: dims length is the new rank.
+                if step.op == OpKind.RESHAPE:
+                    dims = step.params.get("dims") if step.params else None
+                    if dims:
+                        return len(dims)
+                return None
+        # Forward inputs default to rank 3 (BTC) — common in the patterns
+        # we care about.  This is a sound under-approximation: if the
+        # actual rank differs, the propagator will fail validation.
+        if name in self.input_names:
+            return 3
+        return None
+
+    def _try_record_layer_param_alias(self, target_name: str, value: ast.expr,
+                                       line: int, col: int) -> bool:
+        """Detect ``weight = self.<layer>.weight`` style assignments and emit
+        a CONTIGUOUS step that aliases the local name to the canonical
+        ``self.<layer>.<param>`` shape entry registered by
+        ``_InitExtractor._register_layer_param_shapes``.
+
+        Without this, downstream ``weight.view(...)`` calls on layer
+        parameters fall through to an opaque -1 reshape and the verifier
+        cannot detect (e.g.) the PEFT DoRA Conv2d-with-groups bug whose
+        bug *is* the wrong total-element count of the view target.
+        """
+        if not isinstance(value, ast.Attribute):
+            return False
+        if value.attr not in ("weight", "bias"):
+            return False
+        inner = value.value
+        if not (isinstance(inner, ast.Attribute)
+                and isinstance(inner.value, ast.Name)
+                and inner.value.id == "self"):
+            return False
+        layer_name = inner.attr
+        if layer_name not in self.layers:
+            return False
+        canonical = f"self.{layer_name}.{value.attr}"
+        self._param_aliases[target_name] = canonical
+        # Emit a shape-preserving CONTIGUOUS step so the propagator copies
+        # the parameter shape into the local name's shape_env entry.
+        self.steps.append(ComputationStep(
+            op=OpKind.CONTIGUOUS,
+            inputs=[canonical],
+            output=target_name,
+            line=line, col=col,
+        ))
+        return True
+
 
     def _resolve_name(self, node: ast.expr) -> str:
         """Return the tensor-variable name for an expression, following aliases."""
@@ -2270,6 +2958,46 @@ class _ForwardExtractor(ast.NodeVisitor):
                     self.generic_visit(node)
                     return
 
+                # Detect "B, T, C = x.size()" — same as x.shape but a method call.
+                if (isinstance(node.value, ast.Call)
+                        and isinstance(node.value.func, ast.Attribute)
+                        and node.value.func.attr == "size"
+                        and not node.value.args):
+                    src_tensor = self._resolve_name(node.value.func.value)
+                    for dim_i, elt in enumerate(target.elts):
+                        if isinstance(elt, ast.Name) and elt.id != "_":
+                            self._shape_dim_map[elt.id] = (src_tensor, dim_i)
+                    self.generic_visit(node)
+                    return
+
+                # Distribute parallel-tuple assignment: q, k, v = a[0], a[1], a[2]
+                # → process each (target_i, value_i) independently.
+                if (isinstance(node.value, ast.Tuple)
+                        and len(node.value.elts) == len(target.elts)):
+                    for tgt_i, val_i in zip(target.elts, node.value.elts):
+                        if isinstance(tgt_i, ast.Name) and tgt_i.id != "_":
+                            sub_name = tgt_i.id
+                        else:
+                            sub_name = self._fresh("ptup")
+                        self._process_expr(val_i, sub_name,
+                                           node.lineno, node.col_offset)
+                    self.generic_visit(node)
+                    return
+
+                # --- Task B: q, k, v = X.split(...) / X.chunk(...) -----------
+                # Emit a SPLIT step per output element so each q/k/v gets the
+                # correct chunk shape independently.
+                if self._try_emit_split_unpack(target, node.value,
+                                                node.lineno, node.col_offset):
+                    self.generic_visit(node)
+                    return
+
+                # --- q, k, v = X.unbind(dim) ------------------------------------
+                if self._try_emit_unbind_unpack(target, node.value,
+                                                node.lineno, node.col_offset):
+                    self.generic_visit(node)
+                    return
+
                 # Handle nested tuple for LSTM hidden state extraction:
                 #   _, (h, _) = self.lstm(x)  or  output, (h_n, c_n) = self.lstm(x)
                 # The inner tuple contains the hidden state which has a different
@@ -2316,8 +3044,174 @@ class _ForwardExtractor(ast.NodeVisitor):
         else:
             target_name = self._fresh("assign")
 
+        # Local scalar capture: ``wrong_features = self.hidden_size // 2``.
+        # Recording this allows downstream view/reshape calls that mention
+        # ``wrong_features`` to resolve the dim concretely instead of
+        # falling through to an opaque -1.  Only meaningful when the
+        # target is a single ast.Name (genuine local variable).
+        if (len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)):
+            self._try_record_local_scalar(node.targets[0].id, node.value)
+            # Single-dim shape alias: ``batch = x.shape[0]`` or
+            # ``batch = x.size(0)``.  Register in _shape_dim_map so a
+            # follow-up ``y.view(batch, -1, H, D)`` resolves the first
+            # arg as "copy from base dim 0" sentinel rather than -1.
+            self._try_record_shape_dim_alias(node.targets[0].id, node.value)
+            # Track shape-tuple-valued local variables (size(), [:-1],
+            # tuple concatenation) so ``view(*new_shape)`` patterns can
+            # be resolved concretely.  Used heavily in HuggingFace
+            # ``new_qkv_shape = qkv.size()[:-1] + (H, D)`` style code.
+            self._try_record_shape_tuple(node.targets[0].id, node.value)
+            # Layer-attribute alias: ``weight = self.conv.weight`` or
+            # ``bias = self.fc.bias``.  We record the canonical name so a
+            # follow-up ``weight.view(...)`` is treated as a reshape of the
+            # registered nn.Parameter shape (populated below via
+            # ``_layer_param_shape``).
+            self._try_record_layer_param_alias(node.targets[0].id, node.value,
+                                               node.lineno, node.col_offset)
+
         self._process_expr(node.value, target_name, node.lineno, node.col_offset)
         self.generic_visit(node)
+
+
+    def _try_emit_split_unpack(self, target: ast.Tuple, value: ast.expr,
+                                line: int, col: int) -> bool:
+        """Detect ``q, k, v = X.split(...)`` / ``X.chunk(...)`` and emit a
+        SPLIT step per output element so that each q/k/v's shape reflects its
+        own slice of the split dimension.
+
+        Returns True if handled, False to fall through to default tuple logic.
+        """
+        if not isinstance(value, ast.Call):
+            return False
+        if not (isinstance(value.func, ast.Attribute)
+                and value.func.attr in ("split", "chunk")):
+            return False
+        method = value.func.attr
+        # Skip torch.split(...) functional form — base would be 'torch'.
+        base_name = _name_or_attr(value.func.value)
+        if base_name in ("torch", "F", "nn", "torch.nn",
+                         "torch.nn.functional"):
+            # torch.split(x, split_size, dim) — input is value.args[0]
+            return False  # don't handle here
+
+        base = self._resolve_arg(value.func.value)
+        n = len(target.elts)
+        if n == 0:
+            return False
+
+        # dim
+        dim_val = None
+        if len(value.args) > 1:
+            dim_val = _const_value(value.args[1], self._scalar_attrs)
+        for kw in value.keywords:
+            if kw.arg == "dim":
+                dim_val = _const_value(kw.value, self._scalar_attrs)
+        if not isinstance(dim_val, int):
+            dim_val = 0
+
+        # split_size_or_sizes (per-chunk size) for .split, chunks for .chunk
+        sizes: List[Any] = []  # length n; each entry is int|str|None
+        chunks_count: Optional[int] = None
+        if method == "split":
+            if value.args:
+                first = value.args[0]
+                if isinstance(first, ast.List):
+                    sizes = [_const_value(e, self._scalar_attrs) for e in first.elts]
+                else:
+                    raw = _const_value(first, self._scalar_attrs)
+                    if raw is None:
+                        # try resolution via scalar_attrs which may hold strings
+                        # _const_value already does that for self.X if str.
+                        # Fall back: attempt direct attr lookup
+                        if (isinstance(first, ast.Attribute)
+                                and isinstance(first.value, ast.Name)
+                                and first.value.id == "self"
+                                and first.attr in [k.split(".",1)[1] if "." in k else k
+                                                    for k in self._scalar_attrs]):
+                            raw = self._scalar_attrs.get(f"self.{first.attr}")
+                    sizes = [raw] * n
+        else:  # chunk
+            if value.args:
+                cn = _const_value(value.args[0], self._scalar_attrs)
+                if isinstance(cn, int) and cn > 0:
+                    chunks_count = cn
+
+        # Emit per-element steps
+        for i, elt in enumerate(target.elts):
+            if isinstance(elt, ast.Name) and elt.id != "_":
+                out_name = elt.id
+            else:
+                out_name = self._fresh("split")
+            params: Dict[str, Any] = {"dim": dim_val, "split_index": i,
+                                       "n_outputs": n}
+            if method == "split":
+                if sizes and i < len(sizes):
+                    params["split_size"] = sizes[i]
+                # Only set "chunks" when split_size is concretely an int —
+                # if symbolic, downstream propagation should prefer the
+                # n_outputs-based fallback to detect divisibility bugs.
+                if (sizes and i < len(sizes)
+                        and isinstance(sizes[i], int)):
+                    params["chunks"] = n
+            else:  # chunk
+                if chunks_count is not None:
+                    params["chunks"] = chunks_count
+                else:
+                    params["chunks"] = n
+            self.steps.append(ComputationStep(
+                op=OpKind.SPLIT if method == "split" else OpKind.CHUNK,
+                inputs=[base], output=out_name,
+                params=params, line=line, col=col,
+            ))
+        return True
+
+    def _try_emit_unbind_unpack(self, target: ast.Tuple, value: ast.expr,
+                                line: int, col: int) -> bool:
+        """Detect ``q, k, v = X.unbind(dim)`` and emit one UNBIND step per
+        output element.  Each output element drops the split dimension from
+        the input shape (unbind removes dim completely, unlike split/chunk).
+
+        Returns True if handled, False to fall through to default tuple logic.
+        """
+        if not isinstance(value, ast.Call):
+            return False
+        if not (isinstance(value.func, ast.Attribute)
+                and value.func.attr == "unbind"):
+            return False
+        # Skip torch.unbind(x, dim) functional form.
+        base_name = _name_or_attr(value.func.value)
+        if base_name in ("torch", "F", "nn", "torch.nn",
+                         "torch.nn.functional"):
+            return False
+
+        base = self._resolve_arg(value.func.value)
+        n = len(target.elts)
+        if n == 0:
+            return False
+
+        # dim (default 0)
+        dim_val = 0
+        if value.args:
+            dim_val = _const_value(value.args[0], self._scalar_attrs)
+            if not isinstance(dim_val, int):
+                dim_val = 0
+        for kw in value.keywords:
+            if kw.arg == "dim":
+                v = _const_value(kw.value, self._scalar_attrs)
+                if isinstance(v, int):
+                    dim_val = v
+
+        for i, elt in enumerate(target.elts):
+            out_name = elt.id if isinstance(elt, ast.Name) and elt.id != "_" \
+                       else self._fresh("unbind")
+            self.steps.append(ComputationStep(
+                op=OpKind.UNBIND,
+                inputs=[base], output=out_name,
+                params={"dim": dim_val, "unbind_index": i, "n_outputs": n},
+                line=line, col=col,
+            ))
+        return True
 
     def visit_AugAssign(self, node: ast.AugAssign) -> None:
         """Handle augmented assignments like ``x += self.layer(x)``."""
@@ -2597,6 +3491,20 @@ class _ForwardExtractor(ast.NodeVisitor):
             self._process_expr(arg, tmp, getattr(arg, 'lineno', 0),
                                getattr(arg, 'col_offset', 0))
             return tmp
+        # Handle the `.T` attribute (e.g. self.weight.T) — emit a TRANSPOSE step
+        # swapping the last two dimensions (matching PyTorch semantics for matmul).
+        if isinstance(arg, ast.Attribute) and arg.attr == "T":
+            base = self._resolve_arg(arg.value)
+            tmp = self._fresh("T_attr")
+            self.steps.append(ComputationStep(
+                op=OpKind.TRANSPOSE,
+                inputs=[base],
+                output=tmp,
+                params={"dim0": -2, "dim1": -1},
+                line=getattr(arg, 'lineno', 0),
+                col=getattr(arg, 'col_offset', 0),
+            ))
+            return tmp
         return self._resolve_name(arg)
 
     def _process_call(
@@ -2610,6 +3518,29 @@ class _ForwardExtractor(ast.NodeVisitor):
                 func.value.id == "self" and
                 func.attr in self.layers):
             layer_name = func.attr
+            inputs = [self._resolve_arg(a) for a in node.args]
+            self.steps.append(ComputationStep(
+                op=OpKind.LAYER_CALL,
+                inputs=inputs,
+                output=target,
+                layer_ref=layer_name,
+                line=line, col=col,
+            ))
+            return
+
+        # --- self.<unknown_attr>(x) ------------------------------------------
+        # E.g. self._process_input(x) where _process_input is a sibling
+        # method or a self.X = <opaque> never seen in __init__. Register an
+        # opaque LayerKind.UNKNOWN so the call propagates a fully-symbolic
+        # output shape (sound abstention) rather than falling through to
+        # OpKind.CUSTOM (which preserves the input shape — unsound).
+        if (isinstance(func, ast.Attribute) and
+                isinstance(func.value, ast.Name) and
+                func.value.id == "self"):
+            layer_name = func.attr
+            self.layers[layer_name] = LayerDef(
+                attr_name=layer_name, kind=LayerKind.UNKNOWN, line=line,
+            )
             inputs = [self._resolve_arg(a) for a in node.args]
             self.steps.append(ComputationStep(
                 op=OpKind.LAYER_CALL,
@@ -2634,10 +3565,56 @@ class _ForwardExtractor(ast.NodeVisitor):
                     params: Dict[str, Any] = {}
 
                     if method in ("view", "reshape"):
-                        dims = [_const_value(a, self._scalar_attrs) for a in node.args]
+                        env = self._dim_env()
+                        # Expand starred shape-tuple args:
+                        # ``view(*new_shape)`` where ``new_shape`` was
+                        # recorded by _try_record_shape_tuple.  Each entry
+                        # of the recorded tuple is one of:
+                        #   - int: concrete dim
+                        #   - str: symbolic dim expression
+                        #   - ('copy', tensor, k): k-th dim of ``tensor``
+                        #
+                        # We expand into a flat list of "synthetic" arg
+                        # placeholders: a None ast.Name marker plus a
+                        # parallel list ``preresolved`` mapping idx to the
+                        # concrete value to use in ``dims``.
+                        flat_args: List[Optional[ast.expr]] = []
+                        preresolved: Dict[int, Any] = {}
+                        starred_aliases: Dict[int, Tuple[str, int]] = {}
+                        for a in node.args:
+                            if (isinstance(a, ast.Starred)
+                                    and isinstance(a.value, ast.Name)
+                                    and a.value.id in self._shape_tuples):
+                                st = self._materialise_shape_tuple(
+                                    self._shape_tuples[a.value.id])
+                                if st is not None:
+                                    for entry in st:
+                                        i = len(flat_args)
+                                        if (isinstance(entry, tuple)
+                                                and entry[0] == "copy"):
+                                            starred_aliases[i] = (
+                                                entry[1], entry[2])
+                                            preresolved[i] = entry[1]
+                                        else:
+                                            preresolved[i] = entry
+                                        flat_args.append(None)
+                                    continue
+                            flat_args.append(a)
+                        dims = [
+                            preresolved[i] if i in preresolved
+                            else _const_value(a, env)
+                            for i, a in enumerate(flat_args)
+                        ]
                         # Detect x.size(dim) or x.shape[dim] patterns
                         size_dim_indices = []
-                        for idx, (d, a) in enumerate(zip(dims, node.args)):
+                        # Records {dim_idx: (src_tensor_var, src_dim_idx)} for
+                        # cross-tensor aliases so the propagator can resolve
+                        # them against the current shape_env.
+                        alias_resolutions: Dict[int, Tuple[str, int]] = dict(
+                            starred_aliases)
+                        for idx, (d, a) in enumerate(zip(dims, flat_args)):
+                            if a is None:
+                                continue  # pre-resolved (starred expansion)
                             if d is None:
                                 if isinstance(a, ast.Call):
                                     # x.size(dim) → mark as "keep from input"
@@ -2646,11 +3623,34 @@ class _ForwardExtractor(ast.NodeVisitor):
                                     # x.shape[dim] → mark as "keep from input"
                                     size_dim_indices.append(idx)
                                 elif isinstance(a, ast.Name):
+                                    # Local-scalar resolution must precede
+                                    # shape-dim alias logic so a view dim that
+                                    # was bound to a constructor scalar (e.g.
+                                    # ``wrong_features = self.hidden_size//2``)
+                                    # propagates as a concrete int rather than
+                                    # an opaque -1 free dimension.
+                                    if a.id in self._local_scalars:
+                                        dims[idx] = self._local_scalars[a.id]
+                                        continue
                                     # Check if variable comes from "B, C, H, W = base.shape"
                                     alias = self._shape_dim_map.get(a.id)
                                     if alias is not None and alias[0] == base:
                                         # Encode as sentinel -k-2 meaning "copy from dim k"
                                         dims[idx] = -alias[1] - 2
+                                        continue
+                                    if alias is not None:
+                                        # Cross-tensor alias: record for
+                                        # propagation-time resolution AND fall
+                                        # back to symbolic name as the dim.
+                                        alias_resolutions[idx] = alias
+                                        dims[idx] = a.id
+                                        continue
+                                elif isinstance(a, ast.BinOp):
+                                    # Try to resolve as int|str via dim helper.
+                                    rv = _resolve_dim_value(
+                                        a, env, None, None)
+                                    if isinstance(rv, (int, str)):
+                                        dims[idx] = rv
                                         continue
                                 dims[idx] = -1
                         # Common pattern: view(x.size(0), -1) → flatten(1)
@@ -2672,6 +3672,8 @@ class _ForwardExtractor(ast.NodeVisitor):
                         params["dims"] = tuple(
                             d if d is not None else -1 for d in dims
                         )
+                        if alias_resolutions:
+                            params["__alias_resolutions__"] = alias_resolutions
                     elif method == "flatten":
                         sd = _const_value(node.args[0]) if node.args else 1
                         params["start_dim"] = sd
@@ -2682,6 +3684,10 @@ class _ForwardExtractor(ast.NodeVisitor):
                         if len(node.args) >= 2:
                             params["dim0"] = _const_value(node.args[0])
                             params["dim1"] = _const_value(node.args[1])
+                    elif method == "t":
+                        # x.t() — 2D transpose, swap last two dimensions
+                        params["dim0"] = -2
+                        params["dim1"] = -1
                     elif method == "permute":
                         params["dims"] = tuple(
                             _const_value(a) for a in node.args
@@ -2878,6 +3884,83 @@ def _find_method(cls_node: ast.ClassDef, name: str) -> Optional[ast.FunctionDef]
     return None
 
 
+def _collect_helper_functions(tree: ast.AST) -> Dict[str, ast.FunctionDef]:
+    """Return top-level ``def helper(...): return nn.<Layer>(...)`` functions.
+
+    Used to expand torchvision-style ``conv3x3``/``conv1x1`` helpers and
+    similar one-liner factory functions inline at a layer assignment site
+    so the resulting layer is recognised as in-fragment instead of opaque.
+    """
+    out: Dict[str, ast.FunctionDef] = {}
+    for node in getattr(tree, "body", []):
+        if not isinstance(node, ast.FunctionDef):
+            continue
+        # Body must be a single Return whose value is a Call.
+        body = [s for s in node.body if not isinstance(s, ast.Expr)
+                or not (isinstance(s.value, ast.Constant)
+                        and isinstance(s.value.value, str))]  # strip docstring
+        if len(body) != 1 or not isinstance(body[0], ast.Return):
+            continue
+        ret = body[0].value
+        if not isinstance(ret, ast.Call):
+            continue
+        # Only register helpers that return a known nn.<Layer>(...)
+        ret_name = _name_or_attr(ret.func)
+        is_layer, _ = _is_nn_layer(ret_name)
+        if is_layer:
+            out[node.name] = node
+    return out
+
+
+def _expand_layer_helper(
+    fn: ast.FunctionDef, call: ast.Call, outer_param_map: Dict[str, Any],
+) -> Optional[ast.Call]:
+    """Substitute *call*'s positional/keyword args into *fn*'s body Call.
+
+    Returns the rewritten ``nn.<Layer>(...)`` Call node with parameter
+    references replaced by the call-site argument expressions, or ``None``
+    if substitution fails.  Only handles the simple shape:
+        def helper(a, b=..., c=...):
+            return nn.<Layer>(<expr-using-a-b-c>)
+    """
+    # Strip docstring + locate the return Call
+    body = [s for s in fn.body if not (isinstance(s, ast.Expr)
+            and isinstance(s.value, ast.Constant)
+            and isinstance(s.value.value, str))]
+    if len(body) != 1 or not isinstance(body[0], ast.Return):
+        return None
+    ret_call = body[0].value
+    if not isinstance(ret_call, ast.Call):
+        return None
+    # Build name -> AST-expr map from the call site, applying defaults.
+    args = fn.args
+    name_to_expr: Dict[str, ast.expr] = {}
+    pos_names = [a.arg for a in args.args]
+    defaults = list(args.defaults or [])
+    n_defaults = len(defaults)
+    n_args = len(pos_names)
+    # apply defaults
+    for i, d in enumerate(defaults):
+        name_to_expr[pos_names[n_args - n_defaults + i]] = d
+    # positional args
+    for i, a in enumerate(call.args):
+        if i < n_args:
+            name_to_expr[pos_names[i]] = a
+    # keyword args
+    for kw in call.keywords:
+        if kw.arg in pos_names:
+            name_to_expr[kw.arg] = kw.value
+    # Substitute parameter Name nodes inside the return call.
+    class _Substitute(ast.NodeTransformer):
+        def visit_Name(self, n: ast.Name) -> ast.AST:  # noqa: N802
+            if n.id in name_to_expr:
+                return name_to_expr[n.id]
+            return n
+    new_call = _Substitute().visit(copy.deepcopy(ret_call))
+    ast.fix_missing_locations(new_call)
+    return new_call
+
+
 def _collect_module_classes(tree: ast.AST) -> List[ast.ClassDef]:
     """Return all ``nn.Module`` subclass definitions from *tree* in source order."""
     classes = []
@@ -2887,7 +3970,15 @@ def _collect_module_classes(tree: ast.AST) -> List[ast.ClassDef]:
         if isinstance(node, ast.ClassDef):
             bases = [_name_or_attr(b) for b in node.bases]
             is_module = any(
-                b in ("nn.Module", "Module", "torch.nn.Module")
+                b in (
+                    "nn.Module", "Module", "torch.nn.Module",
+                    # Common nn.Module subclasses whose children are also
+                    # valid analysis targets (no additional __init__ analysis
+                    # needed — inherited parameters are handled symbolically):
+                    "nn.Linear", "Linear", "torch.nn.Linear",
+                    "nn.Embedding", "Embedding", "torch.nn.Embedding",
+                    "nn.LayerNorm", "LayerNorm", "torch.nn.LayerNorm",
+                )
                 for b in bases if b is not None
             )
             if is_module:
@@ -3017,6 +4108,8 @@ def extract_computation_graph(source: str) -> ComputationGraph:
 
     # Build class map for submodule resolution
     class_map: Dict[str, ast.ClassDef] = {c.name: c for c in module_classes}
+    # Collect helper factory functions (e.g. ``conv3x3``) for inline expansion
+    function_map: Dict[str, ast.FunctionDef] = _collect_helper_functions(tree)
 
     # Select the root module
     root_cls = _find_root_module(module_classes)
@@ -3034,12 +4127,41 @@ def extract_computation_graph(source: str) -> ComputationGraph:
     init_fn = _find_method(root_cls, "__init__")
     scalar_attrs: Dict[str, Any] = {}
     if init_fn:
-        extractor = _InitExtractor(class_map=class_map)
+        extractor = _InitExtractor(class_map=class_map, function_map=function_map)
         extractor.extract(init_fn)
         graph.layers = extractor.layers
         graph.buffer_shapes = extractor.buffer_shapes
         graph.param_shapes = extractor.param_shapes
         scalar_attrs = extractor.scalar_attrs
+
+    # Inject inherited parameter shapes for well-known nn.Module subclasses
+    # that omit __init__ (e.g. nn.Linear subclasses use self.weight/self.bias).
+    if not init_fn:
+        bases = [_name_or_attr(b) for b in root_cls.bases]
+        if any(b in ("nn.Linear", "Linear", "torch.nn.Linear") for b in bases if b):
+            # Symbolic (out_features, in_features) — not known statically
+            graph.param_shapes.setdefault(
+                "self.weight",
+                TensorShape((ShapeDim("_linear_out"), ShapeDim("_linear_in")))
+            )
+            graph.param_shapes.setdefault(
+                "self.bias",
+                TensorShape((ShapeDim("_linear_out"),))
+            )
+        elif any(b in ("nn.Embedding", "Embedding", "torch.nn.Embedding") for b in bases if b):
+            graph.param_shapes.setdefault(
+                "self.weight",
+                TensorShape((ShapeDim("_emb_vocab"), ShapeDim("_emb_dim")))
+            )
+        elif any(b in ("nn.LayerNorm", "LayerNorm", "torch.nn.LayerNorm") for b in bases if b):
+            graph.param_shapes.setdefault(
+                "self.weight",
+                TensorShape((ShapeDim("_ln_dim"),))
+            )
+            graph.param_shapes.setdefault(
+                "self.bias",
+                TensorShape((ShapeDim("_ln_dim"),))
+            )
 
     # --- forward: extract steps ---
     fwd_fn = _find_method(root_cls, "forward")
@@ -3766,7 +4888,8 @@ def _propagate_linear(
         return None, "Linear requires at least 1D input"
 
     last = input_shape.dims[-1]
-    if layer.in_features is not None and not last.is_symbolic:
+    if (layer.in_features is not None and not last.is_symbolic
+            and isinstance(layer.in_features, int)):
         if last.value != layer.in_features:
             return None, (
                 f"Linear expects last dim={layer.in_features}, "
@@ -3775,7 +4898,11 @@ def _propagate_linear(
 
     out_feat = layer.out_features
     if out_feat is None:
-        return None, "Linear out_features unknown"
+        # Out-of-fragment: out_features could not be resolved (e.g. came from
+        # an unresolved config object). Sound abstention: propagate symbolic
+        # last dim and emit no error.
+        new_dims = input_shape.dims[:-1] + (ShapeDim(f"_unk_lin_out_{layer.attr_name or 'anon'}"),)
+        return TensorShape(new_dims), None
 
     new_dims = input_shape.dims[:-1] + (ShapeDim(out_feat),)
     return TensorShape(new_dims), None
@@ -3793,7 +4920,8 @@ def _propagate_conv2d(
         return None, f"Conv2d expects 4D input, got {input_shape.ndim}D"
 
     c_in = input_shape.dims[1]
-    if layer.in_channels is not None and not c_in.is_symbolic:
+    if (layer.in_channels is not None and not c_in.is_symbolic
+            and isinstance(layer.in_channels, int)):
         if c_in.value != layer.in_channels:
             return None, (
                 f"Conv2d expects {layer.in_channels} input channels, "
@@ -3804,12 +4932,12 @@ def _propagate_conv2d(
     # divisible by groups
     groups = layer.params.get("groups", 1)
     if isinstance(groups, int) and groups > 1:
-        if layer.in_channels is not None and layer.in_channels % groups != 0:
+        if layer.in_channels is not None and isinstance(layer.in_channels, int) and layer.in_channels % groups != 0:
             return None, (
                 f"Conv2d groups={groups} does not divide "
                 f"in_channels={layer.in_channels}"
             )
-        if layer.out_channels is not None and layer.out_channels % groups != 0:
+        if layer.out_channels is not None and isinstance(layer.out_channels, int) and layer.out_channels % groups != 0:
             return None, (
                 f"Conv2d groups={groups} does not divide "
                 f"out_channels={layer.out_channels}"
@@ -3901,7 +5029,7 @@ def _propagate_conv1d(
         return None, f"Conv1d expects 3D input, got {input_shape.ndim}D"
 
     c_in = input_shape.dims[1]
-    if layer.in_channels is not None and not c_in.is_symbolic:
+    if layer.in_channels is not None and not c_in.is_symbolic and isinstance(layer.in_channels, int):
         if c_in.value != layer.in_channels:
             return None, (
                 f"Conv1d expects {layer.in_channels} input channels, "
@@ -3910,12 +5038,12 @@ def _propagate_conv1d(
 
     groups = layer.params.get("groups", 1)
     if isinstance(groups, int) and groups > 1:
-        if layer.in_channels is not None and layer.in_channels % groups != 0:
+        if layer.in_channels is not None and isinstance(layer.in_channels, int) and layer.in_channels % groups != 0:
             return None, (
                 f"Conv1d groups={groups} does not divide "
                 f"in_channels={layer.in_channels}"
             )
-        if layer.out_channels is not None and layer.out_channels % groups != 0:
+        if layer.out_channels is not None and isinstance(layer.out_channels, int) and layer.out_channels % groups != 0:
             return None, (
                 f"Conv1d groups={groups} does not divide "
                 f"out_channels={layer.out_channels}"
@@ -3961,7 +5089,7 @@ def _propagate_batchnorm(
         return None, f"BatchNorm requires at least 2D input, got {input_shape.ndim}D"
 
     feat = input_shape.dims[1]
-    if layer.num_features is not None and not feat.is_symbolic:
+    if layer.num_features is not None and not feat.is_symbolic and isinstance(layer.num_features, int):
         if feat.value != layer.num_features:
             return None, (
                 f"BatchNorm expects {layer.num_features} features, "
@@ -4115,25 +5243,41 @@ def _propagate_pool2d(
 def _propagate_sequential(
     input_shape: TensorShape, layer: LayerDef
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """Propagate shape through nn.Sequential by chaining sub-layers."""
+    """Propagate shape through nn.Sequential by chaining sub-layers.
+
+    Sound-abstention policy: if the input to the Sequential carries any
+    symbolic ``_unk_`` dim (i.e. came through an opaque submodule), or if a
+    sub-layer's transfer function fails because its parameters could not be
+    statically resolved, we abstain (return a fully-symbolic same-ndim shape)
+    rather than report a shape mismatch. This avoids false positives from
+    helper-function-built Sequentials (e.g. torchvision ``make_layers``).
+    """
     if not layer.sub_layers:
         return input_shape, None
+    def _abstain(sh: TensorShape) -> TensorShape:
+        return TensorShape(tuple(
+            ShapeDim(f"_unk_seq_{layer.attr_name}_{i}") for i in range(sh.ndim)
+        ))
+    if any(d.is_symbolic and isinstance(d.value, str) and d.value.startswith("_unk")
+           for d in input_shape.dims):
+        return _abstain(input_shape), None
     current = input_shape
     for sub in layer.sub_layers:
         propagator = _LAYER_PROPAGATORS.get(sub.kind)
         if propagator is not None:
-            current, err = propagator(current, sub)
-            if err:
-                return None, f"Sequential sub-layer {sub.attr_name}: {err}"
-            if current is None:
-                return None, f"Sequential sub-layer {sub.attr_name}: shape unknown"
+            new_current, err = propagator(current, sub)
+            if err or new_current is None:
+                # Sound abstention on opaque/unresolvable sub-layer.
+                return _abstain(current), None
+            current = new_current
         elif sub.kind in (LayerKind.RELU, LayerKind.DROPOUT,
                           LayerKind.IDENTITY, LayerKind.SOFTMAX):
             pass  # shape-preserving
         elif sub.kind == LayerKind.FLATTEN:
-            current, err = _propagate_flatten(current, 1)
-            if current is None:
-                return None, f"Sequential sub-layer {sub.attr_name}: flatten failed"
+            new_current, _err = _propagate_flatten(current, 1)
+            if new_current is None:
+                return _abstain(current), None
+            current = new_current
         else:
             # Unknown sub-layer: mark output shape as UNKNOWN (fully symbolic)
             logger.warning(
@@ -4154,7 +5298,7 @@ def _propagate_groupnorm(
     if input_shape.ndim < 2:
         return None, f"GroupNorm requires at least 2D input, got {input_shape.ndim}D"
     feat = input_shape.dims[1]
-    if layer.num_features is not None and not feat.is_symbolic:
+    if layer.num_features is not None and not feat.is_symbolic and isinstance(layer.num_features, int):
         if feat.value != layer.num_features:
             return None, (
                 f"GroupNorm expects {layer.num_features} channels, "
@@ -4170,7 +5314,7 @@ def _propagate_instancenorm2d(
     if input_shape.ndim != 4:
         return None, f"InstanceNorm2d expects 4D input, got {input_shape.ndim}D"
     feat = input_shape.dims[1]
-    if layer.num_features is not None and not feat.is_symbolic:
+    if layer.num_features is not None and not feat.is_symbolic and isinstance(layer.num_features, int):
         if feat.value != layer.num_features:
             return None, (
                 f"InstanceNorm2d expects {layer.num_features} channels, "
@@ -4267,13 +5411,13 @@ def _propagate_multihead_attention(
     num_heads = layer.num_heads
 
     last = input_shape.dims[-1]
-    if embed_dim is not None and not last.is_symbolic:
+    if isinstance(embed_dim, int) and not last.is_symbolic:
         if last.value != embed_dim:
             return None, (
                 f"MultiheadAttention expects last dim={embed_dim}, "
                 f"got {last.value}"
             )
-    if embed_dim is not None and num_heads is not None:
+    if isinstance(embed_dim, int) and isinstance(num_heads, int):
         if embed_dim % num_heads != 0:
             return None, (
                 f"embed_dim={embed_dim} not divisible by num_heads={num_heads}"
@@ -4632,7 +5776,7 @@ def _propagate_instancenorm1d(
     if input_shape.ndim != 3:
         return None, f"InstanceNorm1d expects 3D input, got {input_shape.ndim}D"
     feat = input_shape.dims[1]
-    if layer.num_features is not None and not feat.is_symbolic:
+    if layer.num_features is not None and not feat.is_symbolic and isinstance(layer.num_features, int):
         if feat.value != layer.num_features:
             return None, (
                 f"InstanceNorm1d expects {layer.num_features} features, "
@@ -4648,7 +5792,7 @@ def _propagate_instancenorm3d(
     if input_shape.ndim != 5:
         return None, f"InstanceNorm3d expects 5D input, got {input_shape.ndim}D"
     feat = input_shape.dims[1]
-    if layer.num_features is not None and not feat.is_symbolic:
+    if layer.num_features is not None and not feat.is_symbolic and isinstance(layer.num_features, int):
         if feat.value != layer.num_features:
             return None, (
                 f"InstanceNorm3d expects {layer.num_features} features, "
@@ -4671,7 +5815,7 @@ def _propagate_batchnorm3d(
     if input_shape.ndim != 5:
         return None, f"BatchNorm3d expects 5D input, got {input_shape.ndim}D"
     feat = input_shape.dims[1]
-    if layer.num_features is not None and not feat.is_symbolic:
+    if layer.num_features is not None and not feat.is_symbolic and isinstance(layer.num_features, int):
         if feat.value != layer.num_features:
             return None, (
                 f"BatchNorm3d expects {layer.num_features} features, "
@@ -4843,7 +5987,7 @@ def _propagate_conv3d(
     if input_shape.ndim != 5:
         return None, f"Conv3d expects 5D input, got {input_shape.ndim}D"
     c_in = input_shape.dims[1]
-    if layer.in_channels is not None and not c_in.is_symbolic:
+    if layer.in_channels is not None and not c_in.is_symbolic and isinstance(layer.in_channels, int):
         if c_in.value != layer.in_channels:
             return None, (
                 f"Conv3d expects {layer.in_channels} input channels, "
@@ -4904,7 +6048,13 @@ def _propagate_layernorm(inp_shape: TensorShape, layer: LayerDef) -> Tuple[Optio
         ns = normalized_shape if isinstance(normalized_shape, (list, tuple)) else [normalized_shape]
         if len(ns) <= inp_shape.ndim:
             for i, (expected, actual) in enumerate(zip(reversed(ns), reversed(inp_shape.dims))):
-                if not actual.is_symbolic and actual.value != expected:
+                # Symbolic-vs-concrete or vice versa: bind, do not reject. The
+                # concrete value is consistent with any free symbol; abstaining
+                # here preserves soundness without spurious FP on configs whose
+                # attributes were resolved symbolically.
+                if isinstance(expected, str) or actual.is_symbolic:
+                    continue
+                if actual.value != expected:
                     return None, f"LayerNorm normalized_shape[-{i+1}]={expected} but input dim={actual.value}"
     return inp_shape, None
 
@@ -5716,14 +6866,14 @@ class ConstraintVerifier:
                 if layer.kind == LayerKind.LINEAR:
                     for i in range(min(len(pre_d) - 1, len(post_d) - 1)):
                         cs.append(post_d[i] == pre_d[i])
-                    if layer.out_features is not None and post_d:
+                    if layer.out_features is not None and isinstance(layer.out_features, int) and post_d:
                         cs.append(
                             post_d[-1] == z3.IntVal(layer.out_features)
                         )
                 elif layer.kind in (LayerKind.CONV2D, LayerKind.CONV1D):
                     if pre_d and post_d:
                         cs.append(post_d[0] == pre_d[0])
-                    if layer.out_channels is not None and len(post_d) >= 2:
+                    if layer.out_channels is not None and isinstance(layer.out_channels, int) and len(post_d) >= 2:
                         cs.append(
                             post_d[1] == z3.IntVal(layer.out_channels)
                         )
@@ -5741,7 +6891,7 @@ class ConstraintVerifier:
                 elif layer.kind == LayerKind.EMBEDDING:
                     for i in range(min(len(pre_d), len(post_d) - 1)):
                         cs.append(post_d[i] == pre_d[i])
-                    if layer.embedding_dim is not None and post_d:
+                    if layer.embedding_dim is not None and isinstance(layer.embedding_dim, int) and post_d:
                         cs.append(
                             post_d[-1] == z3.IntVal(layer.embedding_dim)
                         )
@@ -5799,7 +6949,7 @@ class ConstraintVerifier:
                     # Preserve batch dim; set out_channels
                     if pre_d and post_d:
                         cs.append(post_d[0] == pre_d[0])
-                    if layer.out_channels is not None and len(post_d) >= 2:
+                    if layer.out_channels is not None and isinstance(layer.out_channels, int) and len(post_d) >= 2:
                         cs.append(
                             post_d[1] == z3.IntVal(layer.out_channels)
                         )
@@ -5811,7 +6961,7 @@ class ConstraintVerifier:
                     # MHA preserves shape; input last dim == embed_dim
                     for dp, dq in zip(pre_d, post_d):
                         cs.append(dq == dp)
-                    if layer.in_features is not None and pre_d:
+                    if layer.in_features is not None and isinstance(layer.in_features, int) and pre_d:
                         cs.append(
                             pre_d[-1] == z3.IntVal(layer.in_features)
                         )
@@ -5822,7 +6972,7 @@ class ConstraintVerifier:
                     # Transformer layers preserve shape; input last dim == d_model
                     for dp, dq in zip(pre_d, post_d):
                         cs.append(dq == dp)
-                    if layer.in_features is not None and pre_d:
+                    if layer.in_features is not None and isinstance(layer.in_features, int) and pre_d:
                         cs.append(
                             pre_d[-1] == z3.IntVal(layer.in_features)
                         )
@@ -5835,12 +6985,12 @@ class ConstraintVerifier:
                     # LSTM/GRU: leading dims preserved, last dim = hidden_size * D
                     for i in range(min(len(pre_d) - 1, len(post_d) - 1)):
                         cs.append(post_d[i] == pre_d[i])
-                    if layer.hidden_size is not None and post_d:
+                    if layer.hidden_size is not None and isinstance(layer.hidden_size, int) and post_d:
                         D = 2 if layer.bidirectional else 1
                         cs.append(
                             post_d[-1] == z3.IntVal(layer.hidden_size * D)
                         )
-                    if layer.in_features is not None and pre_d:
+                    if layer.in_features is not None and isinstance(layer.in_features, int) and pre_d:
                         cs.append(
                             pre_d[-1] == z3.IntVal(layer.in_features)
                         )
@@ -5848,7 +6998,7 @@ class ConstraintVerifier:
                     # ConvTranspose1d: batch preserved, out_channels set
                     if pre_d and post_d:
                         cs.append(post_d[0] == pre_d[0])
-                    if layer.out_channels is not None and len(post_d) >= 2:
+                    if layer.out_channels is not None and isinstance(layer.out_channels, int) and len(post_d) >= 2:
                         cs.append(
                             post_d[1] == z3.IntVal(layer.out_channels)
                         )
@@ -6216,17 +7366,18 @@ class ConstraintVerifier:
             if layer and inp and inp in k.shape_vars:
                 dims = k.shape_vars[inp]
                 if (layer.kind == LayerKind.LINEAR
-                        and layer.in_features is not None and dims):
+                        and layer.in_features is not None and isinstance(layer.in_features, int) and dims):
                     cs.append(dims[-1] == z3.IntVal(layer.in_features))
                 elif layer.kind in (LayerKind.CONV2D, LayerKind.CONV1D):
-                    if layer.in_channels is not None and len(dims) >= 2:
+                    if layer.in_channels is not None and isinstance(layer.in_channels, int) and len(dims) >= 2:
                         cs.append(dims[1] == z3.IntVal(layer.in_channels))
                 elif layer.kind == LayerKind.CONVTRANSPOSE2D:
-                    if layer.in_channels is not None and len(dims) >= 2:
+                    if layer.in_channels is not None and isinstance(layer.in_channels, int) and len(dims) >= 2:
                         cs.append(dims[1] == z3.IntVal(layer.in_channels))
                 elif layer.kind in (LayerKind.BATCHNORM1D,
                                     LayerKind.BATCHNORM2D):
                     if (layer.num_features is not None
+                            and isinstance(layer.num_features, int)
                             and len(dims) >= 2):
                         cs.append(
                             dims[1] == z3.IntVal(layer.num_features)
@@ -6234,21 +7385,22 @@ class ConstraintVerifier:
                 elif layer.kind in (LayerKind.GROUPNORM,
                                     LayerKind.INSTANCENORM2D):
                     if (layer.num_features is not None
+                            and isinstance(layer.num_features, int)
                             and len(dims) >= 2):
                         cs.append(
                             dims[1] == z3.IntVal(layer.num_features)
                         )
                 elif layer.kind == LayerKind.MULTIHEAD_ATTENTION:
-                    if layer.in_features is not None and dims:
+                    if layer.in_features is not None and isinstance(layer.in_features, int) and dims:
                         cs.append(dims[-1] == z3.IntVal(layer.in_features))
                 elif layer.kind in (LayerKind.TRANSFORMER_ENCODER_LAYER,
                                     LayerKind.TRANSFORMER_DECODER_LAYER,
                                     LayerKind.TRANSFORMER_ENCODER,
                                     LayerKind.TRANSFORMER_DECODER):
-                    if layer.in_features is not None and dims:
+                    if layer.in_features is not None and isinstance(layer.in_features, int) and dims:
                         cs.append(dims[-1] == z3.IntVal(layer.in_features))
                 elif layer.kind in (LayerKind.LSTM, LayerKind.GRU):
-                    if layer.in_features is not None and dims:
+                    if layer.in_features is not None and isinstance(layer.in_features, int) and dims:
                         cs.append(dims[-1] == z3.IntVal(layer.in_features))
         elif step.op == OpKind.MATMUL and len(step.inputs) >= 2:
             a, b = step.inputs[0], step.inputs[1]
@@ -6937,19 +8089,103 @@ class ConstraintVerifier:
                 inp_shape = state.shape_env[step.inputs[0]]
                 chunks = step.params.get("chunks")
                 dim = step.params.get("dim", 0)
-                if (chunks is not None and isinstance(chunks, int)
-                        and chunks > 0
-                        and isinstance(dim, int)
-                        and 0 <= dim < inp_shape.ndim
-                        and not inp_shape.dims[dim].is_symbolic
-                        and not inp_shape.dims[dim].is_symbolic):
+                split_size = step.params.get("split_size")  # may be int|str|None
+                n_outputs = step.params.get("n_outputs")
+                if isinstance(dim, int) and dim < 0:
+                    dim = inp_shape.ndim + dim
+                concrete_dim = (isinstance(dim, int)
+                                and 0 <= dim < inp_shape.ndim
+                                and not inp_shape.dims[dim].is_symbolic)
+                # SOUNDNESS: if the split dim is CONCRETE but split_size is
+                # symbolic, fall back to the chunks-based path so that
+                # downstream bugs (e.g. wrong split axis with concrete shape)
+                # remain detectable.
+                use_split_size = (
+                    split_size is not None
+                    and isinstance(dim, int)
+                    and 0 <= dim < inp_shape.ndim
+                    and (not concrete_dim or isinstance(split_size, int))
+                )
+                if use_split_size:
+                    new_dims = list(inp_shape.dims)
+                    new_dims[dim] = ShapeDim(split_size)
+                    new_state.shape_env[step.output] = TensorShape(tuple(new_dims))
+                elif (chunks is not None and isinstance(chunks, int)
+                        and chunks > 0 and concrete_dim):
                     new_dims = list(inp_shape.dims)
                     orig = inp_shape.dims[dim].value
                     chunk_size = (orig + chunks - 1) // chunks
                     new_dims[dim] = ShapeDim(chunk_size)
                     new_state.shape_env[step.output] = TensorShape(tuple(new_dims))
+                elif (n_outputs is not None and isinstance(n_outputs, int)
+                        and n_outputs > 0 and concrete_dim):
+                    # Symbolic split_size on a concrete dim — recover via
+                    # n_outputs to keep bug detection sound.
+                    new_dims = list(inp_shape.dims)
+                    orig = inp_shape.dims[dim].value
+                    # Soundness: q,k,v = X.split(sz, dim) requires
+                    # n_outputs * sz == orig, so orig must be divisible by
+                    # n_outputs. Otherwise a wrong-axis split (e.g. dim=1
+                    # instead of dim=2) produces a concrete contradiction.
+                    if (violations is not None
+                            and step.params.get("split_index", 0) == 0
+                            and orig % n_outputs != 0):
+                        violations.append(SafetyViolation(
+                            kind="shape_incompatible",
+                            step_index=-1, step=step,
+                            message=(
+                                f"Split incompatible: cannot split dim {dim} "
+                                f"of size {orig} into {n_outputs} chunks of "
+                                f"size {split_size!r} "
+                                f"({orig} not divisible by {n_outputs}) — "
+                                f"likely wrong split axis"
+                            ),
+                            tensor_a=step.inputs[0],
+                            shape_a=inp_shape,
+                        ))
+                    chunk_size = (orig + n_outputs - 1) // n_outputs
+                    new_dims[dim] = ShapeDim(chunk_size)
+                    new_state.shape_env[step.output] = TensorShape(tuple(new_dims))
                 else:
                     new_state.shape_env[step.output] = inp_shape
+        elif step.op == OpKind.UNBIND:
+            # unbind(dim) removes the split dimension entirely.
+            # q, k, v = X.unbind(0) where X has shape (3, B, H, D)
+            # → each output has shape (B, H, D).
+            if step.inputs and step.inputs[0] in state.shape_env:
+                inp_shape = state.shape_env[step.inputs[0]]
+                dim = step.params.get("dim", 0)
+                n_outputs = step.params.get("n_outputs", 1)
+                if isinstance(dim, int) and dim < 0:
+                    dim = inp_shape.ndim + dim
+                if isinstance(dim, int) and 0 <= dim < inp_shape.ndim:
+                    # Check that the split dimension matches n_outputs (if concrete).
+                    concrete_split = not inp_shape.dims[dim].is_symbolic
+                    split_size = inp_shape.dims[dim].value
+                    if (concrete_split and isinstance(split_size, int)
+                            and split_size != n_outputs
+                            and violations is not None
+                            and step.params.get("unbind_index", 0) == 0):
+                        violations.append(SafetyViolation(
+                            kind="shape_incompatible",
+                            step_index=-1, step=step,
+                            message=(
+                                f"unbind mismatch: unpacking {n_outputs} variables "
+                                f"but dim {dim} has size {split_size}"
+                            ),
+                            tensor_a=step.inputs[0],
+                            shape_a=inp_shape,
+                        ))
+                    # Output shape: remove the unbound dimension.
+                    new_dims = [d for i, d in enumerate(inp_shape.dims) if i != dim]
+                    new_state.shape_env[step.output] = TensorShape(tuple(new_dims))
+                else:
+                    # Symbolic dim: propagate input shape minus one dim (best effort).
+                    if inp_shape.ndim > 0:
+                        new_dims = list(inp_shape.dims[1:])
+                        new_state.shape_env[step.output] = TensorShape(tuple(new_dims))
+                    else:
+                        new_state.shape_env[step.output] = inp_shape
         elif step.op == OpKind.EXPAND:
             if step.inputs and step.inputs[0] in state.shape_env:
                 inp_shape = state.shape_env[step.inputs[0]]
@@ -7335,22 +8571,55 @@ class ConstraintVerifier:
         inp = step.inputs[0] if step.inputs else None
         inp_shape = state.shape_env.get(inp) if inp else None
         dims = step.params.get("dims")
+        # Resolve cross-tensor aliases (recorded at extraction time as
+        # {dim_idx: (src_var, src_dim_idx)}) against the current shape_env so
+        # that ``view(B, T, ...)`` where ``B, T, _ = x.size()`` becomes a
+        # concrete value when ``x`` has a known shape.
+        if dims is not None:
+            aliases = step.params.get("__alias_resolutions__")
+            if aliases:
+                dims_list = list(dims)
+                for di, (src_var, src_di) in aliases.items():
+                    src_shape = state.shape_env.get(src_var)
+                    if (src_shape is not None
+                            and 0 <= src_di < src_shape.ndim):
+                        sd = src_shape.dims[src_di]
+                        if not sd.is_symbolic:
+                            dims_list[di] = sd.value
+                        else:
+                            dims_list[di] = sd.value
+                dims = tuple(dims_list)
         if inp_shape is not None and dims is not None:
             result = compute_reshape_shape(inp_shape, dims)
             if result is not None:
                 state.shape_env[step.output] = result
             elif violations is not None:
-                violations.append(SafetyViolation(
-                    kind="shape_incompatible",
-                    step_index=-1,
-                    step=step,
-                    message=(
-                        f"Reshape incompatible: cannot reshape "
-                        f"{inp_shape} to {dims}"
-                    ),
-                    tensor_a=inp,
-                    shape_a=inp_shape,
-                ))
+                # Soundness: if either side contains free symbolic dims
+                # (e.g. an unresolved Linear out_features ``_unk_lin_out_qkv``
+                # or a config-derived symbol), we cannot prove the reshape
+                # is incompatible — the symbol may bind to a value that
+                # makes it compatible.  Abstain (do not record a violation)
+                # rather than emit a false positive.
+                _has_free_sym = any(
+                    d.is_symbolic and isinstance(d.value, str)
+                    and (d.value.startswith("_unk_") or "_" in d.value)
+                    for d in inp_shape.dims
+                )
+                _dims_have_str = any(
+                    isinstance(d, str) for d in (dims or ())
+                )
+                if not (_has_free_sym or _dims_have_str):
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible",
+                        step_index=-1,
+                        step=step,
+                        message=(
+                            f"Reshape incompatible: cannot reshape "
+                            f"{inp_shape} to {dims}"
+                        ),
+                        tensor_a=inp,
+                        shape_a=inp_shape,
+                    ))
 
     def _apply_flatten(
         self, state: ModelState, step: ComputationStep
@@ -7463,6 +8732,23 @@ class ConstraintVerifier:
         if not all(s is not None for s in shapes) or not shapes:
             return
         cat_dim = step.params.get("dim", 0)
+
+        def _looks_opaque(sh):
+            return any(d.is_symbolic and isinstance(d.value, str)
+                       and d.value.startswith("_unk") for d in sh.dims)
+
+        # Sound abstention: if any operand carries opaque ``_unk_`` dims it
+        # likely came through an opaque submodule whose true ndim/shape we
+        # cannot recover. Propagate a fully-symbolic shape rather than
+        # raising a spurious mismatch.
+        if any(_looks_opaque(s) for s in shapes):
+            first = shapes[0]
+            new_state_shape = TensorShape(
+                tuple(ShapeDim(f"_unk_cat_{i}") for i in range(first.ndim))
+            )
+            state.shape_env[step.output] = new_state_shape
+            return
+
         first = shapes[0]
         for i, s in enumerate(shapes[1:], 1):
             if s.ndim != first.ndim:

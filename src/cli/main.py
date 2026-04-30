@@ -3146,6 +3146,8 @@ class VerifyCommand:
                 ],
                 "duration_ms": result.duration_ms,
                 "status": "SAFE" if not result.bugs else "UNSAFE",
+                "abstained": bool(getattr(result, "abstained", False)),
+                "opaque_layer_count": int(getattr(result, "opaque_layer_count", 0)),
             }
             sys.stdout.write(json.dumps(out, indent=2) + "\n")
         elif fmt == "text":
@@ -3205,7 +3207,7 @@ class ReftypeCliApp:
 
     def _build_parser(self) -> argparse.ArgumentParser:
         parser = argparse.ArgumentParser(
-            prog="reftype",
+            prog="tensorguard",
             description=(
                 "Refinement type inference for dynamically-typed languages "
                 "(Python & TypeScript) using CEGAR."

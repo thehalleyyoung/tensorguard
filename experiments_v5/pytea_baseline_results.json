@@ -1,0 +1,4993 @@
+{
+  "meta": {
+    "tool": "pytea",
+    "source": "https://github.com/ropas/pytea",
+    "pytea_commit": "c536515a5e5947fac8871784323ba7eddc58956d",
+    "pytea_commit_date": "2022-04-26",
+    "node_version": "v25.2.0",
+    "install_attempts": [
+      {
+        "method": "pip3.11 install pytea",
+        "ok": false,
+        "error": "pip package 'PyTEA-0.1.2' (https://github.com/codeif/PyTEA) is a completely unrelated Tiny Encryption Algorithm library, not the shape analyzer"
+      },
+      {
+        "method": "git clone --depth 1 https://github.com/ropas/pytea.git experiments_v5/_pytea_src",
+        "ok": true,
+        "error": ""
+      },
+      {
+        "method": "cd experiments_v5/_pytea_src && npm install && npm run build",
+        "ok": true,
+        "error": "Build succeeded. Node v25.2.0 compatible with this 2022 TypeScript codebase. z3-solver 4.15.8 already available."
+      }
+    ],
+    "install_status": "ok",
+    "run_timestamp": "2026-04-28T18:32:02Z",
+    "notes": "Pytea installed successfully from source (last commit 2022-04-26, Node v25.2.0). pip install pytea installs an unrelated package (Tiny Encryption Algorithm). The tool analyzes Python/PyTorch code for tensor shape errors without execution, using a TypeScript frontend + Z3 offline solver. Pytea v0.1.0 was used via 'python bin/pytea.py <file>'. For the BUG corpus: all 60 repro files were analyzed with a 60s timeout. 27/60 were Refuted (Pytea detected a shape mismatch or immediate error path). 31/60 were Verified (no error detected \u2014 typically because the specific PyTorch API causing the bug was not in Pytea's stub library, so it was silently skipped). 2/60 were N/A (frontend parse failure for Python syntax Pytea cannot handle). For the BLOCK corpus: wrappers were written instantiating each class with no args. 435/488 were N/A (missing helper function/class references from the source library not available in Pytea's stubs, or frontend parse failures). 53/488 were Verified (Pytea found no shape error, but this is uninformative because most APIs in these blocks hit 'attribute not found' and were silently skipped). 0 blocks were Refuted (no actual shape errors detected in blocks)."
+  },
+  "block_corpus": {
+    "N": 488,
+    "summary": {
+      "Verified": 53,
+      "Refuted": 0,
+      "Abstain": 0,
+      "N/A": 435
+    },
+    "per_input": [
+      {
+        "id": "torchvision__BasicBlock__facb2b2e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "BasicBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "torchvision__Bottleneck__6e509c98",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "Bottleneck",
+        "category": "vision_cnn",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "torchvision__ResNet__c58f6c46",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "ResNet",
+        "category": "vision_cnn",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "torchvision__InvertedResidual__8b858391",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "InvertedResidual",
+        "category": "vision_cnn",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "torchvision__MobileNetV2__6436dda3",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "MobileNetV2",
+        "category": "vision_cnn",
+        "elapsed_s": 0.91
+      },
+      {
+        "id": "torchvision__InvertedResidual__c8095521",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "InvertedResidual",
+        "category": "vision_cnn",
+        "elapsed_s": 0.87
+      },
+      {
+        "id": "torchvision__MobileNetV3__ac65cce2",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "MobileNetV3",
+        "category": "vision_cnn",
+        "elapsed_s": 0.9
+      },
+      {
+        "id": "torchvision__EfficientNet__9f84b703",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "EfficientNet",
+        "category": "vision_cnn",
+        "elapsed_s": 0.9
+      },
+      {
+        "id": "torchvision__FusedMBConv__ecebccff",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "FusedMBConv",
+        "category": "vision_cnn",
+        "elapsed_s": 0.9
+      },
+      {
+        "id": "torchvision__MBConv__f527375d",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "MBConv",
+        "category": "vision_cnn",
+        "elapsed_s": 0.9
+      },
+      {
+        "id": "torchvision__DenseNet__a093c450",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "DenseNet",
+        "category": "vision_cnn",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "torchvision__AnyStage__8a5bd23f",
+        "verdict": "Verified",
+        "reason": "no_error(succ=2,valid=1)",
+        "library": "torchvision",
+        "class_name": "AnyStage",
+        "category": "vision_cnn",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "torchvision__BottleneckTransform__3e2052e8",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "BottleneckTransform",
+        "category": "vision_cnn",
+        "elapsed_s": 0.89
+      },
+      {
+        "id": "torchvision__RegNet__6f370d88",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "RegNet",
+        "category": "vision_cnn",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "torchvision__ResBottleneckBlock__87f0d2c0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "ResBottleneckBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "torchvision__SimpleStemIN__0d58277f",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "SimpleStemIN",
+        "category": "vision_cnn",
+        "elapsed_s": 1.0
+      },
+      {
+        "id": "torchvision__InvertedResidual__06250e16",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "InvertedResidual",
+        "category": "vision_cnn",
+        "elapsed_s": 0.99
+      },
+      {
+        "id": "torchvision__ShuffleNetV2__fe61469b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "ShuffleNetV2",
+        "category": "vision_cnn",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "torchvision__MNASNet__46e9b1aa",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "MNASNet",
+        "category": "vision_cnn",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "torchvision__Fire__0a834437",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "Fire",
+        "category": "vision_cnn",
+        "elapsed_s": 1.17
+      },
+      {
+        "id": "torchvision__SqueezeNet__0a56d689",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "SqueezeNet",
+        "category": "vision_cnn",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "torchvision__Encoder__b1234776",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "Encoder",
+        "category": "vision_vit",
+        "elapsed_s": 0.89
+      },
+      {
+        "id": "torchvision__EncoderBlock__baabd083",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "EncoderBlock",
+        "category": "vision_vit",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "torchvision__MLPBlock__0bb7878a",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "MLPBlock",
+        "category": "vision_vit",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "torchvision__VisionTransformer__475440d2",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "VisionTransformer",
+        "category": "vision_vit",
+        "elapsed_s": 0.89
+      },
+      {
+        "id": "torchvision__PatchMerging__b97a5f6d",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "PatchMerging",
+        "category": "vision_vit",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "torchvision__PatchMergingV2__81d9e2b7",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "PatchMergingV2",
+        "category": "vision_vit",
+        "elapsed_s": 0.97
+      },
+      {
+        "id": "torchvision__ShiftedWindowAttention__8455e6fe",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "ShiftedWindowAttention",
+        "category": "vision_vit",
+        "elapsed_s": 1.01
+      },
+      {
+        "id": "torchvision__ShiftedWindowAttentionV2__22e6dcee",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "ShiftedWindowAttentionV2",
+        "category": "vision_vit",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "torchvision__SwinTransformer__406f0da6",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "SwinTransformer",
+        "category": "vision_vit",
+        "elapsed_s": 0.94
+      },
+      {
+        "id": "torchvision__SwinTransformerBlock__ddab822f",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "SwinTransformerBlock",
+        "category": "vision_vit",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "torchvision__SwinTransformerBlockV2__2cf95697",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "SwinTransformerBlockV2",
+        "category": "vision_vit",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "torchvision__CNBlock__9d3f5aaf",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "CNBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.01
+      },
+      {
+        "id": "torchvision__ConvNeXt__9165120f",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "ConvNeXt",
+        "category": "vision_cnn",
+        "elapsed_s": 0.99
+      },
+      {
+        "id": "torchvision__LayerNorm2d__5e6edc17",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "LayerNorm2d",
+        "category": "vision_cnn",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "torchvision__MBConv__152e669c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "MBConv",
+        "category": "vision_vit",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "torchvision__MaxVit__ce854b10",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "MaxVit",
+        "category": "vision_vit",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "torchvision__MaxVitBlock__c35855fb",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "MaxVitBlock",
+        "category": "vision_vit",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "torchvision__MaxVitLayer__b533ec97",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "torchvision",
+        "class_name": "MaxVitLayer",
+        "category": "vision_vit",
+        "elapsed_s": 0.88
+      },
+      {
+        "id": "torchvision__PartitionAttentionLayer__e27baac3",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "PartitionAttentionLayer",
+        "category": "vision_vit",
+        "elapsed_s": 0.99
+      },
+      {
+        "id": "torchvision__RelativePositionalMultiHeadAttention__53fc0512",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "RelativePositionalMultiHeadAttention",
+        "category": "vision_vit",
+        "elapsed_s": 0.97
+      },
+      {
+        "id": "torchvision__SwapAxes__13291fa5",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "SwapAxes",
+        "category": "vision_vit",
+        "elapsed_s": 0.97
+      },
+      {
+        "id": "torchvision__WindowDepartition__4c859ec3",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "WindowDepartition",
+        "category": "vision_vit",
+        "elapsed_s": 0.99
+      },
+      {
+        "id": "torchvision__WindowPartition__35b9db0d",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "WindowPartition",
+        "category": "vision_vit",
+        "elapsed_s": 0.97
+      },
+      {
+        "id": "torchvision__BasicBlock__1f3c4ff7",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "BasicBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.01
+      },
+      {
+        "id": "torchvision__BasicStem__a9744e0a",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "BasicStem",
+        "category": "vision_cnn",
+        "elapsed_s": 0.97
+      },
+      {
+        "id": "torchvision__Bottleneck__8d213acd",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "Bottleneck",
+        "category": "vision_cnn",
+        "elapsed_s": 0.97
+      },
+      {
+        "id": "torchvision__Conv2Plus1D__04cb4bbf",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "Conv2Plus1D",
+        "category": "vision_cnn",
+        "elapsed_s": 0.96
+      },
+      {
+        "id": "torchvision__Conv3DNoTemporal__84cca75c",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "Conv3DNoTemporal",
+        "category": "vision_cnn",
+        "elapsed_s": 0.96
+      },
+      {
+        "id": "torchvision__Conv3DSimple__d388d7d1",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "Conv3DSimple",
+        "category": "vision_cnn",
+        "elapsed_s": 0.96
+      },
+      {
+        "id": "torchvision__R2Plus1dStem__cae0e078",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "R2Plus1dStem",
+        "category": "vision_cnn",
+        "elapsed_s": 0.97
+      },
+      {
+        "id": "torchvision__VideoResNet__ada67880",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "VideoResNet",
+        "category": "vision_cnn",
+        "elapsed_s": 1.0
+      },
+      {
+        "id": "torchvision__ASPP__8f03f871",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "ASPP",
+        "category": "vision_cnn",
+        "elapsed_s": 0.98
+      },
+      {
+        "id": "torchvision__ASPPConv__b2767128",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "ASPPConv",
+        "category": "vision_cnn",
+        "elapsed_s": 1.01
+      },
+      {
+        "id": "torchvision__ASPPPooling__5baa6bca",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "ASPPPooling",
+        "category": "vision_cnn",
+        "elapsed_s": 0.97
+      },
+      {
+        "id": "torchvision__DeepLabHead__41d22de9",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "DeepLabHead",
+        "category": "vision_cnn",
+        "elapsed_s": 0.97
+      },
+      {
+        "id": "torchvision__DeepLabV3__2bdf590b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "DeepLabV3",
+        "category": "vision_cnn",
+        "elapsed_s": 0.95
+      },
+      {
+        "id": "torchvision__FCN__f4f78ed2",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "FCN",
+        "category": "vision_cnn",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "torchvision__FCNHead__0dd9f67b",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "FCNHead",
+        "category": "vision_cnn",
+        "elapsed_s": 0.98
+      },
+      {
+        "id": "torchvision__LRASPP__57ba7a9b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "LRASPP",
+        "category": "vision_cnn",
+        "elapsed_s": 1.14
+      },
+      {
+        "id": "torchvision__LRASPPHead__fe203cd4",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "LRASPPHead",
+        "category": "vision_cnn",
+        "elapsed_s": 1.12
+      },
+      {
+        "id": "torchvision__Conv2dNormActivation__157d8fd4",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "Conv2dNormActivation",
+        "category": "vision_cnn",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "torchvision__Conv3dNormActivation__e2222bf1",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "Conv3dNormActivation",
+        "category": "vision_cnn",
+        "elapsed_s": 1.38
+      },
+      {
+        "id": "torchvision__ConvNormActivation__31ac3cfd",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "ConvNormActivation",
+        "category": "vision_cnn",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "torchvision__FrozenBatchNorm2d__6045250e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "FrozenBatchNorm2d",
+        "category": "vision_cnn",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "torchvision__MLP__14e1a24d",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "MLP",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "torchvision__Permute__c578fee9",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "Permute",
+        "category": "vision_cnn",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "torchvision__SqueezeExcitation__9cf01ef0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "SqueezeExcitation",
+        "category": "vision_vit",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "torchvision__ExtraFPNBlock__3db74521",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "torchvision",
+        "class_name": "ExtraFPNBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "torchvision__FeaturePyramidNetwork__0ad405dd",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "FeaturePyramidNetwork",
+        "category": "vision_cnn",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "torchvision__LastLevelMaxPool__8cfe9276",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "LastLevelMaxPool",
+        "category": "vision_cnn",
+        "elapsed_s": 1.0
+      },
+      {
+        "id": "torchvision__LastLevelP6P7__3cc67870",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "torchvision",
+        "class_name": "LastLevelP6P7",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__BasicBlock__0c23b6cb",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "BasicBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "timm__Bottleneck__d8963bbe",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "Bottleneck",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__ResNet__bfd20515",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ResNet",
+        "category": "vision_cnn",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "timm__Block__3bb5a41e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "Block",
+        "category": "vision_vit",
+        "elapsed_s": 1.01
+      },
+      {
+        "id": "timm__DiffParallelScalingBlock__8a54b29d",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "DiffParallelScalingBlock",
+        "category": "vision_vit",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "timm__ParallelScalingBlock__d7876d3b",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "ParallelScalingBlock",
+        "category": "vision_vit",
+        "elapsed_s": 0.95
+      },
+      {
+        "id": "timm__ParallelThingsBlock__61fc9e7f",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ParallelThingsBlock",
+        "category": "vision_vit",
+        "elapsed_s": 1.14
+      },
+      {
+        "id": "timm__ResPostBlock__77d8eb34",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ResPostBlock",
+        "category": "vision_vit",
+        "elapsed_s": 1.14
+      },
+      {
+        "id": "timm__VisionTransformer__4a5613ac",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "VisionTransformer",
+        "category": "vision_vit",
+        "elapsed_s": 1.0
+      },
+      {
+        "id": "timm__PatchMerging__6aa19f74",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "timm",
+        "class_name": "PatchMerging",
+        "category": "vision_vit",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "timm__SwinTransformer__0f191eae",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "SwinTransformer",
+        "category": "vision_vit",
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "timm__SwinTransformerBlock__64269d53",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "SwinTransformerBlock",
+        "category": "vision_vit",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "timm__SwinTransformerStage__519ea9c1",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "SwinTransformerStage",
+        "category": "vision_vit",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "timm__WindowAttention__2cfdd149",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "WindowAttention",
+        "category": "vision_vit",
+        "elapsed_s": 0.96
+      },
+      {
+        "id": "timm__PatchMerging__fbc82ca8",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "timm",
+        "class_name": "PatchMerging",
+        "category": "vision_vit",
+        "elapsed_s": 1.22
+      },
+      {
+        "id": "timm__SwinTransformerV2__a165096c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "SwinTransformerV2",
+        "category": "vision_vit",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "timm__SwinTransformerV2Block__bbc6501d",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "SwinTransformerV2Block",
+        "category": "vision_vit",
+        "elapsed_s": 0.95
+      },
+      {
+        "id": "timm__SwinTransformerV2Stage__a8ddb1b3",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "SwinTransformerV2Stage",
+        "category": "vision_vit",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "timm__WindowAttention__c308c59d",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "WindowAttention",
+        "category": "vision_vit",
+        "elapsed_s": 1.17
+      },
+      {
+        "id": "timm__ConvNeXt__5b52696a",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ConvNeXt",
+        "category": "vision_cnn",
+        "elapsed_s": 1.15
+      },
+      {
+        "id": "timm__ConvNeXtBlock__e48fc330",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ConvNeXtBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.12
+      },
+      {
+        "id": "timm__ConvNeXtStage__0b95344a",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ConvNeXtStage",
+        "category": "vision_cnn",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "timm__Downsample__60802c6d",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "Downsample",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__Affine__8f1d3b4a",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "timm",
+        "class_name": "Affine",
+        "category": "vision_cnn",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "timm__MixerBlock__aa30e6b1",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "MixerBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__MlpMixer__df86273c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "MlpMixer",
+        "category": "vision_cnn",
+        "elapsed_s": 1.2
+      },
+      {
+        "id": "timm__ResBlock__ae71b868",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ResBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.61
+      },
+      {
+        "id": "timm__SpatialGatingBlock__732b4766",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "SpatialGatingBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.12
+      },
+      {
+        "id": "timm__SpatialGatingUnit__cddb36f2",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "timm",
+        "class_name": "SpatialGatingUnit",
+        "category": "vision_cnn",
+        "elapsed_s": 1.19
+      },
+      {
+        "id": "timm__Attention__003a0971",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "Attention",
+        "category": "vision_vit",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "timm__Beit__6997245c",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "Beit",
+        "category": "vision_vit",
+        "elapsed_s": 0.94
+      },
+      {
+        "id": "timm__Block__22c64202",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "Block",
+        "category": "vision_vit",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "timm__RelativePositionBias__1c05d937",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "RelativePositionBias",
+        "category": "vision_vit",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "timm__Cait__c540b873",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "Cait",
+        "category": "vision_vit",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "timm__ClassAttn__65cd4dd4",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "ClassAttn",
+        "category": "vision_vit",
+        "elapsed_s": 0.9
+      },
+      {
+        "id": "timm__LayerScaleBlock__de8bbf28",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "LayerScaleBlock",
+        "category": "vision_vit",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "timm__LayerScaleBlockClassAttn__a04ec1f5",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "LayerScaleBlockClassAttn",
+        "category": "vision_vit",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "timm__TalkingHeadAttn__72c0467a",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "TalkingHeadAttn",
+        "category": "vision_vit",
+        "elapsed_s": 0.89
+      },
+      {
+        "id": "timm__CoaT__21d9ba11",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "CoaT",
+        "category": "vision_cnn",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "timm__ConvPosEnc__46471a50",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "timm",
+        "class_name": "ConvPosEnc",
+        "category": "vision_cnn",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "timm__ConvRelPosEnc__12b18106",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ConvRelPosEnc",
+        "category": "vision_cnn",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "timm__FactorAttnConvRelPosEnc__96fb8120",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "FactorAttnConvRelPosEnc",
+        "category": "vision_cnn",
+        "elapsed_s": 0.95
+      },
+      {
+        "id": "timm__ParallelBlock__8968d2ec",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ParallelBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "timm__SerialBlock__c9b429f0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "SerialBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.27
+      },
+      {
+        "id": "timm__DownsampleAvg__b4e662f0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "DownsampleAvg",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__GammaAct__4efebfe6",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "GammaAct",
+        "category": "vision_cnn",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "timm__NormFreeBlock__9b86f571",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "NormFreeBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "timm__NormFreeNet__f8ec1497",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "NormFreeNet",
+        "category": "vision_cnn",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "timm__Bottleneck__77e095f8",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "Bottleneck",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__PreBottleneck__99ad5d36",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "PreBottleneck",
+        "category": "vision_cnn",
+        "elapsed_s": 1.17
+      },
+      {
+        "id": "timm__RegNet__d55c9518",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "RegNet",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__RegStage__0f4a69de",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "RegStage",
+        "category": "vision_cnn",
+        "elapsed_s": 1.01
+      },
+      {
+        "id": "timm__ClassAttentionBlock__724bc7b8",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ClassAttentionBlock",
+        "category": "vision_vit",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "timm__ConvPatchEmbed__208dd6fd",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ConvPatchEmbed",
+        "category": "vision_vit",
+        "elapsed_s": 1.0
+      },
+      {
+        "id": "timm__LPI__d0666c5f",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "timm",
+        "class_name": "LPI",
+        "category": "vision_vit",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__PositionalEncodingFourier__03ca7b4f",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "PositionalEncodingFourier",
+        "category": "vision_vit",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__XCA__14db1190",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "XCA",
+        "category": "vision_vit",
+        "elapsed_s": 0.98
+      },
+      {
+        "id": "timm__XCABlock__1aa9c779",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "XCABlock",
+        "category": "vision_vit",
+        "elapsed_s": 0.99
+      },
+      {
+        "id": "timm__Xcit__d8f8dfd8",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "Xcit",
+        "category": "vision_vit",
+        "elapsed_s": 0.95
+      },
+      {
+        "id": "timm__Attention2d__b573c895",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "Attention2d",
+        "category": "vision_cnn",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "timm__AttentionCl__81d4b162",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "AttentionCl",
+        "category": "vision_cnn",
+        "elapsed_s": 0.88
+      },
+      {
+        "id": "timm__ConvNeXtBlock__7ac76913",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ConvNeXtBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "timm__Downsample2d__f53cda31",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "Downsample2d",
+        "category": "vision_cnn",
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "timm__MaxxVit__2c4deb67",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "MaxxVit",
+        "category": "vision_cnn",
+        "elapsed_s": 0.93
+      },
+      {
+        "id": "timm__MaxxVitBlock__fbb3879c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "MaxxVitBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "timm__MaxxVitStage__71291cd4",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "MaxxVitStage",
+        "category": "vision_cnn",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "timm__MbConvBlock__01ae95fd",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "MbConvBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "timm__ParallelMaxxVitBlock__16c23033",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ParallelMaxxVitBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.16
+      },
+      {
+        "id": "timm__ParallelPartitionAttention__2c8fbbd5",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ParallelPartitionAttention",
+        "category": "vision_cnn",
+        "elapsed_s": 1.2
+      },
+      {
+        "id": "timm__PartitionAttention2d__01e392ca",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "PartitionAttention2d",
+        "category": "vision_cnn",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "timm__PartitionAttentionCl__aeba57a3",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "PartitionAttentionCl",
+        "category": "vision_cnn",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "timm__Stem__11b2bbe5",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "Stem",
+        "category": "vision_cnn",
+        "elapsed_s": 1.19
+      },
+      {
+        "id": "timm__TransformerBlock2d__51206f56",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "TransformerBlock2d",
+        "category": "vision_cnn",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "timm__Downsample__3e663d77",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "timm",
+        "class_name": "Downsample",
+        "category": "vision_vit",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "timm__FocalModulation__90fdcf49",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "FocalModulation",
+        "category": "vision_vit",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "timm__FocalNet__7032a739",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "FocalNet",
+        "category": "vision_vit",
+        "elapsed_s": 0.9
+      },
+      {
+        "id": "timm__FocalNetBlock__0ab5fc43",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "FocalNetBlock",
+        "category": "vision_vit",
+        "elapsed_s": 1.01
+      },
+      {
+        "id": "timm__FocalNetStage__80643dac",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "FocalNetStage",
+        "category": "vision_vit",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "timm__ChannelAttention__1ba2cfb8",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "ChannelAttention",
+        "category": "vision_cnn",
+        "elapsed_s": 0.89
+      },
+      {
+        "id": "timm__ChannelAttentionV2__eea03f08",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "ChannelAttentionV2",
+        "category": "vision_cnn",
+        "elapsed_s": 0.94
+      },
+      {
+        "id": "timm__ChannelBlock__2289a984",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ChannelBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.12
+      },
+      {
+        "id": "timm__ConvPosEnc__8c9449a2",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "timm",
+        "class_name": "ConvPosEnc",
+        "category": "vision_cnn",
+        "elapsed_s": 1.15
+      },
+      {
+        "id": "timm__DaVit__aba3fde4",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "DaVit",
+        "category": "vision_cnn",
+        "elapsed_s": 1.23
+      },
+      {
+        "id": "timm__DaVitStage__5abae383",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "DaVitStage",
+        "category": "vision_cnn",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "timm__Downsample__6415ce59",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "Downsample",
+        "category": "vision_cnn",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "timm__SpatialBlock__f859e43f",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "SpatialBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "timm__Stem__1a50d7df",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "Stem",
+        "category": "vision_cnn",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "timm__WindowAttention__cf6bfdd8",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "WindowAttention",
+        "category": "vision_cnn",
+        "elapsed_s": 0.96
+      },
+      {
+        "id": "timm__MultiScaleAttention__e287ef74",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "MultiScaleAttention",
+        "category": "vision_vit",
+        "elapsed_s": 0.93
+      },
+      {
+        "id": "timm__MultiScaleAttentionPoolFirst__0cb0500f",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "MultiScaleAttentionPoolFirst",
+        "category": "vision_vit",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "timm__MultiScaleBlock__9124bb4e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "MultiScaleBlock",
+        "category": "vision_vit",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "timm__MultiScaleVit__1fdce1df",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "MultiScaleVit",
+        "category": "vision_vit",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "timm__MultiScaleVitStage__59c4e020",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "MultiScaleVitStage",
+        "category": "vision_vit",
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "timm__PatchEmbed__7f433b21",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "timm",
+        "class_name": "PatchEmbed",
+        "category": "vision_vit",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "timm__CrossAttention__4bacd45e",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "CrossAttention",
+        "category": "vision_cnn",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "timm__CrossAttentionBlock__50699d9e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "CrossAttentionBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "timm__CrossVit__f8a3d9e3",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "CrossVit",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__MultiScaleBlock__d9e6cc4a",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "MultiScaleBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "timm__PatchEmbed__9a45599b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "PatchEmbed",
+        "category": "vision_cnn",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "timm__Downsample2d__381e6ea5",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "Downsample2d",
+        "category": "vision_cnn",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "timm__FeatureBlock__bf60f135",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "FeatureBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "timm__GlobalContextVit__5296a802",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "GlobalContextVit",
+        "category": "vision_cnn",
+        "elapsed_s": 0.9
+      },
+      {
+        "id": "timm__GlobalContextVitBlock__8683a178",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "GlobalContextVitBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__GlobalContextVitStage__1906878a",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "GlobalContextVitStage",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__MbConvBlock__983d42de",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "MbConvBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "timm__Stem__8e32d116",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "Stem",
+        "category": "vision_cnn",
+        "elapsed_s": 1.0
+      },
+      {
+        "id": "timm__WindowAttentionGlobal__ad24c494",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "WindowAttentionGlobal",
+        "category": "vision_cnn",
+        "elapsed_s": 0.89
+      },
+      {
+        "id": "timm__VisionTransformerDistilled__032a9d92",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "VisionTransformerDistilled",
+        "category": "vision_vit",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "timm__BasicBlock__e2998185",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "BasicBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__BottleneckBlock__fd1e0bab",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "BottleneckBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "timm__ByobNet__491ffc69",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ByobNet",
+        "category": "vision_cnn",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "timm__DarkBlock__375bb54f",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "DarkBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.16
+      },
+      {
+        "id": "timm__DownsampleAvg__b958740c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "DownsampleAvg",
+        "category": "vision_cnn",
+        "elapsed_s": 1.23
+      },
+      {
+        "id": "timm__EdgeBlock__f4ebfba3",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "EdgeBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 2.03
+      },
+      {
+        "id": "timm__MobileOneBlock__a9033e51",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "MobileOneBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.28
+      },
+      {
+        "id": "timm__RepVggBlock__02fa50d1",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "RepVggBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.25
+      },
+      {
+        "id": "timm__SelfAttnBlock__57172128",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "SelfAttnBlock",
+        "category": "vision_cnn",
+        "elapsed_s": 1.2
+      },
+      {
+        "id": "timm__Stem__0600ee42",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "Stem",
+        "category": "vision_cnn",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "timm__Attention2d__2e12b46f",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "Attention2d",
+        "category": "other",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "timm__MultiQueryAttention2d__1d79bcf5",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "timm",
+        "class_name": "MultiQueryAttention2d",
+        "category": "other",
+        "elapsed_s": 0.97
+      },
+      {
+        "id": "timm__MultiQueryAttentionV2__2999ef94",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "timm",
+        "class_name": "MultiQueryAttentionV2",
+        "category": "other",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "timm__ConvMlp__320a5cbb",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "ConvMlp",
+        "category": "other",
+        "elapsed_s": 1.14
+      },
+      {
+        "id": "timm__GatedMlp__07760a6e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "GatedMlp",
+        "category": "other",
+        "elapsed_s": 1.12
+      },
+      {
+        "id": "timm__GlobalResponseNormMlp__3557ad2e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "GlobalResponseNormMlp",
+        "category": "other",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "timm__GluMlp__85ab5720",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "GluMlp",
+        "category": "other",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "timm__Mlp__62c90bd4",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "Mlp",
+        "category": "other",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "timm__SwiGLU__84a8d923",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "timm",
+        "class_name": "SwiGLU",
+        "category": "other",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__BertAttention__6252bb14",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertAttention",
+        "category": "transformer",
+        "elapsed_s": 1.29
+      },
+      {
+        "id": "transformers__BertEmbeddings__69ffff18",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertEmbeddings",
+        "category": "transformer",
+        "elapsed_s": 1.12
+      },
+      {
+        "id": "transformers__BertEncoder__1ec24e83",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertEncoder",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__BertForMaskedLM__f07c0986",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertForMaskedLM",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__BertForMultipleChoice__e6a23721",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertForMultipleChoice",
+        "category": "transformer",
+        "elapsed_s": 1.22
+      },
+      {
+        "id": "transformers__BertForNextSentencePrediction__ddcf8ce2",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertForNextSentencePrediction",
+        "category": "transformer",
+        "elapsed_s": 1.19
+      },
+      {
+        "id": "transformers__BertForPreTraining__fb4fc487",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertForPreTraining",
+        "category": "transformer",
+        "elapsed_s": 1.16
+      },
+      {
+        "id": "transformers__BertForQuestionAnswering__bfcb478d",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "transformers__BertForSequenceClassification__b7751332",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__BertForTokenClassification__b3e3f097",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__BertIntermediate__312fa54a",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "BertIntermediate",
+        "category": "transformer",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "transformers__BertLMHeadModel__ec7a8f20",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertLMHeadModel",
+        "category": "transformer",
+        "elapsed_s": 1.12
+      },
+      {
+        "id": "transformers__BertLMPredictionHead__239cfa65",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertLMPredictionHead",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__BertLayer__123bf444",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertLayer",
+        "category": "transformer",
+        "elapsed_s": 1.18
+      },
+      {
+        "id": "transformers__BertModel__9e1eaedc",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertModel",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__BertOnlyMLMHead__65f3818b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertOnlyMLMHead",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__BertOnlyNSPHead__b5da51c7",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "BertOnlyNSPHead",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__BertOutput__dc6ffac8",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertOutput",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__BertPooler__658a36e2",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "BertPooler",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__BertPreTrainedModel__f1864b27",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__BertPreTrainingHeads__c2e782bc",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertPreTrainingHeads",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__BertPredictionHeadTransform__cd7753b8",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "BertPredictionHeadTransform",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__BertSdpaSelfAttention__29bd0f03",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertSdpaSelfAttention",
+        "category": "transformer",
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "transformers__BertSelfAttention__fc15b00b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertSelfAttention",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__BertSelfOutput__d24a0336",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BertSelfOutput",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__GPT2Attention__35907b71",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "GPT2Attention",
+        "category": "transformer",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "transformers__GPT2Block__5a2da440",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GPT2Block",
+        "category": "transformer",
+        "elapsed_s": 1.22
+      },
+      {
+        "id": "transformers__GPT2DoubleHeadsModel__5882ffd8",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GPT2DoubleHeadsModel",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__GPT2ForQuestionAnswering__30e06c36",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GPT2ForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.26
+      },
+      {
+        "id": "transformers__GPT2ForSequenceClassification__26ea2284",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GPT2ForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "transformers__GPT2ForTokenClassification__abb65812",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GPT2ForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__GPT2LMHeadModel__f7dd424c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GPT2LMHeadModel",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__GPT2MLP__198760b0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GPT2MLP",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__GPT2Model__3940f67c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GPT2Model",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__GPT2PreTrainedModel__7452c372",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GPT2PreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__GPT2SequenceSummary__d6c4589c",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "GPT2SequenceSummary",
+        "category": "transformer",
+        "elapsed_s": 0.99
+      },
+      {
+        "id": "transformers__T5Attention__e925d4be",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5Attention",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__T5Block__1480b6f9",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5Block",
+        "category": "transformer",
+        "elapsed_s": 1.21
+      },
+      {
+        "id": "transformers__T5ClassificationHead__bfd32115",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5ClassificationHead",
+        "category": "transformer",
+        "elapsed_s": 1.19
+      },
+      {
+        "id": "transformers__T5DenseActDense__9f886322",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5DenseActDense",
+        "category": "transformer",
+        "elapsed_s": 1.19
+      },
+      {
+        "id": "transformers__T5DenseGatedActDense__494ec975",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5DenseGatedActDense",
+        "category": "transformer",
+        "elapsed_s": 1.14
+      },
+      {
+        "id": "transformers__T5EncoderModel__1c87733d",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5EncoderModel",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__T5ForConditionalGeneration__da9445ce",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5ForConditionalGeneration",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__T5ForQuestionAnswering__10c6b9c0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5ForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "transformers__T5ForSequenceClassification__9276522e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5ForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.15
+      },
+      {
+        "id": "transformers__T5ForTokenClassification__94d40192",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5ForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.16
+      },
+      {
+        "id": "transformers__T5LayerCrossAttention__8e29c5ad",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5LayerCrossAttention",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__T5LayerFF__6420723a",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5LayerFF",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__T5LayerNorm__f2d13050",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "T5LayerNorm",
+        "category": "transformer",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "transformers__T5LayerSelfAttention__e603b033",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5LayerSelfAttention",
+        "category": "transformer",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "transformers__T5Model__a2aaa18c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5Model",
+        "category": "transformer",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "transformers__T5PreTrainedModel__9585803b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5PreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__T5Stack__3c5b9f6a",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "T5Stack",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__LlamaAttention__44665150",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "LlamaAttention",
+        "category": "transformer",
+        "elapsed_s": 0.93
+      },
+      {
+        "id": "transformers__LlamaDecoderLayer__fd4ea02c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "LlamaDecoderLayer",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__LlamaForCausalLM__509afe82",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "LlamaForCausalLM",
+        "category": "transformer",
+        "elapsed_s": 0.96
+      },
+      {
+        "id": "transformers__LlamaForQuestionAnswering__09da66a6",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "LlamaForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.24
+      },
+      {
+        "id": "transformers__LlamaForSequenceClassification__7339e740",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "LlamaForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.16
+      },
+      {
+        "id": "transformers__LlamaForTokenClassification__f972e4a9",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "LlamaForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.43
+      },
+      {
+        "id": "transformers__LlamaMLP__8e486096",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "LlamaMLP",
+        "category": "transformer",
+        "elapsed_s": 1.43
+      },
+      {
+        "id": "transformers__LlamaModel__3fb478fa",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "LlamaModel",
+        "category": "transformer",
+        "elapsed_s": 0.95
+      },
+      {
+        "id": "transformers__LlamaPreTrainedModel__b255e18b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "LlamaPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__LlamaRMSNorm__3d26a92d",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "LlamaRMSNorm",
+        "category": "transformer",
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "transformers__LlamaRotaryEmbedding__fbfd2bd8",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "LlamaRotaryEmbedding",
+        "category": "transformer",
+        "elapsed_s": 0.97
+      },
+      {
+        "id": "transformers__ViTAttention__bf90faa3",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ViTAttention",
+        "category": "vision_vit",
+        "elapsed_s": 1.22
+      },
+      {
+        "id": "transformers__ViTEmbeddings__8cff6acb",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ViTEmbeddings",
+        "category": "vision_vit",
+        "elapsed_s": 1.16
+      },
+      {
+        "id": "transformers__ViTEncoder__856aaef3",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ViTEncoder",
+        "category": "vision_vit",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__ViTForImageClassification__adc20c40",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "ViTForImageClassification",
+        "category": "vision_vit",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__ViTForMaskedImageModeling__062602cb",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "ViTForMaskedImageModeling",
+        "category": "vision_vit",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "transformers__ViTIntermediate__bf39eb56",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "ViTIntermediate",
+        "category": "vision_vit",
+        "elapsed_s": 1.19
+      },
+      {
+        "id": "transformers__ViTLayer__a25f9cd5",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ViTLayer",
+        "category": "vision_vit",
+        "elapsed_s": 1.4
+      },
+      {
+        "id": "transformers__ViTModel__81e12b22",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "ViTModel",
+        "category": "vision_vit",
+        "elapsed_s": 1.14
+      },
+      {
+        "id": "transformers__ViTOutput__f793a8e0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ViTOutput",
+        "category": "vision_vit",
+        "elapsed_s": 1.19
+      },
+      {
+        "id": "transformers__ViTPatchEmbeddings__ff83e5e8",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ViTPatchEmbeddings",
+        "category": "vision_vit",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__ViTPooler__f219ee12",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ViTPooler",
+        "category": "vision_vit",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__ViTPreTrainedModel__d86c5588",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ViTPreTrainedModel",
+        "category": "vision_vit",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__ViTSelfAttention__b1e54a36",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "ViTSelfAttention",
+        "category": "vision_vit",
+        "elapsed_s": 0.94
+      },
+      {
+        "id": "transformers__ViTSelfOutput__de6f238c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ViTSelfOutput",
+        "category": "vision_vit",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__WhisperAttention__a202e02a",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "WhisperAttention",
+        "category": "transformer",
+        "elapsed_s": 0.94
+      },
+      {
+        "id": "transformers__WhisperDecoder__f2b1f17b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "WhisperDecoder",
+        "category": "transformer",
+        "elapsed_s": 1.17
+      },
+      {
+        "id": "transformers__WhisperDecoderLayer__7b88f11a",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "WhisperDecoderLayer",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__WhisperDecoderWrapper__f16eb33b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "WhisperDecoderWrapper",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__WhisperEncoder__ca6bd151",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "WhisperEncoder",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__WhisperEncoderLayer__02c95568",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "WhisperEncoderLayer",
+        "category": "transformer",
+        "elapsed_s": 1.24
+      },
+      {
+        "id": "transformers__WhisperForAudioClassification__5c48a77a",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "WhisperForAudioClassification",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__WhisperForCausalLM__49d54f15",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "WhisperForCausalLM",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__WhisperForConditionalGeneration__ed440ec8",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "WhisperForConditionalGeneration",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__WhisperModel__2cb724a8",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "WhisperModel",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__WhisperPositionalEmbedding__f3c92931",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "WhisperPositionalEmbedding",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__WhisperPreTrainedModel__aac856a9",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "WhisperPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__BartAttention__872534b2",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "BartAttention",
+        "category": "transformer",
+        "elapsed_s": 0.91
+      },
+      {
+        "id": "transformers__BartClassificationHead__91ada2db",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BartClassificationHead",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__BartDecoder__37b31304",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "BartDecoder",
+        "category": "transformer",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "transformers__BartDecoderLayer__964c0068",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BartDecoderLayer",
+        "category": "transformer",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__BartDecoderWrapper__145bd043",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BartDecoderWrapper",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__BartEncoder__9ecbfcaa",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BartEncoder",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__BartEncoderLayer__22379aa0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BartEncoderLayer",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__BartForCausalLM__badc2db2",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BartForCausalLM",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__BartForConditionalGeneration__31f5e997",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BartForConditionalGeneration",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__BartForQuestionAnswering__11e5505f",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BartForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__BartForSequenceClassification__7b1a4896",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BartForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__BartLearnedPositionalEmbedding__543fc3df",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "BartLearnedPositionalEmbedding",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__BartModel__27886110",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BartModel",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__BartPreTrainedModel__e2854e5b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BartPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__BartPretrainedModel__04fdcfe2",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BartPretrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__BartScaledWordEmbedding__2ebe704c",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "BartScaledWordEmbedding",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__PretrainedBartModel__90ec4e88",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "PretrainedBartModel",
+        "category": "transformer",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "transformers__DistilBertFlashAttention2__9971185e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DistilBertFlashAttention2",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__DistilBertForMaskedLM__074cc05b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DistilBertForMaskedLM",
+        "category": "transformer",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "transformers__DistilBertForMultipleChoice__894eda84",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DistilBertForMultipleChoice",
+        "category": "transformer",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "transformers__DistilBertForQuestionAnswering__e9a36da2",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DistilBertForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__DistilBertForSequenceClassification__2980befd",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DistilBertForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__DistilBertForTokenClassification__bd1d20db",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DistilBertForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__DistilBertModel__e1631f00",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DistilBertModel",
+        "category": "transformer",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "transformers__DistilBertPreTrainedModel__1f6d3674",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DistilBertPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__DistilBertSdpaAttention__96b383dd",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DistilBertSdpaAttention",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__Embeddings__a64ca064",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "Embeddings",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__FFN__883768e0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "FFN",
+        "category": "transformer",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__MultiHeadSelfAttention__56723522",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "MultiHeadSelfAttention",
+        "category": "transformer",
+        "elapsed_s": 0.95
+      },
+      {
+        "id": "transformers__Transformer__1a302bc3",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "Transformer",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__TransformerBlock__d7eea714",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "TransformerBlock",
+        "category": "transformer",
+        "elapsed_s": 0.9
+      },
+      {
+        "id": "transformers__CLIPAttention__400df1d0",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "CLIPAttention",
+        "category": "transformer",
+        "elapsed_s": 0.9
+      },
+      {
+        "id": "transformers__CLIPEncoder__7de3a90a",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "CLIPEncoder",
+        "category": "transformer",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "transformers__CLIPEncoderLayer__907c2486",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "CLIPEncoderLayer",
+        "category": "transformer",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "transformers__CLIPForImageClassification__53204b83",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "CLIPForImageClassification",
+        "category": "transformer",
+        "elapsed_s": 0.89
+      },
+      {
+        "id": "transformers__CLIPMLP__d12a982d",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "CLIPMLP",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__CLIPModel__13d2dfa6",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "CLIPModel",
+        "category": "transformer",
+        "elapsed_s": 0.98
+      },
+      {
+        "id": "transformers__CLIPPreTrainedModel__592bf875",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "CLIPPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__CLIPTextEmbeddings__317a8260",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "CLIPTextEmbeddings",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__CLIPTextModel__fec7faa7",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "CLIPTextModel",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__CLIPTextModelWithProjection__7f89d913",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "CLIPTextModelWithProjection",
+        "category": "transformer",
+        "elapsed_s": 0.93
+      },
+      {
+        "id": "transformers__CLIPTextTransformer__031c0e29",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "CLIPTextTransformer",
+        "category": "transformer",
+        "elapsed_s": 0.91
+      },
+      {
+        "id": "transformers__CLIPVisionEmbeddings__e11586d7",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "CLIPVisionEmbeddings",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__CLIPVisionModel__f9612f8b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "CLIPVisionModel",
+        "category": "transformer",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "transformers__CLIPVisionModelWithProjection__42d64006",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "CLIPVisionModelWithProjection",
+        "category": "transformer",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "transformers__CLIPVisionTransformer__89db1fbd",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "CLIPVisionTransformer",
+        "category": "transformer",
+        "elapsed_s": 0.94
+      },
+      {
+        "id": "transformers__MistralAttention__8ac29b08",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "MistralAttention",
+        "category": "transformer",
+        "elapsed_s": 0.89
+      },
+      {
+        "id": "transformers__MistralDecoderLayer__e784c786",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "MistralDecoderLayer",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__MistralForCausalLM__2460b16a",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "MistralForCausalLM",
+        "category": "transformer",
+        "elapsed_s": 0.94
+      },
+      {
+        "id": "transformers__MistralForQuestionAnswering__8b18fca6",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "MistralForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "transformers__MistralForSequenceClassification__575cee26",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "MistralForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__MistralForTokenClassification__f6513bc5",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "MistralForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "transformers__MistralMLP__77a47fec",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "MistralMLP",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__MistralModel__a8738ef2",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "MistralModel",
+        "category": "transformer",
+        "elapsed_s": 0.9
+      },
+      {
+        "id": "transformers__MistralPreTrainedModel__c5a3ee26",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "MistralPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__MistralRMSNorm__fada1fa7",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "MistralRMSNorm",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__MistralRotaryEmbedding__fafa13a1",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "MistralRotaryEmbedding",
+        "category": "transformer",
+        "elapsed_s": 0.9
+      },
+      {
+        "id": "transformers__GemmaAttention__dd2e41bc",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "GemmaAttention",
+        "category": "transformer",
+        "elapsed_s": 0.89
+      },
+      {
+        "id": "transformers__GemmaDecoderLayer__6502abe9",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GemmaDecoderLayer",
+        "category": "transformer",
+        "elapsed_s": 1.14
+      },
+      {
+        "id": "transformers__GemmaForCausalLM__64e45a7d",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "GemmaForCausalLM",
+        "category": "transformer",
+        "elapsed_s": 0.9
+      },
+      {
+        "id": "transformers__GemmaForSequenceClassification__834f8664",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GemmaForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__GemmaForTokenClassification__284b1df0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GemmaForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__GemmaMLP__c43d07a7",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GemmaMLP",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__GemmaModel__a5eac09f",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "GemmaModel",
+        "category": "transformer",
+        "elapsed_s": 0.91
+      },
+      {
+        "id": "transformers__GemmaPreTrainedModel__bea9489b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GemmaPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__GemmaRMSNorm__3af82dcc",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "GemmaRMSNorm",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__GemmaRotaryEmbedding__73305142",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "GemmaRotaryEmbedding",
+        "category": "transformer",
+        "elapsed_s": 0.93
+      },
+      {
+        "id": "transformers__FalconAttention__9742bf57",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "FalconAttention",
+        "category": "transformer",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "transformers__FalconDecoderLayer__6582cbfb",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "FalconDecoderLayer",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__FalconFlashAttention2__c64fa866",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "FalconFlashAttention2",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__FalconForCausalLM__0bd2b170",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "FalconForCausalLM",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__FalconForQuestionAnswering__4a8af66e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "FalconForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__FalconForSequenceClassification__53df6fb0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "FalconForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__FalconForTokenClassification__ed8d05f2",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "FalconForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "transformers__FalconLinear__11c4d60e",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "FalconLinear",
+        "category": "transformer",
+        "elapsed_s": 0.93
+      },
+      {
+        "id": "transformers__FalconMLP__6b8bea33",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "FalconMLP",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__FalconModel__15321937",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "FalconModel",
+        "category": "transformer",
+        "elapsed_s": 0.91
+      },
+      {
+        "id": "transformers__FalconPreTrainedModel__55936532",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "FalconPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "transformers__FalconRotaryEmbedding__0d3de369",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "FalconRotaryEmbedding",
+        "category": "transformer",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "transformers__GPTNeoXAttention__0cfba163",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "GPTNeoXAttention",
+        "category": "transformer",
+        "elapsed_s": 0.94
+      },
+      {
+        "id": "transformers__GPTNeoXDecoderLayer__fdd10742",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GPTNeoXDecoderLayer",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__GPTNeoXForCausalLM__303baee1",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "GPTNeoXForCausalLM",
+        "category": "transformer",
+        "elapsed_s": 0.95
+      },
+      {
+        "id": "transformers__GPTNeoXForQuestionAnswering__a03baec2",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "GPTNeoXForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "transformers__GPTNeoXForSequenceClassification__71a009c6",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "GPTNeoXForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "transformers__GPTNeoXForTokenClassification__86a22a5b",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "GPTNeoXForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 0.89
+      },
+      {
+        "id": "transformers__GPTNeoXLayer__e0f32bd0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GPTNeoXLayer",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__GPTNeoXMLP__80844091",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GPTNeoXMLP",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__GPTNeoXModel__1d753983",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "GPTNeoXModel",
+        "category": "transformer",
+        "elapsed_s": 1.15
+      },
+      {
+        "id": "transformers__GPTNeoXPreTrainedModel__9eda7029",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "GPTNeoXPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__GPTNeoXRMSNorm__d653611b",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "GPTNeoXRMSNorm",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__GPTNeoXRotaryEmbedding__a44abc41",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "GPTNeoXRotaryEmbedding",
+        "category": "transformer",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "transformers__Qwen2Attention__bd67b6c8",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "Qwen2Attention",
+        "category": "transformer",
+        "elapsed_s": 0.91
+      },
+      {
+        "id": "transformers__Qwen2DecoderLayer__87203a27",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "Qwen2DecoderLayer",
+        "category": "transformer",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "transformers__Qwen2ForCausalLM__8bbd0043",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "Qwen2ForCausalLM",
+        "category": "transformer",
+        "elapsed_s": 0.93
+      },
+      {
+        "id": "transformers__Qwen2ForQuestionAnswering__a8a5c2d4",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "Qwen2ForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__Qwen2ForSequenceClassification__6433ca29",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "Qwen2ForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__Qwen2ForTokenClassification__37e86321",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "Qwen2ForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__Qwen2MLP__847e5083",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "Qwen2MLP",
+        "category": "transformer",
+        "elapsed_s": 1.12
+      },
+      {
+        "id": "transformers__Qwen2Model__58bb107f",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "Qwen2Model",
+        "category": "transformer",
+        "elapsed_s": 0.93
+      },
+      {
+        "id": "transformers__Qwen2PreTrainedModel__a311ac62",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "Qwen2PreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "transformers__Qwen2RMSNorm__795d458c",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "Qwen2RMSNorm",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__Qwen2RotaryEmbedding__c9b7a59b",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "Qwen2RotaryEmbedding",
+        "category": "transformer",
+        "elapsed_s": 0.93
+      },
+      {
+        "id": "transformers__RobertaAttention__e006f377",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaAttention",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__RobertaClassificationHead__d31ced3e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaClassificationHead",
+        "category": "transformer",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "transformers__RobertaEmbeddings__27d0f198",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaEmbeddings",
+        "category": "transformer",
+        "elapsed_s": 1.14
+      },
+      {
+        "id": "transformers__RobertaEncoder__320be8e6",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaEncoder",
+        "category": "transformer",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__RobertaForCausalLM__bd93edfc",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaForCausalLM",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__RobertaForMaskedLM__6e029774",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaForMaskedLM",
+        "category": "transformer",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "transformers__RobertaForMultipleChoice__0324395b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaForMultipleChoice",
+        "category": "transformer",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "transformers__RobertaForQuestionAnswering__e34c038b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__RobertaForSequenceClassification__38529e03",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__RobertaForTokenClassification__a9785151",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__RobertaIntermediate__9da9fb8b",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "RobertaIntermediate",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__RobertaLMHead__dc339265",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "RobertaLMHead",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__RobertaLayer__a95c30ac",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaLayer",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__RobertaModel__e903ada9",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaModel",
+        "category": "transformer",
+        "elapsed_s": 1.28
+      },
+      {
+        "id": "transformers__RobertaOutput__85cdfff1",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaOutput",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__RobertaPooler__43433f8b",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "RobertaPooler",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__RobertaPreTrainedModel__e616dcd3",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "transformers__RobertaSdpaSelfAttention__cc16368b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaSdpaSelfAttention",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__RobertaSelfAttention__56085e50",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaSelfAttention",
+        "category": "transformer",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "transformers__RobertaSelfOutput__4b1851b0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "RobertaSelfOutput",
+        "category": "transformer",
+        "elapsed_s": 1.44
+      },
+      {
+        "id": "transformers__AlbertAttention__9691e747",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertAttention",
+        "category": "transformer",
+        "elapsed_s": 1.18
+      },
+      {
+        "id": "transformers__AlbertEmbeddings__aa5a3981",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertEmbeddings",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__AlbertForMaskedLM__444a57ae",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertForMaskedLM",
+        "category": "transformer",
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "transformers__AlbertForMultipleChoice__3d721e99",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "AlbertForMultipleChoice",
+        "category": "transformer",
+        "elapsed_s": 0.92
+      },
+      {
+        "id": "transformers__AlbertForPreTraining__0bc1b159",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertForPreTraining",
+        "category": "transformer",
+        "elapsed_s": 1.14
+      },
+      {
+        "id": "transformers__AlbertForQuestionAnswering__4a242c13",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "AlbertForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 0.91
+      },
+      {
+        "id": "transformers__AlbertForSequenceClassification__fd9bb76c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__AlbertForTokenClassification__a514ef32",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__AlbertLayer__50bc51d0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertLayer",
+        "category": "transformer",
+        "elapsed_s": 1.12
+      },
+      {
+        "id": "transformers__AlbertLayerGroup__ef35f8f2",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertLayerGroup",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__AlbertMLMHead__8a0fa150",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertMLMHead",
+        "category": "transformer",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "transformers__AlbertModel__f4b637f2",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertModel",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__AlbertPreTrainedModel__6b90b824",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.16
+      },
+      {
+        "id": "transformers__AlbertSOPHead__016ff313",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertSOPHead",
+        "category": "transformer",
+        "elapsed_s": 1.15
+      },
+      {
+        "id": "transformers__AlbertSdpaAttention__6c7a75f6",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertSdpaAttention",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__AlbertTransformer__5a849827",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "AlbertTransformer",
+        "category": "transformer",
+        "elapsed_s": 1.24
+      },
+      {
+        "id": "transformers__OPTAttention__46b5daf0",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "OPTAttention",
+        "category": "transformer",
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "transformers__OPTDecoder__c91a52f0",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "OPTDecoder",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__OPTDecoderLayer__24a4c9cc",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "OPTDecoderLayer",
+        "category": "transformer",
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "transformers__OPTForCausalLM__2b15a250",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "OPTForCausalLM",
+        "category": "transformer",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__OPTForQuestionAnswering__b4351cc4",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "OPTForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__OPTForSequenceClassification__5365eb03",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "OPTForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__OPTLearnedPositionalEmbedding__6fb6e1e7",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "OPTLearnedPositionalEmbedding",
+        "category": "transformer",
+        "elapsed_s": 1.22
+      },
+      {
+        "id": "transformers__OPTModel__bb5f30a8",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "OPTModel",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__OPTPreTrainedModel__8d7cca0c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "OPTPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.19
+      },
+      {
+        "id": "transformers__BloomAttention__4ab351a5",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BloomAttention",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__BloomBlock__3a17894c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BloomBlock",
+        "category": "transformer",
+        "elapsed_s": 1.17
+      },
+      {
+        "id": "transformers__BloomForCausalLM__36a60c67",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BloomForCausalLM",
+        "category": "transformer",
+        "elapsed_s": 1.19
+      },
+      {
+        "id": "transformers__BloomForQuestionAnswering__7994d60e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BloomForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__BloomForSequenceClassification__81e125ad",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BloomForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "transformers__BloomForTokenClassification__057bf6a0",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BloomForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.6
+      },
+      {
+        "id": "transformers__BloomGelu__8ee84096",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "BloomGelu",
+        "category": "transformer",
+        "elapsed_s": 1.23
+      },
+      {
+        "id": "transformers__BloomMLP__43666c6d",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BloomMLP",
+        "category": "transformer",
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "transformers__BloomModel__f089388c",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "BloomModel",
+        "category": "transformer",
+        "elapsed_s": 1.0
+      },
+      {
+        "id": "transformers__BloomPreTrainedModel__4a772e64",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "BloomPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__ContextPooler__8ee8f94f",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ContextPooler",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__DebertaAttention__ad76f1a3",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DebertaAttention",
+        "category": "transformer",
+        "elapsed_s": 1.15
+      },
+      {
+        "id": "transformers__DebertaEmbeddings__a04a0e1f",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DebertaEmbeddings",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__DebertaEncoder__233bff42",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "DebertaEncoder",
+        "category": "transformer",
+        "elapsed_s": 0.94
+      },
+      {
+        "id": "transformers__DebertaForMaskedLM__bdf0c81c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DebertaForMaskedLM",
+        "category": "transformer",
+        "elapsed_s": 1.22
+      },
+      {
+        "id": "transformers__DebertaForQuestionAnswering__dbb32f9f",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DebertaForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__DebertaForSequenceClassification__f3f064d8",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DebertaForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "transformers__DebertaForTokenClassification__db2b551a",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DebertaForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__DebertaIntermediate__0eab50bc",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "DebertaIntermediate",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__DebertaLMPredictionHead__eda030a3",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "DebertaLMPredictionHead",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__DebertaLayer__a1667b76",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DebertaLayer",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__DebertaLayerNorm__fb3b5814",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "DebertaLayerNorm",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__DebertaModel__d4dcd33c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DebertaModel",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__DebertaOnlyMLMHead__d2057fff",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DebertaOnlyMLMHead",
+        "category": "transformer",
+        "elapsed_s": 1.12
+      },
+      {
+        "id": "transformers__DebertaOutput__984d5f9f",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DebertaOutput",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__DebertaPreTrainedModel__81744cba",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DebertaPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "transformers__DebertaSelfOutput__89334fca",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "DebertaSelfOutput",
+        "category": "transformer",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__DisentangledSelfAttention__b8334cec",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "DisentangledSelfAttention",
+        "category": "transformer",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "transformers__LegacyDebertaLMPredictionHead__c60fb93e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "LegacyDebertaLMPredictionHead",
+        "category": "transformer",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__LegacyDebertaOnlyMLMHead__230311ab",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "LegacyDebertaOnlyMLMHead",
+        "category": "transformer",
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "transformers__LegacyDebertaPredictionHeadTransform__32cb6d4e",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "LegacyDebertaPredictionHeadTransform",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__ElectraAttention__5759530c",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraAttention",
+        "category": "transformer",
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "transformers__ElectraClassificationHead__4afaea88",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraClassificationHead",
+        "category": "transformer",
+        "elapsed_s": 1.17
+      },
+      {
+        "id": "transformers__ElectraDiscriminatorPredictions__3e27518e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraDiscriminatorPredictions",
+        "category": "transformer",
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "transformers__ElectraEmbeddings__42cd8d0b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraEmbeddings",
+        "category": "transformer",
+        "elapsed_s": 1.25
+      },
+      {
+        "id": "transformers__ElectraEncoder__5529778a",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraEncoder",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__ElectraForCausalLM__096d250d",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraForCausalLM",
+        "category": "transformer",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__ElectraForMaskedLM__d15e3e41",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraForMaskedLM",
+        "category": "transformer",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__ElectraForMultipleChoice__6fbdbe6b",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraForMultipleChoice",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__ElectraForPreTraining__74bdacae",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraForPreTraining",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__ElectraForQuestionAnswering__389f4d6e",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraForQuestionAnswering",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__ElectraForSequenceClassification__af15f28d",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraForSequenceClassification",
+        "category": "transformer",
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "transformers__ElectraForTokenClassification__12722bf3",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraForTokenClassification",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__ElectraGeneratorPredictions__5ad5a190",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraGeneratorPredictions",
+        "category": "transformer",
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "transformers__ElectraIntermediate__84a0c6ce",
+        "verdict": "Verified",
+        "reason": "no_error(succ=1,valid=1)",
+        "library": "transformers",
+        "class_name": "ElectraIntermediate",
+        "category": "transformer",
+        "elapsed_s": 1.14
+      },
+      {
+        "id": "transformers__ElectraLayer__e8b525e7",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraLayer",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__ElectraModel__12079a7f",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraModel",
+        "category": "transformer",
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "transformers__ElectraOutput__6cf5d663",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraOutput",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__ElectraPreTrainedModel__1e4993ba",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraPreTrainedModel",
+        "category": "transformer",
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "transformers__ElectraSelfAttention__3f68d2e7",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraSelfAttention",
+        "category": "transformer",
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "transformers__ElectraSelfOutput__ddfbfff8",
+        "verdict": "N/A",
+        "reason": "missing_dependency_reference",
+        "library": "transformers",
+        "class_name": "ElectraSelfOutput",
+        "category": "transformer",
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "transformers__ElectraSequenceSummary__fa325a69",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "library": "transformers",
+        "class_name": "ElectraSequenceSummary",
+        "category": "transformer",
+        "elapsed_s": 0.94
+      }
+    ]
+  },
+  "bug_corpus": {
+    "N": 60,
+    "summary": {
+      "Verified": 31,
+      "Refuted": 27,
+      "Abstain": 0,
+      "N/A": 2
+    },
+    "per_input": [
+      {
+        "id": "bug_001_sdpa_attn_mask_gqa",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "",
+        "is_buggy": true,
+        "elapsed_s": 1.19
+      },
+      {
+        "id": "bug_002_isclose_broadcast",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "",
+        "is_buggy": true,
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "bug_003_view_total_size",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "",
+        "is_buggy": true,
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "bug_004_view_empty",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "",
+        "is_buggy": true,
+        "elapsed_s": 1.12
+      },
+      {
+        "id": "bug_005_broadcast_mismatch",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "",
+        "is_buggy": true,
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "bug_006_cross_entropy_weight",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": false,
+        "category": "",
+        "is_buggy": true,
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "bug_007_conv_dtype_mismatch",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "",
+        "is_buggy": true,
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "bug_008",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "conv_channel_mismatch",
+        "is_buggy": true,
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "bug_009",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "linear_inout_mismatch",
+        "is_buggy": true,
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "bug_010",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "view_reshape_total_size",
+        "is_buggy": true,
+        "elapsed_s": 1.15
+      },
+      {
+        "id": "bug_011",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "broadcasting",
+        "is_buggy": true,
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "bug_012",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "attention_dim",
+        "is_buggy": true,
+        "elapsed_s": 1.21
+      },
+      {
+        "id": "bug_013",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "einsum_dim",
+        "is_buggy": true,
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "bug_014",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "transpose_axes",
+        "is_buggy": true,
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "bug_015",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "batchnorm_features",
+        "is_buggy": true,
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "bug_016",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": false,
+        "category": "embedding_index",
+        "is_buggy": true,
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "bug_017",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "conv_channel_mismatch",
+        "is_buggy": true,
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "bug_018",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "has_unimpl_api": false,
+        "category": "linear_inout_mismatch",
+        "is_buggy": true,
+        "elapsed_s": 0.99
+      },
+      {
+        "id": "bug_019",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "view_reshape_total_size",
+        "is_buggy": true,
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "bug_020",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "broadcasting",
+        "is_buggy": true,
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "bug_022",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "einsum_dim",
+        "is_buggy": true,
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "bug_024",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "batchnorm_features",
+        "is_buggy": true,
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "bug_026",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "conv_channel_mismatch",
+        "is_buggy": true,
+        "elapsed_s": 1.16
+      },
+      {
+        "id": "bug_027",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "linear_inout_mismatch",
+        "is_buggy": true,
+        "elapsed_s": 1.2
+      },
+      {
+        "id": "bug_028",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "view_reshape_total_size",
+        "is_buggy": true,
+        "elapsed_s": 1.39
+      },
+      {
+        "id": "bug_029",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "broadcasting",
+        "is_buggy": true,
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "bug_031",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "einsum_dim",
+        "is_buggy": true,
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "bug_032",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "transpose_axes",
+        "is_buggy": true,
+        "elapsed_s": 1.05
+      },
+      {
+        "id": "bug_033",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "batchnorm_features",
+        "is_buggy": true,
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "bug_034",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": false,
+        "category": "embedding_index",
+        "is_buggy": true,
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "bug_035",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "conv_channel_mismatch",
+        "is_buggy": true,
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "bug_037",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "view_reshape_total_size",
+        "is_buggy": true,
+        "elapsed_s": 1.35
+      },
+      {
+        "id": "bug_038",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "broadcasting",
+        "is_buggy": true,
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "bug_039",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": false,
+        "category": "attention_dim",
+        "is_buggy": true,
+        "elapsed_s": 1.23
+      },
+      {
+        "id": "bug_040",
+        "verdict": "N/A",
+        "reason": "frontend_parse_failed",
+        "has_unimpl_api": false,
+        "category": "einsum_dim",
+        "is_buggy": true,
+        "elapsed_s": 1.16
+      },
+      {
+        "id": "bug_041",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "transpose_axes",
+        "is_buggy": true,
+        "elapsed_s": 1.16
+      },
+      {
+        "id": "bug_042",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "other",
+        "is_buggy": true,
+        "elapsed_s": 1.14
+      },
+      {
+        "id": "bug_043",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "other",
+        "is_buggy": true,
+        "elapsed_s": 1.08
+      },
+      {
+        "id": "bug_044",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "other",
+        "is_buggy": true,
+        "elapsed_s": 1.1
+      },
+      {
+        "id": "bug_045",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "conv_channel_mismatch",
+        "is_buggy": true,
+        "elapsed_s": 1.13
+      },
+      {
+        "id": "bug_047",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "view_reshape_total_size",
+        "is_buggy": true,
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "bug_048",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "broadcasting",
+        "is_buggy": true,
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "bug_049",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "attention_dim",
+        "is_buggy": true,
+        "elapsed_s": 0.98
+      },
+      {
+        "id": "bug_050",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "einsum_dim",
+        "is_buggy": true,
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "bug_051",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "other",
+        "is_buggy": true,
+        "elapsed_s": 1.09
+      },
+      {
+        "id": "bug_052",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": false,
+        "category": "other",
+        "is_buggy": true,
+        "elapsed_s": 1.16
+      },
+      {
+        "id": "bug_053",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "transpose_axes",
+        "is_buggy": true,
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "bug_054",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": false,
+        "category": "batchnorm_features",
+        "is_buggy": true,
+        "elapsed_s": 1.04
+      },
+      {
+        "id": "bug_055",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "embedding_index",
+        "is_buggy": true,
+        "elapsed_s": 1.06
+      },
+      {
+        "id": "bug_056",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "conv_channel_mismatch",
+        "is_buggy": true,
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "bug_057",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "linear_inout_mismatch",
+        "is_buggy": true,
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "bug_058",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "view_reshape_total_size",
+        "is_buggy": true,
+        "elapsed_s": 1.07
+      },
+      {
+        "id": "bug_059",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "broadcasting",
+        "is_buggy": true,
+        "elapsed_s": 1.03
+      },
+      {
+        "id": "bug_060",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "attention_dim",
+        "is_buggy": true,
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "bug_063",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": false,
+        "category": "view_reshape_total_size",
+        "is_buggy": true,
+        "elapsed_s": 1.02
+      },
+      {
+        "id": "bug_064",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "broadcasting",
+        "is_buggy": true,
+        "elapsed_s": 1.0
+      },
+      {
+        "id": "bug_065",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "other",
+        "is_buggy": true,
+        "elapsed_s": 1.0
+      },
+      {
+        "id": "bug_067",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "other",
+        "is_buggy": true,
+        "elapsed_s": 1.11
+      },
+      {
+        "id": "bug_068",
+        "verdict": "Refuted",
+        "reason": "online(fail=1,succ=0,unr=0) z3(invalid=0,valid=0,undec=0)",
+        "has_unimpl_api": false,
+        "category": "other",
+        "is_buggy": true,
+        "elapsed_s": 1.14
+      },
+      {
+        "id": "bug_069",
+        "verdict": "Verified",
+        "reason": "online(fail=0,succ=1,unr=0) z3(invalid=0,valid=1,undec=0)",
+        "has_unimpl_api": true,
+        "category": "other",
+        "is_buggy": true,
+        "elapsed_s": 1.22
+      }
+    ]
+  },
+  "limitations": [
+    "Pytea targets shape/tensor errors only; cannot reason about requires_grad / autograd flow, dtype mismatches, or runtime-value-dependent branches.",
+    "Pytea requires importable, instantiable nn.Module code; library blocks needing constructor arguments or external helper functions are structurally N/A (same constraint as torch.fx baseline).",
+    "Pytea's built-in PyTorch stub library covers only a subset of PyTorch APIs (as of commit 2022-04-26). Modern APIs such as F.scaled_dot_product_attention, torch.isclose, and many transformers ops are absent, causing false 'Verified' (no-error) results on bugs whose triggering API is unimplemented.",
+    "Frontend parser (pyright-based) in Pytea cannot handle some Python syntax used in modern PyTorch code (e.g. augmented assignment operators in certain positions), causing 2/60 bug repros to fail parse entirely.",
+    "Pytea's last commit was 2022-04-26; PyTorch API coverage has not been updated since then, limiting recall on post-2022 APIs.",
+    "Block corpus wrappers call ClassName() with no constructor arguments; most blocks require non-trivial args (channel counts, config objects), causing constructor-level 'name not found' failures that map to N/A rather than genuine shape analysis.",
+    "Pytea reports 'Verified' when it cannot analyze a code path due to missing stubs \u2014 this is an unsound approximation (false negative). Users must inspect the LOGS section for 'attribute not found' warnings to detect this.",
+    "Z3 offline analysis is only reached for paths that pass the online (TypeScript) phase; paths where Pytea lacks stubs never reach Z3."
+  ]
+}

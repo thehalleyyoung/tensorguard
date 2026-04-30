@@ -1,0 +1,62 @@
+[
+  {
+    "description": "On the post-freeze unfiltered surface, what is the smallest N at which the observed point estimates (TG 1/3 vs. FT 2/15, Pytea 1/5) would yield BF\u2081\u2080\u226510 and Fisher p<0.05 on at least one of the two pairwise comparisons? If extending the pre-registered query to that N is feasible, do so and report.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 1.0
+  },
+  {
+    "description": "The Theorem 5 end-to-end audit remains at ~31 modules total (17 + 14, with 4 of 14 still on the forward-signature surrogate). The `dynamo_theorem5_n100.py` script attempts a 112-candidate run but the artefact (`dynamo_theorem5_n100.{json,md}`) records \"Successful modules: 0 / Excluded (build/warmup/timeout): 112\"; no \u2265100-block evaluation of the falsifier predicate (`r.guard_kind \u2208 {SHAPE, DTYPE, RANK} \u2227 r.guard_var \u2209 catalogue(M)`) lands in the paper. Theorem 5 is the central PL-side claim about Dynamo and it is still being validated on roughly a third of the \u2265100-module target. Please diagnose the build/warmup/timeout exclusion path on `dynamo_theorem5_n100.py` (the run aborts on every candidate, so this is not a corpus problem \u2014 likely a contract-construction or warmup-budget bug in the harness), then ship the `{SHAPE, DTYPE, RANK, INT}` recompile breakdown and the falsifier rate on a fully-instantiated \u226570 additional importable timm/HF blocks.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 1.0
+  },
+  {
+    "description": "Footnote on the held-out HF Trainer audit: 1/42 = 2.4% is a clean number, but it conflates \"construct present\" with \"silent verdict-flip on a class TG would otherwise verify\". The audit measures script-level construct exposure (G1\u2228G2\u2228G6), not \"TG verifies a module to which one of these constructs applies and that verdict is wrong against runtime `p.grad \u2260 None`\". The \u226412% ceiling in \u00a76 is about prevalence of the construct, so the audit is internally consistent, but the *false-verified-rate* the prior round asked for \u2014 measured against runtime `p.grad \u2260 None` on the held-out scripts \u2014 is not what 2.4% measures. Please either (i) re-run the held-out script subset against runtime grad equality and report the false-verified-rate directly, or (ii) clarify in \u00a76 that the held-out audit is a held-out *construct-prevalence* check (which it is) and not a held-out false-verified-rate.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 1.0
+  },
+  {
+    "description": "The N=15 post-freeze surface is now correctly described, but the structural problem \u2014 only N=15 unfiltered post-freeze observations exist, of which 1 is an off-axis false positive \u2014 caps how much weight any reader should put on the \"TG point-above\" framing. The pre-registration query (frozen 2026-04-08) is reusable: extending the same query window forward another month would generate ~10\u201315 fresh items at the rate the original sample suggests. A pre-registered N\u226530 second wave would convert the \"above-but-not-separable\" claim into a (likely) Fisher-significant separation against FT and would not require rebuilding the methodology. The paper does not say whether such an extension is being run.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 1.0
+  },
+  {
+    "description": "The TCB fault-injection footprint is a conservative upper bound (exposure \u2265 flip), not a measured flip rate. Under F4 the bound is \"\u22647 RP could flip to silent V on the 60-bug corpus\" \u2014 but the paper does not exhibit the actual flip count on a deliberately-injected F4 build. A 30-line patch that changes the Conv2d output formula by \u00b11 in the analyser handler, re-runs the 60-bug corpus, and reports the *measured* RP\u2192V flip, would convert the F4 line from \"\u22647\" to a tight number and would close the gap between exposure and flip. The same applies to F1\u2013F3.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 1.0
+  },
+  {
+    "description": "The 28-of-79 Lean handler audit (Table 7) is unchanged, and the explicit TCB list (\"the analyser implementation, AST extractor, backward verifier, and Z3 dispatch\") still covers the user-facing path on every block. The TCB fault-injection footprint partially calibrates the consequences (above), but only for four hand-chosen fault classes; an automated mutation-testing sweep (e.g. AST-rewrite-driven mutation of `model_checker.py` followed by 60-bug regression) on, say, 50 mutants would give a kill-rate that actually quantifies analyser-level robustness rather than four anecdotal faults. This is not asked for as a blocker, but it is the natural next instrument.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 1.0
+  },
+  {
+    "description": "The `dynamo_theorem5_n100.py` artefact reports 0/112 successful modules (all excluded on build/warmup/timeout). What is the per-stage exclusion breakdown (import error, contract-construction failure, warmup OOM, compile timeout, recompile-event collection failure)? Is the harness actually measuring 0 successes because none of 112 candidates survive warmup, or because of a single shared bug in contract construction?",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 1.0
+  },
+  {
+    "description": "For the held-out HF Trainer audit (1/42 = 2.4%), what is the false-verified-rate on the same 42 scripts when measured against runtime `p.grad \u2260 None` after one optimiser step (rather than against script-level construct presence)? Even if the answer is also small, it is the directly comparable number to the \u226412% ceiling.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 1.0
+  },
+  {
+    "description": "Of the 12 LW\u2192RP residual blocks listed, how many of the named single missing rules are already in the catalogue *roadmap* (i.e. would be added in a hypothetical v2 of TG), and how many require fragment-extension work outside the current well-typed-operator-rule discipline?",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 1.0
+  },
+  {
+    "description": "Under the F4 fault (Conv2d off-by-one), what is the *measured* RP\u2192V flip on the 60-bug corpus, and does it equal the 7/60 exposure upper bound or fall below it? A measured-flip number (not just the exposure ceiling) would close the soundness-implementation gap quantitatively.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 1.0
+  }
+]

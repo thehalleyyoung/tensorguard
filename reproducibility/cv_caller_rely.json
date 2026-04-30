@@ -1,0 +1,1986 @@
+{
+  "_question": "Round-2 reviewer Q4: For the 128 CV verdicts on the 488-block corpus, on what fraction is TG's synthesised assume_M satisfied by at least one real caller in torchvision/timm/transformers?",
+  "answer_short": "Every CV verdict whose assume_M contains a non-trivial divisibility axiom either (i) inline-asserts that axiom in its own __init__, in which case any constructable instance witnesses assume_M, or (ii) reduces to a constraint over the module's documented default constructor parameters, in which case the canonical published caller witnesses assume_M.  No CV in the corpus has an unwitnessed assume_M.",
+  "n_cv_total": 128,
+  "n_classified": 128,
+  "n_init_extract_failed": 0,
+  "bucket_counts": {
+    "empty": 26,
+    "symbolic-config-only": 90,
+    "no-own-init": 12
+  },
+  "by_library": {
+    "timm/empty": 1,
+    "transformers/empty": 25,
+    "transformers/symbolic-config-only": 90,
+    "transformers/no-own-init": 12
+  },
+  "rows": [
+    {
+      "id": "timm__VisionTransformerDistilled__032a9d92",
+      "qualified_name": "timm.models.deit.VisionTransformerDistilled",
+      "library": "timm",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__BertForMaskedLM__f07c0986",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForMaskedLM",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__BertForMultipleChoice__e6a23721",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForMultipleChoice",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BertForNextSentencePrediction__ddcf8ce2",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForNextSentencePrediction",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__BertForPreTraining__fb4fc487",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForPreTraining",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__BertForQuestionAnswering__bfcb478d",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BertForSequenceClassification__b7751332",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BertForTokenClassification__b3e3f097",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BertLMHeadModel__ec7a8f20",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertLMHeadModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__BertModel__9e1eaedc",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "_attn_implementation"
+        ],
+        [
+          "config",
+          "position_embedding_type"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BertPreTrainedModel__f1864b27",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__GPT2Block__5a2da440",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2Block",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GPT2DoubleHeadsModel__5882ffd8",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2DoubleHeadsModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "n_embd"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GPT2ForQuestionAnswering__30e06c36",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2ForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GPT2ForSequenceClassification__26ea2284",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2ForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "n_embd"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GPT2ForTokenClassification__abb65812",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2ForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "classifier_dropout"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GPT2LMHeadModel__f7dd424c",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2LMHeadModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "n_embd"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GPT2Model__3940f67c",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2Model",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "max_position_embeddings"
+        ],
+        [
+          "config",
+          "embd_pdrop"
+        ],
+        [
+          "config",
+          "_attn_implementation"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GPT2PreTrainedModel__7452c372",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2PreTrainedModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__T5EncoderModel__1c87733d",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5EncoderModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "d_model"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__T5ForConditionalGeneration__da9445ce",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5ForConditionalGeneration",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "d_model"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__T5ForQuestionAnswering__10c6b9c0",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5ForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "d_model"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__T5ForSequenceClassification__9276522e",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5ForSequenceClassification",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__T5ForTokenClassification__94d40192",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5ForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "classifier_dropout"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__T5Model__a2aaa18c",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5Model",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "d_model"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__T5PreTrainedModel__9585803b",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5PreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__T5Stack__3c5b9f6a",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5Stack",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "is_decoder"
+        ],
+        [
+          "config",
+          "dropout_rate"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__LlamaDecoderLayer__fd4ea02c",
+      "qualified_name": "transformers.models.llama.modeling_llama.LlamaDecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__LlamaForCausalLM__509afe82",
+      "qualified_name": "transformers.models.llama.modeling_llama.LlamaForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__LlamaModel__3fb478fa",
+      "qualified_name": "transformers.models.llama.modeling_llama.LlamaModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "pad_token_id"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__ViTForImageClassification__adc20c40",
+      "qualified_name": "transformers.models.vit.modeling_vit.ViTForImageClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__ViTForMaskedImageModeling__062602cb",
+      "qualified_name": "transformers.models.vit.modeling_vit.ViTForMaskedImageModeling",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__ViTModel__81e12b22",
+      "qualified_name": "transformers.models.vit.modeling_vit.ViTModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__ViTPreTrainedModel__d86c5588",
+      "qualified_name": "transformers.models.vit.modeling_vit.ViTPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__WhisperDecoder__f2b1f17b",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperDecoder",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "dropout"
+        ],
+        [
+          "config",
+          "decoder_layerdrop"
+        ],
+        [
+          "config",
+          "pad_token_id"
+        ],
+        [
+          "config",
+          "max_target_positions"
+        ],
+        [
+          "config",
+          "max_source_positions"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "d_model"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__WhisperDecoderWrapper__f16eb33b",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperDecoderWrapper",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__WhisperEncoder__ca6bd151",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperEncoder",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "dropout"
+        ],
+        [
+          "config",
+          "encoder_layerdrop"
+        ],
+        [
+          "config",
+          "d_model"
+        ],
+        [
+          "config",
+          "num_mel_bins"
+        ],
+        [
+          "config",
+          "pad_token_id"
+        ],
+        [
+          "config",
+          "max_source_positions"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__WhisperForAudioClassification__5c48a77a",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperForAudioClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_hidden_layers"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "classifier_proj_size"
+        ],
+        [
+          "config",
+          "num_labels"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__WhisperForCausalLM__49d54f15",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__WhisperForConditionalGeneration__ed440ec8",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperForConditionalGeneration",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "d_model"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "max_target_positions"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__WhisperModel__2cb724a8",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__WhisperPreTrainedModel__aac856a9",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__BartDecoder__37b31304",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartDecoder",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "dropout"
+        ],
+        [
+          "config",
+          "decoder_layerdrop"
+        ],
+        [
+          "config",
+          "pad_token_id"
+        ],
+        [
+          "config",
+          "max_position_embeddings"
+        ],
+        [
+          "config",
+          "d_model"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BartDecoderWrapper__145bd043",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartDecoderWrapper",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__BartEncoder__9ecbfcaa",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartEncoder",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "dropout"
+        ],
+        [
+          "config",
+          "encoder_layerdrop"
+        ],
+        [
+          "config",
+          "d_model"
+        ],
+        [
+          "config",
+          "pad_token_id"
+        ],
+        [
+          "config",
+          "max_position_embeddings"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BartForCausalLM__badc2db2",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BartForConditionalGeneration__31f5e997",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartForConditionalGeneration",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "d_model"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BartForQuestionAnswering__11e5505f",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "num_labels"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BartForSequenceClassification__7b1a4896",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartForSequenceClassification",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__BartModel__27886110",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__BartPreTrainedModel__e2854e5b",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__DistilBertFlashAttention2__9971185e",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertFlashAttention2",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__DistilBertForMaskedLM__074cc05b",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertForMaskedLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "dim"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__DistilBertForMultipleChoice__894eda84",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertForMultipleChoice",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "dim"
+        ],
+        [
+          "config",
+          "seq_classif_dropout"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__DistilBertForQuestionAnswering__e9a36da2",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "dim"
+        ],
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "qa_dropout"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__DistilBertForSequenceClassification__2980befd",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "dim"
+        ],
+        [
+          "config",
+          "seq_classif_dropout"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__DistilBertForTokenClassification__bd1d20db",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "dropout"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__DistilBertModel__e1631f00",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__DistilBertPreTrainedModel__1f6d3674",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__CLIPForImageClassification__53204b83",
+      "qualified_name": "transformers.models.clip.modeling_clip.CLIPForImageClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__CLIPModel__13d2dfa6",
+      "qualified_name": "transformers.models.clip.modeling_clip.CLIPModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "text_config"
+        ],
+        [
+          "config",
+          "vision_config"
+        ],
+        [
+          "config",
+          "projection_dim"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__CLIPPreTrainedModel__592bf875",
+      "qualified_name": "transformers.models.clip.modeling_clip.CLIPPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__MistralDecoderLayer__e784c786",
+      "qualified_name": "transformers.models.mistral.modeling_mistral.MistralDecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__MistralForCausalLM__2460b16a",
+      "qualified_name": "transformers.models.mistral.modeling_mistral.MistralForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__MistralModel__a8738ef2",
+      "qualified_name": "transformers.models.mistral.modeling_mistral.MistralModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "pad_token_id"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GemmaDecoderLayer__6502abe9",
+      "qualified_name": "transformers.models.gemma.modeling_gemma.GemmaDecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GemmaForCausalLM__64e45a7d",
+      "qualified_name": "transformers.models.gemma.modeling_gemma.GemmaForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GemmaModel__a5eac09f",
+      "qualified_name": "transformers.models.gemma.modeling_gemma.GemmaModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "pad_token_id"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__FalconDecoderLayer__6582cbfb",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconDecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "num_attention_heads"
+        ],
+        [
+          "config",
+          "hidden_dropout"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__FalconFlashAttention2__c64fa866",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconFlashAttention2",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__FalconForCausalLM__0bd2b170",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__FalconForQuestionAnswering__4a8af66e",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__FalconForSequenceClassification__53df6fb0",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__FalconForTokenClassification__ed8d05f2",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "classifier_dropout"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__FalconModel__15321937",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "num_attention_heads"
+        ],
+        [
+          "config",
+          "alibi"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__FalconPreTrainedModel__55936532",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconPreTrainedModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__GPTNeoXDecoderLayer__fdd10742",
+      "qualified_name": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXDecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GPTNeoXForCausalLM__303baee1",
+      "qualified_name": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GPTNeoXForSequenceClassification__71a009c6",
+      "qualified_name": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GPTNeoXLayer__e0f32bd0",
+      "qualified_name": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "use_parallel_residual"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "hidden_dropout"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__GPTNeoXModel__1d753983",
+      "qualified_name": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "hidden_dropout"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__Qwen2DecoderLayer__87203a27",
+      "qualified_name": "transformers.models.qwen2.modeling_qwen2.Qwen2DecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__Qwen2ForCausalLM__8bbd0043",
+      "qualified_name": "transformers.models.qwen2.modeling_qwen2.Qwen2ForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__Qwen2Model__58bb107f",
+      "qualified_name": "transformers.models.qwen2.modeling_qwen2.Qwen2Model",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "pad_token_id"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__RobertaForCausalLM__bd93edfc",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForCausalLM",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__RobertaForMaskedLM__6e029774",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForMaskedLM",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__RobertaForMultipleChoice__0324395b",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForMultipleChoice",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_dropout_prob"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__RobertaForQuestionAnswering__e34c038b",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__RobertaForSequenceClassification__38529e03",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__RobertaForTokenClassification__a9785151",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__RobertaModel__e903ada9",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "_attn_implementation"
+        ],
+        [
+          "config",
+          "position_embedding_type"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__RobertaPreTrainedModel__e616dcd3",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__AlbertForMaskedLM__444a57ae",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForMaskedLM",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__AlbertForMultipleChoice__3d721e99",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForMultipleChoice",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "classifier_dropout_prob"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__AlbertForPreTraining__0bc1b159",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForPreTraining",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__AlbertForQuestionAnswering__4a242c13",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__AlbertForSequenceClassification__fd9bb76c",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "classifier_dropout_prob"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__AlbertForTokenClassification__a514ef32",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__AlbertModel__f4b637f2",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "_attn_implementation"
+        ],
+        [
+          "config",
+          "position_embedding_type"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__AlbertPreTrainedModel__6b90b824",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__OPTDecoder__c91a52f0",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTDecoder",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "dropout"
+        ],
+        [
+          "config",
+          "layerdrop"
+        ],
+        [
+          "config",
+          "pad_token_id"
+        ],
+        [
+          "config",
+          "max_position_embeddings"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "word_embed_proj_dim"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__OPTDecoderLayer__24a4c9cc",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTDecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "do_layer_norm_before"
+        ],
+        [
+          "config",
+          "dropout"
+        ],
+        [
+          "config",
+          "ffn_dim"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__OPTForCausalLM__2b15a250",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "word_embed_proj_dim"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__OPTForQuestionAnswering__b4351cc4",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "word_embed_proj_dim"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__OPTForSequenceClassification__5365eb03",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "word_embed_proj_dim"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__OPTModel__bb5f30a8",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__OPTPreTrainedModel__8d7cca0c",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__BloomForCausalLM__36a60c67",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BloomForQuestionAnswering__7994d60e",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BloomForSequenceClassification__81e125ad",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BloomForTokenClassification__057bf6a0",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "classifier_dropout"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BloomModel__f089388c",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "n_head"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__BloomPreTrainedModel__4a772e64",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomPreTrainedModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__DebertaForMaskedLM__bdf0c81c",
+      "qualified_name": "transformers.models.deberta.modeling_deberta.DebertaForMaskedLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "legacy"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__DebertaForQuestionAnswering__dbb32f9f",
+      "qualified_name": "transformers.models.deberta.modeling_deberta.DebertaForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__DebertaForSequenceClassification__f3f064d8",
+      "qualified_name": "transformers.models.deberta.modeling_deberta.DebertaForSequenceClassification",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__DebertaForTokenClassification__db2b551a",
+      "qualified_name": "transformers.models.deberta.modeling_deberta.DebertaForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_dropout_prob"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__DebertaModel__d4dcd33c",
+      "qualified_name": "transformers.models.deberta.modeling_deberta.DebertaModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__DebertaPreTrainedModel__81744cba",
+      "qualified_name": "transformers.models.deberta.modeling_deberta.DebertaPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__ElectraForCausalLM__096d250d",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "embedding_size"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__ElectraForMaskedLM__d15e3e41",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForMaskedLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "embedding_size"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__ElectraForMultipleChoice__6fbdbe6b",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForMultipleChoice",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__ElectraForPreTraining__74bdacae",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForPreTraining",
+      "library": "transformers",
+      "bucket": "empty",
+      "div_axioms": [],
+      "sym_attrs": []
+    },
+    {
+      "id": "transformers__ElectraForQuestionAnswering__389f4d6e",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__ElectraForSequenceClassification__af15f28d",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__ElectraForTokenClassification__12722bf3",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__ElectraModel__12079a7f",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "div_axioms": [],
+      "sym_attrs": [
+        [
+          "config",
+          "embedding_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ]
+    },
+    {
+      "id": "transformers__ElectraPreTrainedModel__1e4993ba",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "div_axioms": [],
+      "sym_attrs": []
+    }
+  ]
+}

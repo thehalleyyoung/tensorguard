@@ -1,0 +1,72 @@
+[
+  {
+    "description": "[REPRO] `torch` not in pyproject.toml dependencies; `src/v5/__init__.py` imports `src.v5.hybrid_mode` which does `import torch`, crashing all `tests/v5/` (9 files) at collection.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.5,
+    "unresolved_streak": 0
+  },
+  {
+    "description": "[REPRO] `tests/test_dynamo_extractor.py` and `tests/test_fx_extractor.py` crash at collection with `NameError: name 'nn' is not defined` \u2014 missing `import torch.nn as nn`.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.5,
+    "unresolved_streak": 0
+  },
+  {
+    "description": "[REPRO] `src/refinement/symbolic_config.py:155` uses `ast.Num` (removed in Python 3.12), causing `AttributeError` on Python \u22653.12.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.5,
+    "unresolved_streak": 0
+  },
+  {
+    "description": "[REPRO] `test_missing_unsqueeze` \u2014 verifier returns 0 bugs for a known missing-unsqueeze broadcast pattern (false negative).",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.5,
+    "unresolved_streak": 0
+  },
+  {
+    "description": "[REPRO] `test_vit_mha_block` \u2014 verifier emits spurious division-by-zero warning on `num_heads` in a valid ViT MHA block.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.5,
+    "unresolved_streak": 0
+  },
+  {
+    "description": "The contribution framing in Section 1 still overstates conceptual novelty relative to Pytea-style constraint-based shape analysis. The new substance is the joint shape+grad layer and the calibration/audit package; C1 by itself reads more like a careful repackaging than a major conceptual jump.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0,
+    "unresolved_streak": 0
+  },
+  {
+    "description": "The historical 60-bug corpus remains author-mined and author-curated. The AST-pattern-disabled result removes one specific confound, but it does not remove the broader concern that the benchmark source and inclusion rule were designed with knowledge of TG\u2019s operator surface.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0,
+    "unresolved_streak": 0
+  },
+  {
+    "description": "The real-source applicability gap remains load-bearing. In the paper\u2019s default user-visible free-symbolic regime the 488-block corpus still yields 0 unconditional `REFUTED-PROOF` verdicts, while the stronger 15/488 number appears only after supplying an input-shape contract and enabling added extensions.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0,
+    "unresolved_streak": 0
+  },
+  {
+    "description": "The mutation-robustness story is still middling for a load-bearing handler: `reproducibility/mutation_kill_rate_loadbearing_v2.json` reports `conv_channel_mismatch` at 0.42 on the full load-bearing corpus, with \u201cabove 50%\u201d holding only on a restricted mutation subset.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0,
+    "unresolved_streak": 0
+  },
+  {
+    "description": "Theorem 5 remains a narrow correspondence result. The paper itself quantifies an 8.8% in-contract recompile rate, and four transformer cases still require documented forward-signature surrogates rather than full end-to-end instantiation.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0,
+    "unresolved_streak": 0
+  }
+]

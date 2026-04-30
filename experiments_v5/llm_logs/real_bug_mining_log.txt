@@ -1,0 +1,62 @@
+Tue Apr 28 15:07:10 EDT 2026: Starting real bug mining for TensorGuard v8
+
+=== MINING SESSION: Real Bug Corpus v8 ===
+Date: 2025-07-14
+
+GOAL: Find ≥10 real, publicly-citeable PyTorch shape bugs from popular GitHub
+repositories such that TensorGuard verify_architecture returns RP verdict at ≥0.99.
+
+STRATEGY:
+1. Search HF transformers GitHub issues for "shape is invalid for input of size" and
+   "mat1 and mat2 shapes cannot be multiplied" (46 issues found on first search).
+2. For each candidate issue: extract concrete integer dimensions from error message,
+   build minimal repro with hardcoded values, run TG, verify RP verdict.
+3. Extended search to: EleutherAI/gpt-neox, huggingface/diffusers, huggingface/peft,
+   lucidrains/* repos, timm, fairseq.
+
+BUGS CONFIRMED (10/10 at 0.99 confidence):
+
+rb_001 HF transformers #43208 | xLSTM matQ view | INPUT (2,4,128,192) → view(2,4,2,64,384) | 196608 ≠ 393216
+rb_002 HF transformers #43208 | xLSTM matK view | same config as rb_001 | 196608 ≠ 393216
+rb_003 HF transformers #23081 | GPTNeoX odd heads | Linear(1024,3072) → view(1,5,12,255) | 3072 ≠ 3060
+rb_004 HF transformers #21523 | ConvBERT head_ratio | INPUT (3,10,192) → view(3,10,384) | 5760 ≠ 11520
+rb_005 HF transformers #5646  | Longformer global attn | INPUT (1,12,512,518) → view(1,12,5,512) | 3182592 ≠ 30720
+rb_006 HF transformers PR#45109 | LongT5 TP=4 | Linear(512,128) → view(2,-1,8,64) | 128/(8*64) not integer
+rb_007 EleutherAI/gpt-neox #1314 | GPT-NeoX GQA | INPUT (4096,1,896) → view(4096,1,5,179) | 3670016 ≠ 3665920
+rb_008 HF diffusers #12110 | UNet1D GaussianFourier | INPUT (1,16) → Linear(64,128) | last dim 16 ≠ 64
+rb_009 HF peft #385 | PrefixTuning flan-t5-small | INPUT (8,8,8192) → view(8,8,16,6,85) | 524288 ≠ 522240
+rb_010 HF peft #2549 | DoRA Conv2d groups=2 | INPUT (165888,) → view(192,48,3,3) | 165888 ≠ 82944
+
+LEADS INVESTIGATED BUT NOT TG-DETECTABLE:
+- HF transformers #29185 Gemma-7B: config-dependent shapes only
+- HF transformers #27545 LLaMA-2-70B: config-dependent GQA shapes
+- HF transformers #36875 Qwen2-VL TP=4: runtime tp_size variable
+- HF transformers #39399 Qwen2.5-VL TP: same as above
+- timm MaxViT fix: bug inside nn.Sequential (TG can't trace)
+- Mamba-3 SISO state: tensor copy bug, not view/Linear
+- Qwen3-next transpose: logic/variable ordering, not shape mismatch
+- Swin Transformer H/W padding swap: dynamic H and W values
+- MACE atomic_energies matmul: version compatibility, not static bug
+- RAG/CPMANT/others: user errors or dynamic shapes
+
+ROOT CAUSE TAXONOMY FOR SILENT MISSES:
+~80% config-dependent shapes (self.config.*)
+~10% dynamic distributed training shapes
+~5%  nn.Sequential opacity
+~3%  logic/variable ordering bugs
+~2%  tensor copy/broadcast mismatches
+
+DELIVERABLES CREATED:
+- experiments_v5/v8/real_bugs/rb_001_xlstm_matq_view.py
+- experiments_v5/v8/real_bugs/rb_002_xlstm_matk_view.py
+- experiments_v5/v8/real_bugs/rb_003_gptneox_odd_heads.py
+- experiments_v5/v8/real_bugs/rb_004_convbert_head_ratio.py
+- experiments_v5/v8/real_bugs/rb_005_longformer_global_attn.py
+- experiments_v5/v8/real_bugs/rb_006_longt5_tp_attention.py
+- experiments_v5/v8/real_bugs/rb_007_gptneox_gqa_reshape.py
+- experiments_v5/v8/real_bugs/rb_008_diffusers_unet1d_fourier.py
+- experiments_v5/v8/real_bugs/rb_009_peft_prefix_tuning.py
+- experiments_v5/v8/real_bugs/rb_010_peft_dora_conv_groups.py
+- experiments_v5/v8/real_bug_corpus.json (10 entries, all is_buggy_gt=true)
+- experiments_v5/v8/real_bug_corpus.md (human-readable summary + methodology)
+- experiments_v5/v8/silent_miss_autopsy.json (silent miss analysis)

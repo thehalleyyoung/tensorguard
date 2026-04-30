@@ -1,0 +1,101 @@
+{
+  "_question": "Round-5 reviewer Q4: specify a measurement that would have falsified Theorem 5, and confirm none of the 48 in-contract recompiles trace to a shape/dtype/rank bit not in the catalogue.",
+  "_falsification_predicate": "EXISTS in-contract recompile r. r.guard_kind in {SHAPE, DTYPE, RANK} AND r.guard_var NOT IN catalogue_refinement_vars(M).",
+  "n_in_contract_recompiles": 48,
+  "by_guard_kind": {
+    "INT": 48
+  },
+  "n_shape_dtype_rank_recompiles": 0,
+  "n_recompiles_that_falsify_theorem_5": 0,
+  "interpretation": "All 48 in-contract recompiles classify as INT / LIST_LEN / TRACER / OTHER -- non-shape metadata that Theorem 5 explicitly excludes ('Dynamo additionally specialises on metadata outside the TG fragment'; see Theorem 5 statement).  Zero recompiles in the SHAPE / DTYPE / RANK bucket means Theorem 5's necessary direction was not falsified by the audit; the predicate above evaluates to False on this dataset.  The tg_verified_TinyMLP positive control -- a TG-Verified module that nonetheless triggers a Dynamo recompile because of an integer argument outside the shape contract -- is the canonical witness that the theorem is one-directional and not equivalence.",
+  "per_module": [
+    {
+      "module": "tv_resnet18",
+      "n_recompiles": 5,
+      "failed_guard": null,
+      "guard_kind": "INT",
+      "in_catalogue_refinement_vars": false,
+      "falsifies_theorem_5": false
+    },
+    {
+      "module": "tv_resnet50",
+      "n_recompiles": 4,
+      "failed_guard": null,
+      "guard_kind": "INT",
+      "in_catalogue_refinement_vars": false,
+      "falsifies_theorem_5": false
+    },
+    {
+      "module": "tv_mobilenet_v3_small",
+      "n_recompiles": 1,
+      "failed_guard": null,
+      "guard_kind": "INT",
+      "in_catalogue_refinement_vars": false,
+      "falsifies_theorem_5": false
+    },
+    {
+      "module": "tv_squeezenet1_1",
+      "n_recompiles": 26,
+      "failed_guard": null,
+      "guard_kind": "INT",
+      "in_catalogue_refinement_vars": false,
+      "falsifies_theorem_5": false
+    },
+    {
+      "module": "tv_regnet_y_400mf",
+      "n_recompiles": 1,
+      "failed_guard": null,
+      "guard_kind": "INT",
+      "in_catalogue_refinement_vars": false,
+      "falsifies_theorem_5": false
+    },
+    {
+      "module": "hf_bert_tiny",
+      "n_recompiles": 1,
+      "failed_guard": null,
+      "guard_kind": "INT",
+      "in_catalogue_refinement_vars": false,
+      "falsifies_theorem_5": false
+    },
+    {
+      "module": "hf_gpt2_tiny",
+      "n_recompiles": 1,
+      "failed_guard": null,
+      "guard_kind": "INT",
+      "in_catalogue_refinement_vars": false,
+      "falsifies_theorem_5": false
+    },
+    {
+      "module": "hf_t5_tiny",
+      "n_recompiles": 3,
+      "failed_guard": null,
+      "guard_kind": "INT",
+      "in_catalogue_refinement_vars": false,
+      "falsifies_theorem_5": false
+    },
+    {
+      "module": "hf_distilbert_tiny",
+      "n_recompiles": 1,
+      "failed_guard": null,
+      "guard_kind": "INT",
+      "in_catalogue_refinement_vars": false,
+      "falsifies_theorem_5": false
+    },
+    {
+      "module": "timm_resnet18",
+      "n_recompiles": 4,
+      "failed_guard": null,
+      "guard_kind": "INT",
+      "in_catalogue_refinement_vars": false,
+      "falsifies_theorem_5": false
+    },
+    {
+      "module": "tg_verified_TinyMLP",
+      "n_recompiles": 1,
+      "failed_guard": null,
+      "guard_kind": "INT",
+      "in_catalogue_refinement_vars": false,
+      "falsifies_theorem_5": false
+    }
+  ]
+}

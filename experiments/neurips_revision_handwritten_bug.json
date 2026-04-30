@@ -1,0 +1,48 @@
+{
+  "buggy": {
+    "expected_bug": true,
+    "tensorguard": {
+      "verdict": "rejected",
+      "time_s": 0.3721640110015869,
+      "returncode": 1,
+      "n_bugs": 2,
+      "first_bug": "[SHAPE-INCOMPATIBLE] Linear expects last dim=256, got 512",
+      "stderr_tail": ""
+    },
+    "fx_shapeprop": {
+      "ok": false,
+      "time_s": 3.2289328575134277,
+      "err": "RuntimeError: ShapeProp error for: node=%fc : [num_users=1] = call_module[target=fc](args = (%flatten,), kwargs = {}) with meta={'nn_module_stack': OrderedDict([('fc', ('fc', <class 'torch.nn.modules.linear.Linear'"
+    },
+    "meta_forward": {
+      "ok": false,
+      "time_s": 4.592737913131714,
+      "err": "RuntimeError: a and b must have same reduction dim, but got [1, 512] X [256, 1000]."
+    }
+  },
+  "control": {
+    "expected_bug": false,
+    "tensorguard": {
+      "verdict": "verified",
+      "time_s": 1.3467919826507568,
+      "returncode": 0,
+      "n_bugs": 0,
+      "first_bug": "",
+      "stderr_tail": ""
+    },
+    "fx_shapeprop": {
+      "ok": true,
+      "time_s": 1.8344528675079346,
+      "err": ""
+    },
+    "meta_forward": {
+      "ok": true,
+      "time_s": 2.233154773712158,
+      "out_shape": [
+        1,
+        1000
+      ],
+      "err": ""
+    }
+  }
+}

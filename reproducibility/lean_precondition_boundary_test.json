@@ -1,0 +1,265 @@
+{
+  "_question": "Reviewer W4 (round 1): the 28,000/28,000 in-envelope agreement harness cannot detect a too-narrow precondition.  This is the complementary boundary test: for each rule, sample shapes *outside* the declared envelope and verify that either the torch op raises (which means an honest precondition would have rejected) or the torch result has a different shape (which the rule would have caught had it been applied).  A 'silent_through' sample is one where torch ran AND agreed with the rule's predicted shape AND the rule envelope says 'no': those are the cases where the precondition is too narrow.",
+  "summary": {
+    "n_rules_checked": 28,
+    "total_off_envelope_samples": 6913,
+    "total_torch_errors": 6875,
+    "total_shape_disagreements": 0,
+    "total_silent_through": 0
+  },
+  "rows": [
+    {
+      "name": "matmul",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "bmm",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "view",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "reshape",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "permute",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "cat",
+      "n_samples": 250,
+      "n_in_envelope": 30,
+      "n_torch_error": 220,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "stack",
+      "n_samples": 250,
+      "n_in_envelope": 57,
+      "n_torch_error": 193,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "linear",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "embed",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 212,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "transpose",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "conv1d",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "conv2d",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "conv3d",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "conv_transpose2d",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "expand",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "repeat",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "broadcast_to",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "split",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "chunk",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "unbind",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "gather",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "scatter",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "index_select",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "narrow",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "layer_norm",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "rms_norm",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "scaled_dot_product_attention",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    },
+    {
+      "name": "batched_matmul",
+      "n_samples": 250,
+      "n_in_envelope": 0,
+      "n_torch_error": 250,
+      "n_shape_disagree": 0,
+      "n_silent_through": 0,
+      "silent_examples": []
+    }
+  ],
+  "method": "Each rule has a Python in_envelope predicate mirroring the Lean precondition (see _build_checks() in this file).  Each off-envelope sample is generated by an explicit mutator that violates the precondition (e.g. matmul: bump the inner-dim mismatch).  We then run torch's ground-truth op and compare the resulting shape against the rule's predicted shape (when defined)."
+}

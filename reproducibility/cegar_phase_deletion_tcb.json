@@ -1,0 +1,1039 @@
+{
+  "method": "TCB confirmation that the dead-but-present CEGAR loop and the\nalways-satisfiable phase encoder cannot influence any RP/CV verdict on\nthe headline corpora (round-1 reviewer W7).\n\nThe reviewer asked for the test suite to be re-run with these modules\n*deleted* (not just disabled by a config knob), so that we can rule out\nside-effect-style influence on verdict computation (e.g. a registration\nside effect on import).\n\nApproach (no-execution, source-level):\n\n1. Locate every Python source file whose contents reference one of the\n   \"dead\" modules (cegar / phase encoder).\n2. Cross with a static call-graph that walks from the user-facing\n   verdict entry points (`tensorguard.verify`, `model_checker.verify`,\n   `pipeline.run`, `hybrid_check`) over `import` / `from ... import`\n   statements.\n3. For every reachable module, check whether the dead-code names appear\n   on a *value-producing* path (assigned to a verdict field, returned,\n   yielded, raised, or stored on a `Bug` object) or only inside\n   metadata/log/__repr__ paths.\n\nA path that does not touch verdict-producing code can be deleted from\nthe TCB; conversely, any reachable assignment to `Bug`, `Verdict`,\n`RPVerdict`, `CVVerdict`, `Diagnostic`, or to keys named\n``confidence``/``severity``/``verdict`` is reported as a residual\nTCB-touching site.\n\nThe resulting JSON enumerates every grep-able usage site and tags it\nwith one of {`metadata-only`, `verdict-touching`, `import-only`}.  The\ncorresponding markdown summary is the reviewer-facing artifact.\n",
+  "summary": {
+    "cegar": {
+      "total_sites": 168,
+      "by_kind": {
+        "metadata-only": 140,
+        "import-only": 20,
+        "verdict-touching": 8
+      },
+      "verdict_touching_sites": [
+        {
+          "file": "src/contrastive_explanation.py",
+          "line": 219,
+          "match": "if cegar_result.verdict == CEGARVerdict.SAFE:",
+          "kind": "verdict-touching"
+        }
+      ]
+    },
+    "phase": {
+      "total_sites": 0,
+      "by_kind": {},
+      "verdict_touching_sites": []
+    }
+  },
+  "all_sites": {
+    "cegar": [
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 4,
+        "match": "Extends the base ``ShapeCEGARLoop`` with:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 17,
+        "match": "``run_enhanced_cegar(source, input_shapes, **kwargs) -> ShapeCEGARResult``",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 45,
+        "match": "from src.shape_cegar import (",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 46,
+        "match": "CEGARStatus,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 47,
+        "match": "CEGARVerdict,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 50,
+        "match": "ShapeCEGARLoop,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 51,
+        "match": "ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 94,
+        "match": "# 2.  IncrementalCEGARSolver",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 98,
+        "match": "class IncrementalCEGARSolver:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 108,
+        "match": "raise RuntimeError(\"Z3 is required for IncrementalCEGARSolver\")",
+        "kind": "verdict-touching"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 570,
+        "match": "# 4.  EnhancedShapeCEGARLoop",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 574,
+        "match": "class EnhancedShapeCEGARLoop(ShapeCEGARLoop):",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 577,
+        "match": "Extends ``ShapeCEGARLoop`` to:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 578,
+        "match": "* Reuse a single Z3 solver across iterations (``IncrementalCEGARSolver``).",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 612,
+        "match": "self._incremental_solver: Optional[IncrementalCEGARSolver] = None",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 628,
+        "match": "def run(self) -> ShapeCEGARResult:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 630,
+        "match": "from src.shape_cegar import (",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 644,
+        "match": "return ShapeCEGARResult(",
+        "kind": "verdict-touching"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 645,
+        "match": "final_status=CEGARStatus.PARSE_ERROR,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 652,
+        "match": "result.final_status = CEGARStatus.NO_Z3",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 656,
+        "match": "self._incremental_solver = IncrementalCEGARSolver(",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 688,
+        "match": "CEGARStatus.SAFE, graph, last_vresult, t0,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 694,
+        "match": "CEGARStatus.SAFE, graph, last_vresult, t0,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 740,
+        "match": "from src.shape_cegar import _convert_linear_combo_to_predicate",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 783,
+        "match": "CEGARStatus.REAL_BUG_FOUND, graph, last_vresult, t0,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 790,
+        "match": "CEGARStatus.SAFE, graph, last_vresult, t0,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 795,
+        "match": "CEGARStatus.SAFE, graph, last_vresult, t0,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 808,
+        "match": "CEGARStatus.MAX_ITER, graph, last_vresult, t0,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 822,
+        "match": "\"\"\"Use ``IncrementalCEGARSolver`` + ``EnhancedUnsatCorePredicateExtractor``.\"\"\"",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 883,
+        "match": "status: CEGARStatus,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 887,
+        "match": ") -> ShapeCEGARResult:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 998,
+        "match": "def run_enhanced_cegar(",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 1010,
+        "match": ") -> ShapeCEGARResult:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 1018,
+        "match": "ShapeCEGARResult",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/unsat_core_cegar.py",
+        "line": 1024,
+        "match": "loop = EnhancedShapeCEGARLoop(",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/config.py",
+        "line": 216,
+        "match": "max_cegar_iterations: int = 50",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/config.py",
+        "line": 471,
+        "match": "max_cegar_iterations=int(d.get(\"max_cegar_iterations\", 50)),",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/config.py",
+        "line": 703,
+        "match": "n = cfg.performance.max_cegar_iterations",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/config.py",
+        "line": 706,
+        "match": "f\"max_cegar_iterations must be \u2265 1, got {n}\"",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/config.py",
+        "line": 818,
+        "match": "cfg.performance, max_cegar_iterations=int(val)",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/config.py",
+        "line": 838,
+        "match": "\"max_cegar_iterations\": 10,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/config.py",
+        "line": 865,
+        "match": "\"max_cegar_iterations\": 200,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/config.py",
+        "line": 894,
+        "match": "\"max_cegar_iterations\": 30,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/config.py",
+        "line": 1046,
+        "match": "\"per_function_timeout_s\", \"max_cegar_iterations\",",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/config.py",
+        "line": 1137,
+        "match": "f\"  Contract discovery iterations:  {cfg.performance.max_cegar_iterations}\",",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/knowledge_base.py",
+        "line": 1038,
+        "match": "from src.shape_cegar import ShapeCEGARLoop",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/knowledge_base.py",
+        "line": 1044,
+        "match": "loop = ShapeCEGARLoop(src_code, input_shapes=inp_shapes)",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/knowledge_base.py",
+        "line": 1063,
+        "match": "cold_loop = ShapeCEGARLoop(src_code, input_shapes=inp_shapes)",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/knowledge_base.py",
+        "line": 1071,
+        "match": "warm_loop = ShapeCEGARLoop(src_code, input_shapes=inp_shapes, knowledge_base=kb)",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/ic3_pdr.py",
+        "line": 120,
+        "match": "from src.unsat_core_cegar import IncrementalCEGARSolver",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/lean_conformance_summary.py",
+        "line": 94,
+        "match": "python_type=\"ShapeCEGARLoop state (pred_set, iterations)\",",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/lean_conformance_summary.py",
+        "line": 95,
+        "match": "python_module=\"src.shape_cegar\",",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_cpa.py",
+        "line": 5,
+        "match": "``shape_cegar.py`` as a Configurable Program Analysis (CPA) in the sense",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_cpa.py",
+        "line": 60,
+        "match": "and ``ShapeCEGARLoop`` from ``shape_cegar`` and wraps them with the CPA",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_cpa.py",
+        "line": 85,
+        "match": "from src.shape_cegar import (",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/cegar_cpa.py",
+        "line": 89,
+        "match": "ShapeCEGARLoop,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_cpa.py",
+        "line": 90,
+        "match": "ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_cpa.py",
+        "line": 91,
+        "match": "CEGARStatus,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_cpa.py",
+        "line": 846,
+        "match": "# 7.  Integration helper \u2014 wrap ShapeCEGARLoop as CPA",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_cpa.py",
+        "line": 854,
+        "match": ") -> Tuple[ShapeCEGARResult, ConvergenceCertificate]:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_cpa.py",
+        "line": 855,
+        "match": "\"\"\"Run the existing ShapeCEGARLoop and produce a CPA convergence certificate.",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_cpa.py",
+        "line": 858,
+        "match": "``shape_cegar.py`` and post-hoc constructs the CPA trajectory and",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_cpa.py",
+        "line": 874,
+        "match": "(ShapeCEGARResult, ConvergenceCertificate)",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_cpa.py",
+        "line": 877,
+        "match": "loop = ShapeCEGARLoop(",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_cpa.py",
+        "line": 900,
+        "match": "converged = result.final_status in (CEGARStatus.SAFE, CEGARStatus.REAL_BUG_FOUND)",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_explanation.py",
+        "line": 29,
+        "match": "from src.shape_cegar import (",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/cegar_explanation.py",
+        "line": 30,
+        "match": "ShapeCEGARLoop,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_explanation.py",
+        "line": 31,
+        "match": "ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_explanation.py",
+        "line": 32,
+        "match": "CEGARStatus,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_explanation.py",
+        "line": 33,
+        "match": "CEGARVerdict,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_explanation.py",
+        "line": 178,
+        "match": "cegar_result: ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_explanation.py",
+        "line": 250,
+        "match": "def _build_refinement_trace(cegar_result: ShapeCEGARResult) -> List[str]:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_explanation.py",
+        "line": 280,
+        "match": "cegar_result: ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_explanation.py",
+        "line": 321,
+        "match": "cegar_result: ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_explanation.py",
+        "line": 325,
+        "match": "\"\"\"Generate a human-readable explanation from a ShapeCEGARResult.",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/cegar_explanation.py",
+        "line": 329,
+        "match": "cegar_result : ShapeCEGARResult",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/neurosym_refinement.py",
+        "line": 34,
+        "match": "from src.cegar_explanation import (",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/neurosym_refinement.py",
+        "line": 39,
+        "match": "from src.shape_cegar import CEGARVerdict",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/guard_grammar.py",
+        "line": 120,
+        "match": "from .shape_cegar import PredicateKind as ShapePredicateKind",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/guard_grammar.py",
+        "line": 121,
+        "match": "from .shape_cegar import ShapePredicate",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/api.py",
+        "line": 676,
+        "match": "from src.shape_cegar import (",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/api.py",
+        "line": 679,
+        "match": "ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/api.py",
+        "line": 692,
+        "match": "max_cegar_iterations: int = 10,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/api.py",
+        "line": 714,
+        "match": "max_cegar_iterations: Max contract discovery iterations.",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/api.py",
+        "line": 877,
+        "match": "if _HAS_SHAPE_CEGAR and max_cegar_iterations > 0:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/api.py",
+        "line": 880,
+        "match": "max_iterations=max_cegar_iterations,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/api.py",
+        "line": 950,
+        "match": "max_cegar_iterations: int = 10,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/api.py",
+        "line": 964,
+        "match": "max_cegar_iterations: Max CEGAR refinement iterations.",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/api.py",
+        "line": 977,
+        "match": "max_cegar_iterations=max_cegar_iterations,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 53,
+        "match": "from src.shape_cegar import (",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 56,
+        "match": "ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 57,
+        "match": "CEGARVerdict,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 69,
+        "match": "from src.cegar_explanation import (",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 212,
+        "match": "cegar_result: ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 219,
+        "match": "if cegar_result.verdict == CEGARVerdict.SAFE:",
+        "kind": "verdict-touching"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 254,
+        "match": "cegar_result: ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 286,
+        "match": "cegar_result: ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 352,
+        "match": "cegar_result: ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 467,
+        "match": "cegar_result: ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 668,
+        "match": "cegar_result: ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 676,
+        "match": "cegar_result : ShapeCEGARResult",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 813,
+        "match": "def _narrate_verdict(self, cegar_result: ShapeCEGARResult) -> str:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 819,
+        "match": "if verdict == CEGARVerdict.SAFE:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 824,
+        "match": "elif verdict == CEGARVerdict.UNSAFE:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/contrastive_explanation.py",
+        "line": 839,
+        "match": "cegar_result: ShapeCEGARResult,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/pipeline.py",
+        "line": 55,
+        "match": "from .shape_cegar import run_shape_cegar, ShapeCEGARResult",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/pipeline.py",
+        "line": 653,
+        "match": "Delegates to the Z3-enhanced version when model_checker and shape_cegar",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/pipeline.py",
+        "line": 854,
+        "match": "errors.append(f\"[shape_cegar] {exc}\")",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 270,
+        "match": "class CEGARStatus(Enum):",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 279,
+        "match": "class CEGARVerdict(Enum):",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 324,
+        "match": "class ShapeCEGARResult:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 333,
+        "match": "final_status : CEGARStatus",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 348,
+        "match": "final_status: CEGARStatus = CEGARStatus.SAFE",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 359,
+        "match": "return self.final_status == CEGARStatus.SAFE",
+        "kind": "verdict-touching"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 363,
+        "match": "return self.final_status == CEGARStatus.REAL_BUG_FOUND",
+        "kind": "verdict-touching"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 366,
+        "match": "def verdict(self) -> CEGARVerdict:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 367,
+        "match": "\"\"\"Map the internal CEGARStatus to a high-level CEGARVerdict.",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 370,
+        "match": "- SAFE \u2192 CEGARVerdict.SAFE (all counterexamples eliminated)",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 371,
+        "match": "- REAL_BUG_FOUND \u2192 CEGARVerdict.UNSAFE (confirmed bug)",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 372,
+        "match": "- MAX_ITER \u2192 CEGARVerdict.TIMEOUT (iteration budget exhausted)",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 373,
+        "match": "- NO_Z3 / PARSE_ERROR \u2192 CEGARVerdict.UNKNOWN (inconclusive)",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 376,
+        "match": "CEGARStatus.SAFE: CEGARVerdict.SAFE,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 377,
+        "match": "CEGARStatus.REAL_BUG_FOUND: CEGARVerdict.UNSAFE,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 378,
+        "match": "CEGARStatus.MAX_ITER: CEGARVerdict.TIMEOUT,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 379,
+        "match": "CEGARStatus.NO_Z3: CEGARVerdict.UNKNOWN,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 380,
+        "match": "CEGARStatus.PARSE_ERROR: CEGARVerdict.UNKNOWN,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 382,
+        "match": "return _STATUS_TO_VERDICT.get(self.final_status, CEGARVerdict.UNKNOWN)",
+        "kind": "verdict-touching"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 711,
+        "match": "incremental_solver : IncrementalCEGARSolver, optional",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 1358,
+        "match": "When *incremental_solver* is provided (an ``IncrementalCEGARSolver``),",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 1363,
+        "match": "# --- Incremental path: use IncrementalCEGARSolver + MUS ---",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 1366,
+        "match": "from src.unsat_core_cegar import EnhancedUnsatCorePredicateExtractor",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2631,
+        "match": "class ShapeCEGARLoop:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2640,
+        "match": ">>> loop = ShapeCEGARLoop(source, input_shapes={\"x\": (\"batch\", 10)})",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2715,
+        "match": "def run(self) -> ShapeCEGARResult:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2723,
+        "match": "return ShapeCEGARResult(",
+        "kind": "verdict-touching"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2724,
+        "match": "final_status=CEGARStatus.PARSE_ERROR,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2732,
+        "match": "result.final_status = CEGARStatus.NO_Z3",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2738,
+        "match": "from src.unsat_core_cegar import IncrementalCEGARSolver",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2739,
+        "match": "self._incremental_solver = IncrementalCEGARSolver()",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2800,
+        "match": "CEGARStatus.SAFE, graph, last_vresult, t0,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2806,
+        "match": "CEGARStatus.SAFE, graph, last_vresult, t0,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2940,
+        "match": "CEGARStatus.REAL_BUG_FOUND, graph, last_vresult, t0,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2951,
+        "match": "CEGARStatus.SAFE, graph, last_vresult, t0,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2961,
+        "match": "CEGARStatus.SAFE, graph, last_vresult, t0,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2985,
+        "match": "CEGARStatus.MAX_ITER, graph, last_vresult, t0,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2988,
+        "match": "def _single_pass(self, graph: ComputationGraph) -> ShapeCEGARResult:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2998,
+        "match": "status = CEGARStatus.SAFE if vresult.safe else CEGARStatus.REAL_BUG_FOUND",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 2999,
+        "match": "result = ShapeCEGARResult(",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 3010,
+        "match": "status: CEGARStatus,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 3014,
+        "match": ") -> ShapeCEGARResult:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 3015,
+        "match": "\"\"\"Construct the final ``ShapeCEGARResult``.\"\"\"",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 3025,
+        "match": "return ShapeCEGARResult(",
+        "kind": "verdict-touching"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 3051,
+        "match": ") -> ShapeCEGARResult:",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 3077,
+        "match": "ShapeCEGARResult",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 3080,
+        "match": "a ``CEGARVerdict`` (SAFE, UNSAFE, UNKNOWN, TIMEOUT) that",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 3099,
+        "match": "loop = ShapeCEGARLoop(",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/shape_cegar.py",
+        "line": 3119,
+        "match": "Useful for quick integration where the full ``ShapeCEGARResult`` is",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/telemetry_confidence.py",
+        "line": 93,
+        "match": "\"\"\"Extract telemetry features from a ShapeCEGARResult.",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/telemetry_confidence.py",
+        "line": 97,
+        "match": "cegar_result : ShapeCEGARResult",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/craig_interpolation.py",
+        "line": 4,
+        "match": "Complements the template-based CEGAR predicate discovery in ``shape_cegar.py``",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/craig_interpolation.py",
+        "line": 19,
+        "match": "is then parsed back into ``ShapePredicate`` objects from ``shape_cegar``.",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/craig_interpolation.py",
+        "line": 111,
+        "match": "# Import shape_cegar types",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/craig_interpolation.py",
+        "line": 114,
+        "match": "from src.shape_cegar import ShapePredicate, PredicateKind",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/craig_interpolation.py",
+        "line": 973,
+        "match": "Complements the template-based discovery in ``shape_cegar.py`` by deriving",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/craig_interpolation.py",
+        "line": 1311,
+        "match": "from src.shape_cegar import PredicateKind",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/guard_domain.py",
+        "line": 33,
+        "match": "from .shape_cegar import PredicateKind, ShapePredicate",
+        "kind": "import-only"
+      },
+      {
+        "file": "src/cli/main.py",
+        "line": 3131,
+        "match": "max_cegar_iterations=args.cegar_iterations,",
+        "kind": "metadata-only"
+      },
+      {
+        "file": "src/v5/hybrid_mode.py",
+        "line": 195,
+        "match": "max_cegar_iterations=3,",
+        "kind": "metadata-only"
+      }
+    ],
+    "phase": []
+  }
+}

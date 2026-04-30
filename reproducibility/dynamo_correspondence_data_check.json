@@ -1,0 +1,299 @@
+{
+  "torch_version_at_check": "2.9.1",
+  "n_rules": 28,
+  "n_pass": 28,
+  "n_fail": 0,
+  "fake_tensor_attrs_present": [
+    "dim",
+    "numel",
+    "requires_grad",
+    "shape",
+    "size"
+  ],
+  "guard_kinds_referenced": [
+    "DUAL_LEVEL_NN_MODULE",
+    "TENSOR_MATCH"
+  ],
+  "rows": [
+    {
+      "rule": "T-Linear",
+      "aten_op": "aten::linear",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.size(-1)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Conv2d",
+      "aten_op": "aten::convolution",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.size(1)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-View",
+      "aten_op": "aten::view",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.dim()",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-View",
+      "aten_op": "aten::view",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.numel()",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Reshape",
+      "aten_op": "aten::reshape",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.dim()",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Transpose",
+      "aten_op": "aten::transpose.int",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.size(i), .size(j)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Unsqueeze",
+      "aten_op": "aten::unsqueeze",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.dim()",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Squeeze",
+      "aten_op": "aten::squeeze.dim",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.dim(), .size(d)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Matmul",
+      "aten_op": "aten::matmul",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.size(-1), .size(-2)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-BMM",
+      "aten_op": "aten::bmm",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.size(-1), .size(-2), .size(0)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-BroadcastAdd",
+      "aten_op": "aten::add.Tensor",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.shape (full)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-BroadcastMul",
+      "aten_op": "aten::mul.Tensor",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.shape (full)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Cat",
+      "aten_op": "aten::cat",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.shape (per input)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Stack",
+      "aten_op": "aten::stack",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.shape (per input)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Split",
+      "aten_op": "aten::split",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.size(dim)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Chunk",
+      "aten_op": "aten::tensor_split",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.size(dim)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Expand",
+      "aten_op": "aten::expand",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.size(i)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Sum/Mean",
+      "aten_op": "aten::sum.dim, aten::mean.dim",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.size(dim)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Index",
+      "aten_op": "aten::index_select",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.size(dim)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Slice",
+      "aten_op": "aten::slice.Tensor",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.size(dim)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Softmax",
+      "aten_op": "aten::_softmax",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.dim(), .size(dim)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-LogSoftmax",
+      "aten_op": "aten::_log_softmax",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.dim(), .size(dim)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-LayerNorm",
+      "aten_op": "aten::native_layer_norm",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.shape (suffix)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-BatchNorm",
+      "aten_op": "aten::native_batch_norm",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.size(1)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Embedding",
+      "aten_op": "aten::embedding",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.size(1)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-NoGrad",
+      "aten_op": "aten::detach",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.requires_grad",
+      "reads_ok": true,
+      "guard_kind": "DUAL_LEVEL_NN_MODULE",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Detach",
+      "aten_op": "aten::detach",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.requires_grad",
+      "reads_ok": true,
+      "guard_kind": "DUAL_LEVEL_NN_MODULE",
+      "guard_ok": true,
+      "ok": true
+    },
+    {
+      "rule": "T-Permute",
+      "aten_op": "aten::permute",
+      "aten_ok": true,
+      "dynamo_read": "FakeTensor.dim(), .size(*)",
+      "reads_ok": true,
+      "guard_kind": "TENSOR_MATCH",
+      "guard_ok": true,
+      "ok": true
+    }
+  ]
+}

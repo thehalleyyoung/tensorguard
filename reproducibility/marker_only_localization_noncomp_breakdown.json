@@ -1,0 +1,170 @@
+{
+  "_question": "Round-2 Q5: of the 13/30 non-computable cases in the marker-only audit, what is the breakdown silent-verified vs. explicit-abstain, and how many fall into the constructor-bound integer-attribute envelope class?",
+  "n_total": 13,
+  "verdict_counts": {
+    "silent-verified": 13,
+    "explicit-abstain": 0,
+    "refuted-after-followup": 0,
+    "error": 0
+  },
+  "n_constructor_bound_int_envelope": 1,
+  "method": "For each of the 13 ids, the analyser is invoked via `src.api.analyze(source)` with the user-visible default configuration (no synthesised assume_M, no rule edits since the freeze). Verdict triage: 'refuted' if any Bug objects are produced; 'explicit-abstain' if any Abstain reasons are present and no Bug; 'silent-verified' otherwise. Envelope-class membership is a static pattern check on the source for `int(.)/float(.)/round(.)` casts of constructor scalars or for broadcast/mask shape chains over constructor scalars.",
+  "rows": [
+    {
+      "id": "rb_001_xlstm_matq_view",
+      "path": "experiments_v5/v8/real_bugs_upstream/rb_001_xlstm_matq_view.py",
+      "verdict": "silent-verified",
+      "envelope": {
+        "has_int_cast": false,
+        "has_round_cast": false,
+        "has_ctor_scalar_attr": true,
+        "has_broadcast_or_mask_chain": false,
+        "constructor_bound_int_envelope_class": false
+      }
+    },
+    {
+      "id": "rb_002_xlstm_matk_view",
+      "path": "experiments_v5/v8/real_bugs_upstream/rb_002_xlstm_matk_view.py",
+      "verdict": "silent-verified",
+      "envelope": {
+        "has_int_cast": false,
+        "has_round_cast": false,
+        "has_ctor_scalar_attr": true,
+        "has_broadcast_or_mask_chain": false,
+        "constructor_bound_int_envelope_class": false
+      }
+    },
+    {
+      "id": "rb_pf_002_t5gemma2_xattn_cache",
+      "path": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_002_t5gemma2_xattn_cache.py",
+      "verdict": "silent-verified",
+      "envelope": {
+        "has_int_cast": false,
+        "has_round_cast": false,
+        "has_ctor_scalar_attr": true,
+        "has_broadcast_or_mask_chain": false,
+        "constructor_bound_int_envelope_class": false
+      }
+    },
+    {
+      "id": "rb_pf_005_diffusers_npu_mask",
+      "path": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_005_diffusers_npu_mask.py",
+      "verdict": "silent-verified",
+      "envelope": {
+        "has_int_cast": false,
+        "has_round_cast": false,
+        "has_ctor_scalar_attr": true,
+        "has_broadcast_or_mask_chain": true,
+        "constructor_bound_int_envelope_class": true
+      }
+    },
+    {
+      "id": "rb_pf_006_qwenimage_batch_ordering",
+      "path": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_006_qwenimage_batch_ordering.py",
+      "verdict": "silent-verified",
+      "envelope": {
+        "has_int_cast": false,
+        "has_round_cast": false,
+        "has_ctor_scalar_attr": false,
+        "has_broadcast_or_mask_chain": false,
+        "constructor_bound_int_envelope_class": false
+      }
+    },
+    {
+      "id": "rb_uf_007_idefics3_patch_merger",
+      "path": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_007_idefics3_patch_merger.py",
+      "verdict": "silent-verified",
+      "envelope": {
+        "has_int_cast": false,
+        "has_round_cast": false,
+        "has_ctor_scalar_attr": true,
+        "has_broadcast_or_mask_chain": false,
+        "constructor_bound_int_envelope_class": false
+      }
+    },
+    {
+      "id": "rb_uf_009_glm45_moe_chunk",
+      "path": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_009_glm45_moe_chunk.py",
+      "verdict": "silent-verified",
+      "envelope": {
+        "has_int_cast": false,
+        "has_round_cast": false,
+        "has_ctor_scalar_attr": true,
+        "has_broadcast_or_mask_chain": false,
+        "constructor_bound_int_envelope_class": false
+      }
+    },
+    {
+      "id": "rb_uf_013_peft_vera_scaler",
+      "path": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_013_peft_vera_scaler.py",
+      "verdict": "silent-verified",
+      "envelope": {
+        "has_int_cast": false,
+        "has_round_cast": false,
+        "has_ctor_scalar_attr": false,
+        "has_broadcast_or_mask_chain": false,
+        "constructor_bound_int_envelope_class": false
+      }
+    },
+    {
+      "id": "rb_uf_014_smollm3_grad_ckpt",
+      "path": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_014_smollm3_grad_ckpt.py",
+      "verdict": "silent-verified",
+      "envelope": {
+        "has_int_cast": false,
+        "has_round_cast": false,
+        "has_ctor_scalar_attr": false,
+        "has_broadcast_or_mask_chain": false,
+        "constructor_bound_int_envelope_class": false
+      }
+    },
+    {
+      "id": "rb_uf_015_cosmos2_vision_transpose",
+      "path": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_015_cosmos2_vision_transpose.py",
+      "verdict": "silent-verified",
+      "envelope": {
+        "has_int_cast": false,
+        "has_round_cast": false,
+        "has_ctor_scalar_attr": false,
+        "has_broadcast_or_mask_chain": false,
+        "constructor_bound_int_envelope_class": false
+      }
+    },
+    {
+      "id": "bug_001_sdpa_attn_mask_gqa",
+      "path": "experiments_v5/bug_repros/bug_001_sdpa_attn_mask_gqa.py",
+      "verdict": "silent-verified",
+      "envelope": {
+        "has_int_cast": false,
+        "has_round_cast": false,
+        "has_ctor_scalar_attr": false,
+        "has_broadcast_or_mask_chain": false,
+        "constructor_bound_int_envelope_class": false
+      }
+    },
+    {
+      "id": "bug_002_isclose_broadcast",
+      "path": "experiments_v5/bug_repros/bug_002_isclose_broadcast.py",
+      "verdict": "silent-verified",
+      "envelope": {
+        "has_int_cast": false,
+        "has_round_cast": false,
+        "has_ctor_scalar_attr": false,
+        "has_broadcast_or_mask_chain": false,
+        "constructor_bound_int_envelope_class": false
+      }
+    },
+    {
+      "id": "bug_006_cross_entropy_weight",
+      "path": "experiments_v5/bug_repros/bug_006_cross_entropy_weight.py",
+      "verdict": "silent-verified",
+      "envelope": {
+        "has_int_cast": false,
+        "has_round_cast": false,
+        "has_ctor_scalar_attr": false,
+        "has_broadcast_or_mask_chain": false,
+        "constructor_bound_int_envelope_class": false
+      }
+    }
+  ]
+}

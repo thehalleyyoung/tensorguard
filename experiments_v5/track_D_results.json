@@ -1,0 +1,77 @@
+{
+  "track": "D",
+  "version": "v5",
+  "torch_version": "2.9.1",
+  "property_test": {
+    "n_samples": 500,
+    "agree": 500,
+    "disagree": 0,
+    "errors": 0,
+    "agreement_rate": 1.0,
+    "elapsed_sec": 0.12,
+    "disagreement_examples": [],
+    "sample_sha256_first10": [
+      "986c763e273ed42b",
+      "7cd49352b27c5cfa",
+      "5e82b0e23ab6ff86",
+      "2a397998345bda6a",
+      "b65c6395147af422",
+      "50fe91e13c218db4",
+      "d8967fae5d602ba6",
+      "cc6c1ad74650cc46",
+      "87b6cd05ccf2b9b2",
+      "a70fa3a1bf471697"
+    ]
+  },
+  "case_studies": {
+    "total": 8,
+    "caught": 8,
+    "recall": 1.0,
+    "details": [
+      {
+        "tag": "BUG-A",
+        "description": "param wrapped in no_grad block",
+        "caught": true
+      },
+      {
+        "tag": "BUG-B",
+        "description": "param after .detach()",
+        "caught": true
+      },
+      {
+        "tag": "BUG-C",
+        "description": "param frozen with requires_grad=False",
+        "caught": true
+      },
+      {
+        "tag": "BUG-D",
+        "description": "in-place op on leaf with requires_grad",
+        "caught": true
+      },
+      {
+        "tag": "BUG-E",
+        "description": "no leaf has requires_grad (backward precondition)",
+        "caught": true
+      },
+      {
+        "tag": "BUG-F",
+        "description": "wrong-shape grad: in-place alias mutates needed tensor",
+        "caught": true
+      },
+      {
+        "tag": "BUG-G",
+        "description": "loss is non-scalar",
+        "caught": true
+      },
+      {
+        "tag": "BUG-H",
+        "description": "param never used in forward (silent skip)",
+        "caught": true
+      }
+    ]
+  },
+  "false_positive_sweep": {
+    "n": 50,
+    "false_positives": 0
+  }
+}

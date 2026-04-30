@@ -1,0 +1,22 @@
+{
+  "_obligation": "Round-1 reviewer item: compose the regex-detectable prevalence (<= 12%) with the worst-case construct-family false-Verified rate (2/8 = 25.0%) into a single prevalence-weighted bound on the deployment-side false-Verified rate of the backward verifier.",
+  "_command": "python3 reproducibility/prevalence_weighted_false_verified.py",
+  "_timestamp": "2026-04-30T16:31:51Z",
+  "inputs": {
+    "regex_prevalence_training_scripts": 0.12,
+    "regex_prevalence_inference_scripts": 0.04,
+    "worst_case_false_verified_construct_family": 0.25,
+    "held_out_train_subset_prevalence": 0.023809523809523808,
+    "input_side_data_ptr_aliasing_rate": "0/8 = 0.0 (independent runtime cap)"
+  },
+  "results": {
+    "composed_upper_bound_training_scripts": 0.03,
+    "composed_upper_bound_inference_scripts": 0.01,
+    "composed_upper_bound_holdout_pytorch_examples": 0.005952380952380952,
+    "interpretation_training_scripts": "<= 3.0% of training scripts in the regex-screened population are silently false-Verified by the backward verifier under the worst-case construct family",
+    "interpretation_inference_scripts": "<= 1.0% of inference scripts",
+    "interpretation_holdout": "<= 0.60% of the held-out HF training examples (using the held-out 1/42 prevalence rather than the regex ceiling)"
+  },
+  "method": "Conservative product bound P(false_verified) <= P(construct_family) * P(false_verified | construct_family). Independent in input populations, monotone in both factors.",
+  "paper_claim_cited": "Limitations and Conclusion section: the prevalence-weighted false-Verified bound is reported alongside the regex prevalence and worst-case construct-family rate."
+}

@@ -1,0 +1,175 @@
+{
+  "meta": {
+    "torch_version": "2.9.1",
+    "command": "python3 reproducibility/cross_family_natural_bugs_torchcompile.py"
+  },
+  "summary": {
+    "n_bugs": 7,
+    "torch_compile_caught": 7,
+    "fake_tensor_mode_caught": 7,
+    "tensorguard_caught": 7
+  },
+  "results": [
+    {
+      "name": "Qwen2AttentionHeadMismatch",
+      "family": "Qwen2",
+      "description": "Based on PR #28857: attention head dimension mismatch in reshape",
+      "citation": "https://github.com/huggingface/transformers/pull/28857",
+      "input_shapes": {
+        "hidden_states": [
+          2,
+          32,
+          4096
+        ]
+      },
+      "torch_compile": {
+        "caught": true,
+        "exception_type": "RuntimeError",
+        "message": "torch.compile is not supported on Python 3.14+"
+      },
+      "fake_tensor_mode": {
+        "caught": true,
+        "exception_type": "RuntimeError",
+        "message": "shape '[2, 32, 2048]' is invalid for input of size 262144"
+      }
+    },
+    {
+      "name": "MistralGQAProjectionMismatch",
+      "family": "Mistral",
+      "description": "PR #27931/#28975: GQA projection size mismatched for repeat_kv",
+      "citation": "https://github.com/huggingface/transformers/pull/27931",
+      "input_shapes": {
+        "hidden_states": [
+          2,
+          64,
+          4096
+        ]
+      },
+      "torch_compile": {
+        "caught": true,
+        "exception_type": "RuntimeError",
+        "message": "torch.compile is not supported on Python 3.14+"
+      },
+      "fake_tensor_mode": {
+        "caught": true,
+        "exception_type": "AssertionError",
+        "message": "Please convert all Tensors to FakeTensors first or instantiate FakeTensorMode with 'allow_non_fake_inputs'. Found in aten.t.default(Parameter containing:\ntensor([...], size=(1024, 4096), requires_grad"
+      }
+    },
+    {
+      "name": "Phi3FusedQKVSlice",
+      "family": "Phi3",
+      "description": "PR #29055: incorrect slice indices for fused QKV projection",
+      "citation": "https://github.com/huggingface/transformers/pull/29055",
+      "input_shapes": {
+        "hidden_states": [
+          1,
+          32,
+          3072
+        ]
+      },
+      "torch_compile": {
+        "caught": true,
+        "exception_type": "RuntimeError",
+        "message": "torch.compile is not supported on Python 3.14+"
+      },
+      "fake_tensor_mode": {
+        "caught": true,
+        "exception_type": "AssertionError",
+        "message": "Please convert all Tensors to FakeTensors first or instantiate FakeTensorMode with 'allow_non_fake_inputs'. Found in aten.t.default(Parameter containing:\ntensor([...], size=(9216, 3072), requires_grad"
+      }
+    },
+    {
+      "name": "LlamaIntermediateSizeMismatch",
+      "family": "Llama",
+      "description": "Based on PR #29445: MLP intermediate size config mismatch",
+      "citation": "https://github.com/huggingface/transformers/pull/29445",
+      "input_shapes": {
+        "hidden_states": [
+          2,
+          128,
+          4096
+        ]
+      },
+      "torch_compile": {
+        "caught": true,
+        "exception_type": "RuntimeError",
+        "message": "torch.compile is not supported on Python 3.14+"
+      },
+      "fake_tensor_mode": {
+        "caught": true,
+        "exception_type": "AssertionError",
+        "message": "Please convert all Tensors to FakeTensors first or instantiate FakeTensorMode with 'allow_non_fake_inputs'. Found in aten.t.default(Parameter containing:\ntensor([...], size=(11008, 4096), requires_gra"
+      }
+    },
+    {
+      "name": "MistralAttentionOutputHeads",
+      "family": "Mistral",
+      "description": "Issue #27330: attention output heads arranged incorrectly for output projection",
+      "citation": "https://github.com/huggingface/transformers/issues/27330",
+      "input_shapes": {
+        "hidden_states": [
+          2,
+          64,
+          4096
+        ]
+      },
+      "torch_compile": {
+        "caught": true,
+        "exception_type": "RuntimeError",
+        "message": "torch.compile is not supported on Python 3.14+"
+      },
+      "fake_tensor_mode": {
+        "caught": true,
+        "exception_type": "AssertionError",
+        "message": "Please convert all Tensors to FakeTensors first or instantiate FakeTensorMode with 'allow_non_fake_inputs'. Found in aten.t.default(Parameter containing:\ntensor([...], size=(4096, 4096), requires_grad"
+      }
+    },
+    {
+      "name": "Qwen2ReshapeTargetMismatch",
+      "family": "Qwen2",
+      "description": "Issue #29733: reshape to incompatible target dimensions",
+      "citation": "https://github.com/huggingface/transformers/issues/29733",
+      "input_shapes": {
+        "hidden_states": [
+          2,
+          64,
+          4096
+        ]
+      },
+      "torch_compile": {
+        "caught": true,
+        "exception_type": "RuntimeError",
+        "message": "torch.compile is not supported on Python 3.14+"
+      },
+      "fake_tensor_mode": {
+        "caught": true,
+        "exception_type": "AssertionError",
+        "message": "Please convert all Tensors to FakeTensors first or instantiate FakeTensorMode with 'allow_non_fake_inputs'. Found in aten.t.default(Parameter containing:\ntensor([...], size=(4096, 4096), requires_grad"
+      }
+    },
+    {
+      "name": "LlamaAttentionHeadCount",
+      "family": "Llama",
+      "description": "PR #24815: num_attention_heads vs num_key_value_heads confusion",
+      "citation": "https://github.com/huggingface/transformers/pull/24815",
+      "input_shapes": {
+        "hidden_states": [
+          2,
+          64,
+          4096
+        ]
+      },
+      "torch_compile": {
+        "caught": true,
+        "exception_type": "RuntimeError",
+        "message": "torch.compile is not supported on Python 3.14+"
+      },
+      "fake_tensor_mode": {
+        "caught": true,
+        "exception_type": "AssertionError",
+        "message": "Please convert all Tensors to FakeTensors first or instantiate FakeTensorMode with 'allow_non_fake_inputs'. Found in aten.t.default(Parameter containing:\ntensor([...], size=(1024, 4096), requires_grad"
+      }
+    }
+  ]
+}

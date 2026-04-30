@@ -1,0 +1,239 @@
+{
+  "torch_version": "2.9.1",
+  "models": [
+    {
+      "name": "SimpleMLP",
+      "tg_verdict": "verified",
+      "tg_contract": {
+        "x": [
+          "B",
+          64
+        ]
+      },
+      "tg_error": null,
+      "in_contract_variations": 3,
+      "in_contract_recompiles": 0,
+      "out_of_contract_variations": 1,
+      "out_of_contract_recompiles": 1,
+      "claim_holds": true,
+      "notes": "Initial compilation: 1 graphs; Out-of-contract dim variation: Dynamo failed to run FX node with fake tensors: call_function <built-in function linear>(*(FakeTensor(..., size=(s77, s27)), Parameter(FakeTensor(..., size=(32, 64), requires_grad=True)), Parameter(FakeTensor(..., size=(32,), requires_grad=True))), **{}): got RuntimeError('a and b must have same reduction dim, but got [s77, s27] X [64, 32].')\n\nfrom user code:\n   File \"<string>\", line 10, in forward\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/linear.py\", line 134, in forward\n    return F.linear(input, self.weight, self.bias)\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+      "duration_ms": 9376.862791948952
+    },
+    {
+      "name": "ConvStack",
+      "tg_verdict": "verified",
+      "tg_contract": {
+        "x": [
+          "B",
+          3,
+          "H",
+          "W"
+        ]
+      },
+      "tg_error": null,
+      "in_contract_variations": 5,
+      "in_contract_recompiles": 1,
+      "out_of_contract_variations": 1,
+      "out_of_contract_recompiles": 1,
+      "claim_holds": false,
+      "notes": "Initial compilation: 1 graphs; Out-of-contract variation: Dynamo failed to run FX node with fake tensors: call_function <built-in method conv2d of type object at 0x10a9674e8>(*(FakeTensor(..., size=(s77, s27, s53, s53)), Parameter(FakeTensor(..., size=(16, 3, 3, 3), requires_grad=True)), Parameter(FakeTensor(..., size=(16,), requires_grad=True)), (1, 1), (1, 1), (1, 1), 1), **{}): got RuntimeError('Given groups=1, weight of size [16, 3, 3, 3], expected input[s77, s27, s53, s53] to have 3 channels, but got s27 channels instead')\n\nfrom user code:\n   File \"<string>\", line 13, in forward\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/conv.py\", line 548, in forward\n    return self._conv_forward(input, self.weight, self.bias)\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/conv.py\", line 543, in _conv_forward\n    return F.conv2d(\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+      "duration_ms": 4089.174124994315
+    },
+    {
+      "name": "TinyMHA",
+      "tg_verdict": "verified",
+      "tg_contract": {
+        "x": [
+          "B",
+          "S",
+          64
+        ]
+      },
+      "tg_error": null,
+      "in_contract_variations": 3,
+      "in_contract_recompiles": 0,
+      "out_of_contract_variations": 1,
+      "out_of_contract_recompiles": 1,
+      "claim_holds": true,
+      "notes": "Initial compilation: 0 graphs; Out-of-contract dim variation: passed-in embed_dim 64 didn't match last dim of query 128",
+      "duration_ms": 136.0101669561118
+    },
+    {
+      "name": "SimpleTransformerBlock",
+      "tg_verdict": "verified",
+      "tg_contract": {
+        "x": [
+          "B",
+          "S",
+          64
+        ]
+      },
+      "tg_error": null,
+      "in_contract_variations": 3,
+      "in_contract_recompiles": 0,
+      "out_of_contract_variations": 1,
+      "out_of_contract_recompiles": 1,
+      "claim_holds": true,
+      "notes": "Initial compilation: 1 graphs; Out-of-contract dim variation: Dynamo failed to run FX node with fake tensors: call_function <function layer_norm at 0x10bcc7060>(*(FakeTensor(..., size=(s77, s27, s53)), (64,), Parameter(FakeTensor(..., size=(64,), requires_grad=True)), Parameter(FakeTensor(..., size=(64,), requires_grad=True)), 0.0000100000000000000), **{}): got RuntimeError('Given normalized_shape=[64], expected input with shape [64], but got input of size torch.Size([s77, s27, s53])')\n\nfrom user code:\n   File \"<string>\", line 15, in forward\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/normalization.py\", line 229, in forward\n    return F.layer_norm(\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+      "duration_ms": 5697.324458975345
+    },
+    {
+      "name": "SimpleRNN",
+      "tg_verdict": "verified",
+      "tg_contract": {
+        "x": [
+          "B",
+          "S",
+          64
+        ]
+      },
+      "tg_error": null,
+      "in_contract_variations": 3,
+      "in_contract_recompiles": 0,
+      "out_of_contract_variations": 1,
+      "out_of_contract_recompiles": 1,
+      "claim_holds": true,
+      "notes": "Initial compilation: 0 graphs; Out-of-contract dim variation: input.size(-1) must be equal to input_size. Expected 64, got 128",
+      "duration_ms": 214.78050004225224
+    },
+    {
+      "name": "TinyResBlock",
+      "tg_verdict": "unsafe",
+      "tg_contract": null,
+      "tg_error": "Found 1 issue(s): ['[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 6:\\n  phase_s5 = TRAIN_11\\n  grad_out_s4 = False\\n  dev_identity_s2 = CPU_11\\n  W_out = 26288\\n  grad___inner_1_s4 = True\\n  dev_identity_s6 = CPU_11\\n  grad___inner_2_s5 = True\\n  grad_identity_s3 = False\\n  dev_x_s1 = CPU_11\\n  dev_out_s5 = CPU_11\\n  dev___inner_1_s6 = CPU_11\\n  grad_identity_s4 = False\\n  grad___inner_1_s3 = True\\n  grad_identity_s5 = False\\n  dev___inner_3_s5 = CPU_11\\n  dev_identity_s1 = CPU_11\\n  dev_identity_s3 = CPU_11\\n  grad___inner_2_s4 = True\\n  H_out = 3\\n  grad___inner_1_s5 = True\\n  dev_x_s2 = CPU_11\\n  grad_x_s6 = False\\n  grad___inner_3_s5 = True\\n  dev_x_s3 = CPU_11\\n  dev___inner_2_s4 = CPU_11\\n  grad___inner_2_s6 = True\\n  dev___inner_2_s2 = CPU_11\\n  W = 26287\\n  grad_x_s3 = False\\n  grad_identity_s2 = False\\n  grad_out_s6 = True\\n  dev___inner_3_s6 = CPU_11\\n  phase_s6 = TRAIN_11\\n  dev___inner_2_s5 = CPU_11\\n  phase_s0 = TRAIN_11\\n  dev_identity_s5 = CPU_11\\n  grad_x_s0 = False\\n  dev_x_s6 = CPU_11\\n  grad___inner_3_s6 = True\\n  grad_x_s5 = False\\n  grad_identity_s6 = False\\n  dev_x_s0 = CPU_11\\n  dev___inner_1_s3 = CPU_11\\n  phase_s3 = TRAIN_11\\n  dev___inner_2_s3 = CPU_11\\n  grad_x_s1 = False\\n  grad_identity_s1 = False\\n  dev_identity_s4 = CPU_11\\n  dev_out_s6 = CPU_11\\n  grad___inner_2_s2 = True\\n  B = 1\\n  dev_out_s4 = CPU_11\\n  dev_x_s5 = CPU_11\\n  grad_out_s5 = False\\n  H = 2\\n  dev_x_s4 = CPU_11\\n  dev___inner_1_s5 = CPU_11\\n  dev___inner_1_s4 = CPU_11\\n  dev___inner_2_s6 = CPU_11\\n  grad_x_s4 = False\\n  grad___inner_1_s6 = True\\n  grad___inner_2_s3 = True\\n  grad_x_s2 = False\\n  phase_s2 = TRAIN_11\\n  phase_s4 = TRAIN_11\\n  phase_s1 = TRAIN_11']",
+      "in_contract_variations": 0,
+      "in_contract_recompiles": 0,
+      "out_of_contract_variations": 0,
+      "out_of_contract_recompiles": 0,
+      "claim_holds": null,
+      "notes": "",
+      "duration_ms": 219.82308302540332
+    },
+    {
+      "name": "SimpleCNN",
+      "tg_verdict": "verified",
+      "tg_contract": {
+        "x": [
+          "B",
+          1,
+          28,
+          28
+        ]
+      },
+      "tg_error": null,
+      "in_contract_variations": 3,
+      "in_contract_recompiles": 1,
+      "out_of_contract_variations": 0,
+      "out_of_contract_recompiles": 0,
+      "claim_holds": false,
+      "notes": "Initial compilation: 1 graphs",
+      "duration_ms": 4005.3633749485016
+    },
+    {
+      "name": "MinimalResNet",
+      "tg_verdict": "verified",
+      "tg_contract": {
+        "x": [
+          "B",
+          3,
+          "H",
+          "W"
+        ]
+      },
+      "tg_error": null,
+      "in_contract_variations": 5,
+      "in_contract_recompiles": 1,
+      "out_of_contract_variations": 1,
+      "out_of_contract_recompiles": 1,
+      "claim_holds": false,
+      "notes": "Initial compilation: 1 graphs; Out-of-contract variation: Dynamo failed to run FX node with fake tensors: call_function <built-in method conv2d of type object at 0x10a9674e8>(*(FakeTensor(..., size=(s77, s27, s53, s53)), Parameter(FakeTensor(..., size=(64, 3, 7, 7), requires_grad=True)), Parameter(FakeTensor(..., size=(64,), requires_grad=True)), (2, 2), (3, 3), (1, 1), 1), **{}): got RuntimeError('Given groups=1, weight of size [64, 3, 7, 7], expected input[s77, s27, s53, s53] to have 3 channels, but got s27 channels instead')\n\nfrom user code:\n   File \"<string>\", line 15, in forward\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/conv.py\", line 548, in forward\n    return self._conv_forward(input, self.weight, self.bias)\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/conv.py\", line 543, in _conv_forward\n    return F.conv2d(\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+      "duration_ms": 7792.379708960652
+    },
+    {
+      "name": "MinimalMobileNet",
+      "tg_verdict": "verified",
+      "tg_contract": {
+        "x": [
+          "B",
+          3,
+          "H",
+          "W"
+        ]
+      },
+      "tg_error": null,
+      "in_contract_variations": 5,
+      "in_contract_recompiles": 1,
+      "out_of_contract_variations": 1,
+      "out_of_contract_recompiles": 1,
+      "claim_holds": false,
+      "notes": "Initial compilation: 1 graphs; Out-of-contract variation: Dynamo failed to run FX node with fake tensors: call_function <built-in method conv2d of type object at 0x10a9674e8>(*(FakeTensor(..., size=(s77, s27, s53, s53)), Parameter(FakeTensor(..., size=(32, 3, 3, 3), requires_grad=True)), Parameter(FakeTensor(..., size=(32,), requires_grad=True)), (2, 2), (1, 1), (1, 1), 1), **{}): got RuntimeError('Given groups=1, weight of size [32, 3, 3, 3], expected input[s77, s27, s53, s53] to have 3 channels, but got s27 channels instead')\n\nfrom user code:\n   File \"<string>\", line 16, in forward\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/conv.py\", line 548, in forward\n    return self._conv_forward(input, self.weight, self.bias)\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/conv.py\", line 543, in _conv_forward\n    return F.conv2d(\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+      "duration_ms": 6641.3554169703275
+    },
+    {
+      "name": "MinimalVGG",
+      "tg_verdict": "verified",
+      "tg_contract": {
+        "x": [
+          "B",
+          3,
+          28,
+          28
+        ]
+      },
+      "tg_error": null,
+      "in_contract_variations": 3,
+      "in_contract_recompiles": 1,
+      "out_of_contract_variations": 1,
+      "out_of_contract_recompiles": 1,
+      "claim_holds": false,
+      "notes": "Initial compilation: 1 graphs; Out-of-contract variation: Dynamo failed to run FX node with fake tensors: call_function <built-in method conv2d of type object at 0x10a9674e8>(*(FakeTensor(..., size=(s77, s27, s53, s53)), Parameter(FakeTensor(..., size=(64, 3, 3, 3), requires_grad=True)), Parameter(FakeTensor(..., size=(64,), requires_grad=True)), (1, 1), (1, 1), (1, 1), 1), **{}): got RuntimeError('Given groups=1, weight of size [64, 3, 3, 3], expected input[s77, s27, s53, s53] to have 3 channels, but got s27 channels instead')\n\nfrom user code:\n   File \"<string>\", line 12, in forward\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/conv.py\", line 548, in forward\n    return self._conv_forward(input, self.weight, self.bias)\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/conv.py\", line 543, in _conv_forward\n    return F.conv2d(\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+      "duration_ms": 4615.437250002287
+    },
+    {
+      "name": "MinimalBERTEncoder",
+      "tg_verdict": "verified",
+      "tg_contract": {
+        "input_ids": [
+          "B",
+          "S"
+        ]
+      },
+      "tg_error": null,
+      "in_contract_variations": 0,
+      "in_contract_recompiles": 0,
+      "out_of_contract_variations": 0,
+      "out_of_contract_recompiles": 0,
+      "claim_holds": true,
+      "notes": "Dynamo test failed: Traceback (most recent call last):\n  File \"/Users/halleyyoung/Documents/div/mathdivergence/halley-labs/tensorguard/experiments/run_dynamo_guard_correspondence.py\", line 510, in test_dynamo_correspondence\n    _ = compiled_model(input_tensor)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py\", line 414, in __call__\n    return super().__call__(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1775, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1786, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py\", line 845, in compile_wrapper\n    raise e.remove_dynamo_frames() from None  # see TORCHDYNAMO_VERBOSE=1\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/compile_fx.py\", line 990, in _compile_fx_inner\n    raise InductorError(e, currentframe()).with_traceback(\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/compile_fx.py\", line 974, in _compile_fx_inner\n    mb_compiled_graph = fx_codegen_and_compile(\n                        ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/compile_fx.py\", line 1695, in fx_codegen_and_compile\n    return scheme.codegen_and_compile(gm, example_inputs, inputs_to_check, graph_kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/compile_fx.py\", line 1420, in codegen_and_compile\n    graph.run(*example_inputs)\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/graph.py\", line 937, in run\n    return super().run(*args)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/fx/interpreter.py\", line 174, in run\n    self.env[node] = self.run_node(node)\n                     ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/graph.py\", line 1624, in run_node\n    result = super().run_node(n)\n             ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/fx/interpreter.py\", line 256, in run_node\n    return getattr(self, n.op)(n.target, args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/graph.py\", line 1289, in call_function\n    raise LoweringException(e, target, args, kwargs).with_traceback(\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/graph.py\", line 1279, in call_function\n    out = lowerings[target](*args, **kwargs)  # type: ignore[index]\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/lowering.py\", line 488, in wrapped\n    out = decomp_fn(*args, **kwargs)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/lowering.py\", line 3501, in embedding\n    assert \"int\" in str(indices.get_dtype())\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntorch._inductor.exc.InductorError: LoweringException: AssertionError: \n  target: aten.embedding.default\n  args[0]: TensorBox(StorageBox(\n    InputBuffer(name='arg3_1', layout=FixedLayout('cpu', torch.float32, size=[1000, 128], stride=[128, 1]))\n  ))\n  args[1]: TensorBox(StorageBox(\n    InputBuffer(name='arg2_1', layout=FixedLayout('cpu', torch.float32, size=[s72, s70], stride=[s70, 1]))\n  ))\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n\n",
+      "duration_ms": 386.68912497814745
+    },
+    {
+      "name": "MinimalGPTDecoder",
+      "tg_verdict": "verified",
+      "tg_contract": {
+        "input_ids": [
+          "B",
+          "S"
+        ]
+      },
+      "tg_error": null,
+      "in_contract_variations": 0,
+      "in_contract_recompiles": 0,
+      "out_of_contract_variations": 0,
+      "out_of_contract_recompiles": 0,
+      "claim_holds": true,
+      "notes": "Dynamo test failed: Traceback (most recent call last):\n  File \"/Users/halleyyoung/Documents/div/mathdivergence/halley-labs/tensorguard/experiments/run_dynamo_guard_correspondence.py\", line 510, in test_dynamo_correspondence\n    _ = compiled_model(input_tensor)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py\", line 414, in __call__\n    return super().__call__(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1775, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/nn/modules/module.py\", line 1786, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py\", line 845, in compile_wrapper\n    raise e.remove_dynamo_frames() from None  # see TORCHDYNAMO_VERBOSE=1\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/compile_fx.py\", line 990, in _compile_fx_inner\n    raise InductorError(e, currentframe()).with_traceback(\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/compile_fx.py\", line 974, in _compile_fx_inner\n    mb_compiled_graph = fx_codegen_and_compile(\n                        ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/compile_fx.py\", line 1695, in fx_codegen_and_compile\n    return scheme.codegen_and_compile(gm, example_inputs, inputs_to_check, graph_kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/compile_fx.py\", line 1420, in codegen_and_compile\n    graph.run(*example_inputs)\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/graph.py\", line 937, in run\n    return super().run(*args)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/fx/interpreter.py\", line 174, in run\n    self.env[node] = self.run_node(node)\n                     ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/graph.py\", line 1624, in run_node\n    result = super().run_node(n)\n             ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/fx/interpreter.py\", line 256, in run_node\n    return getattr(self, n.op)(n.target, args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/graph.py\", line 1289, in call_function\n    raise LoweringException(e, target, args, kwargs).with_traceback(\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/graph.py\", line 1279, in call_function\n    out = lowerings[target](*args, **kwargs)  # type: ignore[index]\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/lowering.py\", line 488, in wrapped\n    out = decomp_fn(*args, **kwargs)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.11/site-packages/torch/_inductor/lowering.py\", line 3501, in embedding\n    assert \"int\" in str(indices.get_dtype())\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntorch._inductor.exc.InductorError: LoweringException: AssertionError: \n  target: aten.embedding.default\n  args[0]: TensorBox(StorageBox(\n    InputBuffer(name='arg3_1', layout=FixedLayout('cpu', torch.float32, size=[1000, 128], stride=[128, 1]))\n  ))\n  args[1]: TensorBox(StorageBox(\n    InputBuffer(name='arg2_1', layout=FixedLayout('cpu', torch.float32, size=[s72, s70], stride=[s70, 1]))\n  ))\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n\n",
+      "duration_ms": 260.16962504945695
+    }
+  ],
+  "summary": {
+    "total_models": 12,
+    "tg_verified": 11,
+    "tg_unsafe": 1,
+    "tg_error": 0,
+    "tg_not_attempted": 0,
+    "claim_holds_count": 6,
+    "claim_holds_rate": 0.5454545454545454,
+    "claim_broken_count": 5
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "_question": "Round 1 — Comet cycle W1: report wave-1 (N=15) catch counts and pre-register wave-2 protocol.",
+  "freeze_commit_wave1": "040f6f3",
+  "freeze_date_wave1": "2026-04-07",
+  "freeze_date_wave2_target": "2026-08-31",
+  "wave1": {
+    "n": 15,
+    "catches_of_upstream_bug": {
+      "TG": 5,
+      "FakeTensorMode": 2,
+      "Pytea": 3
+    },
+    "rp_fires_any_axis": {
+      "TG": 6,
+      "FakeTensorMode": 2,
+      "Pytea": 3
+    },
+    "off_axis_false_positive": {
+      "TG": 1,
+      "FakeTensorMode": 0,
+      "Pytea": 0
+    },
+    "wilson_95_ci_tg_catch_rate": [0.1517, 0.5832],
+    "fisher_exact_two_sided_p_tg_vs_faketensor": 0.39,
+    "fisher_exact_two_sided_p_tg_vs_pytea": 0.68,
+    "mcnemar_exact_two_sided_p_tg_vs_faketensor": 0.21875,
+    "mcnemar_exact_two_sided_p_tg_vs_pytea": 0.625,
+    "interpretation": "Wave-1 result is directional: TG point estimate is strictly above both execution-based baselines on the same N=15 sample, but the head-to-head Fisher-exact p-value does not reach alpha=0.05 on either pair.  We do not upgrade this to a separation claim."
+  },
+  "power_calculation": {
+    "method": "Conditioning on the per-tool wave-1 point estimates (TG 5/15, FT 2/15, Pytea 3/15) and assuming wave-2 catches are drawn at the same per-tool Bernoulli rates, locate the smallest N_new at which the pooled-sample Fisher exact two-sided p falls below 0.05.",
+    "n_new_required_for_alpha_05": {
+      "tg_vs_faketensor": 26,
+      "tg_vs_pytea": 77
+    },
+    "n_new_required_for_bf10_ge_10_uniform_prior": {
+      "either_pair": 56
+    },
+    "wave2_target_n_new": 26,
+    "wave2_ceiling_n_new": 100
+  },
+  "wave2": {
+    "status": "pre-registered, not yet collected",
+    "collection_window": "2026-04-08..2026-08-31",
+    "inclusion_rule": "identical mechanical rule as wave 1; next N_new PRs in chronological order matching the pre-registered query Q; no filter for TG-handleability, self-contained repro, or shape-only root cause",
+    "preregistered_primary_tests": [
+      "Fisher exact two-sided on TG vs FakeTensorMode pooled wave-1+wave-2 catches",
+      "Fisher exact two-sided on TG vs Pytea pooled wave-1+wave-2 catches",
+      "Wilson 95% CI on TG catch-rate on pooled sample"
+    ]
+  },
+  "paper_claims_cited_by_this_artifact": [
+    "Abstract sentence on N=15 unfiltered post-freeze sample",
+    "Eval section paragraph on unfiltered pre-registered post-freeze sample",
+    "Limitations paragraph on N=15 non-separability"
+  ]
+}

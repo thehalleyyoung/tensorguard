@@ -1,0 +1,28 @@
+{
+  "_question": "A1: Run TensorGuard verifier on the 1/42 silent-error-positive HF training script.",
+  "timestamp": "2026-04-29T23:36:15.564584Z",
+  "positive_script": "run_wav2vec2_pretraining_no_trainer.py",
+  "positive_reason": "G2_gradient_checkpointing_enable",
+  "results": [
+    {
+      "label": "training_script_direct",
+      "verdict": "Refuted-Proof",
+      "bug_count": 291,
+      "first_bug": "Potential division by zero: 'scale' not guarded",
+      "elapsed_ms": 23.5,
+      "classes_in_script": [
+        "DataCollatorForWav2Vec2Pretraining"
+      ],
+      "nn_module_classes": [],
+      "has_gradient_checkpointing_enable": true
+    },
+    {
+      "label": "Wav2Vec2ForPreTraining_model_class",
+      "verdict": "Abstain",
+      "reason": "abstained",
+      "elapsed_ms": 254.7,
+      "parent_patched_to_nn_Module": true
+    }
+  ],
+  "interpretation": "The 1/42 positive script does not define any nn.Module class inline; it loads a pretrained Wav2Vec2 model and calls gradient_checkpointing_enable() on it. The verifier therefore returns Abstain on the training script itself (no nn.Module subclass found in script source). The pretrained model class is also evaluated for completeness."
+}

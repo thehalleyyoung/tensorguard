@@ -1,0 +1,97 @@
+{
+  "n_total": 50,
+  "n_evaluated": 44,
+  "n_skipped": 6,
+  "false_positives": 2,
+  "fp_models": [
+    {
+      "model": "googlenet",
+      "n_params": 187,
+      "n_disagree": 14
+    },
+    {
+      "model": "quantization.googlenet",
+      "n_params": 187,
+      "n_disagree": 14
+    }
+  ],
+  "skipped_models": [
+    {
+      "model": "inception_v3",
+      "reason": "ValueError: Expected more than 1 value per channel when training, got input size torch.Size("
+    },
+    {
+      "model": "segmentation.fcn_resnet50",
+      "reason": "no_runtime"
+    },
+    {
+      "model": "segmentation.fcn_resnet101",
+      "reason": "no_runtime"
+    },
+    {
+      "model": "segmentation.deeplabv3_resnet50",
+      "reason": "ValueError: Expected more than 1 value per channel when training, got input size torch.Size("
+    },
+    {
+      "model": "segmentation.deeplabv3_resnet101",
+      "reason": "ValueError: Expected more than 1 value per channel when training, got input size torch.Size("
+    },
+    {
+      "model": "segmentation.lraspp_mobilenet_v3_large",
+      "reason": "no_runtime"
+    }
+  ],
+  "models_listed": [
+    "resnet18",
+    "resnet34",
+    "resnet50",
+    "resnet101",
+    "resnext50_32x4d",
+    "wide_resnet50_2",
+    "alexnet",
+    "vgg11",
+    "vgg16",
+    "squeezenet1_0",
+    "squeezenet1_1",
+    "densenet121",
+    "densenet169",
+    "inception_v3",
+    "googlenet",
+    "mobilenet_v2",
+    "mobilenet_v3_small",
+    "mobilenet_v3_large",
+    "mnasnet0_5",
+    "mnasnet1_0",
+    "shufflenet_v2_x0_5",
+    "shufflenet_v2_x1_0",
+    "efficientnet_b0",
+    "regnet_y_400mf",
+    "regnet_x_400mf",
+    "vit_b_16",
+    "vit_b_32",
+    "vit_l_16",
+    "swin_t",
+    "convnext_tiny",
+    "segmentation.fcn_resnet50",
+    "segmentation.fcn_resnet101",
+    "segmentation.deeplabv3_resnet50",
+    "segmentation.deeplabv3_resnet101",
+    "segmentation.lraspp_mobilenet_v3_large",
+    "detection.fasterrcnn_resnet50_fpn",
+    "detection.fasterrcnn_mobilenet_v3_large_fpn",
+    "detection.retinanet_resnet50_fpn",
+    "detection.maskrcnn_resnet50_fpn",
+    "detection.keypointrcnn_resnet50_fpn",
+    "video.r3d_18",
+    "video.mc3_18",
+    "video.r2plus1d_18",
+    "video.s3d",
+    "video.mvit_v1_b",
+    "optical_flow.raft_large",
+    "optical_flow.raft_small",
+    "quantization.resnet18",
+    "quantization.mobilenet_v2",
+    "quantization.googlenet"
+  ],
+  "fp_definition": "An FP is a clean default-constructed torchvision nn.Module on which the TG backward verifier disagrees with PyTorch's runtime per-parameter requires-grad topology after a single loss.sum().backward() call. The verifier is conservative on the no-grad/.detach() axis: it can only refute when it can prove a parameter is dead. On clean default-constructed models it should (and does) emit 0 refutations."
+}

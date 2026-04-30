@@ -1,0 +1,368 @@
+{
+  "regime": "modern_subset_enforced_at_verification_time",
+  "n_total": 34,
+  "tg_refuted_enforced": 32,
+  "tg_verified_enforced": 2,
+  "errors": 0,
+  "rejected_at_screen": 0,
+  "forced_abstain_after": 0,
+  "post_hoc_tg_refuted": 32,
+  "post_hoc_tg_total": 34,
+  "interpretation": "The 'rejected_at_screen' count is the number of modern-subset bug repros where an AST walk found a non-catalogue op call (TG would otherwise have fired); those are forced to Verified per the Pytea fragment fairness rule. The 'forced_abstain_after' count is the number of TG verdicts whose Bug.message referenced a non-catalogue op despite passing the screen; those are also forced to Verified.",
+  "per_bug": [
+    {
+      "id": "bug_003",
+      "primary_op": "Tensor.view",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "view"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_004",
+      "primary_op": "Tensor.view",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "view"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_005",
+      "primary_op": "broadcast (param + tensor)",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_006",
+      "primary_op": "nn.CrossEntropyLoss",
+      "post_hoc_verdict": "Verified",
+      "ops_used": [],
+      "status": "Verified",
+      "enforced_verdict": "Verified"
+    },
+    {
+      "id": "bug_007",
+      "primary_op": "F.conv2d (dtype check)",
+      "post_hoc_verdict": "Verified",
+      "ops_used": [
+        "conv2d"
+      ],
+      "status": "Verified",
+      "enforced_verdict": "Verified"
+    },
+    {
+      "id": "bug_008",
+      "primary_op": "nn.Conv2d",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "Conv2d"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_009",
+      "primary_op": "nn.Linear",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "Linear"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_010",
+      "primary_op": "Tensor.view",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "view"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_011",
+      "primary_op": "broadcast (a + b)",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_014",
+      "primary_op": "Tensor.transpose",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "transpose"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_015",
+      "primary_op": "nn.BatchNorm2d",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "BatchNorm2d"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_016",
+      "primary_op": "nn.Embedding",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "Embedding"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_018",
+      "primary_op": "matmul (@ operator)",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_019",
+      "primary_op": "Tensor.reshape",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "reshape"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_020",
+      "primary_op": "torch.cat",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "cat"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_027",
+      "primary_op": "torch.bmm",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "bmm"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_028",
+      "primary_op": "Tensor.view (wildcard -1)",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "view"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_034",
+      "primary_op": "nn.Embedding",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "Embedding"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_035",
+      "primary_op": "nn.ConvTranspose2d",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "ConvTranspose2d"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_037",
+      "primary_op": "flatten + view",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "flatten",
+        "view"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_038",
+      "primary_op": "torch.stack",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "stack"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_039",
+      "primary_op": "F.softmax",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_040",
+      "primary_op": "matmul (@ operator, batched)",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_042",
+      "primary_op": "nn.CrossEntropyLoss",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_043",
+      "primary_op": "nn.MSELoss",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_044",
+      "primary_op": "nn.NLLLoss",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_045",
+      "primary_op": "nn.Conv2d",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "Conv2d"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_047",
+      "primary_op": "Tensor.unsqueeze",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "unsqueeze"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_049",
+      "primary_op": "F.layer_norm",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "layer_norm"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_053",
+      "primary_op": "Tensor.expand",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "expand"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_056",
+      "primary_op": "nn.Conv2d",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "Conv2d"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_057",
+      "primary_op": "torch.mm",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "mm"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_063",
+      "primary_op": "Tensor.view (post-transpose)",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [
+        "transpose",
+        "view"
+      ],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    },
+    {
+      "id": "bug_068",
+      "primary_op": "nn.MaxPool2d",
+      "post_hoc_verdict": "Refuted",
+      "ops_used": [],
+      "status": "Refuted",
+      "max_conf": 0.99,
+      "enforced_verdict": "Refuted"
+    }
+  ]
+}

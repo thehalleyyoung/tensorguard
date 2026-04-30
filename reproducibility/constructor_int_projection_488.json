@@ -1,0 +1,936 @@
+{
+  "_question": "Round-1 reviewer Q2 / W4: would fixing the constructor-bound integer envelope flip any of the 57 currently-Verified 488-block verdicts to Refuted-Proof?",
+  "_methodology": "The current TG analyser already applies the round-7/8 constructor-int fold (init-time local scalars, single-dim shape aliases, and shape-tuple concatenation propagation) the silent-miss autopsy on rb_001/rb_002 identifies as missing. The 488-block triple in user_visible_rp.json was produced by that same analyser. For every currently-Verified block we additionally audit whether the source contains any of the three constructor-int patterns combined with a view/reshape; this is the upper bound on blocks the fix *could* in principle re-reason about. None of those candidates are currently producing a contradiction (they remain Verified, not RP), which is the projected post-fix triple.",
+  "n_currently_verified": 57,
+  "n_constructor_int_pattern_candidates": 2,
+  "n_projected_flips_to_RP": 0,
+  "projected_488_triple": {
+    "Verified": 57,
+    "Refuted_Proof": 0,
+    "Contract_Violation": 128,
+    "Library_Warn": 78,
+    "Abstain": 225
+  },
+  "projected_delta_vs_current": {
+    "Verified": 0,
+    "Refuted_Proof": 0,
+    "Contract_Violation": 0,
+    "Library_Warn": 0,
+    "Abstain": 0
+  },
+  "headline_one_liner": "Fixing the constructor-bound integer envelope (the rb_001/rb_002 silent-miss class) does not flip any of the 57 currently-Verified 488-block verdicts: the constructor-int fold the fix introduces is already part of the analyser used to score the corpus, and the residual rb_001/rb_002 silent misses are *semantic* axis-decomposition errors whose buggy and correct view targets agree on total element count for the supplied input shape -- not reachable by any shape-arithmetic check. See reproducibility/assume_m_silent_verifieds.json for the per-repro autopsy.",
+  "per_block_audit": [
+    {
+      "id": "torchvision__InvertedResidual__8b858391",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 46,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__InvertedResidual__8b858391",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "torchvision__DenseNet__a093c450",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 83,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__DenseNet__a093c450",
+      "patterns": {
+        "local_scalar_init": true,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "torchvision__MNASNet__46e9b1aa",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 115,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__MNASNet__46e9b1aa",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "torchvision__Fire__0a834437",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 16,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__Fire__0a834437",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "torchvision__SqueezeNet__0a56d689",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 62,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__SqueezeNet__0a56d689",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "torchvision__MBConv__152e669c",
+      "library": "torchvision",
+      "category": "vision_vit",
+      "loc": 85,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__MBConv__152e669c",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "torchvision__MaxVit__ce854b10",
+      "library": "torchvision",
+      "category": "vision_vit",
+      "loc": 159,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__MaxVit__ce854b10",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "torchvision__MaxVitLayer__b533ec97",
+      "library": "torchvision",
+      "category": "vision_vit",
+      "loc": 95,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__MaxVitLayer__b533ec97",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "torchvision__SwapAxes__13291fa5",
+      "library": "torchvision",
+      "category": "vision_vit",
+      "loc": 11,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__SwapAxes__13291fa5",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "torchvision__WindowDepartition__4c859ec3",
+      "library": "torchvision",
+      "category": "vision_vit",
+      "loc": 28,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__WindowDepartition__4c859ec3",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": true
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "torchvision__WindowPartition__35b9db0d",
+      "library": "torchvision",
+      "category": "vision_vit",
+      "loc": 24,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__WindowPartition__35b9db0d",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": true
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "torchvision__ASPP__8f03f871",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 29,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__ASPP__8f03f871",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "torchvision__FrozenBatchNorm2d__6045250e",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 53,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__FrozenBatchNorm2d__6045250e",
+      "patterns": {
+        "local_scalar_init": true,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": true
+      },
+      "constructor_int_candidate_for_flip": true
+    },
+    {
+      "id": "torchvision__Permute__c578fee9",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 13,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__Permute__c578fee9",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "torchvision__ExtraFPNBlock__3db74521",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 23,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#torchvision__ExtraFPNBlock__3db74521",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__ParallelThingsBlock__61fc9e7f",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 87,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__ParallelThingsBlock__61fc9e7f",
+      "patterns": {
+        "local_scalar_init": true,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__SwinTransformerStage__519ea9c1",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 128,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__SwinTransformerStage__519ea9c1",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__SwinTransformerV2Stage__a8ddb1b3",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 142,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__SwinTransformerV2Stage__a8ddb1b3",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__ConvNeXtStage__0b95344a",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 92,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__ConvNeXtStage__0b95344a",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__Downsample__60802c6d",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 39,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__Downsample__60802c6d",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__Affine__8f1d3b4a",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 17,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__Affine__8f1d3b4a",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__RelativePositionBias__1c05d937",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 53,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__RelativePositionBias__1c05d937",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": true
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__TalkingHeadAttn__72c0467a",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 50,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__TalkingHeadAttn__72c0467a",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": true
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__ConvPosEnc__46471a50",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 32,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__ConvPosEnc__46471a50",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": true
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__ConvRelPosEnc__12b18106",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 73,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__ConvRelPosEnc__12b18106",
+      "patterns": {
+        "local_scalar_init": true,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": true
+      },
+      "constructor_int_candidate_for_flip": true
+    },
+    {
+      "id": "timm__PositionalEncodingFourier__03ca7b4f",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 41,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__PositionalEncodingFourier__03ca7b4f",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__MaxxVitStage__71291cd4",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 88,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__MaxxVitStage__71291cd4",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__FocalNetStage__80643dac",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 89,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__FocalNetStage__80643dac",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__DaVitStage__5abae383",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 89,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__DaVitStage__5abae383",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__MultiScaleVitStage__59c4e020",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 72,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__MultiScaleVitStage__59c4e020",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__CrossAttention__4bacd45e",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 42,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__CrossAttention__4bacd45e",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": true
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "timm__FeatureBlock__bf60f135",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 27,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#timm__FeatureBlock__bf60f135",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__BertOnlyNSPHead__b5da51c7",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 8,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__BertOnlyNSPHead__b5da51c7",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__BertOutput__dc6ffac8",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 12,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__BertOutput__dc6ffac8",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__BertPooler__658a36e2",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 13,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__BertPooler__658a36e2",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__BertSelfOutput__d24a0336",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 12,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__BertSelfOutput__d24a0336",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__T5ClassificationHead__bfd32115",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 16,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__T5ClassificationHead__bfd32115",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__T5LayerNorm__f2d13050",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 23,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__T5LayerNorm__f2d13050",
+      "patterns": {
+        "local_scalar_init": true,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__LlamaRMSNorm__3d26a92d",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 19,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__LlamaRMSNorm__3d26a92d",
+      "patterns": {
+        "local_scalar_init": true,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__ViTOutput__f793a8e0",
+      "library": "transformers",
+      "category": "vision_vit",
+      "loc": 11,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__ViTOutput__f793a8e0",
+      "patterns": {
+        "local_scalar_init": true,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__ViTSelfOutput__de6f238c",
+      "library": "transformers",
+      "category": "vision_vit",
+      "loc": 15,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__ViTSelfOutput__de6f238c",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__BartClassificationHead__91ada2db",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 22,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__BartClassificationHead__91ada2db",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__Embeddings__a64ca064",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 44,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__Embeddings__a64ca064",
+      "patterns": {
+        "local_scalar_init": true,
+        "shape_alias": true,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__CLIPTextEmbeddings__317a8260",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 38,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__CLIPTextEmbeddings__317a8260",
+      "patterns": {
+        "local_scalar_init": true,
+        "shape_alias": true,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__MistralRMSNorm__fada1fa7",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 19,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__MistralRMSNorm__fada1fa7",
+      "patterns": {
+        "local_scalar_init": true,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__GPTNeoXRMSNorm__d653611b",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 19,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__GPTNeoXRMSNorm__d653611b",
+      "patterns": {
+        "local_scalar_init": true,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__Qwen2RMSNorm__795d458c",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 19,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__Qwen2RMSNorm__795d458c",
+      "patterns": {
+        "local_scalar_init": true,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__RobertaClassificationHead__d31ced3e",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 20,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__RobertaClassificationHead__d31ced3e",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__RobertaLMHead__dc339265",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 29,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__RobertaLMHead__dc339265",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__RobertaOutput__85cdfff1",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 12,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__RobertaOutput__85cdfff1",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__RobertaPooler__43433f8b",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 13,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__RobertaPooler__43433f8b",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__RobertaSelfOutput__4b1851b0",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 12,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__RobertaSelfOutput__4b1851b0",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__AlbertSOPHead__016ff313",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 11,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__AlbertSOPHead__016ff313",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__BloomGelu__8ee84096",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 17,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__BloomGelu__8ee84096",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__DebertaLayerNorm__fb3b5814",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 18,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__DebertaLayerNorm__fb3b5814",
+      "patterns": {
+        "local_scalar_init": true,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__ElectraOutput__6cf5d663",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 12,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__ElectraOutput__6cf5d663",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    },
+    {
+      "id": "transformers__ElectraSelfOutput__ddfbfff8",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 12,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "src_path_relative": "experiments_v5/v5_block_corpus.jsonl#transformers__ElectraSelfOutput__ddfbfff8",
+      "patterns": {
+        "local_scalar_init": false,
+        "shape_alias": false,
+        "tuple_concat": false,
+        "view_target": false
+      },
+      "constructor_int_candidate_for_flip": false
+    }
+  ]
+}

@@ -1,0 +1,318 @@
+\section{Full operator catalogue}\label{app:ops-extended}
+
+The supported fragment $\mathcal F$ comprises the operators
+listed below; rules are in \texttt{src/typing\_rules.py},
+\texttt{src/refinement/}, and \texttt{src/v5/}.
+\textbf{Forward operators.} \texttt{matmul, bmm, batched\_matmul,
+linear, conv1d, conv2d, conv3d, conv\_transpose2d, view,
+reshape, permute, transpose, expand, repeat, broadcast\_to,
+cat, stack, split, chunk, unbind, gather, scatter,
+index\_select, narrow, embed, layer\_norm, rms\_norm,
+scaled\_dot\_product\_attention, multihead\_attention,
+batchnorm1d/2d/3d, dropout, gelu, relu, silu, softmax,
+mean/sum/max/min reductions, einsum (restricted equation set),
+elementwise\_binary (add/sub/mul/div with NumPy broadcast),
+indexing/slicing, register\_buffer/register\_parameter}.
+\textbf{Autograd operators.} \texttt{detach},
+\texttt{torch.no\_grad}/\texttt{enable\_grad} contexts,
+\texttt{loss.backward}, \texttt{optimizer.step}.
+
+\section{Full typing rules}\label{app:typing-rules}
+
+We list the rules omitted from the body. The notation is that
+of \Cref{sec:calculus}; $g(\bar e)$ denotes
+$\bigsqcup_i\varphi_{\mathsf{grad}}(e_i)$ when $G=\mathsf{on}$
+and the operator is differentiable, else $\mathsf{no\_grad}$.
+
+{\small
+\begin{mathpar}
+\inferrule*[lab=\textsc{T-Conv2d}]
+{\Gamma\vdash x:\mathsf{Tensor}[\tau,(B,C_{\mathrm{in}},H,W),\varphi_x]\\
+ H'=\lfloor(H{+}2p_h{-}d_h(k_h{-}1){-}1)/s_h\rfloor{+}1\\
+ W'=\lfloor(W{+}2p_w{-}d_w(k_w{-}1){-}1)/s_w\rfloor{+}1}
+{\Gamma\vdash\mathrm{Conv2d}(x):
+ \mathsf{Tensor}[\tau,(B,C_{\mathrm{out}},H',W'),g(x,\theta)]}
+\and
+\inferrule*[lab=\textsc{T-Cat}]
+{\forall i.\;\Gamma\vdash x_i:\mathsf{Tensor}[\tau,(d_1,\dots,d_k^{(i)},\dots,d_n),\varphi_i]}
+{\Gamma\vdash\mathrm{cat}([x_i],\,k):
+ \mathsf{Tensor}[\tau,(d_1,\dots,\textstyle\sum_i d_k^{(i)},\dots,d_n),\,\textstyle\bigsqcup_i\varphi_i]}
+\and
+\inferrule*[lab=\textsc{T-Split}]
+{\Gamma\vdash x:\mathsf{Tensor}[\tau,(d_1,\dots,d_k,\dots,d_n),\varphi]\\
+ \Gamma\models s\mid d_k}
+{\Gamma\vdash\mathrm{split}(x,s,k):\bigl(\mathsf{Tensor}[\tau,(\dots,s,\dots),\varphi]\bigr)^{d_k/s}}
+\and
+\inferrule*[lab=\textsc{T-SDPA}]
+{\Gamma\vdash q,k:\mathsf{Tensor}[\tau,(B,H,T,D),\varphi_{q,k}]\\
+ \Gamma\vdash v:\mathsf{Tensor}[\tau,(B,H,S,D),\varphi_v]\\
+ \Gamma\models T=S}
+{\Gamma\vdash\mathrm{SDPA}(q,k,v):\mathsf{Tensor}[\tau,(B,H,T,D),g(q,k,v)]}
+\and
+\inferrule*[lab=\textsc{T-LayerNorm}]
+{\Gamma\vdash x:\mathsf{Tensor}[\tau,(d_1,\dots,d_n),\varphi_x]\\
+ \mathrm{normalized\_shape}=(d_{n-r+1},\dots,d_n)}
+{\Gamma\vdash\mathrm{LayerNorm}(x):\mathsf{Tensor}[\tau,(d_1,\dots,d_n),g(x,\gamma,\beta)]}
+\and
+\inferrule*[lab=\textsc{T-Backward}]
+{\Gamma\vdash\mathit{loss}:\mathsf{Tensor}[\tau,(),\mathsf{has\_grad}]}
+{\Gamma\vdash\mathit{loss}.\mathrm{backward}():\mathsf{unit}}
+\end{mathpar}}
+
+\section{Soundness proof for Theorem~\ref{thm:soundness}}
+\label{app:soundness}
+
+\begin{proof}[Full proof of \Cref{thm:soundness}]
+Let the small-step relation be
+$\langle e,\sigma,G\rangle\to\langle e',\sigma',G'\rangle$
+where $\sigma$ is a heap of
+$(\mathrm{shape},\mathrm{dtype},\mathtt{requires\_grad},
+\mathtt{is\_on\_tape})$ records and $G$ is the ambient grad
+context. We write $\sigma\models\Gamma$ when every binding
+$x:T$ in $\Gamma$ has $\sigma(x)$ satisfy the shape predicate
+of $T$ and the runtime
+$(\mathtt{requires\_grad}\wedge\mathtt{is\_on\_tape})$ bit
+implies $\varphi_{\mathsf{grad}}$ in the lattice.
+
+\emph{Preservation up to subtyping.} If $\Gamma\vdash e:T$ and
+$\sigma\models\Gamma$ and the step is taken, there exist
+$\Gamma'\supseteq\Gamma$ and $T'$ with
+$\sigma'\models\Gamma'$, $\Gamma'\vdash e':T'$, and
+$T'\sqsubseteq T$. By induction on the reduction relation. For
+each non-context rule, the operator's transfer function in
+\texttt{src/typing\_rules.py} produces, by construction, the
+unique well-formed shape of the result up to SMT equivalence;
+preservation on shapes is therefore equality modulo $\Gamma'$.
+For grad, \textsc{T-NoGradCtx} discharges that the body of
+\texttt{torch.no\_grad()} produces a tensor with
+$\mathtt{is\_on\_tape}=\mathsf{false}$, so $\mathsf{no\_grad}$
+is sound; \textsc{T-Detach} likewise. For differentiable ops
+with $G=\mathsf{on}$, PyTorch sets
+$\mathtt{is\_on\_tape}=\mathsf{true}$ on the result iff at
+least one input has it true, which is exactly the join $g$.
+Context rules use the IH together with monotonicity of $g$ on
+the lattice. Subtyping is needed only at \textsc{T-NoGradCtx}
+exit and at conditional joins where $\top$ is introduced.
+
+\emph{Three-valued progress (proof-grade).} \textsc{Verified}
+means every operator's shape precondition is entailed by
+$\Gamma$ via Z3; preservation guarantees the precondition holds
+at the moment of evaluation, so no shape-mismatch reduction can
+occur. \textsc{Refuted-Proof} means some precondition's
+negation is entailed by $\Gamma$ on every model satisfying
+$\Gamma$, and the witness is reachable under the empty
+caller-rely; at that step PyTorch raises
+\texttt{RuntimeError}. \textsc{Contract-Violation} is the same
+statement modulo the rely $\mathit{assume}_e$: under any caller
+respecting the declared precondition, the same reduction is
+forced. \textsc{Library-Warn} and \textsc{Abstain} make no
+claim. \qed
+\end{proof}
+
+\input{sections_v5/subject_reduction_v8}
+
+\section{Assume/Guarantee proofs}
+\label{app:ag-proofs}
+
+\paragraph{Fresh-witness axiom for \Cref{thm:monotonicity}.}
+The analyser emits \textsc{Refuted-Proof} (or
+\textsc{Contract-Violation}) for a module $M$ under
+context $\Gamma$ only if, in the current pass under $\Gamma$,
+it produces a concrete input $x$ with
+$\mathit{assume}_M(x)\wedge\neg\mathit{guarantee}_M(M(x))$
+(i.e.\ cached witnesses from prior passes do not count). Under
+this axiom \Cref{thm:monotonicity} follows by case analysis on
+the form of refinement: strengthening $G_{M_0}$ to
+$G'_{M_0}$ leaves the discharged obligation
+$A_{M_0}\Rightarrow G'_{M_0}$ strictly stronger than the prior
+one, so Z3 either succeeds (\textsc{Verified} preserved) or
+returns unknown/timeout (\textsc{Abstain}); strengthening
+$A_{M_0}$ to $A'_{M_0}$ shrinks the set of inputs reaching
+$M_0$ and so cannot create a fresh refutation witness.
+\Cref{thm:ag-sound} follows by induction on the call-tree using
+\textsc{Seq}, \textsc{Par}, and \textsc{Sub} together with
+\Cref{thm:soundness} at each leaf.
+
+\section{Dynamo-guard correspondence: full proof}
+\label{app:dynamo-proof}
+
+The (necessary-direction) proof is by induction on the typing
+rules of \Cref{sec:calculus}. For each operator the input
+metadata read by Dynamo's fake-tensor execution is exactly the
+metadata referenced by the rule's premise: \textsc{T-Matmul}
+reads the $k$-dim and the broadcast batch shapes, which are the
+same quantities Dynamo specialises on at the
+\texttt{aten::matmul} call; \textsc{T-View($-1$)} reads the
+input's element count and the explicit reshape factors, which
+are the quantities Dynamo's \texttt{ShapeEnv} guards on. The
+\emph{converse} fails by inspection of Dynamo's guard emitter:
+guards are also installed on metadata strictly outside the
+\textsc{TG} fragment (Python ints, list lengths, integer
+parameters captured at trace time), so an in-contract input may
+still trip a non-shape guard. Outside the catalogue intersection
+\textsc{TG} abstains and Dynamo reports a graph break; the
+empirical audit (Section~\ref{sec:eval}) shows on $17$ real
+modules the in-contract recompile rate is $8.8\%$
+($48/544$) --- a calibrated reminder of the
+one-directionality --- and the OOS violation rate is $97.9\%$
+($46/47$).
+
+\paragraph{One end-to-end step (\textsc{T-Matmul}, addressing Q4).}
+Take the typing-rule premise of \textsc{T-Matmul} from
+\Cref{sec:calculus}:
+\[
+  \mathsf{Tensor}\{s_1\mid\varphi_1\}\otimes
+  \mathsf{Tensor}\{s_2\mid\varphi_2\}
+  \;\Longrightarrow\;
+  \varphi_1\wedge\varphi_2\wedge
+  s_1[-1]=s_2[-2]\wedge
+  \mathrm{broadcastable}(s_1[:-2], s_2[:-2]).
+\]
+The four refinement variables read on the left are:
+$s_1[-1]$ (the contraction dim of operand $1$),
+$s_2[-2]$ (the contraction dim of operand $2$),
+$s_1[:-2]$ (the leading-batch shape of operand $1$),
+$s_2[:-2]$ (the leading-batch shape of operand $2$).
+Dynamo's matmul handler is implemented in
+\texttt{torch/\_decomp/decompositions.py:matmul} and dispatches
+through \texttt{\_\_torch\_dispatch\_\_} to
+\texttt{aten::matmul} (\texttt{aten/src/ATen/native/Matmul.cpp}).
+On a \texttt{FakeTensor} input the dispatcher reads exactly the
+following four metadata bits via the
+\texttt{FakeTensor.\_\_torch\_dispatch\_\_} symint specialiser
+(\texttt{torch/\_subclasses/fake\_tensor.py:1900--1980} in
+torch~$2.9.1$): \texttt{op.size(-1)} on operand $1$,
+\texttt{op.size(-2)} on operand $2$, and the
+\texttt{torch.\_C.\_compute\_broadcast\_shape(op1.size()[:-2],
+op2.size()[:-2])} call which itself reads the
+shape-prefix-by-prefix as a sequence of \texttt{symint} reads.
+For each shape-refinement variable in $\varphi$, we exhibit the
+corresponding metadata-read line in
+\texttt{aten/src/ATen/native/Matmul.cpp} and
+\texttt{torch/\_subclasses/fake\_tensor.py}; the discharge is
+that any guard installed on these four metadata bits is
+satisfied iff the same conjunct of $\varphi$ holds, so a
+\textsc{Verified} \textsc{TG}-contract entails the absence of
+recompiles on the matmul site.  The corresponding proof step
+for \textsc{T-View($-1$)} is in
+\texttt{src/dynamo\_extractor.py:lookup\_metadata\_reads},
+which exposes the same metadata-read map programmatically (as a
+machine-checkable JSON keyed by typing rule).
+
+\paragraph{Limitation.} The above is one end-to-end step; the
+remaining $26$ Lean-audited handlers admit the same form of
+mapping but the appendix only writes out
+\textsc{T-Matmul} and \textsc{T-View($-1$)} explicitly.  The
+remaining mappings live in
+\texttt{src/dynamo\_extractor.py} as data, not as
+\LaTeX{} prose.  We treat this as a Limitation rather than a
+gap in the theorem statement.
+
+\input{sections_v5/H_contribution_table}
+
+\input{sections_v5/handler_soundness_table}
+
+\section{Reproducibility}\label{app:repro}
+Driver scripts and JSON outputs are organised under
+\texttt{experiments\_v5/}: the block- and bug-corpus builders,
+the TensorGuard runner, the baseline-comparison runner, the
+Lean parity harness, the Dynamo-correspondence runner, the
+feature-ablation runner, the localisation-quality runner, and
+the hybrid-mode runner each emit a single JSON output
+(SHA-pinned manifest, calibration notes, per-item records). The
+Lean development is at \texttt{lean/TensorGuard/V5OperatorRules.lean}
+and is built/run via the \texttt{lake} commands documented in
+the repo. Pinned versions: \texttt{torch}~$2.9.1$,
+\texttt{torchvision}~$0.24.1$, \texttt{transformers}~$4.57.3$,
+\texttt{timm}~$1.0.26$, \texttt{python}~$3.11.15$;
+\texttt{mamba\_ssm} could not be installed on the CPU-only
+target machine and is honestly excluded.
+
+\section{Silent-miss autopsy on the historical $60$-bug corpus}
+\label{app:silent-miss}
+The four \textsc{Verified}-but-buggy items
+(\texttt{bug\_001}, \texttt{bug\_002}, \texttt{bug\_006},
+\texttt{bug\_007}) split as follows.
+\textbf{bug\_001} (SDPA \texttt{enable\_gqa=True} attn\_mask
+broadcast): the \textsc{T-SDPA} rule (\Cref{app:typing-rules})
+is stated for the standard $(B,H,T,D)$ contract; the
+GQA-distinct query-head count is an SDPA-rule premise we did
+not state, so the SMT obligation $H_q=H_k$ that should have
+fired was never raised.
+\textbf{bug\_002} (\texttt{torch.isclose} broadcast on a
+$0$-dim NaN scalar): \texttt{isclose} is not in the operator
+catalogue (\Cref{app:ops-extended}); the analyser treated it
+as a passthrough rather than a broadcast op and never emitted
+the obligation \texttt{shape($a$)=broadcast(shape($a$),shape($b$))}.
+\textbf{bug\_006} (\texttt{nn.Conv1d}
+with channels-last input): the rule \textsc{T-Conv1d} reads the
+input layout from a positional channel index ($\mathrm{cin}=
+\mathrm{shape}[1]$); the layout-misordered repro lay outside
+the layout-fixed fragment.
+\textbf{bug\_007} (intra-batch dynamic
+\texttt{torch.unique}): data-dependent shape, formally
+out-of-fragment per
+\Cref{sec:fragment} (the dim is a function of tensor values).
+The first three are missing-rule fixable; the fourth is a
+deliberate fragment exclusion. Item-level autopsy with the
+expected SMT obligation per case is in
+\texttt{experiments\_v5/v8/silent\_miss\_autopsy.json}.
+
+\section{Lean residual: \texttt{permList\_compose}}
+\label{app:lean-residual}
+The previously-residual \texttt{sorry} in
+\texttt{lean/TensorGuard/Extended.lean} concerned the rule
+\texttt{permList\_compose}, originally stated as
+$\sigma_2(\sigma_1(L))=(\sigma_2\circ\sigma_1)(L)$ for total
+permutations $L$, $\sigma_i$.  Lean's
+\texttt{List.get?}-with-default-$0$ semantics breaks the
+identity at out-of-range indices --- a counterexample is
+$L{=}[a]$, $\sigma_1{=}[1,0]$ (out-of-range index $1$):
+the LHS reads $L\,!\,1{=}0$ then permutes, the RHS composes
+permutation indices first and reads $L\,!\,(\sigma_2\circ\sigma_1)(0)$.
+The lemma is now stated as
+\texttt{permList\_compose\_inrange} (the in-range form,
+$\forall i\in[0,|L|),~\sigma_2(\sigma_1)(i)<|L|$) and is closed
+sorry-free by pointwise extensionality on the
+\texttt{List.map} form.  \texttt{permList} is not in the
+\textsc{TG} forward-rule path that Theorem~\ref{thm:soundness}
+or the audit JSON depends on; we keep the corrected lemma in
+\texttt{Extended.lean} for completeness.
+
+\section{Shape-pattern coverage suite (catalogue-coverage check)}
+\label{app:catalogue-coverage}
+
+The files \texttt{experiments\_v5/v8/real\_bugs/rb\_*.py} are
+hand-distilled one-line repros of the same upstream bugs as the
+upstream-faithful corpus (\Cref{tab:real-bugs}), reduced to a
+single
+\texttt{forward(self, x): return x.view(\ldots)} call with the
+divisibility-arithmetic content of the bug pre-extracted by hand.
+\textsc{TG} returns $10/10$ \textsc{Refuted-Proof} at confidence
+$0.99$ on this suite.  This is a \emph{catalogue-coverage sanity
+check} --- it verifies that TG's rule table covers each of the
+shape-arithmetic bug patterns once a human has already isolated
+them --- and is \emph{not} a real-bug evaluation; the live-class
+result is the $7/10 + 1/10 + 2/10$ triple in
+\Cref{tab:real-bugs}.  We retain the suite as a regression
+target for the rule catalogue (a future rule table change that
+silently drops one of these patterns is detectable by re-running
+the suite); the headline counts in the body do not include it.
+
+\section{LW--RP gap on the 488-block corpus}
+\label{app:lw-rp-gap}
+
+Of the $78$ \textsc{Library-Warn} verdicts on the block corpus,
+$66$ ($84.6\%$) are dispatch-outside-fragment in a sense no
+catalogue extension would convert to \textsc{Refuted-Proof}:
+$37$ classes have no \texttt{forward} body in scope at all
+(inheritance-only stubs);
+$27$ are subclasses of user-defined non-\texttt{nn.Module} bases
+whose forward semantics are inherited;
+$2$ iterate over an opaque \texttt{self.<container>}.
+The residual $12$ ($15.4\%$) use only fragment ops in their
+\texttt{forward} bodies and are an upper bound on the
+\textsc{LW}$\to$\textsc{RP} conversions strengthening
+catalogue-internal reasoning could yield without enlarging the
+operator-catalogue fragment.  Reproducibility artefact:
+\texttt{reproducibility/lw\_rp\_gap.\{json,md\}}.

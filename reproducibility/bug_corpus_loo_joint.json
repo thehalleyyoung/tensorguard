@@ -1,0 +1,963 @@
+{
+  "_question": "Round-3 reviewer Q6: produce a leave-one-category-out holdout whose RP-count actually changes when the category-relevant rules are removed.  We additionally disable the AST-pattern intent-bug path so that the operator handlers under test are the only path that can still catch the bug.",
+  "category_to_handlers": {
+    "view_reshape_total_size": [
+      "view",
+      "reshape"
+    ],
+    "broadcasting": [
+      "broadcast",
+      "add",
+      "mul",
+      "sub",
+      "div"
+    ],
+    "conv_channel_mismatch": [
+      "conv1d",
+      "conv2d",
+      "conv3d"
+    ],
+    "linear_inout_mismatch": [
+      "linear"
+    ],
+    "einsum_dim": [
+      "einsum",
+      "matmul",
+      "bmm"
+    ],
+    "transpose_axes": [
+      "transpose",
+      "permute"
+    ],
+    "attention_dim": [
+      "scaled_dot_product_attention",
+      "matmul",
+      "bmm",
+      "softmax",
+      "multihead_attention"
+    ],
+    "batchnorm_features": [
+      "batch_norm"
+    ],
+    "embedding_index": [
+      "embed",
+      "index_select",
+      "gather"
+    ],
+    "other": []
+  },
+  "full_pipeline": {
+    "rp": 53,
+    "silent": 7,
+    "abst": 0,
+    "err": 0,
+    "per_category": {
+      "attention_dim": {
+        "rp": 4,
+        "silent": 1,
+        "abst": 0,
+        "err": 0,
+        "n": 5
+      },
+      "broadcasting": {
+        "rp": 7,
+        "silent": 2,
+        "abst": 0,
+        "err": 0,
+        "n": 9
+      },
+      "view_reshape_total_size": {
+        "rp": 7,
+        "silent": 2,
+        "abst": 0,
+        "err": 0,
+        "n": 9
+      },
+      "other": {
+        "rp": 9,
+        "silent": 2,
+        "abst": 0,
+        "err": 0,
+        "n": 11
+      },
+      "conv_channel_mismatch": {
+        "rp": 6,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 6
+      },
+      "linear_inout_mismatch": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 4
+      },
+      "einsum_dim": {
+        "rp": 5,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 5
+      },
+      "transpose_axes": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 4
+      },
+      "batchnorm_features": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 4
+      },
+      "embedding_index": {
+        "rp": 3,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 3
+      }
+    },
+    "elapsed_s": 0.63
+  },
+  "intent_bug_path_only_disabled": {
+    "rp": 53,
+    "silent": 0,
+    "abst": 0,
+    "err": 7,
+    "per_category": {
+      "attention_dim": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 1,
+        "n": 5
+      },
+      "broadcasting": {
+        "rp": 7,
+        "silent": 0,
+        "abst": 0,
+        "err": 2,
+        "n": 9
+      },
+      "view_reshape_total_size": {
+        "rp": 7,
+        "silent": 0,
+        "abst": 0,
+        "err": 2,
+        "n": 9
+      },
+      "other": {
+        "rp": 9,
+        "silent": 0,
+        "abst": 0,
+        "err": 2,
+        "n": 11
+      },
+      "conv_channel_mismatch": {
+        "rp": 6,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 6
+      },
+      "linear_inout_mismatch": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 4
+      },
+      "einsum_dim": {
+        "rp": 5,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 5
+      },
+      "transpose_axes": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 4
+      },
+      "batchnorm_features": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 4
+      },
+      "embedding_index": {
+        "rp": 3,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 3
+      }
+    },
+    "elapsed_s": 0.22
+  },
+  "joint_loo_runs": {
+    "view_reshape_total_size": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "disabled_handlers": [
+        "view",
+        "reshape"
+      ],
+      "elapsed_s": 0.19
+    },
+    "broadcasting": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "disabled_handlers": [
+        "broadcast",
+        "add",
+        "mul",
+        "sub",
+        "div"
+      ],
+      "elapsed_s": 0.14
+    },
+    "conv_channel_mismatch": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "disabled_handlers": [
+        "conv1d",
+        "conv2d",
+        "conv3d"
+      ],
+      "elapsed_s": 0.15
+    },
+    "linear_inout_mismatch": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "disabled_handlers": [
+        "linear"
+      ],
+      "elapsed_s": 0.17
+    },
+    "einsum_dim": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "disabled_handlers": [
+        "einsum",
+        "matmul",
+        "bmm"
+      ],
+      "elapsed_s": 0.2
+    },
+    "transpose_axes": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "disabled_handlers": [
+        "transpose",
+        "permute"
+      ],
+      "elapsed_s": 0.19
+    },
+    "attention_dim": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "disabled_handlers": [
+        "scaled_dot_product_attention",
+        "matmul",
+        "bmm",
+        "softmax",
+        "multihead_attention"
+      ],
+      "elapsed_s": 0.2
+    },
+    "batchnorm_features": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "disabled_handlers": [
+        "batch_norm"
+      ],
+      "elapsed_s": 0.16
+    },
+    "embedding_index": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "disabled_handlers": [
+        "embed",
+        "index_select",
+        "gather"
+      ],
+      "elapsed_s": 0.31
+    }
+  }
+}

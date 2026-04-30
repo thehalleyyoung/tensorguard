@@ -1,0 +1,74 @@
+%% fragment_v8.tex — modeled fragment definition and fragment-level soundness
+\subsection{The Modeled Fragment $\mathcal{F}_\mathrm{TG}$}
+\label{sec:fragment}
+
+\noindent\textbf{Syntax.} The fragment $\mathcal{F}_\mathrm{TG}$ is defined by the following grammar,
+where $\mathit{op}\in\mathrm{Cat}$ denotes any operator in the catalogue of
+Table~\ref{tab:handler-soundness}, and static integers are values derivable
+from the declared refinements without a runtime query.
+
+{\small
+\[
+\begin{array}{@{}lll@{}}
+M &::=& \textbf{class}\ C(\mathtt{nn.Module}){:}\ \textbf{\_\_init\_\_}(\ldots){;}\ \textbf{forward}(\mathit{self}, x_1,\dots,x_n) \to s \\[2pt]
+s &::=& x = e \mid \textbf{return}\ e \mid \textbf{if}^{\dagger}\ c{:}\ s_1\ \textbf{else}\ s_2
+         \mid \textbf{for}^{\dagger}\ x\ \textbf{in}\ \textbf{range}(n){:}\ s \\[2pt]
+e &::=& x \mid e.\mathit{op}(\mathit{args})\ [\mathit{op}\in\mathrm{Cat}]
+         \mid C(\mathit{args}) \mid \mathit{self}.\mathit{attr} \mid \mathit{const}
+         \mid (e_1,\dots,e_k) \mid x_1,\dots,x_k = e
+\end{array}
+\]
+}
+
+\noindent${}^\dagger$\emph{Shape-determinism restriction}: branch condition $c$ and loop
+bound $n$ must be static integers derivable from the declared refinements.
+Types are $\mathsf{Tensor}[\tau,\varphi_s,\varphi_g]$ as in \S\ref{sec:calculus}.
+
+\smallskip\noindent\textbf{Out-of-fragment.}
+The following constructs are \emph{not} in $\mathcal{F}_\mathrm{TG}$:
+data-dependent control flow (condition involves a runtime tensor value);
+custom \texttt{autograd.Function}; dynamic attribute mutation of a module
+after \texttt{\_\_init\_\_}; \texttt{exec}/\texttt{eval}; decorator
+metaprogramming that modifies \texttt{forward} at runtime.
+The analyser emits \textsc{Abstain} on any block containing these.
+
+\begin{theorem}[Fragment-level soundness]
+\label{thm:fragment-soundness}
+Let $M\in\mathcal{F}_\mathrm{TG}$ be a closed module and let
+$\Gamma\vdash M:\tau$ with $\mathsf{Verify}(M)=\textsc{Verified}$.
+Then for every input $x$ with $\sigma\models\mathit{assume}_M(x)$, the
+reduction $\langle M(x),\sigma\rangle\to^* v$ does not invoke the
+operator-level shape-mismatch exception of any operator in $\mathrm{Cat}$.
+\end{theorem}
+\begin{proof}[Sketch]
+\emph{Preservation}: by induction on the BNF of $\mathcal{F}_\mathrm{TG}$.
+Each operator rule (\textsc{T-Matmul}, \textsc{T-View($-1$)},
+\textsc{T-Detach}, and the 76 remaining rules in \Cref{app:typing-rules})
+produces a uniquely-typed result; the 28 Lean-audited handlers
+(Table~\ref{tab:handler-soundness}) are sorry-free at the rule definitions;
+the 3 pen-and-paper handlers follow from the operator-level argument in
+\Cref{app:soundness}; the 48 tested-only handlers are not covered by
+the soundness theorem.
+\emph{Progress}: each statement in $\mathcal{F}_\mathrm{TG}$ either reduces
+or is a value; the shape-determinism restriction on $\textbf{if}^\dagger$ and
+$\textbf{for}^\dagger$ ensures branch selection and loop unrolling are
+determined by the static refinements, so no stuck state arises at those
+forms.
+Together, no well-typed term in the fragment raises a shape-mismatch at any
+$\mathit{op}\in\mathrm{Cat}$; the claim is restricted to modeled operators.
+\end{proof}
+
+\paragraph{Boundary precision.}
+Theorem~\ref{thm:fragment-soundness} does \emph{not} claim:
+(a)~termination;
+(b)~numerical correctness or absence of NaN/Inf;
+(c)~absence of dtype errors outside $\mathrm{Cat}$;
+(d)~soundness of the analyser \emph{implementation}---only of the rule
+table it implements;
+(e)~coverage of the 48 tested-only handlers (Table~\ref{tab:handler-soundness}).
+The implication ``verdict = \textsc{Verified} $\Rightarrow$ no shape mismatch''
+depends on: (i)~the $\mathit{assume}_M$ contract holding at the call site;
+(ii)~the operator being in $\mathrm{Cat}$ with a Lean-audited or
+pen-and-paper soundness proof; (iii)~Z3 returning \textsc{Unsat} correctly
+on every discharged obligation.
+

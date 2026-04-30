@@ -1,0 +1,478 @@
+{
+  "metadata": {
+    "seed": 1549556828,
+    "python_version": "3.11.15 (main, Mar  3 2026, 00:52:57) [Clang 17.0.0 (clang-1700.6.3.2)]",
+    "torch_version": "2.9.1",
+    "num_tests_per_op": 1000,
+    "dim_range": [
+      1,
+      16
+    ],
+    "rank_range": [
+      1,
+      5
+    ]
+  },
+  "lean_registry": {
+    "version": "v5",
+    "rules": [
+      {
+        "name": "matmul",
+        "arity": 2,
+        "notes": "general N-D, batch broadcast"
+      },
+      {
+        "name": "bmm",
+        "arity": 2,
+        "notes": "rank-3 \u00d7 rank-3"
+      },
+      {
+        "name": "batched_matmul",
+        "arity": 2,
+        "notes": "alias for bmm3"
+      },
+      {
+        "name": "conv1d",
+        "arity": 2,
+        "notes": "+ pad/dil/stride/groups"
+      },
+      {
+        "name": "conv2d",
+        "arity": 2,
+        "notes": "+ 2D conv params"
+      },
+      {
+        "name": "conv3d",
+        "arity": 2,
+        "notes": "+ 3D conv params"
+      },
+      {
+        "name": "conv_transpose2d",
+        "arity": 2,
+        "notes": "transpose conv"
+      },
+      {
+        "name": "view",
+        "arity": 1,
+        "notes": "exact element count"
+      },
+      {
+        "name": "reshape",
+        "arity": 1,
+        "notes": "supports one inferred dim (-1)"
+      },
+      {
+        "name": "permute",
+        "arity": 1,
+        "notes": "valid permutation"
+      },
+      {
+        "name": "transpose",
+        "arity": 1,
+        "notes": "swap two dims"
+      },
+      {
+        "name": "expand",
+        "arity": 1,
+        "notes": "left-pad + 1-broadcast"
+      },
+      {
+        "name": "repeat",
+        "arity": 1,
+        "notes": "tile per axis"
+      },
+      {
+        "name": "broadcast_to",
+        "arity": 1,
+        "notes": "right-aligned"
+      },
+      {
+        "name": "cat",
+        "arity": 99,
+        "notes": "list, axis"
+      },
+      {
+        "name": "stack",
+        "arity": 99,
+        "notes": "list, axis"
+      },
+      {
+        "name": "split",
+        "arity": 1,
+        "notes": "axis, chunk_size"
+      },
+      {
+        "name": "chunk",
+        "arity": 1,
+        "notes": "axis, n (ceil)"
+      },
+      {
+        "name": "unbind",
+        "arity": 1,
+        "notes": "axis"
+      },
+      {
+        "name": "gather",
+        "arity": 2,
+        "notes": "input, index, axis"
+      },
+      {
+        "name": "scatter",
+        "arity": 3,
+        "notes": "input, index, src, axis"
+      },
+      {
+        "name": "index_select",
+        "arity": 1,
+        "notes": "axis, len"
+      },
+      {
+        "name": "narrow",
+        "arity": 1,
+        "notes": "axis, start, len"
+      },
+      {
+        "name": "embed",
+        "arity": 1,
+        "notes": "+ embed_dim"
+      },
+      {
+        "name": "layer_norm",
+        "arity": 1,
+        "notes": "normalized_shape suffix"
+      },
+      {
+        "name": "rms_norm",
+        "arity": 1,
+        "notes": "k last dims"
+      },
+      {
+        "name": "scaled_dot_product_attention",
+        "arity": 3,
+        "notes": "Q,K,V"
+      },
+      {
+        "name": "linear",
+        "arity": 1,
+        "notes": "in/out features"
+      }
+    ],
+    "count": 28
+  },
+  "ops": [
+    {
+      "name": "matmul",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.01682901382446289,
+      "sample_disagreements": []
+    },
+    {
+      "name": "bmm",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.01521921157836914,
+      "sample_disagreements": []
+    },
+    {
+      "name": "batched_matmul",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.017199993133544922,
+      "sample_disagreements": []
+    },
+    {
+      "name": "conv1d",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.6758260726928711,
+      "sample_disagreements": []
+    },
+    {
+      "name": "conv2d",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.8253800868988037,
+      "sample_disagreements": []
+    },
+    {
+      "name": "conv3d",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.30959081649780273,
+      "sample_disagreements": []
+    },
+    {
+      "name": "conv_transpose2d",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.11209917068481445,
+      "sample_disagreements": []
+    },
+    {
+      "name": "view",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.39090514183044434,
+      "sample_disagreements": []
+    },
+    {
+      "name": "reshape",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.41340208053588867,
+      "sample_disagreements": []
+    },
+    {
+      "name": "permute",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.014035224914550781,
+      "sample_disagreements": []
+    },
+    {
+      "name": "transpose",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.013139009475708008,
+      "sample_disagreements": []
+    },
+    {
+      "name": "expand",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.010062932968139648,
+      "sample_disagreements": []
+    },
+    {
+      "name": "repeat",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.5875279903411865,
+      "sample_disagreements": []
+    },
+    {
+      "name": "broadcast_to",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.011560916900634766,
+      "sample_disagreements": []
+    },
+    {
+      "name": "cat",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.05294370651245117,
+      "sample_disagreements": []
+    },
+    {
+      "name": "stack",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.014662027359008789,
+      "sample_disagreements": []
+    },
+    {
+      "name": "split",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.023896217346191406,
+      "sample_disagreements": []
+    },
+    {
+      "name": "chunk",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.022944927215576172,
+      "sample_disagreements": []
+    },
+    {
+      "name": "unbind",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.02513909339904785,
+      "sample_disagreements": []
+    },
+    {
+      "name": "gather",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.03052687644958496,
+      "sample_disagreements": []
+    },
+    {
+      "name": "scatter",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.025335073471069336,
+      "sample_disagreements": []
+    },
+    {
+      "name": "index_select",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.021172761917114258,
+      "sample_disagreements": []
+    },
+    {
+      "name": "narrow",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.016149044036865234,
+      "sample_disagreements": []
+    },
+    {
+      "name": "embed",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.04987788200378418,
+      "sample_disagreements": []
+    },
+    {
+      "name": "layer_norm",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.047739267349243164,
+      "sample_disagreements": []
+    },
+    {
+      "name": "rms_norm",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.044152021408081055,
+      "sample_disagreements": []
+    },
+    {
+      "name": "scaled_dot_product_attention",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.06140422821044922,
+      "sample_disagreements": []
+    },
+    {
+      "name": "linear",
+      "total": 1000,
+      "agreed": 1000,
+      "in_fragment": 1000,
+      "disagreed": 0,
+      "excluded_mirror_none": 0,
+      "agreement_rate": 1.0,
+      "wall_sec": 0.07512593269348145,
+      "sample_disagreements": []
+    }
+  ],
+  "overall": {
+    "in_fragment": 28000,
+    "agreed": 28000,
+    "agreement_rate": 1.0,
+    "num_ops": 28
+  }
+}

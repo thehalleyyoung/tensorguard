@@ -1,0 +1,281 @@
+{
+  "metadata": {
+    "timestamp": "2026-04-28 10:06:13",
+    "total_bugs": 10,
+    "search_protocol": "Combined bugclasses.jsonl + gh search issues 'shape mismatch' --repo pytorch/pytorch"
+  },
+  "summary": {
+    "detected": 3,
+    "abstained": 0,
+    "missed": 7,
+    "error": 0
+  },
+  "bugs": [
+    {
+      "id": "view_noncontiguous",
+      "description": "View on non-contiguous tensor (stride/contiguity violation)",
+      "bug_type": "stride_violation",
+      "expected": "detected",
+      "source": "bugclasses.jsonl",
+      "url": null,
+      "input_shapes": {
+        "x": [
+          3,
+          4
+        ]
+      },
+      "tensorguard": {
+        "status": "SAFE",
+        "abstained": false,
+        "bug_count": 0,
+        "duration_ms": 37.91,
+        "bugs": []
+      },
+      "outcome": "missed"
+    },
+    {
+      "id": "batch_broadcast_matmul",
+      "description": "Accidental batch broadcasting in matmul (collapsed batch dimension)",
+      "bug_type": "broadcast_mistake",
+      "expected": "abstain_or_detect",
+      "source": "bugclasses.jsonl",
+      "url": null,
+      "input_shapes": {
+        "x": [
+          4,
+          2,
+          3
+        ]
+      },
+      "tensorguard": {
+        "status": "SAFE",
+        "abstained": false,
+        "bug_count": 0,
+        "duration_ms": 21.95,
+        "bugs": []
+      },
+      "outcome": "missed"
+    },
+    {
+      "id": "concat_incompatible_spatial",
+      "description": "Concat of Conv2d branches with incompatible spatial sizes",
+      "bug_type": "concat_shape_mismatch",
+      "expected": "detected",
+      "source": "bugclasses.jsonl",
+      "url": null,
+      "input_shapes": {
+        "x": [
+          1,
+          3,
+          64,
+          64
+        ]
+      },
+      "tensorguard": {
+        "status": "UNSAFE",
+        "abstained": false,
+        "bug_count": 1,
+        "duration_ms": 31.74,
+        "bugs": [
+          {
+            "category": "type_error",
+            "message": "[SHAPE-INCOMPATIBLE] cat: dimension 2 mismatch: 31 vs 64 (cat along dim=1)",
+            "line": 15
+          }
+        ]
+      },
+      "outcome": "detected"
+    },
+    {
+      "id": "lstm_hidden_mismatch",
+      "description": "LSTM outputs c_n and h_n with wrong dimensions",
+      "bug_type": "lstm_output_shape",
+      "expected": "abstain",
+      "source": "pytorch/pytorch#151200",
+      "url": "https://github.com/pytorch/pytorch/issues/151200",
+      "input_shapes": {
+        "x": [
+          5,
+          3,
+          10
+        ]
+      },
+      "tensorguard": {
+        "status": "SAFE",
+        "abstained": false,
+        "bug_count": 0,
+        "duration_ms": 22.19,
+        "bugs": []
+      },
+      "outcome": "missed"
+    },
+    {
+      "id": "addmm_shape_mismatch",
+      "description": "torch.addmm with shape mismatch",
+      "bug_type": "broadcast_mismatch",
+      "expected": "detected",
+      "source": "pytorch/pytorch#178040",
+      "url": "https://github.com/pytorch/pytorch/issues/178040",
+      "input_shapes": {
+        "x": [
+          5
+        ],
+        "mat1": [
+          3,
+          4
+        ],
+        "mat2": [
+          4,
+          5
+        ]
+      },
+      "tensorguard": {
+        "status": "SAFE",
+        "abstained": false,
+        "bug_count": 0,
+        "duration_ms": 11.59,
+        "bugs": []
+      },
+      "outcome": "missed"
+    },
+    {
+      "id": "transpose_conv_channels",
+      "description": "torch.compile produces wrong output channels",
+      "bug_type": "conv_transpose_shape",
+      "expected": "abstain",
+      "source": "pytorch/pytorch#172711",
+      "url": "https://github.com/pytorch/pytorch/issues/172711",
+      "input_shapes": {
+        "x": [
+          1,
+          64,
+          16,
+          16
+        ]
+      },
+      "tensorguard": {
+        "status": "SAFE",
+        "abstained": false,
+        "bug_count": 0,
+        "duration_ms": 48.6,
+        "bugs": []
+      },
+      "outcome": "missed"
+    },
+    {
+      "id": "index_select_oob",
+      "description": "Index select with out-of-bounds indices",
+      "bug_type": "index_oob",
+      "expected": "abstain",
+      "source": "unknown",
+      "url": null,
+      "input_shapes": {
+        "x": [
+          10,
+          5
+        ],
+        "indices": [
+          3
+        ]
+      },
+      "tensorguard": {
+        "status": "SAFE",
+        "abstained": false,
+        "bug_count": 0,
+        "duration_ms": 11.17,
+        "bugs": []
+      },
+      "outcome": "missed"
+    },
+    {
+      "id": "bmm_batch_mismatch",
+      "description": "Batch matrix multiply with mismatched batch dimensions",
+      "bug_type": "batch_mismatch",
+      "expected": "detected",
+      "source": "unknown",
+      "url": null,
+      "input_shapes": {
+        "x": [
+          4,
+          10,
+          20
+        ],
+        "y": [
+          5,
+          20,
+          30
+        ]
+      },
+      "tensorguard": {
+        "status": "SAFE",
+        "abstained": false,
+        "bug_count": 0,
+        "duration_ms": 11.75,
+        "bugs": []
+      },
+      "outcome": "missed"
+    },
+    {
+      "id": "reshape_incompatible",
+      "description": "Reshape to incompatible total size",
+      "bug_type": "reshape_size_mismatch",
+      "expected": "detected",
+      "source": "unknown",
+      "url": null,
+      "input_shapes": {
+        "x": [
+          3,
+          4,
+          5
+        ]
+      },
+      "tensorguard": {
+        "status": "UNSAFE",
+        "abstained": false,
+        "bug_count": 1,
+        "duration_ms": 16.51,
+        "bugs": [
+          {
+            "category": "type_error",
+            "message": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(3, 4, 5)) to (4, 4, 4)",
+            "line": 9
+          }
+        ]
+      },
+      "outcome": "detected"
+    },
+    {
+      "id": "linear_wrong_features",
+      "description": "Linear layer with wrong number of input features",
+      "bug_type": "linear_input_mismatch",
+      "expected": "detected",
+      "source": "unknown",
+      "url": null,
+      "input_shapes": {
+        "x": [
+          5,
+          15
+        ]
+      },
+      "tensorguard": {
+        "status": "UNSAFE",
+        "abstained": false,
+        "bug_count": 2,
+        "duration_ms": 11.54,
+        "bugs": [
+          {
+            "category": "type_error",
+            "message": "[SHAPE-INCOMPATIBLE] Linear expects last dim=20, got 15",
+            "line": 12
+          },
+          {
+            "category": "type_error",
+            "message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 0:\n  dev_x_s0 = CPU_19\n  phase_s0 = TRAIN_19\n  grad_x_s0 = False",
+            "line": 12
+          }
+        ]
+      },
+      "outcome": "detected"
+    }
+  ]
+}

@@ -1,0 +1,250 @@
+{
+  "_question": "Round-4 reviewer Q2: of the 6 RP fires in the N=15 unfiltered post-freeze sample, the eval calls rb_uf_010 off-axis.  Are the other 5 right-reason?",
+  "_method": "Re-run TG (verify_architecture) on each repro; extract every emitted Bug.message; check whether the message contains a keyword on the upstream-PR axis (per the AXIS_SPEC dict above, manually compiled from each PR title and diff).  A bug is 'right-reason' iff at least one of its messages matches the upstream-axis keyword set.",
+  "headline": "5/5 right-reason RP across the 5 non-rb_uf_010 fires; rb_uf_010 is independently confirmed off-axis (eval).",
+  "n_right_reason": 5,
+  "n_audited": 5,
+  "rows": [
+    {
+      "id": "rb_pf_001",
+      "n_bugs": 2,
+      "bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Linear expects last dim=9216, got 10240",
+          "line": 39,
+          "confidence": 0.99,
+          "severity": "error"
+        },
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 1:\n  phase_s1 = TRAIN_1\n  phase_s0 = TRAIN_1\n  dev_x_s0 = CPU_1\n  grad_x_s0 = False\n  dev_h_s1 = CPU_1\n  dev_x_s1 = CPU_1\n  grad_x_s1 = False\n  grad_h_s1 = True",
+          "line": 39,
+          "confidence": 0.8,
+          "severity": "warning"
+        }
+      ],
+      "axis_spec": {
+        "upstream_axis": "Linear-chain in/out feature-dim cast: the upstream diffusers#13494 fix replaces `int(dim*ff_mult)` with the constructor-folded equivalent that matches the next Linear's in_features.  The bug axis is the feature-dim of a Linear layer.",
+        "right_reason_keywords": [
+          "linear",
+          "in_features",
+          "out_features",
+          "feature",
+          "dim",
+          "shape",
+          "matmul",
+          "mismatch"
+        ]
+      },
+      "matching_bugs": [
+        {
+          "line": 39,
+          "message_head": "[SHAPE-INCOMPATIBLE] Linear expects last dim=9216, got 10240"
+        },
+        {
+          "line": 39,
+          "message_head": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 1:\n  phase_s1 = TRAIN_1\n  phase_s0 = TRAIN_1\n  dev_x_s0 = CPU_1\n  grad_x_s0 = False\n  dev_h_s1 = CPU_1\n  dev_x_s1 = CPU_1\n  grad_x_s1 = F"
+        }
+      ],
+      "right_reason": true,
+      "repro_file": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_001_diffusers_longcat_ffmult.py",
+      "pr": "https://github.com/huggingface/diffusers/pull/13494",
+      "bug_class": "config_dependent_linear_chain"
+    },
+    {
+      "id": "rb_pf_003",
+      "n_bugs": 4,
+      "bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Cannot broadcast (8, 512, 2048) and (8, 2048, 512)",
+          "line": 48,
+          "confidence": 0.99,
+          "severity": "error"
+        },
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 2:\n  dev_base_out_s2 = CPU_3\n  dev_base_out_s1 = CPU_3\n  grad_base_out_s1 = False\n  dev_x_s0 = CPU_3\n  grad_x_s0 = False\n  phase_s2 = TRAIN_3\n  grad_lora_delta_s2 = False\n  phase_s1 = TRAIN_3\n  phase_s0 = TRAIN_3\n  grad_x_s2 = False\n  de",
+          "line": 48,
+          "confidence": 0.8,
+          "severity": "warning"
+        },
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[CEGAR-REAL-BUG] Cannot broadcast (8, 512, 2048) and (8, 2048, 512)",
+          "line": 0,
+          "confidence": 0.95,
+          "severity": "error"
+        },
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[CEGAR-REAL-BUG] Z3 violation (shape_incompatible) at step 2:\n  _einsum = 1\n  grad_lora_delta_s2 = False\n  phase_s2 = TRAIN_4\n  grad_base_out_s1 = False\n  grad_base_out_s2 = False\n  phase_s1 = TRAIN_4\n  phase_s0 = TRAIN_4",
+          "line": 0,
+          "confidence": 0.95,
+          "severity": "error"
+        }
+      ],
+      "axis_spec": {
+        "upstream_axis": "LoRA in/out swap: peft#3165 swaps in_features/out_features in a 3-D LoRA path.  The bug axis is in_features vs. out_features of the LoRA Linear.",
+        "right_reason_keywords": [
+          "linear",
+          "in_features",
+          "out_features",
+          "matmul",
+          "lora",
+          "feature",
+          "shape",
+          "mismatch"
+        ]
+      },
+      "matching_bugs": [
+        {
+          "line": 48,
+          "message_head": "[SHAPE-INCOMPATIBLE] Cannot broadcast (8, 512, 2048) and (8, 2048, 512)"
+        },
+        {
+          "line": 48,
+          "message_head": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 2:\n  dev_base_out_s2 = CPU_3\n  dev_base_out_s1 = CPU_3\n  grad_base_out_s1 = False\n  dev_x_s0 = CPU_3\n  grad_x_s0 = False\n  phase_s2 = TRA"
+        },
+        {
+          "line": 0,
+          "message_head": "[CEGAR-REAL-BUG] Z3 violation (shape_incompatible) at step 2:\n  _einsum = 1\n  grad_lora_delta_s2 = False\n  phase_s2 = TRAIN_4\n  grad_base_out_s1 = False\n  grad_base_out_s2 = False\n  phase_s1 = TRAIN_4"
+        }
+      ],
+      "right_reason": true,
+      "repro_file": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_003_peft_lora_moe_swap.py",
+      "pr": "https://github.com/huggingface/peft/pull/3165",
+      "bug_class": "lora_in_out_swap_3d"
+    },
+    {
+      "id": "rb_pf_004",
+      "n_bugs": 2,
+      "bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Linear expects last dim=2, got 8",
+          "line": 43,
+          "confidence": 0.99,
+          "severity": "error"
+        },
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 2:\n  grad_scores_s2 = True\n  grad_x_s0 = False\n  dev_logits_s2 = CPU_5\n  phase_s2 = TRAIN_5\n  dev_scores_s2 = CPU_5\n  dev_x_s2 = CPU_5\n  grad_logits_s1 = True\n  grad_logits_s2 = True\n  phase_s0 = TRAIN_5\n  phase_s1 = TRAIN_5\n  dev_x_s1 =",
+          "line": 43,
+          "confidence": 0.8,
+          "severity": "warning"
+        }
+      ],
+      "axis_spec": {
+        "upstream_axis": "Router top-k vs. num_experts: transformers#45473 fixes a router that selects top_k logits from a num_experts-wide tensor when top_k > num_experts.  The bug axis is the top_k argument of the topk call.",
+        "right_reason_keywords": [
+          "topk",
+          "top_k",
+          "num_experts",
+          "router",
+          "k=",
+          "shape",
+          "expert",
+          "indices"
+        ]
+      },
+      "matching_bugs": [
+        {
+          "line": 43,
+          "message_head": "[SHAPE-INCOMPATIBLE] Linear expects last dim=2, got 8"
+        },
+        {
+          "line": 43,
+          "message_head": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 2:\n  grad_scores_s2 = True\n  grad_x_s0 = False\n  dev_logits_s2 = CPU_5\n  phase_s2 = TRAIN_5\n  dev_scores_s2 = CPU_5\n  dev_x_s2 = CPU_5\n  "
+        }
+      ],
+      "right_reason": true,
+      "repro_file": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_004_routerparallel_topk.py",
+      "pr": "https://github.com/huggingface/transformers/pull/45473",
+      "bug_class": "router_topk_vs_num_experts"
+    },
+    {
+      "id": "rb_uf_008",
+      "n_bugs": 1,
+      "bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Conv3d expects 5D input, got 1D",
+          "line": 46,
+          "confidence": 0.99,
+          "severity": "error"
+        }
+      ],
+      "axis_spec": {
+        "upstream_axis": "Wan VAE decoder view total-size mismatch: diffusers#13520 fixes a view whose target dims do not multiply to the input element count.  The bug axis is view total-size.",
+        "right_reason_keywords": [
+          "view",
+          "reshape",
+          "total",
+          "element",
+          "product",
+          "size",
+          "shape"
+        ]
+      },
+      "matching_bugs": [
+        {
+          "line": 46,
+          "message_head": "[SHAPE-INCOMPATIBLE] Conv3d expects 5D input, got 1D"
+        }
+      ],
+      "right_reason": true,
+      "repro_file": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_008_wan_vae_decoder.py",
+      "pr": "https://github.com/huggingface/diffusers/pull/13520",
+      "bug_class": "view_total_size_mismatch"
+    },
+    {
+      "id": "rb_uf_012",
+      "n_bugs": 2,
+      "bugs": [
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(1, 4, 32, 32)) to (-2, -3, -1, 64, -1, 64)",
+          "line": 43,
+          "confidence": 0.99,
+          "severity": "error"
+        },
+        {
+          "category": "BugCategory.TYPE_ERROR",
+          "message": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(1, 4, 32, 32)) to (-1, -3, 64, 64)",
+          "line": 46,
+          "confidence": 0.99,
+          "severity": "error"
+        }
+      ],
+      "axis_spec": {
+        "upstream_axis": "Hunyuan VAE NaN-branch: diffusers#13561 patches a data-dependent branch where a NaN guard switches between two reshape branches; the bug axis at the call site is either a view total-size mismatch or a transpose axis mismatch on one of the two paths.",
+        "right_reason_keywords": [
+          "view",
+          "reshape",
+          "transpose",
+          "permute",
+          "shape",
+          "size",
+          "branch",
+          "if"
+        ]
+      },
+      "matching_bugs": [
+        {
+          "line": 43,
+          "message_head": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(1, 4, 32, 32)) to (-2, -3, -1, 64, -1, 64)"
+        },
+        {
+          "line": 46,
+          "message_head": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(1, 4, 32, 32)) to (-1, -3, 64, 64)"
+        }
+      ],
+      "right_reason": true,
+      "repro_file": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_012_hunyuan_vae_nan_branch.py",
+      "pr": "https://github.com/huggingface/diffusers/pull/13561",
+      "bug_class": "data_dependent_control_flow"
+    }
+  ]
+}

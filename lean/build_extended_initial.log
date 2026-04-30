@@ -1,0 +1,34 @@
+⚠ [2/4] Replayed TensorGuard.Soundness
+warning: ././././TensorGuard/Soundness.lean:105:31: unused variable `hk`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+✖ [3/4] Building TensorGuard.AssumeGuarantee
+trace: .> LEAN_PATH=././.lake/build/lib DYLD_LIBRARY_PATH= /Users/halleyyoung/.elan/toolchains/leanprover--lean4---v4.14.0/bin/lean ././././TensorGuard/AssumeGuarantee.lean -R ./././. -o ././.lake/build/lib/TensorGuard/AssumeGuarantee.olean -i ././.lake/build/lib/TensorGuard/AssumeGuarantee.ilean -c ././.lake/build/ir/TensorGuard/AssumeGuarantee.c --json
+error: ././././TensorGuard/AssumeGuarantee.lean:90:30: tactic 'rewrite' failed, did not find instance of the pattern in the target expression
+  applyChain c2 s'
+case intro.intro.intro.intro
+c1 c2 : List Op
+k1 k2 : Contract
+h1 : satisfies c1 k1
+h2 : satisfies c2 k2
+link : ∀ (s : Shape), k1.guarantee s → k2.assume s
+s : Shape
+ha : { assume := k1.assume, guarantee := k2.guarantee }.assume s
+s' : Shape
+hc1 : applyChain c1 s = some s'
+hg1 : k1.guarantee s'
+ha' : k2.assume s'
+s'' : Shape
+hc2 : applyChain c2 s' = some s''
+hg2 : k2.guarantee s''
+⊢ (match some s' with
+    | none => none
+    | some s' => applyChain c2 s') =
+    some s''
+warning: ././././TensorGuard/AssumeGuarantee.lean:104:22: unused variable `s`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+warning: ././././TensorGuard/AssumeGuarantee.lean:104:37: unused variable `s`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+error: Lean exited with code 1
+Some required builds logged failures:
+- TensorGuard.AssumeGuarantee
+error: build failed

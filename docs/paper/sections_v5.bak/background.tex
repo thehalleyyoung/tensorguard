@@ -1,0 +1,33 @@
+\section{Background}\label{sec:background}
+
+\paragraph{PyTorch dynamic shape semantics.} A
+\verb|torch.nn.Module| \verb|forward| method is concrete Python: tensor
+shapes are computed at runtime by each operator's transfer function,
+and a mismatch raises \texttt{RuntimeError} at the offending call.
+\texttt{torch.fx} captures one trace; \texttt{FakeTensorMode} executes
+shape arithmetic without allocating storage; \texttt{torch.export}
+specialises a trace into an exported graph. None of these execute
+\emph{symbolically} over the universe of admissible inputs.
+
+\paragraph{Autograd tape and grad flags.} Each tensor carries
+\texttt{requires\_grad}; PyTorch records a tape entry per non-leaf op
+whose inputs include a \texttt{requires\_grad=True} tensor. After
+\texttt{loss.backward()}, a leaf parameter $p$ has $p.\mathit{grad}\neq
+\bot$ iff $p$ is reverse-reachable from \texttt{loss} along non-detached,
+non-\texttt{no\_grad}-context edges and was not mutated in place after
+its tape entry was recorded. The canonical silent failure mode is
+$p.\mathit{grad}=\bot$ at \texttt{optimizer.step()} time,
+which silently no-ops on $p$.
+
+\paragraph{TorchDynamo guards.} \texttt{torch.compile} installs
+\emph{guards} (predicates over input metadata: shape, dtype, stride,
+\texttt{requires\_grad}) and recompiles when a guard fails on a
+subsequent call. The set of guards is a compact summary of the
+specialisation assumptions made during tracing.
+
+\paragraph{Refinement-typed shape calculi.} A line of work on
+size-indexed types \citep{xi1998dependent,vazou2014liquid,
+sheard2007language} treats dimensions as logical terms and discharges
+side conditions via SMT. \textsc{TensorGuard} adopts this design for a
+real-PyTorch fragment: the type of a tensor is a record over the
+symbolic shape, the grad flag, and a Z3-decidable side condition.

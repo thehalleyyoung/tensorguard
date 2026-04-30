@@ -846,8 +846,44 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
             if isinstance(target, ast.Name) and shape:
                 self.shape_env = self.shape_env.set(target.id, shape)
             elif isinstance(target, ast.Tuple) and isinstance(node.value, ast.Call):
-                # Handle unpacking: a, b = torch.chunk(x, 2)
-                pass
+                # Handle unpacking: a, b, c = x.unbind(dim) or a, b = torch.chunk(x, 2)
+                self._handle_tuple_unpacking(target, node.value)
+
+    def _handle_tuple_unpacking(self, target: ast.Tuple, value: ast.Call):
+        """Handle tuple unpacking from operations like unbind, chunk, split."""
+        func_name = self._get_call_name(value)
+        if not func_name:
+            return
+        base_name = func_name.split(".")[-1] if "." in func_name else func_name
+        
+        # Handle unbind: q, k, v = qkv.unbind(0)
+        if base_name == "unbind":
+            if isinstance(value.func, ast.Attribute):
+                obj_shape = self._infer_shape(value.func.value)
+                if obj_shape and value.args:
+                    dim = self._const_val(value.args[0])
+                    if dim is not None:
+                        if dim < 0:
+                            dim = obj_shape.ndim + dim
+                        # Get the size of the dimension being unbound
+                        if dim < obj_shape.ndim:
+                            dim_size = obj_shape.dims[dim]
+                            # Create the shape for each unbound tensor (remove the dim)
+                            result_dims = list(obj_shape.dims)
+                            result_dims.pop(dim)
+                            elem_shape = TensorShape(tuple(result_dims))
+                            # Assign the shape to each unpacked variable
+                            for elt in target.elts:
+                                if isinstance(elt, ast.Name):
+                                    self.shape_env = self.shape_env.set(elt.id, elem_shape)
+        
+        # Handle chunk/split: a, b = torch.chunk(x, 2)
+        elif base_name in ("chunk", "split"):
+            elem_shape = self._infer_shape(value)
+            if elem_shape:
+                for elt in target.elts:
+                    if isinstance(elt, ast.Name):
+                        self.shape_env = self.shape_env.set(elt.id, elem_shape)
 
     def _analyze_if(self, node: ast.If):
         """Handle if-else with shape environment joining."""
@@ -1029,6 +1065,124 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                          "Tanh", "nn.Tanh"):
             return {"type": "Activation"}
 
+        # nn.Conv1d(in_channels, out_channels, kernel_size, ...)
+        if func_name in ("Conv1d", "nn.Conv1d"):
+            in_c = self._const_or_name(node.args[0]) if node.args else None
+            out_c = self._const_or_name(node.args[1]) if len(node.args) >= 2 else None
+            ks = self._const_or_name(node.args[2]) if len(node.args) >= 3 else None
+            stride = 1
+            padding = 0
+            for kw in node.keywords:
+                if kw.arg == "kernel_size":
+                    ks = self._const_or_name(kw.value)
+                elif kw.arg == "stride":
+                    v = self._const_val(kw.value)
+                    if v is not None:
+                        stride = v
+                elif kw.arg == "padding":
+                    v = self._const_val(kw.value)
+                    if v is not None:
+                        padding = v
+            if in_c is not None and out_c is not None:
+                return {"type": "Conv1d", "in_channels": in_c,
+                        "out_channels": out_c, "kernel_size": ks,
+                        "stride": stride, "padding": padding}
+
+        # nn.Conv3d(in_channels, out_channels, kernel_size, ...)
+        if func_name in ("Conv3d", "nn.Conv3d"):
+            in_c = self._const_or_name(node.args[0]) if node.args else None
+            out_c = self._const_or_name(node.args[1]) if len(node.args) >= 2 else None
+            ks = self._const_or_name(node.args[2]) if len(node.args) >= 3 else None
+            if in_c is not None and out_c is not None:
+                return {"type": "Conv3d", "in_channels": in_c,
+                        "out_channels": out_c, "kernel_size": ks}
+
+        # nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride, padding, output_padding)
+        if func_name in ("ConvTranspose2d", "nn.ConvTranspose2d"):
+            in_c = self._const_or_name(node.args[0]) if node.args else None
+            out_c = self._const_or_name(node.args[1]) if len(node.args) >= 2 else None
+            ks = self._const_val(node.args[2]) if len(node.args) >= 3 else None
+            stride = self._const_val(node.args[3]) if len(node.args) >= 4 else 1
+            padding = self._const_val(node.args[4]) if len(node.args) >= 5 else 0
+            output_padding = self._const_val(node.args[5]) if len(node.args) >= 6 else 0
+            dilation = 1
+            for kw in node.keywords:
+                if kw.arg == "kernel_size":
+                    v = self._const_val(kw.value)
+                    if v is not None:
+                        ks = v
+                elif kw.arg == "stride":
+                    v = self._const_val(kw.value)
+                    if v is not None:
+                        stride = v
+                elif kw.arg == "padding":
+                    v = self._const_val(kw.value)
+                    if v is not None:
+                        padding = v
+                elif kw.arg == "output_padding":
+                    v = self._const_val(kw.value)
+                    if v is not None:
+                        output_padding = v
+                elif kw.arg == "dilation":
+                    v = self._const_val(kw.value)
+                    if v is not None:
+                        dilation = v
+            if in_c is not None and out_c is not None:
+                return {"type": "ConvTranspose2d", "in_channels": in_c,
+                        "out_channels": out_c, "kernel_size": ks,
+                        "stride": stride if stride is not None else 1,
+                        "padding": padding if padding is not None else 0,
+                        "output_padding": output_padding if output_padding is not None else 0,
+                        "dilation": dilation}
+
+        # nn.AvgPool2d(kernel_size, stride)
+        if func_name in ("AvgPool2d", "nn.AvgPool2d"):
+            ks = self._const_val(node.args[0]) if node.args else None
+            stride = self._const_val(node.args[1]) if len(node.args) >= 2 else ks
+            for kw in node.keywords:
+                if kw.arg == "kernel_size":
+                    v = self._const_val(kw.value)
+                    if v is not None:
+                        ks = v
+                elif kw.arg == "stride":
+                    v = self._const_val(kw.value)
+                    if v is not None:
+                        stride = v
+            return {"type": "AvgPool2d", "kernel_size": ks, "stride": stride}
+
+        # nn.AdaptiveMaxPool2d(output_size)
+        if func_name in ("AdaptiveMaxPool2d", "nn.AdaptiveMaxPool2d"):
+            out_size = None
+            if node.args:
+                arg = node.args[0]
+                if isinstance(arg, (ast.Tuple, ast.List)):
+                    vals = [self._const_val(e) for e in arg.elts]
+                    if all(v is not None for v in vals):
+                        out_size = tuple(vals)
+                elif isinstance(arg, ast.Constant) and isinstance(arg.value, int):
+                    out_size = (arg.value, arg.value)
+            if out_size:
+                return {"type": "AdaptiveMaxPool2d", "output_size": out_size}
+
+        # nn.BatchNorm1d / BatchNorm3d (shape-preserving)
+        if func_name in ("BatchNorm1d", "nn.BatchNorm1d"):
+            if node.args:
+                n = self._const_or_name(node.args[0])
+                if n is not None:
+                    return {"type": "BatchNorm1d", "num_features": n}
+        if func_name in ("BatchNorm3d", "nn.BatchNorm3d"):
+            if node.args:
+                n = self._const_or_name(node.args[0])
+                if n is not None:
+                    return {"type": "BatchNorm3d", "num_features": n}
+
+        # nn.GroupNorm(num_groups, num_channels)
+        if func_name in ("GroupNorm", "nn.GroupNorm"):
+            ng = self._const_or_name(node.args[0]) if node.args else None
+            nc = self._const_or_name(node.args[1]) if len(node.args) >= 2 else None
+            if ng is not None and nc is not None:
+                return {"type": "GroupNorm", "num_groups": ng, "num_channels": nc}
+
         return None
 
     # ── Shape inference for expressions ────────────────────────────────
@@ -1047,8 +1201,17 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
         if isinstance(node, ast.BinOp):
             return self._infer_binop_shape(node)
 
-        # Attribute: self.layer(x)
+        # Attribute: self.layer(x) or x.T (transpose)
         if isinstance(node, ast.Attribute):
+            # Handle .T attribute (transpose last two dimensions)
+            if node.attr == "T":
+                obj_shape = self._infer_shape(node.value)
+                if obj_shape and obj_shape.ndim >= 2:
+                    dims = list(obj_shape.dims)
+                    dims[-1], dims[-2] = dims[-2], dims[-1]
+                    return TensorShape(tuple(dims))
+                return obj_shape
+            # Regular attribute access
             if isinstance(node.value, ast.Name):
                 return self.shape_env.get(node.value.id)
 
@@ -1212,8 +1375,11 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                     dims.insert(dim, ShapeDim(len(shapes)))
                     return TensorShape(tuple(dims))
 
-        # sum/mean/max/min with dim
-        if base_name in ("sum", "mean", "max", "min", "prod"):
+        # sum/mean/max/min/var/std/argmax/argmin/amax/amin with dim
+        if base_name in ("sum", "mean", "max", "min", "prod",
+                         "var", "std", "argmax", "argmin",
+                         "amax", "amin", "logsumexp", "any", "all",
+                         "nansum", "nanmean", "count_nonzero"):
             if isinstance(node.func, ast.Attribute):
                 obj_shape = self._infer_shape(node.func.value)
                 if obj_shape:
@@ -1439,11 +1605,274 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                         if info["type"] == "MultiheadAttention" and node.args:
                             return self._infer_shape(node.args[0])
 
+                        if info["type"] == "Conv1d" and node.args:
+                            x_shape = self._infer_shape(node.args[0])
+                            out_c = info["out_channels"]
+                            if x_shape and x_shape.ndim == 3:
+                                ks = info.get("kernel_size", 1)
+                                stride = info.get("stride", 1)
+                                padding = info.get("padding", 0)
+                                l = x_shape.dims[2]
+                                if (isinstance(ks, int) and isinstance(stride, int)
+                                        and isinstance(padding, int)
+                                        and not l.is_symbolic):
+                                    new_l = (l.value + 2 * padding - ks) // stride + 1
+                                    return TensorShape((x_shape.dims[0], ShapeDim(out_c), ShapeDim(new_l)))
+                                return TensorShape((x_shape.dims[0], ShapeDim(out_c), ShapeDim("_l")))
+                            elif isinstance(out_c, int):
+                                return TensorShape((ShapeDim("_batch"), ShapeDim(out_c), ShapeDim("_l")))
+
+                        if info["type"] == "Conv3d" and node.args:
+                            x_shape = self._infer_shape(node.args[0])
+                            out_c = info["out_channels"]
+                            if x_shape and x_shape.ndim == 5:
+                                return TensorShape((x_shape.dims[0], ShapeDim(out_c),
+                                                    x_shape.dims[2], x_shape.dims[3], x_shape.dims[4]))
+                            elif isinstance(out_c, int):
+                                return TensorShape((ShapeDim("_batch"), ShapeDim(out_c),
+                                                    ShapeDim("_d"), ShapeDim("_h"), ShapeDim("_w")))
+
+                        if info["type"] == "ConvTranspose2d" and node.args:
+                            x_shape = self._infer_shape(node.args[0])
+                            out_c = info["out_channels"]
+                            if x_shape and x_shape.ndim == 4:
+                                ks = info.get("kernel_size")
+                                stride = info.get("stride", 1)
+                                padding = info.get("padding", 0)
+                                output_padding = info.get("output_padding", 0)
+                                dilation = info.get("dilation", 1)
+                                h = x_shape.dims[2]
+                                w = x_shape.dims[3]
+                                if (isinstance(ks, int) and isinstance(stride, int)
+                                        and isinstance(padding, int)
+                                        and isinstance(output_padding, int)
+                                        and isinstance(dilation, int)
+                                        and not h.is_symbolic and not w.is_symbolic):
+                                    nh = (h.value - 1) * stride - 2 * padding + dilation * (ks - 1) + output_padding + 1
+                                    nw = (w.value - 1) * stride - 2 * padding + dilation * (ks - 1) + output_padding + 1
+                                    return TensorShape((x_shape.dims[0], ShapeDim(out_c),
+                                                        ShapeDim(nh), ShapeDim(nw)))
+                                return TensorShape((x_shape.dims[0], ShapeDim(out_c),
+                                                    ShapeDim("_ct_h"), ShapeDim("_ct_w")))
+
+                        if info["type"] == "AvgPool2d" and node.args:
+                            x_shape = self._infer_shape(node.args[0])
+                            if x_shape and x_shape.ndim == 4:
+                                ks = info.get("kernel_size", 2)
+                                stride = info.get("stride", ks)
+                                if isinstance(ks, int) and isinstance(stride, int) and stride:
+                                    h = x_shape.dims[2]
+                                    w = x_shape.dims[3]
+                                    if not h.is_symbolic and not w.is_symbolic:
+                                        nh = (h.value - ks) // stride + 1
+                                        nw = (w.value - ks) // stride + 1
+                                        return TensorShape((x_shape.dims[0], x_shape.dims[1],
+                                                            ShapeDim(nh), ShapeDim(nw)))
+                                return TensorShape((x_shape.dims[0], x_shape.dims[1],
+                                                    ShapeDim("_avg_h"), ShapeDim("_avg_w")))
+
+                        if info["type"] == "AdaptiveMaxPool2d" and node.args:
+                            x_shape = self._infer_shape(node.args[0])
+                            oh, ow = info["output_size"]
+                            if x_shape and x_shape.ndim == 4:
+                                return TensorShape((x_shape.dims[0], x_shape.dims[1],
+                                                    ShapeDim(oh), ShapeDim(ow)))
+                            return TensorShape((ShapeDim("_batch"), ShapeDim("_ch"),
+                                                ShapeDim(oh), ShapeDim(ow)))
+
+                        if info["type"] in ("BatchNorm1d", "BatchNorm3d", "GroupNorm") and node.args:
+                            return self._infer_shape(node.args[0])
+
         # nn.Sequential: self.block(x) — just pass through
         if isinstance(node.func, ast.Attribute):
             if isinstance(node.func.value, ast.Name) and node.func.value.id == "self":
                 if node.args:
                     return self._infer_shape(node.args[0])
+
+        # ── Indexing / gather family ──────────────────────────────
+        # Helper: detect free-function style (torch.foo(...) or F.foo(...))
+        def _is_namespace_call(call_node):
+            if isinstance(call_node.func, ast.Attribute) and isinstance(call_node.func.value, ast.Name):
+                return call_node.func.value.id in ("torch", "F", "np", "numpy",
+                                                    "nn", "torch.nn",
+                                                    "functional")
+            return False
+
+        # gather(dim, index): output shape == index shape
+        if base_name == "gather":
+            if isinstance(node.func, ast.Attribute) and not _is_namespace_call(node):
+                obj_shape = self._infer_shape(node.func.value)
+                idx_shape = None
+                if len(node.args) >= 2:
+                    idx_shape = self._infer_shape(node.args[1])
+                if idx_shape is not None:
+                    return TensorShape(idx_shape.dims)
+                if obj_shape is not None:
+                    return TensorShape(obj_shape.dims)
+            elif len(node.args) >= 3:  # torch.gather(input, dim, index)
+                obj_shape = self._infer_shape(node.args[0])
+                idx_shape = self._infer_shape(node.args[2])
+                if idx_shape is not None:
+                    return TensorShape(idx_shape.dims)
+                if obj_shape is not None:
+                    return TensorShape(obj_shape.dims)
+
+        # scatter / scatter_add: shape-preserving (returns self shape)
+        if base_name in ("scatter", "scatter_add", "scatter_", "scatter_add_"):
+            if isinstance(node.func, ast.Attribute) and not _is_namespace_call(node):
+                return self._infer_shape(node.func.value)
+            if node.args:
+                return self._infer_shape(node.args[0])
+
+        # index_select(dim, index): output dims = obj.dims with dim replaced by len(index)
+        if base_name == "index_select":
+            if isinstance(node.func, ast.Attribute) and not _is_namespace_call(node):
+                obj_shape = self._infer_shape(node.func.value)
+                if obj_shape is None:
+                    return None
+                dim = self._const_val(node.args[0]) if node.args else None
+                idx_shape = self._infer_shape(node.args[1]) if len(node.args) >= 2 else None
+                if dim is None:
+                    return None
+                if dim < 0:
+                    dim = obj_shape.ndim + dim
+                if dim < 0 or dim >= obj_shape.ndim:
+                    return None
+                dims = list(obj_shape.dims)
+                if idx_shape is not None and idx_shape.ndim == 1:
+                    dims[dim] = idx_shape.dims[0]
+                else:
+                    dims[dim] = ShapeDim("_index_select")
+                return TensorShape(tuple(dims))
+            elif len(node.args) >= 3:  # torch.index_select(input, dim, index)
+                obj_shape = self._infer_shape(node.args[0])
+                if obj_shape is None:
+                    return None
+                dim = self._const_val(node.args[1])
+                idx_shape = self._infer_shape(node.args[2])
+                if dim is None:
+                    return None
+                if dim < 0:
+                    dim = obj_shape.ndim + dim
+                if dim < 0 or dim >= obj_shape.ndim:
+                    return None
+                dims = list(obj_shape.dims)
+                if idx_shape is not None and idx_shape.ndim == 1:
+                    dims[dim] = idx_shape.dims[0]
+                else:
+                    dims[dim] = ShapeDim("_index_select")
+                return TensorShape(tuple(dims))
+
+        # masked_select(mask): returns 1-D with symbolic length
+        if base_name == "masked_select":
+            return TensorShape((ShapeDim("_masked_select"),))
+
+        # take_along_dim(input, indices, dim): returns shape of indices
+        if base_name == "take_along_dim":
+            if isinstance(node.func, ast.Attribute) and not _is_namespace_call(node):
+                # x.take_along_dim(indices, dim)
+                idx_shape = self._infer_shape(node.args[0]) if node.args else None
+                if idx_shape is not None:
+                    return TensorShape(idx_shape.dims)
+                return self._infer_shape(node.func.value)
+            elif len(node.args) >= 2:
+                # torch.take_along_dim(input, indices, dim)
+                idx_shape = self._infer_shape(node.args[1])
+                if idx_shape is not None:
+                    return TensorShape(idx_shape.dims)
+                return self._infer_shape(node.args[0])
+
+        # narrow(dim, start, length): replace dim with length
+        if base_name == "narrow":
+            if isinstance(node.func, ast.Attribute):
+                obj_shape = self._infer_shape(node.func.value)
+                if obj_shape is None or len(node.args) < 3:
+                    return None
+                dim = self._const_val(node.args[0])
+                length = self._const_val(node.args[2])
+                if dim is None or length is None:
+                    return None
+                if dim < 0:
+                    dim = obj_shape.ndim + dim
+                if dim < 0 or dim >= obj_shape.ndim:
+                    return None
+                dims = list(obj_shape.dims)
+                dims[dim] = ShapeDim(length)
+                return TensorShape(tuple(dims))
+
+        # roll(shifts, dims) and flip(dims): shape-preserving
+        if base_name in ("roll", "flip", "fliplr", "flipud", "rot90"):
+            if isinstance(node.func, ast.Attribute):
+                return self._infer_shape(node.func.value)
+            if node.args:
+                return self._infer_shape(node.args[0])
+
+        # repeat_interleave(repeats, dim)
+        if base_name == "repeat_interleave":
+            obj_shape = None
+            repeats = None
+            dim = None
+            if isinstance(node.func, ast.Attribute):
+                obj_shape = self._infer_shape(node.func.value)
+                if node.args:
+                    repeats = self._const_val(node.args[0])
+                if len(node.args) >= 2:
+                    dim = self._const_val(node.args[1])
+            else:
+                if node.args:
+                    obj_shape = self._infer_shape(node.args[0])
+                if len(node.args) >= 2:
+                    repeats = self._const_val(node.args[1])
+                if len(node.args) >= 3:
+                    dim = self._const_val(node.args[2])
+            for kw in node.keywords:
+                if kw.arg == "dim":
+                    dim = self._const_val(kw.value)
+                elif kw.arg == "repeats":
+                    repeats = self._const_val(kw.value)
+            if obj_shape is None:
+                return None
+            if dim is None:
+                return TensorShape((ShapeDim("_repeat_flat"),))
+            if dim < 0:
+                dim = obj_shape.ndim + dim
+            if dim < 0 or dim >= obj_shape.ndim:
+                return None
+            dims = list(obj_shape.dims)
+            d = dims[dim]
+            if repeats is not None and not d.is_symbolic:
+                dims[dim] = ShapeDim(d.value * repeats)
+            else:
+                dims[dim] = ShapeDim("_repeat")
+            return TensorShape(tuple(dims))
+
+        # broadcast_to(shape) / x.broadcast_to(shape)
+        if base_name == "broadcast_to":
+            if isinstance(node.func, ast.Attribute) and node.args:
+                shape_arg = node.args[0]
+            elif len(node.args) >= 2:
+                shape_arg = node.args[1]
+            else:
+                shape_arg = None
+            if shape_arg is not None:
+                if isinstance(shape_arg, (ast.Tuple, ast.List)):
+                    dims = []
+                    for e in shape_arg.elts:
+                        v = self._const_val(e)
+                        if v is not None:
+                            dims.append(ShapeDim(v))
+                        else:
+                            cn = self._const_or_name(e)
+                            dims.append(ShapeDim(cn if cn is not None else "_bcast"))
+                    return TensorShape(tuple(dims))
+
+        # F.scaled_dot_product_attention(q, k, v) → (*q.dims[:-1], v.dims[-1])
+        if base_name == "scaled_dot_product_attention":
+            if len(node.args) >= 3:
+                q = self._infer_shape(node.args[0])
+                v = self._infer_shape(node.args[2])
+                if q is not None and v is not None and q.ndim >= 1 and v.ndim >= 1:
+                    return TensorShape(q.dims[:-1] + (v.dims[-1],))
 
         # Modern ops: element-wise activations and shape-preserving ops
         if base_name in TORCH_SHAPE_OPS:

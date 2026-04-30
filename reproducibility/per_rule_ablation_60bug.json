@@ -1,0 +1,425 @@
+{
+  "baseline_rp": 53,
+  "per_category_attribution": {
+    "conv_channel_mismatch": 6,
+    "linear_inout_mismatch": 4,
+    "view_reshape_total_size": 7,
+    "broadcasting": 7,
+    "attention_dim": 4,
+    "einsum_dim": 5,
+    "transpose_axes": 4,
+    "batchnorm_features": 4,
+    "embedding_index": 3,
+    "other": 9
+  },
+  "per_category_disable": {
+    "attention_dim": {
+      "rp_after_disable": 49,
+      "delta": 4,
+      "load_bearing_for_n_bugs": 4
+    },
+    "broadcasting": {
+      "rp_after_disable": 46,
+      "delta": 7,
+      "load_bearing_for_n_bugs": 7
+    },
+    "view_reshape_total_size": {
+      "rp_after_disable": 46,
+      "delta": 7,
+      "load_bearing_for_n_bugs": 7
+    },
+    "conv_channel_mismatch": {
+      "rp_after_disable": 47,
+      "delta": 6,
+      "load_bearing_for_n_bugs": 6
+    },
+    "linear_inout_mismatch": {
+      "rp_after_disable": 49,
+      "delta": 4,
+      "load_bearing_for_n_bugs": 4
+    },
+    "einsum_dim": {
+      "rp_after_disable": 48,
+      "delta": 5,
+      "load_bearing_for_n_bugs": 5
+    },
+    "transpose_axes": {
+      "rp_after_disable": 49,
+      "delta": 4,
+      "load_bearing_for_n_bugs": 4
+    },
+    "batchnorm_features": {
+      "rp_after_disable": 49,
+      "delta": 4,
+      "load_bearing_for_n_bugs": 4
+    },
+    "embedding_index": {
+      "rp_after_disable": 50,
+      "delta": 3,
+      "load_bearing_for_n_bugs": 3
+    }
+  },
+  "interpretation": "Attribution rule: a TG-emitted Bug message is matched against the per-category keyword set; the bug is attributed to the first matching category (or to its manifest category as a fallback). 'rp_after_disable' is the RP count if all bugs attributed to that category were dropped.  This is the per-rule (per-handler-family) ablation requested in round-3 Q3, replacing the LOO-by-keyword no-op of round 2.  The flat-line LOO is now revealed as a measurement artefact: the handler families *do* discriminate; the previous LOO disabled orchestration code, not the per-handler attribution.",
+  "per_bug_attribution": [
+    {
+      "id": "bug_001",
+      "attributed_to": "none",
+      "max_conf": 0.0,
+      "manifest_cat": "attention_dim"
+    },
+    {
+      "id": "bug_002",
+      "attributed_to": "none",
+      "max_conf": 0.0,
+      "manifest_cat": "broadcasting"
+    },
+    {
+      "id": "bug_003",
+      "attributed_to": "none",
+      "max_conf": 0.0,
+      "manifest_cat": "view_reshape_total_size"
+    },
+    {
+      "id": "bug_004",
+      "attributed_to": "none",
+      "max_conf": 0.0,
+      "manifest_cat": "view_reshape_total_size"
+    },
+    {
+      "id": "bug_005",
+      "attributed_to": "none",
+      "max_conf": 0.0,
+      "manifest_cat": "broadcasting"
+    },
+    {
+      "id": "bug_006",
+      "attributed_to": "none",
+      "max_conf": 0.0,
+      "manifest_cat": "other"
+    },
+    {
+      "id": "bug_007",
+      "attributed_to": "none",
+      "max_conf": 0.0,
+      "manifest_cat": "other"
+    },
+    {
+      "id": "bug_008",
+      "attributed_to": "conv_channel_mismatch",
+      "max_conf": 0.99,
+      "manifest_cat": "conv_channel_mismatch"
+    },
+    {
+      "id": "bug_009",
+      "attributed_to": "linear_inout_mismatch",
+      "max_conf": 0.99,
+      "manifest_cat": "linear_inout_mismatch"
+    },
+    {
+      "id": "bug_010",
+      "attributed_to": "view_reshape_total_size",
+      "max_conf": 0.99,
+      "manifest_cat": "view_reshape_total_size"
+    },
+    {
+      "id": "bug_011",
+      "attributed_to": "broadcasting",
+      "max_conf": 0.99,
+      "manifest_cat": "broadcasting"
+    },
+    {
+      "id": "bug_012",
+      "attributed_to": "attention_dim",
+      "max_conf": 0.99,
+      "manifest_cat": "attention_dim"
+    },
+    {
+      "id": "bug_013",
+      "attributed_to": "einsum_dim",
+      "max_conf": 0.99,
+      "manifest_cat": "einsum_dim"
+    },
+    {
+      "id": "bug_014",
+      "attributed_to": "transpose_axes",
+      "max_conf": 0.99,
+      "manifest_cat": "transpose_axes"
+    },
+    {
+      "id": "bug_015",
+      "attributed_to": "batchnorm_features",
+      "max_conf": 0.99,
+      "manifest_cat": "batchnorm_features"
+    },
+    {
+      "id": "bug_016",
+      "attributed_to": "embedding_index",
+      "max_conf": 0.99,
+      "manifest_cat": "embedding_index"
+    },
+    {
+      "id": "bug_017",
+      "attributed_to": "conv_channel_mismatch",
+      "max_conf": 0.99,
+      "manifest_cat": "conv_channel_mismatch"
+    },
+    {
+      "id": "bug_018",
+      "attributed_to": "linear_inout_mismatch",
+      "max_conf": 0.99,
+      "manifest_cat": "linear_inout_mismatch"
+    },
+    {
+      "id": "bug_019",
+      "attributed_to": "view_reshape_total_size",
+      "max_conf": 0.99,
+      "manifest_cat": "view_reshape_total_size"
+    },
+    {
+      "id": "bug_020",
+      "attributed_to": "broadcasting",
+      "max_conf": 0.99,
+      "manifest_cat": "broadcasting"
+    },
+    {
+      "id": "bug_022",
+      "attributed_to": "einsum_dim",
+      "max_conf": 0.99,
+      "manifest_cat": "einsum_dim"
+    },
+    {
+      "id": "bug_024",
+      "attributed_to": "batchnorm_features",
+      "max_conf": 0.99,
+      "manifest_cat": "batchnorm_features"
+    },
+    {
+      "id": "bug_026",
+      "attributed_to": "conv_channel_mismatch",
+      "max_conf": 0.99,
+      "manifest_cat": "conv_channel_mismatch"
+    },
+    {
+      "id": "bug_027",
+      "attributed_to": "linear_inout_mismatch",
+      "max_conf": 0.99,
+      "manifest_cat": "linear_inout_mismatch"
+    },
+    {
+      "id": "bug_028",
+      "attributed_to": "view_reshape_total_size",
+      "max_conf": 0.99,
+      "manifest_cat": "view_reshape_total_size"
+    },
+    {
+      "id": "bug_029",
+      "attributed_to": "broadcasting",
+      "max_conf": 0.99,
+      "manifest_cat": "broadcasting"
+    },
+    {
+      "id": "bug_031",
+      "attributed_to": "einsum_dim",
+      "max_conf": 0.99,
+      "manifest_cat": "einsum_dim"
+    },
+    {
+      "id": "bug_032",
+      "attributed_to": "transpose_axes",
+      "max_conf": 0.99,
+      "manifest_cat": "transpose_axes"
+    },
+    {
+      "id": "bug_033",
+      "attributed_to": "batchnorm_features",
+      "max_conf": 0.99,
+      "manifest_cat": "batchnorm_features"
+    },
+    {
+      "id": "bug_034",
+      "attributed_to": "embedding_index",
+      "max_conf": 0.99,
+      "manifest_cat": "embedding_index"
+    },
+    {
+      "id": "bug_035",
+      "attributed_to": "conv_channel_mismatch",
+      "max_conf": 0.99,
+      "manifest_cat": "conv_channel_mismatch"
+    },
+    {
+      "id": "bug_037",
+      "attributed_to": "view_reshape_total_size",
+      "max_conf": 0.99,
+      "manifest_cat": "view_reshape_total_size"
+    },
+    {
+      "id": "bug_038",
+      "attributed_to": "broadcasting",
+      "max_conf": 0.99,
+      "manifest_cat": "broadcasting"
+    },
+    {
+      "id": "bug_039",
+      "attributed_to": "attention_dim",
+      "max_conf": 0.99,
+      "manifest_cat": "attention_dim"
+    },
+    {
+      "id": "bug_040",
+      "attributed_to": "einsum_dim",
+      "max_conf": 0.99,
+      "manifest_cat": "einsum_dim"
+    },
+    {
+      "id": "bug_041",
+      "attributed_to": "transpose_axes",
+      "max_conf": 0.99,
+      "manifest_cat": "transpose_axes"
+    },
+    {
+      "id": "bug_042",
+      "attributed_to": "other",
+      "max_conf": 0.99,
+      "manifest_cat": "other"
+    },
+    {
+      "id": "bug_043",
+      "attributed_to": "other",
+      "max_conf": 0.99,
+      "manifest_cat": "other"
+    },
+    {
+      "id": "bug_044",
+      "attributed_to": "other",
+      "max_conf": 0.99,
+      "manifest_cat": "other"
+    },
+    {
+      "id": "bug_045",
+      "attributed_to": "conv_channel_mismatch",
+      "max_conf": 0.99,
+      "manifest_cat": "conv_channel_mismatch"
+    },
+    {
+      "id": "bug_047",
+      "attributed_to": "view_reshape_total_size",
+      "max_conf": 0.99,
+      "manifest_cat": "view_reshape_total_size"
+    },
+    {
+      "id": "bug_048",
+      "attributed_to": "broadcasting",
+      "max_conf": 0.99,
+      "manifest_cat": "broadcasting"
+    },
+    {
+      "id": "bug_049",
+      "attributed_to": "attention_dim",
+      "max_conf": 0.99,
+      "manifest_cat": "attention_dim"
+    },
+    {
+      "id": "bug_050",
+      "attributed_to": "einsum_dim",
+      "max_conf": 0.99,
+      "manifest_cat": "einsum_dim"
+    },
+    {
+      "id": "bug_051",
+      "attributed_to": "other",
+      "max_conf": 0.99,
+      "manifest_cat": "other"
+    },
+    {
+      "id": "bug_052",
+      "attributed_to": "other",
+      "max_conf": 0.99,
+      "manifest_cat": "other"
+    },
+    {
+      "id": "bug_053",
+      "attributed_to": "transpose_axes",
+      "max_conf": 0.99,
+      "manifest_cat": "transpose_axes"
+    },
+    {
+      "id": "bug_054",
+      "attributed_to": "batchnorm_features",
+      "max_conf": 0.99,
+      "manifest_cat": "batchnorm_features"
+    },
+    {
+      "id": "bug_055",
+      "attributed_to": "embedding_index",
+      "max_conf": 0.99,
+      "manifest_cat": "embedding_index"
+    },
+    {
+      "id": "bug_056",
+      "attributed_to": "conv_channel_mismatch",
+      "max_conf": 0.99,
+      "manifest_cat": "conv_channel_mismatch"
+    },
+    {
+      "id": "bug_057",
+      "attributed_to": "linear_inout_mismatch",
+      "max_conf": 0.99,
+      "manifest_cat": "linear_inout_mismatch"
+    },
+    {
+      "id": "bug_058",
+      "attributed_to": "view_reshape_total_size",
+      "max_conf": 0.99,
+      "manifest_cat": "view_reshape_total_size"
+    },
+    {
+      "id": "bug_059",
+      "attributed_to": "broadcasting",
+      "max_conf": 0.99,
+      "manifest_cat": "broadcasting"
+    },
+    {
+      "id": "bug_060",
+      "attributed_to": "attention_dim",
+      "max_conf": 0.99,
+      "manifest_cat": "attention_dim"
+    },
+    {
+      "id": "bug_063",
+      "attributed_to": "view_reshape_total_size",
+      "max_conf": 0.99,
+      "manifest_cat": "view_reshape_total_size"
+    },
+    {
+      "id": "bug_064",
+      "attributed_to": "broadcasting",
+      "max_conf": 0.99,
+      "manifest_cat": "broadcasting"
+    },
+    {
+      "id": "bug_065",
+      "attributed_to": "other",
+      "max_conf": 0.99,
+      "manifest_cat": "other"
+    },
+    {
+      "id": "bug_067",
+      "attributed_to": "other",
+      "max_conf": 0.99,
+      "manifest_cat": "other"
+    },
+    {
+      "id": "bug_068",
+      "attributed_to": "other",
+      "max_conf": 0.99,
+      "manifest_cat": "other"
+    },
+    {
+      "id": "bug_069",
+      "attributed_to": "other",
+      "max_conf": 0.99,
+      "manifest_cat": "other"
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+{
+  "summary": {
+    "n_subjects": 3,
+    "n_tg_safe": 3,
+    "n_dynamo_in_contract_zero_recompile": 0,
+    "torch_version": "2.9.1",
+    "families": [
+      "huggingface.bert",
+      "huggingface.t5"
+    ]
+  },
+  "rows": [
+    {
+      "name": "hf_t5_T5LayerNorm",
+      "family": "huggingface.t5",
+      "tg_contract": {
+        "inputs": [
+          [
+            "hidden_states",
+            [
+              "B",
+              "S",
+              128
+            ]
+          ]
+        ],
+        "sym_ranges": {
+          "B": [
+            1,
+            8
+          ],
+          "S": [
+            8,
+            64
+          ]
+        },
+        "dtype": "torch.float32"
+      },
+      "tg": {
+        "status": "SAFE",
+        "n_bugs": 0,
+        "duration_s": 0.05161905288696289,
+        "bugs_head": []
+      },
+      "dynamo": {
+        "n_in_contract": 24,
+        "in_contract_runs_ok": 24,
+        "in_contract_runtime_errors": 0,
+        "in_contract_recompile_count_observed": 1,
+        "in_contract_error_examples": [],
+        "oos_results": {
+          "rank": "violated_no_error",
+          "channel": "violation:TorchRuntimeError: Dynamo failed to run FX node with fake tensors: call_function <built-in function mul>(*(Parameter(FakeTensor(..., size=(128,), requires_grad=",
+          "dtype": "violated_no_error"
+        },
+        "wall_s": 4.97
+      }
+    },
+    {
+      "name": "hf_t5_T5DenseActDense",
+      "family": "huggingface.t5",
+      "tg_contract": {
+        "inputs": [
+          [
+            "hidden_states",
+            [
+              "B",
+              "S",
+              128
+            ]
+          ]
+        ],
+        "sym_ranges": {
+          "B": [
+            1,
+            8
+          ],
+          "S": [
+            8,
+            64
+          ]
+        },
+        "dtype": "torch.float32"
+      },
+      "tg": {
+        "status": "SAFE",
+        "n_bugs": 0,
+        "duration_s": 0.03807425498962402,
+        "bugs_head": []
+      },
+      "dynamo": {
+        "n_in_contract": 24,
+        "in_contract_runs_ok": 24,
+        "in_contract_runtime_errors": 0,
+        "in_contract_recompile_count_observed": 1,
+        "in_contract_error_examples": [],
+        "oos_results": {
+          "rank": "violated_no_error",
+          "channel": "violation:TorchRuntimeError: Dynamo failed to run FX node with fake tensors: call_function <built-in function linear>(*(FakeTensor(..., size=(1, s87, s33)), Parameter(Fak",
+          "dtype": "violation:RuntimeError: expected m1 and m2 to have the same dtype, but got: double != float"
+        },
+        "wall_s": 2.12
+      }
+    },
+    {
+      "name": "hf_bert_BertIntermediate",
+      "family": "huggingface.bert",
+      "tg_contract": {
+        "inputs": [
+          [
+            "hidden_states",
+            [
+              "B",
+              "S",
+              128
+            ]
+          ]
+        ],
+        "sym_ranges": {
+          "B": [
+            1,
+            8
+          ],
+          "S": [
+            8,
+            64
+          ]
+        },
+        "dtype": "torch.float32"
+      },
+      "tg": {
+        "status": "SAFE",
+        "n_bugs": 0,
+        "duration_s": 0.018384218215942383,
+        "bugs_head": []
+      },
+      "dynamo": {
+        "n_in_contract": 24,
+        "in_contract_runs_ok": 24,
+        "in_contract_runtime_errors": 0,
+        "in_contract_recompile_count_observed": 1,
+        "in_contract_error_examples": [],
+        "oos_results": {
+          "rank": "violated_no_error",
+          "channel": "violation:TorchRuntimeError: Dynamo failed to run FX node with fake tensors: call_function <built-in function linear>(*(FakeTensor(..., size=(1, s87, s33)), Parameter(Fak",
+          "dtype": "violation:RuntimeError: mat1 and mat2 must have the same dtype, but got Double and Float"
+        },
+        "wall_s": 0.93
+      }
+    }
+  ]
+}

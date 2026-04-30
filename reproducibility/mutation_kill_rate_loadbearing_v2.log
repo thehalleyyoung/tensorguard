@@ -1,0 +1,73 @@
+Scoring baseline (60-bug + 11-bug ext)...
+  baseline: 70/82 RP across union corpora
+
+Handler conv_channel_mismatch: 50 candidate (line, occ, mutation) tuples in [4911, 5017]
+  [1/50] line 4913 occ#0 '>'->'<': KILLED
+  [2/50] line 4919 occ#0 '!='->'==': KILLED
+  [3/50] line 4923 occ#0 'and'->'or': survived
+  [4/50] line 4924 occ#0 'and'->'or': survived
+  [5/50] line 4925 occ#0 '!='->'==': KILLED
+  [6/50] line 4934 occ#0 '>'->'<': KILLED
+  [7/50] line 4934 occ#0 'and'->'or': survived
+  [8/50] line 4935 occ#0 '!='->'==': KILLED
+  [9/50] line 4935 occ#0 'and'->'or': survived
+  [10/50] line 4935 occ#1 'and'->'or': survived
+  [11/50] line 4940 occ#0 '!='->'==': KILLED
+  [12/50] line 4940 occ#0 'and'->'or': survived
+  [13/50] line 4940 occ#1 'and'->'or': survived
+  [14/50] line 4950 occ#0 'or'->'and': survived
+  [15/50] line 4962 occ#0 'and'->'or': survived
+  [16/50] line 4963 occ#0 '+'->'-': survived
+  [17/50] line 4963 occ#1 '+'->'-': survived
+  [18/50] line 4963 occ#0 '-'->'+': survived
+  [19/50] line 4963 occ#1 '-'->'+': survived
+  [20/50] line 4963 occ#2 '-'->'+': survived
+  [21/50] line 4963 occ#0 '*'->'+': survived
+  [22/50] line 4963 occ#1 '*'->'+': survived
+  [23/50] line 4964 occ#0 '+'->'-': survived
+  [24/50] line 4964 occ#1 '+'->'-': survived
+  [25/50] line 4964 occ#0 '-'->'+': survived
+  [26/50] line 4964 occ#1 '-'->'+': survived
+  [27/50] line 4964 occ#2 '-'->'+': survived
+  [28/50] line 4964 occ#0 '*'->'+': survived
+  [29/50] line 4964 occ#1 '*'->'+': survived
+  [30/50] line 4980 occ#0 'or'->'and': KILLED
+  [31/50] line 4994 occ#0 'and'->'or': survived
+  [32/50] line 4995 occ#0 '+'->'-': KILLED
+  [33/50] line 4995 occ#1 '+'->'-': KILLED
+  [34/50] line 4995 occ#0 '-'->'+': KILLED
+  [35/50] line 4995 occ#1 '-'->'+': KILLED
+  [36/50] line 4995 occ#2 '-'->'+': survived
+  [37/50] line 4995 occ#0 '*'->'+': survived
+  [38/50] line 4995 occ#1 '*'->'+': KILLED
+  [39/50] line 4996 occ#0 '+'->'-': KILLED
+  [40/50] line 4996 occ#1 '+'->'-': KILLED
+  [41/50] line 4996 occ#0 '-'->'+': KILLED
+  [42/50] line 4996 occ#1 '-'->'+': KILLED
+  [43/50] line 4996 occ#2 '-'->'+': survived
+  [44/50] line 4996 occ#0 '*'->'+': survived
+  [45/50] line 4996 occ#1 '*'->'+': KILLED
+  [46/50] line 4997 occ#0 '<'->'>': KILLED
+  [47/50] line 4997 occ#1 '<'->'>': KILLED
+  [48/50] line 4997 occ#0 '<='->'>=': KILLED
+  [49/50] line 4997 occ#1 '<='->'>=': KILLED
+  [50/50] line 4997 occ#0 'or'->'and': survived
+  -> conv_channel_mismatch: 21/50 = 42%
+
+Handler einsum_dim: 11 candidate (line, occ, mutation) tuples in [8259, 8302]
+  [1/11] line 8259 occ#0 '=='->'!=': KILLED
+  [2/11] line 8261 occ#0 '>'->'<': KILLED
+  [3/11] line 8261 occ#0 'and'->'or': survived
+  [4/11] line 8262 occ#0 '>'->'<': KILLED
+  [5/11] line 8263 occ#0 '=='->'!=': KILLED
+  [6/11] line 8268 occ#0 '<'->'>': KILLED
+  [7/11] line 8268 occ#0 'and'->'or': KILLED
+  [8/11] line 8271 occ#0 '<'->'>': KILLED
+  [9/11] line 8277 occ#0 'and'->'or': survived
+  [10/11] line 8278 occ#0 '!='->'==': KILLED
+  [11/11] line 8278 occ#0 'and'->'or': survived
+  -> einsum_dim: 8/11 = 73%
+
+Union: 29/61 = 48%
+Comparison+arithmetic only: 27/45 = 60%
+Wrote /Users/halleyyoung/Documents/div/mathdivergence/halley-labs/tensorguard/reproducibility/mutation_kill_rate_loadbearing_v2.json and /Users/halleyyoung/Documents/div/mathdivergence/halley-labs/tensorguard/reproducibility/mutation_kill_rate_loadbearing_v2.md

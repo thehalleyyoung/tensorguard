@@ -1,0 +1,74 @@
+{
+  "N_modules": 5,
+  "events_of_kind_non_INT": 5,
+  "events_outside_catalogue_M": 5,
+  "respect_necessary_direction": 5,
+  "fixture_path_relative": "reproducibility/dynamo_falsifier_curated_corpus_fixture.py",
+  "rows": [
+    {
+      "name": "ShapeGuardModule",
+      "catalogue_M": [
+        "x.shape[0]",
+        "self.linear.weight.shape[0]",
+        "self.linear.weight.shape[1]"
+      ],
+      "custom_op_read": "x.shape[-1]",
+      "guard_kind": "SHAPE",
+      "guard_outside_catalogue": true,
+      "kind_is_non_INT": true,
+      "necessary_direction_holds": true
+    },
+    {
+      "name": "RankGuardModule",
+      "catalogue_M": [
+        "x.shape[0]",
+        "x.shape[1]",
+        "self.proj.weight.shape[0]"
+      ],
+      "custom_op_read": "x.dim()",
+      "guard_kind": "RANK",
+      "guard_outside_catalogue": true,
+      "kind_is_non_INT": true,
+      "necessary_direction_holds": true
+    },
+    {
+      "name": "DtypeGuardModule",
+      "catalogue_M": [
+        "x.shape[0]",
+        "self.lin.weight.shape[0]",
+        "self.lin.weight.shape[1]"
+      ],
+      "custom_op_read": "x.dtype",
+      "guard_kind": "DTYPE",
+      "guard_outside_catalogue": true,
+      "kind_is_non_INT": true,
+      "necessary_direction_holds": true
+    },
+    {
+      "name": "InteriorShapeGuardModule",
+      "catalogue_M": [
+        "x.shape[0]",
+        "self.weight.shape[0]"
+      ],
+      "custom_op_read": "x.shape[1]",
+      "guard_kind": "SHAPE",
+      "guard_outside_catalogue": true,
+      "kind_is_non_INT": true,
+      "necessary_direction_holds": true
+    },
+    {
+      "name": "ProductShapeGuardModule",
+      "catalogue_M": [
+        "x.shape[0]",
+        "self.proj.weight.shape[0]",
+        "self.proj.weight.shape[1]"
+      ],
+      "custom_op_read": "x.numel()",
+      "guard_kind": "SHAPE",
+      "guard_outside_catalogue": true,
+      "kind_is_non_INT": true,
+      "necessary_direction_holds": true
+    }
+  ],
+  "headline": "On N=5 curated torch.library.custom_op-bearing modules, 5/5 events are of kind != INT and 5/5 respect the Theorem~5 necessary direction."
+}

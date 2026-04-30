@@ -82,16 +82,54 @@ def permList (perm : List Nat) (dims : List Nat) : List Nat :=
 def permCompose (p q : List Nat) : List Nat :=
   p.map (fun i => (q.get? i).getD 0)
 
-/-- **Permute composition.** Applying `p` then `q` to a dim list equals
-    applying the composed permutation `permCompose q p` directly.
-    
-    NOTE: This theorem is false as stated when permutation indices fall
-    out of range (the default value 0 makes the composition non-associative).
-    It holds only when all indices are valid (in-bounds), which is not
-    captured in this signature. Left with sorry pending a corrected statement. -/
-theorem permList_compose (p q : List Nat) (dims : List Nat) :
+/-- **Permute composition (corrected, in-range guard).**
+    The previous statement of `permList_compose` was unconditional and
+    is false in general because `permList` defaults out-of-range
+    indices to `0` (see `Extended.lean` round-1 commit message). The
+    Python analyser's `compose_permutations`
+    (`src/smt/permutation_theory.py:126`) raises `IndexError` rather
+    than silently defaulting; the analyser therefore relies *only* on
+    the in-range case stated below. We close that case sorry-free.
+
+    `Inrange p dims` says every index in `p` is a valid index into
+    `dims`. -/
+def Inrange (p : List Nat) (dims : List Nat) : Prop :=
+  ∀ i, i ∈ p → i < dims.length
+
+/-- The corrected, in-range version of `permList_compose`. The
+    analyser only ever invokes this in the in-range case; the
+    out-of-range branch is statically unreachable in
+    `_extract_tensor_shape` because permute targets are validated
+    against the input rank before the symbolic call. -/
+theorem permList_compose_inrange
+    (p q : List Nat) (dims : List Nat)
+    (_hp : Inrange p dims)
+    (hpq : Inrange q (permList p dims)) :
     permList q (permList p dims) = permList (permCompose q p) dims := by
-  sorry  -- Statement is false in general: default value 0 breaks composition for out-of-range indices
+  -- Both sides are `List.map f q` for the same `f`; we prove they
+  -- agree pointwise on every `j ∈ q`, which is where the in-range
+  -- hypothesis on `q` is used.
+  unfold permList permCompose
+  rw [List.map_map]
+  apply List.map_congr_left
+  intro j hj
+  -- `j` is a valid index into `p`, because `q` is in-range w.r.t.
+  -- `permList p dims` whose length equals `p.length`.
+  have hjlen : j < p.length := by
+    have h1 := hpq j hj
+    simp [permList, List.length_map] at h1
+    exact h1
+  -- Look up `p[j]`; impossible to be `none` by the bound above.
+  rw [List.get?_map]
+  cases hpj : p.get? j with
+  | none =>
+    exfalso
+    have hge : p.length ≤ j := List.get?_eq_none.mp hpj
+    exact Nat.lt_irrefl _ (Nat.lt_of_lt_of_le hjlen hge)
+  | some i =>
+    show (dims.get? i).getD 0 = (dims.get? ((p.get? j).getD 0)).getD 0
+    rw [hpj]
+    rfl
 
 /-! ## Conv2d output spatial formula -/
 

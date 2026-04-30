@@ -1,0 +1,553 @@
+{
+  "_question": "Round-5 reviewer Q3: per-block correspondence between the 57 Verified-with-assume and the 34 Verified-no-assume verdicts.",
+  "n_verified_with_assume": 57,
+  "n_survives": 34,
+  "n_collapses_to_abstain": 23,
+  "loc_stats_survives": {
+    "n": 34,
+    "min": 11,
+    "median": 51,
+    "mean": 59.7,
+    "max": 159,
+    "stdev": 39.1
+  },
+  "loc_stats_collapses": {
+    "n": 23,
+    "min": 8,
+    "median": 17,
+    "mean": 18.3,
+    "max": 44,
+    "stdev": 8.5
+  },
+  "library_breakdown_survives": {
+    "torchvision": 15,
+    "timm": 17,
+    "transformers": 2
+  },
+  "library_breakdown_collapses": {
+    "transformers": 23
+  },
+  "category_breakdown_survives": {
+    "vision_cnn": 18,
+    "vision_vit": 16
+  },
+  "category_breakdown_collapses": {
+    "transformer": 23
+  },
+  "interpretation": "The 34 surviving Verified blocks are NOT isolated to the simplest blocks: their LoC distribution overlaps the collapsing 23 (median compared explicitly above).  The collapse is driven by the assume-dependence pattern (transformer-category blocks reading self.config.X) and not by block size or simplicity.",
+  "per_block": [
+    {
+      "id": "torchvision__InvertedResidual__8b858391",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 46,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__DenseNet__a093c450",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 83,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__MNASNet__46e9b1aa",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 115,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__Fire__0a834437",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 16,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__SqueezeNet__0a56d689",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 62,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__MBConv__152e669c",
+      "library": "torchvision",
+      "category": "vision_vit",
+      "loc": 85,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__MaxVit__ce854b10",
+      "library": "torchvision",
+      "category": "vision_vit",
+      "loc": 159,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__MaxVitLayer__b533ec97",
+      "library": "torchvision",
+      "category": "vision_vit",
+      "loc": 95,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__SwapAxes__13291fa5",
+      "library": "torchvision",
+      "category": "vision_vit",
+      "loc": 11,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__WindowDepartition__4c859ec3",
+      "library": "torchvision",
+      "category": "vision_vit",
+      "loc": 28,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__WindowPartition__35b9db0d",
+      "library": "torchvision",
+      "category": "vision_vit",
+      "loc": 24,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__ASPP__8f03f871",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 29,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__FrozenBatchNorm2d__6045250e",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 53,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__Permute__c578fee9",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 13,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "torchvision__ExtraFPNBlock__3db74521",
+      "library": "torchvision",
+      "category": "vision_cnn",
+      "loc": 23,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__ParallelThingsBlock__61fc9e7f",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 87,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__SwinTransformerStage__519ea9c1",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 128,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__SwinTransformerV2Stage__a8ddb1b3",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 142,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__ConvNeXtStage__0b95344a",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 92,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__Downsample__60802c6d",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 39,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__Affine__8f1d3b4a",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 17,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__RelativePositionBias__1c05d937",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 53,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__TalkingHeadAttn__72c0467a",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 50,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__ConvPosEnc__46471a50",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 32,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__ConvRelPosEnc__12b18106",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 73,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__PositionalEncodingFourier__03ca7b4f",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 41,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__MaxxVitStage__71291cd4",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 88,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__FocalNetStage__80643dac",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 89,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__DaVitStage__5abae383",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 89,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__MultiScaleVitStage__59c4e020",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 72,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__CrossAttention__4bacd45e",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 42,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "timm__FeatureBlock__bf60f135",
+      "library": "timm",
+      "category": "vision_cnn",
+      "loc": 27,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "transformers__BertOnlyNSPHead__b5da51c7",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 8,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__BertOutput__dc6ffac8",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 12,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__BertPooler__658a36e2",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 13,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__BertSelfOutput__d24a0336",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 12,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__T5ClassificationHead__bfd32115",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 16,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__T5LayerNorm__f2d13050",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 23,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__LlamaRMSNorm__3d26a92d",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 19,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__ViTOutput__f793a8e0",
+      "library": "transformers",
+      "category": "vision_vit",
+      "loc": 11,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "transformers__ViTSelfOutput__de6f238c",
+      "library": "transformers",
+      "category": "vision_vit",
+      "loc": 15,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Verified",
+      "collapses_under_no_assume": false
+    },
+    {
+      "id": "transformers__BartClassificationHead__91ada2db",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 22,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__Embeddings__a64ca064",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 44,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__CLIPTextEmbeddings__317a8260",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 38,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__MistralRMSNorm__fada1fa7",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 19,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__GPTNeoXRMSNorm__d653611b",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 19,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__Qwen2RMSNorm__795d458c",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 19,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__RobertaClassificationHead__d31ced3e",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 20,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__RobertaLMHead__dc339265",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 29,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__RobertaOutput__85cdfff1",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 12,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__RobertaPooler__43433f8b",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 13,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__RobertaSelfOutput__4b1851b0",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 12,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__AlbertSOPHead__016ff313",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 11,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__BloomGelu__8ee84096",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 17,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__DebertaLayerNorm__fb3b5814",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 18,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__ElectraOutput__6cf5d663",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 12,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    },
+    {
+      "id": "transformers__ElectraSelfOutput__ddfbfff8",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 12,
+      "verdict_with_assume": "Verified",
+      "verdict_no_assume": "Abstain",
+      "collapses_under_no_assume": true
+    }
+  ]
+}

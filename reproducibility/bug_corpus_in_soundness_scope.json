@@ -1,0 +1,942 @@
+{
+  "_question": "Round-1 reviewer Q1: for the 60 historical bugs and 10 upstream-faithful re-extracts, how many RP catches are entirely within the Lean-audited or pen-and-paper-audited handler set (Theorem 2 footprint)?",
+  "method": "category-to-primary-handler mapping for the 9 named categories; source-token detection for 'other' and upstream-faithful bugs",
+  "in_soundness_set": [
+    "batched_matmul",
+    "bmm",
+    "broadcast_to",
+    "cat",
+    "chunk",
+    "conv1d",
+    "conv2d",
+    "conv3d",
+    "conv_transpose2d",
+    "detach",
+    "dropout",
+    "einsum",
+    "elementwise_binary",
+    "embed",
+    "expand",
+    "flatten",
+    "gather",
+    "gelu",
+    "index_select",
+    "layer_norm",
+    "linear",
+    "matmul",
+    "narrow",
+    "pad",
+    "permute",
+    "reduce",
+    "relu",
+    "repeat",
+    "reshape",
+    "rms_norm",
+    "scaled_dot_product_attention",
+    "scatter",
+    "sigmoid",
+    "silu",
+    "softmax",
+    "split",
+    "squeeze",
+    "stack",
+    "tanh",
+    "transpose",
+    "unbind",
+    "unsqueeze",
+    "view",
+    "where"
+  ],
+  "tested_only_set": [
+    "adaptive_avg_pool",
+    "addmm",
+    "avg_pool2d",
+    "baddbmm",
+    "batch_norm",
+    "checkpoint",
+    "conv_transpose1d",
+    "creation_ops",
+    "cross_entropy",
+    "einops_rearrange",
+    "fold",
+    "glu",
+    "grid_sample",
+    "group_norm",
+    "instance_norm",
+    "interpolate",
+    "linalg_eig",
+    "linalg_qr",
+    "linalg_solve",
+    "linalg_svd",
+    "masked_select",
+    "max_pool2d",
+    "multihead_attention",
+    "outer",
+    "pixel_shuffle",
+    "pixel_unshuffle",
+    "repeat_interleave",
+    "roll_flip",
+    "rotary_embedding",
+    "scatter_add",
+    "stft",
+    "take_along_dim",
+    "tensordot",
+    "topk",
+    "unfold"
+  ],
+  "aggregate": {
+    "historical_60": {
+      "corpus": "historical_60",
+      "n_total": 60,
+      "n_rp": 56,
+      "n_in_soundness_Y": 46,
+      "n_in_soundness_N": 10,
+      "n_not_applicable": 4,
+      "pct_rp_in_soundness": 82.1
+    },
+    "upstream_faithful_10": {
+      "corpus": "upstream_faithful_10",
+      "n_total": 10,
+      "n_rp": 7,
+      "n_in_soundness_Y": 7,
+      "n_in_soundness_N": 0,
+      "n_not_applicable": 3,
+      "pct_rp_in_soundness": 100.0
+    },
+    "combined": {
+      "corpus": "combined",
+      "n_rp": 63,
+      "n_in_soundness_Y": 53,
+      "n_in_soundness_N": 10,
+      "pct_rp_in_soundness": 84.1
+    }
+  },
+  "per_bug": [
+    {
+      "bug_id": "bug_001",
+      "category": "attention_dim",
+      "tg_verdict": "VERIFIED",
+      "primary_handler": null,
+      "handlers_used": [],
+      "in_soundness": "N/A",
+      "reason": "TG did not return REFUTED_PROOF; soundness scope not applicable",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_002",
+      "category": "broadcasting",
+      "tg_verdict": "VERIFIED",
+      "primary_handler": null,
+      "handlers_used": [],
+      "in_soundness": "N/A",
+      "reason": "TG did not return REFUTED_PROOF; soundness scope not applicable",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_003",
+      "category": "view_reshape_total_size",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'view' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_004",
+      "category": "view_reshape_total_size",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'view' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_005",
+      "category": "broadcasting",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "elementwise_binary",
+      "handlers_used": [
+        "elementwise_binary"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'elementwise_binary' (scope: pen_and_paper)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_006",
+      "category": "other",
+      "tg_verdict": "VERIFIED",
+      "primary_handler": null,
+      "handlers_used": [],
+      "in_soundness": "N/A",
+      "reason": "TG did not return REFUTED_PROOF; soundness scope not applicable",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_007",
+      "category": "other",
+      "tg_verdict": "VERIFIED",
+      "primary_handler": null,
+      "handlers_used": [],
+      "in_soundness": "N/A",
+      "reason": "TG did not return REFUTED_PROOF; soundness scope not applicable",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_008",
+      "category": "conv_channel_mismatch",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "conv2d",
+      "handlers_used": [
+        "conv2d"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'conv2d' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_009",
+      "category": "linear_inout_mismatch",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "linear",
+      "handlers_used": [
+        "linear"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'linear' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_010",
+      "category": "view_reshape_total_size",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'view' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_011",
+      "category": "broadcasting",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "elementwise_binary",
+      "handlers_used": [
+        "elementwise_binary"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'elementwise_binary' (scope: pen_and_paper)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_012",
+      "category": "attention_dim",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "scaled_dot_product_attention",
+      "handlers_used": [
+        "scaled_dot_product_attention"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'scaled_dot_product_attention' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_013",
+      "category": "einsum_dim",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "einsum",
+      "handlers_used": [
+        "einsum"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'einsum' (scope: pen_and_paper)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_014",
+      "category": "transpose_axes",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "transpose",
+      "handlers_used": [
+        "transpose"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'transpose' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_015",
+      "category": "batchnorm_features",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "batch_norm",
+      "handlers_used": [
+        "batch_norm"
+      ],
+      "in_soundness": "N",
+      "reason": "category maps to primary handler 'batch_norm' (scope: tested_only)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_016",
+      "category": "embedding_index",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "embed",
+      "handlers_used": [
+        "embed"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'embed' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_017",
+      "category": "conv_channel_mismatch",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "conv2d",
+      "handlers_used": [
+        "conv2d"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'conv2d' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_018",
+      "category": "linear_inout_mismatch",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "linear",
+      "handlers_used": [
+        "linear"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'linear' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_019",
+      "category": "view_reshape_total_size",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'view' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_020",
+      "category": "broadcasting",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "elementwise_binary",
+      "handlers_used": [
+        "elementwise_binary"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'elementwise_binary' (scope: pen_and_paper)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_022",
+      "category": "einsum_dim",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "einsum",
+      "handlers_used": [
+        "einsum"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'einsum' (scope: pen_and_paper)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_024",
+      "category": "batchnorm_features",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "batch_norm",
+      "handlers_used": [
+        "batch_norm"
+      ],
+      "in_soundness": "N",
+      "reason": "category maps to primary handler 'batch_norm' (scope: tested_only)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_026",
+      "category": "conv_channel_mismatch",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "conv2d",
+      "handlers_used": [
+        "conv2d"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'conv2d' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_027",
+      "category": "linear_inout_mismatch",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "linear",
+      "handlers_used": [
+        "linear"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'linear' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_028",
+      "category": "view_reshape_total_size",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'view' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_029",
+      "category": "broadcasting",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "elementwise_binary",
+      "handlers_used": [
+        "elementwise_binary"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'elementwise_binary' (scope: pen_and_paper)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_031",
+      "category": "einsum_dim",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "einsum",
+      "handlers_used": [
+        "einsum"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'einsum' (scope: pen_and_paper)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_032",
+      "category": "transpose_axes",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "transpose",
+      "handlers_used": [
+        "transpose"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'transpose' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_033",
+      "category": "batchnorm_features",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "batch_norm",
+      "handlers_used": [
+        "batch_norm"
+      ],
+      "in_soundness": "N",
+      "reason": "category maps to primary handler 'batch_norm' (scope: tested_only)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_034",
+      "category": "embedding_index",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "embed",
+      "handlers_used": [
+        "embed"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'embed' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_035",
+      "category": "conv_channel_mismatch",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "conv2d",
+      "handlers_used": [
+        "conv2d"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'conv2d' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_037",
+      "category": "view_reshape_total_size",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'view' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_038",
+      "category": "broadcasting",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "elementwise_binary",
+      "handlers_used": [
+        "elementwise_binary"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'elementwise_binary' (scope: pen_and_paper)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_039",
+      "category": "attention_dim",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "scaled_dot_product_attention",
+      "handlers_used": [
+        "scaled_dot_product_attention"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'scaled_dot_product_attention' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_040",
+      "category": "einsum_dim",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "einsum",
+      "handlers_used": [
+        "einsum"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'einsum' (scope: pen_and_paper)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_041",
+      "category": "transpose_axes",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "transpose",
+      "handlers_used": [
+        "transpose"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'transpose' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_042",
+      "category": "other",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "cross_entropy",
+      "handlers_used": [
+        "cross_entropy"
+      ],
+      "in_soundness": "N",
+      "reason": "source-token detection: primary handler 'cross_entropy' (scope: tested_only)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_043",
+      "category": "other",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "cross_entropy",
+      "handlers_used": [
+        "cross_entropy"
+      ],
+      "in_soundness": "N",
+      "reason": "source-token detection: primary handler 'cross_entropy' (scope: tested_only)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_044",
+      "category": "other",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "cross_entropy",
+      "handlers_used": [
+        "cross_entropy"
+      ],
+      "in_soundness": "N",
+      "reason": "source-token detection: primary handler 'cross_entropy' (scope: tested_only)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_045",
+      "category": "conv_channel_mismatch",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "conv2d",
+      "handlers_used": [
+        "conv2d"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'conv2d' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_047",
+      "category": "view_reshape_total_size",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'view' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_048",
+      "category": "broadcasting",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "elementwise_binary",
+      "handlers_used": [
+        "elementwise_binary"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'elementwise_binary' (scope: pen_and_paper)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_049",
+      "category": "attention_dim",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "scaled_dot_product_attention",
+      "handlers_used": [
+        "scaled_dot_product_attention"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'scaled_dot_product_attention' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_050",
+      "category": "einsum_dim",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "einsum",
+      "handlers_used": [
+        "einsum"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'einsum' (scope: pen_and_paper)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_051",
+      "category": "other",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "gather",
+      "handlers_used": [
+        "gather"
+      ],
+      "in_soundness": "Y",
+      "reason": "source-token detection: primary handler 'gather' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_052",
+      "category": "other",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "scatter",
+      "handlers_used": [
+        "scatter"
+      ],
+      "in_soundness": "Y",
+      "reason": "source-token detection: primary handler 'scatter' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_053",
+      "category": "transpose_axes",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "transpose",
+      "handlers_used": [
+        "transpose"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'transpose' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_054",
+      "category": "batchnorm_features",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "batch_norm",
+      "handlers_used": [
+        "batch_norm"
+      ],
+      "in_soundness": "N",
+      "reason": "category maps to primary handler 'batch_norm' (scope: tested_only)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_055",
+      "category": "embedding_index",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "embed",
+      "handlers_used": [
+        "embed"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'embed' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_056",
+      "category": "conv_channel_mismatch",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "conv2d",
+      "handlers_used": [
+        "conv2d"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'conv2d' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_057",
+      "category": "linear_inout_mismatch",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "linear",
+      "handlers_used": [
+        "linear"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'linear' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_058",
+      "category": "view_reshape_total_size",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'view' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_059",
+      "category": "broadcasting",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "elementwise_binary",
+      "handlers_used": [
+        "elementwise_binary"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'elementwise_binary' (scope: pen_and_paper)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_060",
+      "category": "attention_dim",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "scaled_dot_product_attention",
+      "handlers_used": [
+        "scaled_dot_product_attention"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'scaled_dot_product_attention' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_063",
+      "category": "view_reshape_total_size",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'view' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_064",
+      "category": "broadcasting",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "elementwise_binary",
+      "handlers_used": [
+        "elementwise_binary"
+      ],
+      "in_soundness": "Y",
+      "reason": "category maps to primary handler 'elementwise_binary' (scope: pen_and_paper)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_065",
+      "category": "other",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "matmul",
+      "handlers_used": [
+        "matmul"
+      ],
+      "in_soundness": "Y",
+      "reason": "source-token detection: primary handler 'matmul' (scope: lean_verified)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_067",
+      "category": "other",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "linalg_solve",
+      "handlers_used": [
+        "linalg_solve"
+      ],
+      "in_soundness": "N",
+      "reason": "source-token detection: primary handler 'linalg_solve' (scope: tested_only)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_068",
+      "category": "other",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "max_pool2d",
+      "handlers_used": [
+        "max_pool2d"
+      ],
+      "in_soundness": "N",
+      "reason": "source-token detection: primary handler 'max_pool2d' (scope: tested_only)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "bug_069",
+      "category": "other",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "repeat_interleave",
+      "handlers_used": [
+        "repeat_interleave"
+      ],
+      "in_soundness": "N",
+      "reason": "source-token detection: primary handler 'repeat_interleave' (scope: tested_only)",
+      "corpus": "historical_60"
+    },
+    {
+      "bug_id": "rb_001",
+      "category": "upstream_faithful",
+      "tg_verdict": "VERIFIED",
+      "primary_handler": null,
+      "handlers_used": [],
+      "in_soundness": "N/A",
+      "reason": "TG did not return REFUTED_PROOF; soundness scope not applicable",
+      "corpus": "upstream_faithful_10"
+    },
+    {
+      "bug_id": "rb_002",
+      "category": "upstream_faithful",
+      "tg_verdict": "VERIFIED",
+      "primary_handler": null,
+      "handlers_used": [],
+      "in_soundness": "N/A",
+      "reason": "TG did not return REFUTED_PROOF; soundness scope not applicable",
+      "corpus": "upstream_faithful_10"
+    },
+    {
+      "bug_id": "rb_003",
+      "category": "upstream_faithful",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "linear",
+      "handlers_used": [
+        "linear"
+      ],
+      "in_soundness": "Y",
+      "reason": "source-token detection: primary handler 'linear' (scope: lean_verified)",
+      "corpus": "upstream_faithful_10"
+    },
+    {
+      "bug_id": "rb_004",
+      "category": "upstream_faithful",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "source-token detection: primary handler 'view' (scope: lean_verified)",
+      "corpus": "upstream_faithful_10"
+    },
+    {
+      "bug_id": "rb_005",
+      "category": "upstream_faithful",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "source-token detection: primary handler 'view' (scope: lean_verified)",
+      "corpus": "upstream_faithful_10"
+    },
+    {
+      "bug_id": "rb_006",
+      "category": "upstream_faithful",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "linear",
+      "handlers_used": [
+        "linear"
+      ],
+      "in_soundness": "Y",
+      "reason": "source-token detection: primary handler 'linear' (scope: lean_verified)",
+      "corpus": "upstream_faithful_10"
+    },
+    {
+      "bug_id": "rb_007",
+      "category": "upstream_faithful",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "source-token detection: primary handler 'view' (scope: lean_verified)",
+      "corpus": "upstream_faithful_10"
+    },
+    {
+      "bug_id": "rb_008",
+      "category": "upstream_faithful",
+      "tg_verdict": "UNKNOWN",
+      "primary_handler": null,
+      "handlers_used": [],
+      "in_soundness": "N/A",
+      "reason": "TG did not return REFUTED_PROOF; soundness scope not applicable",
+      "corpus": "upstream_faithful_10"
+    },
+    {
+      "bug_id": "rb_009",
+      "category": "upstream_faithful",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "source-token detection: primary handler 'view' (scope: lean_verified)",
+      "corpus": "upstream_faithful_10"
+    },
+    {
+      "bug_id": "rb_010",
+      "category": "upstream_faithful",
+      "tg_verdict": "REFUTED_PROOF",
+      "primary_handler": "view",
+      "handlers_used": [
+        "view"
+      ],
+      "in_soundness": "Y",
+      "reason": "source-token detection: primary handler 'view' (scope: lean_verified)",
+      "corpus": "upstream_faithful_10"
+    }
+  ]
+}

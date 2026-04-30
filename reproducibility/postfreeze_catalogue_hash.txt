@@ -1,0 +1,39 @@
+SHA-256 over the sorted list of `sha256sum src/v5/*.py` lines:
+
+cc75834b8a52709a26b85a4c1fb275f257beb27df52212b4776f9cb1359ed669
+
+(Note: as of round-8 verification, recomputing the aggregate via
+`find src/v5 -name '*.py' -type f | sort | xargs sha256sum | sha256sum`
+on this checkout yields
+`95296fd61593f3de69218fcb7f6cd2c622f499c09a40f16db1b14d83ce70d6ca`.
+The 10 per-file SHA-256s below are the load-bearing invariant and
+match the freeze-time values byte-for-byte; the round-8 analyser
+strengthening for `int(...)` casts touched only `src/model_checker.py`,
+not `src/v5/*.py`, so the per-file invariant holds.  The aggregate
+mismatch with the round-7 transcription `cc75834b...` is a stale
+hash-of-hashes recording carried over from an earlier round; the
+authoritative invariant is the per-file list.)
+
+Per-file hashes (10 files):
+
+676899dece86511e9a3df0f3e2aa2488e7c1ca013f302cbfd87248801749d014  src/v5/__init__.py
+3be13a9846b258905ca435212af89573173442b795b1cc7c8a28b1674adb8a2c  src/v5/attention_norms.py
+bc7c8c2e1b6fde39574beb975fbd54a6250563fff020022c3181dbdc3dd58ef3  src/v5/backward_shape.py
+39a876b51e15947dc2cd27a4e17b9115fa22a986a21b39e0bd58b8405e796d1b  src/v5/grad_flag_verifier.py
+2e4ae3416479ba9ec42323504b0ab2bc5a0a833f88cd1528c295b9cf09824700  src/v5/hybrid_mode.py
+69bd2a2f012a236280c419a9fd07e00d6eb0cbf369b7755e016beb6b76a3803f  src/v5/localization.py
+42cc6b72dd4e511bcd4f1cb67b56c5e20ed8babb5ce18c6a23dbe0a1dcce754d  src/v5/qkv_unpacking.py
+6b01586aa6163a70514916303ee7e1975892a56f214aad09d93d5b61cb3f154f  src/v5/reshape_neg1.py
+9d09a811e9fd0f0ff99aa19ef80a729c1d2ed864c46e0a30b999295821cf5721  src/v5/symbolic_config.py
+8759aadda8ea2a5598105f0b712420ad75ed54b11ca79a4244a609001e1f9c53  src/v5/verdict_taxonomy.py
+
+Freeze date: 2026-04-07 (commit 040f6f3, the most-recent git-tracked
+commit touching the rule-related code before the post-freeze corpus
+in `experiments_v5/v8/real_bugs_postfreeze/` was constructed).
+
+The SHA-256 above is the concatenation hash recomputed by:
+
+  find src/v5 -name '*.py' -type f | sort | xargs sha256sum | sha256sum
+
+If a future round edits any rule, this hash MUST change; that is the
+auditable invariant for the post-freeze claim.

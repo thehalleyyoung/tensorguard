@@ -1,0 +1,252 @@
+{
+  "_doc": "Round-3 reviewer Q5: Wilson 95% / Clopper-Pearson 95% intervals on every X/Y headline, plus Fisher exact p-values on the head-to-head comparisons that the paper makes.",
+  "interval_method": "Wilson score (default) and Clopper-Pearson (reported in parentheses where N is small).",
+  "headlines": [
+    {
+      "label": "post-freeze N=15: TG catches upstream-fixed bug",
+      "section": "Eval (post-freeze sample)",
+      "k": 5,
+      "n": 15,
+      "point_pct": 33.33,
+      "wilson_95": [
+        15.18,
+        58.29
+      ],
+      "clopper_pearson_95": [
+        11.82,
+        61.62
+      ]
+    },
+    {
+      "label": "post-freeze N=15: FakeTensorMode catches upstream bug",
+      "section": "Eval (post-freeze sample)",
+      "k": 2,
+      "n": 15,
+      "point_pct": 13.33,
+      "wilson_95": [
+        3.74,
+        37.88
+      ],
+      "clopper_pearson_95": [
+        1.66,
+        40.46
+      ]
+    },
+    {
+      "label": "post-freeze N=15: Pytea catches upstream bug",
+      "section": "Eval (post-freeze sample)",
+      "k": 3,
+      "n": 15,
+      "point_pct": 20.0,
+      "wilson_95": [
+        7.05,
+        45.19
+      ],
+      "clopper_pearson_95": [
+        4.33,
+        48.09
+      ]
+    },
+    {
+      "label": "60-bug catalogue: TG Refuted-Proof",
+      "section": "Eval bug corpus",
+      "k": 53,
+      "n": 60,
+      "point_pct": 88.33,
+      "wilson_95": [
+        77.82,
+        94.23
+      ],
+      "clopper_pearson_95": [
+        77.43,
+        95.18
+      ]
+    },
+    {
+      "label": "10-bug shape-pattern coverage: TG@>=0.99",
+      "section": "Eval Table 2",
+      "k": 7,
+      "n": 10,
+      "point_pct": 70.0,
+      "wilson_95": [
+        39.68,
+        89.22
+      ],
+      "clopper_pearson_95": [
+        34.75,
+        93.33
+      ]
+    },
+    {
+      "label": "10-bug shape-pattern coverage: TG@>=0.80 (additional)",
+      "section": "Eval Table 2",
+      "k": 1,
+      "n": 10,
+      "point_pct": 10.0,
+      "wilson_95": [
+        1.79,
+        40.42
+      ],
+      "clopper_pearson_95": [
+        0.25,
+        44.5
+      ]
+    },
+    {
+      "label": "modern subset N=34: TG Refuted-Proof",
+      "section": "Eval modern subset",
+      "k": 32,
+      "n": 34,
+      "point_pct": 94.12,
+      "wilson_95": [
+        80.91,
+        98.37
+      ],
+      "clopper_pearson_95": [
+        80.32,
+        99.28
+      ]
+    },
+    {
+      "label": "modern subset N=34: Pytea Refuted-Proof (silent-skip-corrected)",
+      "section": "Eval modern subset",
+      "k": 22,
+      "n": 34,
+      "point_pct": 64.71,
+      "wilson_95": [
+        47.91,
+        78.51
+      ],
+      "clopper_pearson_95": [
+        46.49,
+        80.25
+      ]
+    },
+    {
+      "label": "Lean\u2013torch random fragment agreement",
+      "section": "Eval Lean parity",
+      "k": 28000,
+      "n": 28000,
+      "point_pct": 100.0,
+      "wilson_95": [
+        99.99,
+        100.0
+      ],
+      "clopper_pearson_95": [
+        99.99,
+        100.0
+      ]
+    },
+    {
+      "label": "Lean precondition boundary test (off-envelope diverges from torch)",
+      "section": "Eval boundary test",
+      "k": 2375,
+      "n": 2413,
+      "point_pct": 98.43,
+      "wilson_95": [
+        97.85,
+        98.85
+      ],
+      "clopper_pearson_95": [
+        97.84,
+        98.88
+      ]
+    },
+    {
+      "label": "dynamo end-to-end SAFE on chosen 5 modules",
+      "section": "Eval Dynamo \u00a74.3",
+      "k": 5,
+      "n": 5,
+      "point_pct": 100.0,
+      "wilson_95": [
+        56.55,
+        100.0
+      ],
+      "clopper_pearson_95": [
+        47.82,
+        100.0
+      ]
+    },
+    {
+      "label": "CV caller-rely: witnessed assume_M",
+      "section": "Eval CV caller-rely",
+      "k": 128,
+      "n": 128,
+      "point_pct": 100.0,
+      "wilson_95": [
+        97.09,
+        100.0
+      ],
+      "clopper_pearson_95": [
+        97.16,
+        100.0
+      ]
+    }
+  ],
+  "head_to_head": [
+    {
+      "label": "post-freeze N=15: TG vs FakeTensorMode",
+      "a": {
+        "k": 5,
+        "n": 15,
+        "rate_pct": 33.33
+      },
+      "b": {
+        "k": 2,
+        "n": 15,
+        "rate_pct": 13.33
+      },
+      "fisher_two_sided_p": 0.38984674329501917,
+      "fisher_greater_p": 0.19492337164750956,
+      "odds_ratio": 3.25
+    },
+    {
+      "label": "post-freeze N=15: TG vs Pytea",
+      "a": {
+        "k": 5,
+        "n": 15,
+        "rate_pct": 33.33
+      },
+      "b": {
+        "k": 3,
+        "n": 15,
+        "rate_pct": 20.0
+      },
+      "fisher_two_sided_p": 0.6816591704147925,
+      "fisher_greater_p": 0.3408295852073963,
+      "odds_ratio": 2.0
+    },
+    {
+      "label": "modern N=34: TG vs Pytea",
+      "a": {
+        "k": 32,
+        "n": 34,
+        "rate_pct": 94.12
+      },
+      "b": {
+        "k": 22,
+        "n": 34,
+        "rate_pct": 64.71
+      },
+      "fisher_two_sided_p": 0.005527196500206154,
+      "fisher_greater_p": 0.002763598250103078,
+      "odds_ratio": 8.727272727272727
+    },
+    {
+      "label": "60-bug catalogue: TG vs Pytea (Pytea 17/60 historic)",
+      "a": {
+        "k": 53,
+        "n": 60,
+        "rate_pct": 88.33
+      },
+      "b": {
+        "k": 17,
+        "n": 60,
+        "rate_pct": 28.33
+      },
+      "fisher_two_sided_p": 1.7137459126006967e-11,
+      "fisher_greater_p": 8.568729563003482e-12,
+      "odds_ratio": 19.15126050420168
+    }
+  ]
+}

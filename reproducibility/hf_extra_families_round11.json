@@ -1,0 +1,151 @@
+{
+  "_question": "Round 11: extend cross-family static-analysis evidence beyond Llama 2/3 (six modules) and the Qwen2 round-1-Comet expansion (five modules) to three additional decoder families that are NOT in the 488-block real-source corpus: Mistral, Gemma, Phi-3.  Each family contributes 4 architecturally-faithful modules plus 1 deliberately-broken shape-arithmetic variant.",
+  "families": [
+    "Mistral",
+    "Gemma",
+    "Phi3"
+  ],
+  "n_modules": 15,
+  "tally_overall": {
+    "Verified": 10,
+    "RP": 4,
+    "Abstain": 1
+  },
+  "tally_by_family": {
+    "Mistral": {
+      "Verified": 4,
+      "RP": 1
+    },
+    "Gemma": {
+      "Abstain": 1,
+      "Verified": 3,
+      "RP": 1
+    },
+    "Phi3": {
+      "Verified": 3,
+      "RP": 2
+    }
+  },
+  "results": [
+    {
+      "module": "MistralRMSNorm",
+      "family": "Mistral",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 300
+    },
+    {
+      "module": "MistralMLP",
+      "family": "Mistral",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 117
+    },
+    {
+      "module": "MistralGQAProjections",
+      "family": "Mistral",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 326
+    },
+    {
+      "module": "MistralDecoderLayer",
+      "family": "Mistral",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 90
+    },
+    {
+      "module": "MistralMLP_buggy_intermediate",
+      "family": "Mistral",
+      "verdict": "RP",
+      "bug_count": 2,
+      "first_bug": "[SHAPE-INCOMPATIBLE] Linear expects last dim=11008, got 14336",
+      "elapsed_ms": 101
+    },
+    {
+      "module": "GemmaRMSNorm",
+      "family": "Gemma",
+      "verdict": "Abstain",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 42
+    },
+    {
+      "module": "GemmaMLP",
+      "family": "Gemma",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 138
+    },
+    {
+      "module": "GemmaSdpaAttentionProjections",
+      "family": "Gemma",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 412
+    },
+    {
+      "module": "GemmaDecoderLayer",
+      "family": "Gemma",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 105
+    },
+    {
+      "module": "GemmaMLP_buggy_geglu_dim",
+      "family": "Gemma",
+      "verdict": "RP",
+      "bug_count": 2,
+      "first_bug": "[SHAPE-INCOMPATIBLE] Cannot broadcast (2, 32, 24576) and (2, 32, 16384)",
+      "elapsed_ms": 152
+    },
+    {
+      "module": "Phi3RMSNorm",
+      "family": "Phi3",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 88
+    },
+    {
+      "module": "Phi3MLPGateUpFused",
+      "family": "Phi3",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 111
+    },
+    {
+      "module": "Phi3SdpaAttentionFusedQKV",
+      "family": "Phi3",
+      "verdict": "RP",
+      "bug_count": 4,
+      "first_bug": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(1, 32, 9216)) to (1, 32, 32, 96)",
+      "elapsed_ms": 175
+    },
+    {
+      "module": "Phi3DecoderLayer",
+      "family": "Phi3",
+      "verdict": "Verified",
+      "bug_count": 0,
+      "first_bug": "",
+      "elapsed_ms": 84
+    },
+    {
+      "module": "Phi3MLP_buggy_chunk_count",
+      "family": "Phi3",
+      "verdict": "RP",
+      "bug_count": 2,
+      "first_bug": "[SHAPE-INCOMPATIBLE] Linear expects last dim=8192, got 4096",
+      "elapsed_ms": 120
+    }
+  ]
+}

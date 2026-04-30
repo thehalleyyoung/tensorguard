@@ -688,6 +688,28 @@ def transfer_split(
     return TensorShape(tuple(result_dims))
 
 
+def transfer_unbind(
+    input_shape: TensorShape,
+    dim: int = 0,
+) -> Optional[TensorShape]:
+    """Shape rule for torch.unbind — returns shape of each unbound tensor.
+    
+    Removes the specified dimension, returning the shape that each
+    element in the unbind result will have. The caller must handle
+    the fact that unbind returns a tuple of n tensors where n is
+    the size of the removed dimension.
+    """
+    if input_shape.ndim == 0:
+        return None
+    if dim < 0:
+        dim = input_shape.ndim + dim
+    if dim >= input_shape.ndim:
+        return None
+    result_dims = list(input_shape.dims)
+    result_dims.pop(dim)
+    return TensorShape(tuple(result_dims))
+
+
 def transfer_repeat_interleave(
     input_shape: TensorShape,
     repeats: int,
@@ -1726,7 +1748,7 @@ MODERN_TORCH_SHAPE_OPS = {
     # ── Tensor manipulation ──
     "narrow": "narrow",
     "select": "select",
-    "unbind": "select",
+    "unbind": "unbind",
     "movedim": "movedim",
     "moveaxis": "movedim",
     "swapaxes": "movedim",

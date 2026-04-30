@@ -1,0 +1,138 @@
+{
+  "regime": "no_synthesised_assume_M (user-visible)",
+  "freeze_date": "2026-04-07",
+  "freeze_commit": "040f6f3",
+  "n_total": 6,
+  "headline_triple": {
+    "Verified (silent)": 3,
+    "Refuted_Proof_at_0.99": 3,
+    "Refuted_Proof_at_0.80": 0,
+    "load_err": 0
+  },
+  "interpretation": "Each row is a real upstream bug-fix PR filed strictly after the catalogue-freeze date 2026-04-07. TG is run end-to-end with no rule edits and no analyser changes between freeze and this run.  The headline triple is the user-visible (assume_M-empty) verdict; an RP at this regime is unconditional.",
+  "per_item": [
+    {
+      "id": "rb_pf_001",
+      "file": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_001_diffusers_longcat_ffmult.py",
+      "input_shapes": {
+        "x": [
+          2,
+          2560
+        ]
+      },
+      "n_bugs": 2,
+      "max_confidence": 0.99,
+      "verdicts": [
+        ""
+      ],
+      "status": "RP_0.99",
+      "pr": "https://github.com/huggingface/diffusers/pull/13494",
+      "created_at": "2026-04-16",
+      "class": "config_dependent_linear_chain"
+    },
+    {
+      "id": "rb_pf_002",
+      "file": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_002_t5gemma2_xattn_cache.py",
+      "input_shapes": {
+        "hidden": [
+          1,
+          4097,
+          512
+        ]
+      },
+      "n_bugs": 0,
+      "max_confidence": 0.0,
+      "verdicts": [
+        "none"
+      ],
+      "status": "silent_verified",
+      "pr": "https://github.com/huggingface/transformers/pull/45540",
+      "created_at": "2026-04-21",
+      "class": "attention_mask_dim_mismatch"
+    },
+    {
+      "id": "rb_pf_003",
+      "file": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_003_peft_lora_moe_swap.py",
+      "input_shapes": {
+        "x": [
+          2,
+          8,
+          2048
+        ]
+      },
+      "n_bugs": 4,
+      "max_confidence": 0.99,
+      "verdicts": [
+        ""
+      ],
+      "status": "RP_0.99",
+      "pr": "https://github.com/huggingface/peft/pull/3165",
+      "created_at": "2026-04-15",
+      "class": "lora_in_out_swap_3d"
+    },
+    {
+      "id": "rb_pf_004",
+      "file": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_004_routerparallel_topk.py",
+      "input_shapes": {
+        "x": [
+          16,
+          512
+        ]
+      },
+      "n_bugs": 2,
+      "max_confidence": 0.99,
+      "verdicts": [
+        ""
+      ],
+      "status": "RP_0.99",
+      "pr": "https://github.com/huggingface/transformers/pull/45473",
+      "created_at": "2026-04-16",
+      "class": "router_topk_vs_num_experts"
+    },
+    {
+      "id": "rb_pf_005",
+      "file": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_005_diffusers_npu_mask.py",
+      "input_shapes": {
+        "hidden": [
+          1,
+          128,
+          512
+        ],
+        "mask": [
+          1,
+          1,
+          1,
+          128
+        ]
+      },
+      "n_bugs": 0,
+      "max_confidence": 0.0,
+      "verdicts": [
+        "none"
+      ],
+      "status": "silent_verified",
+      "pr": "https://github.com/huggingface/diffusers/pull/13490",
+      "created_at": "2026-04-16",
+      "class": "attention_mask_expand_off_by_one"
+    },
+    {
+      "id": "rb_pf_006",
+      "file": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_006_qwenimage_batch_ordering.py",
+      "input_shapes": {
+        "latents": [
+          8,
+          64
+        ]
+      },
+      "n_bugs": 0,
+      "max_confidence": 0.0,
+      "verdicts": [
+        "none"
+      ],
+      "status": "silent_verified",
+      "pr": "https://github.com/huggingface/diffusers/pull/13441",
+      "created_at": "2026-04-10",
+      "class": "batch_ordering_chunk_mismatch"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+\subsection{Backward verifier}\label{sec:impl-backward}
+The backward verifier
+(\texttt{src/v5/backward\_shape.py},
+\texttt{src/v5/grad\_flag\_verifier.py})
+consumes a forward graph annotated with the refinement types of
+\Cref{sec:calculus} and certifies, without execution, that
+(i)~\texttt{loss.backward()} would produce gradients of the right shape
+modulo \texttt{sum\_to(grad, primal.shape)} reduction, and (ii)~the set
+$H$ of parameters reverse-reachable from \texttt{loss} along
+non-detached, non-\texttt{no\_grad}-context, \texttt{requires\_grad=True}
+edges equals the user-declared expected-to-learn set $E$. The check is
+a reverse-topological traversal that mirrors PyTorch's per-Function
+shape contract \verb|grad_outputs[i].shape == y_i.shape|. The
+\emph{grad-flag} component additionally detects three canonical
+silent-zero-grad bug classes: in-place writes on a leaf with
+\texttt{requires\_grad=True} (B3), no leaf in the trace has
+\texttt{requires\_grad=True} (B4), and parameters used only inside a
+\texttt{with torch.no\_grad():} block or after \texttt{.detach()} (B1).
+These are reported as \emph{Refuted} verdicts with witness traces.
+
+\paragraph{Empirical agreement.}
+On a 500-model property test (random small \texttt{nn.Module}s drawn
+from a grammar), the static verifier agrees with PyTorch's runtime
+behaviour on $500/500$ models (gradient presence and gradient shape
+both match). On 8 hand-curated case studies modelled on canonical
+PyTorch issues (no-grad scope, \texttt{.detach()},
+\texttt{requires\_grad=False}, in-place-on-leaf, missing leaf, in-place
+alias mutating a saved tensor, non-scalar loss, unused parameter
+silently skipped by \texttt{optimizer.step()}), the verifier correctly
+catches $8/8$. On a 50-model false-positive sweep on clean models, the
+verifier reports $0$ spurious refutations. All 20 unit tests
+pass. Numbers are in \texttt{experiments\_v5/track\_D\_results.json}.
+

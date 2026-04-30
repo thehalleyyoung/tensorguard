@@ -1,0 +1,358 @@
+% =====================================================================
+% Section: Refinement-Typed Shape & Grad Calculus
+% Target: NeurIPS 2026 main paper; column-figure-free; <= 2.5pp dense.
+% Required preamble (in neurips.tex): amsmath, amssymb, amsthm, mathpartir
+% (\inferrule), and the {theorem}/{definition}/{lemma} environments
+% already present in docs/paper/neurips.tex.
+% =====================================================================
+\section{Refinement-Typed Shape \& Grad Calculus}
+\label{sec:refinement-types}
+
+We formalize TensorGuard's abstract domain as a refinement-type
+system over a torch.fx-style intermediate representation
+(IR)~\cite{reed2022torchfx}. The system has two novel ingredients
+relative to prior shape-only refinement work
+(\Cref{sec:related}): (i)~shape predicates live in a fragment of
+linear integer arithmetic with bounded multiplication and
+divisibility, decided by Z3~\cite{moura2008z3}; (ii)~each tensor
+also carries a three-valued \emph{grad refinement} that tracks
+whether the tensor is on the autograd tape, enabling sound
+detection of silently frozen parameters.
+
+\subsection{Types and judgments}
+\label{sec:rt:types}
+
+\paragraph{Tensor types.} The type of a tensor is
+\[
+ \mathsf{Tensor}[\tau,\;\varphi_{\mathsf{shape}}(d_1,\dots,d_k),\;\varphi_{\mathsf{grad}}],
+\]
+where $\tau\in\{\mathtt{f16},\mathtt{f32},\mathtt{f64},\mathtt{i32},\mathtt{i64},\mathtt{bool},\dots\}$,
+the shape refinement
+$\varphi_{\mathsf{shape}}\in\mathcal{P}_{\mathsf{shape}}$ is a
+quantifier-free predicate over symbolic dim variables
+$d_i\in\mathcal{V}$ in the theory
+\[
+ \mathcal{T}_{\mathsf{shape}} \;=\; \mathrm{LIA} \;\cup\;
+ \mathrm{Div} \;\cup\; \mathrm{BMul},
+\]
+i.e.\ linear integer arithmetic, divisibility ($a\mid b$), and
+bounded nonlinear multiplication (products whose factors are
+syntactically known at extraction time, as enforced by the
+canonicalization in
+). The grad refinement
+\(
+ \varphi_{\mathsf{grad}}\in\{\mathsf{has\_grad},\,\mathsf{no\_grad},\,\top\}
+\)
+abstracts the conjunction
+$\mathtt{requires\_grad}\wedge\mathtt{is\_on\_tape}$ where
+$\mathtt{is\_on\_tape}$ is the runtime predicate ``some
+differentiable operator producing this tensor was evaluated with
+\texttt{torch.is\_grad\_enabled()=True}''.
+
+\paragraph{Lattice.} The grad lattice is the flat lattice with
+top element $\top$ and incomparable atoms
+$\mathsf{has\_grad}$ and $\mathsf{no\_grad}$:
+$\mathsf{has\_grad}\sqsubseteq\top$,
+$\mathsf{no\_grad}\sqsubseteq\top$, and the two atoms are
+\emph{not} ordered with respect to each other---they make
+incompatible operational claims, so neither soundly substitutes
+for the other. Joins are
+$\mathsf{has\_grad}\sqcup\mathsf{no\_grad}=\top$. Subtyping on
+tensor types is componentwise: $\tau$ and $k$ must match,
+$\varphi_{\mathsf{shape}}$ is ordered by SMT entailment under the
+ambient context, and $\varphi_{\mathsf{grad}}$ uses the lattice
+above.
+
+\paragraph{Contexts and entailment.} A typing context $\Gamma$
+binds variables to refinement types and accumulates path
+predicates and a grad-context flag $G\in\{\mathsf{on},\mathsf{off}\}$
+recording whether the cursor is inside
+\texttt{torch.no\_grad()}. The entailment judgment
+$\Gamma\models\varphi\Rightarrow\psi$ is discharged by Z3 on the
+shape projection of $\Gamma$; on the grad component it is the
+lattice order. We write $\Gamma\vdash e:T$ for the typing
+judgment.
+
+\subsection{Typing rules for the supported fragment}
+\label{sec:rt:rules}
+
+We give representative rules; the full set (covering
+) is
+implemented in and
+ (files,
+,, ). Throughout,
+we write $g(e_1,\dots,e_n) := \bigsqcup_i\varphi_{\mathsf{grad}}(e_i)$
+when $G=\mathsf{on}$ and the operator is differentiable, and
+$g(\dots):=\mathsf{no\_grad}$ otherwise; this captures PyTorch's
+runtime semantics that any differentiable consumer of a tape
+tensor under an active grad context produces a tape tensor.
+
+{\small
+\begin{mathpar}
+\inferrule*[lab=T-Matmul]
+{\Gamma\vdash a:\mathsf{Tensor}[\tau,\,\mathsf{shape}{=}(\bar B,m,k),\,\varphi_a]\\
+ \Gamma\vdash b:\mathsf{Tensor}[\tau,\,\mathsf{shape}{=}(\bar B',k,n),\,\varphi_b]\\
+ \Gamma\models\mathrm{broadcast}(\bar B,\bar B')=\bar C}
+{\Gamma\vdash a\mathbin{@}b:\mathsf{Tensor}[\tau,\,(\bar C,m,n),\,g(a,b)]}
+\and
+\inferrule*[lab=T-Conv2d]
+{\Gamma\vdash x:\mathsf{Tensor}[\tau,(B,C_{\mathrm{in}},H,W),\varphi_x]\\
+ H'=\lfloor(H{+}2p_h{-}d_h(k_h{-}1){-}1)/s_h\rfloor{+}1\\
+ W'=\lfloor(W{+}2p_w{-}d_w(k_w{-}1){-}1)/s_w\rfloor{+}1}
+{\Gamma\vdash\mathrm{Conv2d}(x):\mathsf{Tensor}[\tau,(B,C_{\mathrm{out}},H',W'),g(x,\theta)]}
+\and
+\inferrule*[lab=T-Reshape-($-1$)]
+{\Gamma\vdash x:\mathsf{Tensor}[\tau,(d_1,\dots,d_n),\varphi_x]\\
+ \bar s=(s_1,\dots,s_{j-1},-1,s_{j+1},\dots,s_m)\\
+ P=\textstyle\prod_i d_i\;\;Q=\textstyle\prod_{i\neq j}s_i\\
+ \Gamma\models Q\mid P}
+{\Gamma\vdash\mathrm{view}(x,\bar s):\mathsf{Tensor}[\tau,(s_1,\dots,P/Q,\dots,s_m),\varphi_x]}
+\and
+\inferrule*[lab=T-Cat]
+{\forall i.\;\Gamma\vdash x_i:\mathsf{Tensor}[\tau,(d_1,\dots,d_k^{(i)},\dots,d_n),\varphi_i]}
+{\Gamma\vdash\mathrm{cat}([x_i],\,\mathrm{dim}{=}k):
+ \mathsf{Tensor}[\tau,(d_1,\dots,\textstyle\sum_i d_k^{(i)},\dots,d_n),\,\textstyle\bigsqcup_i\varphi_i]}
+\and
+\inferrule*[lab=T-Split]
+{\Gamma\vdash x:\mathsf{Tensor}[\tau,(d_1,\dots,d_k,\dots,d_n),\varphi]\\
+ \Gamma\models s\mid d_k\\\;\;m=d_k/s}
+{\Gamma\vdash\mathrm{split}(x,s,k):
+ (\underbrace{\mathsf{Tensor}[\tau,(\dots,s,\dots),\varphi],\dots}_{m\text{ copies}})}
+\and
+\inferrule*[lab=T-SDPA]
+{\Gamma\vdash q,k:\mathsf{Tensor}[\tau,(B,H,T,D),\varphi_{q,k}]\\
+ \Gamma\vdash v:\mathsf{Tensor}[\tau,(B,H,S,D),\varphi_v]\\
+ \Gamma\models T=S}
+{\Gamma\vdash\mathrm{SDPA}(q,k,v):\mathsf{Tensor}[\tau,(B,H,T,D),g(q,k,v)]}
+\and
+\inferrule*[lab=T-LayerNorm]
+{\Gamma\vdash x:\mathsf{Tensor}[\tau,(d_1,\dots,d_n),\varphi_x]\\
+ \mathrm{normalized\_shape}=(d_{n-r+1},\dots,d_n)}
+{\Gamma\vdash\mathrm{LayerNorm}(x):\mathsf{Tensor}[\tau,(d_1,\dots,d_n),g(x,\gamma,\beta)]}
+\and
+\inferrule*[lab=T-Detach]
+{\Gamma\vdash x:\mathsf{Tensor}[\tau,\varphi_s,\varphi_g]}
+{\Gamma\vdash x.\mathrm{detach}():\mathsf{Tensor}[\tau,\varphi_s,\mathsf{no\_grad}]}
+\and
+\inferrule*[lab=T-NoGradCtx]
+{\Gamma[G\mapsto\mathsf{off}]\vdash e:\mathsf{Tensor}[\tau,\varphi_s,\varphi_g]}
+{\Gamma\vdash\mathtt{with~torch.no\_grad():}\;e:\mathsf{Tensor}[\tau,\varphi_s,\mathsf{no\_grad}]}
+\end{mathpar}}
+
+The remaining operators (\texttt{permute, transpose, einsum,
+indexing, slicing, scatter, gather, repeat, expand, stack, chunk,
+unbind, RMSNorm, conv3d}) follow the same template: shape is
+computed by the corresponding handler in 
+or, and the grad component is
+$g(\bar e)$ for differentiable ops and $\mathsf{no\_grad}$ for
+non-differentiable indexing dtypes (e.g.\ integer indices in
+\texttt{gather}). All rules degrade gracefully: if a precondition
+is not entailed by $\Gamma$ but its negation is also not entailed,
+the verdict is \textsc{Abstain} for that subterm and the result
+type carries the symbolic shape unchanged.
+
+\paragraph{Backward and optimizer rules.} The two
+``whole-program'' rules close the loop:
+
+{\small
+\begin{mathpar}
+\inferrule*[lab=T-Backward]
+{\Gamma\vdash \mathit{loss}:\mathsf{Tensor}[\tau,(),\,\mathsf{has\_grad}]}
+{\Gamma\vdash \mathit{loss}.\mathrm{backward}():\mathsf{unit}}
+\and
+\inferrule*[lab=T-OptStep]
+{\forall p\in\mathit{opt}.\mathit{params}.\;\;
+ \Gamma\vdash p:\mathsf{Tensor}[\tau_p,\varphi_p,\mathsf{has\_grad}]\\
+ \text{i.e.\ } p\text{ is reachable from some }\mathit{loss}\text{ trace by a }\mathsf{has\_grad}\text{ path}}
+{\Gamma\vdash \mathit{opt}.\mathrm{step}():\mathsf{unit}}
+\end{mathpar}}
+
+\textsc{T-Backward} requires the loss tensor to carry
+$\mathsf{has\_grad}$; \textsc{T-OptStep} requires every parameter
+the optimizer claims to update to be reachable from a
+$\mathsf{has\_grad}$-typed expression in the trace. A parameter
+typed $\mathsf{no\_grad}$ along every use in \texttt{forward} is
+flagged: its \texttt{.grad} will be \texttt{None} after
+\texttt{backward()} and the optimizer will silently skip it
+(\Cref{sec:rt:gradflag}).
+
+\subsection{Soundness}
+\label{sec:rt:soundness}
+
+The semantics is small-step, $\langle e,\sigma,G\rangle\to\langle
+e',\sigma',G'\rangle$, where $\sigma$ is a heap of
+$(\mathrm{shape},\mathrm{dtype},\mathtt{requires\_grad},\mathtt{is\_on\_tape})$
+records and $G$ is the ambient grad context. We write
+$\sigma\models\Gamma$ when every binding $x\!:\!T$ in $\Gamma$ has
+$\sigma(x)$ satisfy the shape predicate of $T$ and the runtime
+$(\mathtt{requires\_grad}\wedge\mathtt{is\_on\_tape})$ bit
+implies $\varphi_{\mathsf{grad}}$ in the lattice sense
+($\mathsf{true}$ may be typed $\mathsf{has\_grad}$ or $\top$;
+$\mathsf{false}$ may be typed $\mathsf{no\_grad}$ or $\top$).
+
+\begin{theorem}[Preservation up to subtyping]
+\label{thm:preservation}
+If $\Gamma\vdash e:T$, $\sigma\models\Gamma$, and $\langle
+e,\sigma,G\rangle\to\langle e',\sigma',G'\rangle$, then there
+exist $\Gamma'\supseteq\Gamma$ and $T'$ with
+$\sigma'\models\Gamma'$, $\Gamma'\vdash e':T'$, and
+$T'\sqsubseteq T$.
+\end{theorem}
+\begin{proof}[Proof sketch]
+By induction on the reduction relation. For each non-context
+rule, the operator's transfer function in
+ produces, by construction, a shape
+that is the unique well-formed shape of the result up to SMT
+equivalence; preservation on shapes is therefore
+\emph{equality} modulo $\Gamma'$. For grad, the case
+\textsc{T-NoGradCtx} discharges the obligation that the body
+of \texttt{torch.no\_grad()} produces a tensor with
+\texttt{is\_on\_tape}{=}false, so $\mathsf{no\_grad}$ is sound;
+\textsc{T-Detach} likewise. For differentiable ops with $G=\mathsf{on}$,
+PyTorch's runtime sets \texttt{is\_on\_tape}{=}true on the result
+when at least one input has it true~\cite{paszke2019pytorch};
+this is exactly the join $g(\bar e)$. Context rules use the IH
+together with monotonicity of $g$ on the lattice. The relaxation
+to $T'\sqsubseteq T$ is needed only at \textsc{T-NoGradCtx} exit
+and at conditional joins where $\top$ is introduced.\qed
+\end{proof}
+
+\begin{theorem}[Three-valued progress]
+\label{thm:progress}
+Let $\mathsf{Verify}(e)\in\{\textsc{Verified},\textsc{Refuted},\textsc{Abstain}\}$
+be TensorGuard's verdict. For any closed $e$ in the supported
+fragment and any $\sigma\models\Gamma$:
+(i) if $\mathsf{Verify}(e)=\textsc{Verified}$, then no reduction
+sequence from $\langle e,\sigma,\mathsf{on}\rangle$ raises a
+shape-mismatch exception; (ii) if
+$\mathsf{Verify}(e)=\textsc{Refuted}$, then \emph{every} reduction
+sequence raises a shape-mismatch exception at the witnessed
+subterm; (iii) if $\mathsf{Verify}(e)=\textsc{Abstain}$, no claim
+is made.
+\end{theorem}
+\begin{proof}[Proof sketch]
+\textsc{Verified} means every operator's shape precondition is
+entailed by $\Gamma$ via Z3; \Cref{thm:preservation} then
+guarantees the precondition holds at the moment of evaluation, so
+the runtime check inside the PyTorch dispatcher cannot fail.
+\textsc{Refuted} requires Z3 to return a concrete model violating
+some precondition; that model becomes the counterexample
+$\sigma$, and the supported operators are
+\emph{precondition-strict} (their PyTorch implementations raise
+\texttt{RuntimeError} on the falsified condition).
+\textsc{Abstain} corresponds to $\Gamma\not\models\varphi$ and
+$\Gamma\not\models\neg\varphi$.\qed
+\end{proof}
+
+\begin{theorem}[Grad-flag soundness]
+\label{thm:grad-soundness}
+Suppose $\Gamma\vdash e:\mathsf{Tensor}[\tau,\varphi_s,\mathsf{has\_grad}]$
+and $\sigma\models\Gamma$. Let $t$ be the tensor produced by
+$\langle e,\sigma,\mathsf{on}\rangle\to^*\langle v,\sigma',\cdot\rangle$.
+Then (a) $\mathrm{shape}(t)\models\varphi_s$ in $\sigma'$, and
+(b) for every leaf parameter $p$ such that some directed path in
+the autograd graph rooted at $t$ uses $p$ \emph{as a
+differentiable input under} $G=\mathsf{on}$, executing
+$t.\mathrm{backward}()$ leaves $p.\mathrm{grad}\neq\bot$.
+\end{theorem}
+\begin{proof}[Proof sketch]
+(a) is the shape projection of \Cref{thm:preservation}. For (b),
+$\varphi_{\mathsf{grad}}(t)=\mathsf{has\_grad}$ is, by induction
+on the typing derivation and the rule
+$g(\bar e)=\bigsqcup_i\varphi_{\mathsf{grad}}(e_i)$ (where the
+join is taken only for differentiable ops with $G=\mathsf{on}$),
+witnessed by a chain of $\mathsf{has\_grad}$ ancestors back to a
+tape-leaf; PyTorch's autograd engine populates
+$p.\mathrm{grad}$ for exactly those leaves
+reachable by such a chain~\cite{paszke2019pytorch}. The
+quantification over ``leaves used as differentiable inputs under
+$G=\mathsf{on}$'' is essential: leaves used \emph{only} inside
+\texttt{no\_grad} contexts have no such chain and are
+\emph{correctly} predicted to receive no gradient by our system,
+since their use sites type as $\mathsf{no\_grad}$.\qed
+\end{proof}
+
+\subsection{Grad-flag refinement in practice}
+\label{sec:rt:gradflag}
+
+Consider the model in
+: a
+two-layer network whose trunk is computed inside
+\texttt{with torch.no\_grad():} and whose head sits on top of
+the (now-detached) trunk activation. By
+\textsc{T-NoGradCtx}, the bound name $h$ types as
+$\mathsf{Tensor}[\mathtt{f32},(16,8),\mathsf{no\_grad}]$. By
+\textsc{T-Linear}, $\mathrm{head}(h)$ types as
+$\mathsf{Tensor}[\mathtt{f32},(16,4),g(h,W_{\mathrm{head}})]$;
+since $G=\mathsf{on}$ at the call site and
+$\varphi_{\mathsf{grad}}(W_{\mathrm{head}})=\mathsf{has\_grad}$,
+the join is $\mathsf{has\_grad}$. The loss therefore types as
+$\mathsf{has\_grad}$ and \textsc{T-Backward} succeeds, but
+$W_{\mathrm{trunk}}$ is reachable from the loss only via the
+$\mathsf{no\_grad}$ binding $h$. The
+\textsc{T-OptStep} side-condition
+``$W_{\mathrm{trunk}}$ reachable by a $\mathsf{has\_grad}$ path''
+is unsatisfiable, so TensorGuard reports
+\textsc{Refuted} with the witness ``\texttt{trunk.weight.grad}
+will be \texttt{None} after \texttt{backward()}.'' Running the
+script reproduces the underlying PyTorch~2.9 behavior verbatim:
+\texttt{head.weight.grad} is populated,
+\texttt{trunk.weight.grad} is \texttt{None}, and
+\texttt{optimizer.step()} leaves \texttt{trunk.weight}
+bit-identical before and after the update.
+
+\subsection{Limitations}
+\label{sec:rt:limitations}
+
+The calculus is calibrated to what we can prove. It does
+\emph{not} cover: (i)~in-place mutation that re-routes the
+autograd graph (\texttt{x.add\_(y)} when \texttt{y} carries grad),
+which we conservatively type at $\top$; (ii)~user-defined
+\texttt{torch.autograd.Function}, whose backward pass is opaque
+and forces \textsc{Abstain}; (iii)~distributed and sharded
+parameters (DDP, FSDP), where the ``unique path'' premise of
+\Cref{thm:grad-soundness} fails because parameters are
+materialized per-rank; (iv)~storage aliasing through
+\texttt{view().detach()} chained with later in-place writes,
+which can re-attach the storage to the tape in ways
+$\varphi_{\mathsf{grad}}$ does not track; and
+(v)~gradient-accumulation patterns across multiple
+\texttt{backward()} calls without \texttt{zero\_grad()}, where
+$.grad$ is non-\texttt{None} for reasons unrelated to the current
+$e$. Cases (i)--(v) are detected at extraction time and downgrade
+the relevant subterm to \textsc{Abstain}, preserving soundness of
+\textsc{Verified}/\textsc{Refuted} verdicts at the cost of
+completeness.
+
+% =====================================================================
+% Self-summary (for overseer agent):
+% This section formalizes TensorGuard's abstract domain as a
+% refinement-type system Tensor[tau, phi_shape, phi_grad] over a
+% torch.fx-style IR. Shape refinements live in LIA + divisibility +
+% bounded multiplication (Z3-decidable, matching the implementation in
+% src/typing_rules.py and src/refinement/{attention,norms,qkv,reshape}.py).
+% The grad refinement is a flat 3-valued lattice with has_grad and
+% no_grad incomparable (both <: top); this ordering was corrected from
+% an earlier draft after rubber-duck critique pointed out that the
+% inverted ordering would let a no_grad tensor be used where has_grad
+% is required, breaking soundness. Typing rules are given in mathpar
+% style for matmul, conv2d, reshape (-1 inference via SMT divisibility),
+% cat, split, SDPA, LayerNorm, detach, no_grad context, plus the two
+% whole-program rules T-Backward and T-OptStep. We state Preservation
+% up to subtyping (deliberately renamed from "Subject Reduction" per
+% rubber-duck feedback, since shape preservation is exact but grad uses
+% subtyping) and a 3-valued Progress theorem connecting Verified/
+% Refuted/Abstain verdicts to the operational semantics. The grad-flag
+% soundness theorem is tightened to quantify only over "leaves used as
+% differentiable inputs under G=on" (per rubber-duck), avoiding the
+% earlier overclaim. The worked example
+% (experiments_v5/grad_flag_example.py) was actually executed under
+% python3.11 + torch 2.9.1 and confirmed: head.weight.grad is
+% populated, trunk.weight.grad is None, opt.step() leaves trunk
+% bit-identical. Limitations explicitly enumerate the five edge cases
+% the rubber-duck flagged: in-place mutation, custom autograd.Function,
+% distributed/sharded params, view+detach storage aliasing, and grad
+% accumulation across backward() calls without zero_grad. All
+% operator references point at real files in src/. No claim is made
+% about coverage outside the supported fragment.
+% =====================================================================

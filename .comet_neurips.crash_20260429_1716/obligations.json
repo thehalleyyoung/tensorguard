@@ -1,0 +1,86 @@
+[
+  {
+    "description": "The headline post-freeze unfiltered comparison (Table 3: TG 5/15 vs FakeTensor 2/15 vs Pytea 3/15) is not statistically separable at \u03b1=0.05 (Fisher p=0.39 and 0.68; the authors say so), and the Bayes factors (8.1, 3.6) do not clear \"strong evidence\". Yet the abstract still presents this as \"point estimate above both baselines\". On N=15 with these p-values, the substantive evidence for TG > baselines on out-of-distribution PRs is weak; a larger pre-registered draw (N\u226550, same query) is needed before this can be the third headline number.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  },
+  {
+    "description": "Theorem 2's soundness scope (Lean-audited + pen-and-paper handlers, i.e. 28+3=31/79) covers only 36/185 in-soundness verdicts on the 488-block corpus per the paper itself (line ~498); the remaining 105/185 verdicts touch at least one tested-only handler and are therefore outside the formal soundness theorem. The contribution as advertised in the abstract (\"Lean-audited operator-rule table\") understates that 48/79 handlers are tested-only and most real-corpus verdicts depend on them.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  },
+  {
+    "description": "Theorem 3 (compositional soundness of the assume/guarantee discipline) is mechanised only on a 3-operator DSL (matmul/view/add), yet C2 is sold as a primary contribution. The gap between \"assume/guarantee at the `nn.Module` boundary\" as a research artifact and what is actually proven sound is substantial; please either mechanise the composition rule on a non-trivial subset of the 79-handler surface or restate C2 to scope the formal claim to the 3-operator DSL throughout the contribution list, not just in the theorem statement.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  },
+  {
+    "description": "The bug-corpus exclusion pipeline removes ~237/1087 (~22%) of keyword hits under categories (iii) distributed-shape and (iv) config-attribute, where the latter is precisely the silent-miss class flagged in \u00a76 and produces 0/113 RP in the reported audit. The 53/60 (88.3%) headline therefore measures performance conditional on the fragment, not on shape-bug PRs in the wild. A complementary \"headline-on-all-1087\" or \"headline-on-(60+113)\" denominator would let readers price in the scope cap.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  },
+  {
+    "description": "The Theorem 5 instantiation uses a \"documented forward-signature surrogate\" on 4 of the 14 modules (and on 16 of the 17 modules in the prior audit because \"full instantiation exceeds end-to-end constraint solving\"). The empirical falsifier (zero in-contract recompiles outside the catalogue) is therefore evaluated against a hand-written contract, not against the contract TG would synthesise end-to-end on a transformer. Either run the audit end-to-end on at least one transformer block, or drop \"Dynamo-guard correspondence\" from the contributions and frame Theorem 5 as a CNN-block result with an open transformer obligation.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  },
+  {
+    "description": "The localisation result (Sec 4.2: tracer \u00b15 lines on 14/17 caught bugs) has a self-selecting numerator: the 13/30 cases where TG did not refute or returned `location.line=0` are exactly the cases where localisation is needed and missing. The reported 82% should be paired with an end-to-end \"fraction of the 30 bugs localised within \u00b15 lines\" (i.e. 14/30 = 47%) so the headline is comparable to a runtime tracer that always fires.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  },
+  {
+    "description": "The L1 (CEGAR) and L3 (phase) features ship in the analyser but are no-ops (Table 5 caption), which is honest but raises a TCB concern: dead-but-present code paths can still affect verdict computation. Please confirm (e.g. by running the test suite with these modules deleted, not just disabled) that the unused CEGAR loop and the always-satisfiable phase encoder cannot influence any RP/CV verdict on the headline corpora.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  },
+  {
+    "description": "The grad-flag silent-misclassification regime (parameter sharing under renamed attributes; \u226412% prevalence) is acknowledged but not reflected in the headline. Since C3 explicitly claims \"0/50 false positives\" on the backward verifier, please report the false-negative rate of the silent-misclassification regime on a corpus drawn from the \u226412% slice (e.g. 50 training scripts that exhibit tied weights), so C3's calibration matches its denominator.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  },
+  {
+    "description": "On the post-freeze N=15 sample, what is the smallest N at which the pre-registered query would give Fisher-exact p<0.05 vs both baselines under the observed 5/15, 2/15, 3/15 rates? Is a pre-registered N=50 draw feasible before camera-ready?",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  },
+  {
+    "description": "How many of the 53/60 RPs on the historical bug corpus depend on at least one handler outside the 31 Lean-audited + pen-and-paper soundness scope? A per-bug attribution would let readers compute the in-soundness RP count directly.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  },
+  {
+    "description": "For Theorem 5's necessary-direction claim, does the 8.8% (48/544) in-contract recompile rate include any guards on shape/dtype/rank variables that are in `catalogue(M)` syntactically but whose specialiser bit is read on a different aten op than the one TG's rule fires on? The falsification predicate as stated would not catch this aliasing.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  },
+  {
+    "description": "Can the assume/guarantee composition rule (Theorem 3) be mechanised on at least the matmul/view/add/broadcast/conv2d/reshape subset, or is there a structural obstacle (e.g. handler representation in Python that does not lift to Lean)? If so, please name it.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  },
+  {
+    "description": "The 32/34 vs 22/34 fragment-fair Pytea comparison enforces the modern subset by a static AST predicate over Pytea's commit `cb02a8a` catalogue; what is the verdict triple if this predicate is also enforced on TG's *handler dispatch trace* (not just the AST), to ensure no TG handler outside Pytea's catalogue contributed to a refutation indirectly via Z3?",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  },
+  {
+    "description": "For the 2/10 silent verifieds on `rb_001`/`rb_002` (semantically-aliased view bugs), is there an einops-style typed-target extension that the existing rule table can encode, or does this require a new judgement form? A one-paragraph sketch in the limitations would clarify whether this is a future-rule or future-fragment problem.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 1.0
+  }
+]

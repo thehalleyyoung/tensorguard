@@ -1,0 +1,182 @@
+{
+  "results": [
+    {
+      "name": "conv_view_linear_bug",
+      "category": "shape_after_conv",
+      "buggy": true,
+      "flagged": true,
+      "correct": true,
+      "time_ms": 296.0031032562256
+    },
+    {
+      "name": "matmul_dim_mismatch",
+      "category": "linear_chain",
+      "buggy": true,
+      "flagged": true,
+      "correct": true,
+      "time_ms": 270.5709934234619
+    },
+    {
+      "name": "good_mlp",
+      "category": "good_baseline",
+      "buggy": false,
+      "flagged": false,
+      "correct": true,
+      "time_ms": 300.35901069641113
+    },
+    {
+      "name": "good_conv",
+      "category": "good_baseline",
+      "buggy": false,
+      "flagged": false,
+      "correct": true,
+      "time_ms": 325.35600662231445
+    },
+    {
+      "name": "transpose_then_linear_bug",
+      "category": "axis_swap",
+      "buggy": true,
+      "flagged": true,
+      "correct": true,
+      "time_ms": 337.1391296386719
+    },
+    {
+      "name": "good_resnet_block",
+      "category": "skip_connection",
+      "buggy": false,
+      "flagged": false,
+      "correct": true,
+      "time_ms": 414.8421287536621
+    },
+    {
+      "name": "flatten_bug",
+      "category": "shape_after_conv",
+      "buggy": true,
+      "flagged": true,
+      "correct": true,
+      "time_ms": 314.0077590942383
+    },
+    {
+      "name": "good_two_branch",
+      "category": "good_baseline",
+      "buggy": false,
+      "flagged": false,
+      "correct": true,
+      "time_ms": 285.506010055542
+    },
+    {
+      "name": "bad_two_branch_size",
+      "category": "broadcast_mismatch",
+      "buggy": true,
+      "flagged": true,
+      "correct": true,
+      "time_ms": 296.0069179534912
+    },
+    {
+      "name": "good_chain_3",
+      "category": "good_baseline",
+      "buggy": false,
+      "flagged": false,
+      "correct": true,
+      "time_ms": 286.15498542785645
+    },
+    {
+      "name": "bad_chain_middle",
+      "category": "linear_chain",
+      "buggy": true,
+      "flagged": true,
+      "correct": true,
+      "time_ms": 299.7288703918457
+    },
+    {
+      "name": "good_conv_chain",
+      "category": "good_baseline",
+      "buggy": false,
+      "flagged": false,
+      "correct": true,
+      "time_ms": 313.10200691223145
+    },
+    {
+      "name": "bad_conv_channel",
+      "category": "conv_channel",
+      "buggy": true,
+      "flagged": true,
+      "correct": true,
+      "time_ms": 299.30806159973145
+    },
+    {
+      "name": "bad_view_neg1",
+      "category": "view_mismatch",
+      "buggy": true,
+      "flagged": true,
+      "correct": true,
+      "time_ms": 259.7081661224365
+    }
+  ],
+  "summary": {
+    "tp": 8,
+    "fp": 0,
+    "tn": 6,
+    "fn": 0,
+    "n_buggy": 8,
+    "n_safe": 6,
+    "n_total": 14,
+    "precision": 1.0,
+    "recall": 1.0,
+    "specificity": 1.0,
+    "f1": 1.0,
+    "accuracy": 1.0,
+    "mean_time_ms": 306.9852249962943,
+    "elapsed_s": 4.387088060379028,
+    "by_category": {
+      "shape_after_conv": {
+        "n": 2,
+        "n_buggy": 2,
+        "n_correct": 2,
+        "mean_time_ms": 305.00543117523193
+      },
+      "linear_chain": {
+        "n": 2,
+        "n_buggy": 2,
+        "n_correct": 2,
+        "mean_time_ms": 285.1499319076538
+      },
+      "good_baseline": {
+        "n": 5,
+        "n_buggy": 0,
+        "n_correct": 5,
+        "mean_time_ms": 302.0956039428711
+      },
+      "axis_swap": {
+        "n": 1,
+        "n_buggy": 1,
+        "n_correct": 1,
+        "mean_time_ms": 337.1391296386719
+      },
+      "skip_connection": {
+        "n": 1,
+        "n_buggy": 0,
+        "n_correct": 1,
+        "mean_time_ms": 414.8421287536621
+      },
+      "broadcast_mismatch": {
+        "n": 1,
+        "n_buggy": 1,
+        "n_correct": 1,
+        "mean_time_ms": 296.0069179534912
+      },
+      "conv_channel": {
+        "n": 1,
+        "n_buggy": 1,
+        "n_correct": 1,
+        "mean_time_ms": 299.30806159973145
+      },
+      "view_mismatch": {
+        "n": 1,
+        "n_buggy": 1,
+        "n_correct": 1,
+        "mean_time_ms": 259.7081661224365
+      }
+    }
+  }
+}

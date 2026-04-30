@@ -1,0 +1,1570 @@
+{
+  "_question": "Round-3 W1 / Q1: report the handler-attributable refute count under joint-LOO, broken out by category, to reconcile the per-handler attribution (49 RPs across categories) with the joint-LOO non-result (53/60 -> 53/60).  This script extends the joint-LOO to a *triple*-LOO that simultaneously disables the per-category operator handlers, the AST-pattern intent-bug analyser, and the constraint-based residue (CEGAR loop plus heuristic flow-sensitive analyser).",
+  "full_pipeline": {
+    "rp": 53,
+    "silent": 0,
+    "abst": 7,
+    "err": 0,
+    "per_category": {
+      "attention_dim": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 1,
+        "err": 0,
+        "n": 5
+      },
+      "broadcasting": {
+        "rp": 7,
+        "silent": 0,
+        "abst": 2,
+        "err": 0,
+        "n": 9
+      },
+      "view_reshape_total_size": {
+        "rp": 7,
+        "silent": 0,
+        "abst": 2,
+        "err": 0,
+        "n": 9
+      },
+      "other": {
+        "rp": 9,
+        "silent": 0,
+        "abst": 2,
+        "err": 0,
+        "n": 11
+      },
+      "conv_channel_mismatch": {
+        "rp": 6,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 6
+      },
+      "linear_inout_mismatch": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 4
+      },
+      "einsum_dim": {
+        "rp": 5,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 5
+      },
+      "transpose_axes": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 4
+      },
+      "batchnorm_features": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 4
+      },
+      "embedding_index": {
+        "rp": 3,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 3
+      }
+    },
+    "rp_ids": [
+      "bug_008",
+      "bug_009",
+      "bug_010",
+      "bug_011",
+      "bug_012",
+      "bug_013",
+      "bug_014",
+      "bug_015",
+      "bug_016",
+      "bug_017",
+      "bug_018",
+      "bug_019",
+      "bug_020",
+      "bug_022",
+      "bug_024",
+      "bug_026",
+      "bug_027",
+      "bug_028",
+      "bug_029",
+      "bug_031",
+      "bug_032",
+      "bug_033",
+      "bug_034",
+      "bug_035",
+      "bug_037",
+      "bug_038",
+      "bug_039",
+      "bug_040",
+      "bug_041",
+      "bug_042",
+      "bug_043",
+      "bug_044",
+      "bug_045",
+      "bug_047",
+      "bug_048",
+      "bug_049",
+      "bug_050",
+      "bug_051",
+      "bug_052",
+      "bug_053",
+      "bug_054",
+      "bug_055",
+      "bug_056",
+      "bug_057",
+      "bug_058",
+      "bug_059",
+      "bug_060",
+      "bug_063",
+      "bug_064",
+      "bug_065",
+      "bug_067",
+      "bug_068",
+      "bug_069"
+    ],
+    "elapsed_s": 0.33
+  },
+  "all_three_paths_globally_disabled": {
+    "rp": 53,
+    "silent": 0,
+    "abst": 0,
+    "err": 7,
+    "per_category": {
+      "attention_dim": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 1,
+        "n": 5
+      },
+      "broadcasting": {
+        "rp": 7,
+        "silent": 0,
+        "abst": 0,
+        "err": 2,
+        "n": 9
+      },
+      "view_reshape_total_size": {
+        "rp": 7,
+        "silent": 0,
+        "abst": 0,
+        "err": 2,
+        "n": 9
+      },
+      "other": {
+        "rp": 9,
+        "silent": 0,
+        "abst": 0,
+        "err": 2,
+        "n": 11
+      },
+      "conv_channel_mismatch": {
+        "rp": 6,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 6
+      },
+      "linear_inout_mismatch": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 4
+      },
+      "einsum_dim": {
+        "rp": 5,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 5
+      },
+      "transpose_axes": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 4
+      },
+      "batchnorm_features": {
+        "rp": 4,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 4
+      },
+      "embedding_index": {
+        "rp": 3,
+        "silent": 0,
+        "abst": 0,
+        "err": 0,
+        "n": 3
+      }
+    },
+    "rp_ids": [
+      "bug_008",
+      "bug_009",
+      "bug_010",
+      "bug_011",
+      "bug_012",
+      "bug_013",
+      "bug_014",
+      "bug_015",
+      "bug_016",
+      "bug_017",
+      "bug_018",
+      "bug_019",
+      "bug_020",
+      "bug_022",
+      "bug_024",
+      "bug_026",
+      "bug_027",
+      "bug_028",
+      "bug_029",
+      "bug_031",
+      "bug_032",
+      "bug_033",
+      "bug_034",
+      "bug_035",
+      "bug_037",
+      "bug_038",
+      "bug_039",
+      "bug_040",
+      "bug_041",
+      "bug_042",
+      "bug_043",
+      "bug_044",
+      "bug_045",
+      "bug_047",
+      "bug_048",
+      "bug_049",
+      "bug_050",
+      "bug_051",
+      "bug_052",
+      "bug_053",
+      "bug_054",
+      "bug_055",
+      "bug_056",
+      "bug_057",
+      "bug_058",
+      "bug_059",
+      "bug_060",
+      "bug_063",
+      "bug_064",
+      "bug_065",
+      "bug_067",
+      "bug_068",
+      "bug_069"
+    ],
+    "elapsed_s": 0.11
+  },
+  "per_category_triple_loo": {
+    "view_reshape_total_size": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "rp_ids": [
+        "bug_008",
+        "bug_009",
+        "bug_010",
+        "bug_011",
+        "bug_012",
+        "bug_013",
+        "bug_014",
+        "bug_015",
+        "bug_016",
+        "bug_017",
+        "bug_018",
+        "bug_019",
+        "bug_020",
+        "bug_022",
+        "bug_024",
+        "bug_026",
+        "bug_027",
+        "bug_028",
+        "bug_029",
+        "bug_031",
+        "bug_032",
+        "bug_033",
+        "bug_034",
+        "bug_035",
+        "bug_037",
+        "bug_038",
+        "bug_039",
+        "bug_040",
+        "bug_041",
+        "bug_042",
+        "bug_043",
+        "bug_044",
+        "bug_045",
+        "bug_047",
+        "bug_048",
+        "bug_049",
+        "bug_050",
+        "bug_051",
+        "bug_052",
+        "bug_053",
+        "bug_054",
+        "bug_055",
+        "bug_056",
+        "bug_057",
+        "bug_058",
+        "bug_059",
+        "bug_060",
+        "bug_063",
+        "bug_064",
+        "bug_065",
+        "bug_067",
+        "bug_068",
+        "bug_069"
+      ],
+      "disabled_handlers": [
+        "view",
+        "reshape"
+      ],
+      "elapsed_s": 0.14
+    },
+    "broadcasting": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "rp_ids": [
+        "bug_008",
+        "bug_009",
+        "bug_010",
+        "bug_011",
+        "bug_012",
+        "bug_013",
+        "bug_014",
+        "bug_015",
+        "bug_016",
+        "bug_017",
+        "bug_018",
+        "bug_019",
+        "bug_020",
+        "bug_022",
+        "bug_024",
+        "bug_026",
+        "bug_027",
+        "bug_028",
+        "bug_029",
+        "bug_031",
+        "bug_032",
+        "bug_033",
+        "bug_034",
+        "bug_035",
+        "bug_037",
+        "bug_038",
+        "bug_039",
+        "bug_040",
+        "bug_041",
+        "bug_042",
+        "bug_043",
+        "bug_044",
+        "bug_045",
+        "bug_047",
+        "bug_048",
+        "bug_049",
+        "bug_050",
+        "bug_051",
+        "bug_052",
+        "bug_053",
+        "bug_054",
+        "bug_055",
+        "bug_056",
+        "bug_057",
+        "bug_058",
+        "bug_059",
+        "bug_060",
+        "bug_063",
+        "bug_064",
+        "bug_065",
+        "bug_067",
+        "bug_068",
+        "bug_069"
+      ],
+      "disabled_handlers": [
+        "broadcast",
+        "add",
+        "mul",
+        "sub",
+        "div"
+      ],
+      "elapsed_s": 0.17
+    },
+    "conv_channel_mismatch": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "rp_ids": [
+        "bug_008",
+        "bug_009",
+        "bug_010",
+        "bug_011",
+        "bug_012",
+        "bug_013",
+        "bug_014",
+        "bug_015",
+        "bug_016",
+        "bug_017",
+        "bug_018",
+        "bug_019",
+        "bug_020",
+        "bug_022",
+        "bug_024",
+        "bug_026",
+        "bug_027",
+        "bug_028",
+        "bug_029",
+        "bug_031",
+        "bug_032",
+        "bug_033",
+        "bug_034",
+        "bug_035",
+        "bug_037",
+        "bug_038",
+        "bug_039",
+        "bug_040",
+        "bug_041",
+        "bug_042",
+        "bug_043",
+        "bug_044",
+        "bug_045",
+        "bug_047",
+        "bug_048",
+        "bug_049",
+        "bug_050",
+        "bug_051",
+        "bug_052",
+        "bug_053",
+        "bug_054",
+        "bug_055",
+        "bug_056",
+        "bug_057",
+        "bug_058",
+        "bug_059",
+        "bug_060",
+        "bug_063",
+        "bug_064",
+        "bug_065",
+        "bug_067",
+        "bug_068",
+        "bug_069"
+      ],
+      "disabled_handlers": [
+        "conv1d",
+        "conv2d",
+        "conv3d"
+      ],
+      "elapsed_s": 0.14
+    },
+    "linear_inout_mismatch": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "rp_ids": [
+        "bug_008",
+        "bug_009",
+        "bug_010",
+        "bug_011",
+        "bug_012",
+        "bug_013",
+        "bug_014",
+        "bug_015",
+        "bug_016",
+        "bug_017",
+        "bug_018",
+        "bug_019",
+        "bug_020",
+        "bug_022",
+        "bug_024",
+        "bug_026",
+        "bug_027",
+        "bug_028",
+        "bug_029",
+        "bug_031",
+        "bug_032",
+        "bug_033",
+        "bug_034",
+        "bug_035",
+        "bug_037",
+        "bug_038",
+        "bug_039",
+        "bug_040",
+        "bug_041",
+        "bug_042",
+        "bug_043",
+        "bug_044",
+        "bug_045",
+        "bug_047",
+        "bug_048",
+        "bug_049",
+        "bug_050",
+        "bug_051",
+        "bug_052",
+        "bug_053",
+        "bug_054",
+        "bug_055",
+        "bug_056",
+        "bug_057",
+        "bug_058",
+        "bug_059",
+        "bug_060",
+        "bug_063",
+        "bug_064",
+        "bug_065",
+        "bug_067",
+        "bug_068",
+        "bug_069"
+      ],
+      "disabled_handlers": [
+        "linear"
+      ],
+      "elapsed_s": 0.15
+    },
+    "einsum_dim": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "rp_ids": [
+        "bug_008",
+        "bug_009",
+        "bug_010",
+        "bug_011",
+        "bug_012",
+        "bug_013",
+        "bug_014",
+        "bug_015",
+        "bug_016",
+        "bug_017",
+        "bug_018",
+        "bug_019",
+        "bug_020",
+        "bug_022",
+        "bug_024",
+        "bug_026",
+        "bug_027",
+        "bug_028",
+        "bug_029",
+        "bug_031",
+        "bug_032",
+        "bug_033",
+        "bug_034",
+        "bug_035",
+        "bug_037",
+        "bug_038",
+        "bug_039",
+        "bug_040",
+        "bug_041",
+        "bug_042",
+        "bug_043",
+        "bug_044",
+        "bug_045",
+        "bug_047",
+        "bug_048",
+        "bug_049",
+        "bug_050",
+        "bug_051",
+        "bug_052",
+        "bug_053",
+        "bug_054",
+        "bug_055",
+        "bug_056",
+        "bug_057",
+        "bug_058",
+        "bug_059",
+        "bug_060",
+        "bug_063",
+        "bug_064",
+        "bug_065",
+        "bug_067",
+        "bug_068",
+        "bug_069"
+      ],
+      "disabled_handlers": [
+        "einsum",
+        "matmul",
+        "bmm"
+      ],
+      "elapsed_s": 0.13
+    },
+    "transpose_axes": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "rp_ids": [
+        "bug_008",
+        "bug_009",
+        "bug_010",
+        "bug_011",
+        "bug_012",
+        "bug_013",
+        "bug_014",
+        "bug_015",
+        "bug_016",
+        "bug_017",
+        "bug_018",
+        "bug_019",
+        "bug_020",
+        "bug_022",
+        "bug_024",
+        "bug_026",
+        "bug_027",
+        "bug_028",
+        "bug_029",
+        "bug_031",
+        "bug_032",
+        "bug_033",
+        "bug_034",
+        "bug_035",
+        "bug_037",
+        "bug_038",
+        "bug_039",
+        "bug_040",
+        "bug_041",
+        "bug_042",
+        "bug_043",
+        "bug_044",
+        "bug_045",
+        "bug_047",
+        "bug_048",
+        "bug_049",
+        "bug_050",
+        "bug_051",
+        "bug_052",
+        "bug_053",
+        "bug_054",
+        "bug_055",
+        "bug_056",
+        "bug_057",
+        "bug_058",
+        "bug_059",
+        "bug_060",
+        "bug_063",
+        "bug_064",
+        "bug_065",
+        "bug_067",
+        "bug_068",
+        "bug_069"
+      ],
+      "disabled_handlers": [
+        "transpose",
+        "permute"
+      ],
+      "elapsed_s": 0.15
+    },
+    "attention_dim": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "rp_ids": [
+        "bug_008",
+        "bug_009",
+        "bug_010",
+        "bug_011",
+        "bug_012",
+        "bug_013",
+        "bug_014",
+        "bug_015",
+        "bug_016",
+        "bug_017",
+        "bug_018",
+        "bug_019",
+        "bug_020",
+        "bug_022",
+        "bug_024",
+        "bug_026",
+        "bug_027",
+        "bug_028",
+        "bug_029",
+        "bug_031",
+        "bug_032",
+        "bug_033",
+        "bug_034",
+        "bug_035",
+        "bug_037",
+        "bug_038",
+        "bug_039",
+        "bug_040",
+        "bug_041",
+        "bug_042",
+        "bug_043",
+        "bug_044",
+        "bug_045",
+        "bug_047",
+        "bug_048",
+        "bug_049",
+        "bug_050",
+        "bug_051",
+        "bug_052",
+        "bug_053",
+        "bug_054",
+        "bug_055",
+        "bug_056",
+        "bug_057",
+        "bug_058",
+        "bug_059",
+        "bug_060",
+        "bug_063",
+        "bug_064",
+        "bug_065",
+        "bug_067",
+        "bug_068",
+        "bug_069"
+      ],
+      "disabled_handlers": [
+        "scaled_dot_product_attention",
+        "matmul",
+        "bmm",
+        "softmax",
+        "multihead_attention"
+      ],
+      "elapsed_s": 0.18
+    },
+    "batchnorm_features": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "rp_ids": [
+        "bug_008",
+        "bug_009",
+        "bug_010",
+        "bug_011",
+        "bug_012",
+        "bug_013",
+        "bug_014",
+        "bug_015",
+        "bug_016",
+        "bug_017",
+        "bug_018",
+        "bug_019",
+        "bug_020",
+        "bug_022",
+        "bug_024",
+        "bug_026",
+        "bug_027",
+        "bug_028",
+        "bug_029",
+        "bug_031",
+        "bug_032",
+        "bug_033",
+        "bug_034",
+        "bug_035",
+        "bug_037",
+        "bug_038",
+        "bug_039",
+        "bug_040",
+        "bug_041",
+        "bug_042",
+        "bug_043",
+        "bug_044",
+        "bug_045",
+        "bug_047",
+        "bug_048",
+        "bug_049",
+        "bug_050",
+        "bug_051",
+        "bug_052",
+        "bug_053",
+        "bug_054",
+        "bug_055",
+        "bug_056",
+        "bug_057",
+        "bug_058",
+        "bug_059",
+        "bug_060",
+        "bug_063",
+        "bug_064",
+        "bug_065",
+        "bug_067",
+        "bug_068",
+        "bug_069"
+      ],
+      "disabled_handlers": [
+        "batch_norm"
+      ],
+      "elapsed_s": 0.13
+    },
+    "embedding_index": {
+      "rp": 53,
+      "silent": 0,
+      "abst": 0,
+      "err": 7,
+      "per_category": {
+        "attention_dim": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 1,
+          "n": 5
+        },
+        "broadcasting": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "view_reshape_total_size": {
+          "rp": 7,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 9
+        },
+        "other": {
+          "rp": 9,
+          "silent": 0,
+          "abst": 0,
+          "err": 2,
+          "n": 11
+        },
+        "conv_channel_mismatch": {
+          "rp": 6,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 6
+        },
+        "linear_inout_mismatch": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "einsum_dim": {
+          "rp": 5,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 5
+        },
+        "transpose_axes": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "batchnorm_features": {
+          "rp": 4,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 4
+        },
+        "embedding_index": {
+          "rp": 3,
+          "silent": 0,
+          "abst": 0,
+          "err": 0,
+          "n": 3
+        }
+      },
+      "rp_ids": [
+        "bug_008",
+        "bug_009",
+        "bug_010",
+        "bug_011",
+        "bug_012",
+        "bug_013",
+        "bug_014",
+        "bug_015",
+        "bug_016",
+        "bug_017",
+        "bug_018",
+        "bug_019",
+        "bug_020",
+        "bug_022",
+        "bug_024",
+        "bug_026",
+        "bug_027",
+        "bug_028",
+        "bug_029",
+        "bug_031",
+        "bug_032",
+        "bug_033",
+        "bug_034",
+        "bug_035",
+        "bug_037",
+        "bug_038",
+        "bug_039",
+        "bug_040",
+        "bug_041",
+        "bug_042",
+        "bug_043",
+        "bug_044",
+        "bug_045",
+        "bug_047",
+        "bug_048",
+        "bug_049",
+        "bug_050",
+        "bug_051",
+        "bug_052",
+        "bug_053",
+        "bug_054",
+        "bug_055",
+        "bug_056",
+        "bug_057",
+        "bug_058",
+        "bug_059",
+        "bug_060",
+        "bug_063",
+        "bug_064",
+        "bug_065",
+        "bug_067",
+        "bug_068",
+        "bug_069"
+      ],
+      "disabled_handlers": [
+        "embed",
+        "index_select",
+        "gather"
+      ],
+      "elapsed_s": 0.13
+    }
+  },
+  "handler_attributable_under_triple_loo": {
+    "view_reshape_total_size": {
+      "rp_full": 7,
+      "rp_under_triple_loo": 7,
+      "handler_attributable_drop": 0
+    },
+    "broadcasting": {
+      "rp_full": 7,
+      "rp_under_triple_loo": 7,
+      "handler_attributable_drop": 0
+    },
+    "conv_channel_mismatch": {
+      "rp_full": 6,
+      "rp_under_triple_loo": 6,
+      "handler_attributable_drop": 0
+    },
+    "linear_inout_mismatch": {
+      "rp_full": 4,
+      "rp_under_triple_loo": 4,
+      "handler_attributable_drop": 0
+    },
+    "einsum_dim": {
+      "rp_full": 5,
+      "rp_under_triple_loo": 5,
+      "handler_attributable_drop": 0
+    },
+    "transpose_axes": {
+      "rp_full": 4,
+      "rp_under_triple_loo": 4,
+      "handler_attributable_drop": 0
+    },
+    "attention_dim": {
+      "rp_full": 4,
+      "rp_under_triple_loo": 4,
+      "handler_attributable_drop": 0
+    },
+    "batchnorm_features": {
+      "rp_full": 4,
+      "rp_under_triple_loo": 4,
+      "handler_attributable_drop": 0
+    },
+    "embedding_index": {
+      "rp_full": 3,
+      "rp_under_triple_loo": 3,
+      "handler_attributable_drop": 0
+    }
+  },
+  "interpretation": "If the all-three-paths globally-disabled run still produces RP > 0, a fourth refute path exists.  If the per-category triple-LOO drop matches the per-rule attribution table (7/7/6/5/4*4/3), then the catalogue is genuinely over-determined and the joint-LOO 53/60 result is robustness, not vacuity.  If the per-category drops are all zero, the corpus is being caught by predicate harvesting that is independent of the per-handler dispatch.  This script lets the reader decide between the two readings."
+}

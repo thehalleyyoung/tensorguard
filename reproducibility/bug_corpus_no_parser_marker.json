@@ -1,0 +1,553 @@
+{
+  "_question": "R5-Q3: with the AST-pattern path disabled AND the [MODEL_CHECK] No nn.Module subclass found parser-failure marker excluded from the catch count, what fraction of the 60-bug corpus does the rule-driven symbolic analyser still catch?",
+  "timestamp": "2026-04-30T02:53:32.554960Z",
+  "n_total": 60,
+  "rp_full_pipeline": 53,
+  "rp_full_parser_marker_only": 53,
+  "rp_ast_pattern_disabled": 53,
+  "rp_ast_disabled_parser_marker_only": 53,
+  "rp_rule_driven_only": 0,
+  "interpretation": "On the 60-bug corpus the full pipeline returns Refuted-Proof on 53, of which 53 are powered exclusively by the parser-failure marker (the bug is a script-level repro that does not contain an ``nn.Module`` subclass at all). With the AST-pattern path disabled the count is 53, with 53 parser-marker-only. The residual rule-driven RP count -- the analyser's contribution under both ablations -- is 0/60 (0.0%).  The remaining bugs are caught by the AST-pattern path (rounds where that path is enabled) or by the parser-failure marker recognising that the script-level repro is not a reasoning subject for the calculus.  This is the most diagnostic single number for the calculus's contribution on the curated corpus.",
+  "per_bug": [
+    {
+      "id": "bug_001",
+      "category": "attention_dim",
+      "full_bucket": "Verified",
+      "full_parser_marker_only": false,
+      "ast_disabled_bucket": "Verified",
+      "ast_disabled_parser_marker_only": false,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_002",
+      "category": "broadcasting",
+      "full_bucket": "Verified",
+      "full_parser_marker_only": false,
+      "ast_disabled_bucket": "Verified",
+      "ast_disabled_parser_marker_only": false,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_003",
+      "category": "view_reshape_total_size",
+      "full_bucket": "Verified",
+      "full_parser_marker_only": false,
+      "ast_disabled_bucket": "Verified",
+      "ast_disabled_parser_marker_only": false,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_004",
+      "category": "view_reshape_total_size",
+      "full_bucket": "Verified",
+      "full_parser_marker_only": false,
+      "ast_disabled_bucket": "Verified",
+      "ast_disabled_parser_marker_only": false,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_005",
+      "category": "broadcasting",
+      "full_bucket": "Verified",
+      "full_parser_marker_only": false,
+      "ast_disabled_bucket": "Verified",
+      "ast_disabled_parser_marker_only": false,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_006",
+      "category": "other",
+      "full_bucket": "Verified",
+      "full_parser_marker_only": false,
+      "ast_disabled_bucket": "Verified",
+      "ast_disabled_parser_marker_only": false,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_007",
+      "category": "other",
+      "full_bucket": "Verified",
+      "full_parser_marker_only": false,
+      "ast_disabled_bucket": "Verified",
+      "ast_disabled_parser_marker_only": false,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_008",
+      "category": "conv_channel_mismatch",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_009",
+      "category": "linear_inout_mismatch",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_010",
+      "category": "view_reshape_total_size",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_011",
+      "category": "broadcasting",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_012",
+      "category": "attention_dim",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_013",
+      "category": "einsum_dim",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_014",
+      "category": "transpose_axes",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_015",
+      "category": "batchnorm_features",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_016",
+      "category": "embedding_index",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_017",
+      "category": "conv_channel_mismatch",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_018",
+      "category": "linear_inout_mismatch",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_019",
+      "category": "view_reshape_total_size",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_020",
+      "category": "broadcasting",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_022",
+      "category": "einsum_dim",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_024",
+      "category": "batchnorm_features",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_026",
+      "category": "conv_channel_mismatch",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_027",
+      "category": "linear_inout_mismatch",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_028",
+      "category": "view_reshape_total_size",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_029",
+      "category": "broadcasting",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_031",
+      "category": "einsum_dim",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_032",
+      "category": "transpose_axes",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_033",
+      "category": "batchnorm_features",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_034",
+      "category": "embedding_index",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_035",
+      "category": "conv_channel_mismatch",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_037",
+      "category": "view_reshape_total_size",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_038",
+      "category": "broadcasting",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_039",
+      "category": "attention_dim",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_040",
+      "category": "einsum_dim",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_041",
+      "category": "transpose_axes",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_042",
+      "category": "other",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_043",
+      "category": "other",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_044",
+      "category": "other",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_045",
+      "category": "conv_channel_mismatch",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_047",
+      "category": "view_reshape_total_size",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_048",
+      "category": "broadcasting",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_049",
+      "category": "attention_dim",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_050",
+      "category": "einsum_dim",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_051",
+      "category": "other",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_052",
+      "category": "other",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_053",
+      "category": "transpose_axes",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_054",
+      "category": "batchnorm_features",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_055",
+      "category": "embedding_index",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_056",
+      "category": "conv_channel_mismatch",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_057",
+      "category": "linear_inout_mismatch",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_058",
+      "category": "view_reshape_total_size",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_059",
+      "category": "broadcasting",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_060",
+      "category": "attention_dim",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_063",
+      "category": "view_reshape_total_size",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_064",
+      "category": "broadcasting",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_065",
+      "category": "other",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_067",
+      "category": "other",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_068",
+      "category": "other",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    },
+    {
+      "id": "bug_069",
+      "category": "other",
+      "full_bucket": "Refuted",
+      "full_parser_marker_only": true,
+      "ast_disabled_bucket": "Refuted",
+      "ast_disabled_parser_marker_only": true,
+      "ast_disabled_first_real_bug": ""
+    }
+  ]
+}

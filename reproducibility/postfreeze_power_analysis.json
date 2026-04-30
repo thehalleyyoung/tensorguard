@@ -1,0 +1,37 @@
+{
+  "_question": "R5-Q4: per-arm sample size needed to declare TG strictly above the post-freeze baselines at alpha=0.05, 80% power, two-sided Fisher exact, given the round-4 effect sizes.",
+  "timestamp": "2026-04-30T02:55:30.946974Z",
+  "alpha": 0.05,
+  "target_power": 0.8,
+  "observed": {
+    "tg": [
+      5,
+      15
+    ],
+    "fake_tensor_mode": [
+      2,
+      15
+    ],
+    "pytea": [
+      3,
+      15
+    ]
+  },
+  "fisher_two_sided": {
+    "vs_fake_tensor_mode": {
+      "n_per_arm_for_80pct_power": 80,
+      "achieved_power": 0.832
+    },
+    "vs_pytea": {
+      "n_per_arm_for_80pct_power": 187,
+      "achieved_power": 0.8135
+    }
+  },
+  "mcnemar_independent_baseline": {
+    "vs_fake_tensor_mode": {
+      "n_pairs_for_80pct_power": 100,
+      "achieved_power": 0.895
+    }
+  },
+  "interpretation": "Under the round-4 observed proportions (TG 5/15 vs FTM 2/15 vs Pytea 3/15), a two-sided Fisher exact test reaches 80% power at approximately N >= 80 per arm against FakeTensorMode and N >= 187 per arm against Pytea.  The shipped N=15 sample is therefore directionally informative but underpowered against either baseline at the observed effect size.  This is a corpus-collection cost question, not a tool-quality question: catching unbiased post-freeze PRs is the throughput bottleneck.  An N >= 187 replication on a future-collected post-freeze sample would be sufficient to upgrade the directional result to a statistically separable comparison."
+}

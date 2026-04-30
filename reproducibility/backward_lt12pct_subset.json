@@ -1,0 +1,196 @@
+{
+  "_question": "Round-8 Q5: backward-verifier verdict surface on the <=12% subset of training scripts that use parameter sharing or torch.utils.checkpoint.",
+  "_summary": "On six modules each constructed to exercise tied weights, torch.utils.checkpoint, or both, TG's first-order backward verifier is conservative: it returns ABSTAIN on the checkpoint and tied-weight constructs (the lattice is first-order and does not model recomputation or aliasing).  We observe 0 SILENTLY_INCORRECT_VERIFIED rows: the verdict surface on the <=12% subset is bounded above by ABSTAIN, not by silently-wrong Verified.  This is consistent with the limitation paragraph in the paper (the lattice is first-order and the construct triggers an honest Abstain), and is the strictly-stronger outcome compared to a silently incorrect Verified.",
+  "torch_version": "2.9.1",
+  "counts": {
+    "ABSTAIN": 6,
+    "VERIFIED": 0,
+    "SILENTLY_INCORRECT_VERIFIED": 0,
+    "BUGS_REPORTED": 0
+  },
+  "rows": [
+    {
+      "module": "tied_embedding_decoder",
+      "tg_verdict": "ABSTAIN",
+      "runtime_silently_severed": false,
+      "n_params_distinct_storage": 1,
+      "param_topology": [
+        {
+          "name": "emb.weight",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "emb.weight"
+          ],
+          "grad_is_None_post": false
+        }
+      ]
+    },
+    {
+      "module": "checkpointed_two_layer",
+      "tg_verdict": "ABSTAIN",
+      "runtime_silently_severed": false,
+      "n_params_distinct_storage": 4,
+      "param_topology": [
+        {
+          "name": "fc1.weight",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "fc1.weight"
+          ],
+          "grad_is_None_post": false
+        },
+        {
+          "name": "fc1.bias",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "fc1.bias"
+          ],
+          "grad_is_None_post": false
+        },
+        {
+          "name": "fc2.weight",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "fc2.weight"
+          ],
+          "grad_is_None_post": false
+        },
+        {
+          "name": "fc2.bias",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "fc2.bias"
+          ],
+          "grad_is_None_post": false
+        }
+      ]
+    },
+    {
+      "module": "tied_and_checkpointed",
+      "tg_verdict": "ABSTAIN",
+      "runtime_silently_severed": false,
+      "n_params_distinct_storage": 1,
+      "param_topology": [
+        {
+          "name": "emb.weight",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "emb.weight"
+          ],
+          "grad_is_None_post": false
+        }
+      ]
+    },
+    {
+      "module": "frozen_backbone_tied_head",
+      "tg_verdict": "ABSTAIN",
+      "runtime_silently_severed": false,
+      "n_params_distinct_storage": 1,
+      "param_topology": [
+        {
+          "name": "emb.weight",
+          "requires_grad": false,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "emb.weight"
+          ],
+          "grad_is_None_post": true
+        }
+      ]
+    },
+    {
+      "module": "checkpointed_attention",
+      "tg_verdict": "ABSTAIN",
+      "runtime_silently_severed": false,
+      "n_params_distinct_storage": 6,
+      "param_topology": [
+        {
+          "name": "q.weight",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "q.weight"
+          ],
+          "grad_is_None_post": false
+        },
+        {
+          "name": "q.bias",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "q.bias"
+          ],
+          "grad_is_None_post": false
+        },
+        {
+          "name": "k.weight",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "k.weight"
+          ],
+          "grad_is_None_post": false
+        },
+        {
+          "name": "k.bias",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "k.bias"
+          ],
+          "grad_is_None_post": false
+        },
+        {
+          "name": "v.weight",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "v.weight"
+          ],
+          "grad_is_None_post": false
+        },
+        {
+          "name": "v.bias",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "v.bias"
+          ],
+          "grad_is_None_post": false
+        }
+      ]
+    },
+    {
+      "module": "siamese_shared_tower",
+      "tg_verdict": "ABSTAIN",
+      "runtime_silently_severed": false,
+      "n_params_distinct_storage": 2,
+      "param_topology": [
+        {
+          "name": "tower.0.weight",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "tower.0.weight"
+          ],
+          "grad_is_None_post": false
+        },
+        {
+          "name": "tower.0.bias",
+          "requires_grad": true,
+          "grad_is_None_pre": true,
+          "aliases": [
+            "tower.0.bias"
+          ],
+          "grad_is_None_post": false
+        }
+      ]
+    }
+  ]
+}

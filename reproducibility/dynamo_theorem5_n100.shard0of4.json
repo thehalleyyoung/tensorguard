@@ -1,0 +1,432 @@
+{
+  "_question": "Reviewer W4: extend the 17-module Dynamo necessary-direction audit to >=100 modules. Falsifier rate = #(SHAPE/DTYPE/RANK guards outside TG catalogue) / #(in-contract recompiles).",
+  "timestamp": "2026-04-29T19:47:45.891449Z",
+  "torch_version": "2.9.1",
+  "python_version": "3.11.15 (main, Mar  3 2026, 00:52:57) [Clang 17.0.0 (clang-1700.6.4.2)]",
+  "seed": 0,
+  "n_candidates": 107,
+  "n_successful_modules": 17,
+  "n_excluded": 10,
+  "exclusion_breakdown": {
+    "ok": 17,
+    "subproc_timeout": 7,
+    "warmup_failed": 3
+  },
+  "n_in_contract_recompiles_total": 22,
+  "by_guard_kind_aggregate": {
+    "INT": 22
+  },
+  "n_shape_dtype_rank_recompiles": 0,
+  "n_recompiles_outside_catalogue": 0,
+  "falsifier_rate": 0.0,
+  "n_modules_falsifying_theorem5": 0,
+  "interpretation": "Over 17 successfully-instantiated modules (excluding 10 build/warmup/timeout failures), there were 22 in-contract recompiles. Of these, 0 were SHAPE/DTYPE/RANK guards. Of those, 0 were outside the TG operator-rule catalogue (falsifier predicate = True). Falsifier rate = 0/22 = 0.0000. Theorem 5 is falsified iff this rate > 0 and the recompiles name a shape/dtype/rank bit not in the catalogue.",
+  "per_module": [
+    {
+      "name": "tv_resnet18",
+      "family": "torchvision",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 2,
+      "by_guard_kind": {
+        "INT": 2
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 173.19
+    },
+    {
+      "name": "tv_efficientnet_b0",
+      "family": "torchvision",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 209.69
+    },
+    {
+      "name": "tv_shufflenet_v2",
+      "family": "torchvision",
+      "status": "subproc_timeout",
+      "note": "hard kill after 240s",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 240.12
+    },
+    {
+      "name": "tv_densenet121",
+      "family": "torchvision",
+      "status": "subproc_timeout",
+      "note": "hard kill after 240s",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 240.23
+    },
+    {
+      "name": "tv_resnet_bottleneck",
+      "family": "torchvision",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 41.8
+    },
+    {
+      "name": "tv_densenet_denselayer",
+      "family": "torchvision",
+      "status": "warmup_failed",
+      "note": "TypeError: _DenseLayer.forward() got an unexpected keyword argument 'x'",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 24.91
+    },
+    {
+      "name": "hf_albert_tiny",
+      "family": "transformers",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 41.71
+    },
+    {
+      "name": "hf_mpnet_tiny",
+      "family": "transformers",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 48.52
+    },
+    {
+      "name": "timm_mobilenetv2_050",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 210.98
+    },
+    {
+      "name": "timm_efficientnet_b0",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 199.31
+    },
+    {
+      "name": "timm_rexnetr_100",
+      "family": "timm",
+      "status": "subproc_timeout",
+      "note": "hard kill after 240s",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 240.09
+    },
+    {
+      "name": "timm_deit_tiny_patch16_224",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 36.17
+    },
+    {
+      "name": "timm_convnext_femto",
+      "family": "timm",
+      "status": "warmup_failed",
+      "note": "RuntimeError: Calculated padded input size per channel: (1 x 1). Kernel size: (2 x 2). Kernel size can't be greater than actual input ",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 57.37
+    },
+    {
+      "name": "timm_xcit_tiny_12_p16_224",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 120.44
+    },
+    {
+      "name": "timm_swin_small_patch4_window7_224",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 155.56
+    },
+    {
+      "name": "timm_resnext26ts",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 4,
+      "by_guard_kind": {
+        "INT": 4
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 213.39
+    },
+    {
+      "name": "timm_densenet121",
+      "family": "timm",
+      "status": "warmup_failed",
+      "note": "RuntimeError: Given input size: (512x1x1). Calculated output size: (512x0x0). Output size is too small",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 98.26
+    },
+    {
+      "name": "timm_skresnet18",
+      "family": "timm",
+      "status": "subproc_timeout",
+      "note": "hard kill after 240s",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 240.08
+    },
+    {
+      "name": "timm_regnetx_004",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 168.39
+    },
+    {
+      "name": "timm_repvgg_a1",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 2,
+      "by_guard_kind": {
+        "INT": 2
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 131.53
+    },
+    {
+      "name": "timm_ghostnet_100",
+      "family": "timm",
+      "status": "subproc_timeout",
+      "note": "hard kill after 240s",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 240.09
+    },
+    {
+      "name": "timm_lambda_resnet50ts",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 4,
+      "by_guard_kind": {
+        "INT": 4
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 191.18
+    },
+    {
+      "name": "timm_legacy_seresnet34",
+      "family": "timm",
+      "status": "subproc_timeout",
+      "note": "hard kill after 240s",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 240.08
+    },
+    {
+      "name": "timm_tinynet_a",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 136.32
+    },
+    {
+      "name": "timm_halo2botnet50ts_256",
+      "family": "timm",
+      "status": "subproc_timeout",
+      "note": "hard kill after 240s",
+      "n_inputs": 0,
+      "n_in_contract_recompiles": 0,
+      "by_guard_kind": {},
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 240.23
+    },
+    {
+      "name": "timm_hardcorenas_a",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 172.76
+    },
+    {
+      "name": "timm_eca_resnet33ts",
+      "family": "timm",
+      "status": "ok",
+      "note": "",
+      "n_inputs": 7,
+      "n_in_contract_recompiles": 1,
+      "by_guard_kind": {
+        "INT": 1
+      },
+      "n_shape_dtype_rank": 0,
+      "n_outside_catalogue": 0,
+      "falsifies_theorem5": false,
+      "guard_examples": [],
+      "elapsed_s": 99.37
+    }
+  ]
+}

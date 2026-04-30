@@ -1,0 +1,662 @@
+[
+  {
+    "description": "**The headline number does not support the thesis.** On the 488-block real-source corpus, TG produces **0 unconditional RP** (line 219\u2013225 of the paper, confirmed in `experiments_v5/v8/user_visible_rp.json`: `Refuted_Proof: 0` in both regimes). The 206 \"refutations\" are 128 CV (sound only under a tool-synthesised caller-rely envelope, i.e. the tool is allowed to invent the precondition that makes its own refutation hold) plus 78 LW (explicitly outside the soundness theorem). Calling 128 CV verdicts \"sound only under the synthesised caller-rely assume\" is close to circular: TG synthesises `assume_M`, then refutes the caller for violating it. The paper acknowledges this but still leads with the 488-block corpus; the unconditional-RP claim rests entirely on the 60-bug historical corpus and 3/10 (or 6/10 at 0.80) on the 10-bug upstream corpus.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.06250000000000001
+  },
+  {
+    "description": "**The Dynamo correspondence \"audit\" is not what it appears.** `experiments_v5/dynamo_correspondence_v5.json` shows `\"signature-trusted\"` for 16 of 17 modules with the candid annotation: *\"Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.\"* In other words, TG did not actually verify the modules in \u00a74.3; the contracts were taken from documentation, then Dynamo was run against those contracts. The 8.8% in-contract recompile and 97.9% OOS-violation numbers therefore measure how well a hand-written signature predicts Dynamo guards, not how well TG's verifier does. Theorem 5's empirical instantiation is essentially vacuous on 16/17 modules.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.06250000000000001
+  },
+  {
+    "description": "**Lean claim and Lean source disagree about `sorry`-freedom.** \u00a71 / \u00a74.4 state \"10/11 previously-axiomatic sites\" closed with one outstanding `sorry` for `permList_compose`. But `lean/TensorGuard/V5OperatorRules.lean` lines 20\u201324 say *\"the entire `lean/TensorGuard/` tree is also `sorry`-free: the \u2026 unconditional `permList_compose`) is now closed sorry-free\"*. Either the paper or the source is stale. `grep -n sorry lean/TensorGuard/*.lean` returns matches only inside comments/docstrings, but the in-paper count of 28/79 handlers Lean-audited (and 48 tested-only) is the more important \u2014 and uncomforting \u2014 number: **48 of 79 operator handlers are covered only by random agreement testing**, and \u00a7C/\u00a7Theorem 1's soundness sketch explicitly excludes them. The actual mechanised soundness footprint is far smaller than the \"Lean-audited\" framing suggests.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.06250000000000001
+  },
+  {
+    "description": "**The 28,000/28,000 Lean\u2013torch agreement is an in-fragment random sample, not a precondition-discovery test.** \u00a74.4 admits this (\"inputs are sampled uniformly within the rule's declared precondition envelope; the test is therefore an implementation-agreement check, not a precondition-discovery check\"). So a wrong precondition envelope cannot be caught by the harness \u2014 the most plausible source of unsoundness in a hand-written rule table is exactly the one the test is blind to.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.06250000000000001
+  },
+  {
+    "description": "**The leave-one-category-out holdout is reported as a literal no-op** (\"aggregate RP rate falls from 53/60 to 53/60 ... the v5 orchestration modules disabled by the LOO are not where operator handlers live\"). This means the only \"holdout\" evidence presented is a process claim (catalogue enumerated from `torch.nn.modules` before bug forwards were inspected), which is not independently verifiable from the artifact. The per-feature ablation on the real-public 10-bug corpus is also a flat line (\u00a7306\u2013311). The empirical case for catalogue-not-overfit therefore reduces to author attestation.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.06250000000000001
+  },
+  {
+    "description": "**The 10-bug \"shape-pattern coverage suite\" 10/10 result is misleading as presented.** The hand-distilled `forward(self,x): return x.view(...)` one-liners (`experiments_v5/v8/real_bugs/`) are by construction inside FTG's most favourable case (literal-int divisibility view), so 10/10 is a self-test of TG's view rule, not evidence on real public-repo code. The paper does eventually concede this (\"catalogue-coverage check, not that TG runs on the upstream class\") but Table 2's bolded 10/10 column risks being read as a real headline.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.06250000000000001
+  },
+  {
+    "description": "**Backward verifier \"500/500 agreement\" is on random small modules drawn from a generative grammar** TG itself helped specify; the 10-real-model sweep in `experiments_v5/v8/backward_real/` explicitly excludes parameter sharing and `torch.utils.checkpoint`, which \u00a76 admits is the regime where TG silently misclassifies. The \"\u226412% / \u22644%\" prevalence estimate is uncited and based on filename keyword filtering of \"5,000 HuggingFace training scripts\" (no script list shipped).",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.06250000000000001
+  },
+  {
+    "description": "**Theorem 2 has a reach gap relative to the implementation.** \u00a72.1 (\"the analyser implementation \u2026 is not mechanised\"), \u00a76 (\"Lean does not mechanise the AST extractor, the analyser implementation, the assume/guarantee composition rule [for the full handler set], or the backward verifier\") \u2014 combined with 48/79 tested-only handlers \u2014 means the soundness theorem applies to the rule table on paper, not to what `verify(M)` actually computes for any module containing a tested-only handler. The paper should not be allowed to leverage \"soundness theorem\" rhetoric for verdicts that involve any of those 48 handlers.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.06250000000000001
+  },
+  {
+    "description": "**The headline thesis is still not supported by the headline corpus.** On the 488-block real-source corpus TG produces **0 unconditional RP** in both regimes (`experiments_v5/v8/user_visible_rp.json`). The 128 \"CV\" refutations are sound only under a TG-synthesised `assume_M`, i.e. TG invents the precondition that makes its own refutation hold, then refutes the caller for violating it. The paper acknowledges this but still leads with \"206 refutations\". The unconditional-RP claim rests entirely on the 60-bug historical corpus and 3/10 (or 6/10 at 0.80) of a 10-bug corpus.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.08838834764831846
+  },
+  {
+    "description": "**The Dynamo-correspondence audit is materially unchanged from round 1 and remains near-vacuous.** `experiments_v5/dynamo_correspondence_v5.json` still records `signature-trusted` for **16 of 17** modules (\"Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR\"). The 8.8% in-contract recompile and 97.9% OOS-violation rates therefore measure how well a documented signature predicts Dynamo guards, not how well TG's verifier does. Theorem 5's empirical instantiation in \u00a74.3 is detached from the analyser on 16/17 modules.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.08838834764831846
+  },
+  {
+    "description": "**Mechanised soundness footprint is much smaller than \"Lean-audited\" framing suggests.** Table 6 / \u00a74.4 admit 28 Lean-audited + 3 pen-and-paper + **48 tested-only** handlers out of 79, and \"the parser, the AST extractor, the analyser implementation, the assume/guarantee composition rule [for the full handler set], and the backward verifier are not mechanised\". Theorem 2's soundness theorem therefore does not transfer to any verdict whose path touches one of the 48 tested-only handlers (which is most of the 488-block corpus). The paper continues to lean on \"soundness theorem\" rhetoric for verdicts the theorem does not in fact cover.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.08838834764831846
+  },
+  {
+    "description": "**The 28k/28k Lean\u2013torch agreement remains an in-fragment random sample, not a precondition-discovery test.** \u00a74.4 still concedes: \"inputs are sampled uniformly within the rule's declared precondition envelope; the test is therefore an implementation-agreement check, not a precondition-discovery check.\" A wrong precondition envelope \u2014 the most plausible source of unsoundness in a hand-written rule table \u2014 is exactly what the harness cannot catch.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.08838834764831846
+  },
+  {
+    "description": "**Lean status disclosure is internally inconsistent.** The paper still writes \"10/11 previously-axiomatic soundness lemmas closed sorry-free \u2026 the one remaining sorry (`permList_compose`) is documented with a counterexample showing the original statement is false at the boundary\" (lines 358\u2013363). But (a) `grep '^\\s*sorry' lean/TensorGuard/*.lean` returns nothing, and (b) `V5OperatorRules.lean` lines 20\u201324 explicitly state the tree is sorry-free including `permList_compose` (the in-range restatement is closed). The \"one remaining sorry\" is no longer present in the source \u2014 the paper's framing predates the most recent commit (`3471faf Eliminate 10 sorry sites \u2026`) and should be reconciled, particularly because the round-1 reviewer flagged this exact contradiction.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.08838834764831846
+  },
+  {
+    "description": "**The leave-one-category-out is still reported as a literal no-op** (53/60 \u2192 53/60; \"the v5 orchestration modules disabled by the LOO are not where operator handlers live\"). This is the only quantitative holdout in the paper, and it does not disable any handler on the path of the bugs it was meant to ablate. The \"real\" holdout reduces to author attestation about catalogue freeze order, with no externally checkable artefact summarised in the paper. The per-feature ablation on the upstream-faithful 10-bug corpus is also a flat line (\u00a7306\u2013311), which the paper reports honestly but which further weakens the empirical story.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.08838834764831846
+  },
+  {
+    "description": "**The 10/10 \"shape-pattern coverage suite\" remains misleading as headlined.** `experiments_v5/v8/real_bugs/rb_*.py` is by construction a hand-distilled `forward(self,x): return x.view(...)` one-liner per bug \u2014 exactly TG's most favourable case. Table 2 still bolds the 10/10 column; the paper concedes this is a \"catalogue-coverage check, not a live-class run\", but the bold typography and abstract continue to invite the wrong reading. The genuinely real-class number is 3/10 RP@0.99 + 3/10 @0.80, with 4/10 silent verifieds \u2014 the constructor-bound-integer gap discussed in \u00a76 is a substantive scope limitation, not just an implementation polish item.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.08838834764831846
+  },
+  {
+    "description": "**Backward-verifier evaluation excludes precisely the regimes \u00a76 admits TG misclassifies.** The 10-real-model sweep in `experiments_v5/v8/backward_real/` explicitly excludes `torch.utils.checkpoint` and parameter sharing; the \"\u226412% / \u22644%\" prevalence estimate is based on filename keyword filtering of an unspecified 5,000 HF training scripts (no script list shipped, no commit SHA frozen). 8/8 canonical bugs and 0/50 false positives are on hand-curated and randomly-generated grammars TG itself helped specify; the realistic frequency at which the silent-misclassification regime fires in production is unmeasured.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.08838834764831846
+  },
+  {
+    "description": "**The hybrid-mode falsification (Table 3) is a 25-block hand-built stress set, not a corpus measurement.** It is honest evidence that TG and FakeTensor surfaces are complementary on importable code \u2014 but it is not, and is not claimed to be, a falsification of the \"0 RP on 488 blocks\" headline; on that corpus the hybrid contributes \"zero additional resolutions\". The paper should not let Table 3 quietly soften the \u00a74.1 result.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.08838834764831846
+  },
+  {
+    "description": "**The headline thesis is still not supported by the headline corpus.** On the 488-block corpus TG produces **0 unconditional RP** in both regimes (`experiments_v5/v8/user_visible_rp.json`). The 128 CVs are sound only under a TG-synthesised `assume_M`; the abstract still leads with \"206 refutations\" before disclosing the decomposition. The unconditional-RP story rests on a 60-bug curated catalogue and a 10-bug + N=15 post-freeze sample \u2014 small numbers for a paper whose thesis is dominance over execution-based tools on real code.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.12500000000000003
+  },
+  {
+    "description": "**The Dynamo-correspondence audit is materially unchanged from rounds 1 and 2 and remains near-vacuous as an empirical instantiation of Theorem 5.** `experiments_v5/dynamo_correspondence_v5.json` still contains `signature-trusted` on **16 of 17** modules. The 8.8% in-contract recompile and 97.9% OOS-violation rates therefore measure how well a documented forward signature predicts Dynamo guards, not how well TG's analyser does. Round 2 asked for an end-to-end subset; the repo shows no follow-up commit.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.12500000000000003
+  },
+  {
+    "description": "**The mechanised soundness footprint is much smaller than the \"Lean-audited\" framing.** Theorems 1 and 3 are mechanised on a 3-operator DSL (matmul/view/add); the rule table covers 28 of 79 handlers in Lean, 3 pen-and-paper, and **48 tested-only**. The paper itself states the parser, AST extractor, analyser implementation, backward verifier, and Z3 dispatch are not mechanised. Theorem 2's soundness therefore does not transfer to any forward path that touches a tested-only handler, which is most of the 488-block corpus. The paper does not report what fraction of V/CV verdicts on the 488 corpus actually have an end-to-end Lean-covered path; this is the single number that would let a reader calibrate the soundness rhetoric, and it is missing.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.12500000000000003
+  },
+  {
+    "description": "**The 28k/28k random-agreement check is still an in-fragment uniform-sample test, not a precondition-discovery test** (acknowledged in \u00a74.4: \"implementation-agreement check, not a precondition-discovery check\"). A wrong precondition envelope on a hand-written rule is exactly the failure mode the harness cannot detect, and is the most plausible source of unsoundness for a 79-rule table.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.12500000000000003
+  },
+  {
+    "description": "**The paper text on Lean status is internally inconsistent with the source as of submission.** The abstract and \u00a74.4 say \"11/11 previously-axiomatic soundness lemmas closed sorry-free,\" yet downstream prose elsewhere in the v6 sections (carried over from earlier versions; flagged in round 2) still refers to a remaining `permList_compose` `sorry`. `grep '^\\s*sorry' lean/TensorGuard/*.lean` returns nothing. Reviewers should not have to chase which prose is current.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.12500000000000003
+  },
+  {
+    "description": "**The leave-one-category-out remains a literal no-op (53/60 \u2192 53/60).** This is the only quantitative ablation with a counterfactual structure; the v5 modules disabled are not on the handler path of any of the 60 bugs, so the LOO does not actually ablate anything. Reporting this as a holdout is closer to evidence of the absence of a holdout. The per-feature ablation on the 10 upstream-faithful PR repros is similarly flat.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.12500000000000003
+  },
+  {
+    "description": "**The 10/10 \"shape-pattern coverage\" headline (Table 2) is still mis-leading at first reading.** `experiments_v5/v8/real_bugs/rb_*.py` are by construction one-line `forward(self,x): return x.view(...)` distillations \u2014 TG's most favourable case. The honest \"real-class\" number is 7/10 RP@\u22650.99 + 1/10 @0.80 with 2/10 silent verifieds; the constructor-bound integer-attribute envelope flagged in \u00a76 is a substantive scope limit, not a polish item.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.12500000000000003
+  },
+  {
+    "description": "**The post-freeze N=15 result, while pre-registered, is fragile under multiple-comparisons honesty.** With 5/15 vs 2/15 / 3/15, a Fisher exact comparable test against the strongest baseline (Pytea 3/15) does not approach significance (p \u2248 0.43). The paper presents the gap as \"strictly above\" without any uncertainty interval; for a paper whose contribution is calibration this should be a CI or a Bayes factor, not a point estimate.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.12500000000000003
+  },
+  {
+    "description": "**The CV regime needs an ecological-validity check.** For the 128 CV refutations, the paper does not exhibit even a small sample where the synthesised `assume_M` is satisfied by an actual caller in `torchvision`/`timm`/`transformers`. Without that, a CV verdict on a leaf module is consistent with TG having invented an unsatisfiable precondition and then refuting the caller for failing to satisfy it.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.12500000000000003
+  },
+  {
+    "description": "**The unconditional-RP claim on real library code is zero.** Section 4.1 / Table 1 show 0 RP on the 488-block corpus; all 128 CV verdicts are sound only under a *synthesised* caller-rely `assume_M`. The 84.6% LW rate is principled abstention, but \"0 RP on 488 blocks\" is the user-visible truth for anyone who does not buy the synthesised contract envelope, and 90/128 of the CV witnesses depend on `transformers` `*Config` defaults rather than independently-checkable preconditions (`reproducibility/cv_caller_rely_witnesses.{json,md}`). The paper carries the unconditional-RP claim entirely on hand-curated bug corpora.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "**The N=15 post-freeze unfiltered evaluation does not separate from baselines.** Table 3 reports TG 5/15 vs FakeTensor 2/15 vs Pytea 3/15 with two-sided Fisher p=0.39 and 0.68. The paper concedes this is not statistically separable at \u03b1=0.05, yet it is the only evaluation that actually controls for retro-fitting, and it is framed as a calibrated-confidence positive result. With p=0.39 vs FakeTensor and a 6/15 RP-fire rate (one of which is admitted to be a false positive against ground truth), the post-freeze evidence cannot bear the weight the abstract puts on it.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "**The handler-class LOO is a no-op (53/60\u219253/60) by the paper's own admission**, because catches are duplicated through an \"AST-pattern intent-bug analyser\" and a constraint-based shape back-end that operate independently of the operator dispatch (Section 4.1 round-3 Q6 paragraph; `reproducibility/bug_corpus_loo_joint.{json,md}`). This means the bug-corpus number measures the union of three pattern-matchers, not the soundness of the typing rules; the keyword-attribution numbers (7/7/6/...) rest on a manual mapping of bugs to handler categories, which is exactly the kind of post-hoc accounting the LOO was supposed to rule out.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "**Theorem 3 (compositional soundness) is mechanised on the same 3-operator DSL (matmul/view/add) as Theorem 1, not on the 79-handler operator surface** (`lean/TensorGuard/AssumeGuarantee.lean`). The paper states this in \u00a74.4, but the contribution C2 (\"assume/guarantee discipline at the nn.Module class boundary\") is then only mechanised on a toy DSL. The gap between Lean-mechanised composition and the Python composition that ships in `src/composition_soundness.py` is a TCB obligation indistinguishable from \"we asserted it\".",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "**The 500/500 backward-pass agreement and 8/8 canonical-bug catch are weak evidence**. The 500 modules are random small `nn.Module`s drawn from a grammar (Section 3.2), and the 8 canonical bugs are hand-curated. Together with 0/50 false positives on a clean grammar-sampled set, this is in-distribution agreement, not evidence on the parameter-sharing-under-renamed-attribute case the paper itself flags as silently-incorrect at \u226412% prevalence (Section 6).",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "**Localisation 33/33 is admittedly a consistency check, not a precision claim** (Section 4.2 caveat: heuristic ground truth and AST-walk strategy share information; only 3/3 marker-only items are independently scored). The improvement from v4's 9% to \"33/33\" is therefore not interpretable, and an N=3 marker-only audit cannot support the claimed gain.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "**The Dynamo-falsification audit lands {SHAPE:0, DTYPE:0, RANK:0, INT:48}**, i.e. all 48 in-contract recompiles fall into the bucket Theorem 5 *already excludes* (Section 4.3). The paper notes this is \"consistent with Theorem 5 without proving it\"; in practice the audit can never falsify the theorem because the theorem's claim has been narrowed to exclude exactly the metadata Dynamo specialises on. This is a near-vacuous empirical instantiation.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "**Per-feature stress benchmark is hand-engineered to discriminate** (Table 5), and on the 488-block + 60-bug *real* aggregate the ablation is admittedly flat across all five knobs. The paper itself scopes the empirical contribution to 3 features (device-consistency, gradient-flow, low-confidence gating) rather than 5, and labels CEGAR contract discovery and the train/eval phase check as \"engineering no-ops\". This significantly deflates the implementation contribution.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "For the 128 CV verdicts: how many of the synthesised `assume_M` predicates are entailed by the *actual* preconditions of an instantiated `*PreTrainedModel.forward` call as exercised in a published example script (not a config-default existence check)? The 12 randomly-sampled witnesses in `cv_caller_rely_witnesses.md` are evidence of nonemptiness, not of typical-caller validity.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "On the rb_uf_010 off-axis fire (device-mismatch where the upstream PR fixes a dtype bug): how many of the other 5 RP fires in the N=15 post-freeze sample have been independently audited for \"right answer for the right reason\" rather than ground-truth axis match alone?",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "The Lean precondition-boundary check is on ~2,400 off-envelope samples across only 10 of 28 audited rules. Can the authors run the boundary check on all 28 rules, and report whether any rule has a precondition strictly narrower than torch's permissive behaviour? The \"10-rule\" partial coverage leaves 18/28 boundaries unchecked.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "For Theorem 5's necessary-direction empirical instantiation: on the five end-to-end TG-verified blocks (BasicBlock, Bottleneck, InvertedResidual, Fire, Block), what is the breakdown of post-compile recompiles by guard kind? \"0\u20132\" recompiles \"all attributable to standard dynamic-shape graph specialisation\" is an informal claim and should be a `r.guard_kind \u2208 {SHAPE,DTYPE,RANK}` count.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "The \"AST-pattern intent-bug analyser\" plus \"constraint-based shape back-end\" duplicate operator-handler catches (joint LOO = 53/60). Could the authors report the 60-bug RP count *without* the operator handlers and *without* the AST-pattern analyser \u2014 i.e., relying only on the typing rules whose soundness is in Theorem 2? That is the number that actually corresponds to the soundness theorem.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "The first-order grad lattice's \u226412%-of-training-scripts caveat: was this prevalence measured by AST-grep over `from torch.utils.checkpoint import` and tied-weight keys? If so, \"renamed-attribute parameter sharing\" is not detectable by such a filter and the 12% is an underestimate; please clarify the measurement protocol.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.17677669529663692
+  },
+  {
+    "description": "**The paper's central headline is structurally fragile.** On the 488-block real-source corpus the verifier returns 0 unconditional Refuted-Proof verdicts, and the user-visible (no synthesised \\texttt{config} envelope) recomputation collapses Verified from 57 to 34 and CV+RP to 0/0. The \"find real bugs in real source\" claim is therefore carried entirely by the 60 historical bugs (selected for shape-error keywords), the 10 upstream-faithful re-extracts, and the N=15 post-freeze sample. The 488-block evaluation is, on its own terms, a coverage-and-abstention measurement rather than a bug-finding result, and the abstract should not be allowed to read as if the 488 number is doing bug-finding work.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "**The \"TG \u226b baselines\" reading on the 488-block corpus is corpus-baked.** \u2265435/488 N/A for FakeTensorMode/torch.fx/torch.export/torch.export/Pytea is a structural fact about constructor-argument requirements on a corpus that was selected to consist of \\texttt{nn.Module} classes that need a non-trivial \\texttt{config}. The paper acknowledges this once (line 200\u2013204 of \\texttt{eval\\_v6.tex}) and then continues to use the 488-block triple as the headline framing in the abstract and conclusion. Either the 488 number is fairness-compatible with the N/A baselines (it isn't) or it should be demoted to \"applicability\" rather than presented next to the bug-finding numbers.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "**The fair head-to-head N=34 vs. Pytea is a constructed subset.** The \"modern subset\" is defined by the static AST predicate \"every operator called from \\texttt{forward} appears in Pytea's 2022 \\texttt{pylib/}\". Since TG is restricted symmetrically (Sec. \\ref{sec:eval-benchmark}, \"Pytea modern-subset filter\" paragraph), the comparison is internally consistent, but the selection still excludes precisely the bugs Pytea cannot reach by construction. Please report (i) the size of the symmetric handler intersection vs. each tool's full catalogue, and (ii) the corresponding TG-only / Pytea-only refute counts on the *complement* (the 26 bugs that fall out of the modern subset) so the reader can judge whether the 32/34 vs 22/34 gap is a fragment-coverage artefact.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "**The post-freeze N=15 result is presented as the deciding generalisation evidence but the head-to-head is not statistically separable.** TG 5/15 vs. FakeTensorMode 2/15 (Fisher-exact two-sided p=0.39) and vs. Pytea 3/15 (p=0.68). The paper concedes this once and then in the abstract still asserts TG is \"point-strictly above\" the baselines; on N=15 a difference of 2\u20133 catches is well inside binomial noise and should not be in the abstract as a separation result. Please either grow the unfiltered sample to a size where Wilson intervals on the rate difference exclude zero, or remove the comparative claim from the abstract.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "**Thm. 5 (Dynamo-guard correspondence, necessary direction) is close to vacuous as stated.** \"Every shape/dtype/rank refinement bit Dynamo reads on the trace at any input $x$ with $A(x)$ true is a refinement variable in $\\varphi$ for some rule in the catalogue\" is *true by construction* whenever the catalogue is the set of metadata bits TG inspects, because TG's catalogue is also defined off Dynamo's specialiser bits. The empirical falsifier (Sec. \\ref{sec:eval-dynamo}, \"Falsification predicate\" paragraph) reports {SHAPE:0, DTYPE:0, RANK:0, INT:48} \u2014 i.e., the 48 in-contract recompiles all fall in the bucket the theorem already excludes. A non-vacuous test would be: a catalogue-extension experiment where you intentionally widen TG's refinement language to include one Dynamo guard kind not currently in the catalogue (e.g., one of the integer or list-length specialisers), measure whether a recompile in that kind has ever fallen on an in-contract input, and report whether the theorem still holds at the wider catalogue. The current audit cannot distinguish \"Dynamo guards are a superset of TG refinements\" (a tautology) from \"Dynamo's shape/dtype/rank guards are exactly TG's refinements\" (the substantive claim).",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "**The Lean audit covers the rule table, not the analyser.** This is stated honestly in \u00a7\\ref{sec:eval-lean}, but the consequence for the reader is sharper than the paper admits: only 28/79 shape handlers are Lean-audited, the AST extractor and Python analyser are not, and the assume/guarantee composition theorem (Thm. 3) is mechanised on a 3-operator DSL only. Per the per-block scope accounting (line 845\u2013852 of \\texttt{eval\\_v6.tex}), only 36/185 in-soundness verdicts on the 488-block corpus touch only Lean-audited or pen-and-paper handlers \u2014 meaning the soundness theorem applies tightly to roughly one-fifth of the headline verdicts. The \"sound static verification\" framing in the title is therefore stronger than the underlying mechanisation.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "**Two of the per-feature ablation knobs are conceded to be no-ops in the implementation.** Sec. \\ref{sec:eval-loc-hybrid} reports CEGAR contract discovery and the train/eval phase check as \"honest no-ops\" on real data; CEGAR predicates are stored as metadata but never surfaced as \\texttt{Bug} objects. These are listed alongside the active knobs in Tab. \\ref{tab:ablation} and in the contributions list, even after the abstract concedes the empirical contribution is now scoped to three features (device, grad, low-conf gating). Please remove the inactive features from the implementation/contribution claims rather than carrying them as engineering \"ships\".",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "**The leave-one-category-out result (53/60 \u2192 53/60) is a non-result that the paper presents as robustness.** When LOO leaves the rate unchanged across every category drop, the most parsimonious explanation is that the LOO is hitting orchestration code rather than the load-bearing rules. The paper acknowledges this and pivots to a \"true rule-class LOO\" that *also* yields 53/60 \u2192 53/60, attributing the constancy to an independent AST-pattern path. If catches survive simultaneous removal of (a) the per-category operator handlers and (b) the AST-pattern intent-bug analyser, then a substantial fraction of the 53/60 is attributable to a constraint-based shape backend that is not what the paper's calculus and Lean audit are about. Please report the catch count when *all three* paths (per-operator handlers, intent-bug AST patterns, constraint-based backend) are disabled, and the catch count of the constraint backend alone, so the reader can attribute the 53/60 to a specific component.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "**Several rb_* \"catches\" were engineered into the system inside the development window.** Lines 172\u2013192 of \\texttt{eval\\_v6.tex} note that the rb_003/rb_004/rb_006/rb_010 conversions from silent-verified to RP@0.99 came from a \"three-stage constructor-bound integer-attribute envelope synthesiser\" and a \"per-forward local-scalar map\" added within the round-4 to round-6 window. The pre-registered post-freeze split (N=6 + N=15) is the only segment of the real-bug evaluation that is uncontaminated by handler additions designed against specific bugs; on that split the catch rate is 3/6 + 5/15. The headline 7/10 should be reported with a clear footnote that \u22654 of the 7 catches were enabled by handler edits made after the bugs were inspected.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "On the 488-block corpus, what is the user-visible (no-assume) catch rate on a *bug-injected* subset \u2014 i.e., if you mutate one shape-arithmetic axis in each of, say, 100 of the 488 blocks, how many does TG flag as RP (not CV) without any synthesised \\texttt{config} envelope? This isolates the calculus's bug-finding power from the catalogue-coverage and assume-synthesis layers.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "For the N=15 unfiltered post-freeze sample, please report the per-PR overlap matrix (which PRs each tool catches), not just the marginal counts. With N=15 and 5/2/3 catches the joint distribution is the only way to tell whether TG's catches *contain* the FakeTensor/Pytea catches or are disjoint from them.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "Can you provide a falsifier for Thm. 5 that does not reduce to the catalogue's own definition? E.g., an audit where TG's refinement language is *extended* by one dtype-promotion guard kind currently outside the catalogue, and the in-contract recompile bucket for that kind is reported on the same 17-module audit.",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "The backward verifier's $500/500$ static\u2194runtime agreement and 8/8 canonical-bug catch are reported on synthetic small modules and 8 hand-curated cases respectively; the 10-real-model sweep explicitly excludes \\texttt{torch.utils.checkpoint} and parameter sharing. What is the agreement rate on a sample of the (\u226412% prevalence) training scripts that *do* use these constructs?",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "On the joint LOO that disables per-category handlers and the AST-pattern intent-bug analyser simultaneously, you still report 53/60. What is the catch count when you additionally disable the constraint-based shape back-end (the \"third path\")? If it is 53/60 still, what catches the bugs?",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "For the modern-subset Pytea comparison, what is the size of the *complement* (60-block bugs that fall outside the symmetric handler intersection) and the per-tool catch counts on it?",
+    "source": "reviewer",
+    "round_added": 1,
+    "weight": 0.25000000000000006
+  },
+  {
+    "description": "**The mechanised soundness story is much narrower than the paper title suggests.** Theorem 1 (`thm:soundness`) is whole-program, but its proof \"reduces \u2026 to per-operator preservation lemmas already covered by the Lean rule audit\", and that audit covers 28/79 handlers (Table 6 in `handler_soundness_table.tex`); the assume/guarantee composition Theorem (Thm 3) is explicitly mechanised \"on the same 3-operator DSL (matmul/view/add)\" (Sec. 3.1, lines 137\u2013141). On the 488-block corpus the paper itself reports that only 36/185 in-soundness verdicts touch handlers in the Lean+pen-and-paper set, while 105/185 touch at least one tested-only handler (Sec. 5.5, lines 819\u2013822). The headline phrase \"Sound Static Verification \u2026 with a \u2026 Lean-Audited Operator-Rule Table\" is therefore technically supported only on a thin slice of the verdicts the paper actually reports.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "**The 60-bug corpus is selected in a way that pre-removes the hardest cases.** The exclusion funnel (Sec. 5.1, \"Bug-corpus exclusion denominator\", lines 423\u2013444) drops 124 distributed-shape bugs (auto-Abstain) and 113 \"config-attribute\" bugs that reduce to constructor sentinel-resolution \u2014 but config-attribute resolution is exactly what the paper sells as TG's central advantage over execution-based baselines (Sec. 1, lines 21\u201326 and \"symbolic config\" front-end in Sec. 4.1). Excluding them by protocol from the bug corpus while keeping them in the marketing argument is a form of double-booking. Please report the RP rate on the 113-bug config-attribute slice rather than discarding it.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "**The strongest external-validity test reverses the headline.** The \"unfiltered pre-registered post-freeze\" sample (Table 3, N=15) gives TG 5/15 vs FakeTensorMode 2/15 vs Pytea 3/15, with two-sided Fisher-exact p=0.39 (vs FT) and p=0.68 (vs Pytea). On the only sample drawn without filtering for fragment fit, TG is not statistically separable from either baseline (Sec. 5.1, lines 354\u2013393). The 88.3% / 32-vs-22 numbers in the abstract should at minimum be contextualised by this; right now the abstract advertises only the curated-corpus numbers.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "**The Pytea comparison is on a frozen 2022 catalogue.** The fair-head-to-head subset (`N=34`) is \"operators in Pytea's 2022 catalogue\" with Pytea pinned at commit `cb02a8a` (2022-04-26) (Sec. 5.1, lines 273\u2013294). Pytea has not been updated for SDPA, RMSNorm, modern attention, etc.; the McNemar p=0.00195 result mostly measures the four-year catalogue gap, not a methodological advance. A fairer comparison would either re-implement the missing handlers in Pytea's framework or down-scope TG to the same modern-operator surface and re-run *both* tools with all current handlers; the 2022 freeze is the wrong way around.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "**CEGAR and phase-check are admitted no-ops yet remain in the architectural pitch.** Section 5.4 / Table 5 explicitly state that L1 (CEGAR) and L3 (phase) \"did not discriminate any case in the current implementation\" and that on the real-corpus ablation (Sec. 5.4, lines 608\u2013619) \"none of CEGAR, device-flag, phase, grad-flow, or low-conf gating discriminates on the real bugs.\" The contributions list (C5, Sec. 1) acknowledges this and scopes the empirical contribution to three features, but the Implementation section still describes CEGAR and phase-check as live machinery. Either remove them from the system description or report a measurement on which they fire on real code.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "**The localisation 33/33 within \u00b15 lines is essentially uncalibrated.** Sec. 5.4 (\"Localisation\", lines 621\u2013636) admits the AST-walk strategy and the heuristic ground truth share information for the patterns where the line marker was unavailable; only 3/3 marker-only items are independently scored, on which no localisation claim survives a sample size that small. The 33/33 figure should be removed from headline summaries until a \u226530-item marker-only audit is run; right now the conclusion paragraph leaves the impression that localisation is a solved problem.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "**The Dynamo-correspondence theorem is effectively never instantiated end-to-end.** Sec. 5.4 (\"Empirical audit\", lines 693\u2013711) admits that \"on 16 of the 17 modules the audit takes the documented `forward` signature as the contract because the full instantiated module exceeds end-to-end constraint solving; we therefore treat the 8.8%/97.9% row as a calibration of Dynamo against hand-written contracts rather than as an in-theorem instantiation of `thm:dynamo-corr`.\" The \"End-to-end TG\u2013Dynamo correspondence on constituent blocks\" paragraph then exhibits 5 (five) modules. A theorem whose empirical instantiation is on 5 of the simplest torchvision/timm blocks is worth marking as preliminary, not as the C4 contribution it currently is.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "**The 0/RP-on-real-source result undermines the \"no-execution alternative for modern ML code\" framing.** On 488 real `nn.Module` blocks under the user-visible (free-symbolic-config) verdict regime, the paper reports `34 V / 0 RP / 206 LW / 248 A` (Sec. 5.1, line 77). I would like to see one example, in the body, of a `Refuted-Proof` verdict on a real upstream class (not on a hand-distilled or upstream-faithful re-extract), or an honest reframing of the contribution as \"shape-bug verification on hand-distilled bug repros plus a coverage map on real code\".",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "What is TG's RP rate on the 113 \"config-attribute\" bugs you excluded under exclusion rule (iv) (Sec. 5.1, line 437)? If the symbolic-config front-end is genuinely a contribution, this number is the actual evidence; please add it.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "For the unfiltered post-freeze sample (Table 3), can you run TG, FakeTensorMode, and Pytea on a substantially larger pre-registered post-freeze sample (e.g. N=60) drawn by the same query, and report the corrected confidence intervals? On N=15 the headline-advantage claim is undersupported.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "Of the 105/185 in-corpus verdicts that touch at least one tested-only handler (Sec. 5.5), how many would be downgraded from V/CV to \"outside-soundness-scope\" if the verdict were restricted to handler chains that are entirely Lean-audited or pen-and-paper?",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "Please re-run the Pytea modern-subset comparison with TG also restricted to its handler intersection with Pytea's *current* HEAD (not its 2022-04-26 commit), or down-scope both tools to a contemporaneous catalogue. What is the resulting (TG, Pytea) refutation pair?",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "For the post-freeze unfiltered RP-fire-rate of 6/15 with one false positive on `rb_uf_010`, what is the false-positive rate on the same 488-block corpus when low-confidence violations (the L5 feature in Table 5) are enabled? L5 contributes +8 verdicts on the stress benchmark, but its precision on real source is not reported.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "Is the assume/guarantee composition Theorem (Thm 3) extensible from the 3-operator DSL to the full handler set in principle, or does the proof rely on properties special to matmul/view/add? A one-paragraph statement of the obstacle would clarify the gap.",
+    "source": "reviewer",
+    "round_added": 2,
+    "weight": 0.35355339059327384
+  },
+  {
+    "description": "**The joint-LOO result is so flat it is suspect rather than reassuring.** The new joint test in `bug_corpus_loo_joint.py` reports that disabling *all* per-category operator handlers *and* the AST-pattern intent-bug analyser simultaneously still leaves the bug-corpus refute count at 53/60 (Sec. 5.1, lines 501\u2013511). The paper attributes this to \"a constraint-based shape back-end [that] harvests shape predicates from explicit asserts, control-flow guards, and the symbolic interpreter\". If true, this means the curated 60-bug corpus is catchable by predicates the bug repros themselves carry (assert lines, explicit shape literals), and the operator catalogue is doing very little load-bearing work on this benchmark. Either the per-handler \"load-bearing for 7 RPs / 6 RPs / \u2026\" attribution (lines 489\u2013496) or the joint-LOO 53/60 result must be wrong, because handler-dependency cannot be both 7+7+6+5+4\u00b74+3 = 49 and 0. Please report the *handler-attributable refute count under joint-LOO* (i.e., bugs that joint-LOO converts from RP to non-RP), not just the headcount.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "**The unbiased external-validity sample is still flat and still N=15.** The pre-registered post-freeze unfiltered sample (`tab:unfiltered-postfreeze`) is unchanged in size since round 2: TG 5/15 vs FakeTensor 2/15 vs Pytea 3/15, Fisher p=0.39 and p=0.68 (lines 354\u2013367). The round-2 review explicitly asked for this sample to be expanded to N\u226560 with corrected CIs; it has not been. Adding Wilson intervals to the same N=15 cell (lines 355\u2013360) is a formatting improvement, not new evidence. The paper then says TG is \"strictly above the two execution-based baselines on the same unfiltered surface, although on N=15 the head-to-head Fisher-exact comparisons are not statistically separable\" (lines 383\u2013388) \u2014 but \"strictly above on point estimate, not separable\" is a circular description of insufficient data, not a result.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "**The 113 config-attribute exclusion (round-2 W2 / Q1) was not measured.** The bug-corpus exclusion funnel still drops `~113` config-attribute bugs (Sec. 5.1, lines 436\u2013439, exclusion rule (iv)) \u2014 exactly the class the paper sells as TG's central advantage over execution-based baselines (Sec. 1, intro framing, and the \"symbolic config\" front-end in Sec. 4). Round 2 asked for the RP rate on this 113-bug slice; round 3 still discards them by protocol. Without that number the headline 53/60 / 88.3% rate measures TG against the corpus from which its hardest target class has been removed.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "**The Pytea baseline is still pinned at 2022-04-26.** Round 2 asked for either a current-HEAD Pytea run *or* a TG/Pytea down-scope to a contemporaneous catalogue; this round restricts TG to the 2022 catalogue intersection (lines 282\u2013286), which is the right adjustment on the *TG* side but does not address that Pytea itself has not been retargeted to 2025/2026 PyTorch. The 32/34 vs 22/34 McNemar p=0.00195 therefore still substantially measures the 4-year operator-catalogue freeze on the *baseline*, not a methodological advance.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "**The CV \"witness\" audit is qualitative.** The claim \"zero `assume_M` is unwitnessed\" (lines 94\u201395) is supported by 12 hand-paired CV verdicts out of 128. The remaining 116 are classified by *type* of `assume_M` reference (empty / `config.*` / `*PreTrainedModel` stub) but no real upstream call site is exhibited. \"Every published checkpoint config exposes `config.hidden_size`\" (line 91) shows a config has the *attribute*, not that any real caller's value satisfies the synthesised inequality. Either (i) check the synthesised `assume_M` against the actual config defaults of N\u226530 published checkpoints, or (ii) report the witness coverage as 12/128 rather than as a categorical \"zero unwitnessed\".",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "**CEGAR and phase-check remain in the architectural pitch but are admitted no-ops on every measured corpus.** Sec. 5.4 reports that L1 and L3 \"did not discriminate any case in the current implementation\" on the synthetic stress benchmark (lines 573\u2013582) and also that \"none of CEGAR, device-flag, phase, grad-flow, or low-conf gating discriminates\" on the real 10-bug ablation (lines 614\u2013619). Yet they remain in the contributions/system pitch. Per round-2 W5: either remove them from the system description or report a measurement on which they fire.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "**The Lean reconciliation makes the soundness footprint smaller than the contributions list implies.** Of TG's 185 in-soundness verdicts on the 488-block corpus, 36 (\u224819%) touch only handlers that are Lean-audited or pen-and-paper; 105 (\u224857%) touch at least one tested-only handler (lines 816\u2013822). The paper title still advertises \"Sound Static Verification \u2026 with a \u2026 Lean-Audited Operator-Rule Table\"; the calibrated reading is that on real source roughly four-fifths of the soundness-bearing verdicts depend on at least one un-mechanised handler.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "**The Dynamo correspondence's empirical instantiation is still 5 modules.** The end-to-end TG-verifies-class-body + `torch.compile(dynamic=True)` audit (lines 713\u2013733) covers BasicBlock, Bottleneck, InvertedResidual, Fire, and ViT Block \u2014 i.e., five small constituent blocks. The 17-module `8.8% / 97.9%` audit is now explicitly downgraded to \"calibration of Dynamo against hand-written contracts rather than \u2026 in-theorem instantiation of `thm:dynamo-corr`\" (lines 705\u2013711). With a 5-module in-theorem witness set, `thm:dynamo-corr` should be presented as preliminary rather than a headline contribution (C4).",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "**Localisation 33/33 \u00b15 lines is still in the body of Sec. 5.4 (lines 626\u2013636).** It is correctly caveated this round, but the figure is not removed and a marker-only audit at N\u226530 has not been run; the headline number a casual reader will retain is still 33/33.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "Reconcile the joint-LOO 53/60 result with the per-handler attribution table (7/7/6/5/4\u00d74/3 = 49 RPs attributed to handler classes). Please report the *handler-attributable refute count under joint-LOO* \u2014 i.e., the count of bugs that joint-LOO converts from RP to non-RP, broken out by category \u2014 so a reader can distinguish \"the catalogue is over-determined\" from \"the corpus is catchable from predicate harvesting alone\".",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "What is TG's RP rate on the ~113 \"config-attribute\" bugs excluded by exclusion rule (iv)? This was Q1 in round 2 and is the actual evidence for the symbolic-config contribution.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "Can the unfiltered post-freeze sample be enlarged to N\u226560 (same pre-registered query, same exclusion rules), and the Fisher-exact comparisons re-run? The current N=15 is too small to resolve any of TG/FakeTensor/Pytea against each other.",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "Run the head-to-head against current-HEAD Pytea (or, equivalently, a Pytea fork retargeted to a contemporaneous PyTorch). What are the resulting (TG, Pytea) refutation pairs on the modern-subset N=34?",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "For the 116 CV verdicts not in the 12-witness sample, can the synthesised `assume_M` be evaluated against published `*Config()` defaults from the matching HuggingFace checkpoint repository, and the share that *concretely* satisfies `assume_M` reported as a fraction?",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "The first-order grad-flag lattice silently misclassifies parameter-sharing/checkpoint cases (Sec. limitations, lines 97\u2013113). What is the frequency of such patterns in the bug corpus and the 488-block real corpus, and is any such block currently in the V or RP column?",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 0.5000000000000001
+  },
+  {
+    "description": "**The mechanised soundness perimeter is far smaller than the title advertises.** Table 7 maps the 79 handlers to {28 Lean-audited, 3 pen-and-paper, 48 tested-only}. On the 488-block corpus only 36/185 in-soundness verdicts (11 of 57 V, 25 of 128 CV) touch *only* in-scope handlers, while 105/185 touch at least one tested-only handler (Sec. 4.4, \"Calibrated framing\"). Theorem 3 (assume/guarantee composition) is mechanised on a 3-operator DSL (matmul/view/add). The title \u2014 \"Sound Static Verification \u2026 with a \u2026 Lean-Audited Operator-Rule Table\" \u2014 is technically defensible but materially over-sells: most verdicts the paper reports rely on handlers outside the Lean perimeter. A title or abstract that names the audited fraction (e.g. \"28/79-handler\") would be honest.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.7071067811865476
+  },
+  {
+    "description": "**The 60-bug curation excludes ~22% of the funnel (124 distributed + 113 config-attribute hits, Sec. 4.1 \"Bug-corpus exclusion denominator\") and the 113 config-attribute slice is exactly the regime the paper sells as TG's central advantage** (\"symbolic config front-end binds `self.config.<attr>` to fresh SymInts so that HuggingFace-style modules \u2026 can be checked once and reused\", Sec. 3.1). Dropping the config-attribute bugs from the *bug* denominator while keeping the config-envelope feature in the *contribution* list is double-booking. The headline 53/60 (88.3%) and the Wilson CI [77.8%, 94.2%] are conditional on this exclusion. The paper should report the RP rate on the 113-bug config-attribute slice as an independent number, not just the post-freeze 5/15.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.7071067811865476
+  },
+  {
+    "description": "**The Pytea baseline is pinned to a 2022 catalogue (commit `cb02a8a`, 2022-04-26).** The fair-head-to-head subset is, by construction, \"operators in Pytea's 2022 catalogue\" (Sec. 4.1). Pytea has no SDPA, RMSNorm, modern attention, or einsum handler, and the paper itself acknowledges that 23/29 Pytea misses on the 60-bug corpus are \"pure operator-catalogue gaps\". The McNemar p=0.00195 therefore quantifies a four-year catalogue gap as much as a methodological advance. A Pytea fork with handlers ported (or symmetrically: TG restricted to *Pytea's* ops on the modern-attention bugs and *re-run with Pytea's* solver) is the missing comparator. Without it the headline gap is not identified.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.7071067811865476
+  },
+  {
+    "description": "**The strongest external-validity result reverses the headline.** On the unfiltered pre-registered post-freeze sample (Table 3, N=15), TG catches 5/15, FakeTensor 2/15, Pytea 3/15, with two-sided Fisher-exact p=0.39 (vs FT) and p=0.68 (vs Pytea); the abstract's confidence interval [15.2%, 58.3%] crosses both baselines. The abstract sells 88.3% on a curated corpus and 32/34 on a 2022-restricted subset, but the only sample drawn without filtering for fragment fit shows TG statistically indistinguishable from execution-based baselines. The abstract should lead with the unfiltered measurement and treat the curated numbers as supporting, not the reverse.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.7071067811865476
+  },
+  {
+    "description": "**CEGAR contract discovery and the train/eval phase check are admitted no-ops on every reported real corpus.** Table 5 caption: L1 (CEGAR) and L3 (phase) \"did not discriminate any case\"; Sec. 4.2 \"Real-corpus ablation\": \"none of CEGAR, device-flag, phase, grad-flow, or low-conf gating discriminates on the real bugs\". The Implementation section still describes them as live components, and the original contribution list (C5) historically named CEGAR as an architectural pillar. Either remove the no-op components from the architecture description (Sec. 3) and restate the contribution as a 3-feature analyser, or supply a real-bug case on which CEGAR fires.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.7071067811865476
+  },
+  {
+    "description": "**Localisation: 33/33 within \u00b15 lines is uncalibrated.** Sec. 4.2 itself flags that the AST-walk strategy and the heuristic ground truth \"share information for the patterns where the marker was unavailable\"; only 3/3 marker-only items are independently scored. A 3-item denominator does not support a localisation claim, and the 33/33 figure should be removed from any summary until a \u226530-item marker-only audit is run.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.7071067811865476
+  },
+  {
+    "description": "**Theorem 5 (Dynamo-guard correspondence) is essentially never instantiated end-to-end.** Sec. 4.3 admits that on 16 of the 17 audited modules \"the audit takes the documented `forward` signature as the contract because the full instantiated module exceeds end-to-end constraint solving\"; the actual end-to-end TG-verified instances are 5 (`BasicBlock`, `Bottleneck`, `InvertedResidual`, `Fire`, ViT `Block`). The \"calibration \u2026 rather than \u2026 in-theorem instantiation\" disclaimer is appropriate, but a theorem with five end-to-end witnesses is a preliminary result, not a labelled contribution (C4). The 48/544 in-contract recompiles are also all bucket `INT`, which the theorem already excludes by construction; this is consistency, not evidence.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.7071067811865476
+  },
+  {
+    "description": "**The paper as written reads in many places as a revision diary** \u2014 phrases like \"(round-7 W5)\", \"(Round-2 reviewer Q1)\", \"(round-3 borderline lift)\", \"(round-5 Q4)\", \"round-3 Q6\", \"the rb_pf_001 flip from silent to RP@0.99 this round\", \"the round-7 int(...)/float(...)-cast fold introduced this round\" appear throughout Sec. 4.1, Sec. 4.4, and Sec. 6. A final NeurIPS submission should not narrate its own revision history; please either remove or rewrite these passages so the empirical claims read as claims rather than as responses to prior reviews.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.7071067811865476
+  },
+  {
+    "description": "What is TG's RP rate on the 113-bug \"config-attribute\" slice excluded under exclusion rule (iv) of the bug-corpus funnel (Sec. 4.1, \"Bug-corpus exclusion denominator\")? This is the regime the symbolic-config front-end is sold against.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.7071067811865476
+  },
+  {
+    "description": "Can you provide TG vs Pytea on the modern-attention bugs after either (a) porting SDPA/RMSNorm/einsum handlers into Pytea's Z3 frontend, or (b) restricting *both* tools to Pytea's 2022 catalogue and running the *same* set of bugs on each? The current asymmetry conflates four years of operator coverage with a methodological contribution.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.7071067811865476
+  },
+  {
+    "description": "Of the 488 real-source blocks, can you exhibit a single block (not a hand-distilled or upstream-faithful re-extract) on which TG returns `Refuted-Proof` *under the user-visible free-symbolic-config regime*? If not, the abstract should be reworded to scope the unconditional-RP claim to the bug corpora.",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.7071067811865476
+  },
+  {
+    "description": "What is the marker-only localisation rate on a fresh \u226530-item audit where the AST-walk and the ground-truth marker do not share information? The current 33/33 number is dependent on shared information by the paper's own admission.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  },
+  {
+    "description": "For Theorem 5, can you re-run the end-to-end (no `forward`-signature surrogate) audit on at least 15 modules \u2014 including at least three transformer blocks where the in-contract recompile rate currently relies on the surrogate \u2014 and report `{SHAPE, DTYPE, RANK, INT}` recompile counts per module?",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  },
+  {
+    "description": "The first-order grad-flag lattice silently misclassifies parameter-sharing-under-renamed-attribute, with prevalence \u226412% of training scripts (Sec. 6). What is TG's silent-error rate on, e.g., the 17 real torchvision/HF/timm modules audited for Theorem 5, and on a stratified sample restricted to scripts that pass the renamed-attribute filter (i.e. the population where the bug actually fires)?",
+    "source": "reviewer",
+    "round_added": 4,
+    "weight": 0.7071067811865476
+  },
+  {
+    "description": "**The title still oversells the mechanised perimeter.** \"Sound Static Verification \u2026 with a \u2026 Lean-Audited Operator-Rule Table\" is paired with Table 7's `28 Lean-audited / 3 pen-and-paper / 48 tested-only` split and with Sec. 4.4's per-block scope table showing 36/185 in-soundness verdicts touch only in-scope handlers, while 105/185 touch at least one tested-only handler. The 48 untested-by-Lean handlers cover the majority of verdicts the paper actually reports. The honest title would name the audited fraction (e.g. \"28/79-handler Lean-audited rule table\") rather than implying the table as a whole is Lean-audited.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  },
+  {
+    "description": "**The 60-bug curation excludes ~22% of the funnel and the 113 config-attribute slice is exactly the regime the paper sells the symbolic-config front-end against.** Sec. 4.1 \"Bug-corpus exclusion denominator\" confirms 113/1087 hits dropped under exclusion (iv), and Sec. 3.1 markets the symbolic config environment as \"binds `self.config.<attr>` to fresh SymInts so HuggingFace-style modules ... can be checked once and reused\". The headline 53/60 (88.3%) is therefore conditional on dropping the very bugs that exercise the headline feature. Round 4 already asked for the RP rate on the 113-bug config-attribute slice as an independent number; the current revision still does not report it.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  },
+  {
+    "description": "**The Pytea baseline is pinned to a 2022 catalogue (commit `cb02a8a`, 2022-04-26).** The fair-head-to-head is by construction \"operators in Pytea's 2022 catalogue\" (Sec. 4.1). The paper itself notes 23/29 Pytea misses on the 60-bug corpus are \"pure operator-catalogue gaps\" (no SDPA, RMSNorm, einsum, Conv1d/3d, GroupNorm, BatchNorm1d). McNemar p=0.00195 thus quantifies four years of operator coverage as much as a methodological advance. The principled comparator \u2014 Pytea forked with SDPA/RMSNorm/einsum handlers ported, or symmetrically TG and Pytea both restricted to Pytea's 2022 catalogue on the modern-attention bugs \u2014 is not run.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  },
+  {
+    "description": "**The unfiltered post-freeze sample (Table 3, N=15) reverses the headline.** TG 5/15, FakeTensor 2/15, Pytea 3/15, with two-sided Fisher-exact p=0.39 vs FT and p=0.68 vs Pytea, and the abstract's interval [15.2%, 58.3%] crosses both baselines. The abstract leads with 88.3% on the curated corpus and 32/34 on the 2022-restricted subset; the only sample drawn without filtering for fragment fit shows TG statistically indistinguishable from execution-based baselines. The lead number should be the unfiltered measurement, with curated numbers as supporting.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  },
+  {
+    "description": "**CEGAR contract discovery and the train/eval phase check are admitted no-ops on every reported real corpus.** Table 5 caption: L1 (CEGAR) and L3 (phase) \"did not discriminate any case in the current implementation.\" Sec. 4.2 \"Real-corpus ablation\": \"none of CEGAR, device-flag, phase, grad-flow, or low-conf gating discriminates on the real bugs.\" The Implementation section still describes them as live components and the contribution list historically named CEGAR as an architectural pillar. Either remove the no-op components from the architecture description or supply a real-bug case on which CEGAR fires.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  },
+  {
+    "description": "**Localisation: the 33/33 within \u00b15 lines is uncalibrated.** Sec. 4.2 itself flags that \"the heuristic ground truth and the AST-walk strategy share information for the patterns where the marker was unavailable\"; only 3/3 marker-only items are independently scored. A 3-item denominator does not support a localisation claim, and the 33/33 figure should be removed from any summary text until a \u226530-item marker-only audit is run.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  },
+  {
+    "description": "**Theorem 5 is essentially never instantiated end-to-end.** Sec. 4.3 admits that on 16 of the 17 audited modules \"the audit takes the documented forward signature as the contract because the full instantiated module exceeds end-to-end constraint solving\"; the actual end-to-end TG-verified instances are 5 (`BasicBlock`, `Bottleneck`, `InvertedResidual`, `Fire`, ViT `Block`). The 48/544 in-contract recompiles are *all* bucket `INT`, which the theorem already excludes by construction; this is internal consistency, not evidence. A theorem with five end-to-end witnesses, none of which are large transformer blocks, is a preliminary result, not a labelled contribution (C4).",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  },
+  {
+    "description": "**The paper continues to read in many places as a revision diary.** Tags such as \"(round-7 W5)\" (Sec. 4.3), \"(round-2 Q4)\" and \"(round-7 Q6)\" and \"(round-5 Q3)\" and \"(round-3 Q4)\" (Sec. 4.1), \"(Round-2 reviewer Q1)\" and \"(Round-2 reviewer Q2)\" and \"(Round-3 borderline lift)\" and \"(round-5 Q2; revised round 1)\" and \"(round-3 Q6)\" (Sec. 4.1), and narrative phrases such as \"the rb_pf_001 flip from silent to RP@0.99 this round closes the intermediate ... bottleneck reported in round 7\" (Sec. 4.1 post-freeze paragraph) and \"the round-7 int(...)/float(...)-cast fold introduced this round\" (Sec. 6) are present throughout. A NeurIPS submission should read as a self-contained artefact; please rewrite these passages so the empirical claims read as claims rather than as responses to prior reviewers.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  },
+  {
+    "description": "What is TG's RP rate on the 113-bug \"config-attribute\" slice excluded under exclusion rule (iv) (Sec. 4.1, \"Bug-corpus exclusion denominator\")? Until this is reported, the 53/60 headline cannot be read as evidence about the regime the symbolic-config front-end is sold for.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  },
+  {
+    "description": "Can you provide TG vs Pytea on the modern-attention bugs after either (a) porting SDPA/RMSNorm/einsum handlers into Pytea's Z3 frontend, or (b) restricting *both* tools to Pytea's 2022 catalogue on the same set of bugs? The current asymmetry conflates four years of operator coverage with the methodological contribution.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  },
+  {
+    "description": "Of the 488 real-source blocks, can you exhibit a single block (not a hand-distilled or upstream-faithful re-extract) on which TG returns Refuted-Proof under the user-visible free-symbolic-config regime? If not, the abstract's \"0 unconditional Refuted-Proof verdicts\" should be the lead, not the 53/60 carry-over.",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  },
+  {
+    "description": "The first-order grad-flag lattice silently misclassifies parameter-sharing-under-renamed-attribute, prevalence \u226412% of training scripts (Sec. 6). What is TG's silent-error rate on the 17 real torchvision/HF/timm modules used for Theorem 5, and on a stratified sample restricted to scripts that pass the renamed-attribute filter (i.e. the population where the bug actually fires)?",
+    "source": "reviewer",
+    "round_added": 5,
+    "weight": 1.0
+  }
+]

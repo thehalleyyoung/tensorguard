@@ -1,0 +1,150 @@
+{
+  "_question": "Round-2 Q4: of the 5/15 catches in the post-freeze unfiltered sample, how many fire through a tested-only handler vs. a Lean-audited or pen-and-paper handler?",
+  "n_catches": 5,
+  "footprint_distribution": {
+    "Lean-audited or pen-and-paper": 0,
+    "tested-only": 0,
+    "mixed (touches both)": 5,
+    "uncovered-only": 0
+  },
+  "handler_invocation_counts": {
+    "Lean-audited": 8,
+    "pen-and-paper": 1,
+    "tested-only": 2,
+    "uncovered": 4,
+    "no-handler-id": 0
+  },
+  "method": "For each of the 5 catches we (i) source-scan the repro for handler tokens (HANDLER_TOKENS subset matching the per-block scope script) and (ii) classify each detected handler against experiments_v5/handler_soundness_scope.json into {Lean-audited, pen-and-paper, tested-only, uncovered}.  A catch's footprint is 'Lean-audited or pen-and-paper' iff every detected handler in the file lies in those two sets, 'tested-only' iff every detected handler is tested-only, 'mixed' if the file touches both, and 'uncovered-only' if no detected handler is in any soundness scope.  This is the same per-block soundness footprint definition used in handler_scope_per_block.py.",
+  "rows": [
+    {
+      "id": "rb_pf_001_diffusers_longcat_ffmult",
+      "path": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_001_diffusers_longcat_ffmult.py",
+      "analyser_note": "no-bugs (silent-verified or abstain)",
+      "raw_bug_annotations": [],
+      "source_handlers": [
+        "linear",
+        "mul"
+      ],
+      "source_handler_scope": [
+        [
+          "linear",
+          "Lean-audited"
+        ],
+        [
+          "mul",
+          "uncovered"
+        ]
+      ],
+      "footprint_classification": "mixed (touches both)"
+    },
+    {
+      "id": "rb_pf_003_peft_lora_moe_swap",
+      "path": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_003_peft_lora_moe_swap.py",
+      "analyser_note": "no-bugs (silent-verified or abstain)",
+      "raw_bug_annotations": [],
+      "source_handlers": [
+        "add",
+        "einsum",
+        "expand",
+        "unsqueeze"
+      ],
+      "source_handler_scope": [
+        [
+          "expand",
+          "Lean-audited"
+        ],
+        [
+          "add",
+          "uncovered"
+        ],
+        [
+          "einsum",
+          "pen-and-paper"
+        ],
+        [
+          "unsqueeze",
+          "tested-only"
+        ]
+      ],
+      "footprint_classification": "mixed (touches both)"
+    },
+    {
+      "id": "rb_pf_004_routerparallel_topk",
+      "path": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_004_routerparallel_topk.py",
+      "analyser_note": "no-bugs (silent-verified or abstain)",
+      "raw_bug_annotations": [],
+      "source_handlers": [
+        "linear",
+        "softmax"
+      ],
+      "source_handler_scope": [
+        [
+          "linear",
+          "Lean-audited"
+        ],
+        [
+          "softmax",
+          "tested-only"
+        ]
+      ],
+      "footprint_classification": "mixed (touches both)"
+    },
+    {
+      "id": "rb_uf_008_wan_vae_decoder",
+      "path": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_008_wan_vae_decoder.py",
+      "analyser_note": "no-bugs (silent-verified or abstain)",
+      "raw_bug_annotations": [],
+      "source_handlers": [
+        "mul",
+        "reshape",
+        "view"
+      ],
+      "source_handler_scope": [
+        [
+          "view",
+          "Lean-audited"
+        ],
+        [
+          "reshape",
+          "Lean-audited"
+        ],
+        [
+          "mul",
+          "uncovered"
+        ]
+      ],
+      "footprint_classification": "mixed (touches both)"
+    },
+    {
+      "id": "rb_uf_012_hunyuan_vae_nan_branch",
+      "path": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_012_hunyuan_vae_nan_branch.py",
+      "analyser_note": "no-bugs (silent-verified or abstain)",
+      "raw_bug_annotations": [],
+      "source_handlers": [
+        "conv2d",
+        "mul",
+        "permute",
+        "view"
+      ],
+      "source_handler_scope": [
+        [
+          "view",
+          "Lean-audited"
+        ],
+        [
+          "permute",
+          "Lean-audited"
+        ],
+        [
+          "conv2d",
+          "Lean-audited"
+        ],
+        [
+          "mul",
+          "uncovered"
+        ]
+      ],
+      "footprint_classification": "mixed (touches both)"
+    }
+  ]
+}

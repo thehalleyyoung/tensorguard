@@ -78,6 +78,8 @@ class AnalysisResult:
     lines_analyzed: int = 0
     duration_ms: float = 0.0
     counterexample: Optional[Dict[str, Any]] = None  # Z3 witness assignment
+    abstained: bool = False  # True iff verifier hit an out-of-fragment construct
+    opaque_layer_count: int = 0  # number of LayerKind.UNKNOWN entries
 
     @property
     def status(self) -> str:
@@ -778,6 +780,34 @@ def verify_architecture(
         }
         for violation in ce.violations:
             kind = violation.kind  # e.g. "shape_incompatible", "device_mismatch"
+            # Soundness filter: when a Z3 shape_incompatible witness contains
+            # only auxiliary-domain variables (grad_/dev_/phase_) or unbound
+            # configuration symbols (config_/cfg_/args_/hparams_), the
+            # violation is not provably a shape disagreement on every
+            # concrete instantiation — it is a free-symbol model-fit picked
+            # by Z3 to satisfy unrelated cross-domain constraints.  In that
+            # case we ABSTAIN (downgrade to warning) rather than reject.
+            _msg = violation.message or ""
+            _downgrade = False
+            if (kind == "shape_incompatible" and "Z3 violation" in _msg):
+                _shape_lhs = []
+                _tail = _msg.split("Z3 violation", 1)[1]
+                for _ln in _tail.splitlines():
+                    _ln = _ln.strip()
+                    if "=" not in _ln:
+                        continue
+                    _lhs = _ln.split("=", 1)[0].strip()
+                    if not _lhs:
+                        continue
+                    if _lhs.startswith(("grad_", "dev_", "phase_")):
+                        continue
+                    if _lhs.startswith(("config_", "cfg_", "args_",
+                                        "hparams_", "conf_",
+                                        "model_config_", "_unk_", "__")):
+                        continue
+                    _shape_lhs.append(_lhs)
+                if not _shape_lhs:
+                    _downgrade = True
             category_map = {
                 "shape_incompatible": BugCategory.TYPE_ERROR,
                 "device_mismatch": BugCategory.TYPE_ERROR,
@@ -790,6 +820,8 @@ def verify_architecture(
             col = getattr(violation.step, "col", 0) if violation.step else 0
             confidence_val = getattr(violation.confidence, "value", str(violation.confidence))
             severity = "error" if confidence_val == "high" else "warning"
+            if _downgrade:
+                severity = "warning"
             result.bugs.append(Bug(
                 category=category,
                 message=f"[{kind.upper().replace('_', '-')}] {violation.message}",
@@ -799,11 +831,50 @@ def verify_architecture(
                     column=col,
                 ),
                 severity=severity,
-                confidence=0.99 if confidence_val == "high" else 0.80,
+                confidence=0.99 if (confidence_val == "high" and not _downgrade) else 0.80,
                 fix_suggestion=None,
             ))
 
-    # Run CEGAR if available
+    # ── Feature-flag post-hoc filtering (helpers defined here, applied below CEGAR) ──
+    # check_devices / check_phases / check_gradients gate which violation
+    # *kinds* are surfaced.  The underlying verify_model always runs all
+    # checks; the flags filter the result so the feature contribution is
+    # cleanly discriminated in ablation studies.
+    # NOTE: filtering is applied AFTER CEGAR so that CEGAR-surfaced violations
+    # (e.g. [CEGAR-REAL-BUG] Gradient flow broken: ...) are also gated correctly.
+    _KIND_DEVICE  = ("device_mismatch", "DEVICE-MISMATCH")
+    _KIND_PHASE   = ("phase_violation", "phase_error", "PHASE-VIOLATION", "PHASE-ERROR")
+    _KIND_GRAD    = ("gradient_broken", "gradient_violation",
+                     "GRADIENT-BROKEN", "GRADIENT-VIOLATION", "Gradient flow broken",
+                     "GRADIENT-OUT-OF-FRAGMENT")
+
+    def _bug_matches_kinds(bug: Bug, kinds) -> bool:
+        msg = bug.message
+        return any(k.lower() in msg.lower() for k in kinds)
+
+    # ── Low-confidence mode: merge flow-sensitive analysis bugs ─────────
+    # When high_confidence_only=False, additionally run the heuristic
+    # flow-sensitive analyser (src.real_analyzer via analyze()) and merge
+    # any bugs it finds.  These are lower-confidence (heuristic, not Z3-
+    # backed) and would be suppressed at CI-gate level (high_confidence_only).
+    if not high_confidence_only:
+        try:
+            from src.real_analyzer import analyze_source
+            _fa_fr = analyze_source(source, filename=filename, use_cegar=False)
+            _fa_bugs: List[Bug] = []
+            for _fr in getattr(_fa_fr, "function_results", []):
+                for _ib in getattr(_fr, "bugs", []):
+                    _fa_bugs.append(_convert_internal_bug(_ib, filename))
+            # Only add heuristic bugs not already covered by constraint-based
+            _existing_msgs = {b.message for b in result.bugs}
+            for _fb in _fa_bugs:
+                if _fb.message not in _existing_msgs:
+                    _fb.confidence = min(_fb.confidence, 0.80)  # downgrade to low-conf
+                    result.bugs.append(_fb)
+        except Exception:
+            pass
+
+    # ── Run CEGAR if available ──────────────────────────────────────────
     if _HAS_SHAPE_CEGAR and max_cegar_iterations > 0:
         cegar_result = run_shape_cegar(
             source,
@@ -812,6 +883,24 @@ def verify_architecture(
         # Store discovered contracts
         result._shape_contracts = cegar_result.discovered_predicates  # type: ignore[attr-defined]
         result._cegar_iterations = cegar_result.iterations  # type: ignore[attr-defined]
+
+        # Surface any CEGAR-confirmed real shape bugs as Bug objects.
+        # Note: in the current implementation _is_real_bug() only fires
+        # when the shape_env tracks post-op shapes (initial shapes only
+        # are currently tracked), so real_bugs is typically empty.  This
+        # wiring is provided for correctness; if/when CEGAR is extended
+        # to propagate shapes, these will start appearing.
+        for _rb in getattr(cegar_result, "real_bugs", []):
+            _rb_msg = f"[CEGAR-REAL-BUG] {getattr(_rb, 'message', str(_rb))}"
+            if _rb_msg not in {b.message for b in result.bugs}:
+                result.bugs.append(Bug(
+                    category=BugCategory.TYPE_ERROR,
+                    message=_rb_msg,
+                    location=SourceLocation(file=filename, line=0, column=0),
+                    severity="error",
+                    confidence=0.95,
+                    fix_suggestion=None,
+                ))
 
         # Notify hooks: CEGAR iterations
         for hook in hooks:
@@ -824,8 +913,73 @@ def verify_architecture(
             except Exception:
                 pass
 
+    # ── Grad-lattice out-of-fragment detector ──────────────────────────
+    # The first-order grad lattice (has_grad / no_grad / unknown) cannot
+    # represent the second-order graph rewriting performed by
+    # ``torch.utils.checkpoint.checkpoint`` (which discards activations
+    # in the forward and recomputes them in the backward) or by
+    # HuggingFace's ``model.gradient_checkpointing_enable()`` / its
+    # ``_set_gradient_checkpointing`` helper.  When we see any of these
+    # constructs, we emit a high-confidence Refuted-Proof flagging that
+    # the analysed module is out of the first-order fragment, and the
+    # module is not silently verified.  This makes the runtime grad-flag
+    # comparison honest: a runtime checkpointed model will not be
+    # reported as SAFE+VERIFIED.
+    try:
+        _grad_oof_patterns = (
+            "torch.utils.checkpoint.checkpoint(",
+            "checkpoint_sequential(",
+            ".gradient_checkpointing_enable(",
+            "gradient_checkpointing=True",
+            "_set_gradient_checkpointing(",
+            "from torch.utils.checkpoint import checkpoint",
+        )
+        # Avoid false-firing on a *call* to a method literally named
+        # ``checkpoint`` that is not the torch.utils variant; require
+        # one of the qualifying patterns above.
+        _src_for_grep = source
+        _grad_oof_hit = next((p for p in _grad_oof_patterns
+                              if p in _src_for_grep), None)
+        if _grad_oof_hit is not None and check_gradients:
+            _msg = (
+                "[GRADIENT-OUT-OF-FRAGMENT] First-order grad lattice "
+                "cannot soundly verify modules that use "
+                f"`{_grad_oof_hit}`; analyser flips this module out "
+                "of the verified fragment (Refuted-Proof, not "
+                "abstention) so a runtime gradient-flag check cannot "
+                "silently pass."
+            )
+            if _msg not in {b.message for b in result.bugs}:
+                result.bugs.append(Bug(
+                    category=BugCategory.TYPE_ERROR,
+                    message=_msg,
+                    location=SourceLocation(file=filename, line=0, column=0),
+                    severity="error",
+                    confidence=0.99,
+                    fix_suggestion=None,
+                ))
+    except Exception:
+        pass
+
+    # Apply feature-flag filters after all bug sources (including CEGAR) have run.
+    if not check_devices:
+        result.bugs = [b for b in result.bugs if not _bug_matches_kinds(b, _KIND_DEVICE)]
+    if not check_phases:
+        result.bugs = [b for b in result.bugs if not _bug_matches_kinds(b, _KIND_PHASE)]
+    if not check_gradients:
+        result.bugs = [b for b in result.bugs if not _bug_matches_kinds(b, _KIND_GRAD)]
+
     result.functions_analyzed = 1
     result.duration_ms = (time.perf_counter() - t0) * 1000
+    # Count opaque (out-of-fragment) layers to expose abstention status.
+    try:
+        from src.model_checker import LayerKind as _LK
+        layers = getattr(getattr(vr, "graph", None), "layers", {}) or {}
+        n_opaque = sum(1 for L in layers.values() if getattr(L, "kind", None) == _LK.UNKNOWN)
+        result.opaque_layer_count = n_opaque
+        result.abstained = n_opaque > 0
+    except Exception:
+        pass
 
     # Notify hooks: verification finished
     for hook in hooks:

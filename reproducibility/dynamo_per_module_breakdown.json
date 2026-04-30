@@ -1,0 +1,165 @@
+{
+  "_question": "Round-1 reviewer Q5: per-module breakdown of 48/544 Dynamo in-contract recompiles; is there a TG-Verified module with 0% recompile rate beyond the hand-built TinyMLP positive control?",
+  "_source": "experiments_v5/dynamo_correspondence_v5.json",
+  "n_modules": 17,
+  "total_in_contract_samples": 544,
+  "total_in_contract_recompiles": 48,
+  "aggregate_rate": 0.08823529411764706,
+  "n_modules_zero_recompile": 6,
+  "n_modules_zero_recompile_excluding_TinyMLP": 6,
+  "modules_zero_recompile_excluding_TinyMLP": [
+    "tv_efficientnet_b0",
+    "tv_vit_b_16",
+    "tv_convnext_tiny",
+    "hf_vit_tiny",
+    "timm_deit_tiny_p16_224",
+    "timm_mobilenetv3_small_050"
+  ],
+  "top3_concentrator_modules": [
+    "tv_squeezenet1_1",
+    "tv_resnet18",
+    "tv_resnet50"
+  ],
+  "top3_share_of_recompiles": 0.7291666666666666,
+  "concentrator_module": "tv_squeezenet1_1",
+  "concentrator_recompile_rate": 0.8125,
+  "per_module": [
+    {
+      "name": "tv_resnet18",
+      "family": "torchvision",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 5,
+      "recompile_rate": 0.15625,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "tv_resnet50",
+      "family": "torchvision",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 4,
+      "recompile_rate": 0.125,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "tv_mobilenet_v3_small",
+      "family": "torchvision",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 1,
+      "recompile_rate": 0.03125,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "tv_efficientnet_b0",
+      "family": "torchvision",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 0,
+      "recompile_rate": 0.0,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "tv_squeezenet1_1",
+      "family": "torchvision",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 26,
+      "recompile_rate": 0.8125,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "tv_regnet_y_400mf",
+      "family": "torchvision",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 1,
+      "recompile_rate": 0.03125,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "tv_vit_b_16",
+      "family": "torchvision",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 0,
+      "recompile_rate": 0.0,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "tv_convnext_tiny",
+      "family": "torchvision",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 0,
+      "recompile_rate": 0.0,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "hf_bert_tiny",
+      "family": "transformers",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 1,
+      "recompile_rate": 0.03125,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "hf_gpt2_tiny",
+      "family": "transformers",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 1,
+      "recompile_rate": 0.03125,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "hf_t5_tiny",
+      "family": "transformers",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 3,
+      "recompile_rate": 0.09375,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "hf_distilbert_tiny",
+      "family": "transformers",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 1,
+      "recompile_rate": 0.03125,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "hf_vit_tiny",
+      "family": "transformers",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 0,
+      "recompile_rate": 0.0,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "timm_deit_tiny_p16_224",
+      "family": "timm",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 0,
+      "recompile_rate": 0.0,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "timm_mobilenetv3_small_050",
+      "family": "timm",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 0,
+      "recompile_rate": 0.0,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "timm_resnet18",
+      "family": "timm",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 4,
+      "recompile_rate": 0.125,
+      "tg_verdict": "signature-trusted"
+    },
+    {
+      "name": "tg_verified_TinyMLP",
+      "family": "misc",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 1,
+      "recompile_rate": 0.03125,
+      "tg_verdict": "verified"
+    }
+  ],
+  "interpretation": "Of the 17 audited modules, 48 in-contract recompiles total. The single largest concentrator is tv_squeezenet1_1 (26/32 = 81% in-contract recompile rate); the top-3 (tv_squeezenet1_1, tv_resnet18, tv_resnet50) account for 73% of all in-contract recompiles. Six TG-Verified modules beyond TinyMLP have *zero* in-contract recompiles across 32 sampled inputs each: tv_efficientnet_b0, tv_vit_b_16, tv_convnext_tiny, hf_vit_tiny, timm_deit_tiny_p16_224, timm_mobilenetv3_small_050. On these 6 modules TG-Verified is therefore a sufficient predictor of Dynamo guard-stability in the audited regime, even though the formal correspondence is one-directional."
+}

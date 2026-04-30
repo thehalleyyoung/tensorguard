@@ -1,0 +1,168 @@
+{
+  "summary": {
+    "n_total": 10,
+    "rp_at_0.99": 7,
+    "not_rp_at_0.99": 3
+  },
+  "records": [
+    {
+      "id": "rb_001",
+      "file": "experiments_v5/v8/real_bugs_upstream/rb_001_xlstm_matq_view.py",
+      "input_shapes": {
+        "matQ": [
+          2,
+          4,
+          128,
+          192
+        ]
+      },
+      "n_bugs": 0,
+      "max_confidence": 0.0,
+      "abstained": false,
+      "status": "Verified_or_Silent",
+      "first_bug": null
+    },
+    {
+      "id": "rb_002",
+      "file": "experiments_v5/v8/real_bugs_upstream/rb_002_xlstm_matk_view.py",
+      "input_shapes": {
+        "matK": [
+          2,
+          4,
+          128,
+          192
+        ]
+      },
+      "n_bugs": 0,
+      "max_confidence": 0.0,
+      "abstained": false,
+      "status": "Verified_or_Silent",
+      "first_bug": null
+    },
+    {
+      "id": "rb_003",
+      "file": "experiments_v5/v8/real_bugs_upstream/rb_003_gptneox_odd_heads.py",
+      "input_shapes": {
+        "hidden_states": [
+          1,
+          5,
+          1024
+        ]
+      },
+      "n_bugs": 2,
+      "max_confidence": 0.99,
+      "abstained": false,
+      "status": "RP_0.99",
+      "first_bug": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(1, 5, 3072)) to (1, 5, 12, 255)"
+    },
+    {
+      "id": "rb_004",
+      "file": "experiments_v5/v8/real_bugs_upstream/rb_004_convbert_head_ratio.py",
+      "input_shapes": {
+        "mixed_query_layer": [
+          3,
+          10,
+          192
+        ]
+      },
+      "n_bugs": 1,
+      "max_confidence": 0.99,
+      "abstained": false,
+      "status": "RP_0.99",
+      "first_bug": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(3, 10, 192)) to (-2, -3, 384)"
+    },
+    {
+      "id": "rb_005",
+      "file": "experiments_v5/v8/real_bugs_upstream/rb_005_longformer_global_attn.py",
+      "input_shapes": {
+        "attn_probs": [
+          1,
+          12,
+          512,
+          518
+        ]
+      },
+      "n_bugs": 1,
+      "max_confidence": 0.99,
+      "abstained": false,
+      "status": "RP_0.99",
+      "first_bug": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(1, 12, 512, 518)) to (-2, 12, 5, -4)"
+    },
+    {
+      "id": "rb_006",
+      "file": "experiments_v5/v8/real_bugs_upstream/rb_006_longt5_tp_attention.py",
+      "input_shapes": {
+        "hidden_states": [
+          2,
+          10,
+          512
+        ]
+      },
+      "n_bugs": 3,
+      "max_confidence": 0.99,
+      "abstained": false,
+      "status": "RP_0.99",
+      "first_bug": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(2, 10, 128)) to (2, -1, 8, 64)"
+    },
+    {
+      "id": "rb_007",
+      "file": "experiments_v5/v8/real_bugs_upstream/rb_007_gptneox_gqa_reshape.py",
+      "input_shapes": {
+        "mixed_x_layer": [
+          4096,
+          1,
+          896
+        ]
+      },
+      "n_bugs": 1,
+      "max_confidence": 0.99,
+      "abstained": false,
+      "status": "RP_0.99",
+      "first_bug": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(4096, 1, 896)) to (-2, -3, 5, -1)"
+    },
+    {
+      "id": "rb_008",
+      "file": "experiments_v5/v8/real_bugs_upstream/rb_008_diffusers_unet1d_fourier.py",
+      "input_shapes": {
+        "timesteps": [
+          1
+        ]
+      },
+      "n_bugs": 5,
+      "max_confidence": 0.8,
+      "abstained": false,
+      "status": "RP_lt_0.99",
+      "first_bug": "Index 0 on 'block_out_channels' without length guard (may be empty)"
+    },
+    {
+      "id": "rb_009",
+      "file": "experiments_v5/v8/real_bugs_upstream/rb_009_peft_prefix_tuning.py",
+      "input_shapes": {
+        "past_key_values": [
+          8,
+          8,
+          8192
+        ]
+      },
+      "n_bugs": 2,
+      "max_confidence": 0.99,
+      "abstained": false,
+      "status": "RP_0.99",
+      "first_bug": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(8, 8, 8192)) to (-2, 8, 16, 6, 85)"
+    },
+    {
+      "id": "rb_010",
+      "file": "experiments_v5/v8/real_bugs_upstream/rb_010_peft_dora_conv_groups.py",
+      "input_shapes": {
+        "_x": [
+          1
+        ]
+      },
+      "n_bugs": 2,
+      "max_confidence": 0.99,
+      "abstained": false,
+      "status": "RP_0.99",
+      "first_bug": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(192, 48, 3, 3)) to (192, 96, 3, 3)"
+    }
+  ]
+}

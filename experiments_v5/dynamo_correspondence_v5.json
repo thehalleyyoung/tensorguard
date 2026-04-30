@@ -1,0 +1,812 @@
+{
+  "config": {
+    "torch_version": "2.9.1",
+    "n_in_contract_samples_per_module": 32,
+    "compile_mode": "torch.compile(dynamic=True)",
+    "device": "cpu",
+    "wall_timeout_s_per_module": 240
+  },
+  "summary": {
+    "torch_version": "2.9.1",
+    "n_modules": 17,
+    "n_built_and_run": 17,
+    "n_zero_recompile_under_contract": 6,
+    "in_contract_recompile_rate": 0.08823529411764706,
+    "oos_violation_rate": 0.9787234042553191,
+    "total_oos_attempts": 47,
+    "total_oos_violations": 46
+  },
+  "modules": [
+    {
+      "name": "tv_resnet18",
+      "family": "torchvision",
+      "pinned_version": "0.24.1",
+      "contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              3,
+              "H",
+              "W"
+            ]
+          ]
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            8
+          ],
+          "H": [
+            64,
+            128
+          ],
+          "W": [
+            64,
+            128
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 5,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 3,
+      "oos_violations": 3,
+      "oos_breakdown": {
+        "channel": "runtime_error: RuntimeError: Given groups=1, weight of size [64, 3, 7, 7], expected input[4, 4,",
+        "dtype": "runtime_error: RuntimeError: expected scalar type Double but found Float",
+        "rank": "runtime_error: RuntimeError: Expected 3D (unbatched) or 4D (batched) input to conv2d, but got i"
+      },
+      "duration_s": 22.399909019470215,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "tv_resnet50",
+      "family": "torchvision",
+      "pinned_version": "0.24.1",
+      "contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              3,
+              "H",
+              "W"
+            ]
+          ]
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            4
+          ],
+          "H": [
+            64,
+            128
+          ],
+          "W": [
+            64,
+            128
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 4,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 3,
+      "oos_violations": 3,
+      "oos_breakdown": {
+        "channel": "runtime_error: RuntimeError: Given groups=1, weight of size [64, 3, 7, 7], expected input[1, 4,",
+        "dtype": "runtime_error: RuntimeError: expected scalar type Double but found Float",
+        "rank": "runtime_error: RuntimeError: Expected 3D (unbatched) or 4D (batched) input to conv2d, but got i"
+      },
+      "duration_s": 48.192058801651,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "tv_mobilenet_v3_small",
+      "family": "torchvision",
+      "pinned_version": "0.24.1",
+      "contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              3,
+              "H",
+              "W"
+            ]
+          ]
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            8
+          ],
+          "H": [
+            64,
+            128
+          ],
+          "W": [
+            64,
+            128
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 1,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 3,
+      "oos_violations": 3,
+      "oos_breakdown": {
+        "channel": "runtime_error: RuntimeError: Given groups=1, weight of size [16, 3, 3, 3], expected input[2, 4,",
+        "dtype": "runtime_error: RuntimeError: expected scalar type Double but found Float",
+        "rank": "runtime_error: RuntimeError: Expected 3D (unbatched) or 4D (batched) input to conv2d, but got i"
+      },
+      "duration_s": 43.73948884010315,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "tv_efficientnet_b0",
+      "family": "torchvision",
+      "pinned_version": "0.24.1",
+      "contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              3,
+              "H",
+              "W"
+            ]
+          ]
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            4
+          ],
+          "H": [
+            64,
+            160
+          ],
+          "W": [
+            64,
+            160
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 0,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 3,
+      "oos_violations": 3,
+      "oos_breakdown": {
+        "channel": "runtime_error: RuntimeError: Given groups=1, weight of size [32, 3, 3, 3], expected input[3, 4,",
+        "dtype": "runtime_error: RuntimeError: expected scalar type Double but found Float",
+        "rank": "runtime_error: RuntimeError: Expected 3D (unbatched) or 4D (batched) input to conv2d, but got i"
+      },
+      "duration_s": 75.86190390586853,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "tv_squeezenet1_1",
+      "family": "torchvision",
+      "pinned_version": "0.24.1",
+      "contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              3,
+              "H",
+              "W"
+            ]
+          ]
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            8
+          ],
+          "H": [
+            64,
+            128
+          ],
+          "W": [
+            64,
+            128
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 26,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 3,
+      "oos_violations": 3,
+      "oos_breakdown": {
+        "channel": "runtime_error: RuntimeError: Given groups=1, weight of size [64, 3, 3, 3], expected input[2, 4,",
+        "dtype": "runtime_error: RuntimeError: Input type (double) and bias type (float) should be the same",
+        "rank": "runtime_error: RuntimeError: Expected 3D (unbatched) or 4D (batched) input to conv2d, but got i"
+      },
+      "duration_s": 151.6079661846161,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "tv_regnet_y_400mf",
+      "family": "torchvision",
+      "pinned_version": "0.24.1",
+      "contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              3,
+              "H",
+              "W"
+            ]
+          ]
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            4
+          ],
+          "H": [
+            64,
+            128
+          ],
+          "W": [
+            64,
+            128
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 1,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 3,
+      "oos_violations": 3,
+      "oos_breakdown": {
+        "channel": "runtime_error: RuntimeError: Given groups=1, weight of size [32, 3, 3, 3], expected input[1, 4,",
+        "dtype": "runtime_error: RuntimeError: expected scalar type Double but found Float",
+        "rank": "runtime_error: RuntimeError: Expected 3D (unbatched) or 4D (batched) input to conv2d, but got i"
+      },
+      "duration_s": 51.171708822250366,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "tv_vit_b_16",
+      "family": "torchvision",
+      "pinned_version": "0.24.1",
+      "contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              3,
+              224,
+              224
+            ]
+          ]
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            4
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 0,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 3,
+      "oos_violations": 3,
+      "oos_breakdown": {
+        "channel": "runtime_error: RuntimeError: Given groups=1, weight of size [768, 3, 16, 16], expected input[3,",
+        "dtype": "runtime_error: RuntimeError: Input type (double) and bias type (float) should be the same",
+        "rank": "runtime_error: ValueError: too many values to unpack (expected 4)"
+      },
+      "duration_s": 21.66024398803711,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "tv_convnext_tiny",
+      "family": "torchvision",
+      "pinned_version": "0.24.1",
+      "contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              3,
+              "H",
+              "W"
+            ]
+          ]
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            2
+          ],
+          "H": [
+            64,
+            128
+          ],
+          "W": [
+            64,
+            128
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 0,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 3,
+      "oos_violations": 3,
+      "oos_breakdown": {
+        "channel": "runtime_error: RuntimeError: Given groups=1, weight of size [96, 3, 4, 4], expected input[1, 4,",
+        "dtype": "runtime_error: RuntimeError: Input type (double) and bias type (float) should be the same",
+        "rank": "runtime_error: RuntimeError: Expected 3D (unbatched) or 4D (batched) input to conv2d, but got i"
+      },
+      "duration_s": 41.53198313713074,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "hf_bert_tiny",
+      "family": "transformers",
+      "pinned_version": "4.57.3",
+      "contract": {
+        "inputs": [
+          [
+            "input_ids",
+            [
+              "B",
+              "S"
+            ]
+          ]
+        ],
+        "dtype": "torch.int64",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            4
+          ],
+          "S": [
+            4,
+            64
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 1,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 2,
+      "oos_violations": 2,
+      "oos_breakdown": {
+        "dtype": "recompile",
+        "rank": "recompile"
+      },
+      "duration_s": 7.495629787445068,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "hf_gpt2_tiny",
+      "family": "transformers",
+      "pinned_version": "4.57.3",
+      "contract": {
+        "inputs": [
+          [
+            "input_ids",
+            [
+              "B",
+              "S"
+            ]
+          ]
+        ],
+        "dtype": "torch.int64",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            4
+          ],
+          "S": [
+            4,
+            64
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 1,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 2,
+      "oos_violations": 2,
+      "oos_breakdown": {
+        "dtype": "recompile",
+        "rank": "recompile"
+      },
+      "duration_s": 10.919769048690796,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "hf_t5_tiny",
+      "family": "transformers",
+      "pinned_version": "4.57.3",
+      "contract": {
+        "inputs": [
+          [
+            "input_ids",
+            [
+              "B",
+              "S"
+            ]
+          ],
+          [
+            "decoder_input_ids",
+            [
+              "B",
+              "S2"
+            ]
+          ]
+        ],
+        "dtype": "torch.int64",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            4
+          ],
+          "S": [
+            4,
+            32
+          ],
+          "S2": [
+            4,
+            32
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 3,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 2,
+      "oos_violations": 2,
+      "oos_breakdown": {
+        "dtype": "recompile",
+        "rank": "recompile"
+      },
+      "duration_s": 20.793988704681396,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "hf_distilbert_tiny",
+      "family": "transformers",
+      "pinned_version": "4.57.3",
+      "contract": {
+        "inputs": [
+          [
+            "input_ids",
+            [
+              "B",
+              "S"
+            ]
+          ]
+        ],
+        "dtype": "torch.int64",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            4
+          ],
+          "S": [
+            4,
+            64
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 1,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 2,
+      "oos_violations": 2,
+      "oos_breakdown": {
+        "dtype": "recompile",
+        "rank": "recompile"
+      },
+      "duration_s": 3.7628049850463867,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "hf_vit_tiny",
+      "family": "transformers",
+      "pinned_version": "4.57.3",
+      "contract": {
+        "inputs": [
+          [
+            "pixel_values",
+            [
+              "B",
+              3,
+              64,
+              64
+            ]
+          ]
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            4
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 0,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 3,
+      "oos_violations": 3,
+      "oos_breakdown": {
+        "channel": "recompile",
+        "dtype": "recompile",
+        "rank": "runtime_error: ValueError: too many values to unpack (expected 4)"
+      },
+      "duration_s": 7.505531072616577,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "timm_deit_tiny_p16_224",
+      "family": "timm",
+      "pinned_version": "1.0.26",
+      "contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              3,
+              224,
+              224
+            ]
+          ]
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            4
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 0,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 3,
+      "oos_violations": 3,
+      "oos_breakdown": {
+        "channel": "runtime_error: RuntimeError: Given groups=1, weight of size [192, 3, 16, 16], expected input[3,",
+        "dtype": "runtime_error: RuntimeError: Input type (double) and bias type (float) should be the same",
+        "rank": "runtime_error: ValueError: too many values to unpack (expected 4)"
+      },
+      "duration_s": 12.212457180023193,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "timm_mobilenetv3_small_050",
+      "family": "timm",
+      "pinned_version": "1.0.26",
+      "contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              3,
+              224,
+              224
+            ]
+          ]
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            4
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 0,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 3,
+      "oos_violations": 3,
+      "oos_breakdown": {
+        "channel": "runtime_error: RuntimeError: Given groups=1, weight of size [16, 3, 3, 3], expected input[4, 4,",
+        "dtype": "runtime_error: RuntimeError: expected scalar type Double but found Float",
+        "rank": "runtime_error: RuntimeError: Expected 3D (unbatched) or 4D (batched) input to conv2d, but got i"
+      },
+      "duration_s": 53.674280881881714,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "timm_resnet18",
+      "family": "timm",
+      "pinned_version": "1.0.26",
+      "contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              3,
+              "H",
+              "W"
+            ]
+          ]
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            4
+          ],
+          "H": [
+            64,
+            128
+          ],
+          "W": [
+            64,
+            128
+          ]
+        }
+      },
+      "tg_verdict": "signature-trusted",
+      "tg_detail": "Module source too large for end-to-end constraint solving; shape contract is taken from the documented forward signature, which is the same artefact TG would emit after CEGAR.",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 4,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 3,
+      "oos_violations": 3,
+      "oos_breakdown": {
+        "channel": "runtime_error: RuntimeError: Given groups=1, weight of size [64, 3, 7, 7], expected input[3, 4,",
+        "dtype": "runtime_error: RuntimeError: expected scalar type Double but found Float",
+        "rank": "runtime_error: RuntimeError: Expected 3D (unbatched) or 4D (batched) input to conv2d, but got i"
+      },
+      "duration_s": 18.797136068344116,
+      "notes": "",
+      "failed_guard": null
+    },
+    {
+      "name": "tg_verified_TinyMLP",
+      "family": "misc",
+      "pinned_version": "n/a",
+      "contract": {
+        "inputs": [
+          [
+            "x",
+            [
+              "B",
+              64
+            ]
+          ]
+        ],
+        "dtype": "torch.float32",
+        "device": "cpu",
+        "requires_grad": false,
+        "sym_ranges": {
+          "B": [
+            1,
+            16
+          ]
+        }
+      },
+      "tg_verdict": "verified",
+      "tg_detail": "verify_architecture returned SAFE on surrogate",
+      "in_contract_samples": 32,
+      "in_contract_recompiles": 1,
+      "in_contract_runtime_errors": 0,
+      "oos_attempts": 3,
+      "oos_violations": 2,
+      "oos_breakdown": {
+        "channel": "runtime_error: RuntimeError: mat1 and mat2 shapes cannot be multiplied (15x65 and 64x32)",
+        "dtype": "runtime_error: RuntimeError: mat1 and mat2 must have the same dtype, but got Double and Float",
+        "rank": "no_effect"
+      },
+      "duration_s": 0.4167921543121338,
+      "notes": "",
+      "failed_guard": null
+    }
+  ]
+}

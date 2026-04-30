@@ -1,0 +1,1669 @@
+{
+  "_question": "Round-2 W3/Q1: report the witnessed-ratio on the full 128 CV set with a Clopper-Pearson 95% CI.",
+  "timestamp": "2026-04-29T16:25:53.553892Z",
+  "freeze_commit": "040f6f3",
+  "freeze_date": "2026-04-07",
+  "denominator_full128": {
+    "n": 128,
+    "k_jointly_satisfied": 118,
+    "ratio": 0.921875,
+    "clopper_pearson_95": [
+      0.8610175408226017,
+      0.9619006105596413
+    ]
+  },
+  "denominator_attempted": {
+    "n": 128,
+    "k_jointly_satisfied": 118,
+    "ratio": 0.921875,
+    "clopper_pearson_95": [
+      0.8610175408226017,
+      0.9619006105596413
+    ]
+  },
+  "bucket_breakdown": {
+    "empty_trivially_satisfied": 26,
+    "no_own_init_vacuously_satisfied": 12,
+    "symbolic_config_attempted": 90,
+    "symbolic_config_jointly_satisfied": 80,
+    "symbolic_config_excluded": 0
+  },
+  "method": "For bucket=empty (26/128): assume_M is identically true; counted as jointly satisfied by definition.  For bucket=no-own-init (12/128): the class inherits __init__ and contributes no axiom; counted as jointly satisfied (vacuous-but-sound).  For bucket=symbolic-config-only (90/128): each row's full conjunction of assume_M sym_attr clauses is checked against a single default *Config() instantiation using the helpers in cv_caller_rely_joint_sat.py.  Rows whose *Config class cannot be resolved or instantiated locally are reported as 'excluded' and not counted as witnessed; the headline ratio is therefore a *lower bound* on the true joint-realisability rate.",
+  "rows": [
+    {
+      "id": "timm__VisionTransformerDistilled__032a9d92",
+      "qualified_name": "timm.models.deit.VisionTransformerDistilled",
+      "library": "timm",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__BertForMaskedLM__f07c0986",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForMaskedLM",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__BertForMultipleChoice__e6a23721",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForMultipleChoice",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (BertConfig() with documented defaults)",
+      "note": "",
+      "config_class": "BertConfig",
+      "clause_results": [
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BertForNextSentencePrediction__ddcf8ce2",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForNextSentencePrediction",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__BertForPreTraining__fb4fc487",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForPreTraining",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__BertForQuestionAnswering__bfcb478d",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (BertConfig() with documented defaults)",
+      "note": "",
+      "config_class": "BertConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BertForSequenceClassification__b7751332",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (BertConfig() with documented defaults)",
+      "note": "",
+      "config_class": "BertConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BertForTokenClassification__b3e3f097",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (BertConfig() with documented defaults)",
+      "note": "",
+      "config_class": "BertConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BertLMHeadModel__ec7a8f20",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertLMHeadModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__BertModel__9e1eaedc",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": false,
+      "method": "default-config (BertConfig() with documented defaults)",
+      "note": "one or more sym_attr clauses failed",
+      "config_class": "BertConfig",
+      "clause_results": [
+        "_attn_implementation=None",
+        "position_embedding_type='absolute' (non-empty \u2713)"
+      ]
+    },
+    {
+      "id": "transformers__BertPreTrainedModel__f1864b27",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "jointly_satisfied": true,
+      "method": "vacuous (no own __init__; assume_M contributes no axiom)",
+      "note": ""
+    },
+    {
+      "id": "transformers__GPT2Block__5a2da440",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2Block",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (GPT2Config() with documented defaults)",
+      "note": "",
+      "config_class": "GPT2Config",
+      "clause_results": [
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__GPT2DoubleHeadsModel__5882ffd8",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2DoubleHeadsModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (GPT2Config() with documented defaults)",
+      "note": "",
+      "config_class": "GPT2Config",
+      "clause_results": [
+        "n_embd=768 > 0 \u2713",
+        "vocab_size=50257 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__GPT2ForQuestionAnswering__30e06c36",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2ForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (GPT2Config() with documented defaults)",
+      "note": "",
+      "config_class": "GPT2Config",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__GPT2ForSequenceClassification__26ea2284",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2ForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (GPT2Config() with documented defaults)",
+      "note": "",
+      "config_class": "GPT2Config",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "n_embd=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__GPT2ForTokenClassification__abb65812",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2ForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": false,
+      "method": "default-config (GPT2Config() with documented defaults)",
+      "note": "one or more sym_attr clauses failed",
+      "config_class": "GPT2Config",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "missing attribute 'classifier_dropout'",
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__GPT2LMHeadModel__f7dd424c",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2LMHeadModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (GPT2Config() with documented defaults)",
+      "note": "",
+      "config_class": "GPT2Config",
+      "clause_results": [
+        "n_embd=768 > 0 \u2713",
+        "vocab_size=50257 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__GPT2Model__3940f67c",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2Model",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": false,
+      "method": "default-config (GPT2Config() with documented defaults)",
+      "note": "one or more sym_attr clauses failed",
+      "config_class": "GPT2Config",
+      "clause_results": [
+        "hidden_size=768 > 0 \u2713",
+        "vocab_size=50257 > 0 \u2713",
+        "max_position_embeddings=1024 > 0 \u2713",
+        "embd_pdrop=0.1 (numeric, defined)",
+        "_attn_implementation=None"
+      ]
+    },
+    {
+      "id": "transformers__GPT2PreTrainedModel__7452c372",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2PreTrainedModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__T5EncoderModel__1c87733d",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5EncoderModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (T5Config() with documented defaults)",
+      "note": "",
+      "config_class": "T5Config",
+      "clause_results": [
+        "vocab_size=32128 > 0 \u2713",
+        "d_model=512 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__T5ForConditionalGeneration__da9445ce",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5ForConditionalGeneration",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (T5Config() with documented defaults)",
+      "note": "",
+      "config_class": "T5Config",
+      "clause_results": [
+        "d_model=512 > 0 \u2713",
+        "vocab_size=32128 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__T5ForQuestionAnswering__10c6b9c0",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5ForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (T5Config() with documented defaults)",
+      "note": "",
+      "config_class": "T5Config",
+      "clause_results": [
+        "d_model=512 > 0 \u2713",
+        "vocab_size=32128 > 0 \u2713",
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=512 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__T5ForSequenceClassification__9276522e",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5ForSequenceClassification",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__T5ForTokenClassification__94d40192",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5ForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (T5Config() with documented defaults)",
+      "note": "",
+      "config_class": "T5Config",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "classifier_dropout=0.0 in [0,1] \u2713",
+        "hidden_size=512 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__T5Model__a2aaa18c",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5Model",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (T5Config() with documented defaults)",
+      "note": "",
+      "config_class": "T5Config",
+      "clause_results": [
+        "vocab_size=32128 > 0 \u2713",
+        "d_model=512 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__T5PreTrainedModel__9585803b",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5PreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "jointly_satisfied": true,
+      "method": "vacuous (no own __init__; assume_M contributes no axiom)",
+      "note": ""
+    },
+    {
+      "id": "transformers__T5Stack__3c5b9f6a",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5Stack",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (T5Config() with documented defaults)",
+      "note": "",
+      "config_class": "T5Config",
+      "clause_results": [
+        "is_decoder=False (bool, defined)",
+        "dropout_rate=0.1 in [0,1] \u2713"
+      ]
+    },
+    {
+      "id": "transformers__LlamaDecoderLayer__fd4ea02c",
+      "qualified_name": "transformers.models.llama.modeling_llama.LlamaDecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (LlamaConfig() with documented defaults)",
+      "note": "",
+      "config_class": "LlamaConfig",
+      "clause_results": [
+        "hidden_size=4096 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__LlamaForCausalLM__509afe82",
+      "qualified_name": "transformers.models.llama.modeling_llama.LlamaForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (LlamaConfig() with documented defaults)",
+      "note": "",
+      "config_class": "LlamaConfig",
+      "clause_results": [
+        "vocab_size=32000 > 0 \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__LlamaModel__3fb478fa",
+      "qualified_name": "transformers.models.llama.modeling_llama.LlamaModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": false,
+      "method": "default-config (LlamaConfig() with documented defaults)",
+      "note": "one or more sym_attr clauses failed",
+      "config_class": "LlamaConfig",
+      "clause_results": [
+        "pad_token_id=None",
+        "vocab_size=32000 > 0 \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__ViTForImageClassification__adc20c40",
+      "qualified_name": "transformers.models.vit.modeling_vit.ViTForImageClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (ViTConfig() with documented defaults)",
+      "note": "",
+      "config_class": "ViTConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__ViTForMaskedImageModeling__062602cb",
+      "qualified_name": "transformers.models.vit.modeling_vit.ViTForMaskedImageModeling",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__ViTModel__81e12b22",
+      "qualified_name": "transformers.models.vit.modeling_vit.ViTModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (ViTConfig() with documented defaults)",
+      "note": "",
+      "config_class": "ViTConfig",
+      "clause_results": [
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__ViTPreTrainedModel__d86c5588",
+      "qualified_name": "transformers.models.vit.modeling_vit.ViTPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "jointly_satisfied": true,
+      "method": "vacuous (no own __init__; assume_M contributes no axiom)",
+      "note": ""
+    },
+    {
+      "id": "transformers__WhisperDecoder__f2b1f17b",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperDecoder",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (WhisperConfig() with documented defaults)",
+      "note": "",
+      "config_class": "WhisperConfig",
+      "clause_results": [
+        "dropout=0.0 in [0,1] \u2713",
+        "decoder_layerdrop=0.0 (numeric, defined)",
+        "pad_token_id=50256 (numeric, defined)",
+        "max_target_positions=448 (numeric, defined)",
+        "max_source_positions=1500 (numeric, defined)",
+        "vocab_size=51865 > 0 \u2713",
+        "d_model=384 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__WhisperDecoderWrapper__f16eb33b",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperDecoderWrapper",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__WhisperEncoder__ca6bd151",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperEncoder",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (WhisperConfig() with documented defaults)",
+      "note": "",
+      "config_class": "WhisperConfig",
+      "clause_results": [
+        "dropout=0.0 in [0,1] \u2713",
+        "encoder_layerdrop=0.0 (numeric, defined)",
+        "d_model=384 > 0 \u2713",
+        "num_mel_bins=80 > 0 \u2713",
+        "pad_token_id=50256 (numeric, defined)",
+        "max_source_positions=1500 (numeric, defined)"
+      ]
+    },
+    {
+      "id": "transformers__WhisperForAudioClassification__5c48a77a",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperForAudioClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (WhisperConfig() with documented defaults)",
+      "note": "",
+      "config_class": "WhisperConfig",
+      "clause_results": [
+        "num_hidden_layers=4 > 0 \u2713",
+        "hidden_size=384 > 0 \u2713",
+        "classifier_proj_size=256 > 0 \u2713",
+        "num_labels=2 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__WhisperForCausalLM__49d54f15",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (WhisperConfig() with documented defaults)",
+      "note": "",
+      "config_class": "WhisperConfig",
+      "clause_results": [
+        "hidden_size=384 > 0 \u2713",
+        "vocab_size=51865 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__WhisperForConditionalGeneration__ed440ec8",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperForConditionalGeneration",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (WhisperConfig() with documented defaults)",
+      "note": "",
+      "config_class": "WhisperConfig",
+      "clause_results": [
+        "d_model=384 > 0 \u2713",
+        "vocab_size=51865 > 0 \u2713",
+        "max_target_positions=448 (numeric, defined)"
+      ]
+    },
+    {
+      "id": "transformers__WhisperModel__2cb724a8",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__WhisperPreTrainedModel__aac856a9",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "jointly_satisfied": true,
+      "method": "vacuous (no own __init__; assume_M contributes no axiom)",
+      "note": ""
+    },
+    {
+      "id": "transformers__BartDecoder__37b31304",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartDecoder",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (BartConfig() with documented defaults)",
+      "note": "",
+      "config_class": "BartConfig",
+      "clause_results": [
+        "dropout=0.1 in [0,1] \u2713",
+        "decoder_layerdrop=0.0 (numeric, defined)",
+        "pad_token_id=1 (numeric, defined)",
+        "max_position_embeddings=1024 > 0 \u2713",
+        "d_model=1024 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BartDecoderWrapper__145bd043",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartDecoderWrapper",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__BartEncoder__9ecbfcaa",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartEncoder",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (BartConfig() with documented defaults)",
+      "note": "",
+      "config_class": "BartConfig",
+      "clause_results": [
+        "dropout=0.1 in [0,1] \u2713",
+        "encoder_layerdrop=0.0 (numeric, defined)",
+        "d_model=1024 > 0 \u2713",
+        "pad_token_id=1 (numeric, defined)",
+        "max_position_embeddings=1024 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BartForCausalLM__badc2db2",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (BartConfig() with documented defaults)",
+      "note": "",
+      "config_class": "BartConfig",
+      "clause_results": [
+        "hidden_size=1024 > 0 \u2713",
+        "vocab_size=50265 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BartForConditionalGeneration__31f5e997",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartForConditionalGeneration",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (BartConfig() with documented defaults)",
+      "note": "",
+      "config_class": "BartConfig",
+      "clause_results": [
+        "d_model=1024 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BartForQuestionAnswering__11e5505f",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (BartConfig() with documented defaults)",
+      "note": "",
+      "config_class": "BartConfig",
+      "clause_results": [
+        "hidden_size=1024 > 0 \u2713",
+        "num_labels=3 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BartForSequenceClassification__7b1a4896",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartForSequenceClassification",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__BartModel__27886110",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__BartPreTrainedModel__e2854e5b",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "jointly_satisfied": true,
+      "method": "vacuous (no own __init__; assume_M contributes no axiom)",
+      "note": ""
+    },
+    {
+      "id": "transformers__DistilBertFlashAttention2__9971185e",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertFlashAttention2",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__DistilBertForMaskedLM__074cc05b",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertForMaskedLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (DistilBertConfig() with documented defaults)",
+      "note": "",
+      "config_class": "DistilBertConfig",
+      "clause_results": [
+        "dim=768 > 0 \u2713",
+        "vocab_size=30522 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__DistilBertForMultipleChoice__894eda84",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertForMultipleChoice",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (DistilBertConfig() with documented defaults)",
+      "note": "",
+      "config_class": "DistilBertConfig",
+      "clause_results": [
+        "dim=768 > 0 \u2713",
+        "seq_classif_dropout=0.2 in [0,1] \u2713"
+      ]
+    },
+    {
+      "id": "transformers__DistilBertForQuestionAnswering__e9a36da2",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (DistilBertConfig() with documented defaults)",
+      "note": "",
+      "config_class": "DistilBertConfig",
+      "clause_results": [
+        "dim=768 > 0 \u2713",
+        "num_labels=2 > 0 \u2713",
+        "qa_dropout=0.1 in [0,1] \u2713"
+      ]
+    },
+    {
+      "id": "transformers__DistilBertForSequenceClassification__2980befd",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (DistilBertConfig() with documented defaults)",
+      "note": "",
+      "config_class": "DistilBertConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "dim=768 > 0 \u2713",
+        "seq_classif_dropout=0.2 in [0,1] \u2713"
+      ]
+    },
+    {
+      "id": "transformers__DistilBertForTokenClassification__bd1d20db",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (DistilBertConfig() with documented defaults)",
+      "note": "",
+      "config_class": "DistilBertConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "dropout=0.1 in [0,1] \u2713",
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__DistilBertModel__e1631f00",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__DistilBertPreTrainedModel__1f6d3674",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "jointly_satisfied": true,
+      "method": "vacuous (no own __init__; assume_M contributes no axiom)",
+      "note": ""
+    },
+    {
+      "id": "transformers__CLIPForImageClassification__53204b83",
+      "qualified_name": "transformers.models.clip.modeling_clip.CLIPForImageClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (CLIPConfig() with documented defaults)",
+      "note": "",
+      "config_class": "CLIPConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__CLIPModel__13d2dfa6",
+      "qualified_name": "transformers.models.clip.modeling_clip.CLIPModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (CLIPConfig() with documented defaults)",
+      "note": "",
+      "config_class": "CLIPConfig",
+      "clause_results": [
+        "text_config=CLIPTextConfig (non-None)",
+        "vision_config=CLIPVisionConfig (non-None)",
+        "projection_dim=512 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__CLIPPreTrainedModel__592bf875",
+      "qualified_name": "transformers.models.clip.modeling_clip.CLIPPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "jointly_satisfied": true,
+      "method": "vacuous (no own __init__; assume_M contributes no axiom)",
+      "note": ""
+    },
+    {
+      "id": "transformers__MistralDecoderLayer__e784c786",
+      "qualified_name": "transformers.models.mistral.modeling_mistral.MistralDecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (MistralConfig() with documented defaults)",
+      "note": "",
+      "config_class": "MistralConfig",
+      "clause_results": [
+        "hidden_size=4096 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__MistralForCausalLM__2460b16a",
+      "qualified_name": "transformers.models.mistral.modeling_mistral.MistralForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (MistralConfig() with documented defaults)",
+      "note": "",
+      "config_class": "MistralConfig",
+      "clause_results": [
+        "vocab_size=32000 > 0 \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__MistralModel__a8738ef2",
+      "qualified_name": "transformers.models.mistral.modeling_mistral.MistralModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": false,
+      "method": "default-config (MistralConfig() with documented defaults)",
+      "note": "one or more sym_attr clauses failed",
+      "config_class": "MistralConfig",
+      "clause_results": [
+        "pad_token_id=None",
+        "vocab_size=32000 > 0 \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__GemmaDecoderLayer__6502abe9",
+      "qualified_name": "transformers.models.gemma.modeling_gemma.GemmaDecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (GemmaConfig() with documented defaults)",
+      "note": "",
+      "config_class": "GemmaConfig",
+      "clause_results": [
+        "hidden_size=3072 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__GemmaForCausalLM__64e45a7d",
+      "qualified_name": "transformers.models.gemma.modeling_gemma.GemmaForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (GemmaConfig() with documented defaults)",
+      "note": "",
+      "config_class": "GemmaConfig",
+      "clause_results": [
+        "vocab_size=256000 > 0 \u2713",
+        "hidden_size=3072 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__GemmaModel__a5eac09f",
+      "qualified_name": "transformers.models.gemma.modeling_gemma.GemmaModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (GemmaConfig() with documented defaults)",
+      "note": "",
+      "config_class": "GemmaConfig",
+      "clause_results": [
+        "pad_token_id=0 (numeric, defined)",
+        "vocab_size=256000 > 0 \u2713",
+        "hidden_size=3072 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__FalconDecoderLayer__6582cbfb",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconDecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (FalconConfig() with documented defaults)",
+      "note": "",
+      "config_class": "FalconConfig",
+      "clause_results": [
+        "hidden_size=4544 > 0 \u2713",
+        "num_attention_heads=71 > 0 \u2713",
+        "hidden_dropout=0.0 in [0,1] \u2713"
+      ]
+    },
+    {
+      "id": "transformers__FalconFlashAttention2__c64fa866",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconFlashAttention2",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__FalconForCausalLM__0bd2b170",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (FalconConfig() with documented defaults)",
+      "note": "",
+      "config_class": "FalconConfig",
+      "clause_results": [
+        "hidden_size=4544 > 0 \u2713",
+        "vocab_size=65024 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__FalconForQuestionAnswering__4a8af66e",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (FalconConfig() with documented defaults)",
+      "note": "",
+      "config_class": "FalconConfig",
+      "clause_results": [
+        "hidden_size=4544 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__FalconForSequenceClassification__53df6fb0",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (FalconConfig() with documented defaults)",
+      "note": "",
+      "config_class": "FalconConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=4544 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__FalconForTokenClassification__ed8d05f2",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": false,
+      "method": "default-config (FalconConfig() with documented defaults)",
+      "note": "one or more sym_attr clauses failed",
+      "config_class": "FalconConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "missing attribute 'classifier_dropout'",
+        "hidden_size=4544 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__FalconModel__15321937",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (FalconConfig() with documented defaults)",
+      "note": "",
+      "config_class": "FalconConfig",
+      "clause_results": [
+        "hidden_size=4544 > 0 \u2713",
+        "num_attention_heads=71 > 0 \u2713",
+        "alibi=False (bool, defined)",
+        "vocab_size=65024 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__FalconPreTrainedModel__55936532",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconPreTrainedModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__GPTNeoXDecoderLayer__fdd10742",
+      "qualified_name": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXDecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (GPTNeoXConfig() with documented defaults)",
+      "note": "",
+      "config_class": "GPTNeoXConfig",
+      "clause_results": [
+        "hidden_size=6144 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__GPTNeoXForCausalLM__303baee1",
+      "qualified_name": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (GPTNeoXConfig() with documented defaults)",
+      "note": "",
+      "config_class": "GPTNeoXConfig",
+      "clause_results": [
+        "hidden_size=6144 > 0 \u2713",
+        "vocab_size=50432 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__GPTNeoXForSequenceClassification__71a009c6",
+      "qualified_name": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (GPTNeoXConfig() with documented defaults)",
+      "note": "",
+      "config_class": "GPTNeoXConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=6144 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__GPTNeoXLayer__e0f32bd0",
+      "qualified_name": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (GPTNeoXConfig() with documented defaults)",
+      "note": "",
+      "config_class": "GPTNeoXConfig",
+      "clause_results": [
+        "use_parallel_residual=True (bool, defined)",
+        "hidden_size=6144 > 0 \u2713",
+        "hidden_dropout=0.0 in [0,1] \u2713"
+      ]
+    },
+    {
+      "id": "transformers__GPTNeoXModel__1d753983",
+      "qualified_name": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (GPTNeoXConfig() with documented defaults)",
+      "note": "",
+      "config_class": "GPTNeoXConfig",
+      "clause_results": [
+        "vocab_size=50432 > 0 \u2713",
+        "hidden_size=6144 > 0 \u2713",
+        "hidden_dropout=0.0 in [0,1] \u2713"
+      ]
+    },
+    {
+      "id": "transformers__Qwen2DecoderLayer__87203a27",
+      "qualified_name": "transformers.models.qwen2.modeling_qwen2.Qwen2DecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (Qwen2Config() with documented defaults)",
+      "note": "",
+      "config_class": "Qwen2Config",
+      "clause_results": [
+        "hidden_size=4096 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__Qwen2ForCausalLM__8bbd0043",
+      "qualified_name": "transformers.models.qwen2.modeling_qwen2.Qwen2ForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (Qwen2Config() with documented defaults)",
+      "note": "",
+      "config_class": "Qwen2Config",
+      "clause_results": [
+        "vocab_size=151936 > 0 \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__Qwen2Model__58bb107f",
+      "qualified_name": "transformers.models.qwen2.modeling_qwen2.Qwen2Model",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": false,
+      "method": "default-config (Qwen2Config() with documented defaults)",
+      "note": "one or more sym_attr clauses failed",
+      "config_class": "Qwen2Config",
+      "clause_results": [
+        "pad_token_id=None",
+        "vocab_size=151936 > 0 \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__RobertaForCausalLM__bd93edfc",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForCausalLM",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__RobertaForMaskedLM__6e029774",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForMaskedLM",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__RobertaForMultipleChoice__0324395b",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForMultipleChoice",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (RobertaConfig() with documented defaults)",
+      "note": "",
+      "config_class": "RobertaConfig",
+      "clause_results": [
+        "hidden_dropout_prob=0.1 in [0,1] \u2713",
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__RobertaForQuestionAnswering__e34c038b",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (RobertaConfig() with documented defaults)",
+      "note": "",
+      "config_class": "RobertaConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__RobertaForSequenceClassification__38529e03",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (RobertaConfig() with documented defaults)",
+      "note": "",
+      "config_class": "RobertaConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__RobertaForTokenClassification__a9785151",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (RobertaConfig() with documented defaults)",
+      "note": "",
+      "config_class": "RobertaConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__RobertaModel__e903ada9",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": false,
+      "method": "default-config (RobertaConfig() with documented defaults)",
+      "note": "one or more sym_attr clauses failed",
+      "config_class": "RobertaConfig",
+      "clause_results": [
+        "_attn_implementation=None",
+        "position_embedding_type='absolute' (non-empty \u2713)"
+      ]
+    },
+    {
+      "id": "transformers__RobertaPreTrainedModel__e616dcd3",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "jointly_satisfied": true,
+      "method": "vacuous (no own __init__; assume_M contributes no axiom)",
+      "note": ""
+    },
+    {
+      "id": "transformers__AlbertForMaskedLM__444a57ae",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForMaskedLM",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__AlbertForMultipleChoice__3d721e99",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForMultipleChoice",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (AlbertConfig() with documented defaults)",
+      "note": "",
+      "config_class": "AlbertConfig",
+      "clause_results": [
+        "classifier_dropout_prob=0.1 in [0,1] \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__AlbertForPreTraining__0bc1b159",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForPreTraining",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__AlbertForQuestionAnswering__4a242c13",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (AlbertConfig() with documented defaults)",
+      "note": "",
+      "config_class": "AlbertConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__AlbertForSequenceClassification__fd9bb76c",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (AlbertConfig() with documented defaults)",
+      "note": "",
+      "config_class": "AlbertConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "classifier_dropout_prob=0.1 in [0,1] \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__AlbertForTokenClassification__a514ef32",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (AlbertConfig() with documented defaults)",
+      "note": "",
+      "config_class": "AlbertConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__AlbertModel__f4b637f2",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": false,
+      "method": "default-config (AlbertConfig() with documented defaults)",
+      "note": "one or more sym_attr clauses failed",
+      "config_class": "AlbertConfig",
+      "clause_results": [
+        "hidden_size=4096 > 0 \u2713",
+        "_attn_implementation=None",
+        "position_embedding_type='absolute' (non-empty \u2713)"
+      ]
+    },
+    {
+      "id": "transformers__AlbertPreTrainedModel__6b90b824",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "jointly_satisfied": true,
+      "method": "vacuous (no own __init__; assume_M contributes no axiom)",
+      "note": ""
+    },
+    {
+      "id": "transformers__OPTDecoder__c91a52f0",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTDecoder",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (OPTConfig() with documented defaults)",
+      "note": "",
+      "config_class": "OPTConfig",
+      "clause_results": [
+        "dropout=0.1 in [0,1] \u2713",
+        "layerdrop=0.0 (numeric, defined)",
+        "pad_token_id=1 (numeric, defined)",
+        "max_position_embeddings=2048 > 0 \u2713",
+        "vocab_size=50272 > 0 \u2713",
+        "word_embed_proj_dim=768 > 0 \u2713",
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__OPTDecoderLayer__24a4c9cc",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTDecoderLayer",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (OPTConfig() with documented defaults)",
+      "note": "",
+      "config_class": "OPTConfig",
+      "clause_results": [
+        "hidden_size=768 > 0 \u2713",
+        "do_layer_norm_before=True (bool, defined)",
+        "dropout=0.1 in [0,1] \u2713",
+        "ffn_dim=3072 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__OPTForCausalLM__2b15a250",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (OPTConfig() with documented defaults)",
+      "note": "",
+      "config_class": "OPTConfig",
+      "clause_results": [
+        "word_embed_proj_dim=768 > 0 \u2713",
+        "vocab_size=50272 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__OPTForQuestionAnswering__b4351cc4",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (OPTConfig() with documented defaults)",
+      "note": "",
+      "config_class": "OPTConfig",
+      "clause_results": [
+        "word_embed_proj_dim=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__OPTForSequenceClassification__5365eb03",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (OPTConfig() with documented defaults)",
+      "note": "",
+      "config_class": "OPTConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "word_embed_proj_dim=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__OPTModel__bb5f30a8",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__OPTPreTrainedModel__8d7cca0c",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "jointly_satisfied": true,
+      "method": "vacuous (no own __init__; assume_M contributes no axiom)",
+      "note": ""
+    },
+    {
+      "id": "transformers__BloomForCausalLM__36a60c67",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (BloomConfig() with documented defaults)",
+      "note": "",
+      "config_class": "BloomConfig",
+      "clause_results": [
+        "hidden_size=64 > 0 \u2713",
+        "vocab_size=250880 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BloomForQuestionAnswering__7994d60e",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (BloomConfig() with documented defaults)",
+      "note": "",
+      "config_class": "BloomConfig",
+      "clause_results": [
+        "hidden_size=64 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BloomForSequenceClassification__81e125ad",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (BloomConfig() with documented defaults)",
+      "note": "",
+      "config_class": "BloomConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=64 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BloomForTokenClassification__057bf6a0",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": false,
+      "method": "default-config (BloomConfig() with documented defaults)",
+      "note": "one or more sym_attr clauses failed",
+      "config_class": "BloomConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "missing attribute 'classifier_dropout'",
+        "hidden_size=64 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BloomModel__f089388c",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (BloomConfig() with documented defaults)",
+      "note": "",
+      "config_class": "BloomConfig",
+      "clause_results": [
+        "hidden_size=64 > 0 \u2713",
+        "n_head=8 > 0 \u2713",
+        "vocab_size=250880 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__BloomPreTrainedModel__4a772e64",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomPreTrainedModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__DebertaForMaskedLM__bdf0c81c",
+      "qualified_name": "transformers.models.deberta.modeling_deberta.DebertaForMaskedLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (DebertaConfig() with documented defaults)",
+      "note": "",
+      "config_class": "DebertaConfig",
+      "clause_results": [
+        "legacy=True (bool, defined)"
+      ]
+    },
+    {
+      "id": "transformers__DebertaForQuestionAnswering__dbb32f9f",
+      "qualified_name": "transformers.models.deberta.modeling_deberta.DebertaForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (DebertaConfig() with documented defaults)",
+      "note": "",
+      "config_class": "DebertaConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__DebertaForSequenceClassification__f3f064d8",
+      "qualified_name": "transformers.models.deberta.modeling_deberta.DebertaForSequenceClassification",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__DebertaForTokenClassification__db2b551a",
+      "qualified_name": "transformers.models.deberta.modeling_deberta.DebertaForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (DebertaConfig() with documented defaults)",
+      "note": "",
+      "config_class": "DebertaConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_dropout_prob=0.1 in [0,1] \u2713",
+        "hidden_size=768 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__DebertaModel__d4dcd33c",
+      "qualified_name": "transformers.models.deberta.modeling_deberta.DebertaModel",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__DebertaPreTrainedModel__81744cba",
+      "qualified_name": "transformers.models.deberta.modeling_deberta.DebertaPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "jointly_satisfied": true,
+      "method": "vacuous (no own __init__; assume_M contributes no axiom)",
+      "note": ""
+    },
+    {
+      "id": "transformers__ElectraForCausalLM__096d250d",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForCausalLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (ElectraConfig() with documented defaults)",
+      "note": "",
+      "config_class": "ElectraConfig",
+      "clause_results": [
+        "embedding_size=128 > 0 \u2713",
+        "vocab_size=30522 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__ElectraForMaskedLM__d15e3e41",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForMaskedLM",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (ElectraConfig() with documented defaults)",
+      "note": "",
+      "config_class": "ElectraConfig",
+      "clause_results": [
+        "embedding_size=128 > 0 \u2713",
+        "vocab_size=30522 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__ElectraForMultipleChoice__6fbdbe6b",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForMultipleChoice",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (ElectraConfig() with documented defaults)",
+      "note": "",
+      "config_class": "ElectraConfig",
+      "clause_results": [
+        "hidden_size=256 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__ElectraForPreTraining__74bdacae",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForPreTraining",
+      "library": "transformers",
+      "bucket": "empty",
+      "jointly_satisfied": true,
+      "method": "vacuous (assume_M \u2261 true)",
+      "note": ""
+    },
+    {
+      "id": "transformers__ElectraForQuestionAnswering__389f4d6e",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForQuestionAnswering",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (ElectraConfig() with documented defaults)",
+      "note": "",
+      "config_class": "ElectraConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=256 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__ElectraForSequenceClassification__af15f28d",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForSequenceClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (ElectraConfig() with documented defaults)",
+      "note": "",
+      "config_class": "ElectraConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__ElectraForTokenClassification__12722bf3",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForTokenClassification",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (ElectraConfig() with documented defaults)",
+      "note": "",
+      "config_class": "ElectraConfig",
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=256 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__ElectraModel__12079a7f",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraModel",
+      "library": "transformers",
+      "bucket": "symbolic-config-only",
+      "jointly_satisfied": true,
+      "method": "default-config (ElectraConfig() with documented defaults)",
+      "note": "",
+      "config_class": "ElectraConfig",
+      "clause_results": [
+        "embedding_size=128 > 0 \u2713",
+        "hidden_size=256 > 0 \u2713"
+      ]
+    },
+    {
+      "id": "transformers__ElectraPreTrainedModel__1e4993ba",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraPreTrainedModel",
+      "library": "transformers",
+      "bucket": "no-own-init",
+      "jointly_satisfied": true,
+      "method": "vacuous (no own __init__; assume_M contributes no axiom)",
+      "note": ""
+    }
+  ]
+}

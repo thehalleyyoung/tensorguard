@@ -1,0 +1,144 @@
+{
+  "capability_matrix": [
+    {
+      "capability": "Closed-form symbolic shape constraints (e.g. B*C*H*W == ...)",
+      "tg": "yes",
+      "fx": "no",
+      "ft": "partial",
+      "export": "partial",
+      "note": "ShapeProp is concrete; FakeTensor + torch.export with dynamic_shapes carry symbolic ints but only as scalar symbols, not as multi-variable polynomial constraints"
+    },
+    {
+      "capability": "Soundness against ALL integer instantiations (formal)",
+      "tg": "yes",
+      "fx": "no",
+      "ft": "no",
+      "export": "no",
+      "note": "TG soundness is proved (Lean-checked core fragment); native tools verify only the concrete trace input"
+    },
+    {
+      "capability": "No execution required (no tensor allocation)",
+      "tg": "yes",
+      "fx": "no",
+      "ft": "partial",
+      "export": "no",
+      "note": "ShapeProp allocates tensors; FakeTensor uses meta storage but still walks the dispatcher; torch.export traces by execution"
+    },
+    {
+      "capability": "Friendly per-operator error message (op + dim + expected)",
+      "tg": "yes",
+      "fx": "partial",
+      "ft": "no",
+      "export": "partial",
+      "note": "TG emits \"[SHAPE-INCOMPATIBLE] Linear expects last dim=N, got M\"; native tools surface the underlying RuntimeError from the kernel"
+    },
+    {
+      "capability": "Catches batch-parity-dependent bugs (e.g. view(-1, 32) on B=33)",
+      "tg": "yes",
+      "fx": "no",
+      "ft": "no",
+      "export": "partial",
+      "note": "Native tools verify the trace input; only TG reasons about all instantiations"
+    },
+    {
+      "capability": "Handles RNN/LSTM/GRU recurrent shape",
+      "tg": "no",
+      "fx": "partial",
+      "ft": "yes",
+      "export": "yes",
+      "note": "TG abstains (out-of-fragment); native tools execute the recurrent loop on a concrete length"
+    },
+    {
+      "capability": "Requires a runnable (importable) module",
+      "tg": "no",
+      "fx": "yes",
+      "ft": "yes",
+      "export": "yes",
+      "note": "TG works on source AST without instantiation; native tools require an instantiated nn.Module"
+    },
+    {
+      "capability": "Reports an \"unknown\" verdict (vs. silent success or hard error)",
+      "tg": "yes",
+      "fx": "no",
+      "ft": "no",
+      "export": "no",
+      "note": "TG has a first-class third verdict; native tools either succeed or raise"
+    },
+    {
+      "capability": "Cumulative wall time on the 30-model torchvision sweep",
+      "tg": "12.7s",
+      "fx": "~110s",
+      "ft": "~120s",
+      "export": "not run",
+      "note": "TG cumulative wall is the headline CI-throughput number; from experiments/neurips_revision.json"
+    }
+  ],
+  "smoke_view_divisibility": {
+    "tg_div": {
+      "status": "UNSAFE",
+      "returncode": 1,
+      "time_s": 0.323594331741333,
+      "n_bugs": 2,
+      "first_bug": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(4, 16, 5, 5)) to (0, -1, 32)"
+    },
+    "fx_div": {
+      "ok": false,
+      "time_s": 2.103029251098633,
+      "input_shape": [
+        4,
+        16,
+        5,
+        5
+      ],
+      "err": "RuntimeError: ShapeProp error for: node=%view : [num_users=1] = call_method[target=view](args = (%x, %size, -1, 32), kwargs = {}) with meta={}\n\nWhile executing %view : [num_users=1] = call_method[target=view](args "
+    },
+    "export_div": {
+      "ok": false,
+      "time_s": 2.3133130073547363,
+      "input_shape": [
+        4,
+        16,
+        5,
+        5
+      ],
+      "err": "RuntimeError: shape '[4, -1, 32]' is invalid for input of size 1600"
+    },
+    "tg_nondiv": {
+      "status": "UNSAFE",
+      "returncode": 1,
+      "time_s": 0.3147389888763428,
+      "n_bugs": 2,
+      "first_bug": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(1, 16, 5, 5)) to (0, -1, 32)"
+    },
+    "fx_nondiv": {
+      "ok": false,
+      "time_s": 1.8913788795471191,
+      "input_shape": [
+        1,
+        16,
+        5,
+        5
+      ],
+      "err": "RuntimeError: ShapeProp error for: node=%view : [num_users=1] = call_method[target=view](args = (%x, %size, -1, 32), kwargs = {}) with meta={}\n\nWhile executing %view : [num_users=1] = call_method[target=view](args "
+    },
+    "export_nondiv": {
+      "ok": false,
+      "time_s": 3.908128023147583,
+      "input_shape": [
+        1,
+        16,
+        5,
+        5
+      ],
+      "err": "RuntimeError: shape '[1, -1, 32]' is invalid for input of size 400"
+    }
+  },
+  "python": "/opt/homebrew/bin/python3.11",
+  "repo": "/Users/halleyyoung/Documents/div/mathdivergence/halley-labs/tensorguard",
+  "tools": {
+    "tg": "TensorGuard (this paper)",
+    "fx": "torch.fx.symbolic_trace + torch.fx.passes.shape_prop.ShapeProp",
+    "ft": "torch._subclasses.fake_tensor.FakeTensorMode forward",
+    "export": "torch.export.export"
+  }
+}

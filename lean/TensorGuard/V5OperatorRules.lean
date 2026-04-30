@@ -17,9 +17,14 @@ The Lean module also serializes every rule's metadata as JSON via
 This file does not modify any pre-existing module; it imports the
 core only for the `Shape` namespace.
 
-Following the convention of the existing `Extended` and `Parity`
-modules, deeply-arithmetic length lemmas use `sorry` (interface
-lemmas); the actual rule definitions are sorry-free.
+All theorems in this file are closed without `sorry`. As of round~9
+the entire `lean/TensorGuard/` tree is also `sorry`-free: the
+previously open `permList_compose_inrange` lemma in
+`Extended.lean` (the corrected, in-range form of the original
+unconditional `permList_compose`) is now closed sorry-free by
+pointwise extensionality on the `List.map` form. Run
+`cd lean && lake build` to verify; see
+`reproducibility/lake_build.log` for a captured run.
 -/
 
 import TensorGuard.Soundness

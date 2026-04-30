@@ -1,0 +1,67 @@
+{
+  "summary": {
+    "total_fp_diagnostics": 8,
+    "category_counts": {
+      "C1: opaque-sequential / unknown layer dim": 6,
+      "C2: cat / multi-arg forward (rank desync)": 2
+    }
+  },
+  "fps": [
+    {
+      "module": "torchvision.models.vgg",
+      "class": "VGG",
+      "line": 69,
+      "msg": "[SHAPE-INCOMPATIBLE] Sequential sub-layer _seq_0: Linear expects last dim=25088, got 147",
+      "category": "C1: opaque-sequential / unknown layer dim"
+    },
+    {
+      "module": "torchvision.models.squeezenet",
+      "class": "Fire",
+      "line": 95,
+      "msg": "[SHAPE-INCOMPATIBLE] Sequential sub-layer _seq_0: Conv2d expects 3 input channels, got 96",
+      "category": "C1: opaque-sequential / unknown layer dim"
+    },
+    {
+      "module": "torchvision.models.mnasnet",
+      "class": "MNASNet",
+      "line": 162,
+      "msg": "[SHAPE-INCOMPATIBLE] Sequential sub-layer _seq_1: Linear expects last dim=1280, got 224",
+      "category": "C1: opaque-sequential / unknown layer dim"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 296,
+      "msg": "[SHAPE-INCOMPATIBLE] cat: tensors have different ndim (2 vs 4)",
+      "category": "C2: cat / multi-arg forward (rank desync)"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 296,
+      "msg": "[SHAPE-INCOMPATIBLE] cat: tensors have different ndim (2 vs 3)",
+      "category": "C2: cat / multi-arg forward (rank desync)"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 712,
+      "msg": "[SHAPE-INCOMPATIBLE] Sequential sub-layer _seq_3: Linear out_features unknown",
+      "category": "C1: opaque-sequential / unknown layer dim"
+    },
+    {
+      "module": "torchvision.models.detection.faster_rcnn",
+      "class": "TwoMLPHead",
+      "line": 369,
+      "msg": "[SHAPE-INCOMPATIBLE] Linear out_features unknown",
+      "category": "C1: opaque-sequential / unknown layer dim"
+    },
+    {
+      "module": "torchvision.models.detection.faster_rcnn",
+      "class": "TwoMLPHead",
+      "line": 370,
+      "msg": "[SHAPE-INCOMPATIBLE] Linear out_features unknown",
+      "category": "C1: opaque-sequential / unknown layer dim"
+    }
+  ]
+}

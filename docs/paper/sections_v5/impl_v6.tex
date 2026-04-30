@@ -1,0 +1,86 @@
+\section{Implementation}\label{sec:impl}
+
+\subsection{Extended fragment and front-end}
+\label{sec:impl-fragment}
+\textsc{TensorGuard}'s analyser parses class source via Python's
+\texttt{ast} module, extracts a typed IR, and dispatches each
+op to a handler that returns the refinement-typed result type.
+We add four front-end families under (no edits
+to legacy ). The \emph{symbolic config} environment
+binds \texttt{self.config.<attr>} to fresh \texttt{SymInt}s so
+that HuggingFace-style modules whose dimensions come from a
+\texttt{config} object can be checked once and reused. The
+\emph{QKV unpacking} front-end recognises the four idiomatic
+Q/K/V splits (\texttt{split}, \texttt{chunk},
+\texttt{view+unbind}, and \texttt{einops.rearrange} with the
+canonical \texttt{(three h d) $\to$ three b h t d} pattern) and
+elaborates each into three correlated tensor types. The
+\emph{negative-one reshape} elaborator emits a Z3 divisibility
+constraint $P\bmod Q=0$. Transfer rules for
+\texttt{F.scaled\_dot\_product\_attention},
+\texttt{nn.MultiheadAttention}, \texttt{nn.LayerNorm}, and
+\texttt{nn.RMSNorm} register into the analyser's shape-op
+dictionary. All $74$ unit tests pass on \texttt{python3.11} +
+\texttt{torch~2.9.1}. We report that on the \emph{legacy
+v4 corpus} these new APIs produce zero verdict-count delta (the
+v4 corpus did not abstain on patterns these APIs target); the
+v5 contribution is that the new APIs are now \emph{callable on
+realistic Transformer modules} that v4 could not enter, surfaced
+in the empirical evaluation through the 488-block real-source
+corpus (\Cref{sec:eval-benchmark}).
+
+\subsection{Backward verifier}\label{sec:impl-backward}
+The backward verifier consumes a forward graph
+annotated with the refinement types of \Cref{sec:calculus} and
+certifies, without execution, that (i)~\texttt{loss.backward()}
+would produce gradients of the right shape modulo
+\texttt{sum\_to(grad,primal.shape)} reduction, and (ii)~the set
+$H$ of parameters reverse-reachable from \texttt{loss} along
+non-detached, non-\texttt{no\_grad}-context,
+\texttt{requires\_grad=True} edges equals the user-declared
+expected-to-learn set $E$. The check is a reverse-topological
+traversal mirroring PyTorch's per-Function shape contract
+\verb|grad_outputs[i].shape == y_i.shape|. The grad-flag
+component additionally detects the three canonical
+silent-zero-grad bug classes: in-place writes on a leaf with
+\texttt{requires\_grad=True}; no leaf in the trace has
+\texttt{requires\_grad=True}; and parameters used only inside
+\texttt{torch.no\_grad()} or after \texttt{.detach()}. These
+are reported as \textsc{Refuted} with witness traces.
+
+\paragraph{Empirical agreement.}
+On a $500$-model property test (random small \texttt{nn.Module}s
+drawn from a grammar) the static verifier agrees with PyTorch's
+runtime on $500/500$ models (gradient presence and gradient
+shape both match). On $8$ hand-curated case studies modelled on
+canonical PyTorch issues (\texttt{no\_grad} scope,
+\texttt{.detach()}, \texttt{requires\_grad=False},
+in-place-on-leaf, missing leaf, in-place alias mutating a saved
+tensor, non-scalar loss, unused parameter silently skipped by
+\texttt{optimizer.step()}), the verifier catches $8/8$. On a
+$50$-model false-positive sweep on clean models the verifier
+reports $0$ spurious refutations.
+
+\subsection{Localisation tracer and hybrid mode}
+\label{sec:impl-loc-hybrid}
+
+\paragraph{Localisation.} A v4 review noted that of $6$
+detections in early experiments, only $1$ landed within $\pm 5$
+lines of the bug. The v4 verifier returns
+\texttt{location.line=0} for bugs detected via the model-check
+path (those that bypass per-step counterexamples). We add a
+``first unsatisfied symbolic constraint'' tracer
+: given a refutation, we
+extract the offending tensor and dim variables from the bug
+message and walk the source AST to the earliest assignment or
+typing-rule call that bound a symbolic dim appearing in the
+unsatisfied constraint, attributing the bug to its source line.
+
+\paragraph{Hybrid mode (TG-static $\to$ FakeTensor fallback).}
+\texttt{tensorguard.hybrid\_check(M)}
+ returns the TG verdict if it
+is \textsc{Verified} or \textsc{Refuted}; otherwise, if $M$ is
+importable and instantiable with a no-arg constructor, it falls
+back to \texttt{FakeTensorMode}. Both the localisation tracer
+and the hybrid mode are evaluated in
+\Cref{sec:eval-loc-hybrid}.

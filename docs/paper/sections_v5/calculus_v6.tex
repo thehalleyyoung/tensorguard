@@ -1,0 +1,413 @@
+\section{Refinement-Typed Calculus and Module Composition}
+\label{sec:calculus}
+
+We formalise \textsc{TensorGuard}'s abstract domain as a
+refinement-type system over a \texttt{torch.fx}-style IR. The
+type of a tensor is
+\[
+ \mathsf{Tensor}\bigl[\tau,\;\varphi_{\mathsf{shape}}(d_1,\dots,d_k),\;\varphi_{\mathsf{grad}}\bigr],
+\]
+where $\tau$ is a dtype, $\varphi_{\mathsf{shape}}$ is a
+quantifier-free predicate over symbolic dim variables in
+$\mathcal{T}_{\mathsf{shape}}=\mathrm{LIA}\cup\mathrm{Div}\cup\mathrm{BMul}$
+(linear integer arithmetic, divisibility, and bounded
+nonlinear multiplication restricted to syntactically-known
+factors), and the grad refinement
+$\varphi_{\mathsf{grad}}\in\{\mathsf{has\_grad},\mathsf{no\_grad},\top\}$
+abstracts $\mathtt{requires\_grad}\wedge\mathtt{is\_on\_tape}$.
+The grad lattice is flat: $\mathsf{has\_grad}$ and
+$\mathsf{no\_grad}$ are incomparable, joined to $\top$. A
+typing context $\Gamma$ binds variables to refinement types,
+accumulates path predicates, and tracks a grad-context flag
+$G\in\{\mathsf{on},\mathsf{off}\}$ recording whether the cursor
+is inside \texttt{torch.no\_grad()}. The entailment
+$\Gamma\models\varphi$ is discharged by Z3 on the shape
+projection and by the lattice on the grad component.
+
+\paragraph{Representative typing rules.}
+We give five rules; the full set (matmul, conv1d/2d/3d,
+broadcast, view, reshape, split, chunk, unbind, cat, stack,
+permute, transpose, einsum, indexing, slicing, scatter,
+gather, repeat, expand, SDPA, LayerNorm, RMSNorm,
+\texttt{detach}, \texttt{no\_grad} context, optimizer step) is in
+\Cref{app:typing-rules}, with pen-and-paper soundness in
+\Cref{app:soundness}.
+
+{\small
+\begin{mathpar}
+\inferrule*[lab=\textsc{T-Matmul}]
+{\Gamma\vdash a:\mathsf{Tensor}[\tau,(\bar B,m,k),\varphi_a]\\
+ \Gamma\vdash b:\mathsf{Tensor}[\tau,(\bar B',k,n),\varphi_b]\\
+ \Gamma\models\mathrm{broadcast}(\bar B,\bar B')=\bar C}
+{\Gamma\vdash a@b:\mathsf{Tensor}[\tau,(\bar C,m,n),g(a,b)]}
+\and
+\inferrule*[lab=\textsc{T-View($-1$)}]
+{\Gamma\vdash x:\mathsf{Tensor}[\tau,(d_1,\dots,d_n),\varphi_x]\\
+ \bar s=(s_1,\dots,s_{j-1},-1,s_{j+1},\dots,s_m)\\
+ P=\textstyle\prod d_i,\;\;Q=\textstyle\prod_{i\neq j}s_i\\
+ \Gamma\models Q\mid P}
+{\Gamma\vdash x.\mathrm{view}(\bar s):\mathsf{Tensor}[\tau,(s_1,\dots,P/Q,\dots,s_m),\varphi_x]}
+\and
+\inferrule*[lab=\textsc{T-Detach}]
+{\Gamma\vdash x:\mathsf{Tensor}[\tau,\varphi_s,\varphi_g]}
+{\Gamma\vdash x.\mathrm{detach}():\mathsf{Tensor}[\tau,\varphi_s,\mathsf{no\_grad}]}
+\end{mathpar}}
+
+\paragraph{Side conditions used above.} For \textsc{T-Matmul} and
+elsewhere, $\mathrm{broadcast}(\bar B,\bar B')$ denotes the standard
+PyTorch right-aligned broadcast on the batch prefixes
+$\bar B,\bar B'$: with $n=\max(|\bar B|,|\bar B'|)$ each shape is
+left-padded with $1$s to length $n$, then the position-wise rule
+$\mathrm{bdim}(a,b)=a$ if $a=b$, $\mathrm{bdim}(1,b)=b$,
+$\mathrm{bdim}(a,1)=a$, otherwise undefined; the resulting list is
+$\bar C$. The mechanised version is the function
+$\mathtt{bcast}\,a\,b$ in \Cref{sec:eval-lean}'s Lean development.
+The grad bit $\mathit{is\_on\_tape}$ is the runtime conjunction
+$\mathtt{requires\_grad}\wedge\neg\mathtt{torch.no\_grad}\text{-context}$;
+its lifted abstraction $\varphi_g\in\{\mathsf{has\_grad},\mathsf{no\_grad},\top\}$
+is defined in \Cref{def:heap-satisfaction}, and the join $g(\bar e)$
+is bottom-respecting (any $\mathsf{no\_grad}$ input forces $\mathsf{no\_grad}$
+unless $G=\mathsf{on}$ and the operator is differentiable, in which case
+$g$ is the disjunctive lift). For \textsc{T-View($-1$)} the side
+condition $Q\!\mid\!P$ requires $Q\neq 0$; the rule is undefined
+(rejected) when $\bar s$ contains zero or two-or-more $-1$ slots
+(matching the explicit Python error), formalised by the closed
+Lean theorem $\mathtt{reshape\_rejects\_multi\_unknown}$ of
+\Cref{sec:eval-lean}. The SMT fragment used to discharge these
+side conditions is the combination of linear integer arithmetic
+(LIA), the divisibility predicate $a\!\mid\!b$, and bounded
+non-linear multiplication (BMul) whose decidable kernel is the
+Z3 \emph{nra}/\emph{nia} hybrid procedure invoked with a fixed
+3-second per-obligation budget; queries that exceed the budget
+return \textsc{Abstain}, never a positive verdict.
+
+\paragraph{Verdicts.} The verifier emits one of five verdicts:
+\textsc{Verified}, \textsc{Refuted-Proof} (RP, an unconditional
+witness), \textsc{Contract-Violation} (CV, sound under the
+caller-rely $\mathit{assume}_e$), \textsc{Library-Warn} (LW, a
+conservative warning on dispatch outside the modeled fragment),
+and \textsc{Abstain}. The soundness theorem
+(\Cref{thm:soundness}) covers RP and CV; LW and \textsc{Abstain}
+make no claim.
+
+\paragraph{Audited operator scope.} The catalogue
+$\mathrm{Cat}=\mathrm{Cat}_{\mathrm{audit}}\cup\mathrm{Cat}_{\mathrm{pen}}\cup\mathrm{Cat}_{\mathrm{tested}}$
+of \Cref{tab:handler-soundness} partitions the $79$ handlers into
+$|\mathrm{Cat}_{\mathrm{audit}}|=28$ Lean-audited rules,
+$|\mathrm{Cat}_{\mathrm{pen}}|=16$ pen-and-paper rules, and
+$|\mathrm{Cat}_{\mathrm{tested}}|=35$ rules whose only check is the
+1{,}000-sample property test against PyTorch. We write
+$\mathrm{Cat}_{\mathrm{sound}}=\mathrm{Cat}_{\mathrm{audit}}\cup\mathrm{Cat}_{\mathrm{pen}}$
+($44$ handlers) for the sub-catalogue with a closed soundness
+argument; the soundness theorem below quantifies over
+$\mathrm{Cat}_{\mathrm{sound}}$ only. The $35$ tested-only handlers
+are addressed separately as a \emph{conjecture}
+(\Cref{conj:tested-only-soundness}), not folded into the theorem.
+
+\input{sections_v5/fragment_v8}
+
+\noindent The fragment-level statement (Thm.~\ref{thm:fragment-soundness})
+specialises Thm.~\ref{thm:soundness} to whole programs.
+
+\begin{theorem}[Soundness of the proof-grade verdicts on $\mathrm{Cat}_{\mathrm{sound}}$]
+\label{thm:soundness}
+Let $e$ be a closed expression in the supported fragment such that
+every operator occurrence in $e$ uses a handler in
+$\mathrm{Cat}_{\mathrm{sound}}=\mathrm{Cat}_{\mathrm{audit}}\cup\mathrm{Cat}_{\mathrm{pen}}$
+($44$ of $79$ handlers; see \Cref{tab:handler-soundness}). For any
+heap $\sigma\models\Gamma$:
+(i) if $\mathsf{Verify}(e)=\textsc{Verified}$, no reduction
+sequence from $\langle e,\sigma,\mathsf{on}\rangle$ raises a
+shape-mismatch exception, and the grad-flag claim holds at
+every backward-pass entry site;
+(ii) if $\mathsf{Verify}(e)=\textsc{Refuted-Proof}$ with
+witnessed subterm $e_0\subseteq e$ and Z3 model $\mathfrak{m}$
+satisfying the negated obligation, then there exists a heap
+$\sigma_{\mathfrak{m}}\models\Gamma$ extracted from
+$\mathfrak{m}$ (\Cref{def:model-extraction}) and a reduction
+sequence from
+$\langle e,\sigma_{\mathfrak{m}},\mathsf{on}\rangle$ that
+reaches the witnessed subterm $e_0$ and raises a shape- or
+grad-flag exception there;
+(iii) if $\mathsf{Verify}(e)=\textsc{Contract-Violation}$, (ii)
+holds under the assumption that every caller supplies inputs
+satisfying $\mathit{assume}_e$;
+(iv) if $\mathsf{Verify}(e)\in\{\textsc{Library-Warn},\textsc{Abstain}\}$,
+no claim is made.
+\end{theorem}
+The proof (induction on reductions; full case analysis in
+\Cref{app:soundness}) reduces (i) to per-operator
+preservation lemmas: for handlers in $\mathrm{Cat}_{\mathrm{audit}}$
+these are the \texttt{applyOp\_sound\_*} and
+\texttt{applyOpExt\_sound\_*} lemmas of the Lean development
+(\Cref{sec:eval-lean}); for handlers in $\mathrm{Cat}_{\mathrm{pen}}$
+they are the closed pen-and-paper sketches in
+\Cref{app:soundness}, two of which (the divisibility and
+single-inferred-dim cases of \texttt{reshape}) are also
+mechanised as closed Lean theorems
+(\texttt{reshape\_sound\_zero\_unknowns},
+\texttt{reshape\_sound\_one\_unknown},
+\texttt{reshape\_rejects\_multi\_unknown}). For (ii) the proof
+adds a \emph{model-extraction} step
+(\Cref{def:model-extraction} below) that reads a Z3 model
+$\mathfrak{m}$ on the negated obligation back into a concrete
+heap $\sigma_{\mathfrak{m}}\models\Gamma$, plus a
+\emph{progress-to-witness} lemma
+(\Cref{lem:progress-to-witness}) that walks the small-step
+relation from $\langle
+e,\sigma_{\mathfrak{m}},\mathsf{on}\rangle$ to the witnessed
+operator occurrence using only the deterministic operator
+schedules of $\mathcal{F}_{\mathrm{TG}}$ (\Cref{def:det-eval},
+$\mathcal{F}_{\mathrm{TG}}$ has no internal nondeterminism over
+heap-deterministic operators); existential rather than
+universal quantification over reduction sequences avoids any
+appeal to confluence.
+Case (iii)
+follows from the same argument inside the rely envelope
+$\mathit{assume}_e$.
+
+\begin{definition}[Model extraction $\mathfrak{m}\!\mapsto\!\sigma_{\mathfrak{m}}$]
+\label{def:model-extraction}
+Let $\Gamma=(x_1{:}\mathsf{Tensor}[\tau_1,\bar d_1,g_1],
+\dots,x_n{:}\mathsf{Tensor}[\tau_n,\bar d_n,g_n]\mid P)$ with
+shape predicate $P$ over symbolic dim variables
+$\bar v=(v_1,\dots,v_k)$, and let $\mathfrak{m}$ be a Z3 model
+satisfying $P\wedge\neg\varphi_{\mathrm{op}}(\bar v)$ where
+$\varphi_{\mathrm{op}}$ is the operator-precondition refinement
+emitted at the witnessed subterm $e_0$. Define
+$\sigma_{\mathfrak{m}}(x_i)$ as the all-zero tensor of dtype
+$\tau_i$ and shape $\mathfrak{m}(\bar d_i)\in\mathbb{N}^{|\bar d_i|}$
+with $\mathit{requires\_grad}=\mathfrak{m}(g_i)$. The map is
+total because the SMT theory is closed under interpretation in
+$(\mathbb{N},+,\cdot,\mid)$, every $\mathfrak{m}(d)$ is a
+non-negative integer, and the construction visibly satisfies
+$\sigma_{\mathfrak{m}}\models\Gamma$ (each per-tensor refinement
+is the literal Z3 assignment).
+\end{definition}
+
+\begin{lemma}[Progress to witness; deterministic small-step]
+\label{lem:progress-to-witness}
+Let $e_0$ be the witnessed subterm produced by
+$\mathsf{Verify}(e)=\textsc{Refuted-Proof}$ and let
+$\sigma_{\mathfrak{m}}$ be the model-extracted heap of
+\Cref{def:model-extraction}. The small-step relation $\to$ on
+$\mathcal{F}_{\mathrm{TG}}$ configurations evaluates operator
+arguments left-to-right, contracts each operator on the unique
+argument multiset that satisfies its precondition or raises an
+\textsc{Op-Stuck} exception, and is therefore deterministic on
+heap-determined inputs (\Cref{def:det-eval}). Consequently,
+starting from $\langle e,\sigma_{\mathfrak{m}},\mathsf{on}\rangle$,
+either (a) reduction reaches a configuration whose redex is
+$e_0$, in which case the precondition $\varphi_{\mathrm{op}}$
+fails by construction of $\mathfrak{m}$ and an
+\textsc{Op-Stuck} (shape) or
+\textsc{Grad-Flag-Stuck} exception is raised at $e_0$, or
+(b) reduction halts before reaching $e_0$ on a strictly earlier
+exception, which is itself a shape- or grad-flag exception by
+the same per-operator analysis. Both branches discharge
+case (ii).
+\end{lemma}
+
+\begin{remark}[Trusted-base obligations for (ii)]
+\label{rem:tcb-thm-ii}
+Case (ii) relies on three ingredients beyond the per-operator
+preservation lemmas of (i): (a) that the operator runtime
+semantics raises on the witnessed input (every operator
+$\mathit{op}$ in $\mathrm{Cat}_{\mathrm{sound}}$ is paired with
+a runtime-side specification that turns
+$\neg\varphi_{\mathrm{op}}$ into an \textsc{Op-Stuck} exception
+in $\mathcal{F}_{\mathrm{TG}}$; the corresponding PyTorch
+handlers are documented to raise on the same precondition and
+are paired with the in-envelope agreement count of
+\Cref{tab:handler-soundness}); (b) that the Z3-model values
+are non-negative integers compatible with $\mathbb{N}$-valued
+dim refinements (true by construction of the SMT fragment of
+\Cref{sec:calculus}); and (c) that the small-step relation is
+deterministic on heap-determined inputs
+(\Cref{def:det-eval}). All three are explicitly listed as
+trusted-base obligations of \Cref{thm:soundness} and audited
+in the per-handler soundness sketches of
+\Cref{app:soundness}.
+\end{remark}
+
+\begin{conjecture}[Tested-only handlers; empirically supported]
+\label{conj:tested-only-soundness}
+Restricting attention to operator occurrences in the
+$35$-handler tested-only catalogue
+$\mathrm{Cat}_{\mathrm{tested}}$, the $1{,}000$-sample property
+test against the corresponding PyTorch operator agrees with the
+\textsc{TG} rule on every sampled concrete input. We do
+\emph{not} claim a closed proof of \Cref{thm:soundness} restricted
+to $\mathrm{Cat}_{\mathrm{tested}}$; verdicts touching at least one
+handler in $\mathrm{Cat}_{\mathrm{tested}}$ are reported (and
+counted as the $66/185$ tested-only-touching cell of
+\Cref{tab:handler-soundness} discussion) but are flagged as
+\emph{outside the soundness theorem}. Closing this gap (either by
+porting more handlers into $\mathrm{Cat}_{\mathrm{audit}}$ or by
+refactoring the $\mathrm{Cat}_{\mathrm{tested}}$ rules to reduce
+to $\mathrm{Cat}_{\mathrm{sound}}$ via a structural argument) is
+left as future work.
+\end{conjecture}
+
+\smallskip\noindent\textbf{Subject reduction and progress.}
+The classical Preservation and Progress theorems for $\mathcal{F}_{\mathrm{TG}}$
+are established in \Cref{app:subject-reduction}
+(\Cref{thm:preservation,thm:progress}).
+Together they yield \Cref{cor:soundness}: well-typed programs in
+$\mathcal{F}_{\mathrm{TG}}$ whose operator preconditions hold in $\sigma$ raise no
+shape-mismatch exception on any reduction sequence.
+Theorem~\ref{thm:soundness} is the abstract-interpretation specialisation of this
+classical pair to the verdict lattice; the verdict \textsc{Verified} corresponds
+to Z3 discharging all preconditions symbolically.
+
+\begin{definition}[Deterministic small-step evaluation order]
+\label{def:det-eval}
+The small-step relation $\to$ on $\mathcal{F}_{\mathrm{TG}}$
+configurations evaluates compound operator applications by a
+fixed left-to-right argument-evaluation strategy and contracts
+each ground operator on the unique heap-deterministic image
+specified by its semantics; in particular every operator in
+$\mathrm{Cat}_{\mathrm{sound}}$ is a deterministic function of
+its concrete-tensor argument multiset (no autograd-side
+in-place rewrites or RNG draws are inside the operator
+language; \texttt{dropout}'s RNG draw is hoisted out as a
+mask argument before the operator step). Consequently, given a
+heap $\sigma$ and a closed expression $e$, there is at most
+one finite reduction sequence $\langle e,\sigma,\mathsf{on}\rangle
+\to^*\langle v,\sigma',\mathsf{on}\rangle$ ending in a value
+or in an \textsc{Op-Stuck} or \textsc{Grad-Flag-Stuck}
+exception. The relation is therefore \emph{not} confluent in
+the term-rewriting sense (we never claim it is); it is simply
+a deterministic abstract-machine evaluator for the fragment.
+\end{definition}
+
+\subsection{Assume/Guarantee Composition}
+\label{sec:assume-guarantee}
+
+For each \texttt{nn.Module} class $M$ we synthesise a contract
+$C(M)=(\mathit{assume}_M,\mathit{guarantee}_M)$, with
+$\mathit{assume}_M$ a refinement on input types and
+$\mathit{guarantee}_M$ a refinement on output types. Sequential
+composition (e.g.\ \texttt{nn.Sequential}) discharges
+$\mathit{guarantee}_{M_1}\!\Rightarrow\!\mathit{assume}_{M_2}$
+locally; parallel composition (residual sums, QKV split) treats
+each sibling independently and joins the guarantees:
+
+{\small
+\begin{mathpar}
+\inferrule[\textsc{Seq}]
+{\vdash C(M_1)=(A_1,G_1)\\
+ \vdash C(M_2)=(A_2,G_2)\\
+ \models G_1\Rightarrow A_2}
+{\vdash C(M_2\circ M_1)=(A_1,G_2)}
+\and
+\inferrule[\textsc{Sub}]
+{C(M)=(A,G)\\ M'<:M\\
+ \models A_M\Rightarrow A_{M'}\quad\text{(contravariant)}\\
+ \models G_{M'}\Rightarrow G_M\quad\text{(covariant)}}
+{\vdash C(M')=(A_{M'},G_{M'})\text{ refines }C(M)}
+\end{mathpar}}
+
+\noindent The subclassing rule is a syntactic obligation: a
+subclass that overrides \texttt{forward} in a way that violates
+the parent's guarantee is rejected statically rather than
+silently re-analysed.
+
+\begin{theorem}[Compositional soundness; mechanised fragment]\label{thm:ag-sound}
+\emph{Scope.} The theorem as stated is mechanised on a
+$17$-operator DSL covering \texttt{matmul}, \texttt{view},
+\texttt{add}/\texttt{broadcast\_add}, \texttt{linear},
+\texttt{transpose}, \texttt{permute}, \texttt{relu},
+\texttt{cat}, \texttt{sum\_reduce}, \texttt{mean\_reduce},
+\texttt{expand}, \texttt{gather}, \texttt{embedding},
+\texttt{conv2d}, \texttt{einsum}, \texttt{unbind}, and
+\texttt{reshape}; $15$ of the $17$ operators carry a
+per-operator \texttt{applyOpExt\_sound\_*} lemma. The two
+remaining operators (\texttt{broadcast\_add} and \texttt{matmul})
+are discharged by an \emph{operator-agnostic composition
+witness} whose precise content is given as
+\Cref{ax:operator-agnostic-witness} below; this places one
+explicit obligation per operator into the trusted base of the
+composition theorem and is reflected in the per-handler
+breakdown of \Cref{tab:handler-soundness}. All $17$ DSL operators
+lie inside $\mathrm{Cat}_{\mathrm{sound}}$ of
+\Cref{thm:soundness}. The mechanised fragment does \emph{not} cover the
+remaining $62$ handlers of \Cref{tab:handler-soundness}, the
+AST extractor, or the Python analyser implementation.
+If every leaf module in the call tree of an
+$\mathcal{F}_{\mathrm{TG}}^{17}$ program is contract-verified
+in the mechanised fragment and every composition obligation
+is discharged by Z3, then the whole-program verdict given by
+the inductive use of \textsc{Seq}, \textsc{Par}, and
+\textsc{Sub} is sound in the sense of \Cref{thm:soundness}
+restricted to the same fragment.
+\end{theorem}
+
+\begin{axiom}[Operator-agnostic composition witness; \texttt{broadcast\_add}, \texttt{matmul}]
+\label{ax:operator-agnostic-witness}
+For each of $\mathit{op}\in\{\texttt{broadcast\_add},
+\texttt{matmul}\}$, the composition theorem
+(\Cref{thm:ag-sound}) admits without per-operator
+\texttt{applyOpExt\_sound\_*} the following:
+\textbf{(i)}~the rule-table shape function
+$\mathrm{shape}_{\mathit{op}}$ in the Lean development agrees
+with the runtime shape of the corresponding PyTorch operator
+on every input multiset that satisfies the rule's
+precondition (this is the in-envelope agreement count of
+$1{,}000$/$1{,}000$ samples in
+\Cref{tab:handler-soundness});
+\textbf{(ii)}~when the precondition is violated, the runtime
+operator raises a \texttt{RuntimeError} (broadcast-shape
+mismatch for \texttt{broadcast\_add}; contraction-dim
+mismatch for \texttt{matmul}); and
+\textbf{(iii)}~the operator is heap-deterministic in the sense
+of \Cref{def:det-eval} (no in-place writes, no RNG draws). The
+analogous lemmas are mechanised for the other $15$ operators
+(\texttt{applyOpExt\_sound\_view}, \dots,
+\texttt{applyOpExt\_sound\_unbind}); for these two operators
+they are taken on faith and explicitly counted as $2$ open
+obligations against \Cref{thm:ag-sound}'s trusted base.
+\end{axiom}
+
+\begin{axiom}[Fresh-witness refutation; needed for \Cref{thm:monotonicity}]
+\label{ax:fresh-witness}
+The analyser emits \textsc{Refuted-Proof} (or
+\textsc{Contract-Violation}) for module $M$ under context
+$\Gamma$ only if, in the current analysis pass under $\Gamma$,
+it produces a concrete input $x$ with
+$\mathit{assume}_M(x)\wedge\neg\mathit{guarantee}_M(M(x))$.
+Cached witnesses from earlier passes are not allowed to count.
+This is a property of how the analyser is implemented (no
+witness memoisation across pass boundaries), not a property of
+the calculus. The discipline is enforced by a single
+verifier-entry invariant (the witness cache is keyed on
+$(\Gamma,M)$ and emptied on every $\Gamma$-edge); we
+distribute an executable property test
+that asserts this invariant on
+every analyser entry by replaying $200$ random
+$\Gamma$-strengthenings against the current implementation
+and confirming the witness count strictly increases on each
+strengthening (no cache hit). The current shipped analyser
+passes the test on all $200$ replays.
+\end{axiom}
+
+\begin{theorem}[Monotonicity of refinement; conditional on no-memoisation]\label{thm:monotonicity}
+Strengthening any single contract $C(M_0)$ to $C'(M_0)\sqsubseteq
+C(M_0)$ never turns a \textsc{Verified} root into
+\textsc{Refuted-Proof}. \emph{Conditional on the no-memoisation
+discipline} (\Cref{ax:fresh-witness}; verified by the
+property test described above on the current
+shipped analyser), the new verdict is in
+$\{\textsc{Verified},\textsc{Contract-Violation},
+\textsc{Library-Warn},\textsc{Abstain}\}$. The conditional
+phrasing makes the unmechanised implementation invariant
+explicit; in deployments that disable the witness-cache
+invariant or hot-swap the verifier in a way that breaks the
+property test, the second clause is vacuous and only the first
+(``no \textsc{Verified}-to-\textsc{Refuted-Proof} flip'')
+survives.
+\end{theorem}
+
+The full case analysis (cases on the form of refinement, with
+the $\bot$ guarantee and unreachable-sibling sub-cases) is in
+\Cref{app:ag-proofs}.

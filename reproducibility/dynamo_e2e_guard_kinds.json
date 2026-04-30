@@ -1,0 +1,96 @@
+{
+  "_question": "Round-4 reviewer Q4: for the five end-to-end TG-Verified blocks (BasicBlock, Bottleneck, InvertedResidual, Fire, Block), what is the per-guard-kind breakdown of post-compile recompiles?",
+  "_method": "Run torch.compile(dynamic=True) on each of the five subjects from experiments_v5/v8/dynamo_e2e/run_dynamo_e2e.py with TORCH_LOGS=recompiles routed into a Python logging Handler.  Parse each emitted line for a guard expression and classify via the keyword scheme of experiments_v5/v8/dynamo_falsification_audit.py (SHAPE_KW, DTYPE_KW, RANK_KW, INT_KW, LIST_LEN_KW, TRACER_KW).  Recompile counts are cross-checked via torch._dynamo.convert_frame.FRAME_COMPILE_COUNTER.",
+  "n_subjects": 5,
+  "n_recompiles_total": 8,
+  "by_guard_kind_aggregate": {
+    "SHAPE": 8
+  },
+  "n_shape_dtype_rank": 8,
+  "n_guards_input_shape_in_catalogue": 8,
+  "n_guards_outside_catalogue": 0,
+  "n_recompiles_that_falsify_thm_dynamo_corr": 0,
+  "_falsification_predicate": "EXISTS recompile r. r.guard_kind in {SHAPE, DTYPE, RANK} AND r.guard_var NOT IN catalogue_refinement_vars(M).  On the five end-to-end TG-Verified blocks, every captured guard names an element of the input tensor's shape (e.g. 'size mismatch at index 0', '2 <= x.size()[0] <= 15'), which is a refinement variable of every catalogue rule that touches the input.  The falsifier therefore evaluates to false on this dataset: the per-block SHAPE recompiles refine on input-shape elements that the TG calculus already exposes as symbolic refinement variables, exactly as Theorem 5 requires.",
+  "fallback_used": false,
+  "torch_version": "2.9.1",
+  "rows": [
+    {
+      "name": "tv_resnet_BasicBlock",
+      "n_inputs": 24,
+      "n_recompile_lines_captured": 2,
+      "n_recompiles_via_compile_counter": 2,
+      "by_guard_kind": {
+        "SHAPE": 2
+      },
+      "n_shape_dtype_rank": 2,
+      "n_guards_input_shape_in_catalogue": 2,
+      "n_guards_outside_catalogue": 0,
+      "examples": [
+        "Recompiling function forward in /opt/homebrew/lib/python3.11/site-packages/torchvision/models/resnet.py:89\n    triggered by the following guard failure(s):\n    guard 0 failures:\n    - 0/0: tensor 'x' ",
+        "Recompiling function forward in /opt/homebrew/lib/python3.11/site-packages/torchvision/models/resnet.py:89\n    triggered by the following guard failure(s):\n    guard 0 failures:\n    - 0/1: tensor 'x' "
+      ]
+    },
+    {
+      "name": "tv_resnet_Bottleneck",
+      "n_inputs": 24,
+      "n_recompile_lines_captured": 2,
+      "n_recompiles_via_compile_counter": 2,
+      "by_guard_kind": {
+        "SHAPE": 2
+      },
+      "n_shape_dtype_rank": 2,
+      "n_guards_input_shape_in_catalogue": 2,
+      "n_guards_outside_catalogue": 0,
+      "examples": [
+        "Recompiling function forward in /opt/homebrew/lib/python3.11/site-packages/torchvision/models/resnet.py:143\n    triggered by the following guard failure(s):\n    guard 0 failures:\n    - 0/0: tensor 'x'",
+        "Recompiling function forward in /opt/homebrew/lib/python3.11/site-packages/torchvision/models/resnet.py:143\n    triggered by the following guard failure(s):\n    guard 0 failures:\n    - 0/1: tensor 'x'"
+      ]
+    },
+    {
+      "name": "tv_mnv2_InvertedResidual",
+      "n_inputs": 24,
+      "n_recompile_lines_captured": 1,
+      "n_recompiles_via_compile_counter": 1,
+      "by_guard_kind": {
+        "SHAPE": 1
+      },
+      "n_shape_dtype_rank": 1,
+      "n_guards_input_shape_in_catalogue": 1,
+      "n_guards_outside_catalogue": 0,
+      "examples": [
+        "Recompiling function forward in /opt/homebrew/lib/python3.11/site-packages/torchvision/models/mobilenetv2.py:60\n    triggered by the following guard failure(s):\n    guard 0 failures:\n    - 0/0: 2 <= x"
+      ]
+    },
+    {
+      "name": "tv_squeezenet_Fire",
+      "n_inputs": 24,
+      "n_recompile_lines_captured": 2,
+      "n_recompiles_via_compile_counter": 2,
+      "by_guard_kind": {
+        "SHAPE": 2
+      },
+      "n_shape_dtype_rank": 2,
+      "n_guards_input_shape_in_catalogue": 2,
+      "n_guards_outside_catalogue": 0,
+      "examples": [
+        "Recompiling function forward in /opt/homebrew/lib/python3.11/site-packages/torchvision/models/squeezenet.py:29\n    triggered by the following guard failure(s):\n    guard 0 failures:\n    - 0/0: tensor ",
+        "Recompiling function forward in /opt/homebrew/lib/python3.11/site-packages/torchvision/models/squeezenet.py:29\n    triggered by the following guard failure(s):\n    guard 0 failures:\n    - 0/1: tensor "
+      ]
+    },
+    {
+      "name": "timm_vit_Block",
+      "n_inputs": 24,
+      "n_recompile_lines_captured": 1,
+      "n_recompiles_via_compile_counter": 1,
+      "by_guard_kind": {
+        "SHAPE": 1
+      },
+      "n_shape_dtype_rank": 1,
+      "n_guards_input_shape_in_catalogue": 1,
+      "n_guards_outside_catalogue": 0,
+      "examples": [
+        "Recompiling function forward in /opt/homebrew/lib/python3.11/site-packages/timm/models/vision_transformer.py:206\n    triggered by the following guard failure(s):\n    guard 0 failures:\n    - 0/0: 2 <= "
+      ]
+    }
+  ]
+}

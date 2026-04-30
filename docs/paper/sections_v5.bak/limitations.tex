@@ -1,0 +1,60 @@
+\subsection{Limitations}\label{sec:limitations}
+
+\textsc{TensorGuard} v5 inherits the scoped character of v4 and
+extends it; the scope is now explicit in the refinement type
+system rather than spread across two passes.
+
+\paragraph{Analyzed Python subset.} We analyze the typed AST
+fragment $\mathcal F$ of \verb|nn.Module| classes:
+\verb|__init__| with statically resolvable layer constructors,
+\verb|forward| with straight-line composition, refinement-typed
+helpers, and the operator catalogue of
+\Cref{app:ops-extended}. Decorator metaprogramming, dynamic
+attribute assignment after \verb|__init__|, and class factories
+that synthesize \verb|forward| at runtime are out of scope. Of
+the cited benchmark blocks, the in-fragment rate is reported
+per-source in \Cref{sec:eval}; out-of-fragment blocks receive an
+\textbf{Abstain} verdict, never a false claim.
+
+\paragraph{Truly dynamic control flow.} The calculus assumes
+shape- and grad-flag-determinism: the trace structure of a
+\verb|forward| call is a function of the static refinement of its
+inputs, not of their values. Data-dependent branches
+(\verb|if x.sum() > 0|), data-dependent loops, and Python-level
+exceptions inside \verb|forward| trigger sound abstention on the
+affected sub-tree. This is a strict design choice: the
+Dynamo-guard correspondence (\Cref{thm:dynamo-corr}) is stated
+modulo Dynamo graph breaks, and abstention is exactly what
+\textsc{TensorGuard} emits where Dynamo would have broken the
+graph.
+
+\paragraph{Backward verifier scope.} The backward analysis
+(\Cref{sec:impl-backward}) tracks the grad-flag refinement
+through the operator catalogue and detects severed-tape
+conditions; it does \emph{not} verify numerical correctness of
+gradients, does not reason about second-order or higher
+derivatives, and abstains on custom \verb|autograd.Function|
+subclasses (their \verb|backward| body is opaque to the static
+analysis). \verb|torch.no_grad()| and \verb|torch.enable_grad()|
+scopes are tracked syntactically; runtime context-manager
+swapping via \verb|setattr| is out of scope.
+
+\paragraph{Lean parity is operator-rule-only.} The Lean~4
+development (\Cref{sec:lean-theorems}) machine-checks the
+per-operator transfer-function and refinement-implication lemmas
+for $20$ operators. It does \emph{not} mechanise the analyzer
+implementation, the AST extractor, or the assume/guarantee
+composition rule; soundness of those layers reduces to the Lean
+operator lemmas via the pen-and-paper proof of
+\Cref{sec:soundness-proof}. The boundary between machine-checked
+and pen-and-paper soundness is stated explicitly there and is
+unchanged from v4 in character but expanded in coverage.
+
+\paragraph{Dynamo correspondence is one-way at the boundary.} The
+correspondence theorem (\Cref{thm:dynamo-corr}) is exact only on
+the intersection of \textsc{TensorGuard}'s in-fragment subset and
+Dynamo's traceable subset. Outside that intersection,
+\textsc{TensorGuard} abstains and Dynamo either installs a
+non-shape guard or breaks the graph; we do not claim agreement
+on those rows and they are reported separately in
+\Cref{sec:eval}.

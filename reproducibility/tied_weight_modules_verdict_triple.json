@@ -1,0 +1,614 @@
+{
+  "n_total": 100,
+  "sample_source": "100 nn.Module subclasses with 5..60 LoC forward, drawn from the 335 (=333+2) tied-weight files in benchmarks/_corpus/{transformers,timm}",
+  "population_size": 1957,
+  "note": "sample is *not* a uniform random draw of the 333 tied-weight files; it is a tractable-class slice (small forward bodies, present `nn.Module` base in source). The full 1957 small-class population is the upper-bound denominator for the static V/RP/Abstain triple over the tied-weight files.",
+  "buckets": {
+    "Verified": 14,
+    "Refuted": 22,
+    "Abstain": 64,
+    "Error": 0
+  },
+  "results": [
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/dots1/modeling_dots1.py",
+      "class_name": "Dots1RMSNorm",
+      "loc": 5,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/dots1/modeling_dots1.py",
+      "class_name": "Dots1RotaryEmbedding",
+      "loc": 11,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/dots1/modeling_dots1.py",
+      "class_name": "Dots1Attention",
+      "loc": 39,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/dots1/modeling_dots1.py",
+      "class_name": "Dots1NaiveMoe",
+      "loc": 24,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/dots1/modeling_dots1.py",
+      "class_name": "Dots1MoE",
+      "loc": 8,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/dots1/modeling_dots1.py",
+      "class_name": "Dots1Model",
+      "loc": 60,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/dots1/modeling_dots1.py",
+      "class_name": "Dots1ForCausalLM",
+      "loc": 59,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ernie4_5_vl_moe/modeling_ernie4_5_vl_moe.py",
+      "class_name": "Ernie4_5_VLMoeTextRotaryEmbedding",
+      "loc": 15,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ernie4_5_vl_moe/modeling_ernie4_5_vl_moe.py",
+      "class_name": "Ernie4_5_VLMoeTextAttention",
+      "loc": 38,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ernie4_5_vl_moe/modeling_ernie4_5_vl_moe.py",
+      "class_name": "Ernie4_5_VLMoeRMSNorm",
+      "loc": 5,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ernie4_5_vl_moe/modeling_ernie4_5_vl_moe.py",
+      "class_name": "Ernie4_5_VLMoeMoeStatics",
+      "loc": 6,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ernie4_5_vl_moe/modeling_ernie4_5_vl_moe.py",
+      "class_name": "Ernie4_5_VLMoeMoeTopKRouter",
+      "loc": 16,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ernie4_5_vl_moe/modeling_ernie4_5_vl_moe.py",
+      "class_name": "Ernie4_5_VLMoeMoeExperts",
+      "loc": 24,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ernie4_5_vl_moe/modeling_ernie4_5_vl_moe.py",
+      "class_name": "Ernie4_5_VLMoeSparseMoeBlock",
+      "loc": 10,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ernie4_5_vl_moe/modeling_ernie4_5_vl_moe.py",
+      "class_name": "Ernie4_5_VLMoeMoeBlock",
+      "loc": 40,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ernie4_5_vl_moe/modeling_ernie4_5_vl_moe.py",
+      "class_name": "Ernie4_5_VLMoeVisionTransformerPretrainedModel",
+      "loc": 30,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ernie4_5_vl_moe/modeling_ernie4_5_vl_moe.py",
+      "class_name": "Ernie4_5_VLMoeVisionMLP",
+      "loc": 5,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ernie4_5_vl_moe/modeling_ernie4_5_vl_moe.py",
+      "class_name": "Ernie4_5_VLMoeVariableResolutionResamplerModel",
+      "loc": 14,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/solar_open/modeling_solar_open.py",
+      "class_name": "SolarOpenNaiveMoe",
+      "loc": 24,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/solar_open/modeling_solar_open.py",
+      "class_name": "SolarOpenMoE",
+      "loc": 8,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/solar_open/modeling_solar_open.py",
+      "class_name": "SolarOpenAttention",
+      "loc": 38,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/solar_open/modeling_solar_open.py",
+      "class_name": "SolarOpenRMSNorm",
+      "loc": 5,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/solar_open/modeling_solar_open.py",
+      "class_name": "SolarOpenRotaryEmbedding",
+      "loc": 11,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/solar_open/modeling_solar_open.py",
+      "class_name": "SolarOpenModel",
+      "loc": 50,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/solar_open/modeling_solar_open.py",
+      "class_name": "SolarOpenForCausalLM",
+      "loc": 54,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/nllb_moe/modeling_nllb_moe.py",
+      "class_name": "NllbMoeSinusoidalPositionalEmbedding",
+      "loc": 23,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/nllb_moe/modeling_nllb_moe.py",
+      "class_name": "NllbMoeTop2Router",
+      "loc": 24,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/nllb_moe/modeling_nllb_moe.py",
+      "class_name": "NllbMoeDenseActDense",
+      "loc": 11,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/nllb_moe/modeling_nllb_moe.py",
+      "class_name": "NllbMoeExperts",
+      "loc": 15,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/nllb_moe/modeling_nllb_moe.py",
+      "class_name": "NllbMoeSparseMLP",
+      "loc": 5,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/nllb_moe/modeling_nllb_moe.py",
+      "class_name": "NllbMoeAttention",
+      "loc": 59,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/nllb_moe/modeling_nllb_moe.py",
+      "class_name": "NllbMoeEncoder",
+      "loc": 31,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/nllb_moe/modeling_nllb_moe.py",
+      "class_name": "NllbMoeModel",
+      "loc": 44,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/sew_d/modeling_sew_d.py",
+      "class_name": "SEWDPositionalConvEmbedding",
+      "loc": 5,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/sew_d/modeling_sew_d.py",
+      "class_name": "SEWDUpsampling",
+      "loc": 12,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/sew_d/modeling_sew_d.py",
+      "class_name": "SEWDFeatureEncoder",
+      "loc": 10,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/sew_d/modeling_sew_d.py",
+      "class_name": "ContextPooler",
+      "loc": 8,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/sew_d/modeling_sew_d.py",
+      "class_name": "StableDropout",
+      "loc": 9,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/sew_d/modeling_sew_d.py",
+      "class_name": "SEWDAttention",
+      "loc": 26,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/sew_d/modeling_sew_d.py",
+      "class_name": "ConvLayer",
+      "loc": 20,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/sew_d/modeling_sew_d.py",
+      "class_name": "SEWDEncoder",
+      "loc": 51,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/sew_d/modeling_sew_d.py",
+      "class_name": "SEWDModel",
+      "loc": 52,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoAttention",
+      "loc": 46,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoRoPESelfAttention",
+      "loc": 39,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoRoPECrossAttention",
+      "loc": 52,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoPositionEmbeddingSine",
+      "loc": 25,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoMemoryEncoder",
+      "loc": 16,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoFeedForward",
+      "loc": 9,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoPositionalEmbedding",
+      "loc": 15,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoMemoryAttentionLayer",
+      "loc": 31,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoMemoryAttention",
+      "loc": 48,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoPerceiverAttention",
+      "loc": 47,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoPerceiverEncoderLayer",
+      "loc": 30,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoPerceiverResampler",
+      "loc": 24,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoMaskEmbedding",
+      "loc": 9,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoPromptEncoder",
+      "loc": 40,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/edgetam_video/modeling_edgetam_video.py",
+      "class_name": "EdgeTamVideoTwoWayTransformer",
+      "loc": 40,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/bark/modeling_bark.py",
+      "class_name": "BarkSelfAttention",
+      "loc": 25,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/bark/modeling_bark.py",
+      "class_name": "BarkMLP",
+      "loc": 5,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/llama4/modeling_llama4.py",
+      "class_name": "Llama4TextExperts",
+      "loc": 18,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/llama4/modeling_llama4.py",
+      "class_name": "Llama4TextMoe",
+      "loc": 8,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/llama4/modeling_llama4.py",
+      "class_name": "Llama4TextRotaryEmbedding",
+      "loc": 10,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/llama4/modeling_llama4.py",
+      "class_name": "Llama4TextAttention",
+      "loc": 56,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/llama4/modeling_llama4.py",
+      "class_name": "Llama4TextModel",
+      "loc": 60,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/llama4/modeling_llama4.py",
+      "class_name": "Llama4ForCausalLM",
+      "loc": 58,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/llama4/modeling_llama4.py",
+      "class_name": "Llama4VisionAttention",
+      "loc": 39,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/laguna/modeling_laguna.py",
+      "class_name": "LagunaRMSNorm",
+      "loc": 5,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/laguna/modeling_laguna.py",
+      "class_name": "LagunaRotaryEmbedding",
+      "loc": 14,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/laguna/modeling_laguna.py",
+      "class_name": "LagunaTopKRouter",
+      "loc": 18,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/laguna/modeling_laguna.py",
+      "class_name": "LagunaExperts",
+      "loc": 24,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/laguna/modeling_laguna.py",
+      "class_name": "LagunaSparseMoeBlock",
+      "loc": 12,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/laguna/modeling_laguna.py",
+      "class_name": "LagunaAttention",
+      "loc": 46,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/laguna/modeling_laguna.py",
+      "class_name": "LagunaModel",
+      "loc": 60,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/olmo3/modeling_olmo3.py",
+      "class_name": "Olmo3RMSNorm",
+      "loc": 5,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/olmo3/modeling_olmo3.py",
+      "class_name": "Olmo3Attention",
+      "loc": 43,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/olmo3/modeling_olmo3.py",
+      "class_name": "Olmo3RotaryEmbedding",
+      "loc": 11,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/olmo3/modeling_olmo3.py",
+      "class_name": "Olmo3Model",
+      "loc": 57,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/olmo3/modeling_olmo3.py",
+      "class_name": "Olmo3ForCausalLM",
+      "loc": 54,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/bigbird_pegasus/modeling_bigbird_pegasus.py",
+      "class_name": "BigBirdPegasusSelfAttention",
+      "loc": 54,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/bigbird_pegasus/modeling_bigbird_pegasus.py",
+      "class_name": "BigBirdPegasusBlockSparseAttention",
+      "loc": 59,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/bigbird_pegasus/modeling_bigbird_pegasus.py",
+      "class_name": "BigBirdPegasusEncoderAttention",
+      "loc": 29,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/bigbird_pegasus/modeling_bigbird_pegasus.py",
+      "class_name": "BigBirdPegasusClassificationHead",
+      "loc": 6,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/biogpt/modeling_biogpt.py",
+      "class_name": "BioGptForCausalLM",
+      "loc": 43,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/biogpt/modeling_biogpt.py",
+      "class_name": "BioGptForTokenClassification",
+      "loc": 50,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/biogpt/modular_biogpt.py",
+      "class_name": "BioGptForCausalLM",
+      "loc": 43,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/biogpt/modular_biogpt.py",
+      "class_name": "BioGptForTokenClassification",
+      "loc": 50,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ministral3/modeling_ministral3.py",
+      "class_name": "Ministral3Attention",
+      "loc": 45,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ministral3/modeling_ministral3.py",
+      "class_name": "Ministral3RMSNorm",
+      "loc": 5,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ministral3/modeling_ministral3.py",
+      "class_name": "Ministral3RotaryEmbedding",
+      "loc": 11,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ministral3/modeling_ministral3.py",
+      "class_name": "Ministral3Model",
+      "loc": 50,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ministral3/modeling_ministral3.py",
+      "class_name": "Ministral3ForCausalLM",
+      "loc": 54,
+      "verdict": "Refuted"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/visual_bert/modeling_visual_bert.py",
+      "class_name": "VisualBertSelfAttention",
+      "loc": 35,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/visual_bert/modeling_visual_bert.py",
+      "class_name": "VisualBertAttention",
+      "loc": 13,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/visual_bert/modeling_visual_bert.py",
+      "class_name": "VisualBertEncoder",
+      "loc": 36,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/visual_bert/modeling_visual_bert.py",
+      "class_name": "VisualBertPooler",
+      "loc": 6,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/visual_bert/modeling_visual_bert.py",
+      "class_name": "VisualBertRegionToPhraseAttention",
+      "loc": 20,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/cohere/modeling_cohere.py",
+      "class_name": "CohereLayerNorm",
+      "loc": 7,
+      "verdict": "Verified"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/cohere/modeling_cohere.py",
+      "class_name": "CohereRotaryEmbedding",
+      "loc": 11,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/cohere/modeling_cohere.py",
+      "class_name": "CohereAttention",
+      "loc": 46,
+      "verdict": "Abstain"
+    },
+    {
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/cohere/modeling_cohere.py",
+      "class_name": "CohereModel",
+      "loc": 50,
+      "verdict": "Refuted"
+    }
+  ]
+}

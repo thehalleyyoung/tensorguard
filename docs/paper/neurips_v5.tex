@@ -1,0 +1,196 @@
+\documentclass{article}
+
+\usepackage{neurips_2026}
+\renewcommand{\sfdefault}{ptm}
+
+\usepackage{lineno}
+\linenumbers
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{url}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% Inference-rule typesetting: prefer mathpartir, fall back to proof.
+\IfFileExists{mathpartir.sty}{\usepackage{mathpartir}}{%
+  \IfFileExists{proof.sty}{\usepackage{proof}}{}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+\title{TensorGuard v5: Refinement-Typed Shape and Gradient
+  Verification for \texttt{nn.Module} Composition,
+  with a Dynamo-Guard Correspondence}
+
+\author{Anonymous Authors\\Submission under double-blind review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present \textsc{TensorGuard}~v5, a sound static verifier for
+PyTorch \verb|nn.Module| classes built around a refinement-typed
+calculus that unifies symbolic shape analysis and static
+gradient-flag analysis under a single metatheory. Tensor types
+are refinement records over symbolic shape, gradient-required
+flag, and a Z3-decidable side condition; module composition is
+checked locally as an assume/guarantee discipline at the class
+boundary; an autograd-aware backward verifier catches the
+canonical silent-zero-grad bugs (in-place leaf write,
+\texttt{.detach()} on the loss path, \texttt{torch.no\_grad()}
+scope error) statically. We prove a one-to-one correspondence
+between the refinements \textsc{TensorGuard} discharges and the
+guards TorchDynamo would install on the same trace, and report
+empirical agreement on a benchmark of $\geq 150$ verification
+blocks drawn from torchvision, HuggingFace Transformers, timm,
+and a curated bug-injection suite. A Lean~4 parity development
+machine-checks $20$ operator transfer-function lemmas with no
+\texttt{sorry} and no \texttt{mathlib} dependency. Out-of-fragment
+constructs trigger explicit abstention, reported as a
+first-class verdict.
+\end{abstract}
+
+%% ===== §1 Introduction =====
+\IfFileExists{sections_v5/intro.tex}{\input{sections_v5/intro}}{%
+  \section{Introduction}\label{sec:intro}
+  \emph{Intro section pending Track integration.}}
+
+%% ===== §2 Background =====
+\IfFileExists{sections_v5/background.tex}{\input{sections_v5/background}}{%
+  \section{Background}\label{sec:background}
+  \emph{Background section pending Track integration. Will cover
+  PyTorch dynamic shape semantics, autograd tape construction,
+  TorchDynamo guard installation, and the refinement-type-system
+  literature relevant to a tensor calculus, in $\leq 0.7$ pp.}}
+
+%% ===== §3 Refinement-typed calculus (Track A) =====
+\IfFileExists{sections_v5/A.tex}{\input{sections_v5/A}}{%
+  \section{A refinement-typed calculus for shapes and
+    grad flags}\label{sec:calculus}
+  \emph{Track A scaffold. Will introduce
+  $\tau = \mathsf{Tensor}\{s,g\mid\varphi\}$, the typing
+  judgement, and the soundness theorem against a small-step
+  semantics with explicit autograd tape, in $\leq 2.5$ pp.}}
+
+%% ===== §4 Assume/guarantee composition (Track B) =====
+\IfFileExists{sections_v5/B.tex}{\input{sections_v5/B}}{%
+  \section{Assume/guarantee module composition}\label{sec:assume-guarantee}
+  \emph{Track B scaffold. Will give the module-contract
+  $\mathsf{A}\Rightarrow\mathsf{G}$ judgement, the local
+  composition rule, and the contravariant/covariant subclassing
+  rule, in $\leq 1.5$ pp (or merged with~\Cref{sec:calculus} if
+  tight).}}
+
+%% ===== §5 Implementation =====
+\section{Implementation}\label{sec:impl}
+
+\IfFileExists{sections_v5/C-summary.tex}{\input{sections_v5/C-summary}}{%
+  \subsection{Extended fragment and front-end}\label{sec:impl-fragment}
+  \emph{Track C summary scaffold. Will document the extended
+  operator catalogue, the typed AST extractor, factory-helper
+  inlining, and the abstention triggers, in $\leq 0.7$ pp.}}
+
+\IfFileExists{sections_v5/D-summary.tex}{\input{sections_v5/D-summary}}{%
+  \subsection{Backward verifier}\label{sec:impl-backward}
+  \emph{Track D summary scaffold. Will describe abstract-tape
+  construction from the grad-flag refinement, severed-tape
+  detection, and the witness format, in $\leq 0.8$ pp.}}
+
+%% ===== §6 Empirical evaluation =====
+\section{Empirical evaluation}\label{sec:eval}
+
+\IfFileExists{sections_v5/F.tex}{\input{sections_v5/F}}{%
+  \subsection{Benchmark}\label{sec:eval-benchmark}
+  \emph{Track F scaffold. Will report the
+  $\geq 150$-block benchmark across torchvision, HuggingFace,
+  timm, and the bug-injection suite, with per-source in-fragment
+  rate, verified/abstain/rejected counts, and head-to-head
+  comparison with \texttt{torch.fx}+ShapeProp,
+  \texttt{FakeTensorMode}, and \texttt{torch.export}, in
+  $\leq 1.0$ pp.}}
+
+\IfFileExists{sections_v5/E.tex}{\input{sections_v5/E}}{%
+  \subsection{Dynamo-guard correspondence}\label{sec:eval-dynamo}
+  \emph{Track E scaffold. Will state \Cref{thm:dynamo-corr},
+  describe the experimental protocol for empirical guard
+  agreement, and report per-block agreement rates, in
+  $\leq 0.6$ pp.}}
+
+\IfFileExists{sections_v5/G.tex}{\input{sections_v5/G}}{%
+  \subsection{Lean parity}\label{sec:lean-theorems}
+  \emph{Track G scaffold. Will list the $20$ Lean-checked
+  operator transfer-function lemmas, build status, and the
+  pen-and-paper boundary, in $\leq 0.4$ pp.}}
+
+%% ===== §7 Related work (Track H) =====
+\IfFileExists{sections_v5/H.tex}{\input{sections_v5/H}}{%
+  \section{Related work}\label{sec:related}
+  \emph{Track H scaffold. Will cover refinement type systems for
+  tensor programs, PyTorch's own shape/guard ecosystem
+  (\texttt{fx}, \texttt{FakeTensorMode}, \texttt{torch.export},
+  Dynamo's \texttt{ShapeEnv}), and machine-checked tensor
+  semantics work, in $\leq 0.6$ pp.}}
+
+%% ===== §8 Limitations & Conclusion =====
+\section{Limitations and conclusion}\label{sec:limconc}
+
+\IfFileExists{sections_v5/limitations.tex}{\input{sections_v5/limitations}}{%
+  \subsection{Limitations}\label{sec:limitations}
+  \emph{Limitations section pending.}}
+
+\IfFileExists{sections_v5/conclusion.tex}{\input{sections_v5/conclusion}}{%
+  \subsection{Conclusion}\label{sec:conclusion}
+  \emph{Conclusion section pending.}}
+
+%% ===== References =====
+\clearpage
+\bibliographystyle{plainnat}
+\IfFileExists{sections_v5/references.bbl}{\input{sections_v5/references.bbl}}{%
+  \begin{thebibliography}{10}
+  \bibitem[Cousot and Cousot(1977)]{cousot1977abstract} P.~Cousot and
+  R.~Cousot. ``Abstract interpretation: a unified lattice model for
+  static analysis of programs by construction or approximation of
+  fixpoints.'' \emph{POPL}, 1977.
+  \bibitem[Rink(2018)]{rink2018hindley} D.~Rink. ``Hindley-Milner
+  elaboration in applicative style.'' \emph{ICFP}, 2018.
+  \bibitem[Rush(2019)]{rush2019tensor} A.~M.~Rush. ``Tensor
+  considered harmful: named tensors for PyTorch.'' Tech.\ report, 2019.
+  \end{thebibliography}}
+
+%% ===== Appendix =====
+\appendix
+
+\IfFileExists{sections_v5/appendix.tex}{\input{sections_v5/appendix}}{%
+  \section{Operator catalogue}\label{app:ops-extended}
+  \emph{Appendix scaffold. Will list the extended operator
+  catalogue, refinement signatures, the detailed soundness proof
+  (\Cref{sec:soundness-proof}), the floor/divisibility analysis
+  (\Cref{app:floor-divisibility}), the Lean theorem index, and
+  the reproducibility manifest (\Cref{app:repro}).}
+
+  \section{Detailed soundness proof}\label{sec:soundness-proof}
+  \emph{Pending.}
+
+  \section{Floor and divisibility for \texttt{Conv2d} and
+    \texttt{view(-1, \ldots)}}\label{app:floor-divisibility}
+  \emph{Pending.}
+
+  \section{Reproducibility}\label{app:repro}
+  \emph{Pending. Will list every driver script, JSON output, and
+  Lean module backing the numbers in this paper.}}
+
+%% ===== Checklist (must be last) =====
+\IfFileExists{neurips_2026_checklist.tex}{%
+  \input{neurips_2026_checklist}}{}
+
+\end{document}

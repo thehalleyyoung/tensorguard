@@ -1,0 +1,44 @@
+{
+  "_question": "Round-5 cross-family expansion. Adds Gemma 2 to the naturally-occurring HuggingFace cross-family bug-finding set (originally Llama / Qwen2 / Mistral / Phi-3, 7/7 RP).",
+  "family": "Gemma 2",
+  "n_modules": 2,
+  "tally": {
+    "RP": 2,
+    "Verified": 0,
+    "Abstain": 0,
+    "Error": 0,
+    "RP_low_conf": 0
+  },
+  "rows": [
+    {
+      "name": "Gemma2HeadDimDivisibility",
+      "input_shapes": {
+        "hidden_states": [
+          1,
+          7,
+          2304
+        ]
+      },
+      "status_name": "UNSAFE",
+      "verdict": "RP",
+      "max_confidence": 0.99,
+      "first_bug_message": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(1, 7, 2304)) to (1, 7, 10, 256)",
+      "elapsed_s": 0.154
+    },
+    {
+      "name": "Gemma2GQAGroupedKVRepeat",
+      "input_shapes": {
+        "hidden_states": [
+          1,
+          16,
+          2304
+        ]
+      },
+      "status_name": "UNSAFE",
+      "verdict": "RP",
+      "max_confidence": 0.99,
+      "first_bug_message": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(1, 16, 2304)) to (1, 16, 8, 289)",
+      "elapsed_s": 0.033
+    }
+  ]
+}

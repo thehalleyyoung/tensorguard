@@ -1,0 +1,51 @@
+{
+  "_question": "Round 1 — Comet cycle W3: separate the 9 CNN end-to-end witness from the transformer-surrogate witness on Theorem 5; report the 55-module sweep finding (0 SHAPE/DTYPE/RANK guards fired, only INT specialisations).",
+  "freeze_commit": "040f6f3",
+  "cnn_e2e_block": {
+    "n_subjects": 9,
+    "subjects": [
+      "tv_resnet_BasicBlock", "tv_resnet_Bottleneck",
+      "tv_mnv2_InvertedResidual", "tv_squeezenet_Fire",
+      "timm_convnext_ConvNeXtBlock", "tv_densenet_DenseLayer",
+      "tv_shufflenet_InvertedResidual", "tv_mnv3s_features_1",
+      "timm_regnet_Bottleneck"
+    ],
+    "average_shape_recompiles_per_module": 1.444,
+    "total_shape_recompiles": 13,
+    "guard_kind_breakdown": {"SHAPE": 13, "DTYPE": 0, "RANK": 0, "INT": 0},
+    "all_in_catalogue": true,
+    "evidential_scope": "necessary direction of Theorem 5 supported on these 9 fully end-to-end CNN blocks"
+  },
+  "transformer_surrogate_block": {
+    "n_subjects": 4,
+    "additional_torchvision_encoder": 1,
+    "subjects": [
+      "timm_vit_Block", "timm_swin_SwinTransformerBlock",
+      "timm_mlpmixer_MixerBlock", "tv_vitb16_encoder_layer_0"
+    ],
+    "method": "documented forward-signature surrogate (window-partition, positional-encoding dispatch are stubbed)",
+    "evidential_scope": "surrogate-only; full instantiation exceeds end-to-end constraint solving"
+  },
+  "module_sweep_55": {
+    "n_attempted": 107,
+    "n_warmup_completed": 55,
+    "n_walltime_killed": 35,
+    "n_warmup_failed": 17,
+    "in_contract_recompiles": 72,
+    "guard_kind_breakdown": {"SHAPE": 0, "DTYPE": 0, "RANK": 0, "INT": 72},
+    "falsification_predicate_status": "not exercised on this population (denominator 0 SHAPE/DTYPE/RANK guards)",
+    "interpretation": "On the 55-module long-tail population the torch.compile flow is dominated by integer/SymInt specialisation, not shape guards.  The necessary-direction falsification predicate is therefore not non-vacuously evaluated on this population."
+  },
+  "evidential_scope_summary": {
+    "primary_test": "9 CNN-only end-to-end (13 SHAPE recompiles, all in catalogue)",
+    "context": "4-module transformer surrogate audit (forward-signature only)",
+    "denominator_audit": "55-module sweep (0 SHAPE/DTYPE/RANK guards fired; INT specialisation only)",
+    "necessary_direction": "supported on the CNN block",
+    "sufficient_direction": "not measured (the converse is explicitly disclaimed in Theorem 5 statement)"
+  },
+  "paper_claims_cited": [
+    "Theorem 5 (Dynamo correspondence, necessary direction)",
+    "Eval section extended end-to-end audit paragraph",
+    "Eval section audit on a strictly larger module population paragraph"
+  ]
+}

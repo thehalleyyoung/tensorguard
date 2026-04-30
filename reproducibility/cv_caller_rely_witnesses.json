@@ -1,0 +1,297 @@
+{
+  "_doc": "Round-3 reviewer Q4 follow-up: exhibit \u226510 randomly-sampled CV verdicts together with a real caller in transformers/timm/torchvision whose call site satisfies the synthesised assume_M.",
+  "seed": 20260428,
+  "sample_size": 12,
+  "n_witnessed": 12,
+  "rows": [
+    {
+      "id": "transformers__WhisperForConditionalGeneration__ed440ec8",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperForConditionalGeneration",
+      "library": "transformers",
+      "category": "transformer",
+      "bucket": "symbolic-config-only",
+      "sym_attrs": [
+        [
+          "config",
+          "d_model"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "max_target_positions"
+        ]
+      ],
+      "div_axioms": [],
+      "real_caller_witness": {
+        "real_caller": "transformers.WhisperForConditionalGeneration(config=WhisperConfig())",
+        "checkpoint": "openai/whisper-tiny",
+        "config_class": "transformers.WhisperConfig",
+        "satisfying_attrs": {
+          "d_model": 384,
+          "vocab_size": 51865
+        },
+        "satisfies": "config.d_model (=384) > 0 \u2713; config.vocab_size (=51865) > 0 \u2713."
+      }
+    },
+    {
+      "id": "transformers__DistilBertPreTrainedModel__1f6d3674",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertPreTrainedModel",
+      "library": "transformers",
+      "category": "transformer",
+      "bucket": "no-own-init",
+      "sym_attrs": [],
+      "div_axioms": [],
+      "real_caller_witness": {
+        "real_caller": "transformers.DistilBertModel(config=DistilBertConfig())  # subclasses DistilBertPreTrainedModel",
+        "checkpoint": "distilbert-base-uncased",
+        "config_class": "transformers.DistilBertConfig",
+        "satisfying_attrs": {},
+        "satisfies": "no own __init__; assume_M is trivial; every DistilBert subclass instantiation witnesses it."
+      }
+    },
+    {
+      "id": "transformers__BloomForSequenceClassification__81e125ad",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomForSequenceClassification",
+      "library": "transformers",
+      "category": "transformer",
+      "bucket": "symbolic-config-only",
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "div_axioms": [],
+      "real_caller_witness": {
+        "real_caller": "transformers.BloomForSequenceClassification(config=BloomConfig())",
+        "checkpoint": "bigscience/bloom-560m",
+        "config_class": "transformers.BloomConfig",
+        "satisfying_attrs": {
+          "num_labels": 2,
+          "hidden_size": 1024
+        },
+        "satisfies": "config.num_labels (=2) \u2265 1 \u2713; config.hidden_size (=1024) > 0 \u2713."
+      }
+    },
+    {
+      "id": "transformers__CLIPModel__13d2dfa6",
+      "qualified_name": "transformers.models.clip.modeling_clip.CLIPModel",
+      "library": "transformers",
+      "category": "transformer",
+      "bucket": "symbolic-config-only",
+      "sym_attrs": [
+        [
+          "config",
+          "text_config"
+        ],
+        [
+          "config",
+          "vision_config"
+        ],
+        [
+          "config",
+          "projection_dim"
+        ]
+      ],
+      "div_axioms": [],
+      "real_caller_witness": {
+        "real_caller": "transformers.CLIPModel(config=CLIPConfig())",
+        "checkpoint": "openai/clip-vit-base-patch32",
+        "config_class": "transformers.CLIPConfig",
+        "satisfying_attrs": {
+          "projection_dim": 512
+        },
+        "satisfies": "config.projection_dim (=512) > 0 \u2713; both CLIPVisionConfig and CLIPTextConfig populated by default."
+      }
+    },
+    {
+      "id": "transformers__ElectraForCausalLM__096d250d",
+      "qualified_name": "transformers.models.electra.modeling_electra.ElectraForCausalLM",
+      "library": "transformers",
+      "category": "transformer",
+      "bucket": "symbolic-config-only",
+      "sym_attrs": [
+        [
+          "config",
+          "embedding_size"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ],
+      "div_axioms": [],
+      "real_caller_witness": {
+        "real_caller": "transformers.ElectraForCausalLM(config=ElectraConfig(is_decoder=True))",
+        "checkpoint": "google/electra-base-discriminator",
+        "config_class": "transformers.ElectraConfig",
+        "satisfying_attrs": {
+          "hidden_size": 256,
+          "vocab_size": 30522
+        },
+        "satisfies": "config.hidden_size (=256) > 0 \u2713; config.vocab_size (=30522) > 0 \u2713."
+      }
+    },
+    {
+      "id": "transformers__Qwen2ForCausalLM__8bbd0043",
+      "qualified_name": "transformers.models.qwen2.modeling_qwen2.Qwen2ForCausalLM",
+      "library": "transformers",
+      "category": "transformer",
+      "bucket": "symbolic-config-only",
+      "sym_attrs": [
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "div_axioms": [],
+      "real_caller_witness": {
+        "real_caller": "transformers.Qwen2ForCausalLM(config=Qwen2Config())",
+        "checkpoint": "Qwen/Qwen2-0.5B",
+        "config_class": "transformers.Qwen2Config",
+        "satisfying_attrs": {
+          "hidden_size": 4096,
+          "vocab_size": 151936,
+          "num_attention_heads": 32,
+          "num_key_value_heads": 32
+        },
+        "satisfies": "config.hidden_size %% config.num_attention_heads == 0 \u2713; vocab_size > 0 \u2713."
+      }
+    },
+    {
+      "id": "transformers__DistilBertModel__e1631f00",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertModel",
+      "library": "transformers",
+      "category": "transformer",
+      "bucket": "empty",
+      "sym_attrs": [],
+      "div_axioms": [],
+      "real_caller_witness": {
+        "real_caller": "transformers.DistilBertModel(config=DistilBertConfig())",
+        "checkpoint": "distilbert-base-uncased",
+        "config_class": "transformers.DistilBertConfig",
+        "satisfying_attrs": {},
+        "satisfies": "assume_M trivial; any DistilBertConfig witnesses it."
+      }
+    },
+    {
+      "id": "transformers__AlbertForPreTraining__0bc1b159",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForPreTraining",
+      "library": "transformers",
+      "category": "transformer",
+      "bucket": "empty",
+      "sym_attrs": [],
+      "div_axioms": [],
+      "real_caller_witness": {
+        "real_caller": "transformers.AlbertForPreTraining(config=AlbertConfig())",
+        "checkpoint": "albert/albert-base-v2",
+        "config_class": "transformers.AlbertConfig",
+        "satisfying_attrs": {},
+        "satisfies": "assume_M trivial; any AlbertConfig witnesses it."
+      }
+    },
+    {
+      "id": "transformers__OPTForQuestionAnswering__b4351cc4",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTForQuestionAnswering",
+      "library": "transformers",
+      "category": "transformer",
+      "bucket": "symbolic-config-only",
+      "sym_attrs": [
+        [
+          "config",
+          "word_embed_proj_dim"
+        ]
+      ],
+      "div_axioms": [],
+      "real_caller_witness": {
+        "real_caller": "transformers.OPTForQuestionAnswering(config=OPTConfig())",
+        "checkpoint": "facebook/opt-125m",
+        "config_class": "transformers.OPTConfig",
+        "satisfying_attrs": {
+          "hidden_size": 768,
+          "num_labels": 2
+        },
+        "satisfies": "config.hidden_size (=768) > 0 \u2713; config.num_labels (=2) \u2265 1 \u2713."
+      }
+    },
+    {
+      "id": "transformers__BertForNextSentencePrediction__ddcf8ce2",
+      "qualified_name": "transformers.models.bert.modeling_bert.BertForNextSentencePrediction",
+      "library": "transformers",
+      "category": "transformer",
+      "bucket": "empty",
+      "sym_attrs": [],
+      "div_axioms": [],
+      "real_caller_witness": {
+        "real_caller": "transformers.BertForNextSentencePrediction(config=BertConfig())",
+        "checkpoint": "google-bert/bert-base-uncased",
+        "config_class": "transformers.BertConfig",
+        "satisfying_attrs": {},
+        "satisfies": "assume_M trivial; any BertConfig satisfies it."
+      }
+    },
+    {
+      "id": "transformers__FalconForQuestionAnswering__4a8af66e",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconForQuestionAnswering",
+      "library": "transformers",
+      "category": "transformer",
+      "bucket": "symbolic-config-only",
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "div_axioms": [],
+      "real_caller_witness": {
+        "real_caller": "transformers.FalconForQuestionAnswering(config=FalconConfig())",
+        "checkpoint": "tiiuae/falcon-7b",
+        "config_class": "transformers.FalconConfig",
+        "satisfying_attrs": {
+          "hidden_size": 4544,
+          "num_labels": 2
+        },
+        "satisfies": "config.hidden_size (=4544) > 0 \u2713; config.num_labels (=2) \u2265 1 \u2713."
+      }
+    },
+    {
+      "id": "transformers__WhisperForCausalLM__49d54f15",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperForCausalLM",
+      "library": "transformers",
+      "category": "transformer",
+      "bucket": "symbolic-config-only",
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ],
+      "div_axioms": [],
+      "real_caller_witness": {
+        "real_caller": "transformers.WhisperForCausalLM(config=WhisperConfig())",
+        "checkpoint": "openai/whisper-tiny",
+        "config_class": "transformers.WhisperConfig",
+        "satisfying_attrs": {
+          "d_model": 384,
+          "vocab_size": 51865
+        },
+        "satisfies": "config.d_model > 0 \u2713; config.vocab_size > 0 \u2713."
+      }
+    }
+  ]
+}

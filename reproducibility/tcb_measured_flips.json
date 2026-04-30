@@ -1,0 +1,43 @@
+{
+  "_question": "R4-W3 / R4-Q4: convert R3 TCB exposure ceilings into measured RP->V flips by deliberately injecting each single fault and re-scoring the 60-bug corpus.",
+  "timestamp": "2026-04-29T17:46:19.352538Z",
+  "clean_baseline": {
+    "rp": 53,
+    "silent": 7,
+    "abst": 0,
+    "err": 0
+  },
+  "exposure_ceiling_from_R3": {
+    "F1": 0,
+    "F2": 0,
+    "F3": 2,
+    "F4": 7
+  },
+  "measured_flips": {
+    "F1_view_star_mis_bind": {
+      "rp": 53,
+      "rp_to_v_flips": 0,
+      "flipped_bug_ids": [],
+      "elapsed_s": 1.17
+    },
+    "F2_inplace_add_misclassified": {
+      "rp": 53,
+      "rp_to_v_flips": 0,
+      "flipped_bug_ids": [],
+      "elapsed_s": 0.77
+    },
+    "F3_cat_dim_flip": {
+      "rp": 53,
+      "rp_to_v_flips": 0,
+      "flipped_bug_ids": [],
+      "elapsed_s": 0.89
+    },
+    "F4_conv2d_off_by_one": {
+      "rp": 53,
+      "rp_to_v_flips": 0,
+      "flipped_bug_ids": [],
+      "elapsed_s": 0.64
+    }
+  },
+  "interpretation": "Each measured RP->V flip count is at most the exposure ceiling reported in R3, and is the actual number of bugs the fault would silence on the 60-bug corpus.  Tightening the F4 ceiling (7/60 exposure) to the measured flip quantifies the gap between exposure and load-bearing flip for the analyser handler."
+}

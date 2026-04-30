@@ -4,8 +4,9 @@ TensorGuard Parity Extension for Track G (Lean ↔ Python parity).
 Extends the core soundness proofs with additional operators to achieve
 ≥20 operator rules for comprehensive parity testing with Python implementation.
 
-NOTE: Some theorem proofs use sorry for expediency. The definitions themselves
-are complete and usable for parity testing. Future work can complete the proofs.
+NOTE: This file is fully closed under `lake build` (no `sorry`). The
+shape-transfer definitions are also exposed by `lean_rules_mirror.py`
+for runtime parity testing.
 -/
 
 import TensorGuard.Extended

@@ -1,0 +1,423 @@
+{
+  "_question": "Round-5 borderline criterion: are any unconditional RP catches on the 488-block real-source corpus inside the Lean/pen-paper audited footprint?",
+  "n_unconditional_rp": 26,
+  "audited_only_count": 5,
+  "audited_or_no_detected_handlers_count": 10,
+  "footprint_breakdown": {
+    "lean_or_pp_only": 5,
+    "touches_tested_only": 10,
+    "no_handlers_detected": 5,
+    "uncovered_only": 6
+  },
+  "definition_audited_only": "soundness_footprint partitioning rule from handler_scope_per_block.json: every operator handler detected in the block source is either Lean-audited or pen-and-paper sound; no tested-only or uncovered handlers detected.",
+  "rows": [
+    {
+      "id": "timm__VisionTransformerDistilled__032a9d92",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 97,
+      "handlers": [
+        "cat",
+        "expand",
+        "linear",
+        "view"
+      ],
+      "n_lean": 4,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 0,
+      "soundness_footprint": "lean_or_pp_only"
+    },
+    {
+      "id": "transformers__AlbertForMaskedLM__444a57ae",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 104,
+      "handlers": [
+        "argmax",
+        "cross_entropy",
+        "embed",
+        "linear",
+        "view",
+        "where"
+      ],
+      "n_lean": 3,
+      "n_pen_and_paper": 1,
+      "n_tested_only": 1,
+      "n_uncovered": 1,
+      "soundness_footprint": "touches_tested_only"
+    },
+    {
+      "id": "transformers__AlbertForPreTraining__0bc1b159",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 106,
+      "handlers": [
+        "cross_entropy",
+        "embed",
+        "linear",
+        "unsqueeze",
+        "view"
+      ],
+      "n_lean": 3,
+      "n_pen_and_paper": 1,
+      "n_tested_only": 1,
+      "n_uncovered": 0,
+      "soundness_footprint": "touches_tested_only"
+    },
+    {
+      "id": "transformers__BartDecoderWrapper__145bd043",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 12,
+      "handlers": [],
+      "n_lean": 0,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 0,
+      "soundness_footprint": "no_handlers_detected"
+    },
+    {
+      "id": "transformers__BartForSequenceClassification__7b1a4896",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 149,
+      "handlers": [
+        "cross_entropy",
+        "squeeze",
+        "sum",
+        "to",
+        "view"
+      ],
+      "n_lean": 1,
+      "n_pen_and_paper": 1,
+      "n_tested_only": 1,
+      "n_uncovered": 2,
+      "soundness_footprint": "touches_tested_only"
+    },
+    {
+      "id": "transformers__BartModel__27886110",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 158,
+      "handlers": [
+        "sqrt"
+      ],
+      "n_lean": 0,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 1,
+      "soundness_footprint": "uncovered_only"
+    },
+    {
+      "id": "transformers__BertForMaskedLM__f07c0986",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 107,
+      "handlers": [
+        "cat",
+        "cross_entropy",
+        "view"
+      ],
+      "n_lean": 2,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 1,
+      "n_uncovered": 0,
+      "soundness_footprint": "touches_tested_only"
+    },
+    {
+      "id": "transformers__BertForNextSentencePrediction__ddcf8ce2",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 98,
+      "handlers": [
+        "cross_entropy",
+        "view"
+      ],
+      "n_lean": 1,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 1,
+      "n_uncovered": 0,
+      "soundness_footprint": "touches_tested_only"
+    },
+    {
+      "id": "transformers__BertForPreTraining__fb4fc487",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 103,
+      "handlers": [
+        "cross_entropy",
+        "view"
+      ],
+      "n_lean": 1,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 1,
+      "n_uncovered": 0,
+      "soundness_footprint": "touches_tested_only"
+    },
+    {
+      "id": "transformers__BertLMHeadModel__ec7a8f20",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 93,
+      "handlers": [],
+      "n_lean": 0,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 0,
+      "soundness_footprint": "no_handlers_detected"
+    },
+    {
+      "id": "transformers__BloomPreTrainedModel__4a772e64",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 28,
+      "handlers": [
+        "embed",
+        "layer_norm",
+        "linear"
+      ],
+      "n_lean": 3,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 0,
+      "soundness_footprint": "lean_or_pp_only"
+    },
+    {
+      "id": "transformers__DebertaForSequenceClassification__f3f064d8",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 110,
+      "handlers": [
+        "cross_entropy",
+        "dropout",
+        "expand",
+        "gather",
+        "linear",
+        "mean",
+        "squeeze",
+        "sum",
+        "to",
+        "view"
+      ],
+      "n_lean": 4,
+      "n_pen_and_paper": 2,
+      "n_tested_only": 1,
+      "n_uncovered": 3,
+      "soundness_footprint": "touches_tested_only"
+    },
+    {
+      "id": "transformers__DebertaModel__d4dcd33c",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 105,
+      "handlers": [],
+      "n_lean": 0,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 0,
+      "soundness_footprint": "no_handlers_detected"
+    },
+    {
+      "id": "transformers__DistilBertFlashAttention2__9971185e",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 99,
+      "handlers": [
+        "reshape",
+        "to",
+        "view"
+      ],
+      "n_lean": 2,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 1,
+      "soundness_footprint": "uncovered_only"
+    },
+    {
+      "id": "transformers__DistilBertModel__e1631f00",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 140,
+      "handlers": [
+        "embed",
+        "to"
+      ],
+      "n_lean": 1,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 1,
+      "soundness_footprint": "uncovered_only"
+    },
+    {
+      "id": "transformers__ElectraForPreTraining__74bdacae",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 99,
+      "handlers": [
+        "squeeze",
+        "view"
+      ],
+      "n_lean": 1,
+      "n_pen_and_paper": 1,
+      "n_tested_only": 0,
+      "n_uncovered": 0,
+      "soundness_footprint": "lean_or_pp_only"
+    },
+    {
+      "id": "transformers__FalconFlashAttention2__c64fa866",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 107,
+      "handlers": [
+        "reshape",
+        "to",
+        "transpose"
+      ],
+      "n_lean": 2,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 1,
+      "soundness_footprint": "uncovered_only"
+    },
+    {
+      "id": "transformers__FalconPreTrainedModel__55936532",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 40,
+      "handlers": [
+        "embed",
+        "layer_norm",
+        "linear"
+      ],
+      "n_lean": 3,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 0,
+      "soundness_footprint": "lean_or_pp_only"
+    },
+    {
+      "id": "transformers__GPT2PreTrainedModel__7452c372",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 44,
+      "handlers": [
+        "embed",
+        "layer_norm",
+        "linear",
+        "sqrt"
+      ],
+      "n_lean": 3,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 1,
+      "soundness_footprint": "uncovered_only"
+    },
+    {
+      "id": "transformers__OPTModel__bb5f30a8",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 60,
+      "handlers": [],
+      "n_lean": 0,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 0,
+      "soundness_footprint": "no_handlers_detected"
+    },
+    {
+      "id": "transformers__RobertaForCausalLM__bd93edfc",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 122,
+      "handlers": [
+        "to"
+      ],
+      "n_lean": 0,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 1,
+      "soundness_footprint": "uncovered_only"
+    },
+    {
+      "id": "transformers__RobertaForMaskedLM__6e029774",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 91,
+      "handlers": [
+        "cross_entropy",
+        "to",
+        "view"
+      ],
+      "n_lean": 1,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 1,
+      "n_uncovered": 1,
+      "soundness_footprint": "touches_tested_only"
+    },
+    {
+      "id": "transformers__T5ForSequenceClassification__9276522e",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 166,
+      "handlers": [
+        "cross_entropy",
+        "squeeze",
+        "sum",
+        "to",
+        "view"
+      ],
+      "n_lean": 1,
+      "n_pen_and_paper": 1,
+      "n_tested_only": 1,
+      "n_uncovered": 2,
+      "soundness_footprint": "touches_tested_only"
+    },
+    {
+      "id": "transformers__ViTForMaskedImageModeling__062602cb",
+      "library": "transformers",
+      "category": "vision_vit",
+      "loc": 113,
+      "handlers": [
+        "contiguous",
+        "conv2d",
+        "permute",
+        "pixel_shuffle",
+        "reshape",
+        "sum",
+        "unsqueeze"
+      ],
+      "n_lean": 3,
+      "n_pen_and_paper": 1,
+      "n_tested_only": 1,
+      "n_uncovered": 2,
+      "soundness_footprint": "touches_tested_only"
+    },
+    {
+      "id": "transformers__WhisperDecoderWrapper__f16eb33b",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 19,
+      "handlers": [],
+      "n_lean": 0,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 0,
+      "soundness_footprint": "no_handlers_detected"
+    },
+    {
+      "id": "transformers__WhisperModel__2cb724a8",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 190,
+      "handlers": [
+        "expand"
+      ],
+      "n_lean": 1,
+      "n_pen_and_paper": 0,
+      "n_tested_only": 0,
+      "n_uncovered": 0,
+      "soundness_footprint": "lean_or_pp_only"
+    }
+  ]
+}

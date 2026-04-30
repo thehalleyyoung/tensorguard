@@ -1,0 +1,833 @@
+{
+  "_question": "Reviewer W3/Q2: show that the *conjunction* of assume_M clauses is satisfied by one concrete published checkpoint config, not just each clause independently.",
+  "timestamp": "2026-04-29T16:14:40.705651Z",
+  "seed": 0,
+  "n_symbolic_config_rows_total": 90,
+  "n_sampled": 30,
+  "n_excluded_no_config": 0,
+  "n_attempted": 30,
+  "n_jointly_satisfied": 24,
+  "jointly_sat_rate": "24/30",
+  "jointly_sat_fraction": 0.8,
+  "method": "For each sampled row, we (i) infer the *Config class from the qualified module name, (ii) instantiate *Config() with default constructor (documented defaults, no internet needed), and (iii) check that the full conjunction of assume_M sym_attr clauses holds simultaneously on that single config instance.",
+  "fallback_used": true,
+  "fallback_note": "No internet access used; all configs instantiated via default *Config() constructor (published documented defaults).",
+  "rows": [
+    {
+      "id": "transformers__FalconForSequenceClassification__53df6fb0",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconForSequenceClassification",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "config_class": "FalconConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=4544 > 0 \u2713"
+      ],
+      "note": "all 2 clauses satisfied by FalconConfig()",
+      "config_defaults": {
+        "num_labels": 2,
+        "hidden_size": 4544
+      }
+    },
+    {
+      "id": "transformers__GPTNeoXForCausalLM__303baee1",
+      "qualified_name": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXForCausalLM",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ],
+      "config_class": "GPTNeoXConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "hidden_size=6144 > 0 \u2713",
+        "vocab_size=50432 > 0 \u2713"
+      ],
+      "note": "all 2 clauses satisfied by GPTNeoXConfig()",
+      "config_defaults": {
+        "hidden_size": 6144,
+        "vocab_size": 50432
+      }
+    },
+    {
+      "id": "transformers__GPT2Block__5a2da440",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2Block",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "config_class": "GPT2Config",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "hidden_size=768 > 0 \u2713"
+      ],
+      "note": "all 1 clauses satisfied by GPT2Config()",
+      "config_defaults": {
+        "hidden_size": 768
+      }
+    },
+    {
+      "id": "transformers__DistilBertForMaskedLM__074cc05b",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertForMaskedLM",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "dim"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ],
+      "config_class": "DistilBertConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "dim=768 > 0 \u2713",
+        "vocab_size=30522 > 0 \u2713"
+      ],
+      "note": "all 2 clauses satisfied by DistilBertConfig()",
+      "config_defaults": {
+        "dim": 768,
+        "vocab_size": 30522
+      }
+    },
+    {
+      "id": "transformers__AlbertForMultipleChoice__3d721e99",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForMultipleChoice",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "classifier_dropout_prob"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "config_class": "AlbertConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "classifier_dropout_prob=0.1 in [0,1] \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ],
+      "note": "all 2 clauses satisfied by AlbertConfig()",
+      "config_defaults": {
+        "classifier_dropout_prob": 0.1,
+        "hidden_size": 4096
+      }
+    },
+    {
+      "id": "transformers__RobertaForSequenceClassification__38529e03",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForSequenceClassification",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ]
+      ],
+      "config_class": "RobertaConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "num_labels=2 > 0 \u2713"
+      ],
+      "note": "all 1 clauses satisfied by RobertaConfig()",
+      "config_defaults": {
+        "num_labels": 2
+      }
+    },
+    {
+      "id": "transformers__FalconModel__15321937",
+      "qualified_name": "transformers.models.falcon.modeling_falcon.FalconModel",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "num_attention_heads"
+        ],
+        [
+          "config",
+          "alibi"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ]
+      ],
+      "config_class": "FalconConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "hidden_size=4544 > 0 \u2713",
+        "num_attention_heads=71 > 0 \u2713",
+        "alibi=False (bool, defined)",
+        "vocab_size=65024 > 0 \u2713"
+      ],
+      "note": "all 4 clauses satisfied by FalconConfig()",
+      "config_defaults": {
+        "hidden_size": 4544,
+        "num_attention_heads": 71,
+        "alibi": false,
+        "vocab_size": 65024
+      }
+    },
+    {
+      "id": "transformers__CLIPForImageClassification__53204b83",
+      "qualified_name": "transformers.models.clip.modeling_clip.CLIPForImageClassification",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ]
+      ],
+      "config_class": "CLIPConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "num_labels=2 > 0 \u2713"
+      ],
+      "note": "all 1 clauses satisfied by CLIPConfig()",
+      "config_defaults": {
+        "num_labels": 2
+      }
+    },
+    {
+      "id": "transformers__RobertaForQuestionAnswering__e34c038b",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForQuestionAnswering",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "config_class": "RobertaConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=768 > 0 \u2713"
+      ],
+      "note": "all 2 clauses satisfied by RobertaConfig()",
+      "config_defaults": {
+        "num_labels": 2,
+        "hidden_size": 768
+      }
+    },
+    {
+      "id": "transformers__GemmaModel__a5eac09f",
+      "qualified_name": "transformers.models.gemma.modeling_gemma.GemmaModel",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "pad_token_id"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "config_class": "GemmaConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "pad_token_id=0 (numeric, defined)",
+        "vocab_size=256000 > 0 \u2713",
+        "hidden_size=3072 > 0 \u2713"
+      ],
+      "note": "all 3 clauses satisfied by GemmaConfig()",
+      "config_defaults": {
+        "pad_token_id": 0,
+        "vocab_size": 256000,
+        "hidden_size": 3072
+      }
+    },
+    {
+      "id": "transformers__OPTForSequenceClassification__5365eb03",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTForSequenceClassification",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "word_embed_proj_dim"
+        ]
+      ],
+      "config_class": "OPTConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "word_embed_proj_dim=768 > 0 \u2713"
+      ],
+      "note": "all 2 clauses satisfied by OPTConfig()",
+      "config_defaults": {
+        "num_labels": 2,
+        "word_embed_proj_dim": 768
+      }
+    },
+    {
+      "id": "transformers__WhisperForConditionalGeneration__ed440ec8",
+      "qualified_name": "transformers.models.whisper.modeling_whisper.WhisperForConditionalGeneration",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "d_model"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "max_target_positions"
+        ]
+      ],
+      "config_class": "WhisperConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "d_model=384 > 0 \u2713",
+        "vocab_size=51865 > 0 \u2713",
+        "max_target_positions=448 (numeric, defined)"
+      ],
+      "note": "all 3 clauses satisfied by WhisperConfig()",
+      "config_defaults": {
+        "d_model": 384,
+        "vocab_size": 51865,
+        "max_target_positions": 448
+      }
+    },
+    {
+      "id": "transformers__RobertaModel__e903ada9",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaModel",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "_attn_implementation"
+        ],
+        [
+          "config",
+          "position_embedding_type"
+        ]
+      ],
+      "config_class": "RobertaConfig",
+      "jointly_satisfied": false,
+      "clause_results": [
+        "_attn_implementation=None",
+        "position_embedding_type='absolute' (non-empty \u2713)"
+      ],
+      "note": "one or more clauses FAILED for RobertaConfig()",
+      "config_defaults": {
+        "_attn_implementation": null,
+        "position_embedding_type": "absolute"
+      }
+    },
+    {
+      "id": "transformers__T5Stack__3c5b9f6a",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5Stack",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "is_decoder"
+        ],
+        [
+          "config",
+          "dropout_rate"
+        ]
+      ],
+      "config_class": "T5Config",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "is_decoder=False (bool, defined)",
+        "dropout_rate=0.1 in [0,1] \u2713"
+      ],
+      "note": "all 2 clauses satisfied by T5Config()",
+      "config_defaults": {
+        "is_decoder": false,
+        "dropout_rate": 0.1
+      }
+    },
+    {
+      "id": "transformers__DistilBertForSequenceClassification__2980befd",
+      "qualified_name": "transformers.models.distilbert.modeling_distilbert.DistilBertForSequenceClassification",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "dim"
+        ],
+        [
+          "config",
+          "seq_classif_dropout"
+        ]
+      ],
+      "config_class": "DistilBertConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "dim=768 > 0 \u2713",
+        "seq_classif_dropout=0.2 in [0,1] \u2713"
+      ],
+      "note": "all 3 clauses satisfied by DistilBertConfig()",
+      "config_defaults": {
+        "num_labels": 2,
+        "dim": 768,
+        "seq_classif_dropout": 0.2
+      }
+    },
+    {
+      "id": "transformers__BloomForQuestionAnswering__7994d60e",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomForQuestionAnswering",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "config_class": "BloomConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "hidden_size=64 > 0 \u2713"
+      ],
+      "note": "all 1 clauses satisfied by BloomConfig()",
+      "config_defaults": {
+        "hidden_size": 64
+      }
+    },
+    {
+      "id": "transformers__T5EncoderModel__1c87733d",
+      "qualified_name": "transformers.models.t5.modeling_t5.T5EncoderModel",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "d_model"
+        ]
+      ],
+      "config_class": "T5Config",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "vocab_size=32128 > 0 \u2713",
+        "d_model=512 > 0 \u2713"
+      ],
+      "note": "all 2 clauses satisfied by T5Config()",
+      "config_defaults": {
+        "vocab_size": 32128,
+        "d_model": 512
+      }
+    },
+    {
+      "id": "transformers__BartForQuestionAnswering__11e5505f",
+      "qualified_name": "transformers.models.bart.modeling_bart.BartForQuestionAnswering",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "num_labels"
+        ]
+      ],
+      "config_class": "BartConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "hidden_size=1024 > 0 \u2713",
+        "num_labels=3 > 0 \u2713"
+      ],
+      "note": "all 2 clauses satisfied by BartConfig()",
+      "config_defaults": {
+        "hidden_size": 1024,
+        "num_labels": 3
+      }
+    },
+    {
+      "id": "transformers__AlbertForTokenClassification__a514ef32",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertForTokenClassification",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "config_class": "AlbertConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ],
+      "note": "all 2 clauses satisfied by AlbertConfig()",
+      "config_defaults": {
+        "num_labels": 2,
+        "hidden_size": 4096
+      }
+    },
+    {
+      "id": "transformers__LlamaDecoderLayer__fd4ea02c",
+      "qualified_name": "transformers.models.llama.modeling_llama.LlamaDecoderLayer",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "config_class": "LlamaConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "hidden_size=4096 > 0 \u2713"
+      ],
+      "note": "all 1 clauses satisfied by LlamaConfig()",
+      "config_defaults": {
+        "hidden_size": 4096
+      }
+    },
+    {
+      "id": "transformers__CLIPModel__13d2dfa6",
+      "qualified_name": "transformers.models.clip.modeling_clip.CLIPModel",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "text_config"
+        ],
+        [
+          "config",
+          "vision_config"
+        ],
+        [
+          "config",
+          "projection_dim"
+        ]
+      ],
+      "config_class": "CLIPConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "text_config=CLIPTextConfig (non-None)",
+        "vision_config=CLIPVisionConfig (non-None)",
+        "projection_dim=512 > 0 \u2713"
+      ],
+      "note": "all 3 clauses satisfied by CLIPConfig()",
+      "config_defaults": {
+        "text_config": "CLIPTextConfig {\n  \"attention_dropout\": 0.0,\n  \"bos_token_id\": 49406,\n  \"eos_token_id\": 49407,\n  \"hi",
+        "vision_config": "CLIPVisionConfig {\n  \"attention_dropout\": 0.0,\n  \"hidden_act\": \"quick_gelu\",\n  \"hidden_size\": 768,\n ",
+        "projection_dim": 512
+      }
+    },
+    {
+      "id": "transformers__OPTForQuestionAnswering__b4351cc4",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTForQuestionAnswering",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "word_embed_proj_dim"
+        ]
+      ],
+      "config_class": "OPTConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "word_embed_proj_dim=768 > 0 \u2713"
+      ],
+      "note": "all 1 clauses satisfied by OPTConfig()",
+      "config_defaults": {
+        "word_embed_proj_dim": 768
+      }
+    },
+    {
+      "id": "transformers__GPT2ForTokenClassification__abb65812",
+      "qualified_name": "transformers.models.gpt2.modeling_gpt2.GPT2ForTokenClassification",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "classifier_dropout"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "config_class": "GPT2Config",
+      "jointly_satisfied": false,
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "missing attribute 'classifier_dropout'",
+        "hidden_size=768 > 0 \u2713"
+      ],
+      "note": "one or more clauses FAILED for GPT2Config()",
+      "config_defaults": {
+        "num_labels": 2,
+        "classifier_dropout": null,
+        "hidden_size": 768
+      }
+    },
+    {
+      "id": "transformers__MistralModel__a8738ef2",
+      "qualified_name": "transformers.models.mistral.modeling_mistral.MistralModel",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "pad_token_id"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "config_class": "MistralConfig",
+      "jointly_satisfied": false,
+      "clause_results": [
+        "pad_token_id=None",
+        "vocab_size=32000 > 0 \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ],
+      "note": "one or more clauses FAILED for MistralConfig()",
+      "config_defaults": {
+        "pad_token_id": null,
+        "vocab_size": 32000,
+        "hidden_size": 4096
+      }
+    },
+    {
+      "id": "transformers__RobertaForMultipleChoice__0324395b",
+      "qualified_name": "transformers.models.roberta.modeling_roberta.RobertaForMultipleChoice",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_dropout_prob"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "config_class": "RobertaConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "hidden_dropout_prob=0.1 in [0,1] \u2713",
+        "hidden_size=768 > 0 \u2713"
+      ],
+      "note": "all 2 clauses satisfied by RobertaConfig()",
+      "config_defaults": {
+        "hidden_dropout_prob": 0.1,
+        "hidden_size": 768
+      }
+    },
+    {
+      "id": "transformers__OPTDecoderLayer__24a4c9cc",
+      "qualified_name": "transformers.models.opt.modeling_opt.OPTDecoderLayer",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "do_layer_norm_before"
+        ],
+        [
+          "config",
+          "dropout"
+        ],
+        [
+          "config",
+          "ffn_dim"
+        ]
+      ],
+      "config_class": "OPTConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "hidden_size=768 > 0 \u2713",
+        "do_layer_norm_before=True (bool, defined)",
+        "dropout=0.1 in [0,1] \u2713",
+        "ffn_dim=3072 > 0 \u2713"
+      ],
+      "note": "all 4 clauses satisfied by OPTConfig()",
+      "config_defaults": {
+        "hidden_size": 768,
+        "do_layer_norm_before": true,
+        "dropout": 0.1,
+        "ffn_dim": 3072
+      }
+    },
+    {
+      "id": "transformers__DebertaForMaskedLM__bdf0c81c",
+      "qualified_name": "transformers.models.deberta.modeling_deberta.DebertaForMaskedLM",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "legacy"
+        ]
+      ],
+      "config_class": "DebertaConfig",
+      "jointly_satisfied": true,
+      "clause_results": [
+        "legacy=True (bool, defined)"
+      ],
+      "note": "all 1 clauses satisfied by DebertaConfig()",
+      "config_defaults": {
+        "legacy": true
+      }
+    },
+    {
+      "id": "transformers__BloomForTokenClassification__057bf6a0",
+      "qualified_name": "transformers.models.bloom.modeling_bloom.BloomForTokenClassification",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "num_labels"
+        ],
+        [
+          "config",
+          "classifier_dropout"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "config_class": "BloomConfig",
+      "jointly_satisfied": false,
+      "clause_results": [
+        "num_labels=2 > 0 \u2713",
+        "missing attribute 'classifier_dropout'",
+        "hidden_size=64 > 0 \u2713"
+      ],
+      "note": "one or more clauses FAILED for BloomConfig()",
+      "config_defaults": {
+        "num_labels": 2,
+        "classifier_dropout": null,
+        "hidden_size": 64
+      }
+    },
+    {
+      "id": "transformers__LlamaModel__3fb478fa",
+      "qualified_name": "transformers.models.llama.modeling_llama.LlamaModel",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "pad_token_id"
+        ],
+        [
+          "config",
+          "vocab_size"
+        ],
+        [
+          "config",
+          "hidden_size"
+        ]
+      ],
+      "config_class": "LlamaConfig",
+      "jointly_satisfied": false,
+      "clause_results": [
+        "pad_token_id=None",
+        "vocab_size=32000 > 0 \u2713",
+        "hidden_size=4096 > 0 \u2713"
+      ],
+      "note": "one or more clauses FAILED for LlamaConfig()",
+      "config_defaults": {
+        "pad_token_id": null,
+        "vocab_size": 32000,
+        "hidden_size": 4096
+      }
+    },
+    {
+      "id": "transformers__AlbertModel__f4b637f2",
+      "qualified_name": "transformers.models.albert.modeling_albert.AlbertModel",
+      "library": "transformers",
+      "sym_attrs": [
+        [
+          "config",
+          "hidden_size"
+        ],
+        [
+          "config",
+          "_attn_implementation"
+        ],
+        [
+          "config",
+          "position_embedding_type"
+        ]
+      ],
+      "config_class": "AlbertConfig",
+      "jointly_satisfied": false,
+      "clause_results": [
+        "hidden_size=4096 > 0 \u2713",
+        "_attn_implementation=None",
+        "position_embedding_type='absolute' (non-empty \u2713)"
+      ],
+      "note": "one or more clauses FAILED for AlbertConfig()",
+      "config_defaults": {
+        "hidden_size": 4096,
+        "_attn_implementation": null,
+        "position_embedding_type": "absolute"
+      }
+    }
+  ]
+}

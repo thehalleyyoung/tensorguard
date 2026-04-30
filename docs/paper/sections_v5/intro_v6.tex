@@ -1,0 +1,142 @@
+\section{Introduction}\label{sec:intro}
+
+Tensor programs in PyTorch fail in two characteristic ways that
+unit tests rarely catch: \emph{(i)} the forward pass crashes deep
+inside an autograd-traced subgraph because two operand shapes
+disagree under a particular batch size, sequence length, or
+image resolution; and \emph{(ii)} the backward pass silently
+produces a wrong gradient --- e.g.\ a parameter receives
+\texttt{p.grad=None} after \texttt{loss.backward()} because an
+in-place op or a \verb|.detach()| broke the autograd tape along
+one branch, and \texttt{optimizer.step()} silently skips it.
+
+The PyTorch ecosystem responds to these failures with
+\emph{execution-based} tools: \texttt{torch.fx}+ShapeProp
+captures one trace, \texttt{FakeTensorMode} executes shape
+arithmetic on metadata-only tensors, \texttt{torch.export}
+specialises a trace, and \texttt{TorchDynamo} installs runtime
+guards that recompile when an invariant fails. All four require
+the model to be importable, instantiable, and traceable on the
+target machine. On modern HuggingFace/timm code that is
+typically \emph{not} the case: a transformer block needs a
+\texttt{config} object, an attention head reads
+\texttt{self.config.hidden\_size}, and an
+\texttt{nn.ModuleList} over \texttt{config.num\_layers} blocks
+demands a fully-realised configuration before a single tensor
+can flow.
+
+\textsc{TensorGuard} takes the opposite stance. Given an
+\texttt{nn.Module} \emph{class source}, with no instantiation
+and no tracer, it computes a refinement-typed signature
+$\mathsf{Tensor}\{s,g\mid\varphi\}$ for every value flowing
+through \texttt{forward}, where $s$ is a symbolic shape, $g$ is
+a static gradient-required flag, and $\varphi$ is a
+Z3-decidable refinement constraining both. The
+\textsc{Abstain} verdict is reported as a first-class outcome
+whenever a subgraph falls outside the verified fragment, so the
+analyser never silently claims verification on constructs it
+cannot reason about. A separately scoped exploratory result
+(\Cref{thm:dynamo-corr}) gives a one-directional inclusion
+relating these refinement variables to the metadata reads that
+\textsc{TorchDynamo} issues on the matching \texttt{aten} call;
+the inclusion is necessary-direction only, audited on $17$
+modules, and is not claimed as a runtime equivalence.
+
+\paragraph{Contributions.}\hangindent=1em
+\textbf{(C1)} A refinement-typed calculus
+$\mathsf{Tensor}\{s,g\mid\varphi\}$ that unifies symbolic shape
+and static gradient-flag analysis under one Z3 procedure
+(\Cref{sec:calculus}), with classical
+Preservation/Progress (\Cref{thm:preservation,thm:progress}).
+The calculus itself reorganises constraint-based shape
+typing rather than inventing it; the distinctive substance
+is its joint shape-plus-grad layer (C3), its un-instantiated
+class-source regime described above, and the audit and
+calibration package (C5--C6) that partitions every verdict
+by handler-soundness scope.
+\textbf{(C2)} An assume/guarantee discipline at the
+\texttt{nn.Module} class boundary, with a contravariant/covariant
+subclassing rule (\Cref{sec:assume-guarantee}); the soundness of the
+composition rule (\texttt{ag\_composition\_ext}) is mechanised in
+Lean~$4$ on a $17$-operator DSL (\texttt{matmul}, \texttt{view},
+\texttt{add}/\texttt{broadcast\_add}, \texttt{linear},
+\texttt{transpose}, \texttt{permute}, \texttt{relu},
+\texttt{cat}, \texttt{sum\_reduce}, \texttt{mean\_reduce},
+\texttt{expand}, \texttt{gather}, \texttt{embedding},
+\texttt{conv2d}, \texttt{einsum}, \texttt{unbind}, \texttt{reshape});
+the composition theorem is operator-agnostic over any per-operator
+\texttt{applyOp\_sound\_*} witness, so the four operators that fire
+on the post-freeze real-PR catches
+(\texttt{view}/\texttt{reshape} as a non-trivial shape rule,
+\texttt{conv2d}, \texttt{einsum}, plus \texttt{unbind}) are now
+\emph{inside} the mechanised composition fragment with their own
+soundness lemmas (\texttt{applyOpExt\_sound\_view},
+\texttt{applyOpExt\_sound\_reshape},
+\texttt{applyOpExt\_sound\_conv2d},
+\texttt{applyOpExt\_sound\_einsum},
+\texttt{applyOpExt\_sound\_unbind}, all sorry-free under
+\texttt{lake build}). The algorithmic discipline is implemented
+over the full $79$-handler catalogue; the remaining $62$ handlers
+sit under per-rule lemmas or under tested-only soundness scope, as
+\Cref{sec:limconc} discusses.
+\textbf{(C3)} An autograd-aware backward verifier catching
+three canonical silent-zero-grad bug classes statically
+(\Cref{sec:impl-backward}); $500/500$ static$\leftrightarrow$runtime
+agreement, $8/8$ canonical bugs caught, $0/50$ false positives.
+The lattice is first-order
+($\{\texttt{has\_grad},\texttt{no\_grad},\top\}$) and is silently
+incorrect on parameter-sharing-under-renamed-attribute (prevalence
+$\le 12\%$ of training scripts; \Cref{sec:limconc}); we flag this as
+a substantive caveat, not a footnote.
+\textbf{(C4)} An \emph{exploratory} \emph{Dynamo-guard inclusion lemma}
+(\Cref{thm:dynamo-corr}, necessary direction only): every
+\textsc{TG} refinement variable is, on the matching
+\texttt{aten} call, a metadata read \textsc{TorchDynamo}'s
+specialiser issues on a \texttt{FakeTensor}. The mapping is
+shipped as data ($28$ rows; mechanically rechecked
+against the imported torch --- $28/28$ pass under \texttt{torch~2.9.1}). The lemma is
+empirically audited on a $17$-module corpus drawn from
+\texttt{torchvision}, \texttt{transformers}, and \texttt{timm}; on
+$16$ of the $17$ modules the documented forward-signature contract
+(equivalent to what TG would emit after CEGAR closure) is used as
+the assumed contract, and the remaining row is a TG-verified
+surrogate. We accordingly
+scope C4 as an \emph{exploratory} result.  We do \emph{not} claim a
+two-directional correspondence.
+\textbf{(C5)} A $488$-block + $60$-bug benchmark with calibrated reporting under a five-way verdict
+taxonomy per tool (\Cref{sec:eval-benchmark});
+a per-feature stress benchmark on $25$ targeted cases
+(\Cref{tab:ablation}) reporting that, on the
+hand-designed $25$-case stress benchmark, only three knobs ---
+\textbf{device-consistency}, \textbf{gradient-flow}, and
+\textbf{low-confidence gating} --- move verdicts (the
+corresponding ablation on the real corpora is a flat line, with
+none of the five knobs flipping a verdict;
+\Cref{sec:eval-benchmark}); a $25$-block hybrid-mode falsification corpus
+(\Cref{tab:hybrid-falsify}); and an AST-skeleton diversity
+analysis ($K_{\mathsf{ast}}{=}406$ on the $488$ blocks).
+The contribution is restricted to those three discriminative
+knobs; the unused CEGAR loop and the always-satisfiable
+phase encoder ship with the analyser but are not claimed as
+contributions.
+The localisation tracer is reported as engineering rather
+than as a research result.
+\textbf{(C6)} A Lean~4 \emph{operator-rule audit} of the
+\textbf{shape-transfer rule table}: $28$
+shape-transfer rules with $11/11$ previously-axiomatic
+soundness lemmas closed sorry-free, the full
+operator-rule tree building \texttt{sorry}-free
+under \texttt{lake build}, and
+$28{,}000/28{,}000$ in-envelope samples agreeing with
+\texttt{torch~2.9.1} (\Cref{sec:eval-lean};
+\Cref{tab:handler-soundness}). \emph{The rule table is
+audited; the analyser implementation, AST extractor, and
+backward verifier are \emph{not} audited.} On the $488$-block
+real-source corpus, $32/57$ \textsc{Verified} verdicts and
+$30/128$ \textsc{Contract-Violation} verdicts touch \emph{only}
+handlers in the Lean-or-pen-paper audited footprint
+($62/185$ in-soundness verdicts in total); the
+remaining verdicts split into $66/185$ touching at least one
+of the $35$ tested-only handlers and $57/185$ touching only
+handlers outside any of the three soundness scopes (a TCB
+obligation explicitly tracked, \Cref{sec:eval-lean}).

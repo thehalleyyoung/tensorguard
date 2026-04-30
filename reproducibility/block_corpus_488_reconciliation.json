@@ -1,0 +1,2467 @@
+{
+  "meta": {
+    "build_time": "2026-04-30T05:22:39Z",
+    "purpose": "reconcile 50/213/225 vs 57/206/225 headline counts",
+    "regime_hco_true": "high_confidence_only=True (Z3-proven bugs only); matches paper headline and feature_ablation.json",
+    "regime_hco_false": "high_confidence_only=False (default); adds lower-confidence heuristic post-pass; matches experiments_v5/v5_benchmark_results.json"
+  },
+  "summary": {
+    "n": 488,
+    "hco_true": {
+      "Abstain": 225,
+      "Verified": 62,
+      "Refuted": 201
+    },
+    "hco_false": {
+      "Abstain": 225,
+      "Verified": 55,
+      "Refuted": 208
+    },
+    "transitions_true_to_false": {
+      "Verified->Refuted": 7
+    },
+    "elapsed_s": 133.6
+  },
+  "per_id": [
+    {
+      "id": "torchvision.models.resnet.BasicBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.resnet.Bottleneck",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.resnet.ResNet",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.mobilenetv2.InvertedResidual",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.models.mobilenetv2.MobileNetV2",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.mobilenetv3.InvertedResidual",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.mobilenetv3.MobileNetV3",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.efficientnet.EfficientNet",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.efficientnet.FusedMBConv",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.efficientnet.MBConv",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.densenet.DenseNet",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.models.regnet.AnyStage",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.regnet.BottleneckTransform",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.regnet.RegNet",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.regnet.ResBottleneckBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.regnet.SimpleStemIN",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.shufflenetv2.InvertedResidual",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.shufflenetv2.ShuffleNetV2",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.mnasnet.MNASNet",
+      "hco_true": "Verified",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.squeezenet.Fire",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.models.squeezenet.SqueezeNet",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.models.vision_transformer.Encoder",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.vision_transformer.EncoderBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.vision_transformer.MLPBlock",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.vision_transformer.VisionTransformer",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.swin_transformer.PatchMerging",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.swin_transformer.PatchMergingV2",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.swin_transformer.ShiftedWindowAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.swin_transformer.ShiftedWindowAttentionV2",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.swin_transformer.SwinTransformer",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.swin_transformer.SwinTransformerBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.swin_transformer.SwinTransformerBlockV2",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.convnext.CNBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.convnext.ConvNeXt",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.convnext.LayerNorm2d",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.models.maxvit.MBConv",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.models.maxvit.MaxVit",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.models.maxvit.MaxVitBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.maxvit.MaxVitLayer",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.models.maxvit.PartitionAttentionLayer",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.maxvit.RelativePositionalMultiHeadAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.maxvit.SwapAxes",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.models.maxvit.WindowDepartition",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.models.maxvit.WindowPartition",
+      "hco_true": "Verified",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.video.resnet.BasicBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.video.resnet.BasicStem",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.video.resnet.Bottleneck",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.video.resnet.Conv2Plus1D",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.video.resnet.Conv3DNoTemporal",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.video.resnet.Conv3DSimple",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.video.resnet.R2Plus1dStem",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.video.resnet.VideoResNet",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.segmentation.deeplabv3.ASPP",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.models.segmentation.deeplabv3.ASPPConv",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.segmentation.deeplabv3.ASPPPooling",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.segmentation.deeplabv3.DeepLabHead",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.segmentation.deeplabv3.DeepLabV3",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.segmentation.fcn.FCN",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.segmentation.fcn.FCNHead",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.models.segmentation.lraspp.LRASPP",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.models.segmentation.lraspp.LRASPPHead",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.ops.misc.Conv2dNormActivation",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.ops.misc.Conv3dNormActivation",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.ops.misc.ConvNormActivation",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.ops.misc.FrozenBatchNorm2d",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.ops.misc.MLP",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.ops.misc.Permute",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.ops.misc.SqueezeExcitation",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.ops.feature_pyramid_network.ExtraFPNBlock",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "torchvision.ops.feature_pyramid_network.FeaturePyramidNetwork",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "torchvision.ops.feature_pyramid_network.LastLevelMaxPool",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "torchvision.ops.feature_pyramid_network.LastLevelP6P7",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "timm.models.resnet.BasicBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.resnet.Bottleneck",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.resnet.ResNet",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.vision_transformer.Block",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.vision_transformer.DiffParallelScalingBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.vision_transformer.ParallelScalingBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.vision_transformer.ParallelThingsBlock",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "timm.models.vision_transformer.ResPostBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.vision_transformer.VisionTransformer",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.swin_transformer.PatchMerging",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.swin_transformer.SwinTransformer",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.swin_transformer.SwinTransformerBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.swin_transformer.SwinTransformerStage",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "timm.models.swin_transformer.WindowAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.swin_transformer_v2.PatchMerging",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.swin_transformer_v2.SwinTransformerV2",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.swin_transformer_v2.SwinTransformerV2Block",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.swin_transformer_v2.SwinTransformerV2Stage",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "timm.models.swin_transformer_v2.WindowAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.convnext.ConvNeXt",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.convnext.ConvNeXtBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.convnext.ConvNeXtStage",
+      "hco_true": "Verified",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "timm.models.convnext.Downsample",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "timm.models.mlp_mixer.Affine",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "timm.models.mlp_mixer.MixerBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.mlp_mixer.MlpMixer",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.mlp_mixer.ResBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.mlp_mixer.SpatialGatingBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.mlp_mixer.SpatialGatingUnit",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.beit.Attention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.beit.Beit",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.beit.Block",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.beit.RelativePositionBias",
+      "hco_true": "Verified",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "timm.models.cait.Cait",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.cait.ClassAttn",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.cait.LayerScaleBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.cait.LayerScaleBlockClassAttn",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.cait.TalkingHeadAttn",
+      "hco_true": "Verified",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "timm.models.coat.CoaT",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.coat.ConvPosEnc",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "timm.models.coat.ConvRelPosEnc",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "timm.models.coat.FactorAttnConvRelPosEnc",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.coat.ParallelBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.coat.SerialBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.nfnet.DownsampleAvg",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.nfnet.GammaAct",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.nfnet.NormFreeBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.nfnet.NormFreeNet",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.regnet.Bottleneck",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.regnet.PreBottleneck",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.regnet.RegNet",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.regnet.RegStage",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.xcit.ClassAttentionBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.xcit.ConvPatchEmbed",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.xcit.LPI",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.xcit.PositionalEncodingFourier",
+      "hco_true": "Verified",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "timm.models.xcit.XCA",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.xcit.XCABlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.xcit.Xcit",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.maxxvit.Attention2d",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.maxxvit.AttentionCl",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.maxxvit.ConvNeXtBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.maxxvit.Downsample2d",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.maxxvit.MaxxVit",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.maxxvit.MaxxVitBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.maxxvit.MaxxVitStage",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "timm.models.maxxvit.MbConvBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.maxxvit.ParallelMaxxVitBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.maxxvit.ParallelPartitionAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.maxxvit.PartitionAttention2d",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.maxxvit.PartitionAttentionCl",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.maxxvit.Stem",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.maxxvit.TransformerBlock2d",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.focalnet.Downsample",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.focalnet.FocalModulation",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.focalnet.FocalNet",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.focalnet.FocalNetBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.focalnet.FocalNetStage",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "timm.models.davit.ChannelAttention",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "timm.models.davit.ChannelAttentionV2",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "timm.models.davit.ChannelBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.davit.ConvPosEnc",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.davit.DaVit",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.davit.DaVitStage",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "timm.models.davit.Downsample",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.davit.SpatialBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.davit.Stem",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.davit.WindowAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.mvitv2.MultiScaleAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.mvitv2.MultiScaleAttentionPoolFirst",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.mvitv2.MultiScaleBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.mvitv2.MultiScaleVit",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.mvitv2.MultiScaleVitStage",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "timm.models.mvitv2.PatchEmbed",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "timm.models.crossvit.CrossAttention",
+      "hco_true": "Verified",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "timm.models.crossvit.CrossAttentionBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.crossvit.CrossVit",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.crossvit.MultiScaleBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.crossvit.PatchEmbed",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.gcvit.Downsample2d",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.gcvit.FeatureBlock",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "timm.models.gcvit.GlobalContextVit",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.gcvit.GlobalContextVitBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.gcvit.GlobalContextVitStage",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.gcvit.MbConvBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.gcvit.Stem",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.gcvit.WindowAttentionGlobal",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.deit.VisionTransformerDistilled",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "timm.models.byobnet.BasicBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.byobnet.BottleneckBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.byobnet.ByobNet",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.byobnet.DarkBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.byobnet.DownsampleAvg",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.byobnet.EdgeBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.byobnet.MobileOneBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.byobnet.RepVggBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.byobnet.SelfAttnBlock",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.models.byobnet.Stem",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "timm.layers.attention2d.Attention2d",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.layers.attention2d.MultiQueryAttention2d",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.layers.attention2d.MultiQueryAttentionV2",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.layers.mlp.ConvMlp",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.layers.mlp.GatedMlp",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.layers.mlp.GlobalResponseNormMlp",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.layers.mlp.GluMlp",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.layers.mlp.Mlp",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "timm.layers.mlp.SwiGLU",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertEmbeddings",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertEncoder",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertForMaskedLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertForMultipleChoice",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertForNextSentencePrediction",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertForPreTraining",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertIntermediate",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertLMHeadModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertLMPredictionHead",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertOnlyMLMHead",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertOnlyNSPHead",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertOutput",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertPooler",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertPreTrainingHeads",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertPredictionHeadTransform",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertSdpaSelfAttention",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertSelfAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.bert.modeling_bert.BertSelfOutput",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.gpt2.modeling_gpt2.GPT2Attention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.gpt2.modeling_gpt2.GPT2Block",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt2.modeling_gpt2.GPT2DoubleHeadsModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt2.modeling_gpt2.GPT2ForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt2.modeling_gpt2.GPT2ForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt2.modeling_gpt2.GPT2ForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt2.modeling_gpt2.GPT2LMHeadModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt2.modeling_gpt2.GPT2MLP",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.gpt2.modeling_gpt2.GPT2Model",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt2.modeling_gpt2.GPT2PreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt2.modeling_gpt2.GPT2SequenceSummary",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5Attention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5Block",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5ClassificationHead",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5DenseActDense",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5DenseGatedActDense",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5EncoderModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5ForConditionalGeneration",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5ForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5ForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5ForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5LayerCrossAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5LayerFF",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5LayerNorm",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5LayerSelfAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5Model",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5PreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.t5.modeling_t5.T5Stack",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.llama.modeling_llama.LlamaAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.llama.modeling_llama.LlamaDecoderLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.llama.modeling_llama.LlamaForCausalLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.llama.modeling_llama.LlamaForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.llama.modeling_llama.LlamaForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.llama.modeling_llama.LlamaForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.llama.modeling_llama.LlamaMLP",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.llama.modeling_llama.LlamaModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.llama.modeling_llama.LlamaPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.llama.modeling_llama.LlamaRMSNorm",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.llama.modeling_llama.LlamaRotaryEmbedding",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTEmbeddings",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTEncoder",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTForImageClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTForMaskedImageModeling",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTIntermediate",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTOutput",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTPatchEmbeddings",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTPooler",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTSelfAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.vit.modeling_vit.ViTSelfOutput",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.whisper.modeling_whisper.WhisperAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.whisper.modeling_whisper.WhisperDecoder",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.whisper.modeling_whisper.WhisperDecoderLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.whisper.modeling_whisper.WhisperDecoderWrapper",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.whisper.modeling_whisper.WhisperEncoder",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.whisper.modeling_whisper.WhisperEncoderLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.whisper.modeling_whisper.WhisperForAudioClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.whisper.modeling_whisper.WhisperForCausalLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.whisper.modeling_whisper.WhisperForConditionalGeneration",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.whisper.modeling_whisper.WhisperModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.whisper.modeling_whisper.WhisperPositionalEmbedding",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.whisper.modeling_whisper.WhisperPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartClassificationHead",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartDecoder",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartDecoderLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartDecoderWrapper",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartEncoder",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartEncoderLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartForCausalLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartForConditionalGeneration",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartLearnedPositionalEmbedding",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartPretrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.BartScaledWordEmbedding",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.bart.modeling_bart.PretrainedBartModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.DistilBertFlashAttention2",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.DistilBertForMaskedLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.DistilBertForMultipleChoice",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.DistilBertForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.DistilBertForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.DistilBertForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.DistilBertModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.DistilBertPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.DistilBertSdpaAttention",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.Embeddings",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.FFN",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.MultiHeadSelfAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.Transformer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.distilbert.modeling_distilbert.TransformerBlock",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPEncoder",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPEncoderLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPForImageClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPMLP",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPTextEmbeddings",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPTextModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPTextModelWithProjection",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPTextTransformer",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPVisionEmbeddings",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPVisionModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPVisionModelWithProjection",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.clip.modeling_clip.CLIPVisionTransformer",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.mistral.modeling_mistral.MistralAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.mistral.modeling_mistral.MistralDecoderLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.mistral.modeling_mistral.MistralForCausalLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.mistral.modeling_mistral.MistralForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.mistral.modeling_mistral.MistralForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.mistral.modeling_mistral.MistralForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.mistral.modeling_mistral.MistralMLP",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.mistral.modeling_mistral.MistralModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.mistral.modeling_mistral.MistralPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.mistral.modeling_mistral.MistralRMSNorm",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.mistral.modeling_mistral.MistralRotaryEmbedding",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.gemma.modeling_gemma.GemmaAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.gemma.modeling_gemma.GemmaDecoderLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gemma.modeling_gemma.GemmaForCausalLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gemma.modeling_gemma.GemmaForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gemma.modeling_gemma.GemmaForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gemma.modeling_gemma.GemmaMLP",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.gemma.modeling_gemma.GemmaModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gemma.modeling_gemma.GemmaPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gemma.modeling_gemma.GemmaRMSNorm",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.gemma.modeling_gemma.GemmaRotaryEmbedding",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.falcon.modeling_falcon.FalconAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.falcon.modeling_falcon.FalconDecoderLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.falcon.modeling_falcon.FalconFlashAttention2",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.falcon.modeling_falcon.FalconForCausalLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.falcon.modeling_falcon.FalconForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.falcon.modeling_falcon.FalconForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.falcon.modeling_falcon.FalconForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.falcon.modeling_falcon.FalconLinear",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.falcon.modeling_falcon.FalconMLP",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.falcon.modeling_falcon.FalconModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.falcon.modeling_falcon.FalconPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.falcon.modeling_falcon.FalconRotaryEmbedding",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXDecoderLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXForCausalLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXMLP",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXRMSNorm",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.gpt_neox.modeling_gpt_neox.GPTNeoXRotaryEmbedding",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.qwen2.modeling_qwen2.Qwen2Attention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.qwen2.modeling_qwen2.Qwen2DecoderLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.qwen2.modeling_qwen2.Qwen2ForCausalLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.qwen2.modeling_qwen2.Qwen2ForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.qwen2.modeling_qwen2.Qwen2ForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.qwen2.modeling_qwen2.Qwen2ForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.qwen2.modeling_qwen2.Qwen2MLP",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.qwen2.modeling_qwen2.Qwen2Model",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.qwen2.modeling_qwen2.Qwen2PreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.qwen2.modeling_qwen2.Qwen2RMSNorm",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.qwen2.modeling_qwen2.Qwen2RotaryEmbedding",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaClassificationHead",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaEmbeddings",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaEncoder",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaForCausalLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaForMaskedLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaForMultipleChoice",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaIntermediate",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaLMHead",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaOutput",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaPooler",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaSdpaSelfAttention",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaSelfAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.roberta.modeling_roberta.RobertaSelfOutput",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertEmbeddings",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertForMaskedLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertForMultipleChoice",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertForPreTraining",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertLayer",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertLayerGroup",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertMLMHead",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertSOPHead",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertSdpaAttention",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.albert.modeling_albert.AlbertTransformer",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.opt.modeling_opt.OPTAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.opt.modeling_opt.OPTDecoder",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.opt.modeling_opt.OPTDecoderLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.opt.modeling_opt.OPTForCausalLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.opt.modeling_opt.OPTForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.opt.modeling_opt.OPTForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.opt.modeling_opt.OPTLearnedPositionalEmbedding",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.opt.modeling_opt.OPTModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.opt.modeling_opt.OPTPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bloom.modeling_bloom.BloomAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.bloom.modeling_bloom.BloomBlock",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bloom.modeling_bloom.BloomForCausalLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bloom.modeling_bloom.BloomForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bloom.modeling_bloom.BloomForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bloom.modeling_bloom.BloomForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bloom.modeling_bloom.BloomGelu",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.bloom.modeling_bloom.BloomMLP",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.bloom.modeling_bloom.BloomModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.bloom.modeling_bloom.BloomPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.ContextPooler",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaEmbeddings",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaEncoder",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaForMaskedLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaIntermediate",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaLMPredictionHead",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaLayerNorm",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaOnlyMLMHead",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaOutput",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DebertaSelfOutput",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.DisentangledSelfAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.LegacyDebertaLMPredictionHead",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.LegacyDebertaOnlyMLMHead",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.deberta.modeling_deberta.LegacyDebertaPredictionHeadTransform",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraClassificationHead",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraDiscriminatorPredictions",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraEmbeddings",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraEncoder",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraForCausalLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraForMaskedLM",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraForMultipleChoice",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraForPreTraining",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraForQuestionAnswering",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraForSequenceClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraForTokenClassification",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraGeneratorPredictions",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraIntermediate",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraLayer",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraOutput",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraPreTrainedModel",
+      "hco_true": "Refuted",
+      "hco_false": "Refuted"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraSelfAttention",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraSelfOutput",
+      "hco_true": "Verified",
+      "hco_false": "Verified"
+    },
+    {
+      "id": "transformers.models.electra.modeling_electra.ElectraSequenceSummary",
+      "hco_true": "Abstain",
+      "hco_false": "Abstain"
+    }
+  ]
+}

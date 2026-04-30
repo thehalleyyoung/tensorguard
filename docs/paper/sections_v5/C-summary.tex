@@ -1,0 +1,31 @@
+\subsection{Extended fragment and front-end}\label{sec:impl-fragment}
+We extend \textsc{TensorGuard}'s analyzer with four module families
+implemented under (no edits to legacy
+). The \emph{symbolic config} environment binds
+\texttt{self.config.<attr>} to fresh \texttt{SymInt}s so that
+HuggingFace-style modules whose dimensions come from a config object
+can be checked once and reused across instantiations
+. The \emph{QKV unpacking}
+front-end recognises the four idiomatic Q/K/V splits
+(\texttt{split}, \texttt{chunk}, \texttt{view+unbind}, and
+\texttt{einops.rearrange} with the canonical
+\verb|(three h d) -> three b h t d| pattern) and elaborates each
+into three correlated tensor types
+. The \emph{negative-one
+reshape} elaborator emits a Z3 divisibility constraint
+$P \bmod Q = 0$ where $P$ is the symbolic input product and $Q$ the
+product of the explicit reshape dimensions
+. Finally, transfer rules for
+\texttt{F.scaled\_dot\_product\_attention},
+\texttt{nn.MultiheadAttention}, \texttt{nn.LayerNorm}, and
+\texttt{nn.RMSNorm} register into the analyzer's
+\texttt{TORCH\_SHAPE\_OPS} dictionary
+. \emph{74/74}
+unit tests pass on \texttt{python3.11} +
+\texttt{torch~2.9.1}.
+The legacy benchmark targets do not abstain in the first place,
+so the v5 contribution lives in the new APIs (callable directly on
+realistic Transformer modules) rather than in moving the legacy
+verdict counters; we report this in
+.
+

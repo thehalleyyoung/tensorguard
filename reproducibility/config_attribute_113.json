@@ -1,0 +1,1544 @@
+{
+  "_question": "Round-3 W3 / Q3: TG's RP rate on the ~113 config-attribute bugs excluded by exclusion rule (iv) of the historical 60-bug corpus protocol.",
+  "n_total": 113,
+  "n_buggy_archetype": 72,
+  "n_clean_archetype": 41,
+  "rp": 0,
+  "silent_verified": 16,
+  "abstain_or_verified": 97,
+  "error": 0,
+  "rp_on_buggy_subset": 0,
+  "rp_on_clean_subset": 0,
+  "rp_rate_buggy": 0.0,
+  "fp_rate_clean": 0.0,
+  "elapsed_s": 2.7,
+  "per_archetype": {
+    "A1_head_div": {
+      "rp": 0,
+      "silent": 0,
+      "abst": 8,
+      "err": 0,
+      "n": 8,
+      "buggy": 4,
+      "clean": 4
+    },
+    "A2_gated_mlp": {
+      "rp": 0,
+      "silent": 0,
+      "abst": 8,
+      "err": 0,
+      "n": 8,
+      "buggy": 4,
+      "clean": 4
+    },
+    "A3_gqa": {
+      "rp": 0,
+      "silent": 8,
+      "abst": 0,
+      "err": 0,
+      "n": 8,
+      "buggy": 3,
+      "clean": 5
+    },
+    "A4_linear_prev_hidden": {
+      "rp": 0,
+      "silent": 0,
+      "abst": 8,
+      "err": 0,
+      "n": 8,
+      "buggy": 4,
+      "clean": 4
+    },
+    "A5_conv_stem": {
+      "rp": 0,
+      "silent": 0,
+      "abst": 8,
+      "err": 0,
+      "n": 8,
+      "buggy": 5,
+      "clean": 3
+    },
+    "A6_patch_div": {
+      "rp": 0,
+      "silent": 8,
+      "abst": 0,
+      "err": 0,
+      "n": 8,
+      "buggy": 3,
+      "clean": 5
+    },
+    "A7_vocab_emb": {
+      "rp": 0,
+      "silent": 0,
+      "abst": 8,
+      "err": 0,
+      "n": 8,
+      "buggy": 4,
+      "clean": 4
+    },
+    "A8_xattn_dim": {
+      "rp": 0,
+      "silent": 0,
+      "abst": 8,
+      "err": 0,
+      "n": 8,
+      "buggy": 8,
+      "clean": 0
+    },
+    "A9_rotary_off_by_one": {
+      "rp": 0,
+      "silent": 0,
+      "abst": 8,
+      "err": 0,
+      "n": 8,
+      "buggy": 6,
+      "clean": 2
+    },
+    "A10_head_dim_mul": {
+      "rp": 0,
+      "silent": 0,
+      "abst": 8,
+      "err": 0,
+      "n": 8,
+      "buggy": 4,
+      "clean": 4
+    },
+    "A11_moe_topk": {
+      "rp": 0,
+      "silent": 0,
+      "abst": 8,
+      "err": 0,
+      "n": 8,
+      "buggy": 4,
+      "clean": 4
+    },
+    "A12_lora_r": {
+      "rp": 0,
+      "silent": 0,
+      "abst": 8,
+      "err": 0,
+      "n": 8,
+      "buggy": 8,
+      "clean": 0
+    },
+    "A13_vae_latent": {
+      "rp": 0,
+      "silent": 0,
+      "abst": 8,
+      "err": 0,
+      "n": 8,
+      "buggy": 8,
+      "clean": 0
+    },
+    "A14_pos_emb": {
+      "rp": 0,
+      "silent": 0,
+      "abst": 8,
+      "err": 0,
+      "n": 8,
+      "buggy": 6,
+      "clean": 2
+    },
+    "A15_t5_dkv": {
+      "rp": 0,
+      "silent": 0,
+      "abst": 1,
+      "err": 0,
+      "n": 1,
+      "buggy": 1,
+      "clean": 0
+    }
+  },
+  "per_fixture": [
+    {
+      "id": 1,
+      "archetype": "A1_head_div",
+      "is_buggy_pred": false,
+      "params": [
+        768,
+        12
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 2,
+      "archetype": "A1_head_div",
+      "is_buggy_pred": true,
+      "params": [
+        768,
+        13
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 3,
+      "archetype": "A1_head_div",
+      "is_buggy_pred": false,
+      "params": [
+        1024,
+        16
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 4,
+      "archetype": "A1_head_div",
+      "is_buggy_pred": true,
+      "params": [
+        1024,
+        9
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 5,
+      "archetype": "A1_head_div",
+      "is_buggy_pred": true,
+      "params": [
+        512,
+        7
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 6,
+      "archetype": "A1_head_div",
+      "is_buggy_pred": false,
+      "params": [
+        512,
+        8
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 7,
+      "archetype": "A1_head_div",
+      "is_buggy_pred": false,
+      "params": [
+        2048,
+        32
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 8,
+      "archetype": "A1_head_div",
+      "is_buggy_pred": true,
+      "params": [
+        2048,
+        33
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 9,
+      "archetype": "A2_gated_mlp",
+      "is_buggy_pred": false,
+      "params": [
+        768,
+        3072,
+        3072
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 10,
+      "archetype": "A2_gated_mlp",
+      "is_buggy_pred": true,
+      "params": [
+        768,
+        3072,
+        2048
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 11,
+      "archetype": "A2_gated_mlp",
+      "is_buggy_pred": false,
+      "params": [
+        1024,
+        4096,
+        4096
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 12,
+      "archetype": "A2_gated_mlp",
+      "is_buggy_pred": true,
+      "params": [
+        1024,
+        4096,
+        2048
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 13,
+      "archetype": "A2_gated_mlp",
+      "is_buggy_pred": false,
+      "params": [
+        512,
+        2048,
+        2048
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 14,
+      "archetype": "A2_gated_mlp",
+      "is_buggy_pred": true,
+      "params": [
+        512,
+        2048,
+        1024
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 15,
+      "archetype": "A2_gated_mlp",
+      "is_buggy_pred": false,
+      "params": [
+        4096,
+        11008,
+        11008
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 16,
+      "archetype": "A2_gated_mlp",
+      "is_buggy_pred": true,
+      "params": [
+        4096,
+        11008,
+        4096
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 17,
+      "archetype": "A3_gqa",
+      "is_buggy_pred": false,
+      "params": [
+        768,
+        12,
+        4
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 1,
+      "first_msg": "Potential division by zero: 'num_q' not guarded"
+    },
+    {
+      "id": 18,
+      "archetype": "A3_gqa",
+      "is_buggy_pred": false,
+      "params": [
+        768,
+        12,
+        6
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 1,
+      "first_msg": "Potential division by zero: 'num_q' not guarded"
+    },
+    {
+      "id": 19,
+      "archetype": "A3_gqa",
+      "is_buggy_pred": false,
+      "params": [
+        1024,
+        16,
+        4
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 1,
+      "first_msg": "Potential division by zero: 'num_q' not guarded"
+    },
+    {
+      "id": 20,
+      "archetype": "A3_gqa",
+      "is_buggy_pred": true,
+      "params": [
+        1024,
+        16,
+        7
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 1,
+      "first_msg": "Potential division by zero: 'num_q' not guarded"
+    },
+    {
+      "id": 21,
+      "archetype": "A3_gqa",
+      "is_buggy_pred": false,
+      "params": [
+        4096,
+        32,
+        8
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 1,
+      "first_msg": "Potential division by zero: 'num_q' not guarded"
+    },
+    {
+      "id": 22,
+      "archetype": "A3_gqa",
+      "is_buggy_pred": true,
+      "params": [
+        4096,
+        32,
+        5
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 1,
+      "first_msg": "Potential division by zero: 'num_q' not guarded"
+    },
+    {
+      "id": 23,
+      "archetype": "A3_gqa",
+      "is_buggy_pred": false,
+      "params": [
+        5120,
+        40,
+        8
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 1,
+      "first_msg": "Potential division by zero: 'num_q' not guarded"
+    },
+    {
+      "id": 24,
+      "archetype": "A3_gqa",
+      "is_buggy_pred": true,
+      "params": [
+        5120,
+        40,
+        7
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 1,
+      "first_msg": "Potential division by zero: 'num_q' not guarded"
+    },
+    {
+      "id": 25,
+      "archetype": "A4_linear_prev_hidden",
+      "is_buggy_pred": false,
+      "params": [
+        768,
+        768
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 26,
+      "archetype": "A4_linear_prev_hidden",
+      "is_buggy_pred": true,
+      "params": [
+        768,
+        1024
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 27,
+      "archetype": "A4_linear_prev_hidden",
+      "is_buggy_pred": true,
+      "params": [
+        1024,
+        768
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 28,
+      "archetype": "A4_linear_prev_hidden",
+      "is_buggy_pred": false,
+      "params": [
+        1024,
+        1024
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 29,
+      "archetype": "A4_linear_prev_hidden",
+      "is_buggy_pred": false,
+      "params": [
+        512,
+        512
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 30,
+      "archetype": "A4_linear_prev_hidden",
+      "is_buggy_pred": true,
+      "params": [
+        512,
+        768
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 31,
+      "archetype": "A4_linear_prev_hidden",
+      "is_buggy_pred": false,
+      "params": [
+        4096,
+        4096
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 32,
+      "archetype": "A4_linear_prev_hidden",
+      "is_buggy_pred": true,
+      "params": [
+        4096,
+        5120
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 33,
+      "archetype": "A5_conv_stem",
+      "is_buggy_pred": false,
+      "params": [
+        3,
+        3
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 34,
+      "archetype": "A5_conv_stem",
+      "is_buggy_pred": true,
+      "params": [
+        3,
+        4
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 35,
+      "archetype": "A5_conv_stem",
+      "is_buggy_pred": true,
+      "params": [
+        1,
+        3
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 36,
+      "archetype": "A5_conv_stem",
+      "is_buggy_pred": false,
+      "params": [
+        1,
+        1
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 37,
+      "archetype": "A5_conv_stem",
+      "is_buggy_pred": true,
+      "params": [
+        4,
+        3
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 38,
+      "archetype": "A5_conv_stem",
+      "is_buggy_pred": false,
+      "params": [
+        4,
+        4
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 39,
+      "archetype": "A5_conv_stem",
+      "is_buggy_pred": true,
+      "params": [
+        3,
+        64
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 40,
+      "archetype": "A5_conv_stem",
+      "is_buggy_pred": true,
+      "params": [
+        3,
+        6
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 41,
+      "archetype": "A6_patch_div",
+      "is_buggy_pred": false,
+      "params": [
+        224,
+        16
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 2,
+      "first_msg": "Potential division by zero: 'patch_size' not guarded"
+    },
+    {
+      "id": 42,
+      "archetype": "A6_patch_div",
+      "is_buggy_pred": false,
+      "params": [
+        224,
+        14
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 2,
+      "first_msg": "Potential division by zero: 'patch_size' not guarded"
+    },
+    {
+      "id": 43,
+      "archetype": "A6_patch_div",
+      "is_buggy_pred": false,
+      "params": [
+        256,
+        32
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 2,
+      "first_msg": "Potential division by zero: 'patch_size' not guarded"
+    },
+    {
+      "id": 44,
+      "archetype": "A6_patch_div",
+      "is_buggy_pred": true,
+      "params": [
+        256,
+        17
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 2,
+      "first_msg": "Potential division by zero: 'patch_size' not guarded"
+    },
+    {
+      "id": 45,
+      "archetype": "A6_patch_div",
+      "is_buggy_pred": false,
+      "params": [
+        384,
+        16
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 2,
+      "first_msg": "Potential division by zero: 'patch_size' not guarded"
+    },
+    {
+      "id": 46,
+      "archetype": "A6_patch_div",
+      "is_buggy_pred": true,
+      "params": [
+        384,
+        14
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 2,
+      "first_msg": "Potential division by zero: 'patch_size' not guarded"
+    },
+    {
+      "id": 47,
+      "archetype": "A6_patch_div",
+      "is_buggy_pred": false,
+      "params": [
+        512,
+        32
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 2,
+      "first_msg": "Potential division by zero: 'patch_size' not guarded"
+    },
+    {
+      "id": 48,
+      "archetype": "A6_patch_div",
+      "is_buggy_pred": true,
+      "params": [
+        512,
+        9
+      ],
+      "verdict": "SILENT_VERIFIED",
+      "n_bugs": 2,
+      "first_msg": "Potential division by zero: 'patch_size' not guarded"
+    },
+    {
+      "id": 49,
+      "archetype": "A7_vocab_emb",
+      "is_buggy_pred": false,
+      "params": [
+        32000,
+        768,
+        32000
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 50,
+      "archetype": "A7_vocab_emb",
+      "is_buggy_pred": true,
+      "params": [
+        32000,
+        768,
+        32001
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 51,
+      "archetype": "A7_vocab_emb",
+      "is_buggy_pred": false,
+      "params": [
+        50257,
+        768,
+        50257
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 52,
+      "archetype": "A7_vocab_emb",
+      "is_buggy_pred": true,
+      "params": [
+        50257,
+        768,
+        50000
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 53,
+      "archetype": "A7_vocab_emb",
+      "is_buggy_pred": false,
+      "params": [
+        100000,
+        4096,
+        100000
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 54,
+      "archetype": "A7_vocab_emb",
+      "is_buggy_pred": true,
+      "params": [
+        100000,
+        4096,
+        99999
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 55,
+      "archetype": "A7_vocab_emb",
+      "is_buggy_pred": false,
+      "params": [
+        8192,
+        512,
+        8192
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 56,
+      "archetype": "A7_vocab_emb",
+      "is_buggy_pred": true,
+      "params": [
+        8192,
+        512,
+        16384
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 57,
+      "archetype": "A8_xattn_dim",
+      "is_buggy_pred": true,
+      "params": [
+        768,
+        768
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 58,
+      "archetype": "A8_xattn_dim",
+      "is_buggy_pred": true,
+      "params": [
+        768,
+        1024
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 59,
+      "archetype": "A8_xattn_dim",
+      "is_buggy_pred": true,
+      "params": [
+        1024,
+        768
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 60,
+      "archetype": "A8_xattn_dim",
+      "is_buggy_pred": true,
+      "params": [
+        1024,
+        1024
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 61,
+      "archetype": "A8_xattn_dim",
+      "is_buggy_pred": true,
+      "params": [
+        512,
+        256
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 62,
+      "archetype": "A8_xattn_dim",
+      "is_buggy_pred": true,
+      "params": [
+        256,
+        512
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 63,
+      "archetype": "A8_xattn_dim",
+      "is_buggy_pred": true,
+      "params": [
+        4096,
+        4096
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 64,
+      "archetype": "A8_xattn_dim",
+      "is_buggy_pred": true,
+      "params": [
+        4096,
+        2048
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 65,
+      "archetype": "A9_rotary_off_by_one",
+      "is_buggy_pred": true,
+      "params": [
+        12,
+        12
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 66,
+      "archetype": "A9_rotary_off_by_one",
+      "is_buggy_pred": false,
+      "params": [
+        12,
+        13
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 67,
+      "archetype": "A9_rotary_off_by_one",
+      "is_buggy_pred": true,
+      "params": [
+        24,
+        24
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 68,
+      "archetype": "A9_rotary_off_by_one",
+      "is_buggy_pred": true,
+      "params": [
+        24,
+        23
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 69,
+      "archetype": "A9_rotary_off_by_one",
+      "is_buggy_pred": true,
+      "params": [
+        32,
+        32
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 70,
+      "archetype": "A9_rotary_off_by_one",
+      "is_buggy_pred": true,
+      "params": [
+        32,
+        31
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 71,
+      "archetype": "A9_rotary_off_by_one",
+      "is_buggy_pred": true,
+      "params": [
+        40,
+        40
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 72,
+      "archetype": "A9_rotary_off_by_one",
+      "is_buggy_pred": false,
+      "params": [
+        40,
+        41
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 73,
+      "archetype": "A10_head_dim_mul",
+      "is_buggy_pred": false,
+      "params": [
+        768,
+        12,
+        64
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 74,
+      "archetype": "A10_head_dim_mul",
+      "is_buggy_pred": true,
+      "params": [
+        768,
+        13,
+        64
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 75,
+      "archetype": "A10_head_dim_mul",
+      "is_buggy_pred": false,
+      "params": [
+        1024,
+        16,
+        64
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 76,
+      "archetype": "A10_head_dim_mul",
+      "is_buggy_pred": true,
+      "params": [
+        1024,
+        16,
+        65
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 77,
+      "archetype": "A10_head_dim_mul",
+      "is_buggy_pred": false,
+      "params": [
+        4096,
+        32,
+        128
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 78,
+      "archetype": "A10_head_dim_mul",
+      "is_buggy_pred": true,
+      "params": [
+        4096,
+        33,
+        128
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 79,
+      "archetype": "A10_head_dim_mul",
+      "is_buggy_pred": false,
+      "params": [
+        512,
+        8,
+        64
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 80,
+      "archetype": "A10_head_dim_mul",
+      "is_buggy_pred": true,
+      "params": [
+        512,
+        7,
+        64
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 81,
+      "archetype": "A11_moe_topk",
+      "is_buggy_pred": false,
+      "params": [
+        8,
+        2
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 82,
+      "archetype": "A11_moe_topk",
+      "is_buggy_pred": true,
+      "params": [
+        8,
+        9
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 83,
+      "archetype": "A11_moe_topk",
+      "is_buggy_pred": false,
+      "params": [
+        16,
+        4
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 84,
+      "archetype": "A11_moe_topk",
+      "is_buggy_pred": true,
+      "params": [
+        16,
+        17
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 85,
+      "archetype": "A11_moe_topk",
+      "is_buggy_pred": false,
+      "params": [
+        4,
+        1
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 86,
+      "archetype": "A11_moe_topk",
+      "is_buggy_pred": true,
+      "params": [
+        4,
+        5
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 87,
+      "archetype": "A11_moe_topk",
+      "is_buggy_pred": false,
+      "params": [
+        32,
+        8
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 88,
+      "archetype": "A11_moe_topk",
+      "is_buggy_pred": true,
+      "params": [
+        32,
+        33
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 89,
+      "archetype": "A12_lora_r",
+      "is_buggy_pred": true,
+      "params": [
+        768,
+        8
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 90,
+      "archetype": "A12_lora_r",
+      "is_buggy_pred": true,
+      "params": [
+        768,
+        16
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 91,
+      "archetype": "A12_lora_r",
+      "is_buggy_pred": true,
+      "params": [
+        1024,
+        4
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 92,
+      "archetype": "A12_lora_r",
+      "is_buggy_pred": true,
+      "params": [
+        1024,
+        32
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 93,
+      "archetype": "A12_lora_r",
+      "is_buggy_pred": true,
+      "params": [
+        512,
+        8
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 94,
+      "archetype": "A12_lora_r",
+      "is_buggy_pred": true,
+      "params": [
+        512,
+        16
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 95,
+      "archetype": "A12_lora_r",
+      "is_buggy_pred": true,
+      "params": [
+        4096,
+        64
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 96,
+      "archetype": "A12_lora_r",
+      "is_buggy_pred": true,
+      "params": [
+        4096,
+        128
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 97,
+      "archetype": "A13_vae_latent",
+      "is_buggy_pred": true,
+      "params": [
+        4,
+        64
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 98,
+      "archetype": "A13_vae_latent",
+      "is_buggy_pred": true,
+      "params": [
+        8,
+        128
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 99,
+      "archetype": "A13_vae_latent",
+      "is_buggy_pred": true,
+      "params": [
+        16,
+        64
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 100,
+      "archetype": "A13_vae_latent",
+      "is_buggy_pred": true,
+      "params": [
+        32,
+        128
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 101,
+      "archetype": "A13_vae_latent",
+      "is_buggy_pred": true,
+      "params": [
+        4,
+        256
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 102,
+      "archetype": "A13_vae_latent",
+      "is_buggy_pred": true,
+      "params": [
+        8,
+        64
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 103,
+      "archetype": "A13_vae_latent",
+      "is_buggy_pred": true,
+      "params": [
+        16,
+        128
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 104,
+      "archetype": "A13_vae_latent",
+      "is_buggy_pred": true,
+      "params": [
+        32,
+        256
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 105,
+      "archetype": "A14_pos_emb",
+      "is_buggy_pred": true,
+      "params": [
+        2048,
+        1024
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 106,
+      "archetype": "A14_pos_emb",
+      "is_buggy_pred": false,
+      "params": [
+        1024,
+        1024
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 107,
+      "archetype": "A14_pos_emb",
+      "is_buggy_pred": true,
+      "params": [
+        4096,
+        2048
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 108,
+      "archetype": "A14_pos_emb",
+      "is_buggy_pred": true,
+      "params": [
+        8192,
+        8191
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 109,
+      "archetype": "A14_pos_emb",
+      "is_buggy_pred": true,
+      "params": [
+        512,
+        256
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 110,
+      "archetype": "A14_pos_emb",
+      "is_buggy_pred": true,
+      "params": [
+        1024,
+        512
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 111,
+      "archetype": "A14_pos_emb",
+      "is_buggy_pred": false,
+      "params": [
+        2048,
+        2049
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 112,
+      "archetype": "A14_pos_emb",
+      "is_buggy_pred": true,
+      "params": [
+        8192,
+        4096
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    },
+    {
+      "id": 113,
+      "archetype": "A15_t5_dkv",
+      "is_buggy_pred": true,
+      "params": [
+        768,
+        12,
+        65
+      ],
+      "verdict": "ABSTAIN_OR_VERIFIED",
+      "n_bugs": 0,
+      "first_msg": null
+    }
+  ],
+  "interpretation": "These 113 fixtures span the 14 canonical config-attribute archetypes catalogued during the original GitHub-issue triage (recorded in the protocol document) plus one T5 d_kv canonical case.  The RP rate on the buggy subset is the answer to the reviewer's Q3; the FP rate on the constructively-clean subset is reported alongside as the calibration baseline.  Note the fixtures are minimal repros (6-12 lines) constructed to instantiate the archetype shape-disagreement, not the full upstream *Config + module class chain; they sit inside TG's static-integer-config-attribute fragment."
+}

@@ -1,0 +1,251 @@
+{
+  "meta": {
+    "n": 34,
+    "tally": {
+      "both_refute": 25,
+      "neither": 2,
+      "tg_only": 7
+    },
+    "note": "tg_enforced is the silent-skip-corrected TG verdict per pytea_modern_enforced.json (forced to Verified when the bug message references a non-catalogue op, per fragment-fairness rule). pytea is the raw Pytea verdict on the modern subset."
+  },
+  "rows": [
+    {
+      "id": "bug_003",
+      "primary_op": "Tensor.view",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_004",
+      "primary_op": "Tensor.view",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_005",
+      "primary_op": "broadcast (param + tensor)",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_006",
+      "primary_op": "nn.CrossEntropyLoss",
+      "tg_enforced": "Verified",
+      "pytea": "Verified",
+      "agreement": "neither"
+    },
+    {
+      "id": "bug_007",
+      "primary_op": "F.conv2d (dtype check)",
+      "tg_enforced": "Verified",
+      "pytea": "Verified",
+      "agreement": "neither"
+    },
+    {
+      "id": "bug_008",
+      "primary_op": "nn.Conv2d",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_009",
+      "primary_op": "nn.Linear",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_010",
+      "primary_op": "Tensor.view",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_011",
+      "primary_op": "broadcast (a + b)",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_014",
+      "primary_op": "Tensor.transpose",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_015",
+      "primary_op": "nn.BatchNorm2d",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_016",
+      "primary_op": "nn.Embedding",
+      "tg_enforced": "Refuted",
+      "pytea": "Verified",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_018",
+      "primary_op": "matmul (@ operator)",
+      "tg_enforced": "Refuted",
+      "pytea": "N/A",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_019",
+      "primary_op": "Tensor.reshape",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_020",
+      "primary_op": "torch.cat",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_027",
+      "primary_op": "torch.bmm",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_028",
+      "primary_op": "Tensor.view (wildcard -1)",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_034",
+      "primary_op": "nn.Embedding",
+      "tg_enforced": "Refuted",
+      "pytea": "Verified",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_035",
+      "primary_op": "nn.ConvTranspose2d",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_037",
+      "primary_op": "flatten + view",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_038",
+      "primary_op": "torch.stack",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_039",
+      "primary_op": "F.softmax",
+      "tg_enforced": "Refuted",
+      "pytea": "Verified",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_040",
+      "primary_op": "matmul (@ operator, batched)",
+      "tg_enforced": "Refuted",
+      "pytea": "N/A",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_042",
+      "primary_op": "nn.CrossEntropyLoss",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_043",
+      "primary_op": "nn.MSELoss",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_044",
+      "primary_op": "nn.NLLLoss",
+      "tg_enforced": "Refuted",
+      "pytea": "Verified",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_045",
+      "primary_op": "nn.Conv2d",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_047",
+      "primary_op": "Tensor.unsqueeze",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_049",
+      "primary_op": "F.layer_norm",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_053",
+      "primary_op": "Tensor.expand",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_056",
+      "primary_op": "nn.Conv2d",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_057",
+      "primary_op": "torch.mm",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    },
+    {
+      "id": "bug_063",
+      "primary_op": "Tensor.view (post-transpose)",
+      "tg_enforced": "Refuted",
+      "pytea": "Verified",
+      "agreement": "tg_only"
+    },
+    {
+      "id": "bug_068",
+      "primary_op": "nn.MaxPool2d",
+      "tg_enforced": "Refuted",
+      "pytea": "Refuted",
+      "agreement": "both_refute"
+    }
+  ]
+}

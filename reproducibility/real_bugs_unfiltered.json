@@ -1,0 +1,313 @@
+{
+  "regime": "no_synthesised_assume_M (user-visible); pre-registered query",
+  "preregistration": "experiments_v5/v8/REAL_BUG_PREREG_QUERY.md",
+  "n_total": 15,
+  "counts": {
+    "TG": {
+      "RP_0.99": 6,
+      "RP_0.80": 0,
+      "silent_verified": 9,
+      "abstain": 0,
+      "low_confidence": 0
+    },
+    "FakeTensor": {
+      "verified": 0,
+      "refuted": 2,
+      "abstain": 13,
+      "n/a": 0
+    },
+    "Pytea": {
+      "verified": 2,
+      "refuted": 3,
+      "abstain": 0,
+      "n/a": 10
+    }
+  },
+  "per_item": [
+    {
+      "id": "rb_pf_001",
+      "file": "../real_bugs_postfreeze/rb_pf_001_diffusers_longcat_ffmult.py",
+      "pr": "https://github.com/huggingface/diffusers/pull/13494",
+      "created_at": "2026-04-16",
+      "class": "config_dependent_linear_chain",
+      "fragment": "in_fragment_constructor_bound",
+      "expected": "silent_verified",
+      "tg": {
+        "n_bugs": 2,
+        "max_conf": 0.99,
+        "verdicts": [
+          "type_error"
+        ],
+        "status": "RP_0.99"
+      },
+      "faketensor": "abstain",
+      "pytea": "n/a"
+    },
+    {
+      "id": "rb_pf_002",
+      "file": "../real_bugs_postfreeze/rb_pf_002_t5gemma2_xattn_cache.py",
+      "pr": "https://github.com/huggingface/transformers/pull/45540",
+      "created_at": "2026-04-21",
+      "class": "attention_mask_dim_mismatch",
+      "fragment": "in_fragment_constructor_bound",
+      "expected": "silent_verified",
+      "tg": {
+        "n_bugs": 0,
+        "max_conf": 0.0,
+        "verdicts": [
+          "none"
+        ],
+        "status": "silent_verified"
+      },
+      "faketensor": "abstain",
+      "pytea": "n/a"
+    },
+    {
+      "id": "rb_pf_003",
+      "file": "../real_bugs_postfreeze/rb_pf_003_peft_lora_moe_swap.py",
+      "pr": "https://github.com/huggingface/peft/pull/3165",
+      "created_at": "2026-04-15",
+      "class": "lora_in_out_swap_3d",
+      "fragment": "in_fragment_literal",
+      "expected": "RP_0.99",
+      "tg": {
+        "n_bugs": 4,
+        "max_conf": 0.99,
+        "verdicts": [
+          "type_error"
+        ],
+        "status": "RP_0.99"
+      },
+      "faketensor": "abstain",
+      "pytea": "refuted"
+    },
+    {
+      "id": "rb_pf_004",
+      "file": "../real_bugs_postfreeze/rb_pf_004_routerparallel_topk.py",
+      "pr": "https://github.com/huggingface/transformers/pull/45473",
+      "created_at": "2026-04-16",
+      "class": "router_topk_vs_num_experts",
+      "fragment": "in_fragment_literal",
+      "expected": "RP_0.99",
+      "tg": {
+        "n_bugs": 2,
+        "max_conf": 0.99,
+        "verdicts": [
+          "type_error"
+        ],
+        "status": "RP_0.99"
+      },
+      "faketensor": "abstain",
+      "pytea": "verified"
+    },
+    {
+      "id": "rb_pf_005",
+      "file": "../real_bugs_postfreeze/rb_pf_005_diffusers_npu_mask.py",
+      "pr": "https://github.com/huggingface/diffusers/pull/13490",
+      "created_at": "2026-04-16",
+      "class": "attention_mask_expand_off_by_one",
+      "fragment": "in_fragment_constructor_bound",
+      "expected": "silent_verified",
+      "tg": {
+        "n_bugs": 0,
+        "max_conf": 0.0,
+        "verdicts": [
+          "none"
+        ],
+        "status": "silent_verified"
+      },
+      "faketensor": "abstain",
+      "pytea": "n/a"
+    },
+    {
+      "id": "rb_pf_006",
+      "file": "../real_bugs_postfreeze/rb_pf_006_qwenimage_batch_ordering.py",
+      "pr": "https://github.com/huggingface/diffusers/pull/13441",
+      "created_at": "2026-04-10",
+      "class": "batch_ordering_chunk_mismatch",
+      "fragment": "in_fragment_constructor_bound",
+      "expected": "silent_verified",
+      "tg": {
+        "n_bugs": 0,
+        "max_conf": 0.0,
+        "verdicts": [
+          "none"
+        ],
+        "status": "silent_verified"
+      },
+      "faketensor": "abstain",
+      "pytea": "n/a"
+    },
+    {
+      "id": "rb_uf_007",
+      "file": "rb_uf_007_idefics3_patch_merger.py",
+      "pr": "https://github.com/huggingface/transformers/pull/45602",
+      "created_at": "2026-04-23",
+      "class": "patch_merge_view",
+      "fragment": "in_fragment_literal",
+      "expected": "RP_0.99",
+      "tg": {
+        "n_bugs": 0,
+        "max_conf": 0.0,
+        "verdicts": [
+          "none"
+        ],
+        "status": "silent_verified"
+      },
+      "faketensor": "abstain",
+      "pytea": "refuted"
+    },
+    {
+      "id": "rb_uf_008",
+      "file": "rb_uf_008_wan_vae_decoder.py",
+      "pr": "https://github.com/huggingface/diffusers/pull/13520",
+      "created_at": "2026-04-19",
+      "class": "view_total_size_mismatch",
+      "fragment": "in_fragment_literal",
+      "expected": "RP_0.99",
+      "tg": {
+        "n_bugs": 1,
+        "max_conf": 0.99,
+        "verdicts": [
+          "type_error"
+        ],
+        "status": "RP_0.99"
+      },
+      "faketensor": "refuted",
+      "pytea": "n/a"
+    },
+    {
+      "id": "rb_uf_009",
+      "file": "rb_uf_009_glm45_moe_chunk.py",
+      "pr": "https://github.com/huggingface/transformers/pull/45597",
+      "created_at": "2026-04-22",
+      "class": "config_dependent_chunk_size",
+      "fragment": "in_fragment_constructor_bound",
+      "expected": "silent_verified",
+      "tg": {
+        "n_bugs": 0,
+        "max_conf": 0.0,
+        "verdicts": [
+          "none"
+        ],
+        "status": "silent_verified"
+      },
+      "faketensor": "refuted",
+      "pytea": "n/a"
+    },
+    {
+      "id": "rb_uf_010",
+      "file": "rb_uf_010_phi5_dtype.py",
+      "pr": "https://github.com/huggingface/transformers/pull/45611",
+      "created_at": "2026-04-23",
+      "class": "dtype_mismatch",
+      "fragment": "out_of_fragment_dtype",
+      "expected": "abstain",
+      "tg": {
+        "n_bugs": 2,
+        "max_conf": 0.99,
+        "verdicts": [
+          "type_error"
+        ],
+        "status": "RP_0.99"
+      },
+      "faketensor": "abstain",
+      "pytea": "n/a"
+    },
+    {
+      "id": "rb_uf_011",
+      "file": "rb_uf_011_mixtral2_dist_gather.py",
+      "pr": "https://github.com/huggingface/transformers/pull/45624",
+      "created_at": "2026-04-24",
+      "class": "distributed_all_gather",
+      "fragment": "out_of_fragment_distributed",
+      "expected": "abstain",
+      "tg": {
+        "n_bugs": 0,
+        "max_conf": 0.0,
+        "verdicts": [
+          "none"
+        ],
+        "status": "silent_verified"
+      },
+      "faketensor": "abstain",
+      "pytea": "n/a"
+    },
+    {
+      "id": "rb_uf_012",
+      "file": "rb_uf_012_hunyuan_vae_nan_branch.py",
+      "pr": "https://github.com/huggingface/diffusers/pull/13561",
+      "created_at": "2026-04-22",
+      "class": "data_dependent_control_flow",
+      "fragment": "out_of_fragment_dynamic",
+      "expected": "silent_verified",
+      "tg": {
+        "n_bugs": 2,
+        "max_conf": 0.99,
+        "verdicts": [
+          "type_error"
+        ],
+        "status": "RP_0.99"
+      },
+      "faketensor": "abstain",
+      "pytea": "n/a"
+    },
+    {
+      "id": "rb_uf_013",
+      "file": "rb_uf_013_peft_vera_scaler.py",
+      "pr": "https://github.com/huggingface/peft/pull/3208",
+      "created_at": "2026-04-20",
+      "class": "literal_broadcast_mismatch",
+      "fragment": "in_fragment_literal",
+      "expected": "RP_0.99",
+      "tg": {
+        "n_bugs": 0,
+        "max_conf": 0.0,
+        "verdicts": [
+          "none"
+        ],
+        "status": "silent_verified"
+      },
+      "faketensor": "abstain",
+      "pytea": "verified"
+    },
+    {
+      "id": "rb_uf_014",
+      "file": "rb_uf_014_smollm3_grad_ckpt.py",
+      "pr": "https://github.com/huggingface/transformers/pull/45650",
+      "created_at": "2026-04-25",
+      "class": "autograd_param_sharing",
+      "fragment": "out_of_fragment_grad_topology",
+      "expected": "silent_verified",
+      "tg": {
+        "n_bugs": 0,
+        "max_conf": 0.0,
+        "verdicts": [
+          "none"
+        ],
+        "status": "silent_verified"
+      },
+      "faketensor": "abstain",
+      "pytea": "n/a"
+    },
+    {
+      "id": "rb_uf_015",
+      "file": "rb_uf_015_cosmos2_vision_transpose.py",
+      "pr": "https://github.com/huggingface/diffusers/pull/13580",
+      "created_at": "2026-04-25",
+      "class": "transpose_swap_view",
+      "fragment": "in_fragment_literal",
+      "expected": "RP_0.99",
+      "tg": {
+        "n_bugs": 0,
+        "max_conf": 0.0,
+        "verdicts": [
+          "none"
+        ],
+        "status": "silent_verified"
+      },
+      "faketensor": "abstain",
+      "pytea": "refuted"
+    }
+  ]
+}

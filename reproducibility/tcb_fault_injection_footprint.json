@@ -1,0 +1,567 @@
+{
+  "_question": "R3-W6 / R3-Q6: deliberate single-fault upper bound on the 60-bug and 488-block corpora.  Each fault sits in a TCB component (AST extractor, backward verifier, Z3 dispatch, or the analyser implementation).  We compute an exposure-based upper bound (# items whose source exercises the mis-handled construct); this is the largest verdict-flip the fault could possibly cause without changing TG.",
+  "timestamp": "2026-04-29T16:59:54.328315Z",
+  "n_60_corpus": 60,
+  "n_488_corpus": 137,
+  "exposure_60_bug": {
+    "F1_view_star_expansion": 0,
+    "F2_inplace_add": 0,
+    "F3_cat_dim": 2,
+    "F4_conv2d_output_formula": 7
+  },
+  "exposure_488_block": {
+    "F1_view_star_expansion": 5,
+    "F2_inplace_add": 18,
+    "F3_cat_dim": 18,
+    "F4_conv2d_output_formula": 19
+  },
+  "tightened_upper_bounds_60": {
+    "F1_view_star_expansion": 0,
+    "F2_inplace_add": 0,
+    "F3_cat_dim": 2,
+    "F4_conv2d_output_formula": 5
+  },
+  "interpretation": "The largest possible verdict-flip on the 60-bug corpus from any single TCB-component fault audited here is <= 7 of 60 (the F1/F2/F3/F4 exposure ceilings).  In practice the actual flip is strictly smaller because not every exposed item is load-bearing for the bug message that TG emits.  The 53/60 RP headline therefore degrades by at most this exposure ceiling under any single deliberate TCB fault, and by zero if the fault is in a TCB component the bug path does not exercise.",
+  "per_bug": [
+    {
+      "id": "bug_001",
+      "category": "attention_dim",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_002",
+      "category": "broadcasting",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_003",
+      "category": "view_reshape_total_size",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_004",
+      "category": "view_reshape_total_size",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_005",
+      "category": "broadcasting",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_006",
+      "category": "other",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_007",
+      "category": "other",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": true
+    },
+    {
+      "id": "bug_008",
+      "category": "conv_channel_mismatch",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": true
+    },
+    {
+      "id": "bug_009",
+      "category": "linear_inout_mismatch",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_010",
+      "category": "view_reshape_total_size",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_011",
+      "category": "broadcasting",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_012",
+      "category": "attention_dim",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_013",
+      "category": "einsum_dim",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_014",
+      "category": "transpose_axes",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_015",
+      "category": "batchnorm_features",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_016",
+      "category": "embedding_index",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_017",
+      "category": "conv_channel_mismatch",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": true
+    },
+    {
+      "id": "bug_018",
+      "category": "linear_inout_mismatch",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_019",
+      "category": "view_reshape_total_size",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_020",
+      "category": "broadcasting",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": true,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_022",
+      "category": "einsum_dim",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_024",
+      "category": "batchnorm_features",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_026",
+      "category": "conv_channel_mismatch",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": true
+    },
+    {
+      "id": "bug_027",
+      "category": "linear_inout_mismatch",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_028",
+      "category": "view_reshape_total_size",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_029",
+      "category": "broadcasting",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_031",
+      "category": "einsum_dim",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_032",
+      "category": "transpose_axes",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_033",
+      "category": "batchnorm_features",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_034",
+      "category": "embedding_index",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_035",
+      "category": "conv_channel_mismatch",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_037",
+      "category": "view_reshape_total_size",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_038",
+      "category": "broadcasting",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": true,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_039",
+      "category": "attention_dim",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_040",
+      "category": "einsum_dim",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_041",
+      "category": "transpose_axes",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_042",
+      "category": "other",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_043",
+      "category": "other",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_044",
+      "category": "other",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_045",
+      "category": "conv_channel_mismatch",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": true
+    },
+    {
+      "id": "bug_047",
+      "category": "view_reshape_total_size",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_048",
+      "category": "broadcasting",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_049",
+      "category": "attention_dim",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_050",
+      "category": "einsum_dim",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_051",
+      "category": "other",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_052",
+      "category": "other",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_053",
+      "category": "transpose_axes",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_054",
+      "category": "batchnorm_features",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_055",
+      "category": "embedding_index",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_056",
+      "category": "conv_channel_mismatch",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": true
+    },
+    {
+      "id": "bug_057",
+      "category": "linear_inout_mismatch",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_058",
+      "category": "view_reshape_total_size",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_059",
+      "category": "broadcasting",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_060",
+      "category": "attention_dim",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": true
+    },
+    {
+      "id": "bug_063",
+      "category": "view_reshape_total_size",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_064",
+      "category": "broadcasting",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_065",
+      "category": "other",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_067",
+      "category": "other",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_068",
+      "category": "other",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    },
+    {
+      "id": "bug_069",
+      "category": "other",
+      "missing": false,
+      "F1_view_star_expansion": false,
+      "F2_inplace_add": false,
+      "F3_cat_dim": false,
+      "F4_conv2d_output_formula": false
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "promoted_handlers": [
+    "flatten",
+    "softmax",
+    "squeeze",
+    "unsqueeze"
+  ],
+  "old_tested_only_handler_count": 48,
+  "new_tested_only_handler_count": 44,
+  "headline_with_assume": {
+    "old_in_soundness": 36,
+    "old_tested_only_touch": 105,
+    "promoted_to_in_soundness_V": 2,
+    "promoted_to_in_soundness_CV": 0,
+    "new_in_soundness": 38,
+    "new_tested_only_touch": 103,
+    "denominator": 185
+  },
+  "no_assume_regime": {
+    "promoted_rows": 2
+  },
+  "promoted_handler_rationale": {
+    "flatten": "special case of view on the suffix-product dim (Lean-audited rule)",
+    "squeeze": "special case of view dropping a unit-length axis at static position (Lean-audited)",
+    "unsqueeze": "special case of view inserting a unit-length axis at static position (Lean-audited)",
+    "softmax": "T-IDENTITY shape rule on every axis (dim-preserving)"
+  }
+}

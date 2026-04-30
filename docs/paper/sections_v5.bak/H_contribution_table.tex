@@ -1,0 +1,60 @@
+\begin{table}[t]
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \renewcommand{\arraystretch}{1.15}
+  \newcommand{\cmark}{\ensuremath{\checkmark}}
+  \newcommand{\xmark}{\ensuremath{\times}}
+  \caption{Calibrated comparison along nine PL/ML axes.
+    \cmark{} = supported; \xmark{} = not supported;
+    $\partial$ = partial / under-developed; --- = not applicable.
+    ``Refinement-typed'' means types carry SMT-decidable predicates
+    (not just shape literals). ``Symbolic shapes'' means dimensions
+    may be unknown variables with constraints. ``Grad-flag tracking''
+    means the type system reasons about \texttt{requires\_grad}.
+    ``Backward verifier'' means the system checks well-formedness of
+    the autograd backward pass, not only the forward computation.
+    ``Lean-audited rules'' means the operator shape-transfer
+    table is mechanically defined and empirically audited
+    against PyTorch (the analyser implementation itself is not
+    mechanised).
+    ``No-execution'' means the analysis runs without invoking a
+    tracer, GPU, or Python interpreter on user code.
+    ``Abstention 1st-class'' means \textsc{Abstain} is a reported
+    verdict distinct from \textsc{Verified}/\textsc{Refuted}.
+    ``Modern Transformer support'' is a coarse practical judgement of
+    whether the tool handles HuggingFace-style attention/KV-cache code
+    out of the box.}
+  \label{tab:contrib}
+  \begin{tabular}{l c c c c c c c c c}
+    \toprule
+    Tool
+      & \rotatebox{60}{Refinement-typed}
+      & \rotatebox{60}{Symbolic shapes}
+      & \rotatebox{60}{Grad-flag tracking}
+      & \rotatebox{60}{Backward verifier}
+      & \rotatebox{60}{Contracts / A-G}
+      & \rotatebox{60}{Lean-audited rules}
+      & \rotatebox{60}{No-execution}
+      & \rotatebox{60}{Abstention 1st-class}
+      & \rotatebox{60}{Modern Transformer} \\
+    \midrule
+    \textbf{TensorGuard}
+      & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark \\
+    Pytea
+      & $\partial$ & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & $\partial$ \\
+    jaxtyping
+      & \xmark & $\partial$ & \xmark & \xmark & $\partial$ & \xmark & \xmark & \xmark & \cmark \\
+    torchtyping
+      & \xmark & $\partial$ & \xmark & \xmark & $\partial$ & \xmark & \xmark & \xmark & \cmark \\
+    FakeTensorMode
+      & \xmark & \cmark & \xmark & $\partial$ & \xmark & \xmark & \xmark & \xmark & \cmark \\
+    torch.export
+      & \xmark & \cmark & \xmark & $\partial$ & \xmark & \xmark & \xmark & \xmark & \cmark \\
+    MyPy / Pyright
+      & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+    beartype
+      & \xmark & \xmark & \xmark & \xmark & $\partial$ & \xmark & \xmark & \xmark & \cmark \\
+    \bottomrule
+  \end{tabular}
+\end{table}

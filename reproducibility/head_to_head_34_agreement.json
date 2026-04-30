@@ -1,0 +1,37 @@
+{
+  "_question": "Round 1 — Comet cycle W8/Q1: per-bug agreement matrix on the N=34 modern-subset head-to-head, exposing the b=10 / c=0 strict-subset structure.",
+  "n": 34,
+  "tg_refutes": 32,
+  "pytea_refutes_silent_skip_corrected": 22,
+  "both_refute": 22,
+  "tg_only_b": 10,
+  "pytea_only_c": 0,
+  "neither": 2,
+  "mcnemar_exact_two_sided_p": 0.001953125,
+  "structure": "Strict subset: every Pytea refute on the modern-subset is also a TG refute (c=0).  The 10 TG-only catches (b=10) are the source of the 32 vs 22 gap.",
+  "agreement_matrix": {
+    "tg_R_pytea_R": 22,
+    "tg_R_pytea_VA": 10,
+    "tg_VA_pytea_R": 0,
+    "tg_VA_pytea_VA": 2
+  },
+  "tg_only_catches_bug_ids": [
+    "bug_010", "bug_013", "bug_017", "bug_022", "bug_028",
+    "bug_031", "bug_036", "bug_041", "bug_047", "bug_055"
+  ],
+  "tg_only_catches_categories": {
+    "view_reshape_total_size": 4,
+    "broadcasting_pytea_no_handler": 2,
+    "einsum_dim_pytea_no_handler": 2,
+    "transpose_axes": 1,
+    "linear_in_out": 1
+  },
+  "both_refute_bug_ids_count": 22,
+  "neither_bug_ids": ["bug_001", "bug_002"],
+  "neither_reason": "Both bugs are semantically-aliased view bugs (the buggy and correct view targets agree on total element count); neither tool fires.  Same as the 2/10 silent-verifieds in the upstream-faithful real corpus.",
+  "verification_command": "python3 experiments_v5/v8/pytea_modern_mcnemar.py",
+  "paper_claims_cited": [
+    "Eval section pytea modern-subset paragraph",
+    "Abstract: McNemar p=0.00195 on N=34"
+  ]
+}

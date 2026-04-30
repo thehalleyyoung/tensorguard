@@ -1,0 +1,41 @@
+⚠ [2/15] Built TensorGuard.Soundness
+warning: ././././TensorGuard/Soundness.lean:105:31: unused variable `hk`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [3/15] Built TensorGuard.AssumeGuarantee
+warning: ././././TensorGuard/AssumeGuarantee.lean:105:22: unused variable `s`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+warning: ././././TensorGuard/AssumeGuarantee.lean:105:37: unused variable `s`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [4/15] Built TensorGuard.Extended
+warning: ././././TensorGuard/Extended.lean:123:6: `List.get?_map` has been deprecated, use `List.getElem?_map` instead
+✔ [5/15] Built TensorGuard.Soundness:c.o
+✔ [6/15] Built TensorGuard.Extended:c.o
+✔ [7/15] Built TensorGuard.V5OperatorRules
+✔ [8/15] Built TensorGuard.Parity
+✔ [9/15] Built TensorGuard.Parity:c.o
+⚠ [10/15] Built TensorGuard.AssumeGuaranteeExtended
+warning: ././././TensorGuard/AssumeGuaranteeExtended.lean:141:19: unused variable `m`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+warning: ././././TensorGuard/AssumeGuaranteeExtended.lean:141:28: unused variable `k`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+warning: ././././TensorGuard/AssumeGuaranteeExtended.lean:163:15: unused variable `vocab`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+warning: ././././TensorGuard/AssumeGuaranteeExtended.lean:165:15: unused variable `vocab`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+✔ [11/15] Built TensorGuard
+✖ [13/15] Building ParityRunner
+trace: .> LEAN_PATH=././.lake/build/lib DYLD_LIBRARY_PATH= /Users/halleyyoung/.elan/toolchains/leanprover--lean4---v4.14.0/bin/lean ././././ParityRunner.lean -R ./././. -o ././.lake/build/lib/ParityRunner.olean -i ././.lake/build/lib/ParityRunner.ilean -c ././.lake/build/ir/ParityRunner.c --json
+error: ././././ParityRunner.lean:21:25: application type mismatch
+  Array.map (fun n => Json.num n) ns.toArray
+argument
+  ns.toArray
+has type
+  Array Nat : Type
+but is expected to have type
+  Array Lean.JsonNumber : Type
+warning: ././././ParityRunner.lean:152:10: unused variable `args`
+note: this linter can be disabled with `set_option linter.unusedVariables false`
+error: Lean exited with code 1
+Some required builds logged failures:
+- ParityRunner
+error: build failed

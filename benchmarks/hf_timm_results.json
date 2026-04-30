@@ -1,0 +1,801 @@
+{
+  "summary": {
+    "n_total": 25,
+    "tensorguard": {
+      "verified": 4,
+      "abstain": 18,
+      "rejected": 3
+    },
+    "fx": {
+      "detected_no_bugs": 4,
+      "errored_or_import_failed": 21
+    },
+    "faketensor": {
+      "detected_no_bugs": 4,
+      "errored_or_import_failed": 21
+    },
+    "tg_advantage_count": 2
+  },
+  "corpus_shas": {
+    "transformers": "aadc005711da266af1f75c33185172af9d9f19bf",
+    "timm": "a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5",
+    "nanoGPT": "3adf61e154c3fe3fca428ad6bc3818b27a3b8291",
+    "minGPT": "37baab71b9abea1b76ab957409a1cc2fbfba8a26",
+    "mae": "efb2a8062c206524e35e47d04501ed4f544c0ae8",
+    "mlp_mixer": "b102a9b25cb8bd2360db36cbd252dc4e670fd5e4"
+  },
+  "records": [
+    {
+      "name": "BertSelfAttention",
+      "corpus": "hf",
+      "module_path": "transformers/src/transformers/models/bert/modeling_bert.py",
+      "sha": "aadc005711da266af1f75c33185172af9d9f19bf",
+      "src_url": "https://github.com/huggingface/transformers/blob/aadc005711da266af1f75c33185172af9d9f19bf/src/transformers/models/bert/modeling_bert.py",
+      "extracted_lines": 44,
+      "input_shape": [
+        1,
+        16,
+        768
+      ],
+      "tg_input_shapes": {
+        "hidden_states": [
+          1,
+          16,
+          768
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=2; warning: [DEAD-OUTPUT] Result 'current_past_key_values' is computed but never used or returned",
+      "tg_n_bugs": 1,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 2,
+      "tg_duration_ms": 272.13,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: fx-trace: TraceError: Proxy object cannot be iterated. This can be attempted when the Proxy is used in a loop or as a *args or **kwargs function argument. See the torch.fx docs on pytorch.org for a mo",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: NameError: name 'ALL_ATTENTION_FUNCTIONS' is not defined"
+    },
+    {
+      "name": "BertSelfOutput",
+      "corpus": "hf",
+      "module_path": "transformers/src/transformers/models/bert/modeling_bert.py",
+      "sha": "aadc005711da266af1f75c33185172af9d9f19bf",
+      "src_url": "https://github.com/huggingface/transformers/blob/aadc005711da266af1f75c33185172af9d9f19bf/src/transformers/models/bert/modeling_bert.py",
+      "extracted_lines": 23,
+      "input_shape": [
+        1,
+        16,
+        768
+      ],
+      "tg_input_shapes": {
+        "hidden_states": [
+          1,
+          16,
+          768
+        ],
+        "input_tensor": [
+          1,
+          16,
+          768
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "warnings only: [SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 2:\n  grad_input_tensor_s1 = False\n  dev_input_tensor_s2 = CPU_3\n  dev_hidden_states_s2 = CPU_3\n  ",
+      "tg_n_bugs": 1,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 0,
+      "tg_duration_ms": 60.62,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "detected: RuntimeError: ShapeProp error for: node=%input_tensor : 'torch.Tensor' [num_users=1] = placeholder[target=input_tensor] with meta={}\n\nWhile executing %input_tensor : 'torch.Tensor' [num_users=1] = pla",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: TypeError: BertSelfOutput.forward() missing 1 required positional argument: 'input_tensor'"
+    },
+    {
+      "name": "BertIntermediate",
+      "corpus": "hf",
+      "module_path": "transformers/src/transformers/models/bert/modeling_bert.py",
+      "sha": "aadc005711da266af1f75c33185172af9d9f19bf",
+      "src_url": "https://github.com/huggingface/transformers/blob/aadc005711da266af1f75c33185172af9d9f19bf/src/transformers/models/bert/modeling_bert.py",
+      "extracted_lines": 24,
+      "input_shape": [
+        1,
+        16,
+        768
+      ],
+      "tg_input_shapes": {
+        "hidden_states": [
+          1,
+          16,
+          768
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=1",
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 1,
+      "tg_duration_ms": 13.93,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: NameError: name 'ACT2FN' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: NameError: name 'ACT2FN' is not defined"
+    },
+    {
+      "name": "BertOutput",
+      "corpus": "hf",
+      "module_path": "transformers/src/transformers/models/bert/modeling_bert.py",
+      "sha": "aadc005711da266af1f75c33185172af9d9f19bf",
+      "src_url": "https://github.com/huggingface/transformers/blob/aadc005711da266af1f75c33185172af9d9f19bf/src/transformers/models/bert/modeling_bert.py",
+      "extracted_lines": 23,
+      "input_shape": [
+        1,
+        16,
+        3072
+      ],
+      "tg_input_shapes": {
+        "hidden_states": [
+          1,
+          16,
+          3072
+        ],
+        "input_tensor": [
+          1,
+          16,
+          768
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "warnings only: [SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 2:\n  grad_input_tensor_s1 = False\n  dev_input_tensor_s2 = CPU_7\n  phase_s1 = TRAIN_7\n  dev_hidden",
+      "tg_n_bugs": 1,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 0,
+      "tg_duration_ms": 36.98,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "detected: RuntimeError: ShapeProp error for: node=%input_tensor : 'torch.Tensor' [num_users=1] = placeholder[target=input_tensor] with meta={}\n\nWhile executing %input_tensor : 'torch.Tensor' [num_users=1] = pla",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: TypeError: BertOutput.forward() missing 1 required positional argument: 'input_tensor'"
+    },
+    {
+      "name": "GPT2Attention",
+      "corpus": "hf",
+      "module_path": "transformers/src/transformers/models/gpt2/modeling_gpt2.py",
+      "sha": "aadc005711da266af1f75c33185172af9d9f19bf",
+      "src_url": "https://github.com/huggingface/transformers/blob/aadc005711da266af1f75c33185172af9d9f19bf/src/transformers/models/gpt2/modeling_gpt2.py",
+      "extracted_lines": 105,
+      "input_shape": [
+        1,
+        16,
+        768
+      ],
+      "tg_input_shapes": {
+        "hidden_states": [
+          1,
+          16,
+          768
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=5; warning: [USE-BEFORE-DEF] Variable 'query_states' used before definition at line 90",
+      "tg_n_bugs": 4,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 5,
+      "tg_duration_ms": 102.08,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: NameError: name 'Conv1D' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: NameError: name 'Conv1D' is not defined"
+    },
+    {
+      "name": "GPT2MLP",
+      "corpus": "hf",
+      "module_path": "transformers/src/transformers/models/gpt2/modeling_gpt2.py",
+      "sha": "aadc005711da266af1f75c33185172af9d9f19bf",
+      "src_url": "https://github.com/huggingface/transformers/blob/aadc005711da266af1f75c33185172af9d9f19bf/src/transformers/models/gpt2/modeling_gpt2.py",
+      "extracted_lines": 26,
+      "input_shape": [
+        1,
+        16,
+        768
+      ],
+      "tg_input_shapes": {
+        "hidden_states": [
+          1,
+          16,
+          768
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=3",
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 3,
+      "tg_duration_ms": 24.13,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: NameError: name 'Conv1D' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: NameError: name 'Conv1D' is not defined"
+    },
+    {
+      "name": "ViTSelfAttention",
+      "corpus": "hf",
+      "module_path": "transformers/src/transformers/models/vit/modeling_vit.py",
+      "sha": "aadc005711da266af1f75c33185172af9d9f19bf",
+      "src_url": "https://github.com/huggingface/transformers/blob/aadc005711da266af1f75c33185172af9d9f19bf/src/transformers/models/vit/modeling_vit.py",
+      "extracted_lines": 38,
+      "input_shape": [
+        1,
+        197,
+        768
+      ],
+      "tg_input_shapes": {
+        "hidden_states": [
+          1,
+          197,
+          768
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=2",
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 2,
+      "tg_duration_ms": 139.15,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: AttributeError: '_Cfg' object has no attribute 'qkv_bias'",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: AttributeError: '_Cfg' object has no attribute 'qkv_bias'"
+    },
+    {
+      "name": "ViTSelfOutput",
+      "corpus": "hf",
+      "module_path": "transformers/src/transformers/models/vit/modeling_vit.py",
+      "sha": "aadc005711da266af1f75c33185172af9d9f19bf",
+      "src_url": "https://github.com/huggingface/transformers/blob/aadc005711da266af1f75c33185172af9d9f19bf/src/transformers/models/vit/modeling_vit.py",
+      "extracted_lines": 25,
+      "input_shape": [
+        1,
+        197,
+        768
+      ],
+      "tg_input_shapes": {
+        "hidden_states": [
+          1,
+          197,
+          768
+        ],
+        "input_tensor": [
+          1,
+          197,
+          768
+        ]
+      },
+      "tg_verdict": "verified",
+      "tg_abstain_cause": null,
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 0,
+      "tg_duration_ms": 17.48,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "detected: RuntimeError: ShapeProp error for: node=%input_tensor : 'torch.Tensor' [num_users=0] = placeholder[target=input_tensor] with meta={}\n\nWhile executing %input_tensor : 'torch.Tensor' [num_users=0] = pla",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: TypeError: ViTSelfOutput.forward() missing 1 required positional argument: 'input_tensor'"
+    },
+    {
+      "name": "LlamaRMSNorm",
+      "corpus": "hf",
+      "module_path": "transformers/src/transformers/models/llama/modeling_llama.py",
+      "sha": "aadc005711da266af1f75c33185172af9d9f19bf",
+      "src_url": "https://github.com/huggingface/transformers/blob/aadc005711da266af1f75c33185172af9d9f19bf/src/transformers/models/llama/modeling_llama.py",
+      "extracted_lines": 30,
+      "input_shape": [
+        1,
+        16,
+        768
+      ],
+      "tg_input_shapes": {
+        "hidden_states": [
+          1,
+          16,
+          768
+        ]
+      },
+      "tg_verdict": "verified",
+      "tg_abstain_cause": null,
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 0,
+      "tg_duration_ms": 40.0,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "import-failed: NameError: name 'use_kernel_forward_from_hub' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "import-failed: NameError: name 'use_kernel_forward_from_hub' is not defined"
+    },
+    {
+      "name": "T5LayerFF",
+      "corpus": "hf",
+      "module_path": "transformers/src/transformers/models/t5/modeling_t5.py",
+      "sha": "aadc005711da266af1f75c33185172af9d9f19bf",
+      "src_url": "https://github.com/huggingface/transformers/blob/aadc005711da266af1f75c33185172af9d9f19bf/src/transformers/models/t5/modeling_t5.py",
+      "extracted_lines": 84,
+      "input_shape": [
+        1,
+        16,
+        768
+      ],
+      "tg_input_shapes": {
+        "hidden_states": [
+          1,
+          16,
+          768
+        ]
+      },
+      "tg_verdict": "rejected",
+      "tg_abstain_cause": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 3:\n  _unk_act_0 = 1\n  _unk_act_1 = 2\n  grad_forwarded_states_s3 = False\n  dev_forwarded_states_s2 = CPU_19\n  grad_forwarded_states_s2 = F",
+      "tg_n_bugs": 1,
+      "tg_n_errors": 1,
+      "tg_opaque_layer_count": 1,
+      "tg_duration_ms": 42.33,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: NameError: name 'ACT2FN' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: NameError: name 'ACT2FN' is not defined"
+    },
+    {
+      "name": "timm_Attention",
+      "corpus": "timm",
+      "module_path": "timm/timm/layers/attention.py",
+      "sha": "a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5",
+      "src_url": "https://github.com/huggingface/pytorch-image-models/blob/a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5/timm/layers/attention.py",
+      "extracted_lines": 78,
+      "input_shape": [
+        1,
+        197,
+        768
+      ],
+      "tg_input_shapes": {
+        "x": [
+          1,
+          197,
+          768
+        ]
+      },
+      "tg_verdict": "rejected",
+      "tg_abstain_cause": "[SHAPE-INCOMPATIBLE] Reshape incompatible: cannot reshape TensorShape(dims=(1, 197, _unk_lin_out_qkv)) to (1, 197, 3, 8, -1)",
+      "tg_n_bugs": 1,
+      "tg_n_errors": 1,
+      "tg_opaque_layer_count": 5,
+      "tg_duration_ms": 83.74,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: NameError: name 'use_fused_attn' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: NameError: name 'use_fused_attn' is not defined"
+    },
+    {
+      "name": "timm_LayerScale",
+      "corpus": "timm",
+      "module_path": "timm/timm/layers/layer_scale.py",
+      "sha": "a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5",
+      "src_url": "https://github.com/huggingface/pytorch-image-models/blob/a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5/timm/layers/layer_scale.py",
+      "extracted_lines": 26,
+      "input_shape": [
+        1,
+        197,
+        768
+      ],
+      "tg_input_shapes": {
+        "x": [
+          1,
+          197,
+          768
+        ]
+      },
+      "tg_verdict": "verified",
+      "tg_abstain_cause": null,
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 0,
+      "tg_duration_ms": 5.16,
+      "fx_verdict": "detected_no_bugs",
+      "fx_msg": "ShapeProp completed",
+      "fakettensor_verdict": "detected_no_bugs",
+      "fakettensor_msg": "FakeTensor forward completed"
+    },
+    {
+      "name": "timm_layers_Mlp",
+      "corpus": "timm",
+      "module_path": "timm/timm/layers/mlp.py",
+      "sha": "a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5",
+      "src_url": "https://github.com/huggingface/pytorch-image-models/blob/a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5/timm/layers/mlp.py",
+      "extracted_lines": 39,
+      "input_shape": [
+        1,
+        197,
+        768
+      ],
+      "tg_input_shapes": {
+        "x": [
+          1,
+          197,
+          768
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=4",
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 4,
+      "tg_duration_ms": 37.01,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: NameError: name 'to_2tuple' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: NameError: name 'to_2tuple' is not defined"
+    },
+    {
+      "name": "timm_layers_GluMlp",
+      "corpus": "timm",
+      "module_path": "timm/timm/layers/mlp.py",
+      "sha": "a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5",
+      "src_url": "https://github.com/huggingface/pytorch-image-models/blob/a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5/timm/layers/mlp.py",
+      "extracted_lines": 49,
+      "input_shape": [
+        1,
+        197,
+        768
+      ],
+      "tg_input_shapes": {
+        "x": [
+          1,
+          197,
+          768
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=4",
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 4,
+      "tg_duration_ms": 45.28,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: NameError: name 'to_2tuple' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: NameError: name 'to_2tuple' is not defined"
+    },
+    {
+      "name": "timm_layers_GatedMlp",
+      "corpus": "timm",
+      "module_path": "timm/timm/layers/mlp.py",
+      "sha": "a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5",
+      "src_url": "https://github.com/huggingface/pytorch-image-models/blob/a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5/timm/layers/mlp.py",
+      "extracted_lines": 43,
+      "input_shape": [
+        1,
+        197,
+        768
+      ],
+      "tg_input_shapes": {
+        "x": [
+          1,
+          197,
+          768
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=2",
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 2,
+      "tg_duration_ms": 38.8,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: NameError: name 'to_2tuple' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: NameError: name 'to_2tuple' is not defined"
+    },
+    {
+      "name": "timm_layers_ConvMlp",
+      "corpus": "timm",
+      "module_path": "timm/timm/layers/mlp.py",
+      "sha": "a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5",
+      "src_url": "https://github.com/huggingface/pytorch-image-models/blob/a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5/timm/layers/mlp.py",
+      "extracted_lines": 33,
+      "input_shape": [
+        1,
+        96,
+        14,
+        14
+      ],
+      "tg_input_shapes": {
+        "x": [
+          1,
+          96,
+          14,
+          14
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=2",
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 2,
+      "tg_duration_ms": 33.07,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: NameError: name 'to_2tuple' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: NameError: name 'to_2tuple' is not defined"
+    },
+    {
+      "name": "timm_vit_Block",
+      "corpus": "timm",
+      "module_path": "timm/timm/models/vision_transformer.py",
+      "sha": "a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5",
+      "src_url": "https://github.com/huggingface/pytorch-image-models/blob/a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5/timm/models/vision_transformer.py",
+      "extracted_lines": 48,
+      "input_shape": [
+        1,
+        197,
+        768
+      ],
+      "tg_input_shapes": {
+        "x": [
+          1,
+          197,
+          768
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=8",
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 8,
+      "tg_duration_ms": 99.0,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "import-failed: NameError: name 'LayerNorm' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "import-failed: NameError: name 'LayerNorm' is not defined"
+    },
+    {
+      "name": "timm_vit_ResPostBlock",
+      "corpus": "timm",
+      "module_path": "timm/timm/models/vision_transformer.py",
+      "sha": "a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5",
+      "src_url": "https://github.com/huggingface/pytorch-image-models/blob/a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5/timm/models/vision_transformer.py",
+      "extracted_lines": 33,
+      "input_shape": [
+        1,
+        197,
+        768
+      ],
+      "tg_input_shapes": {
+        "x": [
+          1,
+          197,
+          768
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=6",
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 6,
+      "tg_duration_ms": 76.58,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "import-failed: NameError: name 'LayerNorm' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "import-failed: NameError: name 'LayerNorm' is not defined"
+    },
+    {
+      "name": "timm_swin_WindowAttention",
+      "corpus": "timm",
+      "module_path": "timm/timm/models/swin_transformer.py",
+      "sha": "a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5",
+      "src_url": "https://github.com/huggingface/pytorch-image-models/blob/a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5/timm/models/swin_transformer.py",
+      "extracted_lines": 118,
+      "input_shape": [
+        64,
+        49,
+        96
+      ],
+      "tg_input_shapes": {
+        "x": [
+          64,
+          49,
+          96
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=3; warning: [DEAD-OUTPUT] Result 'num_win' is computed but never used or returned",
+      "tg_n_bugs": 2,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 3,
+      "tg_duration_ms": 85.75,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: NameError: name 'to_2tuple' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: NameError: name 'to_2tuple' is not defined"
+    },
+    {
+      "name": "timm_ConvNeXtBlock",
+      "corpus": "timm",
+      "module_path": "timm/timm/models/convnext.py",
+      "sha": "a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5",
+      "src_url": "https://github.com/huggingface/pytorch-image-models/blob/a60ce8b717ee8f3c01c3fd0011121dd086fd3ee5/timm/models/convnext.py",
+      "extracted_lines": 75,
+      "input_shape": [
+        1,
+        96,
+        14,
+        14
+      ],
+      "tg_input_shapes": {
+        "x": [
+          1,
+          96,
+          14,
+          14
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=4",
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 4,
+      "tg_duration_ms": 59.01,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: NameError: name 'to_ntuple' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: NameError: name 'to_ntuple' is not defined"
+    },
+    {
+      "name": "nanoGPT_CausalSelfAttention",
+      "corpus": "research",
+      "module_path": "nanoGPT_model.py",
+      "sha": "3adf61e154c3fe3fca428ad6bc3818b27a3b8291",
+      "src_url": "https://raw.githubusercontent.com/karpathy/nanoGPT/master/model.py",
+      "extracted_lines": 44,
+      "input_shape": [
+        1,
+        16,
+        32
+      ],
+      "tg_input_shapes": {
+        "x": [
+          1,
+          16,
+          32
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=1; warning: [DEVICE-MISMATCH] Z3 violation (device_mismatch) at step 14:\n  dev___inner_16_s13 = CUDA_0_41\n  grad_x_s13 = False\n  dev",
+      "tg_n_bugs": 2,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 1,
+      "tg_duration_ms": 239.51,
+      "fx_verdict": "detected_no_bugs",
+      "fx_msg": "ShapeProp completed",
+      "fakettensor_verdict": "detected_no_bugs",
+      "fakettensor_msg": "FakeTensor forward completed"
+    },
+    {
+      "name": "nanoGPT_MLP",
+      "corpus": "research",
+      "module_path": "nanoGPT_model.py",
+      "sha": "3adf61e154c3fe3fca428ad6bc3818b27a3b8291",
+      "src_url": "https://raw.githubusercontent.com/karpathy/nanoGPT/master/model.py",
+      "extracted_lines": 25,
+      "input_shape": [
+        1,
+        16,
+        32
+      ],
+      "tg_input_shapes": {
+        "x": [
+          1,
+          16,
+          32
+        ]
+      },
+      "tg_verdict": "verified",
+      "tg_abstain_cause": null,
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 0,
+      "tg_duration_ms": 24.52,
+      "fx_verdict": "detected_no_bugs",
+      "fx_msg": "ShapeProp completed",
+      "fakettensor_verdict": "detected_no_bugs",
+      "fakettensor_msg": "FakeTensor forward completed"
+    },
+    {
+      "name": "minGPT_CausalSelfAttention",
+      "corpus": "research",
+      "module_path": "minGPT_model.py",
+      "sha": "37baab71b9abea1b76ab957409a1cc2fbfba8a26",
+      "src_url": "https://raw.githubusercontent.com/karpathy/minGPT/master/mingpt/model.py",
+      "extracted_lines": 42,
+      "input_shape": [
+        1,
+        16,
+        32
+      ],
+      "tg_input_shapes": {
+        "x": [
+          1,
+          16,
+          32
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "warnings only: [DEVICE-MISMATCH] Z3 violation (device_mismatch) at step 20:\n  grad_x_s13 = False\n  dev_k_s4 = CPU_45\n  grad___binop_7_s18 = False\n  grad___binop_5_s20 = True\n ",
+      "tg_n_bugs": 3,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 0,
+      "tg_duration_ms": 433.35,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: AttributeError: '_Cfg' object has no attribute 'attn_pdrop'",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: AttributeError: '_Cfg' object has no attribute 'attn_pdrop'"
+    },
+    {
+      "name": "MAE_MaskedAutoencoderViT",
+      "corpus": "research",
+      "module_path": "mae_models.py",
+      "sha": "efb2a8062c206524e35e47d04501ed4f544c0ae8",
+      "src_url": "https://raw.githubusercontent.com/facebookresearch/mae/main/models_mae.py",
+      "extracted_lines": 142,
+      "input_shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "tg_input_shapes": {
+        "imgs": [
+          1,
+          3,
+          224,
+          224
+        ]
+      },
+      "tg_verdict": "abstain",
+      "tg_abstain_cause": "opaque_layers=6",
+      "tg_n_bugs": 0,
+      "tg_n_errors": 0,
+      "tg_opaque_layer_count": 6,
+      "tg_duration_ms": 36.4,
+      "fx_verdict": "error_or_import_failed",
+      "fx_msg": "tool-error: NameError: name 'PatchEmbed' is not defined",
+      "fakettensor_verdict": "error_or_import_failed",
+      "fakettensor_msg": "tool-error: NameError: name 'PatchEmbed' is not defined"
+    },
+    {
+      "name": "MLPMixer_MixerBlock",
+      "corpus": "research",
+      "module_path": "mlp_mixer_block.py",
+      "sha": "b102a9b25cb8bd2360db36cbd252dc4e670fd5e4",
+      "src_url": "https://raw.githubusercontent.com/lucidrains/mlp-mixer-pytorch/main/mlp_mixer_pytorch/mlp_mixer_pytorch.py",
+      "extracted_lines": 37,
+      "input_shape": [
+        1,
+        16,
+        32
+      ],
+      "tg_input_shapes": {
+        "x": [
+          1,
+          16,
+          32
+        ]
+      },
+      "tg_verdict": "rejected",
+      "tg_abstain_cause": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 4:\n  grad_y_s2 = True\n  grad___inner_1_s4 = True\n  grad_x_s0 = False\n  dev_x_s0 = CPU_49\n  dev___inner_1_s3 = CPU_49\n  dev___inner_2_s3 =",
+      "tg_n_bugs": 2,
+      "tg_n_errors": 2,
+      "tg_opaque_layer_count": 0,
+      "tg_duration_ms": 73.38,
+      "fx_verdict": "detected_no_bugs",
+      "fx_msg": "ShapeProp completed",
+      "fakettensor_verdict": "detected_no_bugs",
+      "fakettensor_msg": "FakeTensor forward completed"
+    }
+  ],
+  "excluded": []
+}

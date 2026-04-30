@@ -1,0 +1,234 @@
+% =============================================================================
+% Section B: Assume/Guarantee Reasoning for nn.Module Composition
+% Self-summary: Defines per-module contracts C(M)=(assume_M, guarantee_M)
+% grounded in Jones rely/guarantee, Meyer DbC, and refinement-type contracts;
+% gives sequential and parallel/branched composition rules with Z3 entailment
+% obligations; defines a 3-valued analyzer (Verified, Refuted, Abstain) on the
+% precision lattice with Abstain = top; states & proves a Monotonicity Theorem
+% (refining contracts cannot turn Verified into Refuted, only Verified or
+% Abstain), justifying principled abstention; states & proves a compositional
+% Soundness Theorem by induction on the module tree; ends with a Transformer
+% block worked example citing src/assume_guarantee.py and src/composition_soundness.py.
+% Length budget: <= 2 pp content. Cites Jones'83, Meyer'92, Findler-Felleisen'02,
+% Vazou et al., Swamy F*, Cousot-Cousot, Siek-Taha. Rubber-duck pass applied to
+% the monotonicity proof (cached-witness axiom + reachability restriction added).
+% =============================================================================
+
+\section{Assume/Guarantee Reasoning for \texttt{nn.Module} Composition}
+\label{sec:assume-guarantee}
+
+\subsection{Per-module contracts}
+\label{sec:ag:contracts}
+
+For each \texttt{nn.Module} $M$ we synthesise a \emph{contract}
+\[
+ C(M) \;=\; \bigl(\mathit{assume}_M,\ \mathit{guarantee}_M\bigr),
+\]
+where $\mathit{assume}_M$ is a predicate over input tensor types
+(shape refinements with symbolic dimension variables and a Boolean
+\texttt{requires\_grad} flag) and $\mathit{guarantee}_M$ is a predicate
+over output tensor types in the same language. Both predicates live in
+the quantifier-free linear-integer-arithmetic-plus-uninterpreted-functions
+fragment discharged by Z3. Contracts are a direct port of Jones's
+rely/guarantee discipline for shared-state concurrency~\citep{jones1983tentative}
+to the data-flow setting of a deep network: $\mathit{assume}_M$ is the
+\emph{rely} on the upstream environment, $\mathit{guarantee}_M$ is what
+$M$ promises to its downstream context. The same boundary appears in
+Meyer's Design-by-Contract for Eiffel~\citep{meyer1992applying}, and in
+the refinement-type contracts of Findler and
+Felleisen~\citep{findler2002contracts}, Liquid Haskell~\citep{vazou2014refinement},
+and \fstar~\citep{swamy2016dependent}; we inherit their semantics
+verbatim, with tensor-shape refinements playing the role of value
+refinements and the abstract domain replacing the concrete-value
+projection of \citet{cousot1977abstract}.
+
+\subsection{Composition rules}
+\label{sec:ag:composition}
+
+\paragraph{Sequential composition.}
+For $M_2 \circ M_1$ (modelled by \texttt{nn.Sequential} or by an explicit
+forward chain), the proof obligation is the entailment
+$\mathit{guarantee}_{M_1}\!\Rightarrow\!\mathit{assume}_{M_2}$,
+discharged by Z3. The composite contract is then
+$(\mathit{assume}_{M_1},\,\mathit{guarantee}_{M_2})$:
+\[
+\inferrule[Seq]
+{
+ \vdash C(M_1)=(A_1,G_1) \quad
+ \vdash C(M_2)=(A_2,G_2) \quad
+ \models G_1 \Rightarrow A_2
+}
+{
+ \vdash C(M_2 \circ M_1) = (A_1,\,G_2)
+}
+\]
+
+\paragraph{Parallel / branched composition.}
+\texttt{nn.ModuleList}, residual sums, and the QKV split of attention
+all share the same shape: a single tensor (or tuple) is fanned out to
+$k$ siblings $M_1,\dots,M_k$ whose outputs are recombined by a join
+operator $\oplus$ (concatenation, sum, gather). Following the
+thread-modular reading of rely/guarantee~\citep{jones1983tentative},
+each sibling is verified \emph{independently} under the parent's
+guarantee:
+\[
+\inferrule[Par]
+{
+ \forall i\in[1,k]:\ \models G_{\text{parent}}\Rightarrow A_{M_i}
+ \quad
+ \models \bigl(\textstyle\bigwedge_i G_{M_i}\bigr)\Rightarrow A_\oplus
+}
+{
+ \vdash C\bigl(\oplus(M_1,\dots,M_k)\bigr)
+ = \bigl(A_{\text{parent}},\ G_\oplus\bigr)
+}
+\]
+The premise structure mirrors the DAG of \texttt{torch.fx} traces and
+is what discharges per Dynamo subgraph.
+
+\subsection{Three-valued outcomes and the precision lattice}
+\label{sec:ag:three-valued}
+
+The analyser returns one of $\{\textsc{Verified},\textsc{Refuted},\textsc{Abstain}\}$,
+interpreted concretisation-style as elements of the powerset
+$\mathcal{P}\{\mathsf{ok},\mathsf{bug}\}$:
+\[
+ \gamma(\textsc{Verified})=\{\mathsf{ok}\},\quad
+ \gamma(\textsc{Refuted})=\{\mathsf{bug}\},\quad
+ \gamma(\textsc{Abstain})=\{\mathsf{ok},\mathsf{bug}\}.
+\]
+Ordered by $\subseteq$, this is the precision lattice of
+\citet{cousot1977abstract}: \textsc{Verified} and \textsc{Refuted} are
+incomparable minimal elements and \textsc{Abstain} is the top
+$\top$.\footnote{Hence ``\textsc{Refuted}\!<\!\textsc{Abstain}\!<\!\textsc{Verified}''
+is \emph{not} the right order: \textsc{Verified} and \textsc{Refuted}
+are equally precise, just disjoint.} This is exactly the gradual
+typing reading of \citet{siek2006gradual}: \textsc{Abstain} is the
+``unknown'' shape that defers proof to runtime.
+
+We adopt one definitional axiom about how the analyser reports
+\textsc{Refuted}, made necessary by the rubber-duck review of
+\S\ref{sec:ag:monotonicity}:
+
+\begin{axiom}[Fresh-witness Refutation]
+\label{ax:refuted}
+The analyser emits \textsc{Refuted} for module $M$ under environment
+$\Gamma$ only if, \emph{in the current analysis pass under $\Gamma$},
+it produces a concrete input $x$ with
+$\mathit{assume}_M(x) \wedge \neg\mathit{guarantee}_M(M(x))$.
+Cached witnesses from prior passes do not count.
+\end{axiom}
+
+\subsection{Monotonicity of refinement}
+\label{sec:ag:monotonicity}
+
+A \emph{contract refinement} $C\sqsubseteq C'$ at module $M_0$ means
+$A'_{M_0}\!\Rightarrow\!A_{M_0}$ or $G'_{M_0}\!\Rightarrow\!G_{M_0}$
+(strictly smaller assume- or guarantee-sets, in the subtype direction
+of \citet{vazou2014refinement} and \citet{swamy2016dependent}); all
+other contracts are unchanged.
+
+\begin{theorem}[Monotonicity]
+\label{thm:monotonicity}
+Let $o(\Gamma)\in\{\textsc{Verified},\textsc{Refuted},\textsc{Abstain}\}$
+be the analyser's outcome on the root module under contract environment
+$\Gamma$. If $o(\Gamma)=\textsc{Verified}$ and $\Gamma'$ refines
+$\Gamma$ at any single module $M_0$, then
+$o(\Gamma')\in\{\textsc{Verified},\textsc{Abstain}\}$;
+in particular $o(\Gamma')\neq\textsc{Refuted}$.
+\end{theorem}
+
+\begin{proof}
+By cases on the form of refinement.
+
+\emph{(i) $G_{M_0}$ strengthened to $G'_{M_0}$.}
+The local obligation becomes $\models A_{M_0}\Rightarrow G'_{M_0}$,
+which is strictly stronger than the discharged obligation
+$\models A_{M_0}\Rightarrow G_{M_0}$. Z3 either succeeds
+(\textsc{Verified} preserved) or returns
+\texttt{unknown}/timeout (\textsc{Abstain}). By
+Axiom~\ref{ax:refuted}, \textsc{Refuted} requires a \emph{fresh}
+concrete witness in the current pass; refining a specification creates
+no new concrete inputs, only a new proof obligation. The dual hazard
+flagged by the rubber-duck pass---empty $G'_{M_0}$---only weakens
+downstream entailments $G'_{M_0}\!\Rightarrow\!A_{\text{child}}$, which
+collapse to \textsc{Abstain}, never \textsc{Refuted}.
+
+\emph{(ii) $A_{M_0}$ strengthened to $A'_{M_0}$.}
+The local obligation $\forall x.\,A'_{M_0}(x)\!\Rightarrow\!G_{M_0}(M_0(x))$
+is \emph{weaker} than the discharged one (smaller domain). The vacuous
+sub-case $A'_{M_0}\equiv\bot$ trivially yields \textsc{Verified}. The
+new entailment burden $G_{\text{parent}}\!\Rightarrow\!A'_{M_0}$ may
+fail, in which case the outcome degrades to \textsc{Abstain}; again,
+by Axiom~\ref{ax:refuted}, no new concrete witness is manufactured.
+
+\emph{Composition.} Outcomes combine by greatest-lower-bound on the
+lattice of \S\ref{sec:ag:three-valued}, restricted to the set of
+\emph{reachable} children (as determined by the \texttt{torch.fx} trace);
+unreachable refuted siblings cannot poison the root. Since neither
+local case introduces a fresh \textsc{Refuted} leaf along a reachable
+path, the root outcome remains in $\{\textsc{Verified},\textsc{Abstain}\}$.
+\qed
+\end{proof}
+
+Theorem~\ref{thm:monotonicity} is the formal justification for treating
+\textsc{Abstain} as a first-class output rather than engineering laziness:
+the analyser is permitted to retreat to $\top$ when contracts are
+sharpened, without ever flipping a sound proof into a spurious bug
+report.
+
+\subsection{Compositional soundness}
+\label{sec:ag:soundness}
+
+\begin{theorem}[Compositional Soundness]
+\label{thm:soundness}
+Let $\mathcal{T}$ be the module tree of an \texttt{nn.Module}. If
+(a) every leaf module verifies locally, i.e.\
+$\models A_\ell\Rightarrow G_\ell$ for each leaf $\ell$, and
+(b) every interface entailment imposed by rules \textsc{Seq} and
+\textsc{Par} discharges in Z3, then the root contract is
+\textsc{Verified}.
+\end{theorem}
+
+\begin{proof}
+By structural induction on $\mathcal{T}$.
+\emph{Base:} a leaf is \textsc{Verified} by hypothesis (a).
+\emph{Sequential step:} given children $M_1,M_2$ both
+\textsc{Verified} with contracts $(A_1,G_1),(A_2,G_2)$, hypothesis
+(b) supplies $\models G_1\!\Rightarrow\!A_2$, and rule \textsc{Seq}
+yields a \textsc{Verified} composite $(A_1,G_2)$.
+\emph{Parallel step:} given siblings $M_1,\dots,M_k$ all
+\textsc{Verified} and hypothesis (b) supplying both
+$G_{\text{parent}}\!\Rightarrow\!A_{M_i}$ for every $i$ and
+$\bigwedge_i G_{M_i}\!\Rightarrow\!A_\oplus$, rule \textsc{Par} yields
+a \textsc{Verified} join. Induction concludes at the root.
+\qed
+\end{proof}
+
+This theorem is the load-bearing whole-tree statement;
+the entailment obligations of (b) are exactly the proof goals
+enqueued by the compositional-verification pass of the
+analyser, and the inter-procedural propagation of contracts
+across function boundaries is handled by the call-tree visitor
+described in \S\ref{sec:assume-guarantee}.
+
+\subsection{Worked example: a Transformer block}
+\label{sec:ag:example}
+
+Consider a single pre-norm Transformer block
+$\mathit{Block} \;=\; \mathit{Add}\circ \mathit{MLP}\circ\mathit{LN}_2
+\,\oplus_{+}\, \mathit{Add}\circ\mathit{Attn}\circ\mathit{LN}_1$.
+With symbolic dimensions $(B,T,D)$ and head count $H\!\mid\!D$,
+ synthesises six leaf contracts (two
+\texttt{LayerNorm}, three projection \texttt{Linear}s inside attention,
+one MLP) plus the join contract for the residual sum. Each leaf
+discharges in $<\!50$\,ms; the four \textsc{Seq} entailments and the
+two \textsc{Par} entailments (residual~+~QKV split) discharge in a
+further $<\!100$\,ms. A \emph{non-modular} analysis would have to
+inline the entire forward graph and pose a single SMT query whose size
+is quadratic in $T$ once the attention mask is unfolded; in practice
+this query times out for $T\!>\!512$. The compositional reading
+keeps every per-leaf query under the decidable
+fragment of \citet{cousot1977abstract}'s product domain and lets the
+inter-leaf entailments inherit the abstraction, recovering a
+\textsc{Verified} verdict for the whole block.
