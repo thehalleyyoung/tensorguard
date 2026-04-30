@@ -1792,3 +1792,38 @@ informative: complex constructor signatures in the conv,
 reshape, and unknown-handler buckets do not survive the
 permissive stub-mock, an observation we report rather than
 suppress.
+
+A more powered \emph{proportionally-allocated} stratified
+resample (seed $20260430$, target $n{=}80$, minimum $2$ per
+stratum across the same $8$ handler families) draws
+$\mathbf{n{=}83}$ rows from the $371$-Verified
+tied-weight population and reports
+$\mathbf{2/47}$ silently-incorrect verdicts among the $47$
+instantiable rows (Wilson 95\% CI
+$\mathbf{[0.66\%, 8.37\%]}$), tightening the upper end of
+the previous \mbox{$13.32\%$} envelope to $\mathbf{8.37\%}$
+on the same population. Both silent-error rows fall in the
+\emph{linear-only} stratum (population $134$, sampled $29$,
+instantiable $15$): a token-classification head and a
+span-classification head on which the analyser returns
+\textsc{Verified} but the one-step backward delivers a
+gradient to $0$ of the required-grad leaf parameters
+because the loss-side reduction sits behind a
+detached-from-graph projection that the first-order
+\texttt{requires\_grad} lattice approximates as still
+flowing. The remaining seven strata
+(\textit{attention}, \textit{broadcast-elementwise},
+\textit{conv}, \textit{embedding}, \textit{no-handler},
+\textit{norm}, \textit{reshape}) report
+$\mathbf{0}$ silent errors over the $32$ other instantiable
+rows. We report the $n{=}83$ figure as the headline
+silent-error envelope on the Verified tied-weight
+subpopulation; it strictly subsumes the $0/25$ and
+$0/14$ runs above. The two silently-incorrect rows are
+both linear-only classification heads, not
+tied/renamed-attribute parameter-sharing instances; the
+backward verifier's worst-case construct-family rate of
+$2/8$ on tied/renamed sharing is therefore not the unique
+silent-error class on the Verified subpopulation, and the
+deployment-side bound in \Cref{sec:limconc} is restated
+accordingly.

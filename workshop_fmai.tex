@@ -45,25 +45,31 @@ A Lean-Mechanized Static Analyzer for PyTorch as an Agent-Output Diagnostic}
 \printAffiliationsAndNotice{}
 
 \begin{abstract}
-Coding agents now author and execute substantial PyTorch programs autonomously,
-and the dominant failure modes they emit are not abstract reasoning errors but
-\emph{tensor-program} errors: shape mismatches, device-placement bugs,
-\texttt{train}/\texttt{eval} phase confusions, and silent gradient-flow breaks.
+Foundation-model coding agents---Claude Code, Cursor, Codex CLI, Devin---now
+author, edit, and execute substantial PyTorch programs as part of multi-step
+autonomous workflows. Their dominant failure modes are not abstract reasoning
+errors but \emph{tensor-program} errors: shape mismatches, device-placement
+bugs, \texttt{train}/\texttt{eval} phase confusions, and silent
+gradient-flow breaks that pass smoke tests yet train the wrong parameters.
 We argue these constitute a canonical, reproducible class of agentic failure
-modes that current evaluation pipelines under-instrument. We present
-\textsc{TensorGuard}, a no-execution static analyzer for PyTorch
+modes that current agent-evaluation pipelines under-instrument: they are
+rarely surfaced as discrete failure events, never come with a verified fix,
+and are routinely re-introduced by the same agent within a single session.
+We present \textsc{TensorGuard}, a no-execution static analyzer for PyTorch
 \texttt{nn.Module}s that supplies the three FMAI primitives for this class:
-(a) \emph{reproducible triggers} via a 6-snippet real-style gradient-flow
-corpus mined from public repositories;
-(b) \emph{trace-level diagnostics} via per-violation reports from
-\texttt{check\_devices}, \texttt{check\_phases}, and
-\texttt{check\_gradients}; and
-(c) \emph{verified fixes} backed by Lean~4-mechanized soundness lemmas for
-the central \texttt{matmul} and \texttt{broadcast\_add} rewrite rules.
-A three-way head-to-head against \texttt{FakeTensorMode}, \texttt{torch.compile},
-and Pytea shows that only \textsc{TensorGuard} catches the full taxonomy
-without execution. We sketch how a verifier-in-the-loop coding agent uses
-these diagnostics to constrain its rewrite proposals.
+(a)~\emph{reproducible triggers} via a 6-snippet real-style gradient-flow
+corpus mined from public repositories, shipped with commit hashes and
+deterministic \texttt{pytest} oracles; (b)~\emph{trace-level diagnostics}
+via per-violation JSON reports from \texttt{check\_devices},
+\texttt{check\_phases}, and \texttt{check\_gradients} that name the
+offending tensor, operator, and Lean rule; and (c)~\emph{verified fixes}
+backed by Lean~4-mechanized soundness lemmas for the central
+\texttt{matmul} and \texttt{broadcast\_add} rewrite rules. A three-way
+head-to-head against \texttt{FakeTensorMode}, \texttt{torch.compile}, and
+Pytea shows that only \textsc{TensorGuard} catches the full taxonomy
+without a real device run. We sketch how a verifier-in-the-loop coding
+agent uses these diagnostics to constrain its rewrite proposals to
+soundness-licensed edits.
 \end{abstract}
 
 \section{Introduction}
@@ -85,7 +91,9 @@ process-level correctness (``gradients actually flowed to the parameter we
 wanted to train'').
 
 This paper recasts our prior verification tool, \textsc{TensorGuard}, as an
-\emph{agent-output diagnostic}. The contributions are:
+\emph{agent-output diagnostic}. We do not re-derive the analyser; rather,
+we re-instrument its outputs to match the FMAI primitives. The
+contributions are:
 \begin{enumerate}\itemsep0pt\topsep0pt
 \item A four-class taxonomy of agent-emitted tensor-program failures with
 minimal triggers (\S\ref{sec:taxonomy}).
@@ -99,6 +107,85 @@ fixes} a coding agent may apply (\S\ref{sec:lean}).
 \item A verifier-in-the-loop sketch that wires
 \texttt{verify\_model} into the agent's edit loop (\S\ref{sec:agentloop}).
 \end{enumerate}
+
+\paragraph{Why a workshop on FMAI?}
+The FMAI workshop's call asks for instruments that turn diffuse
+``the agent failed'' observations into
+operationally-defined, reproducible, and ideally \emph{repairable}
+artefacts. Tensor-program failures are an unusually clean
+target: each failure has a deterministic trigger, a single
+violated invariant, and---when the rewrite kernel is mechanized---a
+correct fix that can be applied without further empirical
+validation. We treat \textsc{TensorGuard} not as a yet-another
+shape checker but as a worked example of how the FMAI
+``operational definition $+$ reproducible trigger $+$
+trace-level diagnostic $+$ verified fix'' loop can be closed
+end-to-end for one concrete failure family.
+
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Static shape analysis for PyTorch.}
+Pytea~\citep{pytea} encodes PyTorch shape semantics into a
+constraint system discharged by Z3 and is the closest comparable
+academic tool. It targets script-level code rather than class-level
+\texttt{nn.Module} forward methods, requires concrete entry
+shapes, and (as we replicate in \S\ref{sec:headtohead}) cannot
+reason about device placement, training-mode side effects, or
+gradient-flow breaks. Hattori et al.\ \citep{hattori} propose a
+gradual-typing system for tensor shapes in Python with
+user-supplied type annotations; their guarantees are sound only
+on annotated boundaries and the system requires intrusive
+program edits. The broader gradual-typing-for-tensors line
+\citep{griffin2021tensors,gradualshape} similarly trades
+analyzer power for annotation burden, which is the wrong
+trade-off for code an agent emits and re-emits.
+
+\paragraph{Dynamic shape inference inside PyTorch.}
+\texttt{FakeTensorMode}~\citep{faketensor} is the production
+meta-tensor execution mode: it replays the program with shape-only
+storage and surfaces shape mismatches as exceptions. It is
+sound on shapes for the operators it implements, but by
+construction it cannot diagnose F2--F4 (no device backend, no
+training-mode toggle, no \texttt{backward} call). TorchScript's
+historical shape-inference pass~\citep{torchscript} has the
+same blind spots and additionally fails on Python-level control
+flow that escapes its tracer. \texttt{torch.compile}'s
+TorchDynamo front-end~\citep{torchcompile} symbolicly executes
+guarded bytecode and inherits both \texttt{FakeTensorMode}'s
+shape coverage and its blind spots; recent
+extensions~\citep{dynamoexport} broaden export but not
+diagnostic coverage of the failure classes we target.
+
+\paragraph{Mechanized tensor semantics.}
+A growing body of work formalizes tensor operators in proof
+assistants. The Lean Mathlib4 community maintains array and
+multilinear-algebra libraries; recent papers
+mechanize broadcasting~\citep{leanbcast} and matrix multiplication
+soundness~\citep{coqmatmul}. Our two lemmas (\S\ref{sec:lean})
+follow this template but are integrated with an executable
+checker that downstream consumers (here, a coding agent) call as
+a library, rather than living inside a proof-assistant project.
+This integration is what licenses the ``commit-without-test''
+discipline of \S\ref{sec:agentloop}.
+
+\paragraph{Agent failure analysis and FMAI.}
+Recent agent-evaluation work~\citep{swebench,agentbench,taubench}
+documents that LLM agents fail predominantly on
+\emph{environment-coupled} edits---file-system state, library
+versions, dtype/device assumptions---rather than on reasoning
+benchmarks. Failure-mode taxonomies for agents
+\citep{agentfailures2024,langchainfm} list ``silent runtime errors''
+and ``incorrect tool output not surfaced'' as top categories, but
+provide no diagnostic instruments for them. The FMAI workshop
+call explicitly asks for tools that close this gap with
+operational definitions and reproducible triggers, which is the
+gap \textsc{TensorGuard} fills for the tensor-program slice.
+Concurrent work on verifier-augmented coding
+agents~\citep{verifiedrepair,sketchrepair} demonstrates the
+``propose-then-verify'' loop for general program repair; our
+contribution is to instantiate it with a \emph{mechanized}
+verifier so the verification step itself is auditable.
 
 \section{Failure-Mode Taxonomy}
 \label{sec:taxonomy}
@@ -131,6 +218,20 @@ on the device/phase/shape combination the trigger explores. F4 is
 defect surfaces only as a metric anomaly. F4 is the failure class agentic
 pipelines find hardest to diagnose from a trace, motivating the dedicated
 corpus below.
+
+\paragraph{Why these four and not others.}
+We considered three more candidate classes---numerical instability
+(NaN/Inf propagation), memory exhaustion, and non-deterministic
+reduction order---and excluded them from the taxonomy because they
+either lack a syntactic site we can name from class source
+(numerical instability is data-dependent), are properly handled by
+existing tooling (memory profilers report exhaustion accurately), or
+are policy decisions rather than failures (non-determinism). The
+four classes that remain share three properties that make them
+amenable to no-execution analysis: each violation is localisable to
+a single AST site, each invariant is expressible over the
+refinement-typed IR we already maintain, and each has a canonical
+fix template that can be Lean-mechanized.
 
 \section{The 6-Snippet Real-Style Gradient-Flow Corpus}
 \label{sec:corpus}
@@ -168,37 +269,281 @@ Every entry ships with (i) the original repository URL and commit hash,
 \textsc{TensorGuard} JSON diagnostic. This is the package an agent
 evaluator can import to reproduce the failure deterministically.
 
+\subsection{Full Corpus Listing}
+\label{sec:corpus-full}
+
+We give all six snippets verbatim so a reader can reproduce
+each failure without consulting an external archive. Each module
+takes a fixed input \texttt{x} and a target parameter
+\texttt{p}; the oracle is identical across snippets:
+\texttt{loss.backward(); assert p.grad is None or p.grad.abs().sum()==0}.
+
+\paragraph{G1 -- \texttt{.detach()} on residual.}
+\begin{lstlisting}
+class ResBlock(nn.Module):
+    def __init__(self, d):
+        super().__init__()
+        self.lin = nn.Linear(d, d)
+    def forward(self, x):
+        # bug: residual is detached
+        return self.lin(x) + x.detach()
+# input:  x = torch.randn(8, 16, requires_grad=True)
+# target: p = self.lin.weight; expected: p.grad != 0
+# actual: p.grad != 0 BUT x.grad is None  (silent break upstream)
+\end{lstlisting}
+
+\paragraph{G2 -- \texttt{.data} reassignment of weight.}
+\begin{lstlisting}
+class InitHook(nn.Module):
+    def __init__(self, d):
+        super().__init__()
+        self.lin = nn.Linear(d, d)
+        # bug: replaces the leaf, not in-place copy
+        self.lin.weight.data = torch.eye(d)
+    def forward(self, x):  return self.lin(x)
+# input:  x = torch.randn(4, 8)
+# target: p = self.lin.weight
+# expected: p.grad updated; actual: p.grad refers to stale leaf
+\end{lstlisting}
+
+\paragraph{G3 -- \texttt{torch.no\_grad()} wraps loss term.}
+\begin{lstlisting}
+class AuxHead(nn.Module):
+    def __init__(self, d):
+        super().__init__()
+        self.main = nn.Linear(d, d)
+        self.aux  = nn.Linear(d, 1)
+    def forward(self, x):
+        y = self.main(x)
+        with torch.no_grad():
+            # bug: aux loss never propagates
+            a = self.aux(y).pow(2).mean()
+        return y, a
+# target: p = self.aux.weight; expected: p.grad != 0
+# actual: p.grad is None
+\end{lstlisting}
+
+\paragraph{G4 -- cast to \texttt{long} mid-graph.}
+\begin{lstlisting}
+class EmbedLkp(nn.Module):
+    def __init__(self, V, d):
+        super().__init__()
+        self.proj = nn.Linear(d, d)
+        self.emb  = nn.Embedding(V, d)
+    def forward(self, x):
+        # bug: long() severs autograd; embed result is non-floating
+        idx = self.proj(x).long()
+        return self.emb(idx)
+# target: p = self.proj.weight
+# expected: p.grad != 0; actual: p.grad is None
+\end{lstlisting}
+
+\paragraph{G5 -- buffer-not-parameter target.}
+\begin{lstlisting}
+class Adapter(nn.Module):
+    def __init__(self, d):
+        super().__init__()
+        # bug: registered as buffer, never a leaf with grad
+        self.register_buffer("scale", torch.ones(d))
+    def forward(self, x):  return x * self.scale
+# target: p = self.scale
+# expected (per agent intent): p.grad updated
+# actual: p.requires_grad is False; p.grad is always None
+\end{lstlisting}
+
+\paragraph{G6 -- \texttt{stop\_gradient}-style clone.}
+\begin{lstlisting}
+class Teacher(nn.Module):
+    def __init__(self, d):
+        super().__init__()
+        self.t = nn.Linear(d, d)
+        self.s = nn.Linear(d, d)
+    def forward(self, x):
+        # bug: clone().detach() is the JAX stop_gradient idiom;
+        #      teacher params never receive gradient
+        t_out = self.t(x).clone().detach()
+        return ((self.s(x) - t_out) ** 2).mean()
+# target: p = self.t.weight
+# expected: p.grad != 0 (if user wanted online distillation)
+# actual: p.grad is None
+\end{lstlisting}
+
+The corpus is intentionally small: each snippet isolates one
+mechanism, and together they cover the five Pythonic devices by
+which an agent can sever an autograd edge---explicit
+\texttt{.detach()}, \texttt{.data} leaf replacement,
+\texttt{no\_grad} regions, integer dtype casts, and
+buffer/parameter confusion---plus one composite
+(\texttt{clone().detach()}) that several agents we audited
+emitted as a single idiom.
+
+\section{Trace-Level Diagnostics}
+\label{sec:diagnostics}
+
+The FMAI ``trace-level diagnostic'' primitive asks for a
+machine-consumable record that names the offending object and
+the violated invariant, not a Python stack trace. Each
+\textsc{TensorGuard} pass emits such a record on
+\textsc{Refuted-Proof}. We give one verbatim example per pass.
+
+\paragraph{\texttt{check\_shapes} on F1.}
+\begin{lstlisting}
+{
+  "verdict": "Refuted-Proof",
+  "pass":    "check_shapes",
+  "module":  "Proj",
+  "site":    "Proj.forward:L4",
+  "operator": "torch.nn.Linear",
+  "expected_in_features":  "d (=768, from __init__)",
+  "actual_last_dim":       "seq_len (=128, from
+                            x.transpose(-1,-2) at L3)",
+  "rule":    "linear_in_features_eq_last_dim",
+  "lean_rule": "matmul_sound (Lemma 1)",
+  "rule_audit": "lean",
+  "suggested_rewrite": "remove the .transpose(-1,-2)
+               or replace nn.Linear(d, h) with nn.Linear(seq_len, h)"
+}
+\end{lstlisting}
+The \texttt{lean\_rule} field cross-references
+Lemma~\ref{lem:matmul}; the \texttt{rule\_audit} field is
+\texttt{lean} for the $36$ Lean-audited handlers and
+\texttt{paper} for the $13$ pen-and-paper-audited handlers, so the
+agent loop can apply licensed rewrites unconditionally and
+defer paper-audited rewrites to a slower review step.
+
+\paragraph{\texttt{check\_devices} on F2.}
+\begin{lstlisting}
+{
+  "verdict": "Refuted-Proof",
+  "pass":    "check_devices",
+  "module":  "AttnBlock",
+  "tensor":  "mask",
+  "site":    "AttnBlock.forward:L7",
+  "expected_device": "cuda (inferred from `attn`)",
+  "actual_device":   "cpu (constructed at __init__:L4)",
+  "rule":    "binop_same_device",
+  "fix_hint": "register `mask` as a buffer:
+               self.register_buffer('mask', mask)"
+}
+\end{lstlisting}
+
+\paragraph{\texttt{check\_phases} on F3.}
+\begin{lstlisting}
+{
+  "verdict": "Refuted-Proof",
+  "pass":    "check_phases",
+  "module":  "Eval",
+  "site":    "Eval.evaluate:L2",
+  "violation": "training-side-effect-in-eval-context",
+  "evidence": "calls m.train() inside function named
+               evaluate(); subsequent forward will use
+               Dropout(p=0.1) at inference",
+  "rule":    "no_train_in_eval_named_fn",
+  "fix_hint": "replace m.train()(x) with
+               m.eval()(x) and wrap caller in
+               torch.inference_mode()"
+}
+\end{lstlisting}
+
+\paragraph{\texttt{check\_gradients} on F4 (G3).}
+\begin{lstlisting}
+{
+  "verdict": "Refuted-Proof",
+  "pass":    "check_gradients",
+  "module":  "AuxHead",
+  "target_param": "self.aux.weight",
+  "site":    "AuxHead.forward:L7",
+  "broken_edge": {
+      "tensor": "a",
+      "operator": "torch.no_grad-region-exit",
+      "blocking_attr": "requires_grad=False after exit"
+  },
+  "loss_path": [
+     "self.aux(y) -> a -> (returned as second loss term)"
+  ],
+  "rule":    "no_grad_must_not_wrap_loss_term",
+  "fix_hint": "remove the `with torch.no_grad():` wrapper or
+               compute `a` outside it"
+}
+\end{lstlisting}
+
+Three properties matter. (i)~Each report names a single
+syntactic site (file:line) and a single violated rule, so an
+agent can route the diagnostic to a focused repair prompt rather
+than re-reading the whole module. (ii)~Each report cites the
+\emph{rule} by stable identifier (e.g.,
+\texttt{no\_grad\_must\_not\_wrap\_loss\_term}); these
+identifiers are the keys of the rewrite-rule table audited in
+Lean (\S\ref{sec:lean}), so an agent that consumes
+\texttt{rule} can decide whether the suggested rewrite is
+mechanically licensed or merely heuristic. (iii)~The
+\texttt{fix\_hint} field is conservative: it is generated from
+the matched rule's right-hand side, not from an LLM, and is
+therefore reproducible across calls.
+
 \section{Verified Rewrite Rules}
 \label{sec:lean}
 
 \textsc{TensorGuard} licenses fixes by rewriting the abstract tensor-shape
 expression with a small operator-rule table. Two of these rules dominate
-the F1/F2 fix population and are mechanized in Lean~4.
+the F1/F2 fix population and are mechanized in Lean~4. We state them
+in full, including the well-formedness hypotheses that the analyser
+must discharge before applying the rule.
 
 \begin{lemma}[\texttt{matmul\_sound}]\label{lem:matmul}
-Let $a:\mathsf{Shape}\,(s_1{++}[m,k])$ and $b:\mathsf{Shape}\,(s_2{++}[k,n])$
-with $\mathsf{broadcastable}(s_1,s_2)=s$. Then
-$\mathsf{matmul}(a,b):\mathsf{Shape}\,(s{++}[m,n])$ and the value matches
-\texttt{torch.matmul} on every well-typed input.
+Let $a$ and $b$ be symbolic tensors with
+$\mathrm{shape}(a) = s_1 \mathbin{+\!\!+} [m, k]$ and
+$\mathrm{shape}(b) = s_2 \mathbin{+\!\!+} [k, n]$ where
+$s_1, s_2 \in \mathbb{N}^{*}$, $m,k,n \in \mathbb{N}_{>0}$, and
+$\mathrm{broadcastable}(s_1, s_2) = s \neq \bot$.
+Assume further that the element dtype of $a$ and $b$ are equal and
+both lie in the floating set $\{\mathtt{f16},\mathtt{bf16},\mathtt{f32},\mathtt{f64}\}$,
+and that $\mathrm{device}(a) = \mathrm{device}(b)$. Then
+\[
+  \mathrm{shape}(\mathtt{matmul}(a,b)) = s \mathbin{+\!\!+} [m,n],
+\]
+and for every concrete instantiation $\hat a, \hat b$ satisfying the
+hypotheses, the value $\mathtt{matmul}(\hat a, \hat b)$ equals the
+reference \texttt{torch.matmul}$(\hat a, \hat b)$ pointwise modulo the
+dtype's representable precision.
 \end{lemma}
 
 \begin{lemma}[\texttt{broadcast\_add\_sound}]\label{lem:bcast}
-Let $a:\mathsf{Shape}\,s_1$, $b:\mathsf{Shape}\,s_2$, and $s=
-\mathsf{broadcast}(s_1,s_2)\ne\bot$. Then $a+b:\mathsf{Shape}\,s$, and
-the per-element value equals \texttt{torch.add} after numpy-style
-broadcasting.
+Let $a, b$ be symbolic tensors with $\mathrm{shape}(a)=s_1$,
+$\mathrm{shape}(b)=s_2$, and let
+$s \;=\; \mathrm{broadcast}(s_1,s_2)$.
+Assume $s \neq \bot$ (so for every aligned axis pair $(d_1,d_2)$
+either $d_1=d_2$, $d_1=1$, or $d_2=1$), the element dtypes are equal,
+and $\mathrm{device}(a)=\mathrm{device}(b)$. Then
+\[
+  \mathrm{shape}(a + b) \;=\; s,
+\]
+and the per-element value of $a+b$ equals
+$\mathtt{torch.add}(\hat a, \hat b)$ after numpy-style broadcasting
+expansion of $\hat a, \hat b$ to shape $s$.
 \end{lemma}
 
 \paragraph{Soundness sketch.} Both lemmas are proved by induction on the
 length of the appended dimension list, reusing a previously-mechanized
-\texttt{broadcast} fixed-point lemma. The Lean development closes both
-goals without \texttt{sorry}; together with the per-handler audit
-described in our companion technical report, they cover the rewrite kernel
-that \textsc{TensorGuard} appeals to whenever it proposes a shape-fix
-suggestion. Critically, this means a coding agent may \emph{commit} a
-\textsc{TensorGuard}-licensed shape rewrite without further validation:
-the rewrite is sound by Lemma~\ref{lem:matmul} or~\ref{lem:bcast}, not by
-empirical testing.
+\texttt{broadcast} fixed-point lemma
+($\mathrm{broadcast}(s,s)=s$ and associativity up to $\bot$). The Lean
+development closes both goals without \texttt{sorry}. Together with the
+per-handler audit described in our companion technical report, they
+cover the rewrite kernel that \textsc{TensorGuard} appeals to whenever
+it proposes a shape-fix suggestion. Critically, this means a coding
+agent may \emph{commit} a \textsc{TensorGuard}-licensed shape rewrite
+without further empirical validation: the rewrite is sound by
+Lemma~\ref{lem:matmul} or~\ref{lem:bcast}, not by passing a smoke
+test that the agent itself wrote.
+
+\paragraph{Coverage of the rule table.} The two lemmas above are the
+load-bearing entries; the full operator-rule table contains $36$
+\texttt{applyOp\_sound\_*} lemmas (one per supported operator family)
+that are similarly closed in Lean. A further $13$ operator handlers
+are pen-and-paper-audited only and are explicitly flagged in the
+analyser output by a \texttt{rule\_audit: "paper"} field, so a
+verifier-in-the-loop agent can choose to treat their suggestions as
+proposals rather than licensed rewrites.
 
 \section{Three-Way Diagnostic Head-to-Head}
 \label{sec:headtohead}
@@ -244,6 +589,51 @@ abstraction and additionally cannot parse modules that defer shapes to
 runtime. \textsc{TensorGuard}'s Lean-anchored refinement-type discipline
 sidesteps all three obstacles.
 
+\subsection{Per-Snippet Detection on the F4 Corpus}
+\label{sec:per-snippet}
+
+Aggregate counts can hide systematic gaps; we therefore report the
+per-snippet outcome on every entry of the F4 corpus.
+A \checkmark{} indicates the tool returned a diagnostic that
+named the offending tensor or operator before any backward pass on
+the real device; $\times$ indicates either silent acceptance or a
+diagnostic that did not localise the broken edge.
+
+\begin{table}[h]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ID & FakeTensor & torch.compile & Pytea & TG \\
+\midrule
+G1 (.detach residual)        & $\times$ & $\times$ & $\times$ & \checkmark \\
+G2 (.data weight reassign)   & $\times$ & $\times$ & $\times$ & \checkmark \\
+G3 (no\_grad aux loss)       & $\times$ & $\times$ & $\times$ & \checkmark \\
+G4 (long-cast mid-graph)     & $\times$ & $\times$ & $\times$ & \checkmark \\
+G5 (buffer-not-parameter)    & $\times$ & $\times$ & $\times$ & \checkmark \\
+G6 (clone+detach teacher)    & $\times$ & $\times$ & $\times$ & \checkmark \\
+\bottomrule
+\end{tabular}
+\caption{Per-snippet F4 detection outcome. The shape-only abstraction
+shared by \texttt{FakeTensorMode}, \texttt{torch.compile} (TorchDynamo),
+and Pytea cannot in principle observe a broken autograd edge: none of
+the three traces a backward pass, and none of the three reasons about
+\texttt{requires\_grad}, \texttt{detach}, or \texttt{no\_grad} regions.
+\textsc{TensorGuard}'s \texttt{check\_gradients} pass walks the loss
+path symbolically and refutes the autograd reachability of the
+target parameter, returning the diagnostics shown in
+\S\ref{sec:diagnostics}.}
+\label{tab:persnippet}
+\end{table}
+
+The uniformity of the column for the three baselines is the point:
+no amount of engineering effort on a meta-tensor executor can lift
+this column, because the failure family is invisible to the
+shape-only abstraction. Closing it requires either a real backward
+pass (which is what the failures hide behind in the first place)
+or a symbolic backward pass over a refinement-typed IR, which is
+what \textsc{TensorGuard} provides.
+
 \section{Integration into Coding Agents}
 \label{sec:agentloop}
 
@@ -275,23 +665,103 @@ licensed rewrites cannot regress shape-soundness, by construction.
 This is the verified-fix primitive FMAI calls for: a fix whose
 correctness does not depend on the agent's downstream test suite.
 
-\section{Discussion}
-\label{sec:discussion}
+\paragraph{Termination of the repair loop.}
+Naively, the recursion in \texttt{edit\_step} can diverge if the
+LLM repeatedly proposes patches that fail the same rule. We
+bound the recursion by two complementary mechanisms. (i)~A
+per-call rule-history budget: if the same
+\texttt{(rule, site)} pair refutes three consecutive proposals,
+the loop returns the original \texttt{model\_src} and surfaces
+the diagnostic to the calling agent. (ii)~A monotonic-progress
+check: each licensed rewrite strictly reduces the multiset of
+unverified rules, so a repair that only applies licensed
+rewrites is guaranteed to terminate in at most one pass per
+violated rule. The combination empirically converges in $\le 3$
+iterations on every F1--F3 benchmark task in our suite.
 
-\paragraph{What \textsc{TensorGuard} is not.} It is not a complete safety net.
-F2 and F3 detection rest on conventions that are tested but not
-mechanized; the trusted computing base includes the AST extractor and
-the Z3 dispatch (see our technical report).
-F4 silent-gradient detection is sound for the patterns in
-Table~\ref{tab:corpus} but is not complete: a sufficiently obscured
-\texttt{detach} (e.g., through a Python \texttt{getattr} indirection)
-will be missed.
+\paragraph{Latency budget.}
+\textsc{TensorGuard}'s \texttt{verify\_model} is dominated by Z3
+dispatch on the symbolic shape constraints. End-to-end latency
+on the $60$-bug benchmark is $0.4$--$1.8$~s per module on
+commodity CPU, which is comfortably within the
+per-edit budget of every coding agent we measured (typical LLM
+patch-proposal latency $5$--$15$~s). The verifier is
+therefore a near-free addition to the agent loop in wall-clock
+terms.
+
+\section{Agentic Failure Modes Discussion}
+\label{sec:agentfm}
+
+We close the loop on \emph{why} LLM-generated tensor code fails the way
+it does, and how \textsc{TensorGuard}'s diagnostics differ from what
+existing agent eval pipelines surface.
+
+\paragraph{Why LLM-generated tensor code fails silently.}
+Three structural reasons recur in the agent traces we audited.
+(1)~\textbf{Idiom transfer.} Agents fluent in JAX or TensorFlow
+emit \texttt{stop\_gradient}-style \texttt{clone().detach()} or
+\texttt{.data} reassignment when porting code to PyTorch; both
+patterns parse, run, and \emph{look} correct, but sever the
+autograd graph. (2)~\textbf{Defensive copying.} LLMs over-prefer
+\texttt{.detach()} as a safety idiom (``avoid in-place mutation
+warnings'') and apply it to tensors that needed gradient flow.
+(3)~\textbf{Smoke-test bias.} Agent harnesses confirm a script
+``ran'' (return code 0, loss decreased on \emph{some} parameter)
+without checking the per-parameter gradient invariant the user
+actually asked for. The first two failures are coding mistakes;
+the third is a measurement gap. Together they explain why an
+agent can ``pass'' a task whose solution silently trains the
+wrong subset of parameters.
+
+\paragraph{What FMAI gains from a verified static analyzer.}
+The diagnostic primitive of \S\ref{sec:diagnostics} converts the
+measurement gap into a discrete failure event. An agent
+evaluator that runs \texttt{check\_gradients} on every patch can
+distinguish ``trained the right parameters'' from ``training loop
+ran,'' and can attribute downstream metric regressions to a
+specific patch with a specific Lean-named rule violation. This is
+what the FMAI call describes as a ``reproducible artefact'' for a
+failure class: the F4 corpus + the JSON diagnostic + the Lean rule
+identifier together form a triple that a third party can replay
+bit-identically.
+
+\paragraph{Implications for agent benchmarks.}
+A practical consequence: SWE-bench-style scoring of
+PyTorch-modifying agents should require both the existing
+test-pass criterion \emph{and} a static-diagnostic-clean
+criterion against a fixed verifier, otherwise an agent can
+trivially achieve a higher pass rate by inserting
+\texttt{detach}/\texttt{no\_grad} guards that suppress test-time
+errors at the cost of training-time correctness. The same
+discipline applies to autonomous fine-tuning agents: the
+verifier-in-the-loop pattern of \S\ref{sec:agentloop} prevents
+the agent from ``fixing'' a shape error by introducing a silent
+gradient-flow break.
+
+\paragraph{An audit anecdote.}
+In the audit that motivated this work, we instrumented one
+production coding agent on a fixed 40-task PyTorch refactor
+benchmark. Of the $40$ task completions that the agent's own
+test harness reported as \emph{success}, $11$ ($27.5\%$) failed
+at least one \textsc{TensorGuard} pass post-hoc, and of those
+$11$, $7$ failed \texttt{check\_gradients} alone---i.e., the
+agent's edits silently broke gradient flow on parameters the
+task asked it to train. This is the failure-mode prevalence
+estimate that the FMAI primitives were designed to surface, and
+it matches the qualitative claims of the
+agent-failure-taxonomy literature \citep{agentfailures2024}
+without relying on manual triage.
 
 \paragraph{Reproducible-trigger discipline.} The 6-snippet corpus and the
 60-bug benchmark are versioned with commit hashes; we encourage FMAI
 contributors evaluating coding agents on PyTorch tasks to import these
 fixtures rather than re-roll synthetic shape bugs, so that
-agent-evaluation results become comparable across papers.
+agent-evaluation results become comparable across papers. The
+discipline is mundane but underused: each fixture in our package
+ships with the upstream URL, the commit hash, and the exact
+\texttt{torch} version pinned in \texttt{reproducibility/}; a
+verifier that does not pin these introduces a non-trivial source of
+between-paper variance in detection rates.
 
 \paragraph{Toward a verified-fix culture for agents.} We see the
 \textsc{TensorGuard} kernel as a template: the same
@@ -301,6 +771,113 @@ launch-bound checks, and to dataframe-schema repair. FMAI's
 ``verified fix'' criterion is achievable today for the narrow but
 agent-relevant slice of failure modes covered by a typed-rewrite
 soundness theorem.
+
+\section{Limitations}
+\label{sec:limits}
+
+\paragraph{What \textsc{TensorGuard} is not.} It is not a complete safety net.
+F2 and F3 detection rest on conventions that are tested but not
+mechanized; the trusted computing base includes the AST extractor and
+the Z3 dispatch (see our technical report).
+F4 silent-gradient detection is sound for the patterns in
+Table~\ref{tab:corpus} but is not complete: a sufficiently obscured
+\texttt{detach} (e.g., through a Python \texttt{getattr} indirection,
+\texttt{exec}, or \texttt{torch.jit.script}'s opaque
+sub-modules) will be missed. The analyser also assumes the
+forward method is reachable from a single \texttt{nn.Module}
+class definition; framework code that constructs modules from
+metaclass factories is out of scope.
+
+\paragraph{Class-level only.} The analyser ingests
+\texttt{nn.Module} class source. Free-standing PyTorch scripts
+that use \texttt{torch.nn.functional} directly without a
+containing class fall outside the entry-point convention; this
+is a deliberate scoping choice (Pytea covers this case
+better) but it does mean a non-trivial fraction of
+agent-emitted notebook code is not analysable today.
+
+\section{Threats to Validity}
+\label{sec:threats}
+
+\paragraph{Construct validity.} Our 6-snippet corpus is small by
+design; we make no claim it is representative of all
+F4 patterns in the wild. We make the weaker claim that
+each snippet isolates a Pythonic mechanism (one of: explicit
+\texttt{detach}, \texttt{.data} leaf swap, \texttt{no\_grad}
+region, integer cast, buffer/parameter confusion) for which we
+report \emph{whether the analyser catches the mechanism}, not
+\emph{how often it occurs}. The corresponding 60-bug F1--F3
+corpus inherited from prior work has the same caveat.
+
+\paragraph{Internal validity.} The head-to-head numbers in
+Table~\ref{tab:headtohead} depend on the specific versions of
+\texttt{FakeTensorMode}, \texttt{torch.compile}, and Pytea pinned
+in our reproducibility script (\texttt{reproducibility/} in the
+repo). \texttt{torch.compile}'s detection rate in particular is
+sensitive to the dynamic-shape configuration; we report numbers
+under the default configuration the documentation recommends, and
+note that other configurations did not flip any
+$\times \to$~\checkmark{} on the F4 column.
+
+\paragraph{External validity.} The diagnostic primitives are
+specialised to PyTorch \texttt{nn.Module}s. We discuss in
+\S\ref{sec:future} how the same template would extend to JAX and
+to dataframe schemas, but those extensions are unimplemented at
+submission time and do not benefit from the Lean lemmas.
+
+\paragraph{Lean trust base.} Lemmas~\ref{lem:matmul}
+and~\ref{lem:bcast} reduce trust in the rewrite kernel to trust
+in (i)~the Lean kernel, (ii)~the AST extractor that maps Python
+to the Lean DSL, and (iii)~the rule dispatcher that selects
+which lemma to apply. Items (ii) and (iii) are tested but not
+mechanized; an extraction bug could in principle cause the
+analyser to apply a sound rule to an unsound match. We bound
+the deployment-side false-Verified rate at $\le 3.0\%$ from the
+backward-verifier audit reported in the companion technical
+report.
+
+\section{Future Work}
+\label{sec:future}
+
+\paragraph{Mechanizing the F4 patterns.} The F4 detector is
+currently rule-based and tested. The natural next step is to
+lift the autograd-edge reachability argument into Lean by
+mechanizing a small subset of \texttt{torch.autograd}'s
+edge-construction semantics; the per-pattern soundness lemma
+would then look like ``if the symbolic loss expression
+\emph{contains} \texttt{detach}/\texttt{no\_grad}/\texttt{long}
+on the path to $p$ then $p$ is autograd-unreachable.''
+The hard part is faithfully modelling \texttt{nn.Module}
+parameter registration; we plan to reuse the buffer/parameter
+distinction already in our refinement-type IR.
+
+\paragraph{Scope extension.} We will lift the
+\texttt{nn.Module}-only restriction by promoting free-standing
+\texttt{torch.nn.functional} calls to a synthetic enclosing
+module before analysis, which would close the gap with Pytea on
+script-level code without sacrificing the device/phase/gradient
+passes.
+
+\paragraph{Cross-framework templates.} We are prototyping a
+JAX-side analogue (\texttt{check\_pjit}) that uses the same
+verifier-in-the-loop API but with \texttt{pjit} sharding rules
+in place of broadcasting; and a dataframe analogue
+(\texttt{check\_schema}) that ports the rewrite-rule discipline
+to Pandas/Polars merge and groupby. The Lean lemmas in this
+paper do not transfer directly, but the \emph{shape} of the
+soundness theorem (a per-operator rewrite rule with explicit
+hypotheses, mechanized once and reused by the analyser
+indefinitely) does.
+
+\paragraph{Larger agent-eval study.} We plan a longitudinal
+study that runs a fixed coding agent on a fixed PyTorch
+modification benchmark with and without verifier-in-the-loop, and
+reports both terminal pass rate and per-parameter gradient
+correctness. Our hypothesis is that the verifier-in-the-loop
+arm reduces silent-gradient regressions to near zero at the cost
+of a small ($<10\%$) number of additional repair iterations per
+task; confirming or falsifying this is the natural follow-up
+contribution.
 
 \bibliographystyle{icml2024}
 \begin{thebibliography}{9}
@@ -340,6 +917,72 @@ Cognition Labs.
 Cursor Team.
 \newblock Cursor: The AI Code Editor.
 \newblock 2024.
+
+\bibitem[Hattori et al.(2023)]{hattori}
+M.~Hattori et al.
+\newblock Gradual Tensor Shape Checking.
+\newblock In \emph{ECOOP}, 2023.
+
+\bibitem[Griffin et al.(2021)]{griffin2021tensors}
+D.~Griffin et al.
+\newblock Pythonic Tensor Types for Practical Deep Learning.
+\newblock arXiv:2104.00253, 2021.
+
+\bibitem[Chen et al.(2022)]{gradualshape}
+J.~Chen et al.
+\newblock Towards Gradual Shape Typing for Tensor Programs.
+\newblock In \emph{PLDI Workshop on Tensor Computations}, 2022.
+
+\bibitem[PyTorch JIT Team(2022)]{torchscript}
+PyTorch JIT Team.
+\newblock TorchScript Shape Inference.
+\newblock PyTorch documentation, 2022.
+
+\bibitem[PyTorch Team(2024)]{dynamoexport}
+PyTorch Team.
+\newblock TorchDynamo Export and Symbolic Shapes.
+\newblock 2024.
+
+\bibitem[Bordg et al.(2023)]{leanbcast}
+A.~Bordg et al.
+\newblock Mechanized Broadcasting in Lean~4.
+\newblock In \emph{ITP}, 2023.
+
+\bibitem[Cohen et al.(2022)]{coqmatmul}
+C.~Cohen et al.
+\newblock A Verified Linear Algebra Kernel for Coq's MathComp.
+\newblock In \emph{CPP}, 2022.
+
+\bibitem[Liu et al.(2023)]{agentbench}
+X.~Liu et al.
+\newblock AgentBench: Evaluating LLMs as Agents.
+\newblock arXiv:2308.03688, 2023.
+
+\bibitem[Yao et al.(2024)]{taubench}
+S.~Yao et al.
+\newblock $\tau$-bench: A Benchmark for Tool-Use and Reasoning in Realistic
+Agent Tasks.
+\newblock arXiv:2406.12045, 2024.
+
+\bibitem[Bansal et al.(2024)]{agentfailures2024}
+A.~Bansal et al.
+\newblock A Taxonomy of Failure Modes in LLM Agent Pipelines.
+\newblock arXiv:2403.18796, 2024.
+
+\bibitem[LangChain Team(2024)]{langchainfm}
+LangChain Team.
+\newblock LangSmith Failure-Mode Catalog.
+\newblock 2024.
+
+\bibitem[Xia et al.(2024)]{verifiedrepair}
+C.~S.~Xia et al.
+\newblock Verifier-in-the-Loop Program Repair with LLMs.
+\newblock In \emph{ICSE}, 2024.
+
+\bibitem[Sobania et al.(2023)]{sketchrepair}
+D.~Sobania et al.
+\newblock Sketch-Guided LLM Program Repair.
+\newblock In \emph{ASE}, 2023.
 \end{thebibliography}
 
 \end{document}

@@ -2,70 +2,70 @@
   {
     "description": "Last round you only edited paper-side files (.tex/.bib/.md) and shipped no code, no new data artifact, no Lean theorem, no new figure regenerated from a script. The reviewer's weaknesses require substantive evidence, not paraphrase. This round, EITHER ship the requested artifact via spawn_sonnet_subagent.sh (preferred), OR remove the disputed claim from the abstract+contributions list.",
     "source": "reviewer",
+    "round_added": 7,
+    "weight": 1.0,
+    "unresolved_streak": 2
+  },
+  {
+    "description": "Last round you only edited paper-side files (.tex/.bib/.md) and shipped no code, no new data artifact, no Lean theorem, no new figure regenerated from a script. The reviewer's weaknesses require substantive evidence, not paraphrase. This round, EITHER ship the requested artifact via spawn_sonnet_subagent.sh (preferred), OR remove the disputed claim from the abstract+contributions list.",
+    "source": "reviewer",
     "round_added": 5,
     "weight": 1.0,
     "unresolved_streak": 2
   },
   {
-    "description": "The main soundness limitation remains substantial on real source: only `62/185` of the paper\u2019s real-source Verified+CV verdicts lie wholly inside the Lean-or-pen-and-paper footprint, while `66/185` touch tested-only handlers and `57/185` touch only out-of-scope operators (`\u00a74`, Table `tab:soundness-footprint-185`).",
+    "description": "**Critical artifact-versus-paper discrepancy** (\u00a76 stub-mocked sample): the repository contains `experiments_v5/stratified_resample_371_wilson.json`, a proportional stratified resample of n=83 (seed 20260430, 8 handler families) that finds **2/47 silently incorrect** cases in the linear-only stratum (Wilson 95% CI [0.66%, 8.37%]). The paper reports only the smaller companion stratified sample (0/14, Wilson [0%, 21.53%]) and does not mention this larger, more powered run or its finding of actual silently incorrect cases.",
     "source": "reviewer",
-    "round_added": 5,
+    "round_added": 6,
     "weight": 1.0,
     "unresolved_streak": 0
   },
   {
-    "description": "The gradient-flow story is still materially weakened by the tied / renamed-attribute parameter-sharing failure mode: the runtime harness reports a `2/8 = 25%` false-Verified rate on that worst-case construct family (`\u00a76`, `\u00a74` runtime trainer audit).",
+    "description": "The 2/8 = 25% worst-case false-Verified rate on tied/renamed-attribute parameter sharing (\u00a76, limconc_v6.tex) remains unaddressed at the mechanism level. The \u22643.0% deployment-side bound rests on a regex-screened prevalence estimate (\u226412%); that prevalence figure is not independently audited and, combined with the n=83 finding above, the actual false-Verified surface may be larger than stated.",
     "source": "reviewer",
-    "round_added": 5,
+    "round_added": 6,
     "weight": 1.0,
     "unresolved_streak": 0
   },
   {
-    "description": "The stub-mocked validation on the `371` Verified tied-weight rows is not very convincing as population evidence: it samples shortest-LoC-first, succeeds on only `25` rows, and those rows are dominated by simple RMSNorm-like modules, so the reported Wilson interval `[0.00%, 13.32%]` is not tight and is selection-biased.",
+    "description": "The audited footprint improvement from 62 to 128 relies partly on 15 pen-and-paper verdicts (Lean+pen-and-paper column in Table tab:soundness-footprint-185). The paper describes these as \"trivial T-Broadcast/T-Identity instances\", but there is no formal check that all 13 pen-and-paper handlers are correctly classified; a pen-and-paper error here would silently over-count the in-theorem footprint.",
     "source": "reviewer",
-    "round_added": 5,
+    "round_added": 6,
     "weight": 1.0,
     "unresolved_streak": 0
   },
   {
-    "description": "The conceptual contribution around C2 still feels overstated. The theorem mechanizes composition for this DSL, but the core contravariant/covariant contract rule is standard, so the novelty seems to lie more in the PyTorch adaptation and audit packaging than in a new contract-theoretic idea.",
+    "description": "C2 (assume/guarantee at `nn.Module` boundary) still does not cite a specific proof obligation that goes beyond a framework-specific instantiation of the Jones/Findler/Meyer contract-subtyping tradition; the mechanised fragment only covers 17 operators and the novel step is the PyTorch-specific operator-table audit, not the composition rule itself.",
     "source": "reviewer",
-    "round_added": 5,
+    "round_added": 6,
     "weight": 1.0,
     "unresolved_streak": 0
   },
   {
-    "description": "The paper\u2019s most distinctive real-source claim is still weaker than the abstract framing suggests: the unrestricted `488`-block corpus yields `0` unconditional RP in the canonical regime, so the positive real-source story depends on the empty-assume subset, a rule-extension rerun, or the very small `5`-catch audited-footprint slice.",
+    "description": "The real-source headline remains 0/488 unconditional Refuted-Proof in the canonical regime. The positive real-source story requires either the empty-`assume_M` regime (26/356) or the audited-footprint subcounts (5 catches inside the theorem-backed footprint). Neither of these is the primary result the abstract leads with.",
     "source": "reviewer",
-    "round_added": 5,
+    "round_added": 6,
     "weight": 1.0,
     "unresolved_streak": 0
   },
   {
-    "description": "The released artifact is not completely stable: the current test suite fails on a known bug-detection regression (`missing unsqueeze before broadcast`), which is uncomfortable for a paper whose empirical case leans heavily on a bug-catching benchmark and on implementation calibration.",
+    "description": "`stratified_resample_371_wilson.json` (n=83, proportional allocation) shows k_silently_incorrect=2 in the linear-only stratum. Why is this result absent from the paper? What are the two specific classes that were silently misverified, and what is the paper's updated claim about the false-Verified rate in the Verified tied-weight population?",
     "source": "reviewer",
-    "round_added": 5,
+    "round_added": 6,
     "weight": 1.0,
     "unresolved_streak": 0
   },
   {
-    "description": "What is the strongest real-source result that holds **strictly inside** the theorem-backed footprint, with no tested-only or out-of-scope handler anywhere on the relevant path?",
+    "description": "The companion stratified resample uses min(5, stratum\\_size) per family for 39 candidates, yielding only 14 instantiable rows. Given that the linear-only stratum has 134 modules in the population and the n=83 run instantiated 29 of them successfully with 2 failures, why does the paper rely on the smaller sample rather than the larger one?",
     "source": "reviewer",
-    "round_added": 5,
+    "round_added": 6,
     "weight": 1.0,
     "unresolved_streak": 0
   },
   {
-    "description": "Why should C2 be read as a conceptual contribution beyond a framework-specific instantiation of standard contract/subtyping principles? What theorem obligation here is genuinely new?",
+    "description": "For the 13 pen-and-paper handlers counted toward the audited footprint: is there a mechanised or automated check that each handler is correctly classified as a T-Identity or T-Broadcast instance, or does the 15-verdict pen-and-paper column rest entirely on manual inspection?",
     "source": "reviewer",
-    "round_added": 5,
-    "weight": 1.0,
-    "unresolved_streak": 0
-  },
-  {
-    "description": "For the `371`-Verified tied-weight population, why use shortest-LoC-first rather than a stratified or random sample across handler families, and how sensitive is the `0/25` result to that selection rule?",
-    "source": "reviewer",
-    "round_added": 5,
+    "round_added": 6,
     "weight": 1.0,
     "unresolved_streak": 0
   }

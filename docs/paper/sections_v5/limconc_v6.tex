@@ -133,6 +133,9 @@ We accordingly state the
 bound as \emph{regex-detectable prevalence $\le 12\%$ on the
 $2{,}908$-file sweep; runtime false-verified rate
 $\mathbf{2/8 = 25.0\%}$ on the worst-case construct family;
+direct Wilson 95\% upper bound $\mathbf{\le 8.37\%}$ on the
+$371$-Verified tied-weight subpopulation from the
+$n{=}83$ stratified resample;
 $0/8$ input-side data\_ptr aliasing incidents on the same
 runtime harness}, and treat the gap between regex coverage and
 the worst-case semantic-alias rate as an explicit caveat rather
@@ -148,6 +151,31 @@ the regex-screened inference-script population, and
 $\le (1/42)\!\cdot\!0.25 = 0.60\%$ on the held-out
 \textsc{PyTorch}-examples sub-population (using the held-out
 $1/42$ prevalence rather than the regex ceiling).
+A complementary direct estimate on the
+$371$-row \textsc{Verified} tied-weight subpopulation comes
+from the $n{=}83$ proportionally-allocated stratified
+resample of \Cref{sec:eval}: $\mathbf{2/47}$ silently-incorrect
+verdicts on the instantiable rows, Wilson 95\% CI
+$\mathbf{[0.66\%, 8.37\%]}$, with both silent errors falling
+in the \emph{linear-only} stratum (head-detached
+classification heads), not in the worst-case
+tied/renamed-attribute family. We accordingly report the
+\textbf{Wilson upper bound $\le \mathbf{8.37\%}$}
+as the powered direct envelope on the silent-error rate of
+the Verified tied-weight subpopulation, and retain the
+$\le 3.0\%$ product bound only as the regex-screened
+deployment-side estimate keyed to the worst-case construct
+family. The headline statement we therefore ask the
+soundness reader to use is the more conservative of the
+two: a direct $\le 8.37\%$ Wilson upper on the Verified
+tied-weight subpopulation, with the $\le 3.0\%$ product
+bound holding only under the regex-screened prevalence
+restriction. The presence of $2$ silent errors in the
+linear-only stratum --- a class we did \emph{not}
+pre-register as worst case --- is the single largest
+update to the gradient-flow soundness story since the
+runtime harness was first reported, and we treat it as a
+material caveat.
 \textbf{Why the product is an upper bound.} The decomposition is
 $P(F)=P(F\!\mid\!C)P(C)+P(F\!\mid\!\neg C)P(\neg C)$. By
 construction, the gradient lattice is sound on every input outside
