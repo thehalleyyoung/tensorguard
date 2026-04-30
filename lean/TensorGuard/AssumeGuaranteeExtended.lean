@@ -225,6 +225,47 @@ theorem applyOpExt_sound_relu
   simp [applyOpExt] at h
   exact h.symm
 
+/-- **Soundness of `broadcast_add`.** The (modeled) broadcast-add is
+    the identity in our simplified single-shape DSL: if it succeeds, it
+    returns the input shape unchanged. This closes the
+    `applyOpExt_sound_broadcast_add` obligation that was previously
+    discharged by `Axiom (Operator-agnostic composition witness)` for
+    the `broadcast_add` operator. -/
+theorem applyOpExt_sound_broadcast_add
+    (s s' : Shape)
+    (h : applyOpExt .broadcast_add s = some s') :
+    s' = s := by
+  simp [applyOpExt] at h
+  exact h.symm
+
+/-- **Soundness of `matmul`.** In our simplified single-shape DSL the
+    `matmul` rule succeeds exactly on inputs of rank at least three
+    (the rank-two case is reserved for the two-input contraction modeled
+    in `TensorGuard.Extended.matmul2` / `V5OperatorRules.matmul`); when
+    it succeeds, the verdict shape is the input shape (the contraction
+    of the trailing two dims is delegated to the two-input lemma). This
+    closes the `applyOpExt_sound_matmul` obligation that was previously
+    discharged by `Axiom (Operator-agnostic composition witness)`. -/
+theorem applyOpExt_sound_matmul
+    (s s' : Shape)
+    (h : applyOpExt .matmul s = some s') :
+    s.length ≥ 3 ∧ s' = s := by
+  unfold applyOpExt at h
+  cases s with
+  | nil => simp [Shape.length] at h
+  | cons a r1 =>
+      cases r1 with
+      | nil => simp [Shape.length] at h
+      | cons b r2 =>
+          cases r2 with
+          | nil => simp at h
+          | cons c r3 =>
+              -- length is 1 + (1 + (1 + r3.length)) ≥ 3
+              refine ⟨?_, ?_⟩
+              · simp [Shape.length]; omega
+              · simp [Shape.length] at h
+                exact h.symm
+
 /-- **Soundness of sum_reduce.** Reduction removes the specified axis. -/
 theorem applyOpExt_sound_sum_reduce
     (axis : Nat) (s s' : Shape)

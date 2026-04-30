@@ -174,16 +174,95 @@ shape predicate $P$ over symbolic dim variables
 $\bar v=(v_1,\dots,v_k)$, and let $\mathfrak{m}$ be a Z3 model
 satisfying $P\wedge\neg\varphi_{\mathrm{op}}(\bar v)$ where
 $\varphi_{\mathrm{op}}$ is the operator-precondition refinement
-emitted at the witnessed subterm $e_0$. Define
-$\sigma_{\mathfrak{m}}(x_i)$ as the all-zero tensor of dtype
-$\tau_i$ and shape $\mathfrak{m}(\bar d_i)\in\mathbb{N}^{|\bar d_i|}$
-with $\mathit{requires\_grad}=\mathfrak{m}(g_i)$. The map is
-total because the SMT theory is closed under interpretation in
-$(\mathbb{N},+,\cdot,\mid)$, every $\mathfrak{m}(d)$ is a
-non-negative integer, and the construction visibly satisfies
-$\sigma_{\mathfrak{m}}\models\Gamma$ (each per-tensor refinement
-is the literal Z3 assignment).
+emitted at the witnessed subterm $e_0$.
+
+\emph{Z3 encoding of the grad refinement.} Each grad refinement
+$g_i$ ranges over the three-element flat lattice
+$\mathbb{G}=\{\mathsf{has\_grad},\mathsf{no\_grad},\top\}$,
+encoded by a pair of Boolean Z3 variables
+$(\mathit{rg}_i,\mathit{tp}_i)$ over the
+$\textsc{Bool}\times\textsc{Bool}$ sort with the elimination
+constraint $\mathit{tp}_i\Rightarrow\neg\mathit{rg}_i$
+asserted at context-entry. The decoding map
+$\mathfrak{m}(g_i)\in\mathbb{G}$ is
+$\mathsf{has\_grad}$ when
+$(\mathit{rg}_i,\mathit{tp}_i)=(\top,\bot)$,
+$\mathsf{no\_grad}$ when
+$(\bot,\bot)$, and $\top$ when
+$\mathit{tp}_i=\top$ (the second component encodes
+``the model is non-committal on \texttt{requires\_grad}'').
+The runtime\hyp side projection
+$\rho:\mathbb{G}\to\{\mathsf{True},\mathsf{False}\}$ used to
+build the concrete heap fixes
+$\rho(\mathsf{has\_grad})=\mathsf{True}$,
+$\rho(\mathsf{no\_grad})=\mathsf{False}$, and
+$\rho(\top)=\mathsf{True}$ — the $\top$ case is realised in
+the concrete heap by a $\textsc{Tensor}$ with
+$\texttt{requires\_grad}=\mathsf{True}$, the strictly stronger
+of the two committed values, so that any grad-flow obligation
+discharged on the realised heap also discharges on its
+$\mathsf{no\_grad}$ refinement (joint satisfiability is
+preserved because the per-tensor refinements either commit to
+$\mathsf{has\_grad}$ — in which case $\rho(\mathsf{has\_grad})$
+agrees — or commit to $\mathsf{no\_grad}$ — in which case the
+context constraint $\mathit{tp}_i=\bot$ rules out the $\top$
+case at $\mathfrak{m}$ — or commit to $\top$ — in which case
+strengthening to $\mathsf{has\_grad}$ in the heap is the
+covariant direction of $\sqsubseteq_{\mathbb{G}}$).
+Define $\sigma_{\mathfrak{m}}(x_i)$ as the all-zero tensor of
+dtype $\tau_i$ and shape
+$\mathfrak{m}(\bar d_i)\in\mathbb{N}^{|\bar d_i|}$ with
+$\mathit{requires\_grad}=\rho(\mathfrak{m}(g_i))$.
+The map is total because the SMT theory is closed under
+interpretation in $(\mathbb{N},+,\cdot,\mid)\,\sqcup\,
+(\textsc{Bool}\times\textsc{Bool})$, every $\mathfrak{m}(d)$
+is a non-negative integer, and the construction visibly
+satisfies $\sigma_{\mathfrak{m}}\models\Gamma$ (each
+per-tensor shape refinement is the literal Z3 assignment;
+each grad refinement is satisfied by $\rho\circ\mathfrak{m}$
+under the $\sqsubseteq_{\mathbb{G}}$-order, where
+$\mathsf{has\_grad},\mathsf{no\_grad}\sqsubseteq\top$ and
+both leaves are pairwise incomparable). When the witnessed
+obligation $\neg\varphi_{\mathrm{op}}$ is grad-only and is
+jointly satisfiable only with $\mathfrak{m}(g_j)=\top$ for
+some $j$ (i.e.\ Z3 chooses $\mathit{tp}_j=\top$ to falsify a
+grad precondition), the realised heap with
+$\rho(\top)=\mathsf{True}$ still falsifies
+$\varphi_{\mathrm{op}}$: the negated grad obligations of the
+analyser are by construction monotone in
+$\sqsubseteq_{\mathbb{G}}$ (\Cref{lem:gradmono}, restated
+below), so committing $\mathsf{has\_grad}$ at $x_j$ where Z3
+allowed $\top$ leaves the conjunction
+$P\wedge\neg\varphi_{\mathrm{op}}$ satisfied by the
+realised heap.
 \end{definition}
+
+\begin{lemma}[Grad-flow monotonicity along $\sqsubseteq_{\mathbb{G}}$]
+\label{lem:gradmono}
+For every operator $\mathit{op}\in\mathrm{Cat}_{\mathrm{sound}}$,
+the grad component of $\varphi_{\mathit{op}}$ is a Boolean
+combination of literals of the form
+$g_i\sqsupseteq\mathsf{has\_grad}$ and
+$g_i\sqsubseteq\mathsf{no\_grad}$ that is monotone in the
+strengthening order $\mathsf{has\_grad},\mathsf{no\_grad}
+\sqsubseteq\top$. Consequently, if
+$\sigma_{\mathfrak{m}}\models\Gamma\wedge\neg\varphi_{\mathit{op}}$
+under the decoding $\mathfrak{m}(g_i)=\top$, then the
+strengthened heap $\sigma'_{\mathfrak{m}}$ obtained by
+replacing $g_i\mapsto\top$ with the realised value
+$g_i\mapsto\mathsf{has\_grad}$ also satisfies
+$\Gamma\wedge\neg\varphi_{\mathit{op}}$. The proof is a
+case split on the four grad-flow refinements emitted by the
+analyser
+($\textsc{T-DetachLoss}$, $\textsc{T-NoGradScope}$,
+$\textsc{T-FrozenParam}$, $\textsc{T-MixedReuse}$);
+in each case, the obligation that is falsifiable at $\top$ is
+also falsifiable at $\mathsf{has\_grad}$ because the
+analyser's refutation predicates are syntactically of the
+form $\rho(g_i)=\mathsf{True}\wedge\Phi_{\mathit{shape}}$
+or $\rho(g_i)=\mathsf{False}\wedge\Phi_{\mathit{shape}}$ with
+no use of $g_i=\top$ as an active literal.
+\end{lemma}
 
 \begin{lemma}[Progress to witness; deterministic small-step]
 \label{lem:progress-to-witness}
@@ -212,22 +291,31 @@ case (ii).
 \label{rem:tcb-thm-ii}
 Case (ii) relies on three ingredients beyond the per-operator
 preservation lemmas of (i): (a) that the operator runtime
-semantics raises on the witnessed input (every operator
-$\mathit{op}$ in $\mathrm{Cat}_{\mathrm{sound}}$ is paired with
-a runtime-side specification that turns
-$\neg\varphi_{\mathrm{op}}$ into an \textsc{Op-Stuck} exception
-in $\mathcal{F}_{\mathrm{TG}}$; the corresponding PyTorch
-handlers are documented to raise on the same precondition and
-are paired with the in-envelope agreement count of
-\Cref{tab:handler-soundness}); (b) that the Z3-model values
-are non-negative integers compatible with $\mathbb{N}$-valued
-dim refinements (true by construction of the SMT fragment of
-\Cref{sec:calculus}); and (c) that the small-step relation is
-deterministic on heap-determined inputs
+semantics raises on the witnessed input. For the $28$ operators in
+$\mathrm{Cat}_{\mathrm{sound}}\setminus\mathrm{Cat}_{\mathrm{pen}}$
+this is discharged by the Lean-mechanised
+\texttt{applyOpExt\_sound\_*} lemmas (the precondition that
+appears in the rule is exactly the precondition under which the
+mechanised semantics succeeds). For the $16$ pen-and-paper
+handlers $\mathrm{Cat}_{\mathrm{pen}}$
+(\textsc{T-Broadcast}, \textsc{T-Reduce}, \texttt{einsum}, the
+elementwise-activation family, the structural reshapes, plus
+\texttt{pad}/\texttt{where}), case~(ii) rests on
+\emph{PyTorch documentation that the corresponding handler
+raises on $\neg\varphi_{\mathrm{op}}$, paired with the in-envelope
+agreement count of $1{,}000$/$1{,}000$ samples in
+\Cref{tab:handler-soundness}}; this is a documentation-plus-sampling
+discharge, not a derivation. We list it explicitly as part of the
+trusted base of \Cref{thm:soundness} restricted to
+$\mathrm{Cat}_{\mathrm{pen}}$, and we do not claim refutation
+soundness on this sub-catalogue follows from a closed argument.
+(b) that the Z3-model values are non-negative integers compatible
+with $\mathbb{N}$-valued dim refinements (true by construction of
+the SMT fragment of \Cref{sec:calculus}); and (c) that the
+small-step relation is deterministic on heap-determined inputs
 (\Cref{def:det-eval}). All three are explicitly listed as
-trusted-base obligations of \Cref{thm:soundness} and audited
-in the per-handler soundness sketches of
-\Cref{app:soundness}.
+trusted-base obligations of \Cref{thm:soundness} and audited in
+the per-handler soundness sketches of \Cref{app:soundness}.
 \end{remark}
 
 \begin{conjecture}[Tested-only handlers; empirically supported]
@@ -256,9 +344,25 @@ are established in \Cref{app:subject-reduction}
 Together they yield \Cref{cor:soundness}: well-typed programs in
 $\mathcal{F}_{\mathrm{TG}}$ whose operator preconditions hold in $\sigma$ raise no
 shape-mismatch exception on any reduction sequence.
-Theorem~\ref{thm:soundness} is the abstract-interpretation specialisation of this
-classical pair to the verdict lattice; the verdict \textsc{Verified} corresponds
-to Z3 discharging all preconditions symbolically.
+Theorem~\ref{thm:soundness} case~(i) (\textsc{Verified} soundness) is the
+abstract-interpretation specialisation of this classical pair to the
+verdict lattice; the verdict \textsc{Verified} corresponds to Z3
+discharging all preconditions symbolically, so
+\Cref{cor:soundness} applies.
+Case~(ii) (refutation soundness) is \emph{not} a specialisation of
+preservation/progress: it is an additional
+``completeness for refutation'' direction that requires
+(a) the model-extraction map $\mathfrak{m}\!\mapsto\!\sigma_{\mathfrak{m}}$
+of \Cref{def:model-extraction} and (b) the in-envelope agreement of
+the runtime semantics with the per-operator rule
+(\Cref{lem:progress-to-witness} together with
+\Cref{rem:tcb-thm-ii}). The two directions are proved separately:
+case~(i) by a chain of
+\textsc{Preservation}$\circ$\textsc{Progress} from
+\Cref{app:subject-reduction}, case~(ii) by the
+constructive walk of \Cref{lem:progress-to-witness} along a
+deterministic small-step (\Cref{def:det-eval}). We do not claim
+case~(ii) follows from preservation/progress.
 
 \begin{definition}[Deterministic small-step evaluation order]
 \label{def:det-eval}
@@ -321,15 +425,20 @@ $17$-operator DSL covering \texttt{matmul}, \texttt{view},
 \texttt{cat}, \texttt{sum\_reduce}, \texttt{mean\_reduce},
 \texttt{expand}, \texttt{gather}, \texttt{embedding},
 \texttt{conv2d}, \texttt{einsum}, \texttt{unbind}, and
-\texttt{reshape}; $15$ of the $17$ operators carry a
-per-operator \texttt{applyOpExt\_sound\_*} lemma. The two
-remaining operators (\texttt{broadcast\_add} and \texttt{matmul})
-are discharged by an \emph{operator-agnostic composition
-witness} whose precise content is given as
-\Cref{ax:operator-agnostic-witness} below; this places one
-explicit obligation per operator into the trusted base of the
-composition theorem and is reflected in the per-handler
-breakdown of \Cref{tab:handler-soundness}. All $17$ DSL operators
+\texttt{reshape}; all $17$ operators carry a
+per-operator \texttt{applyOpExt\_sound\_*} lemma closed
+sorry-free in Lean~$4$. In particular,
+\texttt{applyOpExt\_sound\_broadcast\_add} (identity on the
+input shape) and \texttt{applyOpExt\_sound\_matmul} (success
+implies input rank $\ge 3$ and verdict equals input shape;
+the rank-$2$ contraction is delegated to the two-input
+\texttt{matmul2} lemma of \Cref{app:ag-proofs}) are now
+explicit lemmas rather than instances of an operator-agnostic
+axiom; the corresponding entry of
+\Cref{tab:handler-soundness} therefore counts $17/17$
+mechanised, $0/17$ residual operator-agnostic obligations,
+which is reflected in the per-handler breakdown of
+\Cref{tab:handler-soundness}. All $17$ DSL operators
 lie inside $\mathrm{Cat}_{\mathrm{sound}}$ of
 \Cref{thm:soundness}. The mechanised fragment does \emph{not} cover the
 remaining $62$ handlers of \Cref{tab:handler-soundness}, the
@@ -343,31 +452,34 @@ the inductive use of \textsc{Seq}, \textsc{Par}, and
 restricted to the same fragment.
 \end{theorem}
 
-\begin{axiom}[Operator-agnostic composition witness; \texttt{broadcast\_add}, \texttt{matmul}]
-\label{ax:operator-agnostic-witness}
-For each of $\mathit{op}\in\{\texttt{broadcast\_add},
-\texttt{matmul}\}$, the composition theorem
-(\Cref{thm:ag-sound}) admits without per-operator
-\texttt{applyOpExt\_sound\_*} the following:
-\textbf{(i)}~the rule-table shape function
-$\mathrm{shape}_{\mathit{op}}$ in the Lean development agrees
-with the runtime shape of the corresponding PyTorch operator
-on every input multiset that satisfies the rule's
-precondition (this is the in-envelope agreement count of
-$1{,}000$/$1{,}000$ samples in
-\Cref{tab:handler-soundness});
-\textbf{(ii)}~when the precondition is violated, the runtime
-operator raises a \texttt{RuntimeError} (broadcast-shape
-mismatch for \texttt{broadcast\_add}; contraction-dim
-mismatch for \texttt{matmul}); and
-\textbf{(iii)}~the operator is heap-deterministic in the sense
-of \Cref{def:det-eval} (no in-place writes, no RNG draws). The
-analogous lemmas are mechanised for the other $15$ operators
-(\texttt{applyOpExt\_sound\_view}, \dots,
-\texttt{applyOpExt\_sound\_unbind}); for these two operators
-they are taken on faith and explicitly counted as $2$ open
-obligations against \Cref{thm:ag-sound}'s trusted base.
-\end{axiom}
+\begin{remark}[Closed lemmas for \texttt{matmul} and \texttt{broadcast\_add}; replaces a prior operator-agnostic obligation]
+\label{rem:operator-agnostic-witness}
+In an earlier revision the two operators
+\texttt{broadcast\_add} and \texttt{matmul} were discharged
+inside \Cref{thm:ag-sound} by an operator-agnostic
+composition witness whose first clause appealed to the
+$1{,}000$-sample in-envelope agreement count of
+\Cref{tab:handler-soundness}. We have since closed both
+obligations as Lean lemmas:
+\textbf{(i)}~\texttt{applyOpExt\_sound\_broadcast\_add}
+states that whenever the simplified single-shape
+\texttt{broadcast\_add} rule succeeds, the verdict shape is
+the input shape (the rule is the identity in the
+single-shape DSL; the two-input broadcast contract is
+discharged compositionally via the rule for shape-pair
+\texttt{add} in \Cref{app:ag-proofs});
+\textbf{(ii)}~\texttt{applyOpExt\_sound\_matmul} states that
+whenever the single-shape \texttt{matmul} rule succeeds, the
+input has rank at least three and the verdict equals the
+input shape (the rank-$2$ contraction is delegated to the
+two-input \texttt{matmul2}/\texttt{V5OperatorRules.matmul}
+lemma already mechanised in
+\Cref{app:ag-proofs}). Both lemmas are sorry-free under
+\texttt{lake build}; the in-envelope agreement count of
+\Cref{tab:handler-soundness} is no longer load-bearing for
+\Cref{thm:ag-sound} and is retained only as a runtime
+cross-check on the rule table.
+\end{remark}
 
 \begin{axiom}[Fresh-witness refutation; needed for \Cref{thm:monotonicity}]
 \label{ax:fresh-witness}

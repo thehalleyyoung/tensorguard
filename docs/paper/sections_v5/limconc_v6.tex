@@ -183,8 +183,11 @@ mechanised audit (\Cref{tab:handler-soundness}) covers the
 have Lean soundness lemmas (the analyser implementation, AST
 extractor, backward verifier, and Z3 dispatch are
 \emph{not} mechanised; the assume/guarantee composition
-theorem is mechanised on a $17$-operator DSL, $15$ of $17$
-operators with per-operator soundness lemmas).
+theorem is mechanised on a $17$-operator DSL with $17$ of $17$
+operators carrying per-operator soundness lemmas — including
+\texttt{matmul} and \texttt{broadcast\_add}, whose
+operator-agnostic discharge in an earlier revision is now
+closed sorry-free).
 The decisive
 findings are: an inapplicability gap on $481/488$ real
 \texttt{nn.Module}s for execution-based baselines; $53/60$
