@@ -46,6 +46,8 @@ import torch.nn as nn
 class MHABlock(nn.Module):
     def __init__(self, dim, num_heads):
         super().__init__()
+        assert num_heads > 0
+        assert dim % num_heads == 0
         self.qkv = nn.Linear(dim, dim*3)
         self.proj = nn.Linear(dim, dim)
         self.num_heads = num_heads

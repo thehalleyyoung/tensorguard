@@ -1,0 +1,291 @@
+{
+  "meta": {
+    "purpose": "Live end-to-end demonstration that the three secondary-check flags flip verdicts on committed real-source examples.",
+    "schema_version": 1,
+    "n_examples": 3,
+    "n_flag_combos": 8,
+    "all_examples_flip_verdict": true,
+    "n_examples_flip_verdict": 3
+  },
+  "examples": [
+    {
+      "name": "device_mismatch_residual",
+      "path": "examples/check_flag_demo/device_mismatch_residual.py",
+      "primary_flag": "check_devices",
+      "expected_with_flag": "REFUTED",
+      "expected_without_flag": "VERIFIED",
+      "flip_on_verdict": "REFUTED",
+      "flip_off_verdict": "VERIFIED",
+      "flag_flips_verdict": true,
+      "expectation_met": true,
+      "rows": [
+        {
+          "check_devices": true,
+          "check_phases": true,
+          "check_gradients": true,
+          "verdict": "REFUTED",
+          "n_error_bugs": 4,
+          "n_total_bugs": 4,
+          "first_error_msg": "[DEVICE-MISMATCH] Z3 violation (device_mismatch) at step 4:\n  grad___inner_1_s4 = False\n  grad_x_s0 = False\n  grad___subscript_2_s2 = False\n  grad_bias_s4 = False\n  grad___subscript_2_s4 = False\n  phase_s2 = TRAIN_1\n  dev_x_s1 = CUDA_0_1\n  dev_x_s2 = CUDA_0_1\n  phase_s3 = TRAIN_1\n  dev_x_s3 = CUDA_0_1\n  phase_s1 = TRAIN_1\n  phase_s4 = TRAIN_1\n  grad_x_s3 = False\n  grad_x_s4 = False\n  grad___inner_1_s3 = False\n  dev_x_s0 = CPU_1\n  phase_s0 = TRAIN_1\n  dev_x_s4 = CUDA_0_1\n  grad_x_s2 = False\n  grad___subscript_2_s3 = False\n  grad_x_s1 = False\n  dev_bias_s4 = CPU_1",
+          "elapsed_ms": 79.6
+        },
+        {
+          "check_devices": true,
+          "check_phases": true,
+          "check_gradients": false,
+          "verdict": "REFUTED",
+          "n_error_bugs": 3,
+          "n_total_bugs": 3,
+          "first_error_msg": "[DEVICE-MISMATCH] Z3 violation (device_mismatch) at step 4:\n  phase_s4 = TRAIN_2\n  phase_s1 = TRAIN_2\n  dev_x_s2 = CUDA_0_2\n  grad___inner_1_s4 = False\n  grad_x_s0 = False\n  grad___subscript_2_s2 = False\n  grad_bias_s4 = False\n  grad___subscript_2_s4 = False\n  phase_s0 = TRAIN_2\n  dev_x_s1 = CUDA_0_2\n  dev_x_s3 = CUDA_0_2\n  dev_x_s4 = CUDA_0_2\n  grad_x_s3 = False\n  grad_x_s4 = False\n  grad___inner_1_s3 = False\n  dev_x_s0 = CPU_2\n  grad_x_s2 = False\n  grad___subscript_2_s3 = False\n  phase_s2 = TRAIN_2\n  dev_bias_s4 = CPU_2\n  grad_x_s1 = False\n  phase_s3 = TRAIN_2",
+          "elapsed_ms": 35.8
+        },
+        {
+          "check_devices": true,
+          "check_phases": false,
+          "check_gradients": true,
+          "verdict": "REFUTED",
+          "n_error_bugs": 3,
+          "n_total_bugs": 3,
+          "first_error_msg": "[DEVICE-MISMATCH] Z3 violation (device_mismatch) at step 4:\n  grad___inner_1_s4 = False\n  grad_x_s0 = False\n  grad___subscript_2_s2 = False\n  grad_bias_s4 = False\n  grad___subscript_2_s4 = False\n  dev_x_s0 = CPU_3\n  phase_s2 = TRAIN_3\n  phase_s3 = TRAIN_3\n  phase_s4 = TRAIN_3\n  dev_bias_s4 = CPU_3\n  grad_x_s3 = False\n  grad_x_s4 = False\n  grad___inner_1_s3 = False\n  phase_s0 = TRAIN_3\n  phase_s1 = TRAIN_3\n  grad_x_s2 = False\n  grad___subscript_2_s3 = False\n  dev_x_s2 = CUDA_0_3\n  dev_x_s3 = CUDA_0_3\n  dev_x_s4 = CUDA_0_3\n  grad_x_s1 = False\n  dev_x_s1 = CUDA_0_3",
+          "elapsed_ms": 37.6
+        },
+        {
+          "check_devices": true,
+          "check_phases": false,
+          "check_gradients": false,
+          "verdict": "REFUTED",
+          "n_error_bugs": 3,
+          "n_total_bugs": 3,
+          "first_error_msg": "[DEVICE-MISMATCH] Z3 violation (device_mismatch) at step 4:\n  dev_bias_s4 = CPU_4\n  grad___inner_1_s4 = False\n  grad_x_s0 = False\n  grad___subscript_2_s2 = False\n  grad_bias_s4 = False\n  grad___subscript_2_s4 = False\n  dev_x_s2 = CUDA_0_4\n  dev_x_s3 = CUDA_0_4\n  dev_x_s4 = CUDA_0_4\n  dev_x_s1 = CUDA_0_4\n  grad_x_s3 = False\n  grad_x_s4 = False\n  grad___inner_1_s3 = False\n  phase_s2 = TRAIN_4\n  phase_s4 = TRAIN_4\n  phase_s3 = TRAIN_4\n  grad_x_s2 = False\n  grad___subscript_2_s3 = False\n  dev_x_s0 = CPU_4\n  phase_s1 = TRAIN_4\n  grad_x_s1 = False\n  phase_s0 = TRAIN_4",
+          "elapsed_ms": 37.1
+        },
+        {
+          "check_devices": false,
+          "check_phases": true,
+          "check_gradients": true,
+          "verdict": "VERIFIED",
+          "n_error_bugs": 0,
+          "n_total_bugs": 0,
+          "first_error_msg": null,
+          "elapsed_ms": 41.0
+        },
+        {
+          "check_devices": false,
+          "check_phases": true,
+          "check_gradients": false,
+          "verdict": "VERIFIED",
+          "n_error_bugs": 0,
+          "n_total_bugs": 0,
+          "first_error_msg": null,
+          "elapsed_ms": 41.0
+        },
+        {
+          "check_devices": false,
+          "check_phases": false,
+          "check_gradients": true,
+          "verdict": "VERIFIED",
+          "n_error_bugs": 0,
+          "n_total_bugs": 0,
+          "first_error_msg": null,
+          "elapsed_ms": 73.7
+        },
+        {
+          "check_devices": false,
+          "check_phases": false,
+          "check_gradients": false,
+          "verdict": "VERIFIED",
+          "n_error_bugs": 0,
+          "n_total_bugs": 0,
+          "first_error_msg": null,
+          "elapsed_ms": 46.1
+        }
+      ]
+    },
+    {
+      "name": "phase_dependent_head",
+      "path": "examples/check_flag_demo/phase_dependent_head.py",
+      "primary_flag": "check_phases",
+      "expected_with_flag": "REFUTED",
+      "expected_without_flag": "VERIFIED",
+      "flip_on_verdict": "REFUTED",
+      "flip_off_verdict": "VERIFIED",
+      "flag_flips_verdict": true,
+      "expectation_met": true,
+      "rows": [
+        {
+          "check_devices": true,
+          "check_phases": true,
+          "check_gradients": true,
+          "verdict": "REFUTED",
+          "n_error_bugs": 1,
+          "n_total_bugs": 1,
+          "first_error_msg": "[SHAPE-INCOMPATIBLE] [EVAL mode, phase-dependent] Linear expects last dim=32, got 16",
+          "elapsed_ms": 16.4
+        },
+        {
+          "check_devices": true,
+          "check_phases": true,
+          "check_gradients": false,
+          "verdict": "REFUTED",
+          "n_error_bugs": 1,
+          "n_total_bugs": 1,
+          "first_error_msg": "[SHAPE-INCOMPATIBLE] [EVAL mode, phase-dependent] Linear expects last dim=32, got 16",
+          "elapsed_ms": 10.2
+        },
+        {
+          "check_devices": true,
+          "check_phases": false,
+          "check_gradients": true,
+          "verdict": "VERIFIED",
+          "n_error_bugs": 0,
+          "n_total_bugs": 0,
+          "first_error_msg": null,
+          "elapsed_ms": 10.3
+        },
+        {
+          "check_devices": true,
+          "check_phases": false,
+          "check_gradients": false,
+          "verdict": "VERIFIED",
+          "n_error_bugs": 0,
+          "n_total_bugs": 0,
+          "first_error_msg": null,
+          "elapsed_ms": 10.7
+        },
+        {
+          "check_devices": false,
+          "check_phases": true,
+          "check_gradients": true,
+          "verdict": "REFUTED",
+          "n_error_bugs": 1,
+          "n_total_bugs": 1,
+          "first_error_msg": "[SHAPE-INCOMPATIBLE] [EVAL mode, phase-dependent] Linear expects last dim=32, got 16",
+          "elapsed_ms": 10.2
+        },
+        {
+          "check_devices": false,
+          "check_phases": true,
+          "check_gradients": false,
+          "verdict": "REFUTED",
+          "n_error_bugs": 1,
+          "n_total_bugs": 1,
+          "first_error_msg": "[SHAPE-INCOMPATIBLE] [EVAL mode, phase-dependent] Linear expects last dim=32, got 16",
+          "elapsed_ms": 9.5
+        },
+        {
+          "check_devices": false,
+          "check_phases": false,
+          "check_gradients": true,
+          "verdict": "VERIFIED",
+          "n_error_bugs": 0,
+          "n_total_bugs": 0,
+          "first_error_msg": null,
+          "elapsed_ms": 10.1
+        },
+        {
+          "check_devices": false,
+          "check_phases": false,
+          "check_gradients": false,
+          "verdict": "VERIFIED",
+          "n_error_bugs": 0,
+          "n_total_bugs": 0,
+          "first_error_msg": null,
+          "elapsed_ms": 10.3
+        }
+      ]
+    },
+    {
+      "name": "grad_checkpoint_block",
+      "path": "examples/check_flag_demo/grad_checkpoint_block.py",
+      "primary_flag": "check_gradients",
+      "expected_with_flag": "REFUTED",
+      "expected_without_flag": "VERIFIED",
+      "flip_on_verdict": "REFUTED",
+      "flip_off_verdict": "VERIFIED",
+      "flag_flips_verdict": true,
+      "expectation_met": true,
+      "rows": [
+        {
+          "check_devices": true,
+          "check_phases": true,
+          "check_gradients": true,
+          "verdict": "REFUTED",
+          "n_error_bugs": 1,
+          "n_total_bugs": 1,
+          "first_error_msg": "[GRADIENT-OUT-OF-FRAGMENT] First-order grad lattice cannot soundly verify modules that use `from torch.utils.checkpoint import checkpoint`; analyser flips this module out of the verified fragment (Refuted-Proof, not abstention) so a runtime gradient-flag check cannot silently pass.",
+          "elapsed_ms": 88.3
+        },
+        {
+          "check_devices": true,
+          "check_phases": true,
+          "check_gradients": false,
+          "verdict": "VERIFIED",
+          "n_error_bugs": 0,
+          "n_total_bugs": 0,
+          "first_error_msg": null,
+          "elapsed_ms": 6.9
+        },
+        {
+          "check_devices": true,
+          "check_phases": false,
+          "check_gradients": true,
+          "verdict": "REFUTED",
+          "n_error_bugs": 1,
+          "n_total_bugs": 1,
+          "first_error_msg": "[GRADIENT-OUT-OF-FRAGMENT] First-order grad lattice cannot soundly verify modules that use `from torch.utils.checkpoint import checkpoint`; analyser flips this module out of the verified fragment (Refuted-Proof, not abstention) so a runtime gradient-flag check cannot silently pass.",
+          "elapsed_ms": 17.6
+        },
+        {
+          "check_devices": true,
+          "check_phases": false,
+          "check_gradients": false,
+          "verdict": "VERIFIED",
+          "n_error_bugs": 0,
+          "n_total_bugs": 0,
+          "first_error_msg": null,
+          "elapsed_ms": 6.9
+        },
+        {
+          "check_devices": false,
+          "check_phases": true,
+          "check_gradients": true,
+          "verdict": "REFUTED",
+          "n_error_bugs": 1,
+          "n_total_bugs": 1,
+          "first_error_msg": "[GRADIENT-OUT-OF-FRAGMENT] First-order grad lattice cannot soundly verify modules that use `from torch.utils.checkpoint import checkpoint`; analyser flips this module out of the verified fragment (Refuted-Proof, not abstention) so a runtime gradient-flag check cannot silently pass.",
+          "elapsed_ms": 6.7
+        },
+        {
+          "check_devices": false,
+          "check_phases": true,
+          "check_gradients": false,
+          "verdict": "VERIFIED",
+          "n_error_bugs": 0,
+          "n_total_bugs": 0,
+          "first_error_msg": null,
+          "elapsed_ms": 7.9
+        },
+        {
+          "check_devices": false,
+          "check_phases": false,
+          "check_gradients": true,
+          "verdict": "REFUTED",
+          "n_error_bugs": 1,
+          "n_total_bugs": 1,
+          "first_error_msg": "[GRADIENT-OUT-OF-FRAGMENT] First-order grad lattice cannot soundly verify modules that use `from torch.utils.checkpoint import checkpoint`; analyser flips this module out of the verified fragment (Refuted-Proof, not abstention) so a runtime gradient-flag check cannot silently pass.",
+          "elapsed_ms": 7.0
+        },
+        {
+          "check_devices": false,
+          "check_phases": false,
+          "check_gradients": false,
+          "verdict": "VERIFIED",
+          "n_error_bugs": 0,
+          "n_total_bugs": 0,
+          "first_error_msg": null,
+          "elapsed_ms": 13.6
+        }
+      ]
+    }
+  ]
+}

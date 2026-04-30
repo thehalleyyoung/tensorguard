@@ -41,39 +41,33 @@
 \textsc{TensorGuard} is a no-execution refinement-type checker for
 PyTorch \texttt{nn.Module} forward methods that verifies tensor
 shapes and gradient flow statically from class source, without
-instantiating the module or tracing it.
+instantiating or tracing the module.
 On a curated $60$-bug historical corpus it returns
 \textsc{Refuted-Proof} on $53/60$ ($88.3\%$, Wilson 95\% CI
 $[77.8\%, 94.2\%]$); on the $N{=}34$ fragment-fair head-to-head
 with Pytea it scores $32/34$ vs.\ $25/34$ (McNemar exact
 $p{=}0.0156$), and it returns \textsc{Refuted-Proof} on $9/9$
 naturally-occurring shape bugs transcribed from upstream
-HuggingFace \texttt{transformers} issues across Llama, Qwen2,
-Mistral, Phi-3, and Gemma~$2$.
-On unreduced real-source class code drawn from
-\texttt{torchvision}, \texttt{timm}, and HuggingFace
-\texttt{transformers}, the analyser returns
+HuggingFace issues across Llama, Qwen2, Mistral, Phi-3, and
+Gemma~$2$.
+On unreduced real-source class code, the analyser returns
 $26$ unconditional \textsc{Refuted-Proof} verdicts on the
 $356$-block subset whose contract obligation is empty (Wilson
-$95\%$ CI $[5.0\%, 10.5\%]$), of which $5$ fire entirely
-inside the audited handler footprint;
-on the unrestricted $488$-block corpus with the v8 rule
-extensions enabled the unconditional \textsc{Refuted-Proof}
-count is $15/488$ (Wilson $95\%$ CI $[1.87\%, 5.01\%]$).
-The contribution is the joint
-shape-plus-grad analysis on un-instantiated class source,
-together with an assume/guarantee discipline at the class
-boundary and a calibration package that partitions every verdict
-by a Lean-audited soundness footprint; the assume/guarantee
-composition theorem is mechanised in Lean~$4$ on a $17$-operator
-DSL with $17/17$ closed per-operator soundness lemmas, and the
-proof-grade soundness theorem is restricted to a $44$-handler
-sub-catalogue $\mathrm{Cat}_{\mathrm{sound}}$. The remaining
-$35$ handlers, the analyser implementation, the AST extractor,
-the backward verifier, and the Z3 dispatch lie in the trusted
-computing base; the backward verifier's deployment-side
-false-Verified rate is bounded by $\le 3.0\%$ on the
-regex-screened training-script population. An open-source
+$95\%$ CI $[5.0\%, 10.5\%]$), of which $5$ fire inside the
+audited handler footprint; on the unrestricted $488$-block
+corpus the unconditional count is $15/488$.
+The contribution is the joint shape-plus-grad analysis on
+un-instantiated class source, together with an assume/guarantee
+discipline at the class boundary and a calibration package that
+partitions every verdict by a Lean-audited soundness footprint;
+the composition theorem is mechanised in Lean~$4$ on a
+$17$-operator DSL with $17/17$ closed per-operator soundness
+lemmas, and the soundness theorem is restricted to a
+$44$-handler sub-catalogue $\mathrm{Cat}_{\mathrm{sound}}$. The
+remaining $35$ handlers, the analyser implementation, the AST
+extractor, the backward verifier, and the Z3 dispatch lie in the
+trusted computing base; the backward verifier's deployment-side
+false-Verified rate is bounded by $\le 3.0\%$. An open-source
 implementation accompanies the paper.
 \end{abstract}
 

@@ -842,15 +842,57 @@ def verify_architecture(
     # cleanly discriminated in ablation studies.
     # NOTE: filtering is applied AFTER CEGAR so that CEGAR-surfaced violations
     # (e.g. [CEGAR-REAL-BUG] Gradient flow broken: ...) are also gated correctly.
-    _KIND_DEVICE  = ("device_mismatch", "DEVICE-MISMATCH")
-    _KIND_PHASE   = ("phase_violation", "phase_error", "PHASE-VIOLATION", "PHASE-ERROR")
+    _KIND_DEVICE  = ("device_mismatch", "DEVICE-MISMATCH",
+                     "Device mismatch", "device inconsistency")
+    _KIND_PHASE   = ("phase_violation", "phase_error", "PHASE-VIOLATION",
+                     "PHASE-ERROR", "phase inconsistency",
+                     "train/eval", "Phase mismatch",
+                     "phase-dependent",
+                     "[TRAIN mode", "[EVAL mode")
     _KIND_GRAD    = ("gradient_broken", "gradient_violation",
-                     "GRADIENT-BROKEN", "GRADIENT-VIOLATION", "Gradient flow broken",
-                     "GRADIENT-OUT-OF-FRAGMENT")
+                     "GRADIENT-BROKEN", "GRADIENT-VIOLATION",
+                     "Gradient flow broken", "GRADIENT-OUT-OF-FRAGMENT",
+                     "Gradient flow", "grad-flow")
 
+    # Cross-domain and CEGAR-real-bug wrappers carry their original kind
+    # tag in the message body, so the kind-substring test naturally picks
+    # them up.  We also strip CROSS-DOMAIN-VIOLATION when the underlying
+    # Z3 model only exposes auxiliary-domain witnesses for the disabled
+    # check.
     def _bug_matches_kinds(bug: Bug, kinds) -> bool:
         msg = bug.message
         return any(k.lower() in msg.lower() for k in kinds)
+
+    def _bug_is_cross_domain_for(bug: Bug, prefix: str) -> bool:
+        """A CROSS-DOMAIN-VIOLATION whose Z3 witness only contains
+        auxiliary-variable assignments with the given prefix
+        (``dev_``, ``phase_``, ``grad_``) is fully attributable to the
+        disabled secondary check and should be filtered out alongside
+        the primary kind.
+        """
+        msg = bug.message
+        if "CROSS-DOMAIN-VIOLATION" not in msg:
+            return False
+        if "Z3 violation" not in msg:
+            return False
+        tail = msg.split("Z3 violation", 1)[1]
+        seen_prefix = False
+        for ln in tail.splitlines():
+            ln = ln.strip()
+            if "=" not in ln:
+                continue
+            lhs = ln.split("=", 1)[0].strip()
+            if not lhs:
+                continue
+            if lhs.startswith(prefix):
+                seen_prefix = True
+                continue
+            # Any non-prefix, non-shape auxiliary leaks → keep
+            if lhs.startswith(("grad_", "dev_", "phase_")):
+                continue
+            # Real shape variable on lhs → not purely auxiliary
+            return False
+        return seen_prefix
 
     # ── Low-confidence mode: merge flow-sensitive analysis bugs ─────────
     # When high_confidence_only=False, additionally run the heuristic
@@ -963,11 +1005,23 @@ def verify_architecture(
 
     # Apply feature-flag filters after all bug sources (including CEGAR) have run.
     if not check_devices:
-        result.bugs = [b for b in result.bugs if not _bug_matches_kinds(b, _KIND_DEVICE)]
+        result.bugs = [
+            b for b in result.bugs
+            if not _bug_matches_kinds(b, _KIND_DEVICE)
+            and not _bug_is_cross_domain_for(b, "dev_")
+        ]
     if not check_phases:
-        result.bugs = [b for b in result.bugs if not _bug_matches_kinds(b, _KIND_PHASE)]
+        result.bugs = [
+            b for b in result.bugs
+            if not _bug_matches_kinds(b, _KIND_PHASE)
+            and not _bug_is_cross_domain_for(b, "phase_")
+        ]
     if not check_gradients:
-        result.bugs = [b for b in result.bugs if not _bug_matches_kinds(b, _KIND_GRAD)]
+        result.bugs = [
+            b for b in result.bugs
+            if not _bug_matches_kinds(b, _KIND_GRAD)
+            and not _bug_is_cross_domain_for(b, "grad_")
+        ]
 
     result.functions_analyzed = 1
     result.duration_ms = (time.perf_counter() - t0) * 1000

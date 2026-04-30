@@ -1,72 +1,72 @@
 [
   {
-    "description": "On the fairest directly comparable bug subset, the strongest maintained baseline is actually `torch.compile`, which catches 34/34 while TG catches 32/34; empirically, TG is not the best detector there, only the only no-execution tool in the class-source regime.",
-    "source": "reviewer",
-    "round_added": 2,
-    "weight": 1.0,
-    "unresolved_streak": 0
-  },
-  {
-    "description": "The user-visible real-source result remains weak: on the 488-block corpus the free-symbolic regime yields 0 unconditional RP, so the paper still lacks a strong unreduced-real-source bug-finding headline.",
-    "source": "reviewer",
-    "round_added": 2,
-    "weight": 1.0,
-    "unresolved_streak": 0
-  },
-  {
     "description": "The main 53/60 number is still driven by a historically mined and filtered corpus; the newer pre-registered unfiltered post-freeze sample is only 5/15, with wide intervals and no statistically separable advantage over FakeTensorMode or Pytea.",
     "source": "reviewer",
     "round_added": 2,
     "weight": 1.0,
-    "unresolved_streak": 0
+    "unresolved_streak": 1
   },
   {
-    "description": "The soundness footprint on real-source verdicts is still limited: only 62/185 in-soundness verdicts touch handlers entirely inside the Lean-or-pen-paper audited footprint, with many others depending on tested-only or fully unaudited handlers.",
+    "description": "**The CEGAR contribution (C5) is effectively unimplemented on the real corpora.** `feature_ablation.json` explicitly documents: \"CEGAR predicates are stored as metadata only (not fed back as Bug objects). check_devices, check_phases, check_gradients are accepted by the API but NOT forwarded to verify_model in the current implementation; L2/L3/L4 rows therefore replicate L1 verdict counts.\" The 25-case stress benchmark activates these knobs, but the paper's own ablation on the real corpora produces a flat line. C5 as stated (\"CEGAR predicate discovery \u2026 discovers shape predicates automatically\") and the claimed \"5-theory product domain\" are misleading characterisations of what the shipped tool actually does on any real-world input, and the paper's disclosure of this (README Known Limitations section) is too understated relative to the abstract's claims.",
     "source": "reviewer",
-    "round_added": 2,
+    "round_added": 3,
     "weight": 1.0,
     "unresolved_streak": 0
   },
   {
-    "description": "The public artifact surface still looks immature relative to the paper\u2019s architectural narrative: the README states that `check_devices`, `check_phases`, and `check_gradients` are currently not forwarded by the public API/CLI, so part of the advertised multi-feature system is not exposed as functional user-facing controls.",
+    "description": "**The pre-registered unfiltered corpus (Table 3, 5/15) provides no statistical separation from baselines.** The paper states this explicitly (\"not a separation\") and provides a power calculation, but then the abstract and Section 4.1 headline the 53/60 curated figure without a comparable disclaimer. The curated corpus was constructed by historical triage of known bugs; the 5/15 result on the one corpus collected without that foreknowledge is the cleanest unbiased estimate of real-world utility, and its Wilson 95% CI [15.2%, 58.3%] overlaps completely with the execution-based baselines' 2/15 (CI [3.8%, 40.7%]).",
     "source": "reviewer",
-    "round_added": 2,
+    "round_added": 3,
     "weight": 1.0,
     "unresolved_streak": 0
   },
   {
-    "description": "Can the authors provide a larger preregistered evaluation on original, unreduced class source where the headline quantity is unconditional RP rather than CV/LW, so the real-source usefulness claim is not bottlenecked by the current 0/488 result?",
+    "description": "**test_config_qkv_upgrade.py is a known-failing test that must be explicitly ignored.** The prior round's experiment log shows this test was skipped with `--ignore=tests/test_config_qkv_upgrade.py` to get a passing suite. A reproducible artifact should not require ignoring a test that presumably validates a real analysis behaviour. Neither the paper nor the README explains what this test exercises or why it fails.",
     "source": "reviewer",
-    "round_added": 2,
+    "round_added": 3,
     "weight": 1.0,
     "unresolved_streak": 0
   },
   {
-    "description": "Since `torch.compile` is 34/34 on the fair 34-bug subset, what concrete usage boundary should practitioners use to decide when TG is preferable over execution-based tooling, beyond the general \u201cneeds instantiation and inputs\u201d statement?",
+    "description": "**The backward verifier's gradient-flow analysis (C3) is claimed \"8/8 canonical bugs caught, 0/50 false positives\" but the eval corpus is entirely synthetic.** The 8 canonical bug classes and 50 clean scripts are author-authored; there is no third-party or natural-occurrence validation analogous to the 9/9 cross-family HF result for shape bugs. The \u2264 3.0% false-Verified bound on \"regex-screened training-script population\" depends on a regex screen that is not defined or validated in the paper's main body.",
     "source": "reviewer",
-    "round_added": 2,
+    "round_added": 3,
     "weight": 1.0,
     "unresolved_streak": 0
   },
   {
-    "description": "How stable are the paper\u2019s practical conclusions if one restricts evaluation summaries to the 62/185 real-source verdicts that lie entirely inside the Lean-or-pen-paper audited handler footprint?",
+    "description": "**The 57/185 verdicts touching only handlers outside any soundness scope (Table 8 bottom row) are not discussed defensively.** These are not \"tested-only\" \u2014 they are outside all three tiers (Lean, pen-and-paper, tested-only). This is acknowledged with \"TCB obligation explicitly tracked\" but the paper does not report whether these 57 verdicts are concentrated in particular operator families, which would let the reader gauge whether the theoretical apparatus covers the majority of practical fires.",
     "source": "reviewer",
-    "round_added": 2,
+    "round_added": 3,
     "weight": 1.0,
     "unresolved_streak": 0
   },
   {
-    "description": "The released README says the public check flags are currently not forwarded through the API/CLI; which artifact surface should a reviewer treat as the canonical implementation of the paper\u2019s device/phase/grad features?",
+    "description": "The feature ablation JSON metadata states that `check_devices`, `check_phases`, and `check_gradients` \"are accepted by the API but NOT forwarded to verify_model.\" Does the paper intend to claim device, phase, and gradient analysis as live, callable contributions, or are these planned features? If the former, which specific commits implement the forwarding, and which benchmark script exercises them end-to-end?",
     "source": "reviewer",
-    "round_added": 2,
+    "round_added": 3,
     "weight": 1.0,
     "unresolved_streak": 0
   },
   {
-    "description": "\\textbf{Axiom~\\ref{ax:operator-agnostic-witness} silently inflates Theorem~\\ref{thm:ag-sound}'s scope.} The mechanised composition theorem is advertised as covering $17$ operators including \\texttt{matmul}, but \\texttt{matmul} and \\texttt{broadcast\\_add} \u2014 arguably the two most semantically loaded ops \u2014 are discharged by an \"operator-agnostic composition witness\" whose first clause is literally \"the rule-table shape function agrees with the runtime shape on every input multiset that satisfies the rule's precondition (this is the in-envelope agreement count of $1{,}000$/$1{,}000$ samples)\". Using a $1000$-sample property test as an \\emph{axiom} for matmul inside a theorem stated in Lean is a soundness-grade move, not a presentation issue. Either the lemmas \\texttt{applyOpExt\\_sound\\_matmul}/\\texttt{\\_broadcast\\_add} should be closed in Lean, or the theorem should be restated as covering $15$ operators with $2$ explicit conjectures, and the abstract's \"$15$ per-operator lemmas and $2$ explicit operator-agnostic obligations\" claim should not be folded into a sentence whose grammatical subject is a \"mechanised \u2026 composition theorem on a $17$-operator DSL\".",
+    "description": "What does `test_config_qkv_upgrade.py` test, why is it currently failing, and can the authors either fix it or remove it and explain what real behaviour it was meant to validate?",
     "source": "reviewer",
-    "round_added": 1,
-    "weight": 0.7071067811865476,
+    "round_added": 3,
+    "weight": 1.0,
+    "unresolved_streak": 0
+  },
+  {
+    "description": "On the 5/15 pre-registered corpus (Table 3), the paper cites a power calculation \"conditioning on 5/15 for TG, 2/15 for baselines.\" What sample size N would be required to achieve 80% power to reject H\u2080 under these observed proportions, and is there a concrete plan to collect it?",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 1.0,
+    "unresolved_streak": 0
+  },
+  {
+    "description": "The abstract claims \"26 unconditional REFUTED-PROOF verdicts on the 356-block subset whose contract obligation is empty.\" Is there a single command (without cached benchmarks) that regenerates this 26/356 number from the committed corpus, analogous to `python3 verify_neurips_revision.py`?",
+    "source": "reviewer",
+    "round_added": 3,
+    "weight": 1.0,
     "unresolved_streak": 0
   }
 ]

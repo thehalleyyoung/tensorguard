@@ -889,18 +889,18 @@
     "description": "Mutated resnet18: fc head changed from Linear(512,1000) to Linear(256,1000)",
     "tensorguard": {
       "verdict": "verified",
-      "time_s": 3.2235121726989746,
+      "time_s": 0.3090488910675049,
       "returncode": 0,
-      "stderr_tail": "Unsupported layer kind UNKNOWN (net): output shape marked UNKNOWN\nUpdate check failed: HTTP Error 404: Not Found\n"
+      "stderr_tail": "Unsupported layer kind UNKNOWN (net): output shape marked UNKNOWN\n"
     },
     "fx_shapeprop": {
       "ok": false,
-      "time_s": 13.46589708328247,
+      "time_s": 3.210486888885498,
       "err": "RuntimeError: ShapeProp error for: node=%fc : [num_users=1] = call_module[target=fc](args = (%flatten,), kwargs = {}) with meta={'nn_module_stack': OrderedDict([('fc', ('fc', <class 'torch.nn.modules.linear.Linear'"
     },
     "meta_forward": {
       "ok": false,
-      "time_s": 14.150981664657593,
+      "time_s": 1.983475923538208,
       "err": "RuntimeError: a and b must have same reduction dim, but got [1, 512] X [256, 1000]."
     }
   },

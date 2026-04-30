@@ -8878,7 +8878,7 @@ class ConstraintVerifier:
                 for s in inactive_branch:
                     alt_state, vs = self._step_transition(alt_state, s)
                     for v in vs:
-                        v.message = (f"[{inactive_phase.value} mode] " + v.message)
+                        v.message = (f"[{inactive_phase.name} mode, phase-dependent] " + v.message)
                     violations.extend(vs)
 
         elif cond == "not self.training":
@@ -8896,7 +8896,7 @@ class ConstraintVerifier:
                 for s in inactive_branch:
                     alt_state, vs = self._step_transition(alt_state, s)
                     for v in vs:
-                        v.message = (f"[{inactive_phase.value} mode] " + v.message)
+                        v.message = (f"[{inactive_phase.name} mode, phase-dependent] " + v.message)
                     violations.extend(vs)
         elif cond is not None and cond.startswith("hasattr:self."):
             # hasattr(self, attr) — only take true branch if attr exists
