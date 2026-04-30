@@ -301,11 +301,14 @@ grad as in \textsc{T-Matmul}.
 Result type is $\mathsf{unit}$; the condition is vacuous.
 
 \emph{Lean-audited operators}
-(\Cref{tab:handler-soundness}, 28 operators including \textsc{T-Linear},
+(\Cref{tab:handler-soundness}, 36 operators including \textsc{T-Linear},
 \textsc{T-Bmm}, \textsc{T-Permute}, \textsc{T-Expand}, \textsc{T-Repeat},
 \textsc{T-Stack}, \textsc{T-Chunk}, \textsc{T-Unbind},
 \textsc{T-Gather}, \textsc{T-Scatter}, \textsc{T-IndexSelect},
-\textsc{T-Narrow}, \textsc{T-Embed}, \textsc{T-RmsNorm}).
+\textsc{T-Narrow}, \textsc{T-Embed}, \textsc{T-RmsNorm},
+\textsc{T-Squeeze}, \textsc{T-Unsqueeze},
+\textsc{T-Argmax}, \textsc{T-CrossEntropy}, \textsc{T-Dropout},
+\textsc{T-Contiguous}, \textsc{T-Clamp}, \textsc{T-To}).
 Each Lean definition formalises: for any input satisfying the rule's premises,
 the rule's output shape formula equals PyTorch's runtime output---this is exactly
 the statement of the present lemma for each such operator, and the Lean proof

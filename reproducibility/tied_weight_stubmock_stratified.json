@@ -1,0 +1,564 @@
+{
+  "summary": {
+    "seed": 20260430,
+    "stratification_rule": "handler-family priority-order classification; draw min(5, stratum_size) per family from 8 non-empty runnable families",
+    "population_size": 371,
+    "family_sizes": {
+      "attention-family": 8,
+      "broadcast-elementwise": 133,
+      "conv-family": 23,
+      "embedding-family": 35,
+      "linear-only": 134,
+      "no_handler_detected": 17,
+      "norm-family": 17,
+      "reshape-only": 4
+    },
+    "sample_size": 39,
+    "candidates_attempted": 39,
+    "ok_runs": 14,
+    "fail_count": 25,
+    "silent_error_count": 0,
+    "silent_error_class_names": [],
+    "any_grad_count": 14,
+    "all_grad_count": 13,
+    "global_wilson_ci_95": [
+      0.0,
+      0.21531701192718142
+    ],
+    "per_family": {
+      "attention-family": {
+        "stratum_population": 8,
+        "sampled": 5,
+        "ok": 2,
+        "silent_error": 0,
+        "fail_rate": 0.6,
+        "silent_error_rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.6576280471103807
+        ]
+      },
+      "broadcast-elementwise": {
+        "stratum_population": 133,
+        "sampled": 5,
+        "ok": 5,
+        "silent_error": 0,
+        "fail_rate": 0.0,
+        "silent_error_rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.43449149475208104
+        ]
+      },
+      "conv-family": {
+        "stratum_population": 23,
+        "sampled": 5,
+        "ok": 0,
+        "silent_error": 0,
+        "fail_rate": 1.0,
+        "silent_error_rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          1.0
+        ]
+      },
+      "embedding-family": {
+        "stratum_population": 35,
+        "sampled": 5,
+        "ok": 3,
+        "silent_error": 0,
+        "fail_rate": 0.4,
+        "silent_error_rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.5615060804490177
+        ]
+      },
+      "linear-only": {
+        "stratum_population": 134,
+        "sampled": 5,
+        "ok": 3,
+        "silent_error": 0,
+        "fail_rate": 0.4,
+        "silent_error_rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.5615060804490177
+        ]
+      },
+      "no_handler_detected": {
+        "stratum_population": 17,
+        "sampled": 5,
+        "ok": 0,
+        "silent_error": 0,
+        "fail_rate": 1.0,
+        "silent_error_rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          1.0
+        ]
+      },
+      "norm-family": {
+        "stratum_population": 17,
+        "sampled": 5,
+        "ok": 1,
+        "silent_error": 0,
+        "fail_rate": 0.8,
+        "silent_error_rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.7934567085261071
+        ]
+      },
+      "reshape-only": {
+        "stratum_population": 4,
+        "sampled": 4,
+        "ok": 0,
+        "silent_error": 0,
+        "fail_rate": 1.0,
+        "silent_error_rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          1.0
+        ]
+      }
+    },
+    "comparison_vs_original": {
+      "original_shortest_loc": {
+        "seed": 0,
+        "candidates_attempted": 31,
+        "ok_runs": 25,
+        "silent_error_count": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.13319649395317873
+        ],
+        "selection": "shortest-LoC-first, single family dominant (norm)"
+      },
+      "stratified": {
+        "seed": 20260430,
+        "ok_runs": 14,
+        "silent_error_count": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.21531701192718142
+        ],
+        "selection": "stratified random, 8 families, 5 per stratum"
+      }
+    }
+  },
+  "results": [
+    {
+      "class": "SeamlessM4TConformerAdapter",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/seamless_m4t/modeling_seamless_m4t.py",
+      "family": "no_handler_detected",
+      "status": "forward_or_backward_failed",
+      "error": "TypeError: SeamlessM4TConformerAdapter.forward() missing 1 required positional argument: 'attention_mask'"
+    },
+    {
+      "class": "CsmCodebooksHead",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/csm/modeling_csm.py",
+      "family": "reshape-only",
+      "status": "forward_or_backward_failed",
+      "error": "TypeError: unsupported operand type(s) for -: 'NoneType' and 'int'"
+    },
+    {
+      "class": "MllamaPrecomputedAspectRatioEmbedding",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/mllama/modeling_mllama.py",
+      "family": "embedding-family",
+      "status": "forward_or_backward_failed",
+      "error": "TypeError: MllamaPrecomputedAspectRatioEmbedding.forward() missing 1 required positional argument: 'aspect_ratio_ids'"
+    },
+    {
+      "class": "DabDetrFrozenBatchNorm2d",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/dab_detr/modeling_dab_detr.py",
+      "family": "norm-family",
+      "status": "forward_or_backward_failed",
+      "error": "RuntimeError: element 0 of tensors does not require grad and does not have a grad_fn"
+    },
+    {
+      "class": "BltRMSNorm",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/blt/modeling_blt.py",
+      "family": "broadcast-elementwise",
+      "status": "ok",
+      "input_shape": [
+        2,
+        4,
+        16
+      ],
+      "loss": -3.6002962589263916,
+      "n_params": 1,
+      "n_with_grad": 1,
+      "any_grad": true,
+      "all_grad": true,
+      "silent_error": false
+    },
+    {
+      "class": "Phi4MultimodalAudioRelativeAttentionBias",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/phi4_multimodal/modeling_phi4_multimodal.py",
+      "family": "embedding-family",
+      "status": "forward_or_backward_failed",
+      "error": "RuntimeError: index_select(): self indexing axis dim should be positive"
+    },
+    {
+      "class": "MBartClassificationHead",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/mbart/modeling_mbart.py",
+      "family": "linear-only",
+      "status": "instantiation_failed",
+      "error": "TypeError: MBartClassificationHead.__init__() missing 2 required positional arguments: 'num_classes' and 'pooler_dropout'"
+    },
+    {
+      "class": "RelativePositionBiasAggregated",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/udop/modeling_udop.py",
+      "family": "no_handler_detected",
+      "status": "instantiation_failed",
+      "error": "TypeError: RelativePositionBiasAggregated.__init__() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "class": "Deimv2FrozenBatchNorm2d",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/deimv2/modeling_deimv2.py",
+      "family": "norm-family",
+      "status": "forward_or_backward_failed",
+      "error": "RuntimeError: element 0 of tensors does not require grad and does not have a grad_fn"
+    },
+    {
+      "class": "NystromformerEmbeddings",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/nystromformer/modeling_nystromformer.py",
+      "family": "embedding-family",
+      "status": "ok",
+      "input_shape": [
+        1,
+        4
+      ],
+      "loss": 1.9073486328125e-06,
+      "n_params": 5,
+      "n_with_grad": 5,
+      "any_grad": true,
+      "all_grad": true,
+      "silent_error": false
+    },
+    {
+      "class": "Zamba2RMSNormGated",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/zamba2/modular_zamba2.py",
+      "family": "broadcast-elementwise",
+      "status": "ok",
+      "input_shape": [
+        2,
+        4,
+        16
+      ],
+      "loss": -4.0221052169799805,
+      "n_params": 1,
+      "n_with_grad": 1,
+      "any_grad": true,
+      "all_grad": true,
+      "silent_error": false
+    },
+    {
+      "class": "Qwen3_5VisionPatchEmbed",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/qwen3_5/modeling_qwen3_5.py",
+      "family": "conv-family",
+      "status": "forward_or_backward_failed",
+      "error": "RuntimeError: shape '[-1, 3, 0, 4, 4]' is invalid for input of size 8"
+    },
+    {
+      "class": "SeamlessM4Tv2ConformerAdapter",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/seamless_m4t_v2/modeling_seamless_m4t_v2.py",
+      "family": "no_handler_detected",
+      "status": "forward_or_backward_failed",
+      "error": "TypeError: SeamlessM4Tv2ConformerAdapter.forward() missing 1 required positional argument: 'attention_mask'"
+    },
+    {
+      "class": "IdeficsEmbedding",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/idefics/modeling_idefics.py",
+      "family": "attention-family",
+      "status": "forward_or_backward_failed",
+      "error": "TypeError: '>' not supported between instances of 'NoneType' and 'int'"
+    },
+    {
+      "class": "SEWDFeatureEncoder",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/sew_d/modeling_sew_d.py",
+      "family": "no_handler_detected",
+      "status": "instantiation_failed",
+      "error": "TypeError: SEWDFeatureEncoder.__init__() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "class": "GroupedLinearLayer",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/convbert/modeling_convbert.py",
+      "family": "attention-family",
+      "status": "ok",
+      "input_shape": [
+        2,
+        4,
+        16
+      ],
+      "loss": 0.0,
+      "n_params": 2,
+      "n_with_grad": 2,
+      "any_grad": true,
+      "all_grad": true,
+      "silent_error": false
+    },
+    {
+      "class": "Olmo3RMSNorm",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/olmo3/modeling_olmo3.py",
+      "family": "norm-family",
+      "status": "ok",
+      "input_shape": [
+        2,
+        4,
+        16
+      ],
+      "loss": 5.228398323059082,
+      "n_params": 1,
+      "n_with_grad": 1,
+      "any_grad": true,
+      "all_grad": true,
+      "silent_error": false
+    },
+    {
+      "class": "Glm4vMoeVisionPatchEmbed",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/glm4v_moe/modeling_glm4v_moe.py",
+      "family": "conv-family",
+      "status": "forward_or_backward_failed",
+      "error": "RuntimeError: shape '[-1, 3, 0, 4, 4]' is invalid for input of size 8"
+    },
+    {
+      "class": "Qwen2_5_VisionPatchEmbed",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/qwen2_5_omni/modeling_qwen2_5_omni.py",
+      "family": "conv-family",
+      "status": "forward_or_backward_failed",
+      "error": "RuntimeError: shape '[-1, 3, 2, 14, 14]' is invalid for input of size 8"
+    },
+    {
+      "class": "SeamlessM4Tv2ConformerFeatureProjection",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/seamless_m4t_v2/modeling_seamless_m4t_v2.py",
+      "family": "linear-only",
+      "status": "forward_or_backward_failed",
+      "error": "RuntimeError: Given normalized_shape=[0], expected input with shape [*, 0], but got input of size[2, 4]"
+    },
+    {
+      "class": "Ernie4_5_VLMoeMoeStatics",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ernie4_5_vl_moe/modeling_ernie4_5_vl_moe.py",
+      "family": "reshape-only",
+      "status": "forward_or_backward_failed",
+      "error": "RuntimeError: The size of tensor a (4) must match the size of tensor b (0) at non-singleton dimension 1"
+    },
+    {
+      "class": "CsmCodebooksHead",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/csm/modular_csm.py",
+      "family": "reshape-only",
+      "status": "forward_or_backward_failed",
+      "error": "TypeError: unsupported operand type(s) for -: 'NoneType' and 'int'"
+    },
+    {
+      "class": "HifiGanResidualBlock",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/speecht5/modeling_speecht5.py",
+      "family": "conv-family",
+      "status": "forward_or_backward_failed",
+      "error": "NotImplementedError: \"leaky_relu_cpu\" not implemented for 'Long'"
+    },
+    {
+      "class": "LlamaRMSNorm",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/llama/modeling_llama.py",
+      "family": "broadcast-elementwise",
+      "status": "ok",
+      "input_shape": [
+        2,
+        4,
+        16
+      ],
+      "loss": -1.5492304563522339,
+      "n_params": 1,
+      "n_with_grad": 1,
+      "any_grad": true,
+      "all_grad": true,
+      "silent_error": false
+    },
+    {
+      "class": "SEWFeatureEncoder",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/sew/modeling_sew.py",
+      "family": "no_handler_detected",
+      "status": "instantiation_failed",
+      "error": "TypeError: SEWFeatureEncoder.__init__() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "class": "MixtralTopKRouter",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/mixtral/modeling_mixtral.py",
+      "family": "linear-only",
+      "status": "ok",
+      "input_shape": [
+        2,
+        4,
+        16
+      ],
+      "loss": 0.0,
+      "n_params": 1,
+      "n_with_grad": 1,
+      "any_grad": true,
+      "all_grad": true,
+      "silent_error": false
+    },
+    {
+      "class": "UniSpeechSatAttnAdapterLayer",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/unispeech_sat/modeling_unispeech_sat.py",
+      "family": "linear-only",
+      "status": "ok",
+      "input_shape": [
+        2,
+        4,
+        16
+      ],
+      "loss": 0.0,
+      "n_params": 6,
+      "n_with_grad": 1,
+      "any_grad": true,
+      "all_grad": false,
+      "silent_error": false
+    },
+    {
+      "class": "GroundingDinoLearnedPositionEmbedding",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/grounding_dino/modeling_grounding_dino.py",
+      "family": "embedding-family",
+      "status": "ok",
+      "input_shape": [
+        2,
+        4,
+        16
+      ],
+      "loss": -108.40345764160156,
+      "n_params": 2,
+      "n_with_grad": 2,
+      "any_grad": true,
+      "all_grad": true,
+      "silent_error": false
+    },
+    {
+      "class": "MMGroundingDinoFrozenBatchNorm2d",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/mm_grounding_dino/modeling_mm_grounding_dino.py",
+      "family": "norm-family",
+      "status": "forward_or_backward_failed",
+      "error": "RuntimeError: element 0 of tensors does not require grad and does not have a grad_fn"
+    },
+    {
+      "class": "DeformableDetrFrozenBatchNorm2d",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/deformable_detr/modeling_deformable_detr.py",
+      "family": "norm-family",
+      "status": "forward_or_backward_failed",
+      "error": "RuntimeError: element 0 of tensors does not require grad and does not have a grad_fn"
+    },
+    {
+      "class": "RobertaPreLayerNormClassificationHead",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/roberta_prelayernorm/modeling_roberta_prelayernorm.py",
+      "family": "linear-only",
+      "status": "ok",
+      "input_shape": [
+        2,
+        4,
+        16
+      ],
+      "loss": 1.1343817710876465,
+      "n_params": 4,
+      "n_with_grad": 4,
+      "any_grad": true,
+      "all_grad": true,
+      "silent_error": false
+    },
+    {
+      "class": "Ernie4_5_MoeStatics",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ernie4_5_moe/modeling_ernie4_5_moe.py",
+      "family": "reshape-only",
+      "status": "forward_or_backward_failed",
+      "error": "RuntimeError: The size of tensor a (4) must match the size of tensor b (0) at non-singleton dimension 1"
+    },
+    {
+      "class": "SeamlessM4Tv2ConformerSelfAttention",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/seamless_m4t_v2/modeling_seamless_m4t_v2.py",
+      "family": "attention-family",
+      "status": "instantiation_failed",
+      "error": "AttributeError: 'int' object has no attribute 'hidden_size'"
+    },
+    {
+      "class": "Ovis2RMSNorm",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/ovis2/modeling_ovis2.py",
+      "family": "broadcast-elementwise",
+      "status": "ok",
+      "input_shape": [
+        2,
+        4,
+        16
+      ],
+      "loss": -5.914416313171387,
+      "n_params": 1,
+      "n_with_grad": 1,
+      "any_grad": true,
+      "all_grad": true,
+      "silent_error": false
+    },
+    {
+      "class": "KyutaiSpeechToTextFlexibleLinear",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/kyutai_speech_to_text/modeling_kyutai_speech_to_text.py",
+      "family": "attention-family",
+      "status": "ok",
+      "input_shape": [
+        2,
+        3,
+        16,
+        16
+      ],
+      "loss": 404.3818359375,
+      "n_params": 1,
+      "n_with_grad": 1,
+      "any_grad": true,
+      "all_grad": true,
+      "silent_error": false
+    },
+    {
+      "class": "SeamlessM4TVariancePredictor",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/seamless_m4t/modeling_seamless_m4t.py",
+      "family": "conv-family",
+      "status": "forward_or_backward_failed",
+      "error": "IndexError: Dimension out of range (expected to be in range of [-2, 1], but got 2)"
+    },
+    {
+      "class": "SwitchTransformersLayerNorm",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/switch_transformers/modeling_switch_transformers.py",
+      "family": "broadcast-elementwise",
+      "status": "ok",
+      "input_shape": [
+        2,
+        4,
+        16
+      ],
+      "loss": 12.910511016845703,
+      "n_params": 1,
+      "n_with_grad": 1,
+      "any_grad": true,
+      "all_grad": true,
+      "silent_error": false
+    },
+    {
+      "class": "FlavaTextEmbeddings",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/flava/modeling_flava.py",
+      "family": "embedding-family",
+      "status": "ok",
+      "input_shape": [
+        1,
+        4
+      ],
+      "loss": 4.76837158203125e-07,
+      "n_params": 5,
+      "n_with_grad": 5,
+      "any_grad": true,
+      "all_grad": true,
+      "silent_error": false
+    },
+    {
+      "class": "DabDetrMHAttentionMap",
+      "file": "benchmarks/_corpus/transformers/src/transformers/models/dab_detr/modeling_dab_detr.py",
+      "family": "attention-family",
+      "status": "forward_or_backward_failed",
+      "error": "TypeError: DabDetrMHAttentionMap.forward() missing 1 required positional argument: 'k'"
+    }
+  ]
+}

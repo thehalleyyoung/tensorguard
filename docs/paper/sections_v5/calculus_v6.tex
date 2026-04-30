@@ -92,15 +92,15 @@ make no claim.
 
 \paragraph{Audited operator scope.} The catalogue
 $\mathrm{Cat}=\mathrm{Cat}_{\mathrm{audit}}\cup\mathrm{Cat}_{\mathrm{pen}}\cup\mathrm{Cat}_{\mathrm{tested}}$
-of \Cref{tab:handler-soundness} partitions the $79$ handlers into
-$|\mathrm{Cat}_{\mathrm{audit}}|=28$ Lean-audited rules,
-$|\mathrm{Cat}_{\mathrm{pen}}|=16$ pen-and-paper rules, and
-$|\mathrm{Cat}_{\mathrm{tested}}|=35$ rules whose only check is the
+of \Cref{tab:handler-soundness} partitions the $83$ handlers into
+$|\mathrm{Cat}_{\mathrm{audit}}|=36$ Lean-audited rules,
+$|\mathrm{Cat}_{\mathrm{pen}}|=13$ pen-and-paper rules, and
+$|\mathrm{Cat}_{\mathrm{tested}}|=34$ rules whose only check is the
 1{,}000-sample property test against PyTorch. We write
 $\mathrm{Cat}_{\mathrm{sound}}=\mathrm{Cat}_{\mathrm{audit}}\cup\mathrm{Cat}_{\mathrm{pen}}$
-($44$ handlers) for the sub-catalogue with a closed soundness
+($49$ handlers) for the sub-catalogue with a closed soundness
 argument; the soundness theorem below quantifies over
-$\mathrm{Cat}_{\mathrm{sound}}$ only. The $35$ tested-only handlers
+$\mathrm{Cat}_{\mathrm{sound}}$ only. The $34$ tested-only handlers
 are addressed separately as a \emph{conjecture}
 (\Cref{conj:tested-only-soundness}), not folded into the theorem.
 
@@ -114,7 +114,7 @@ specialises Thm.~\ref{thm:soundness} to whole programs.
 Let $e$ be a closed expression in the supported fragment such that
 every operator occurrence in $e$ uses a handler in
 $\mathrm{Cat}_{\mathrm{sound}}=\mathrm{Cat}_{\mathrm{audit}}\cup\mathrm{Cat}_{\mathrm{pen}}$
-($44$ of $79$ handlers; see \Cref{tab:handler-soundness}). For any
+($49$ of $83$ handlers; see \Cref{tab:handler-soundness}). For any
 heap $\sigma\models\Gamma$:
 (i) if $\mathsf{Verify}(e)=\textsc{Verified}$, no reduction
 sequence from $\langle e,\sigma,\mathsf{on}\rangle$ raises a
@@ -191,7 +191,7 @@ $\mathsf{no\_grad}$ when
 $(\bot,\bot)$, and $\top$ when
 $\mathit{tp}_i=\top$ (the second component encodes
 ``the model is non-committal on \texttt{requires\_grad}'').
-The runtime\hyp side projection
+The runtime-side projection
 $\rho:\mathbb{G}\to\{\mathsf{True},\mathsf{False}\}$ used to
 build the concrete heap fixes
 $\rho(\mathsf{has\_grad})=\mathsf{True}$,
@@ -291,12 +291,12 @@ case (ii).
 \label{rem:tcb-thm-ii}
 Case (ii) relies on three ingredients beyond the per-operator
 preservation lemmas of (i): (a) that the operator runtime
-semantics raises on the witnessed input. For the $28$ operators in
+semantics raises on the witnessed input. For the $36$ operators in
 $\mathrm{Cat}_{\mathrm{sound}}\setminus\mathrm{Cat}_{\mathrm{pen}}$
 this is discharged by the Lean-mechanised
 \texttt{applyOpExt\_sound\_*} lemmas (the precondition that
 appears in the rule is exactly the precondition under which the
-mechanised semantics succeeds). For the $16$ pen-and-paper
+mechanised semantics succeeds). For the $13$ pen-and-paper
 handlers $\mathrm{Cat}_{\mathrm{pen}}$
 (\textsc{T-Broadcast}, \textsc{T-Reduce}, \texttt{einsum}, the
 elementwise-activation family, the structural reshapes, plus
@@ -321,14 +321,14 @@ the per-handler soundness sketches of \Cref{app:soundness}.
 \begin{conjecture}[Tested-only handlers; empirically supported]
 \label{conj:tested-only-soundness}
 Restricting attention to operator occurrences in the
-$35$-handler tested-only catalogue
+$34$-handler tested-only catalogue
 $\mathrm{Cat}_{\mathrm{tested}}$, the $1{,}000$-sample property
 test against the corresponding PyTorch operator agrees with the
 \textsc{TG} rule on every sampled concrete input. We do
 \emph{not} claim a closed proof of \Cref{thm:soundness} restricted
 to $\mathrm{Cat}_{\mathrm{tested}}$; verdicts touching at least one
 handler in $\mathrm{Cat}_{\mathrm{tested}}$ are reported (and
-counted as the $66/185$ tested-only-touching cell of
+counted as the $12/185$ tested-only-touching cell of
 \Cref{tab:handler-soundness} discussion) but are flagged as
 \emph{outside the soundness theorem}. Closing this gap (either by
 porting more handlers into $\mathrm{Cat}_{\mathrm{audit}}$ or by
@@ -441,7 +441,7 @@ which is reflected in the per-handler breakdown of
 \Cref{tab:handler-soundness}. All $17$ DSL operators
 lie inside $\mathrm{Cat}_{\mathrm{sound}}$ of
 \Cref{thm:soundness}. The mechanised fragment does \emph{not} cover the
-remaining $62$ handlers of \Cref{tab:handler-soundness}, the
+remaining $66$ handlers of \Cref{tab:handler-soundness}, the
 AST extractor, or the Python analyser implementation.
 If every leaf module in the call tree of an
 $\mathcal{F}_{\mathrm{TG}}^{17}$ program is contract-verified

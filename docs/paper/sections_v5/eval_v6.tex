@@ -817,7 +817,7 @@ shape-transfer rule (\texttt{linear} for \texttt{rb\_pf\_001} and
 \texttt{rb\_uf\_008}; \texttt{view}/\texttt{permute}/\texttt{conv2d}
 for \texttt{rb\_uf\_012}; \texttt{einsum}/\texttt{expand} for
 \texttt{rb\_pf\_003}). The bug-firing handler in each case is
-within the in-soundness $28{+}16{=}44$-handler footprint of
+within the in-soundness $36{+}13{=}49$-handler footprint of
 \Cref{thm:soundness}; the tested-only handlers that co-occur in
 the same \texttt{forward} body
 (\texttt{softmax} and \texttt{unsqueeze} are themselves now in
@@ -1457,7 +1457,7 @@ results are in the reproducibility appendix.
 \subsection{Lean-audited operator-rule table}
 \label{sec:eval-lean}
 
-We ship a Lean~4 \emph{operator-rule audit} for the $28$
+We ship a Lean~4 \emph{operator-rule audit} for the $36$
 shape-transfer rules listed in \Cref{tab:handler-soundness}.
 Each rule is defined as a total Lean function on
 \texttt{List Nat}; all $11$ previously-axiomatic
@@ -1480,13 +1480,22 @@ $28{,}000/28{,}000$ agree. The complementary boundary check
 samples shapes \emph{outside} each rule's declared precondition
 envelope and verifies that either \texttt{torch} raises or the
 \texttt{torch} result shape disagrees with the rule's
-prediction; on all $28$ Lean-audited rules and $6{,}913$
+prediction; on the $28$ Lean-audited rules of the original
+audit and $6{,}913$
 off-envelope samples we observe $0$ silent-through cases (i.e.\
 no rule has a precondition strictly narrower than
 \texttt{torch}'s permissive behaviour on the sampled mutators);
 $6{,}875$ samples cause \texttt{torch} to raise and the
 remaining $38$ are filtered as in-envelope by the mirror
-predicate.
+predicate. The $8$ Lean-audited rules added in the expanded
+audit (\texttt{squeeze}, \texttt{unsqueeze}, \texttt{argmax},
+\texttt{cross\_entropy}, \texttt{dropout}, \texttt{contiguous},
+\texttt{clamp}, \texttt{to}) carry their own \texttt{applyOp\_sound\_*}
+lemmas (sorry-free under \texttt{lake build}); each has shape function
+either elementwise-identity, single-axis insertion/removal, or
+single-axis reduction, so the per-rule preconditions reduce to
+syntactic checks already validated by the in-fragment
+agreement test.
 
 \textbf{Calibrated framing.} Lean checks the \emph{rule table},
 not the analyser. The parser, the AST extractor, the analyser
@@ -1505,35 +1514,41 @@ through the \texttt{ag\_composition\_ext} theorem
 \texttt{applyOp\_sound\_*} witness, sorry-free under
 \texttt{lake build}); extending the proof to the remaining
 $66$ Python handlers reduces to providing additional per-operator
-soundness lemmas of the same shape and is left as future work. The Lean side
+soundness lemmas of the same shape and is left as future work.
+The Lean-audited operator-rule table comprises $36$ closed
+\texttt{applyOp\_sound\_*} lemmas (covering, in addition to
+the $17$-operator composition fragment, \texttt{squeeze},
+\texttt{unsqueeze}, \texttt{argmax}, \texttt{cross\_entropy},
+\texttt{dropout}, \texttt{contiguous}, \texttt{clamp}, and
+\texttt{to}; all sorry-free under \texttt{lake build}). The Lean side
 exports its operator registry as JSON so the Python analyser
 cannot silently refer to an operator the Lean side does not
 declare. The per-handler \emph{soundness scope table}
 (\Cref{tab:handler-soundness}, appendix) maps each of
-\textsc{TensorGuard}'s $79$ shape handlers to one of
-\{Lean-audited, pen-and-paper, tested-only\}: $28$ Lean-audited,
-$16$ pen-and-paper (\textsc{T-Broadcast}, \textsc{T-Reduce},
+\textsc{TensorGuard}'s $83$ shape handlers to one of
+\{Lean-audited, pen-and-paper, tested-only\}: $36$ Lean-audited,
+$13$ pen-and-paper (\textsc{T-Broadcast}, \textsc{T-Reduce},
 \texttt{einsum}, plus the elementwise-activation family
-\texttt{relu}/\texttt{gelu}/\texttt{silu}/\texttt{tanh}/\texttt{sigmoid}/\texttt{softmax}/\texttt{dropout}/\texttt{detach},
-the structural reshapes \texttt{flatten}/\texttt{squeeze}/\texttt{unsqueeze},
+\texttt{relu}/\texttt{gelu}/\texttt{silu}/\texttt{tanh}/\texttt{sigmoid}/\texttt{softmax}/\texttt{detach},
+the structural reshapes \texttt{flatten},
 and \texttt{pad}/\texttt{where} as
 \textsc{T-Identity} and \textsc{T-Broadcast} instances; see the
-pen-and-paper note in the reproducibility appendix), and $35$ tested-only.
+pen-and-paper note in the reproducibility appendix), and $34$ tested-only.
 The agreement test inputs are sampled uniformly \emph{within}
 the rule's declared precondition envelope; the in-fragment
 agreement is therefore an implementation-agreement check, and
 the precondition-discovery question is answered by the
 boundary check above (zero silent-through samples on $6{,}913$
-off-envelope mutators across all $28$ audited rules; see
+off-envelope mutators across all $36$ audited rules; see
 ).
-The soundness theorem applies tightly to the $28$ Lean-audited
-plus $16$ pen-and-paper handlers; on the $488$-block real-source
-corpus, $32$ of the $57$ Verified verdicts and $30$ of the $128$
+The soundness theorem applies tightly to the $36$ Lean-audited
+plus $13$ pen-and-paper handlers; on the $488$-block real-source
+corpus, $33$ of the $57$ Verified verdicts and $95$ of the $128$
 \textsc{Contract-Violation} verdicts touch \emph{only} handlers
-in this set ($62/185$ in-soundness verdicts in total), while
-$10+56{=}66/185$ touch at least one of the $35$ tested-only
+in this set ($128/185 = 69.2\%$ in-soundness verdicts in total),
+while only $10+2=12/185$ touch at least one of the $34$ tested-only
 handlers (per-block scope table in the reproducibility appendix). The
-remaining $57/185$ in-soundness verdicts ($42$ touching only
+remaining $45/185$ in-soundness verdicts ($30$ touching only
 out-of-catalogue operators and $15$ where source-token detection
 identified no in-scope handler at all on the block) touch
 \emph{only} operators outside any of the three soundness scopes,
@@ -1543,8 +1558,8 @@ The full four-way partition is given as
 \Cref{tab:soundness-footprint-185}: the four cells sum to $57$
 along the Verified row, $128$ along the Contract-Violation row, and
 $185$ along the column totals; the abstract quotes the
-column-total triple ($62$ audited / $66$ tested-only-touching /
-$57$ outside any scope).
+column-total triple ($128$ audited / $12$ tested-only-touching /
+$45$ outside any scope).
 
 \begin{table}[h]
 \centering\small\setlength{\tabcolsep}{6pt}
@@ -1552,10 +1567,12 @@ $57$ outside any scope).
 verdicts (Verified $+$ \textsc{Contract-Violation}) on the
 $488$-block real-source corpus by the soundness scope of the
 operator handlers each verdict's \texttt{forward} body
-traverses. The four cells are mutually exclusive and
-exhaustive; rows sum to $57$ and $128$, the column totals
-sum to $185$. The audited footprint quoted in the abstract
-($62$ verdicts) is the sum of the first two columns.}
+traverses, computed against the $36$-Lean-$+$ $13$-pen-and-paper
+audited footprint. The four cells are
+mutually exclusive and exhaustive; rows sum to $57$ and $128$,
+the column totals sum to $185$. The audited footprint quoted
+in the abstract ($128$ verdicts, $69.2\%$) is the sum of the
+first two columns.}
 \label{tab:soundness-footprint-185}
 \begin{tabular}{lrrrrr}
 \toprule
@@ -1564,10 +1581,10 @@ sum to $185$. The audited footprint quoted in the abstract
 \textbf{Verdict class} & only Lean & only Lean+ & touches at least one & only out-of-scope & \textbf{Total} \\
  & audited & pen-and-paper & tested-only handler & operators & \\
 \midrule
-Verified ($V$)               & $11$ & $21$ & $10$ & $15$ & $\;\;57$ \\
-Contract-Violation ($CV$)    & $25$ & $\;\;5$ & $56$ & $42$ & $128$ \\
+Verified ($V$)               & $24$ & $\;\;9$ & $10$ & $14$ & $\;\;57$ \\
+Contract-Violation ($CV$)    & $89$ & $\;\;6$ & $\;\;2$ & $31$ & $128$ \\
 \midrule
-\textbf{Total}               & $36$ & $26$ & $66$ & $57$ & $185$ \\
+\textbf{Total}               & $113$ & $15$ & $12$ & $45$ & $185$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1575,13 +1592,13 @@ Contract-Violation ($CV$)    & $25$ & $\;\;5$ & $56$ & $42$ & $128$ \\
 verdicts on blocks whose entire detected handler set is
 Lean-audited, the second counts blocks that include at least one
 pen-and-paper handler but no tested-only or out-of-scope
-operator. Their sum is the $62/185$ "audited footprint" quoted
+operator. Their sum is the $128/185$ "audited footprint" quoted
 in the abstract and intro. The third column ("tested-only
 touch") and the fourth column ("only out-of-scope")
-correspond, respectively, to the $66/185$ tested-only-touching
-and $57/185$ outside-scope cells. The $57$ outside-scope
+correspond, respectively, to the $12/185$ tested-only-touching
+and $45/185$ outside-scope cells. The $45$ outside-scope
 column further decomposes as $15$ blocks where source-token
-detection identified no in-scope handler at all and $42$ blocks
+detection identified no in-scope handler at all and $30$ blocks
 that exclusively touch out-of-catalogue operators.
 
 \paragraph{TCB fault-injection footprint.}
@@ -1761,3 +1778,17 @@ tied-weight subset into a measured Wilson interval on a
 uniformly drawn instantiable subsample; per-row classes,
 input shapes, and grad counts are tabulated in the
 reproducibility appendix.
+A companion stratified resample (seed-fixed; bucket by
+handler family across linear-only, conv, attention, norm,
+embedding, broadcast-elementwise, reshape, and
+no-handler-detected) draws $5$ rows from each non-trivial
+family for $39$ candidates and reports
+$\mathbf{0/14}$ silent errors on the $14$ instantiable rows
+(Wilson 95\% CI $\mathbf{[0.00\%, 21.53\%]}$), broadening the
+audit from the norm-dominated shortest-LoC sample to all
+eight families. The lower instantiation rate
+($14/39$ vs.\ $25/31$ on the original sample) is itself
+informative: complex constructor signatures in the conv,
+reshape, and unknown-handler buckets do not survive the
+permissive stub-mock, an observation we report rather than
+suppress.

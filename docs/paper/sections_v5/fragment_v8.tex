@@ -50,9 +50,9 @@ Each operator rule in $\mathrm{Cat}_{\mathrm{sound}}$
 (\textsc{T-Matmul}, \textsc{T-View($-1$)}, \textsc{T-Reshape($-1$)},
 \textsc{T-Detach}, and the remaining $40$ rules in
 \Cref{app:typing-rules} restricted to $\mathrm{Cat}_{\mathrm{sound}}$)
-produces a uniquely-typed result. The $28$ Lean-audited handlers
+produces a uniquely-typed result. The $36$ Lean-audited handlers
 (Table~\ref{tab:handler-soundness}, top block) are sorry-free at
-the rule definitions; the $16$ pen-and-paper handlers follow from
+the rule definitions; the $13$ pen-and-paper handlers follow from
 the operator-level argument in \Cref{app:soundness}, and two of
 their nontrivial integer-arithmetic obligations
 (\texttt{reshape} divisibility and the
@@ -68,7 +68,7 @@ forms.
 Together, no well-typed term using only operators in
 $\mathrm{Cat}_{\mathrm{sound}}$ raises a shape-mismatch at any
 $\mathit{op}\in\mathrm{Cat}_{\mathrm{sound}}$. Coverage of the
-$35$ tested-only handlers
+$34$ tested-only handlers
 $\mathrm{Cat}_{\mathrm{tested}}=\mathrm{Cat}\setminus
 \mathrm{Cat}_{\mathrm{sound}}$ is the subject of
 \Cref{conj:tested-only-soundness}, not of this theorem.
@@ -81,7 +81,7 @@ Theorem~\ref{thm:fragment-soundness} does \emph{not} claim:
 (c)~absence of dtype errors outside $\mathrm{Cat}_{\mathrm{sound}}$;
 (d)~soundness of the analyser \emph{implementation}---only of the rule
 table it implements;
-(e)~coverage of the $35$ tested-only handlers
+(e)~coverage of the $34$ tested-only handlers
 $\mathrm{Cat}_{\mathrm{tested}}$ (Table~\ref{tab:handler-soundness},
 addressed by \Cref{conj:tested-only-soundness}).
 The implication ``verdict = \textsc{Verified} $\Rightarrow$ no shape mismatch''

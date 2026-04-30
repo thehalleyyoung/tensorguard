@@ -43,36 +43,31 @@ PyTorch \texttt{nn.Module} forward methods that verifies tensor
 shapes and gradient flow statically from class source, without
 instantiating or tracing the module.
 On a curated $60$-bug historical corpus it returns
-\textsc{Refuted-Proof} on $53/60$ ($88.3\%$, Wilson 95\% CI
-$[77.8\%, 94.2\%]$); on the $N{=}34$ fragment-fair head-to-head
-with Pytea it scores $32/34$ vs.\ $25/34$ (McNemar exact
-$p{=}0.0156$), and it returns \textsc{Refuted-Proof} on $9/9$
-naturally-occurring shape bugs transcribed from upstream
-HuggingFace issues across Llama, Qwen2, Mistral, Phi-3, and
-Gemma~$2$.
-On unreduced real-source class code, the same Z3-discharged
-verdict regime as Table~\ref{tab:headline} returns
-$0/488$ \textsc{Refuted-Proof} on the unrestricted block
-corpus and $26/356$ on its empty-$\mathit{assume}_M$ subset
-(the blocks whose synthesised caller-rely obligation is
-trivially satisfied; Wilson $95\%$ CI $[5.0\%, 10.5\%]$),
-of which $5$ fire inside the audited handler footprint.
-All headline counts in this paper are computed at a single
-named code snapshot, with a per-block audit table released
-alongside the implementation.
-The contribution is the joint shape-plus-grad analysis on
-un-instantiated class source, together with an assume/guarantee
-discipline at the class boundary and a calibration package that
-partitions every verdict by a Lean-audited soundness footprint;
-the composition theorem is mechanised in Lean~$4$ on a
+\textsc{Refuted-Proof} on $53/60$ ($88.3\%$); on the $N{=}34$
+fragment-fair head-to-head with Pytea it scores $32/34$ vs.\
+$25/34$ (McNemar exact $p{=}0.0156$); and it returns
+\textsc{Refuted-Proof} on $9/9$ naturally-occurring HuggingFace
+shape bugs across Llama, Qwen2, Mistral, Phi-3, and Gemma~$2$.
+On unreduced real-source class code the same verdict regime
+returns $0/488$ unconditional \textsc{Refuted-Proof} on the
+unrestricted block corpus and $26/356$ on its
+empty-$\mathit{assume}_M$ subset, of which $5$ fire inside the
+audited handler footprint.
+The composition theorem is mechanised in Lean~$4$ on a
 $17$-operator DSL with $17/17$ closed per-operator soundness
-lemmas, and the soundness theorem is restricted to a
-$44$-handler sub-catalogue $\mathrm{Cat}_{\mathrm{sound}}$. The
-remaining $35$ handlers, the analyser implementation, the AST
-extractor, the backward verifier, and the Z3 dispatch lie in the
-trusted computing base; the backward verifier's deployment-side
-false-Verified rate is bounded by $\le 3.0\%$. An open-source
-implementation accompanies the paper.
+lemmas, the operator-rule table by $36$ closed
+\texttt{applyOp\_sound\_*} lemmas, and the soundness theorem is
+restricted to a $49$-handler sub-catalogue
+$\mathrm{Cat}_{\mathrm{sound}}$ ($36$ Lean-audited $+$ $13$
+pen-and-paper). On the $488$-block real-source corpus
+$128/185$ in-soundness verdicts ($69.2\%$) lie wholly inside
+this audited footprint, with only $12/185$ touching any
+tested-only handler. The remaining $34$ handlers, the analyser
+implementation, the AST extractor, the backward verifier, and
+the Z3 dispatch lie in the trusted computing base; the
+backward verifier's deployment-side false-Verified rate is
+bounded by $\le 3.0\%$. An open-source implementation
+accompanies the paper.
 \end{abstract}
 
 \input{sections_v5/intro_v6}

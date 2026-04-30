@@ -17,7 +17,7 @@ PyTorch only.}
 \small
 \setlength{\tabcolsep}{4pt}
 
-\noindent\textbf{Lean-audited (28 operators)}\\[2pt]
+\noindent\textbf{Lean-audited (36 operators)}\\[2pt]
 \begin{tabular}{lll}
 \toprule
 \textbf{Handler} & \textbf{Handler} & \textbf{Handler} \\
@@ -31,22 +31,23 @@ PyTorch only.}
  \texttt{unbind} & \texttt{gather} & \texttt{scatter} \\
  \texttt{index\_select} & \texttt{narrow} & \texttt{embed} \\
  \texttt{layer\_norm} & \texttt{rms\_norm} & \texttt{scaled\_dot\_product\_attention} \\
- \texttt{linear} & & \\
+ \texttt{linear} & \texttt{squeeze} & \texttt{unsqueeze} \\
+ \texttt{argmax} & \texttt{cross\_entropy} & \texttt{dropout} \\
+ \texttt{contiguous} & \texttt{clamp} & \texttt{to} \\
 \bottomrule
 \end{tabular}
 
 \bigskip
 
-\noindent\textbf{Pen-and-paper (16 handlers)}\\[2pt]
+\noindent\textbf{Pen-and-paper (13 handlers)}\\[2pt]
 \begin{tabular}{lll}
 \toprule
 \textbf{Handler} & \textbf{Handler} & \textbf{Handler} \\
 \midrule
  \texttt{elementwise\_binary} & \texttt{reduce} & \texttt{einsum} \\
- \texttt{flatten} & \texttt{squeeze} & \texttt{unsqueeze} \\
- \texttt{softmax} & \texttt{relu} & \texttt{gelu} \\
- \texttt{silu} & \texttt{tanh} & \texttt{sigmoid} \\
- \texttt{dropout} & \texttt{detach} & \texttt{pad} \\
+ \texttt{flatten} & \texttt{softmax} & \texttt{relu} \\
+ \texttt{gelu} & \texttt{silu} & \texttt{tanh} \\
+ \texttt{sigmoid} & \texttt{detach} & \texttt{pad} \\
  \texttt{where} & & \\
 \bottomrule
 \end{tabular}
@@ -54,53 +55,53 @@ PyTorch only.}
 \footnotesize\textit{Note}: \texttt{elementwise\_binary} covers \texttt{add},
 \texttt{sub}, \texttt{mul}, \texttt{div} (T-BROADCAST rule);
 \texttt{reduce} covers \texttt{sum}, \texttt{mean}, \texttt{max}, \texttt{min}
-(T-REDUCE rule).  The structural reshapes \texttt{flatten},
-\texttt{squeeze}, \texttt{unsqueeze} reduce to \texttt{view} on a
-deterministic shape function. The activation family
+(T-REDUCE rule).  The structural reshape \texttt{flatten} reduces to
+\texttt{view} on a deterministic shape function
+(\texttt{squeeze}/\texttt{unsqueeze}/\texttt{dropout} have been
+promoted to Lean-audited this round). The activation family
 \texttt{relu}/\texttt{gelu}/\texttt{silu}/\texttt{tanh}/\texttt{sigmoid}
-plus \texttt{softmax}/\texttt{dropout}/\texttt{detach} are
+plus \texttt{softmax}/\texttt{detach} are
 shape-preserving by Lemma~EU on the elementwise lift.
 \texttt{pad} has a deterministic linear shape function and
 \texttt{where} reduces to broadcast (a 3-ary \texttt{T-Broadcast}
-instance).  All sixteen carry a self-contained proof sketch in
+instance).  All thirteen carry a self-contained proof sketch in
 the reproducibility appendix and are checked by the same
 $1{,}000$-sample property test as the Lean rules.
 The non-trivial case is \texttt{einsum}, whose explicit pen-and-paper
 soundness statement is given immediately below
-(\Cref{prop:einsum-soundness}); the remaining $15$ pen-and-paper
+(\Cref{prop:einsum-soundness}); the remaining $12$ pen-and-paper
 rules have shape functions that are either elementwise lifts
-(activation family, \texttt{dropout}, \texttt{detach}), strict
-shape-preservation (\texttt{flatten}, \texttt{squeeze},
-\texttt{unsqueeze}), reductions over a fixed axis-set
+(activation family, \texttt{detach}), strict
+shape-preservation (\texttt{flatten}), reductions over a fixed axis-set
 (\texttt{reduce}), or instances of broadcast
 (\texttt{elementwise\_binary}, \texttt{where}).
 \end{minipage}
 
 \bigskip
 
-\noindent\textbf{Tested-only (35 handlers)}\\[2pt]
+\noindent\textbf{Tested-only (34 handlers)}\\[2pt]
 \begin{tabular}{lll}
 \toprule
 \textbf{Handler} & \textbf{Handler} & \textbf{Handler} \\
 \midrule
  \texttt{batch\_norm} & \texttt{group\_norm} & \texttt{instance\_norm} \\
- \texttt{multihead\_attention} & \texttt{conv\_transpose1d} & \texttt{cross\_entropy} \\
- \texttt{interpolate} & \texttt{pixel\_shuffle} & \texttt{pixel\_unshuffle} \\
- \texttt{topk} & \texttt{glu} & \texttt{unfold} \\
- \texttt{fold} & \texttt{repeat\_interleave} & \texttt{masked\_select} \\
- \texttt{take\_along\_dim} & \texttt{roll\_flip} & \texttt{adaptive\_avg\_pool} \\
- \texttt{max\_pool2d} & \texttt{avg\_pool2d} & \texttt{linalg\_svd} \\
- \texttt{linalg\_qr} & \texttt{linalg\_solve} & \texttt{linalg\_eig} \\
- \texttt{rotary\_embedding} & \texttt{einops\_rearrange} & \texttt{stft} \\
- \texttt{creation\_ops} & \texttt{scatter\_add} & \texttt{addmm} \\
- \texttt{baddbmm} & \texttt{outer} & \texttt{tensordot} \\
- \texttt{grid\_sample} & \texttt{checkpoint} & \\
+ \texttt{multihead\_attention} & \texttt{conv\_transpose1d} & \texttt{interpolate} \\
+ \texttt{pixel\_shuffle} & \texttt{pixel\_unshuffle} & \texttt{topk} \\
+ \texttt{glu} & \texttt{unfold} & \texttt{fold} \\
+ \texttt{repeat\_interleave} & \texttt{masked\_select} & \texttt{take\_along\_dim} \\
+ \texttt{roll\_flip} & \texttt{adaptive\_avg\_pool} & \texttt{max\_pool2d} \\
+ \texttt{avg\_pool2d} & \texttt{linalg\_svd} & \texttt{linalg\_qr} \\
+ \texttt{linalg\_solve} & \texttt{linalg\_eig} & \texttt{rotary\_embedding} \\
+ \texttt{einops\_rearrange} & \texttt{stft} & \texttt{creation\_ops} \\
+ \texttt{scatter\_add} & \texttt{addmm} & \texttt{baddbmm} \\
+ \texttt{outer} & \texttt{tensordot} & \texttt{grid\_sample} \\
+ \texttt{checkpoint} & & \\
 \bottomrule
 \end{tabular}
 
 \bigskip
-\noindent\textbf{Summary:} 28 Lean-audited $|$ 16 pen-and-paper $|$
-35 tested-only $|$ 79 total handlers.
+\noindent\textbf{Summary:} 36 Lean-audited $|$ 13 pen-and-paper $|$
+34 tested-only $|$ 83 total handlers.
 
 \end{table}
 
