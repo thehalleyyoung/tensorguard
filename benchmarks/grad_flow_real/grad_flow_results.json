@@ -1,0 +1,72 @@
+{
+  "total": 6,
+  "refuted_proof": 6,
+  "pass_threshold": 5,
+  "suite_pass": true,
+  "entries": [
+    {
+      "file": "snippet_01_detach_before_head.py",
+      "verdict": "REFUTED-PROOF",
+      "expected_verdict": "REFUTED-PROOF",
+      "match": true,
+      "error_messages": [
+        "[GRADIENT-BROKEN] Gradient flow broken: '__inner_1' requires grad but .detach() kills gradient to downstream parameters",
+        "[CEGAR-REAL-BUG] Gradient flow broken: '__inner_1' requires grad but .detach() kills gradient to downstream parameters"
+      ],
+      "duration_ms": 54.7
+    },
+    {
+      "file": "snippet_02_gradient_checkpoint.py",
+      "verdict": "REFUTED-PROOF",
+      "expected_verdict": "REFUTED-PROOF",
+      "match": true,
+      "error_messages": [
+        "[GRADIENT-OUT-OF-FRAGMENT] First-order grad lattice cannot soundly verify modules that use `from torch.utils.checkpoint "
+      ],
+      "duration_ms": 19.2
+    },
+    {
+      "file": "snippet_03_double_detach_residual.py",
+      "verdict": "REFUTED-PROOF",
+      "expected_verdict": "REFUTED-PROOF",
+      "match": true,
+      "error_messages": [
+        "[GRADIENT-BROKEN] Gradient flow broken: 'out' requires grad but .detach() kills gradient to downstream parameters",
+        "[CEGAR-REAL-BUG] Gradient flow broken: 'out' requires grad but .detach() kills gradient to downstream parameters"
+      ],
+      "duration_ms": 37.5
+    },
+    {
+      "file": "snippet_04_attention_keys_detach.py",
+      "verdict": "REFUTED-PROOF",
+      "expected_verdict": "REFUTED-PROOF",
+      "match": true,
+      "error_messages": [
+        "[GRADIENT-BROKEN] Gradient flow broken: '__inner_1' requires grad but .detach() kills gradient to downstream parameters",
+        "[CEGAR-REAL-BUG] Gradient flow broken: '__inner_1' requires grad but .detach() kills gradient to downstream parameters"
+      ],
+      "duration_ms": 123.0
+    },
+    {
+      "file": "snippet_05_finetune_detach_before_trainable.py",
+      "verdict": "REFUTED-PROOF",
+      "expected_verdict": "REFUTED-PROOF",
+      "match": true,
+      "error_messages": [
+        "[GRADIENT-BROKEN] Gradient flow broken: '__inner_1' requires grad but .detach() kills gradient to downstream parameters",
+        "[CEGAR-REAL-BUG] Gradient flow broken: '__inner_1' requires grad but .detach() kills gradient to downstream parameters"
+      ],
+      "duration_ms": 30.7
+    },
+    {
+      "file": "snippet_06_checkpoint_deep_net.py",
+      "verdict": "REFUTED-PROOF",
+      "expected_verdict": "REFUTED-PROOF",
+      "match": true,
+      "error_messages": [
+        "[GRADIENT-OUT-OF-FRAGMENT] First-order grad lattice cannot soundly verify modules that use `from torch.utils.checkpoint "
+      ],
+      "duration_ms": 35.9
+    }
+  ]
+}
