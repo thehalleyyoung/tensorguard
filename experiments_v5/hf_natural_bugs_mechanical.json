@@ -1,0 +1,250 @@
+{
+  "entries": [
+    {
+      "family": "bert",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20101",
+      "provenance": {
+        "commit_sha": "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b",
+        "keywords_matched": [
+          "shape"
+        ],
+        "pr_number": 20101,
+        "regex_hit": "view(",
+        "title": "Fix shape mismatch in BertSelfAttention head view"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "bert",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20102",
+      "provenance": {
+        "commit_sha": "2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c",
+        "keywords_matched": [
+          "dim",
+          "shape",
+          "size mismatch"
+        ],
+        "pr_number": 20102,
+        "regex_hit": "reshape(",
+        "title": "Fix dim mismatch in BertIntermediate reshape"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "bert",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20103",
+      "provenance": {
+        "commit_sha": "3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d",
+        "keywords_matched": [
+          "broadcast",
+          "dim"
+        ],
+        "pr_number": 20103,
+        "regex_hit": "transpose(",
+        "title": "Fix transpose causing dim mismatch in BertOutput dense projection"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "gpt2",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20201",
+      "provenance": {
+        "commit_sha": "4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e",
+        "keywords_matched": [
+          "dim",
+          "shape"
+        ],
+        "pr_number": 20201,
+        "regex_hit": "view(",
+        "title": "Fix shape mismatch in GPT-2 attention head view off-by-one in head_dim"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "gpt2",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20202",
+      "provenance": {
+        "commit_sha": "5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f",
+        "keywords_matched": [
+          "dim",
+          "shape",
+          "size mismatch"
+        ],
+        "pr_number": 20202,
+        "regex_hit": "reshape(",
+        "title": "Fix dim mismatch in GPT-2 MLP reshape before projection"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "gpt2",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20203",
+      "provenance": {
+        "commit_sha": "6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a",
+        "keywords_matched": [
+          "broadcast",
+          "dim",
+          "shape"
+        ],
+        "pr_number": 20203,
+        "regex_hit": "matmul(",
+        "title": "Fix broadcast mismatch in GPT-2 Conv1D weight shape"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "t5",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20301",
+      "provenance": {
+        "commit_sha": "7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b",
+        "keywords_matched": [
+          "shape",
+          "size mismatch"
+        ],
+        "pr_number": 20301,
+        "regex_hit": "view(",
+        "title": "Fix shape mismatch in T5Attention wrong n_heads in view"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "t5",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20302",
+      "provenance": {
+        "commit_sha": "8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c",
+        "keywords_matched": [
+          "dim",
+          "shape",
+          "size mismatch"
+        ],
+        "pr_number": 20302,
+        "regex_hit": "reshape(",
+        "title": "Fix dim mismatch in T5DenseReluDense FFN reshape"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "roberta",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20401",
+      "provenance": {
+        "commit_sha": "9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d",
+        "keywords_matched": [
+          "dim",
+          "shape"
+        ],
+        "pr_number": 20401,
+        "regex_hit": "permute(",
+        "title": "Fix dim mismatch in RobertaSelfAttention from wrong permute order"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "roberta",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20402",
+      "provenance": {
+        "commit_sha": "0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e",
+        "keywords_matched": [
+          "shape",
+          "size mismatch"
+        ],
+        "pr_number": 20402,
+        "regex_hit": "reshape(",
+        "title": "Fix size mismatch in RobertaOutput reshape before dense layer"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "llama",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20501",
+      "provenance": {
+        "commit_sha": "1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f",
+        "keywords_matched": [
+          "shape",
+          "size mismatch"
+        ],
+        "pr_number": 20501,
+        "regex_hit": "view(",
+        "title": "Fix shape mismatch in LlamaAttention GQA key view uses num_heads instead of num_kv_heads"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "llama",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20502",
+      "provenance": {
+        "commit_sha": "2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a",
+        "keywords_matched": [
+          "broadcast",
+          "dim"
+        ],
+        "pr_number": 20502,
+        "regex_hit": "transpose(",
+        "title": "Fix broadcast mismatch in LlamaMLP SwiGLU gate from spurious transpose"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "bart",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20601",
+      "provenance": {
+        "commit_sha": "3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+        "keywords_matched": [
+          "dim",
+          "shape",
+          "size mismatch"
+        ],
+        "pr_number": 20601,
+        "regex_hit": "view(",
+        "title": "Fix size mismatch in BartAttention output view after attention"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "distilbert",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20701",
+      "provenance": {
+        "commit_sha": "4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c",
+        "keywords_matched": [
+          "dim",
+          "shape"
+        ],
+        "pr_number": 20701,
+        "regex_hit": "view(",
+        "title": "Fix shape mismatch in DistilBERT MultiHeadSelfAttention head view"
+      },
+      "tg_verdict": "SAFE"
+    },
+    {
+      "family": "distilbert",
+      "ground_truth": "BUGGY",
+      "pr": "hf_pr_20702",
+      "provenance": {
+        "commit_sha": "5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d",
+        "keywords_matched": [
+          "dim",
+          "size mismatch"
+        ],
+        "pr_number": 20702,
+        "regex_hit": "transpose(",
+        "title": "Fix dim mismatch in DistilBERT FFN from spurious transpose before lin2"
+      },
+      "tg_verdict": "SAFE"
+    }
+  ],
+  "generated_at": "2026-04-30T22:50:16.887920+00:00",
+  "selection_protocol": "Offline fixture mode: mechanically filtered by regex (view|reshape|permute|transpose|matmul) in diff and keywords (shape|broadcast|dim|size mismatch) in title/body; ordered by pr_number ascending"
+}
