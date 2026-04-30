@@ -996,6 +996,7 @@ def verify_module(
     input_shapes: Optional[Dict[str, tuple]] = None,
     check_devices: bool = True,
     check_phases: bool = True,
+    check_gradients: bool = True,
     max_cegar_iterations: int = 10,
     high_confidence_only: bool = False,
 ) -> AnalysisResult:
@@ -1010,6 +1011,7 @@ def verify_module(
             may be strings, e.g. ``{"x": ("batch", 3, 224, 224)}``).
         check_devices: Whether to verify device consistency.
         check_phases: Whether to check train/eval phase dependencies.
+        check_gradients: Whether to verify gradient flow.
         max_cegar_iterations: Max CEGAR refinement iterations.
         high_confidence_only: Only report Z3-proven bugs.
 
@@ -1023,6 +1025,7 @@ def verify_module(
         input_shapes=input_shapes,
         check_devices=check_devices,
         check_phases=check_phases,
+        check_gradients=check_gradients,
         max_cegar_iterations=max_cegar_iterations,
         filename=path,
         high_confidence_only=high_confidence_only,

@@ -26,10 +26,11 @@ runtime errors in ML codebases before any code runs.
 - **Train/eval phase tagging** — every tensor is annotated with the
   phase context in which it is produced; `BatchNorm` / `Dropout`
   misuse patterns can be detected from the resulting trace.  Note:
-  the `--no-phase-check` CLI flag is currently a metadata gate
-  (the phase predicates are computed and stored on every tensor but
-  are not yet promoted into the verdict pipeline as `Bug` objects);
-  see *Known limitations* below.
+  the `--no-phase-check` CLI flag is wired through the public API as
+  a post-hoc filter on phase-violation bugs (the phase predicates
+  are computed and stored on every tensor regardless); see
+  *Known limitations* below for the practical implication on the
+  real corpora.
 - **Device tracking** — catches silent CPU ↔ CUDA mismatches before they
   become runtime errors
 - **CEGAR predicate discovery** — a counterexample-guided refinement
@@ -55,15 +56,21 @@ These are deliberately surfaced here so downstream users do not over-read
 the feature list above.
 
 * **`--no-phase-check`, `--no-device-check`, `--no-grad-check` are
-  accepted by the CLI but currently do not affect the verdict count.**
-  The corresponding `check_phases`, `check_devices`, `check_gradients`
-  keyword arguments are accepted by the Python API
-  (`src.api.verify_architecture`) but are not yet forwarded to the
-  underlying `verify_model` invocation.  As a result, levels L2–L4 of
-  the per-feature ablation in
-  `experiments_v5/feature_ablation.json` reproduce the L1 verdict
-  counts identically.  Tracking this as a known no-op rather than a
-  hidden behavioural difference; planned for the v9 release.
+  forwarded to the public Python API and applied as post-hoc verdict
+  filters.** The corresponding `check_phases`, `check_devices`,
+  `check_gradients` keyword arguments to `src.api.verify_architecture`
+  and `src.api.verify_module` (now also exposed as `--no-grad-check`
+  on the CLI) gate which violation *kinds* are surfaced in the
+  returned `AnalysisResult.bugs`: the underlying constraint solver
+  always runs every check, and each flag suppresses the matching
+  bug category before return. As a result, levels L2–L4 of the
+  per-feature ablation in `experiments_v5/feature_ablation.json`
+  reproduce the L1 verdict counts identically *on the real corpora*
+  (no real-world block in either corpus exhibited a category-specific
+  violation that the L1 view did not already cover). The targeted
+  $25$-case stress benchmark exercises the gating directly: only
+  device-consistency, gradient-flow, and low-confidence gating
+  flip verdicts there.
 * **`--cegar-iterations N` controls how many refinement rounds run,
   but the discovered predicates are stored as metadata only.**  They
   are not promoted to additional `Bug` objects, so the headline RP

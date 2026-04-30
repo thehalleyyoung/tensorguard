@@ -37,13 +37,13 @@
       "tg_first_message": "Potential division by zero: 'model_type' not guarded",
       "tg_first_line": 213,
       "tg_localization_correct": false,
-      "tg_duration_ms": 275.52,
+      "tg_duration_ms": 1319.37,
       "fx_verdict": "detected",
       "fx_first_message": "RuntimeError: ShapeProp error for: node=%getitem_4 : [num_users=1] = call_function[target=operator.getitem](args = (%split, 1), kwargs = {}) with meta={}\n\nWhile executing %getitem_4 : [num_users=1] = call_function[target=operator.getitem](args = (%split, 1), kwargs = {})\nOriginal traceback:\nNone\nUse",
-      "fx_duration_ms": 5382.78,
+      "fx_duration_ms": 13634.26,
       "fakettensor_verdict": "detected",
       "fakettensor_first_message": "ValueError: not enough values to unpack (expected 3, got 1)",
-      "fakettensor_duration_ms": 3958.47
+      "fakettensor_duration_ms": 7598.21
     },
     {
       "source_file": "nanoGPT_model.py",
@@ -58,13 +58,13 @@
       "tg_first_message": "Potential division by zero: 'model_type' not guarded",
       "tg_first_line": 213,
       "tg_localization_correct": false,
-      "tg_duration_ms": 114.57,
+      "tg_duration_ms": 80.23,
       "fx_verdict": "detected",
       "fx_first_message": "RuntimeError: ShapeProp error for: node=%view : [num_users=1] = call_method[target=view](args = (%getitem_4, %getitem, %getitem_1, 4, %add), kwargs = {}) with meta={}\n\nWhile executing %view : [num_users=1] = call_method[target=view](args = (%getitem_4, %getitem, %getitem_1, 4, %add), kwargs = {})\nOr",
-      "fx_duration_ms": 3663.08,
+      "fx_duration_ms": 7676.32,
       "fakettensor_verdict": "detected",
       "fakettensor_first_message": "RuntimeError: shape '[1, 16, 4, 9]' is invalid for input of size 512",
-      "fakettensor_duration_ms": 4443.86
+      "fakettensor_duration_ms": 7177.39
     },
     {
       "source_file": "nanoGPT_model.py",
@@ -79,13 +79,13 @@
       "tg_first_message": "Potential division by zero: 'model_type' not guarded",
       "tg_first_line": 213,
       "tg_localization_correct": false,
-      "tg_duration_ms": 164.92,
+      "tg_duration_ms": 80.03,
       "fx_verdict": "detected",
       "fx_first_message": "RuntimeError: ShapeProp error for: node=%c_proj : [num_users=1] = call_module[target=c_proj](args = (%view_3,), kwargs = {}) with meta={'nn_module_stack': OrderedDict([('c_proj', ('c_proj', <class 'torch.nn.modules.linear.Linear'>))])}\n\nWhile executing %c_proj : [num_users=1] = call_module[target=c_",
-      "fx_duration_ms": 4706.06,
+      "fx_duration_ms": 5678.61,
       "fakettensor_verdict": "detected",
       "fakettensor_first_message": "RuntimeError: a and b must have same reduction dim, but got [32, 16] X [32, 32].",
-      "fakettensor_duration_ms": 3183.8
+      "fakettensor_duration_ms": 4143.65
     },
     {
       "source_file": "minGPT_model.py",
@@ -100,7 +100,7 @@
       "tg_first_message": "[DEVICE-MISMATCH] Z3 violation (device_mismatch) at step 8:\n  phase_s3 = TRAIN_7\n  grad_pos_emb_s5 = False\n  grad___inner_1_s4 = False\n  grad_pos_s4 = False\n  grad_tok_emb_s4 = False\n  grad___binop_3_s7 = False\n  grad_pos_s7 = False\n  grad_pos_s8 = False\n  grad_pos_s6 = False\n  grad___inner_1_s7 = F",
       "tg_first_line": 273,
       "tg_localization_correct": null,
-      "tg_duration_ms": 150.92,
+      "tg_duration_ms": 181.72,
       "fx_verdict": "import-failed",
       "fx_first_message": "static dependency missing",
       "fx_duration_ms": 0.0,
@@ -121,7 +121,7 @@
       "tg_first_message": "[DEVICE-MISMATCH] Z3 violation (device_mismatch) at step 8:\n  dev_x_s1 = CPU_9\n  phase_s3 = TRAIN_9\n  grad_pos_emb_s5 = False\n  grad___inner_1_s4 = False\n  grad_pos_s4 = False\n  grad_tok_emb_s4 = False\n  grad___binop_3_s7 = False\n  grad_pos_s7 = False\n  grad_pos_s8 = False\n  grad_pos_s6 = False\n  gr",
       "tg_first_line": 273,
       "tg_localization_correct": null,
-      "tg_duration_ms": 92.08,
+      "tg_duration_ms": 103.27,
       "fx_verdict": "import-failed",
       "fx_first_message": "static dependency missing",
       "fx_duration_ms": 0.0,
@@ -142,7 +142,7 @@
       "tg_first_message": "[DEVICE-MISMATCH] Z3 violation (device_mismatch) at step 8:\n  phase_s5 = TRAIN_11\n  grad_pos_emb_s5 = False\n  grad___inner_1_s4 = False\n  grad_pos_s4 = False\n  grad_tok_emb_s4 = False\n  grad___binop_3_s7 = False\n  grad_pos_s7 = False\n  grad_pos_s8 = False\n  grad_pos_s6 = False\n  dev_x_s1 = CPU_11\n  ",
       "tg_first_line": 273,
       "tg_localization_correct": null,
-      "tg_duration_ms": 113.35,
+      "tg_duration_ms": 80.96,
       "fx_verdict": "import-failed",
       "fx_first_message": "static dependency missing",
       "fx_duration_ms": 0.0,
@@ -163,7 +163,7 @@
       "tg_first_message": "Potential division by zero: 'p' not guarded",
       "tg_first_line": 103,
       "tg_localization_correct": null,
-      "tg_duration_ms": 56.21,
+      "tg_duration_ms": 52.61,
       "fx_verdict": "import-failed",
       "fx_first_message": "static dependency missing",
       "fx_duration_ms": 0.0,
@@ -184,7 +184,7 @@
       "tg_first_message": "Potential division by zero: 'p' not guarded",
       "tg_first_line": 103,
       "tg_localization_correct": null,
-      "tg_duration_ms": 75.16,
+      "tg_duration_ms": 46.31,
       "fx_verdict": "import-failed",
       "fx_first_message": "static dependency missing",
       "fx_duration_ms": 0.0,
@@ -205,7 +205,7 @@
       "tg_first_message": "Potential division by zero: 'p' not guarded",
       "tg_first_line": 103,
       "tg_localization_correct": null,
-      "tg_duration_ms": 51.43,
+      "tg_duration_ms": 49.32,
       "fx_verdict": "import-failed",
       "fx_first_message": "static dependency missing",
       "fx_duration_ms": 0.0,
@@ -226,13 +226,13 @@
       "tg_first_message": "",
       "tg_first_line": null,
       "tg_localization_correct": null,
-      "tg_duration_ms": 21.89,
+      "tg_duration_ms": 19.73,
       "fx_verdict": "missed",
       "fx_first_message": "ShapeProp completed",
-      "fx_duration_ms": 2780.59,
+      "fx_duration_ms": 4696.86,
       "fakettensor_verdict": "missed",
       "fakettensor_first_message": "FakeTensor forward completed",
-      "fakettensor_duration_ms": 3513.96
+      "fakettensor_duration_ms": 3143.34
     },
     {
       "source_file": "unet_parts.py",
@@ -247,13 +247,13 @@
       "tg_first_message": "",
       "tg_first_line": null,
       "tg_localization_correct": null,
-      "tg_duration_ms": 49.87,
+      "tg_duration_ms": 20.49,
       "fx_verdict": "missed",
       "fx_first_message": "ShapeProp completed",
-      "fx_duration_ms": 3312.49,
+      "fx_duration_ms": 2413.03,
       "fakettensor_verdict": "missed",
       "fakettensor_first_message": "FakeTensor forward completed",
-      "fakettensor_duration_ms": 4805.27
+      "fakettensor_duration_ms": 3315.38
     },
     {
       "source_file": "unet_parts.py",
@@ -268,13 +268,13 @@
       "tg_first_message": "",
       "tg_first_line": null,
       "tg_localization_correct": null,
-      "tg_duration_ms": 59.63,
+      "tg_duration_ms": 22.26,
       "fx_verdict": "missed",
       "fx_first_message": "ShapeProp completed",
-      "fx_duration_ms": 5112.89,
+      "fx_duration_ms": 2671.04,
       "fakettensor_verdict": "missed",
       "fakettensor_first_message": "FakeTensor forward completed",
-      "fakettensor_duration_ms": 4753.84
+      "fakettensor_duration_ms": 3677.48
     },
     {
       "source_file": "labml_mha.py",
@@ -289,7 +289,7 @@
       "tg_first_message": "RecursionError: maximum recursion depth exceeded",
       "tg_first_line": null,
       "tg_localization_correct": null,
-      "tg_duration_ms": 3.7,
+      "tg_duration_ms": 3.75,
       "fx_verdict": "import-failed",
       "fx_first_message": "static dependency missing",
       "fx_duration_ms": 0.0,
@@ -310,7 +310,7 @@
       "tg_first_message": "RecursionError: maximum recursion depth exceeded",
       "tg_first_line": null,
       "tg_localization_correct": null,
-      "tg_duration_ms": 1.69,
+      "tg_duration_ms": 2.58,
       "fx_verdict": "import-failed",
       "fx_first_message": "static dependency missing",
       "fx_duration_ms": 0.0,
@@ -331,7 +331,7 @@
       "tg_first_message": "RecursionError: maximum recursion depth exceeded",
       "tg_first_line": null,
       "tg_localization_correct": null,
-      "tg_duration_ms": 1.67,
+      "tg_duration_ms": 1.94,
       "fx_verdict": "import-failed",
       "fx_first_message": "static dependency missing",
       "fx_duration_ms": 0.0,
@@ -352,13 +352,13 @@
       "tg_first_message": "abstained (opaque layers)",
       "tg_first_line": null,
       "tg_localization_correct": null,
-      "tg_duration_ms": 146.45,
+      "tg_duration_ms": 271.45,
       "fx_verdict": "detected",
       "fx_first_message": "RuntimeError: ShapeProp error for: node=%add : [num_users=1] = call_function[target=operator.add](args = (%bn2, %x), kwargs = {}) with meta={}\n\nWhile executing %add : [num_users=1] = call_function[target=operator.add](args = (%bn2, %x), kwargs = {})\nOriginal traceback:\nNone\nUse tlparse to see full g",
-      "fx_duration_ms": 3657.75,
+      "fx_duration_ms": 3533.04,
       "fakettensor_verdict": "detected",
       "fakettensor_first_message": "RuntimeError: Attempting to broadcast a dimension of length 32 at -1! Mismatching argument at index 1 had torch.Size([1, 16, 32, 32]); but expected shape should be broadcastable to [1, 16, 28, 28]",
-      "fakettensor_duration_ms": 3835.94
+      "fakettensor_duration_ms": 3580.61
     },
     {
       "source_file": "resnet_basic_block.py",
@@ -373,13 +373,13 @@
       "tg_first_message": "abstained (opaque layers)",
       "tg_first_line": null,
       "tg_localization_correct": null,
-      "tg_duration_ms": 308.7,
+      "tg_duration_ms": 367.13,
       "fx_verdict": "detected",
       "fx_first_message": "RuntimeError: ShapeProp error for: node=%bn2 : [num_users=1] = call_module[target=bn2](args = (%conv2,), kwargs = {}) with meta={'nn_module_stack': OrderedDict([('bn2', ('bn2', <class 'torch.nn.modules.batchnorm.BatchNorm2d'>))])}\n\nWhile executing %bn2 : [num_users=1] = call_module[target=bn2](args ",
-      "fx_duration_ms": 3784.0,
+      "fx_duration_ms": 4881.55,
       "fakettensor_verdict": "detected",
       "fakettensor_first_message": "RuntimeError: running_mean should contain 32 elements not 16",
-      "fakettensor_duration_ms": 4194.92
+      "fakettensor_duration_ms": 4025.13
     },
     {
       "source_file": "resnet_basic_block.py",
@@ -394,13 +394,13 @@
       "tg_first_message": "abstained (opaque layers)",
       "tg_first_line": null,
       "tg_localization_correct": null,
-      "tg_duration_ms": 549.56,
+      "tg_duration_ms": 332.45,
       "fx_verdict": "detected",
       "fx_first_message": "RuntimeError: ShapeProp error for: node=%bn2 : [num_users=1] = call_module[target=bn2](args = (%conv2,), kwargs = {}) with meta={'nn_module_stack': OrderedDict([('bn2', ('bn2', <class 'torch.nn.modules.batchnorm.BatchNorm2d'>))])}\n\nWhile executing %bn2 : [num_users=1] = call_module[target=bn2](args ",
-      "fx_duration_ms": 4536.89,
+      "fx_duration_ms": 4752.97,
       "fakettensor_verdict": "detected",
       "fakettensor_first_message": "RuntimeError: running_mean should contain 16 elements not 32",
-      "fakettensor_duration_ms": 3667.85
+      "fakettensor_duration_ms": 4372.36
     },
     {
       "source_file": "vit_encoder_block.py",
@@ -415,13 +415,13 @@
       "tg_first_message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 6:\n  _unk_ln_2_1 = 16\n  _unk_ln_1_0 = 1\n  grad_input_s0 = False\n  grad_input_s6 = False\n  dev_input_s1 = CPU_31\n  dev_input_s2 = CPU_31\n  grad_x_s5 = False\n  dev_input_s3 = CPU_31\n  grad_input_s5 = False\n  grad_input_s2 = False\n  _unk_ln",
       "tg_first_line": 58,
       "tg_localization_correct": null,
-      "tg_duration_ms": 344.66,
+      "tg_duration_ms": 384.95,
       "fx_verdict": "detected",
       "fx_first_message": "RuntimeError: ShapeProp error for: node=%mlp_linear_1 : [num_users=1] = call_module[target=mlp.linear_1](args = (%ln_2,), kwargs = {}) with meta={'nn_module_stack': OrderedDict([('mlp', ('mlp', <class '_runner_tmp.vit_encoder_block__vit_mlp_linear1_swap__fx.MLPBlock'>)), ('mlp.linear_1', ('mlp.linea",
-      "fx_duration_ms": 4698.42,
+      "fx_duration_ms": 5032.72,
       "fakettensor_verdict": "detected",
       "fakettensor_first_message": "RuntimeError: a and b must have same reduction dim, but got [16, 32] X [64, 32].",
-      "fakettensor_duration_ms": 6296.05
+      "fakettensor_duration_ms": 4349.89
     },
     {
       "source_file": "vit_encoder_block.py",
@@ -436,13 +436,13 @@
       "tg_first_message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 6:\n  dev_input_s4 = CPU_33\n  _unk_ln_2_1 = 16\n  _unk_ln_1_0 = 1\n  dev_y_s5 = CPU_33\n  grad_input_s0 = False\n  grad_input_s6 = False\n  dev_input_s0 = CPU_33\n  grad_x_s5 = False\n  phase_s2 = TRAIN_33\n  grad_input_s5 = False\n  grad_input_s2",
       "tg_first_line": 58,
       "tg_localization_correct": null,
-      "tg_duration_ms": 324.29,
+      "tg_duration_ms": 401.39,
       "fx_verdict": "detected",
       "fx_first_message": "RuntimeError: ShapeProp error for: node=%mlp_linear_2 : [num_users=1] = call_module[target=mlp.linear_2](args = (%mlp_dropout_1,), kwargs = {}) with meta={'nn_module_stack': OrderedDict([('mlp', ('mlp', <class '_runner_tmp.vit_encoder_block__vit_mlp_linear2_dim_off__fx.MLPBlock'>)), ('mlp.linear_2',",
-      "fx_duration_ms": 4621.47,
+      "fx_duration_ms": 6420.66,
       "fakettensor_verdict": "detected",
       "fakettensor_first_message": "RuntimeError: a and b must have same reduction dim, but got [16, 64] X [65, 32].",
-      "fakettensor_duration_ms": 7238.34
+      "fakettensor_duration_ms": 5153.68
     },
     {
       "source_file": "vit_encoder_block.py",
@@ -457,13 +457,13 @@
       "tg_first_message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 6:\n  grad_input_s4 = False\n  dev_input_s2 = CPU_35\n  dev_input_s3 = CPU_35\n  _unk_ln_2_1 = 16\n  _unk_ln_1_0 = 1\n  grad_input_s0 = False\n  grad_input_s6 = False\n  grad_x_s5 = False\n  dev_input_s5 = CPU_35\n  phase_s3 = TRAIN_35\n  grad_inpu",
       "tg_first_line": 58,
       "tg_localization_correct": null,
-      "tg_duration_ms": 249.75,
+      "tg_duration_ms": 559.86,
       "fx_verdict": "detected",
       "fx_first_message": "RuntimeError: ShapeProp error for: node=%self_attention : [num_users=2] = call_module[target=self_attention](args = (%ln_1, %ln_1, %ln_1), kwargs = {need_weights: False}) with meta={'nn_module_stack': OrderedDict([('self_attention', ('self_attention', <class 'torch.nn.modules.activation.MultiheadAtt",
-      "fx_duration_ms": 5258.19,
+      "fx_duration_ms": 5368.32,
       "fakettensor_verdict": "detected",
       "fakettensor_first_message": "AssertionError: was expecting embedding dimension of 64, but got 32",
-      "fakettensor_duration_ms": 6552.75
+      "fakettensor_duration_ms": 5054.02
     },
     {
       "source_file": "mlp_mixer_block.py",
@@ -478,13 +478,13 @@
       "tg_first_message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 4:\n  dev_x_s2 = CPU_37\n  dev_x_s3 = CPU_37\n  dev_y_s2 = CPU_37\n  grad_y_s2 = True\n  grad___inner_1_s4 = True\n  grad_x_s0 = False\n  _unk_lin_out__seq_3 = 2\n  dev_x_s4 = CPU_37\n  dev___inner_1_s4 = CPU_37\n  dev___inner_2_s4 = CPU_37\n  grad",
       "tg_first_line": 35,
       "tg_localization_correct": null,
-      "tg_duration_ms": 187.74,
+      "tg_duration_ms": 400.55,
       "fx_verdict": "detected",
       "fx_first_message": "RuntimeError: ShapeProp error for: node=%token_mix_net_0 : [num_users=1] = call_module[target=token_mix.net.0](args = (%transpose,), kwargs = {}) with meta={'nn_module_stack': OrderedDict([('token_mix', ('token_mix', <class '_runner_tmp.mlp_mixer_block__mixer_token_mix_wrong_dim__fx.FeedForward'>)),",
-      "fx_duration_ms": 7405.72,
+      "fx_duration_ms": 6000.11,
       "fakettensor_verdict": "detected",
       "fakettensor_first_message": "RuntimeError: a and b must have same reduction dim, but got [32, 16] X [32, 64].",
-      "fakettensor_duration_ms": 4425.05
+      "fakettensor_duration_ms": 5885.94
     },
     {
       "source_file": "mlp_mixer_block.py",
@@ -499,13 +499,13 @@
       "tg_first_message": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 4:\n  grad_y_s2 = True\n  grad___inner_1_s4 = True\n  grad_x_s0 = False\n  phase_s2 = TRAIN_39\n  _unk_lin_out__seq_3 = 2\n  phase_s4 = TRAIN_39\n  dev_y_s3 = CPU_39\n  dev___inner_1_s2 = CPU_39\n  phase_s1 = TRAIN_39\n  phase_s0 = TRAIN_39\n  dev_",
       "tg_first_line": 35,
       "tg_localization_correct": null,
-      "tg_duration_ms": 163.64,
+      "tg_duration_ms": 246.53,
       "fx_verdict": "detected",
       "fx_first_message": "RuntimeError: ShapeProp error for: node=%channel_mix_net_0 : [num_users=1] = call_module[target=channel_mix.net.0](args = (%norm2,), kwargs = {}) with meta={'nn_module_stack': OrderedDict([('channel_mix', ('channel_mix', <class '_runner_tmp.mlp_mixer_block__mixer_channel_mix_wrong_dim__fx.FeedForwar",
-      "fx_duration_ms": 5823.48,
+      "fx_duration_ms": 4613.88,
       "fakettensor_verdict": "detected",
       "fakettensor_first_message": "RuntimeError: a and b must have same reduction dim, but got [16, 32] X [16, 64].",
-      "fakettensor_duration_ms": 7448.93
+      "fakettensor_duration_ms": 4397.06
     },
     {
       "source_file": "mlp_mixer_block.py",
@@ -520,13 +520,13 @@
       "tg_first_message": "[SHAPE-INCOMPATIBLE] Cannot broadcast (1, 16, 32) and (1, 32, _unk_lin_out__seq_3)",
       "tg_first_line": 35,
       "tg_localization_correct": true,
-      "tg_duration_ms": 487.43,
+      "tg_duration_ms": 244.74,
       "fx_verdict": "detected",
       "fx_first_message": "RuntimeError: ShapeProp error for: node=%add : [num_users=2] = call_function[target=operator.add](args = (%x, %token_mix_net_4), kwargs = {}) with meta={}\n\nWhile executing %add : [num_users=2] = call_function[target=operator.add](args = (%x, %token_mix_net_4), kwargs = {})\nOriginal traceback:\nNone\nU",
-      "fx_duration_ms": 18724.0,
+      "fx_duration_ms": 4394.61,
       "fakettensor_verdict": "detected",
       "fakettensor_first_message": "RuntimeError: Attempting to broadcast a dimension of length 16 at -1! Mismatching argument at index 1 had torch.Size([1, 32, 16]); but expected shape should be broadcastable to [1, 16, 32]",
-      "fakettensor_duration_ms": 11420.9
+      "fakettensor_duration_ms": 4170.01
     }
   ]
 }

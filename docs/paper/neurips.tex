@@ -49,7 +49,18 @@ with Pytea it scores $32/34$ vs.\ $25/34$ (McNemar exact
 $p{=}0.0156$), and it returns \textsc{Refuted-Proof} on $9/9$
 naturally-occurring shape bugs transcribed from upstream
 HuggingFace \texttt{transformers} issues across Llama, Qwen2,
-Mistral, Phi-3, and Gemma~$2$. The contribution is the joint
+Mistral, Phi-3, and Gemma~$2$.
+On unreduced real-source class code drawn from
+\texttt{torchvision}, \texttt{timm}, and HuggingFace
+\texttt{transformers}, the analyser returns
+$26$ unconditional \textsc{Refuted-Proof} verdicts on the
+$356$-block subset whose contract obligation is empty (Wilson
+$95\%$ CI $[5.0\%, 10.5\%]$), of which $5$ fire entirely
+inside the audited handler footprint;
+on the unrestricted $488$-block corpus with the v8 rule
+extensions enabled the unconditional \textsc{Refuted-Proof}
+count is $15/488$ (Wilson $95\%$ CI $[1.87\%, 5.01\%]$).
+The contribution is the joint
 shape-plus-grad analysis on un-instantiated class source,
 together with an assume/guarantee discipline at the class
 boundary and a calibration package that partitions every verdict

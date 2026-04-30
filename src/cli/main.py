@@ -3081,6 +3081,10 @@ class VerifyCommand:
             help="Disable train/eval phase checking"
         )
         parser.add_argument(
+            "--no-grad-check", action="store_true",
+            help="Disable gradient-flow checking"
+        )
+        parser.add_argument(
             "--cegar-iterations", type=int, default=10,
             help="Max CEGAR refinement iterations (default: 10)"
         )
@@ -3128,6 +3132,7 @@ class VerifyCommand:
                 input_shapes=input_shapes,
                 check_devices=not args.no_device_check,
                 check_phases=not args.no_phase_check,
+                check_gradients=not args.no_grad_check,
                 max_cegar_iterations=args.cegar_iterations,
                 filename=str(filepath),
                 high_confidence_only=args.high_confidence,

@@ -1,0 +1,2 @@
+- Close the matmul and broadcast_add Lean composition lemmas — closed matmul and broadcast_add soundness obligations with dedicated sorry-free Lean modules, replacing any operator-agnostic composition witness for these two operators
+- torch.compile head-to-head benchmark on the unfiltered post-freeze N=15 sample — reproducible three-way head-to-head benchmark (TensorGuard vs FakeTensorMode/torch.compile vs Pytea) on the pre-registered N=15 unfiltered corpus, with per-bug verdict table and BH-adjusted Fisher p-values

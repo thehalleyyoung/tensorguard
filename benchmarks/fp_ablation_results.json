@@ -1,67 +1,3035 @@
 {
   "summary": {
-    "total_fp_diagnostics": 8,
+    "total_fp_diagnostics": 432,
     "category_counts": {
-      "C1: opaque-sequential / unknown layer dim": 6,
-      "C2: cat / multi-arg forward (rank desync)": 2
+      "C4: other / uncategorized": 430,
+      "C5: cross-step Z3 propagation downstream of root cause": 2
     }
   },
   "fps": [
     {
+      "module": "torchvision.models.alexnet",
+      "class": "AlexNet",
+      "line": 117,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
       "module": "torchvision.models.vgg",
       "class": "VGG",
-      "line": 69,
-      "msg": "[SHAPE-INCOMPATIBLE] Sequential sub-layer _seq_0: Linear expects last dim=25088, got 147",
-      "category": "C1: opaque-sequential / unknown layer dim"
+      "line": 105,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "ResNet",
+      "line": 301,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "ResNet",
+      "line": 201,
+      "msg": "Index 0 on 'layers' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "ResNet",
+      "line": 202,
+      "msg": "Index 1 on 'layers' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "ResNet",
+      "line": 203,
+      "msg": "Index 2 on 'layers' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "ResNet",
+      "line": 204,
+      "msg": "Index 3 on 'layers' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "BasicBlock",
+      "line": 301,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "BasicBlock",
+      "line": 201,
+      "msg": "Index 0 on 'layers' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "BasicBlock",
+      "line": 202,
+      "msg": "Index 1 on 'layers' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "BasicBlock",
+      "line": 203,
+      "msg": "Index 2 on 'layers' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "BasicBlock",
+      "line": 204,
+      "msg": "Index 3 on 'layers' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "Bottleneck",
+      "line": 301,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "Bottleneck",
+      "line": 201,
+      "msg": "Index 0 on 'layers' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "Bottleneck",
+      "line": 202,
+      "msg": "Index 1 on 'layers' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "Bottleneck",
+      "line": 203,
+      "msg": "Index 2 on 'layers' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.resnet",
+      "class": "Bottleneck",
+      "line": 204,
+      "msg": "Index 3 on 'layers' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.densenet",
+      "class": "DenseNet",
+      "line": 217,
+      "msg": "[SHAPE-INCOMPATIBLE] Linear expects last dim=64, got 3",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.densenet",
+      "class": "DenseNet",
+      "line": 217,
+      "msg": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 4:\n  phase_s0 = TRAIN_11\n  grad_out_s4 = False\n  grad_x_s0 = False\n  grad_out_s3 = False\n  grad_features_s1 = False\n  grad_features_s4 = ",
+      "category": "C5: cross-step Z3 propagation downstream of root cause"
+    },
+    {
+      "module": "torchvision.models.googlenet",
+      "class": "GoogLeNet",
+      "line": 335,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.googlenet",
+      "class": "Inception",
+      "line": 335,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.googlenet",
+      "class": "BasicConv2d",
+      "line": 335,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.inception",
+      "class": "BasicConv2d",
+      "line": 473,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.mobilenetv2",
+      "class": "MobileNetV2",
+      "line": 258,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.mobilenetv2",
+      "class": "InvertedResidual",
+      "line": 258,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.mobilenetv3",
+      "class": "MobileNetV3",
+      "line": 286,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.shufflenetv2",
+      "class": "ShuffleNetV2",
+      "line": 30,
+      "msg": "Potential division by zero: 'groups' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.shufflenetv2",
+      "class": "ShuffleNetV2",
+      "line": 30,
+      "msg": "Potential division by zero: 'groups' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.shufflenetv2",
+      "class": "ShuffleNetV2",
+      "line": 181,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.shufflenetv2",
+      "class": "InvertedResidual",
+      "line": 30,
+      "msg": "Potential division by zero: 'groups' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.shufflenetv2",
+      "class": "InvertedResidual",
+      "line": 30,
+      "msg": "Potential division by zero: 'groups' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.shufflenetv2",
+      "class": "InvertedResidual",
+      "line": 181,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.squeezenet",
+      "class": "SqueezeNet",
+      "line": 112,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
     },
     {
       "module": "torchvision.models.squeezenet",
       "class": "Fire",
-      "line": 95,
-      "msg": "[SHAPE-INCOMPATIBLE] Sequential sub-layer _seq_0: Conv2d expects 3 input channels, got 96",
-      "category": "C1: opaque-sequential / unknown layer dim"
+      "line": 112,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.efficientnet",
+      "class": "EfficientNet",
+      "line": 361,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.efficientnet",
+      "class": "EfficientNet",
+      "line": 293,
+      "msg": "Potential division by zero: 'total_stage_blocks' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.efficientnet",
+      "class": "EfficientNet",
+      "line": 293,
+      "msg": "Potential division by zero: 'total_stage_blocks' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.efficientnet",
+      "class": "MBConv",
+      "line": 361,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.efficientnet",
+      "class": "MBConv",
+      "line": 293,
+      "msg": "Potential division by zero: 'total_stage_blocks' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.efficientnet",
+      "class": "MBConv",
+      "line": 293,
+      "msg": "Potential division by zero: 'total_stage_blocks' not guarded",
+      "category": "C4: other / uncategorized"
     },
     {
       "module": "torchvision.models.mnasnet",
       "class": "MNASNet",
-      "line": 162,
-      "msg": "[SHAPE-INCOMPATIBLE] Sequential sub-layer _seq_1: Linear expects last dim=1280, got 224",
-      "category": "C1: opaque-sequential / unknown layer dim"
+      "line": 86,
+      "msg": "Potential division by zero: 'divisor' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.mnasnet",
+      "class": "MNASNet",
+      "line": 86,
+      "msg": "Potential division by zero: 'divisor' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.mnasnet",
+      "class": "MNASNet",
+      "line": 86,
+      "msg": "Potential division by zero: 'divisor' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.mnasnet",
+      "class": "MNASNet",
+      "line": 86,
+      "msg": "Potential division by zero: 'divisor' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.mnasnet",
+      "class": "MNASNet",
+      "line": 320,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.regnet",
+      "class": "RegNet",
+      "line": 382,
+      "msg": "[SHAPE-INCOMPATIBLE] Z3 violation (shape_incompatible) at step 4:\n  phase_s4 = TRAIN_45\n  _flat = 1\n  phase_s1 = TRAIN_45\n  dev_x_s2 = CPU_45\n  phase_s0 = TRAIN_45\n  grad_x_s0 = False\n  dev_x_s3 = CPU",
+      "category": "C5: cross-step Z3 propagation downstream of root cause"
+    },
+    {
+      "module": "torchvision.models.regnet",
+      "class": "RegNet",
+      "line": 400,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.regnet",
+      "class": "RegNet",
+      "line": 83,
+      "msg": "Potential division by zero: 'group_width' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.regnet",
+      "class": "RegNet",
+      "line": 83,
+      "msg": "Potential division by zero: 'group_width' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.regnet",
+      "class": "RegNet",
+      "line": 368,
+      "msg": "Potential division by zero: 'fan_out' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.convnext",
+      "class": "ConvNeXt",
+      "line": 193,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.convnext",
+      "class": "CNBlock",
+      "line": 193,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
     },
     {
       "module": "torchvision.models.vision_transformer",
       "class": "VisionTransformer",
-      "line": 296,
-      "msg": "[SHAPE-INCOMPATIBLE] cat: tensors have different ndim (2 vs 4)",
-      "category": "C2: cat / multi-arg forward (rank desync)"
+      "line": 335,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 837,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 837,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 180,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 217,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 217,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 217,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 217,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 217,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 248,
+      "msg": "Potential division by zero: 'fan_in' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 261,
+      "msg": "Potential division by zero: 'fan_in' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 273,
+      "msg": "Potential division by zero: 'p' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 273,
+      "msg": "Potential division by zero: 'p' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 274,
+      "msg": "Potential division by zero: 'p' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "VisionTransformer",
+      "line": 274,
+      "msg": "Potential division by zero: 'p' not guarded",
+      "category": "C4: other / uncategorized"
     },
     {
       "module": "torchvision.models.vision_transformer",
       "class": "EncoderBlock",
-      "line": 296,
-      "msg": "[SHAPE-INCOMPATIBLE] cat: tensors have different ndim (2 vs 3)",
-      "category": "C2: cat / multi-arg forward (rank desync)"
+      "line": 335,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 815,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 837,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 837,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 180,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 217,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 217,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 217,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 217,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 217,
+      "msg": "Potential division by zero: 'patch_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 248,
+      "msg": "Potential division by zero: 'fan_in' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 261,
+      "msg": "Potential division by zero: 'fan_in' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 273,
+      "msg": "Potential division by zero: 'p' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 273,
+      "msg": "Potential division by zero: 'p' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 274,
+      "msg": "Potential division by zero: 'p' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.vision_transformer",
+      "class": "EncoderBlock",
+      "line": 274,
+      "msg": "Potential division by zero: 'p' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 52,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 52,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 52,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 52,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 52,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 52,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 52,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 52,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 52,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 52,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 153,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 154,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 160,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 162,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 170,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 171,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 171,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 171,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 171,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 171,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 171,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 171,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 171,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 171,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 171,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 171,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 171,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 172,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 172,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 172,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 172,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 172,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 172,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 172,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 172,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 180,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 180,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 188,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 188,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 188,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 188,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 188,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 188,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 188,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 188,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 188,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 188,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 188,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 188,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 188,
+      "msg": "Potential division by zero: 'num_heads' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 203,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 203,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 203,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 203,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 203,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 203,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 203,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 203,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 203,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 203,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 203,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 203,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 204,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 204,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 204,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 204,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 204,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 204,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 204,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 204,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 207,
+      "msg": "Potential division by zero: 'num_windows' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 207,
+      "msg": "Potential division by zero: 'num_windows' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 219,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 219,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 219,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 219,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 219,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 219,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 219,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 219,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 219,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 219,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 219,
+      "msg": "Index 0 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 219,
+      "msg": "Index 1 on 'window_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 224,
+      "msg": "Index 0 on 'shift_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 224,
+      "msg": "Index 1 on 'shift_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 224,
+      "msg": "Index 0 on 'shift_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 224,
+      "msg": "Index 1 on 'shift_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 642,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 558,
+      "msg": "Index 0 on 'patch_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 558,
+      "msg": "Index 1 on 'patch_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 558,
+      "msg": "Index 0 on 'patch_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.swin_transformer",
+      "class": "SwinTransformer",
+      "line": 558,
+      "msg": "Index 1 on 'patch_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
     },
     {
       "module": "torchvision.models.maxvit",
       "class": "MaxVit",
-      "line": 712,
-      "msg": "[SHAPE-INCOMPATIBLE] Sequential sub-layer _seq_3: Linear out_features unknown",
-      "category": "C1: opaque-sequential / unknown layer dim"
+      "line": 28,
+      "msg": "Potential division by zero: 'stride' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Potential division by zero: 'stride' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 28,
+      "msg": "Index 0 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Potential division by zero: 'stride' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Potential division by zero: 'stride' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 29,
+      "msg": "Index 1 on 'input_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 767,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 158,
+      "msg": "Potential division by zero: 'head_dim' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 161,
+      "msg": "Potential division by zero: 'head_dim' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 246,
+      "msg": "Potential division by zero: 'P' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 246,
+      "msg": "Potential division by zero: 'P' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 246,
+      "msg": "Potential division by zero: 'P' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 246,
+      "msg": "Potential division by zero: 'P' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 249,
+      "msg": "Potential division by zero: 'P' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 249,
+      "msg": "Potential division by zero: 'P' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 249,
+      "msg": "Potential division by zero: 'P' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 249,
+      "msg": "Potential division by zero: 'P' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 249,
+      "msg": "Potential division by zero: 'P' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 249,
+      "msg": "Potential division by zero: 'P' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 249,
+      "msg": "Potential division by zero: 'P' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 249,
+      "msg": "Potential division by zero: 'P' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 320,
+      "msg": "Potential division by zero: 'head_dim' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 322,
+      "msg": "Potential division by zero: 'partition_size' not guarded",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 322,
+      "msg": "Index 0 on 'grid_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.maxvit",
+      "class": "MaxVit",
+      "line": 322,
+      "msg": "Index 0 on 'grid_size' without length guard (may be empty)",
+      "category": "C4: other / uncategorized"
     },
     {
       "module": "torchvision.models.detection.faster_rcnn",
       "class": "TwoMLPHead",
-      "line": 369,
-      "msg": "[SHAPE-INCOMPATIBLE] Linear out_features unknown",
-      "category": "C1: opaque-sequential / unknown layer dim"
+      "line": 577,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
     },
     {
       "module": "torchvision.models.detection.faster_rcnn",
       "class": "TwoMLPHead",
-      "line": 370,
-      "msg": "[SHAPE-INCOMPATIBLE] Linear out_features unknown",
-      "category": "C1: opaque-sequential / unknown layer dim"
+      "line": 645,
+      "msg": "Potential None attribute on 'backbone' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.detection.faster_rcnn",
+      "class": "TwoMLPHead",
+      "line": 645,
+      "msg": "Potential None method_call on 'rpn_anchor_generator' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.detection.faster_rcnn",
+      "class": "TwoMLPHead",
+      "line": 645,
+      "msg": "Potential None attribute on 'backbone' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.detection.faster_rcnn",
+      "class": "TwoMLPHead",
+      "line": 645,
+      "msg": "Potential None method_call on 'rpn_anchor_generator' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.detection.faster_rcnn",
+      "class": "TwoMLPHead",
+      "line": 647,
+      "msg": "Potential None attribute on 'backbone' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.detection.faster_rcnn",
+      "class": "TwoMLPHead",
+      "line": 647,
+      "msg": "Potential None attribute on 'backbone' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.detection.faster_rcnn",
+      "class": "TwoMLPHead",
+      "line": 659,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.detection.faster_rcnn",
+      "class": "TwoMLPHead",
+      "line": 700,
+      "msg": "Potential None method_call on 'model' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.detection.faster_rcnn",
+      "class": "TwoMLPHead",
+      "line": 232,
+      "msg": "Potential None method_call on 'rpn_anchor_generator' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.detection.faster_rcnn",
+      "class": "TwoMLPHead",
+      "line": 232,
+      "msg": "Potential None method_call on 'rpn_anchor_generator' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.detection.faster_rcnn",
+      "class": "TwoMLPHead",
+      "line": 254,
+      "msg": "Potential None attribute on 'box_roi_pool' without guard",
+      "category": "C4: other / uncategorized"
+    },
+    {
+      "module": "torchvision.models.detection.faster_rcnn",
+      "class": "TwoMLPHead",
+      "line": 254,
+      "msg": "Potential None attribute on 'box_roi_pool' without guard",
+      "category": "C4: other / uncategorized"
     }
   ]
 }
