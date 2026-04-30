@@ -749,6 +749,9 @@ def verify_architecture(
         source,
         input_shapes=input_shapes or {},
         high_confidence_only=high_confidence_only,
+        check_devices=check_devices,
+        check_phases=check_phases,
+        check_gradients=check_gradients,
     )
 
     # Convert verification errors to Bug objects

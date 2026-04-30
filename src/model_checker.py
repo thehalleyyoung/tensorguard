@@ -10199,6 +10199,9 @@ def verify_model(
     produce_certificates: bool = False,
     return_kripke: bool = False,
     use_kb_normalization: bool = False,
+    check_devices: bool = True,
+    check_phases: bool = True,
+    check_gradients: bool = True,
 ) -> VerificationResult:
     """One-shot verification of an nn.Module defined in *source*.
 
@@ -10232,6 +10235,12 @@ def verify_model(
         Only used when ``verification_mode="unbounded"``.  Mapping from
         shape position names to symbolic parameter names (e.g.
         ``{"batch": "batch_size"}``).
+    check_devices : bool
+        When False, device-mismatch violations are suppressed from the result.
+    check_phases : bool
+        When False, phase-dependent violations are suppressed from the result.
+    check_gradients : bool
+        When False, gradient-flow violations are suppressed from the result.
 
     Returns
     -------
@@ -10360,6 +10369,57 @@ def verify_model(
 
     if high_confidence_only:
         result = result.filter_by_confidence(Confidence.HIGH)
+
+    # Feature-flag filtering: suppress violation kinds that are disabled.
+    # This mirrors the higher-level filtering in verify_architecture but
+    # operates directly on the VerificationResult so callers of verify_model
+    # see filtered results regardless of which API layer they use.
+    _PHASE_KINDS = {"phase_violation", "phase_error"}
+    _GRAD_KINDS = {"gradient_broken", "gradient_violation"}
+
+    def _filter_violations(res: VerificationResult, keep_pred) -> VerificationResult:
+        if res.safe or not res.counterexample:
+            return res
+        kept = [v for v in res.counterexample.violations if keep_pred(v)]
+        if len(kept) == len(res.counterexample.violations):
+            return res  # unchanged
+        if not kept:
+            return VerificationResult(
+                safe=True,
+                graph=res.graph,
+                errors=res.errors,
+                verification_time_ms=res.verification_time_ms,
+                confidence=res.confidence,
+                dynamic_features=res.dynamic_features,
+                dynamic_feature_warnings=res.dynamic_feature_warnings,
+                unsupported_op_tracker=res.unsupported_op_tracker,
+            )
+        new_cex = CounterexampleTrace(
+            model_name=res.counterexample.model_name,
+            violations=kept,
+            failing_step=kept[0].step_index if kept else -1,
+            states=res.counterexample.states,
+            concrete_dims=res.counterexample.concrete_dims,
+        )
+        return VerificationResult(
+            safe=False,
+            counterexample=new_cex,
+            graph=res.graph,
+            errors=res.errors,
+            verification_time_ms=res.verification_time_ms,
+            confidence=res.confidence,
+            dynamic_features=res.dynamic_features,
+            dynamic_feature_warnings=res.dynamic_feature_warnings,
+            unsupported_op_tracker=res.unsupported_op_tracker,
+        )
+
+    if not check_devices:
+        result = _filter_violations(result, lambda v: v.kind != "device_mismatch")
+    if not check_phases:
+        result = _filter_violations(result, lambda v: v.kind not in _PHASE_KINDS)
+    if not check_gradients:
+        result = _filter_violations(result, lambda v: v.kind not in _GRAD_KINDS)
+
     if return_kripke:
         result.kripke_structure = extract_kripke_structure(
             graph,
