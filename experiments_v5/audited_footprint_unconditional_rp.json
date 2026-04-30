@@ -1,0 +1,85 @@
+{
+  "meta": {
+    "description": "Per-block audit table for the unconditional-RP catches on the 488-block real-source corpus whose entire handler chain lies inside the Lean-audited footprint (lean_verified sub-catalogue). Derived from reproducibility/audited_footprint_per_block_lean_pinning.json and experiments_v5/handler_soundness_scope.json.",
+    "n_catches": 5,
+    "soundness_criterion": "Every handler in handler_chain has a corresponding applyOp_sound_* theorem in lean/TensorGuard/SoundnessV5.lean (see lean_rule map). The module-level Subject Reduction theorem in SoundnessV5.lean composes these per-step lemmas to discharge the verdict for the whole forward body.  non_audited_handlers == [] is the explicit witness that no tested-only or uncovered handler appears in the proof."
+  },
+  "catches": [
+    {
+      "block_id": "timm__VisionTransformerDistilled__032a9d92",
+      "module_path": "timm.models.deit.VisionTransformerDistilled",
+      "handler_chain": [
+        "cat",
+        "expand",
+        "linear",
+        "view"
+      ],
+      "lean_rule": {
+        "cat": "applyOp_sound_cat",
+        "expand": "applyOp_sound_expand",
+        "linear": "applyOp_sound_linear_v5",
+        "view": "applyOp_sound_view_v5"
+      },
+      "non_audited_handlers": [],
+      "verdict": "Refuted"
+    },
+    {
+      "block_id": "transformers__BloomPreTrainedModel__4a772e64",
+      "module_path": "transformers.models.bloom.modeling_bloom.BloomPreTrainedModel",
+      "handler_chain": [
+        "embed",
+        "layer_norm",
+        "linear"
+      ],
+      "lean_rule": {
+        "embed": "applyOp_sound_embed",
+        "layer_norm": "applyOp_sound_layer_norm",
+        "linear": "applyOp_sound_linear_v5"
+      },
+      "non_audited_handlers": [],
+      "verdict": "Refuted"
+    },
+    {
+      "block_id": "transformers__ElectraForPreTraining__74bdacae",
+      "module_path": "transformers.models.electra.modeling_electra.ElectraForPreTraining",
+      "handler_chain": [
+        "squeeze",
+        "view"
+      ],
+      "lean_rule": {
+        "squeeze": "applyOp_sound_squeeze",
+        "view": "applyOp_sound_view_v5"
+      },
+      "non_audited_handlers": [],
+      "verdict": "Refuted"
+    },
+    {
+      "block_id": "transformers__FalconPreTrainedModel__55936532",
+      "module_path": "transformers.models.falcon.modeling_falcon.FalconPreTrainedModel",
+      "handler_chain": [
+        "embed",
+        "layer_norm",
+        "linear"
+      ],
+      "lean_rule": {
+        "embed": "applyOp_sound_embed",
+        "layer_norm": "applyOp_sound_layer_norm",
+        "linear": "applyOp_sound_linear_v5"
+      },
+      "non_audited_handlers": [],
+      "verdict": "Refuted"
+    },
+    {
+      "block_id": "transformers__WhisperModel__2cb724a8",
+      "module_path": "transformers.models.whisper.modeling_whisper.WhisperModel",
+      "handler_chain": [
+        "expand"
+      ],
+      "lean_rule": {
+        "expand": "applyOp_sound_expand"
+      },
+      "non_audited_handlers": [],
+      "verdict": "Refuted"
+    }
+  ]
+}
