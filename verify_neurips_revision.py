@@ -384,6 +384,34 @@ def main():
     else:
         print('\nAll five revision JSONs present; paper claims are reproducible.')
 
+    # ------------------------------------------------------------------ #
+    # Fragment-fair filter check: regenerate audit CSV and verify counts.
+    # ------------------------------------------------------------------ #
+    print('\n3) Fragment-fair filter audit (60→34 Pytea head-to-head)')
+    _filter_script = os.path.join(REPO, 'reproducibility', 'build_fragment_fair_filter.py')
+    _filter_result = subprocess.run(
+        [sys.executable, _filter_script],
+        capture_output=True, text=True,
+    )
+    if _filter_result.returncode != 0:
+        print('!! Fragment-fair filter script failed:')
+        print(_filter_result.stdout)
+        print(_filter_result.stderr)
+        sys.exit(3)
+    print(_filter_result.stdout.strip())
+    _audit_csv = os.path.join(REPO, 'reproducibility', 'fragment_fair_audit.csv')
+    if not os.path.exists(_audit_csv):
+        print('!! fragment_fair_audit.csv not found after running filter script')
+        sys.exit(3)
+    with open(_audit_csv, newline='') as _f:
+        import csv as _csv
+        _rows = list(_csv.DictReader(_f))
+    _n_total = len(_rows)
+    _n_included = sum(1 for r in _rows if r['included_in_34'] == 'True')
+    assert _n_total == 60, f'Expected 60 audit rows, got {_n_total}'
+    assert _n_included == 34, f'Expected 34 included rows, got {_n_included}'
+    print(f'   fragment_fair_audit.csv: {_n_total} rows, {_n_included} included — OK')
+
 
 if __name__ == '__main__':
     main()
