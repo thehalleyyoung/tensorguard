@@ -4,3 +4,5 @@ import TensorGuard.Parity
 import TensorGuard.AssumeGuarantee
 import TensorGuard.AssumeGuaranteeExtended
 import TensorGuard.V5OperatorRules
+import TensorGuard.MatmulSound
+import TensorGuard.BroadcastAddSound
