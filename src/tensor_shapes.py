@@ -733,6 +733,10 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
         self._class_attrs: Dict[str, Any] = {}
         # Track __init__ parameter defaults for attribute resolution
         self._init_param_defaults: Dict[str, Any] = {}
+        # Track the RHS AST expression each variable was assigned from,
+        # so we can determine the "origin" of a variable even when its
+        # shape cannot be statically determined.
+        self._var_origins: Dict[str, ast.expr] = {}
 
     def analyze_source(self, source: str) -> ShapeAnalysisResult:
         """Analyze Python source for tensor shape errors."""
@@ -792,6 +796,8 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
 
     def _analyze_function(self, func: ast.FunctionDef):
         """Analyze a single function for shape errors."""
+        # Reset per-function variable origin tracking
+        self._var_origins = {}
         # Initialize parameter shapes from annotations or conventions
         for arg in func.args.args:
             name = arg.arg
@@ -843,8 +849,12 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
         self._check_expr_shapes(node.value)
         shape = self._infer_shape(node.value)
         for target in node.targets:
-            if isinstance(target, ast.Name) and shape:
-                self.shape_env = self.shape_env.set(target.id, shape)
+            if isinstance(target, ast.Name):
+                # Always record origin even when shape is unknown, so that
+                # downstream checks can inspect the RHS expression.
+                self._var_origins[target.id] = node.value
+                if shape:
+                    self.shape_env = self.shape_env.set(target.id, shape)
             elif isinstance(target, ast.Tuple) and isinstance(node.value, ast.Call):
                 # Handle unpacking: a, b, c = x.unbind(dim) or a, b = torch.chunk(x, 2)
                 self._handle_tuple_unpacking(target, node.value)
@@ -2035,6 +2045,16 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
         left = self._infer_shape(node.left)
         right = self._infer_shape(node.right)
         if not left or not right:
+            # Even with one unknown shape, flag the suspicious pattern where
+            # a 2D tensor with a concrete leading dim=1 is being combined with
+            # the output of a layer call (self.xxx(...)).  This indicates the
+            # programmer constructed a (1, hidden) bias and forgot that the
+            # activation it is added to is 3D+ (missing unsqueeze).
+            known = left if left is not None else right
+            unknown_node = node.right if left is not None else node.left
+            if known is not None:
+                self._check_suspicious_one_sided_broadcast(node, known,
+                                                           unknown_node)
             return
 
         self.constraints_generated += 1
@@ -2057,6 +2077,72 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
             # Check for suspicious ndim mismatch (potential missing unsqueeze)
             self._check_broadcast_ndim_mismatch(node, left, right)
         self.constraints_checked += 1
+
+    def _check_suspicious_one_sided_broadcast(
+            self,
+            node: ast.BinOp,
+            known_shape: "TensorShape",
+            unknown_node: ast.expr):
+        """Flag a potential missing-unsqueeze when only one operand shape is known.
+
+        Specifically: when the known operand is 2D with a concrete leading
+        dim=1 (the classic ``torch.zeros(1, hidden)`` bias pattern) and the
+        unknown operand is the result of a ``self.<layer>(...)`` call (i.e.
+        a module layer whose input ndim we cannot determine statically), we
+        emit a warning.  The combination strongly suggests the programmer
+        intended the bias to broadcast over a batch+sequence axis but
+        omitted one or more unsqueeze calls.
+        """
+        if not (known_shape.ndim == 2
+                and not known_shape.dims[0].is_symbolic
+                and known_shape.dims[0].value == 1):
+            return
+        # Resolve variable names through the origin map so that
+        # ``out + bias`` (where ``out = self.linear(...)``) is handled
+        # identically to ``self.linear(...) + bias``.
+        resolved = self._resolve_origin(unknown_node)
+        if not self._is_layer_call(resolved):
+            return
+        self.errors.append(ShapeError(
+            kind=ShapeErrorKind.BROADCAST_FAIL,
+            line=getattr(node, "lineno", 0),
+            col=getattr(node, "col_offset", 0),
+            message=(
+                f"Suspicious broadcast: 2D tensor {known_shape.pretty()} with "
+                f"leading dim=1 is being added to the output of a layer whose "
+                f"rank is unknown. If the layer output is 3D+ (e.g. batch × seq "
+                f"× hidden), this tensor needs unsqueeze(0) or unsqueeze(1) "
+                f"before the addition — consider torch.zeros(1, 1, ...) instead."
+            ),
+            function=self.func_name,
+            variable="",
+            actual_shape=known_shape,
+            expected_shape=known_shape,
+            severity="warning",
+        ))
+
+    def _resolve_origin(self, node: ast.expr) -> ast.expr:
+        """If *node* is a Name that was assigned from another expression,
+        return that expression; otherwise return *node* unchanged.
+
+        Follows at most one level of assignment to avoid chasing long
+        chains where the connection to a layer call is too tenuous.
+        """
+        if isinstance(node, ast.Name):
+            origin = self._var_origins.get(node.id)
+            if origin is not None:
+                return origin
+        return node
+
+    @staticmethod
+    def _is_layer_call(node: ast.expr) -> bool:
+        """Return True if *node* looks like ``self.<attr>(...)``."""
+        return (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "self"
+        )
 
     def _check_broadcast_z3(self, node: ast.BinOp,
                              a: TensorShape, b: TensorShape):
@@ -2490,7 +2576,14 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
     # ── Utility methods ────────────────────────────────────────────────
 
     def _shape_from_creation_args(self, node: ast.Call) -> Optional[TensorShape]:
-        """Extract shape from torch.zeros(d1, d2, ...) or torch.zeros((d1, d2))."""
+        """Extract shape from torch.zeros(d1, d2, ...) or torch.zeros((d1, d2)).
+
+        Falls back to a permissive parse that uses symbolic dims for any
+        argument that is not a literal constant or variable name (e.g.
+        ``x.size(-1)``, ``hidden * 2``).  This preserves rank information
+        and concrete values (such as leading ``1``s) so that the
+        missing-unsqueeze broadcast check can still fire.
+        """
         if not node.args:
             return None
 
@@ -2502,10 +2595,29 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                 return TensorShape.from_tuple(dims)
             return None
 
-        # torch.zeros(3, 4) — individual arguments
+        # torch.zeros(3, 4) — individual arguments (strict path first)
         dims = self._args_to_dims(node.args)
         if dims:
             return TensorShape.from_tuple(dims)
+
+        # Permissive fallback: keep concrete ints where available, use a
+        # unique symbolic name for expressions we cannot evaluate (e.g.
+        # ``x.size(-1)``).  This lets us at least track rank and leading-1
+        # dims for the missing-unsqueeze heuristic.
+        sym_counter = getattr(self, "_sym_counter", 0)
+        result_dims = []
+        for arg in node.args:
+            v = self._const_or_name(arg)
+            if v is not None:
+                result_dims.append(v)
+            else:
+                # Use a fresh symbolic name so different unknown dims are
+                # treated as independent (not aliased).
+                sym_counter += 1
+                result_dims.append(f"_sym{sym_counter}")
+        self._sym_counter = sym_counter
+        if result_dims:
+            return TensorShape.from_tuple(tuple(result_dims))
         return None
 
     def _extract_shape_literal(self, node: ast.expr) -> Optional[TensorShape]:
