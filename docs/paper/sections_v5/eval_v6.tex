@@ -323,7 +323,10 @@ classifier returns an empty caller-rely obligation, of which
 $5$ fire through a handler chain whose detected operators lie
 entirely inside $\mathrm{Cat}_{\mathrm{sound}}$ (the audited
 footprint) --- a small but non-zero in-theorem real-source
-catch population. The input-shape-contract rerun rates above
+catch population. Each of these five catches is itemised
+in \Cref{tab:audited-footprint-lean-pinning} and pinned to
+the specific Lean lemmas that discharge its per-step
+obligations. The input-shape-contract rerun rates above
 characterise the corpus's behaviour once a contract is supplied
 and serve as the falsifiability anchor for the $12$-row
 LW$\to$RP candidate table.
@@ -1600,6 +1603,29 @@ and $45/185$ outside-scope cells. The $45$ outside-scope
 column further decomposes as $15$ blocks where source-token
 detection identified no in-scope handler at all and $30$ blocks
 that exclusively touch out-of-catalogue operators.
+
+\paragraph{Per-block Lean-rule pinning of the
+$5/488$ audited-footprint unconditional catches.}
+The five unconditional \textsc{Refuted-Proof} catches whose
+detected handler set is entirely contained in
+$\mathrm{Cat}_{\mathrm{sound}}$ are listed individually in
+\Cref{tab:audited-footprint-lean-pinning}. For each catch we
+name every detected operator handler and pin it to the
+specific \texttt{applyOp\_sound\_*} lemma in the Lean
+development that discharges its per-step soundness obligation;
+the rightmost column records the per-block witness that no
+tested-only and no uncovered handler appears in the verdict's
+handler set, so the Subject Reduction theorem composes the
+listed per-step lemmas into the whole-forward-body verdict
+without invoking any non-audited rule. The five catches together
+cover seven distinct Lean rules
+(\texttt{cat}, \texttt{embed}, \texttt{expand},
+\texttt{layer\_norm}, \texttt{linear},
+\texttt{squeeze}, \texttt{view}), and the table is
+mechanically regenerated from the cached corpus and the
+handler-scope file in the reproducibility directory.
+
+\input{sections_v5/audited_footprint_lean_pinning_table}
 
 \paragraph{TCB fault-injection footprint.}
 Theorem~\ref{thm:soundness} carries the calculus, not the

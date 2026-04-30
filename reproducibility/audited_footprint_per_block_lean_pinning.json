@@ -1,0 +1,166 @@
+{
+  "_question": "Round-7 reviewer: per-block table pinning each of the 5 audited-footprint unconditional-RP catches to (a) the specific Lean rule discharged for each detected handler and (b) a witness that no non-audited handler appears in the verdict's handler set.",
+  "definition": "Each block is one of the 5 unconditional-RP catches in the empty-assume_M subset of the 488-block real-source corpus whose detected handler set is entirely contained in the Lean-audited + pen-and-paper sub-catalogue (no tested-only and no uncovered handlers). For each detected handler we name the specific applyOp_sound_* theorem in lean/TensorGuard/SoundnessV5.lean (or the interface theorem in V5OperatorRules.lean) that discharges the per-step soundness obligation; the module-level Subject Reduction theorem then composes these per-step lemmas to discharge the verdict for the whole forward body. The no_non_audited_handler_in_proof column is the explicit witness: it asserts that every handler the verdict's proof traverses is in the audited sub-catalogue, which is the per-block specialisation of the soundness footprint membership condition.",
+  "n_audited_footprint_blocks": 5,
+  "rows": [
+    {
+      "id": "timm__VisionTransformerDistilled__032a9d92",
+      "library": "timm",
+      "category": "vision_vit",
+      "loc": 97,
+      "n_lean": 4,
+      "n_pen_and_paper": 0,
+      "per_handler": [
+        {
+          "handler": "cat",
+          "scope": "lean_verified",
+          "lean_theorem": "applyOp_sound_cat",
+          "lean_file": "lean/TensorGuard/SoundnessV5.lean",
+          "lean_line": 121,
+          "pen_paper_rule": null
+        },
+        {
+          "handler": "expand",
+          "scope": "lean_verified",
+          "lean_theorem": "applyOp_sound_expand",
+          "lean_file": "lean/TensorGuard/SoundnessV5.lean",
+          "lean_line": 103,
+          "pen_paper_rule": null
+        },
+        {
+          "handler": "linear",
+          "scope": "lean_verified",
+          "lean_theorem": "applyOp_sound_linear_v5",
+          "lean_file": "lean/TensorGuard/SoundnessV5.lean",
+          "lean_line": 198,
+          "pen_paper_rule": null
+        },
+        {
+          "handler": "view",
+          "scope": "lean_verified",
+          "lean_theorem": "applyOp_sound_view_v5",
+          "lean_file": "lean/TensorGuard/SoundnessV5.lean",
+          "lean_line": 79,
+          "pen_paper_rule": null
+        }
+      ],
+      "no_non_audited_handler_in_proof": true
+    },
+    {
+      "id": "transformers__BloomPreTrainedModel__4a772e64",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 28,
+      "n_lean": 3,
+      "n_pen_and_paper": 0,
+      "per_handler": [
+        {
+          "handler": "embed",
+          "scope": "lean_verified",
+          "lean_theorem": "applyOp_sound_embed",
+          "lean_file": "lean/TensorGuard/SoundnessV5.lean",
+          "lean_line": 175,
+          "pen_paper_rule": null
+        },
+        {
+          "handler": "layer_norm",
+          "scope": "lean_verified",
+          "lean_theorem": "applyOp_sound_layer_norm",
+          "lean_file": "lean/TensorGuard/SoundnessV5.lean",
+          "lean_line": 179,
+          "pen_paper_rule": null
+        },
+        {
+          "handler": "linear",
+          "scope": "lean_verified",
+          "lean_theorem": "applyOp_sound_linear_v5",
+          "lean_file": "lean/TensorGuard/SoundnessV5.lean",
+          "lean_line": 198,
+          "pen_paper_rule": null
+        }
+      ],
+      "no_non_audited_handler_in_proof": true
+    },
+    {
+      "id": "transformers__ElectraForPreTraining__74bdacae",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 99,
+      "n_lean": 1,
+      "n_pen_and_paper": 1,
+      "per_handler": [
+        {
+          "handler": "squeeze",
+          "scope": "lean_verified",
+          "lean_theorem": "applyOp_sound_squeeze",
+          "lean_file": "lean/TensorGuard/SoundnessV5.lean",
+          "lean_line": 238,
+          "pen_paper_rule": null
+        },
+        {
+          "handler": "view",
+          "scope": "lean_verified",
+          "lean_theorem": "applyOp_sound_view_v5",
+          "lean_file": "lean/TensorGuard/SoundnessV5.lean",
+          "lean_line": 79,
+          "pen_paper_rule": null
+        }
+      ],
+      "no_non_audited_handler_in_proof": true
+    },
+    {
+      "id": "transformers__FalconPreTrainedModel__55936532",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 40,
+      "n_lean": 3,
+      "n_pen_and_paper": 0,
+      "per_handler": [
+        {
+          "handler": "embed",
+          "scope": "lean_verified",
+          "lean_theorem": "applyOp_sound_embed",
+          "lean_file": "lean/TensorGuard/SoundnessV5.lean",
+          "lean_line": 175,
+          "pen_paper_rule": null
+        },
+        {
+          "handler": "layer_norm",
+          "scope": "lean_verified",
+          "lean_theorem": "applyOp_sound_layer_norm",
+          "lean_file": "lean/TensorGuard/SoundnessV5.lean",
+          "lean_line": 179,
+          "pen_paper_rule": null
+        },
+        {
+          "handler": "linear",
+          "scope": "lean_verified",
+          "lean_theorem": "applyOp_sound_linear_v5",
+          "lean_file": "lean/TensorGuard/SoundnessV5.lean",
+          "lean_line": 198,
+          "pen_paper_rule": null
+        }
+      ],
+      "no_non_audited_handler_in_proof": true
+    },
+    {
+      "id": "transformers__WhisperModel__2cb724a8",
+      "library": "transformers",
+      "category": "transformer",
+      "loc": 190,
+      "n_lean": 1,
+      "n_pen_and_paper": 0,
+      "per_handler": [
+        {
+          "handler": "expand",
+          "scope": "lean_verified",
+          "lean_theorem": "applyOp_sound_expand",
+          "lean_file": "lean/TensorGuard/SoundnessV5.lean",
+          "lean_line": 103,
+          "pen_paper_rule": null
+        }
+      ],
+      "no_non_audited_handler_in_proof": true
+    }
+  ]
+}

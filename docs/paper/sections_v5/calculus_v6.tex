@@ -309,6 +309,20 @@ discharge, not a derivation. We list it explicitly as part of the
 trusted base of \Cref{thm:soundness} restricted to
 $\mathrm{Cat}_{\mathrm{pen}}$, and we do not claim refutation
 soundness on this sub-catalogue follows from a closed argument.
+A complementary AST-level certificate, regenerated from the
+analyser source on each build, classifies each of the $13$
+pen-and-paper handlers into the \textsc{T-Identity} or
+\textsc{T-Broadcast} schema and records evidence line numbers
+and a content hash for audit; the resulting partition is
+$10$ \textsc{T-Identity} handlers (\texttt{relu}, \texttt{gelu},
+\texttt{silu}, \texttt{tanh}, \texttt{sigmoid},
+\texttt{softmax}, \texttt{detach}, \texttt{flatten},
+\texttt{pad}, \textsc{T-Reduce}) plus $3$ \textsc{T-Broadcast}
+handlers (\texttt{elementwise\_binary}, \texttt{where},
+\texttt{einsum}). The classifier ships under the
+reproducibility directory with a $18$-test pytest suite and is
+re-exercised by the hard-constraint audit target on every
+build.
 (b) that the Z3-model values are non-negative integers compatible
 with $\mathbb{N}$-valued dim refinements (true by construction of
 the SMT fragment of \Cref{sec:calculus}); and (c) that the

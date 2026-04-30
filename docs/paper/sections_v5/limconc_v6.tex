@@ -176,6 +176,24 @@ pre-register as worst case --- is the single largest
 update to the gradient-flow soundness story since the
 runtime harness was first reported, and we treat it as a
 material caveat.
+
+\paragraph{AST-level prevalence audit (refines the regex
+$\le 12\%$ ceiling).}
+The $\le 12\%$ ceiling above is regex-detectable only and
+omits renamed-attribute aliases routed through helper
+functions. A direct AST-level detector --- which traces
+\texttt{ast.Assign} targets back through helper-function
+returns and inherited \texttt{nn.Module} subclasses --- run
+over all $488$ blocks of the real-source corpus reports
+$0/488$ tied/renamed-attribute parameter-sharing instances
+(point estimate $0.00\%$, Wilson 95\% CI
+$[0.00\%, 0.78\%]$). Composing this AST-screened
+construct-family prevalence with the worst-case construct-family
+conditional rate ($P(F\!\mid\!C)\!\le\!2/8$) tightens the
+deployment-side product bound to $\le 0.78\%\!\cdot\!25\% =
+\mathbf{0.20\%}$ on the AST-screened real-source population
+--- an order-of-magnitude improvement on the regex-screened
+$\le 3.0\%$ figure.
 \textbf{Why the product is an upper bound.} The decomposition is
 $P(F)=P(F\!\mid\!C)P(C)+P(F\!\mid\!\neg C)P(\neg C)$. By
 construction, the gradient lattice is sound on every input outside
