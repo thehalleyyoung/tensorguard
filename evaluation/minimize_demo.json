@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "command": "python3 evaluation/minimize.py",
+    "contract": "preserves predicate truth, not mechanism; locally 1-minimal under op removal and coordinate-wise dim shrink",
+    "generated_by": "evaluation/minimize.py",
+    "predicate": "agreement_bug"
+  },
+  "minimal": {
+    "input_shape": [
+      1,
+      1
+    ],
+    "op_count": 1,
+    "ops": [
+      {
+        "in_override": 2,
+        "k": "linear",
+        "out": 1
+      }
+    ],
+    "predicate_holds": true,
+    "runtime_raises": true,
+    "source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l1 = nn.Linear(2, 1)\n\n    def forward(self, x):\n        h = x\n        h = self.l1(h)\n        return h\n",
+    "tensorguard_refutes": true
+  },
+  "reduction": {
+    "ops_after": 1,
+    "ops_before": 12,
+    "ops_removed": 11
+  },
+  "seed": {
+    "input_shape": [
+      8,
+      32
+    ],
+    "op_count": 12,
+    "predicate_holds": true
+  }
+}

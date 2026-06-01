@@ -534,6 +534,30 @@ the artifact rather than hidden. The committed artifacts live in
 `evaluation/neg_fuzz.json` and `evaluation/neg_fuzz.md` and are pinned by
 `tests/test_neg_fuzz.py`.
 
+### Minimal-reproducer shrinker
+
+`evaluation/minimize.py` is a delta-debugging minimizer for `nn.Module`s,
+generic over a predicate that captures the TensorGuard/runtime relation:
+`false_positive` (TG refutes but the model runs clean), `false_negative` (TG
+accepts but the model raises), or `agreement_bug` (both flag the bug). It
+ddmin-removes layers and then coordinate-shrinks every integer dimension while
+preserving the predicate, yielding a minimal reproducing module.
+
+```bash
+PYTHONPATH=. python3 evaluation/minimize.py     # or: make minimize
+```
+
+Because earlier steps found no real false positives or false negatives, there
+is no natural disagreement corpus yet, so the live demo shrinks an
+`agreement_bug` — a genuine caught shape fault — from a twelve-layer chain down
+to a single faulted `Linear` on a one-feature input, removing every inessential
+layer while TensorGuard still refutes and the model still raises. The
+`false_positive`/`false_negative` paths are covered by unit tests with a
+synthetic oracle. The minimizer preserves the predicate's truth, not its
+mechanism, and is locally minimal under op removal and coordinate-wise dim
+shrinking. Committed artifacts live in `evaluation/minimize_demo.json` and
+`evaluation/minimize_demo.md` and are pinned by `tests/test_minimize.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
@@ -564,6 +588,7 @@ in `lean/TensorGuard/` live inside docstring comments.
 | Latent-bug recall vs the strongest dynamic baseline            | `evaluation/hard_recall.py`                             |
 | Differential fuzz false-positive hunt (random valid models)    | `evaluation/diff_fuzz.py`                               |
 | Negative-fuzz false-negative hunt (injected faults)            | `evaluation/neg_fuzz.py`                                |
+| Minimal-reproducer shrinker (delta-debug disagreements)        | `evaluation/minimize.py`                                |
 | 60-bug headline RP reproducer (single command)                 | `reproducibility/reproduce_headline_60bug.py`           |
 | Verdict reclassification (RP / CV / LW)                        | `experiments_v5/run_verdict_reclassification.py`        |
 | 10-bug real-public corpus                                      | `experiments_v5/v8/verify_real_bugs.py`                 |

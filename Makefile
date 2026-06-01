@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -29,6 +29,7 @@ help:
 	@echo "  hard-recall      Regenerate the latent-bug recall comparison vs the strongest dynamic baseline"
 	@echo "  diff-fuzz        Regenerate the differential fuzz false-positive hunt over random valid models"
 	@echo "  neg-fuzz         Regenerate the negative-fuzz false-negative hunt (inject faults, assert caught)"
+	@echo "  minimize         Regenerate the minimal-reproducer shrinker demo (delta-debug a caught fault)"
 	@echo "  audit            Run the numeric-claim audit over committed artifacts"
 	@echo "  test             Run the pytest suite"
 
@@ -68,6 +69,9 @@ diff-fuzz:
 
 neg-fuzz:
 	$(PYTHON) evaluation/neg_fuzz.py
+
+minimize:
+	$(PYTHON) evaluation/minimize.py
 
 audit:
 	$(PYTHON) reproducibility/audit_numeric_claims.py
