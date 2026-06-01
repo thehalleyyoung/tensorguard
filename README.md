@@ -778,6 +778,30 @@ post-index shape (for example a `gather` or `narrow` result feeding a `Linear`).
 Real torchvision models stay free of new false positives. See
 `tests/test_indexing_gather_precise.py`.
 
+### Precise attention / scaled_dot_product_attention
+
+The modern functional core of attention, `F.scaled_dot_product_attention`, is
+now modelled with exact shape semantics instead of being dropped as a no-op
+(`nn.MultiheadAttention` the layer was already handled, including its
+`embed_dim % num_heads` check). For `query` of shape `(*batch, L, E)`, `key` of
+`(*batch, S, E)` and `value` of `(*batch, S, Ev)`, the output is `(*batch, L,
+Ev)` — the query shape with its last dimension replaced by the value's last
+dimension.
+
+`compute_sdpa_shape` is differential-tested against
+`torch.scaled_dot_product_attention`. A violation is raised only on a provable
+concrete mismatch: the query/key embed dimension (the last dim) or the key/value
+sequence length (the second-to-last dim). Leading batch and head dimensions are
+deliberately not checked — SDPA broadcasts them and grouped-query attention
+allows unequal head counts — so grouped-query attention stays free of false
+positives. Because the output shape is exact, downstream projections are checked
+against the post-attention shape.
+
+This is proven end-to-end on a from-scratch multi-head attention block (linear
+projections, head reshape/transpose, SDPA, output projection) and on a real timm
+Vision Transformer whose traced graph contains a dozen SDPA nodes. See
+`tests/test_attention_sdpa_precise.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

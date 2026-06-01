@@ -763,9 +763,62 @@ def compute_expand_shape(
     return TensorShape(tuple(out)), None
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# Tensor Shape Analyzer: the main analysis engine
-# ═══════════════════════════════════════════════════════════════════════════
+def compute_sdpa_shape(
+    query: "TensorShape", key: "TensorShape", value: "TensorShape"
+) -> Tuple[Optional["TensorShape"], Optional[str]]:
+    """Compute the output shape of ``scaled_dot_product_attention(q, k, v)``.
+
+    Implements PyTorch's SDPA contract:
+
+      * ``query`` is ``(*batch, L, E)``, ``key`` is ``(*batch, S, E)`` and
+        ``value`` is ``(*batch, S, Ev)``.
+      * The output is ``(*batch, L, Ev)`` — i.e. the query shape with its last
+        dimension replaced by the value's last dimension.
+
+    Two constraints are checked when the relevant dims are concrete (sound
+    posture — symbolic dims abstain):
+
+      * ``query.size(-1) == key.size(-1)``   (the head/embed dim ``E``);
+      * ``key.size(-2) == value.size(-2)``   (the source sequence length ``S``).
+
+    Batch / head leading dimensions are *not* checked here: SDPA broadcasts them
+    and grouped-query attention (``enable_gqa``) deliberately allows unequal
+    head counts, so flagging a leading-dim mismatch would risk false positives.
+
+    Returns ``(shape, None)`` on success or ``(None, message)`` when a checked
+    constraint is provably violated.
+    """
+    if query.ndim < 2 or key.ndim < 2 or value.ndim < 2:
+        # Not a well-formed attention call; abstain on shape (take query).
+        return query, None
+
+    q_e = query.dims[-1]
+    k_e = key.dims[-1]
+    k_s = key.dims[-2]
+    v_s = value.dims[-2]
+    v_ev = value.dims[-1]
+
+    # E: query last dim must equal key last dim.
+    if (not q_e.is_symbolic and not k_e.is_symbolic
+            and isinstance(q_e.value, int) and isinstance(k_e.value, int)
+            and q_e.value != k_e.value):
+        return None, (
+            f"scaled_dot_product_attention: query embed dim ({q_e.value}) must "
+            f"match key embed dim ({k_e.value})"
+        )
+
+    # S: key source length must equal value source length.
+    if (not k_s.is_symbolic and not v_s.is_symbolic
+            and isinstance(k_s.value, int) and isinstance(v_s.value, int)
+            and k_s.value != v_s.value):
+        return None, (
+            f"scaled_dot_product_attention: key sequence length ({k_s.value}) "
+            f"must match value sequence length ({v_s.value})"
+        )
+
+    # Output: query shape with the last dim replaced by value's last dim.
+    out_dims = list(query.dims[:-1]) + [v_ev]
+    return TensorShape(tuple(out_dims)), None
 
 @dataclass
 class ShapeAnalysisResult:

@@ -122,6 +122,7 @@ from src.tensor_shapes import (
     compute_broadcast_shape,
     compute_expand_shape,
     compute_reshape_shape,
+    compute_sdpa_shape,
 )
 
 
@@ -306,6 +307,7 @@ class OpKind(Enum):
     NARROW = auto()           # narrow(input, dim, start, length)
     SELECT_DIM = auto()       # select(input, dim, index) → removes dim
     TAKE = auto()             # take(input, index) → index.shape
+    SDPA = auto()             # F.scaled_dot_product_attention(q, k, v)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -8411,6 +8413,8 @@ class ConstraintVerifier:
             OpKind.SELECT_DIM, OpKind.TAKE,
         ):
             self._apply_indexing(new_state.shape_env, step, violations)
+        elif step.op == OpKind.SDPA:
+            self._apply_sdpa(new_state.shape_env, step, violations)
 
         # ---- Propagate device if not explicitly set ----------------------
         if step.output not in new_state.device_map:
@@ -8853,6 +8857,44 @@ class ConstraintVerifier:
                 shape_env[step.output] = TensorShape(tuple(new_dims))
             else:
                 shape_env[step.output] = inp_shape
+
+    def _apply_sdpa(
+        self,
+        shape_env: Dict[str, "TensorShape"],
+        step: ComputationStep,
+        violations: Optional[List[SafetyViolation]],
+    ) -> None:
+        """Shape effect of F.scaled_dot_product_attention(query, key, value).
+
+        Output = query shape with its last dim replaced by value's last dim.
+        Emits a violation (only on concrete, provable mismatches) for a query/key
+        embed-dim mismatch or a key/value sequence-length mismatch. ``violations
+        is None`` (the abstract path) suppresses emission.
+        """
+        if len(step.inputs) < 3:
+            # Fewer than q,k,v captured (e.g. some args were non-tensor) —
+            # propagate the first input's shape as a best-effort fallback.
+            if step.inputs and step.inputs[0] in shape_env:
+                shape_env[step.output] = shape_env[step.inputs[0]]
+            return
+        q_name, k_name, v_name = step.inputs[0], step.inputs[1], step.inputs[2]
+        q = shape_env.get(q_name)
+        k = shape_env.get(k_name)
+        v = shape_env.get(v_name)
+        if q is None or k is None or v is None:
+            if q is not None:
+                shape_env[step.output] = q
+            return
+        out_shape, err = compute_sdpa_shape(q, k, v)
+        if err is not None and violations is not None:
+            violations.append(SafetyViolation(
+                kind="shape_incompatible", step_index=-1, step=step,
+                message=err,
+                tensor_a=q_name, tensor_b=k_name,
+                shape_a=q, shape_b=k,
+            ))
+        if out_shape is not None:
+            shape_env[step.output] = out_shape
 
     def _apply_reshape(
         self, state: ModelState, step: ComputationStep,
@@ -10077,6 +10119,8 @@ class SymbolicShapePropagator:
             OpKind.SELECT_DIM, OpKind.TAKE,
         ):
             self._apply_indexing(env, step, None)
+        elif step.op == OpKind.SDPA:
+            self._apply_sdpa(env, step, None)
 
         elif step.op in (OpKind.RETURN, OpKind.CUSTOM):
             pass

@@ -416,6 +416,8 @@ def _function_to_op(fn) -> Optional[OpKind]:
         F.interpolate: OpKind.INTERPOLATE,
         F.pad: OpKind.PAD,
     })
+    if hasattr(F, "scaled_dot_product_attention"):
+        fn_map[F.scaled_dot_product_attention] = OpKind.SDPA
     # Handle operator module
     import operator
     fn_map.update({
