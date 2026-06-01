@@ -38,10 +38,20 @@ measured, and reproducible.
    constraints (no solver work / witnesses) while enabled ones do; post-hoc
    filter kept only as a defensive net. Tests in
    `tests/test_solver_domain_gating.py`.*
-3. Replace the flat `feature_ablation.json` line with a corpus where each
+3. [x] Replace the flat `feature_ablation.json` line with a corpus where each
    domain (Shape/Device/Phase/Stride/Permutation) demonstrably contributes at
    least one bug the L1 shape view misses; if a domain never contributes,
    document it as "diagnostic-only" rather than "verification".
+   *Done: built a curated per-domain corpus (`experiments_v5/domain_corpus/`
+   + `domain_corpus_manifest.json`) and a marginal-contribution runner
+   (`experiments_v5/run_domain_contribution.py` → `domain_contribution.json`).
+   Real-code result: shape (base) refutes `shape_01`; **device** adds 2 bugs
+   (`device_01`, `device_02`) the shape view misses; **gradient** adds 2 bugs
+   (`grad_01`, `grad_02`); **phase** adds 0 → classified diagnostic-only.
+   Stride/permutation are sub-aspects of the shape domain (no separate solver
+   encoder), so they are covered by the shape view. The old flat
+   `feature_ablation.json` ladder is superseded (notes added in its runner).
+   Pinned by `tests/test_domain_contribution.py` (11 tests).*
 4. Audit every numeric claim in `README.md`, `neurips.tex`, and the workshop
    paper against a single regeneration script; delete or qualify any number
    that cannot be rerun from the current tree.

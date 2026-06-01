@@ -1,0 +1,71 @@
+{
+  "description": "Per-domain contribution corpus for TensorGuard. Each entry is a minimal nn.Module exercising exactly one verification domain. The goal (100_STEPS.md Step 3) is to show that every VERIFICATION domain demonstrably contributes at least one bug that the base shape (L1) view misses, and to document any domain that never contributes as DIAGNOSTIC-ONLY.",
+  "domains": {
+    "shape": "verification (base L0/L1 view)",
+    "device": "verification (requires check_devices)",
+    "gradient": "verification (requires check_gradients)",
+    "phase": "diagnostic-only (registers well-formedness constraints; does not refute)"
+  },
+  "entries": [
+    {
+      "id": "shape_01",
+      "domain": "shape",
+      "repro_file": "experiments_v5/domain_corpus/shape_01_linear_in_features.py",
+      "is_buggy": true,
+      "expected_refuted_by": "base",
+      "bug_class": "Linear in_features mismatch (512 vs 768)",
+      "real_error": "mat1 and mat2 shapes cannot be multiplied / size mismatch",
+      "provenance": "canonical shape-mismatch pattern"
+    },
+    {
+      "id": "device_01",
+      "domain": "device",
+      "repro_file": "experiments_v5/domain_corpus/device_01_buffer_cuda_input_cpu.py",
+      "is_buggy": true,
+      "expected_refuted_by": "device",
+      "bug_class": "cuda registered buffer added to cpu input",
+      "real_error": "Expected all tensors to be on the same device",
+      "provenance": "canonical device-placement pattern"
+    },
+    {
+      "id": "device_02",
+      "domain": "device",
+      "repro_file": "experiments_v5/domain_corpus/device_02_cuda_move_in_forward.py",
+      "is_buggy": true,
+      "expected_refuted_by": "device",
+      "bug_class": "in-forward .cuda() move on one operand only",
+      "real_error": "Expected all tensors to be on the same device",
+      "provenance": "canonical device-placement pattern"
+    },
+    {
+      "id": "grad_01",
+      "domain": "gradient",
+      "repro_file": "experiments_v5/domain_corpus/grad_01_detach_on_output.py",
+      "is_buggy": true,
+      "expected_refuted_by": "gradient",
+      "bug_class": ".detach() on the only path to the output",
+      "real_error": "element 0 of tensors does not require grad and does not have a grad_fn",
+      "provenance": "canonical gradient-flow pattern"
+    },
+    {
+      "id": "grad_02",
+      "domain": "gradient",
+      "repro_file": "experiments_v5/domain_corpus/grad_02_detached_return.py",
+      "is_buggy": true,
+      "expected_refuted_by": "gradient",
+      "bug_class": "forward returns a detached tensor",
+      "real_error": "element 0 of tensors does not require grad and does not have a grad_fn",
+      "provenance": "canonical gradient-flow pattern"
+    },
+    {
+      "id": "phase_01",
+      "domain": "phase",
+      "repro_file": "experiments_v5/domain_corpus/phase_01_batchnorm_dropout.py",
+      "is_buggy": false,
+      "expected_refuted_by": "none",
+      "bug_class": "train/eval phase-sensitive layer (diagnostic-only)",
+      "real_error": "n/a (phase domain does not refute in the shipped checker)",
+      "provenance": "canonical phase-sensitive module; documents DIAGNOSTIC-ONLY status"
+    }
+  ]
+}

@@ -36,13 +36,20 @@ runtime errors in ML codebases before any code runs.
 - **CEGAR predicate discovery** — a counterexample-guided refinement
   loop discovers shape predicates automatically and stores them as
   `cegar_predicates` metadata on the verifier result, available for
-  downstream consumers (no manual specification needed).  Note: the
-  discovered predicates are recorded as metadata only; they are not
-  re-injected into the refutation set as additional `Bug` objects in
-  the current implementation, so the headline RP count does not depend
-  on `--cegar-iterations` (the per-feature ablation in
-  `experiments_v5/feature_ablation.json` confirms this).  See
-  *Known limitations* below.
+  downstream consumers (no manual specification needed).  In addition,
+  when the predicates discovered across refinement rounds are *jointly
+  unsatisfiable* the conflict is promoted to a real
+  `Bug(category=cegar_refined_contract)`, so `--cegar-iterations N` can
+  change the reported bug set.  See *Known limitations* below.
+- **Per-domain verification** — beyond shape, the device and gradient
+  domains each refute real bugs that the base shape view misses (a cuda
+  buffer added to a cpu input; a `.detach()` that severs gradient flow).
+  The phase domain is **diagnostic-only** (it registers train/eval
+  well-formedness but does not refute).  This is demonstrated end-to-end
+  by `experiments_v5/run_domain_contribution.py` over the curated corpus
+  in `experiments_v5/domain_corpus/` (results committed to
+  `experiments_v5/domain_contribution.json`), and pinned by
+  `tests/test_domain_contribution.py`.
 - **Z3-backed** — all shape constraints are discharged by the Z3 SMT solver
   for soundness (0% false positives in `--high-confidence` mode)
 - **SARIF 2.1.0 output** — integrates with GitHub Code Scanning / Advanced Security

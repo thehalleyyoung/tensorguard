@@ -1,0 +1,194 @@
+{
+  "meta": {
+    "timestamp": "2026-06-01T18:46:37Z",
+    "torch_version": "2.9.1",
+    "python_version": "3.14.3",
+    "method": "Each domain's marginal contribution = buggy modules the base shape view leaves SAFE but the domain flag flips to REFUTED."
+  },
+  "levels": [
+    "base",
+    "+device",
+    "+phase",
+    "+grad"
+  ],
+  "results": {
+    "shape_01": {
+      "base": {
+        "elapsed_ms": 34.8,
+        "exception": null,
+        "refuted": true,
+        "bug_count": 2
+      },
+      "+device": {
+        "elapsed_ms": 7.3,
+        "exception": null,
+        "refuted": true,
+        "bug_count": 2
+      },
+      "+phase": {
+        "elapsed_ms": 7.6,
+        "exception": null,
+        "refuted": true,
+        "bug_count": 2
+      },
+      "+grad": {
+        "elapsed_ms": 7.6,
+        "exception": null,
+        "refuted": true,
+        "bug_count": 2
+      }
+    },
+    "device_01": {
+      "base": {
+        "elapsed_ms": 73.7,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      },
+      "+device": {
+        "elapsed_ms": 20.6,
+        "exception": null,
+        "refuted": true,
+        "bug_count": 2
+      },
+      "+phase": {
+        "elapsed_ms": 11.4,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      },
+      "+grad": {
+        "elapsed_ms": 10.0,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      }
+    },
+    "device_02": {
+      "base": {
+        "elapsed_ms": 50.2,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      },
+      "+device": {
+        "elapsed_ms": 40.8,
+        "exception": null,
+        "refuted": true,
+        "bug_count": 2
+      },
+      "+phase": {
+        "elapsed_ms": 14.2,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      },
+      "+grad": {
+        "elapsed_ms": 13.8,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      }
+    },
+    "grad_01": {
+      "base": {
+        "elapsed_ms": 15.5,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      },
+      "+device": {
+        "elapsed_ms": 14.9,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      },
+      "+phase": {
+        "elapsed_ms": 16.0,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      },
+      "+grad": {
+        "elapsed_ms": 16.8,
+        "exception": null,
+        "refuted": true,
+        "bug_count": 1
+      }
+    },
+    "grad_02": {
+      "base": {
+        "elapsed_ms": 13.8,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      },
+      "+device": {
+        "elapsed_ms": 13.8,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      },
+      "+phase": {
+        "elapsed_ms": 11.5,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      },
+      "+grad": {
+        "elapsed_ms": 12.3,
+        "exception": null,
+        "refuted": true,
+        "bug_count": 1
+      }
+    },
+    "phase_01": {
+      "base": {
+        "elapsed_ms": 10.6,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      },
+      "+device": {
+        "elapsed_ms": 10.4,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      },
+      "+phase": {
+        "elapsed_ms": 17.9,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      },
+      "+grad": {
+        "elapsed_ms": 12.0,
+        "exception": null,
+        "refuted": false,
+        "bug_count": 0
+      }
+    }
+  },
+  "summary": {
+    "marginal_contribution": {
+      "shape": [
+        "shape_01"
+      ],
+      "device": [
+        "device_01",
+        "device_02"
+      ],
+      "phase": [],
+      "gradient": [
+        "grad_01",
+        "grad_02"
+      ]
+    },
+    "classification": {
+      "shape": "verification",
+      "device": "verification",
+      "phase": "diagnostic-only",
+      "gradient": "verification"
+    }
+  }
+}

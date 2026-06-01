@@ -4,6 +4,18 @@ run_feature_ablation.py
 
 Per-feature ablation table for TensorGuard v5.
 
+SUPERSEDED (see experiments_v5/run_domain_contribution.py)
+---------------------------------------------------------
+This ladder was produced when `check_devices` / `check_phases` /
+`check_gradients` were accepted by the API but never forwarded to the
+solver, and CEGAR predicates were metadata-only. Rows L1-L5 therefore
+reported identical ("flat") verdict counts. Steps 1-2 of `100_STEPS.md`
+fixed both no-ops; Step 3 replaced the flat ladder with a per-domain
+*marginal contribution* experiment (`run_domain_contribution.py`) that
+shows each verification domain catching at least one bug the shape view
+misses, and documents the phase domain as diagnostic-only. The historical
+notes below are retained for provenance only.
+
 ABLATION STRATEGY DECISION
 --------------------------
 After inspecting `src/v5/__init__.py`, `src/v5/attention_norms.py`, and
