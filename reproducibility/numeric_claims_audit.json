@@ -1,9 +1,9 @@
 {
   "meta": {
     "note": "Audits committed regeneration artifacts; not a fresh regeneration (see module docstring).",
-    "n_claims": 12,
+    "n_claims": 14,
     "counts": {
-      "VERIFIED": 10,
+      "VERIFIED": 12,
       "QUALIFIED_REGIME": 1,
       "QUALIFIED_ENV": 1
     }
@@ -142,19 +142,45 @@
       ],
       "actual": 0,
       "status": "VERIFIED"
+    },
+    {
+      "id": "real_benchmarks_16_of_16",
+      "regime": "frozen real_benchmarks corpus: TG verdict vs frozen label",
+      "claim": "16/16 verdicts match frozen labels",
+      "artifacts": [
+        "real_benchmarks_audit.json"
+      ],
+      "actual": [
+        16,
+        16
+      ],
+      "status": "VERIFIED"
+    },
+    {
+      "id": "real_benchmarks_6_of_8_runtime",
+      "regime": "frozen real_benchmarks corpus: buggy models raising a real eager-PyTorch RuntimeError on this host (device bug is CUDA-only, gradient-detach bug is silent)",
+      "claim": "6/8 buggy raise a real eager RuntimeError",
+      "artifacts": [
+        "real_benchmarks_audit.json"
+      ],
+      "actual": [
+        6,
+        8
+      ],
+      "status": "VERIFIED"
     }
   ],
   "readme_uncovered_tokens": [],
   "readme_ignored_catalogue_rows": [
     {
-      "line": 388,
+      "line": 449,
       "tokens": [
         "80%"
       ],
       "reason": "script-catalogue row (regen script named in-row)"
     },
     {
-      "line": 389,
+      "line": 450,
       "tokens": [
         "2/3"
       ],

@@ -167,8 +167,27 @@ measured, and reproducible.
    generator determinism, manifest well-formedness, provenance, and a
    per-item TG-verdict-matches-frozen-label parametrization). Referenced from
    README.*
-10. Stand up a reproducibility harness (`make reproduce`) that regenerates
+10. [x] Stand up a reproducibility harness (`make reproduce`) that regenerates
     every paper table and README number from scratch in CI.
+    *Done. Added a `Makefile` (`reproduce`, `reproduce-check`, `reproduce-full`,
+    `docs`, `corpus`, `headline`, `audit`, `test`, `help`) driving a single
+    Python orchestrator `reproducibility/reproduce_all.py`. `make reproduce`
+    regenerates — from source, in dependency order — the generated spec
+    docs/tables (`SOUNDNESS_CONTRACT.md`, `VERIFIABLE_FRAGMENT.md`,
+    `operator_confidence_table.json`), the frozen benchmark corpus + its audit
+    artifact (`real_benchmarks/`), and the headline 60-bug Refuted-Proof figure,
+    then runs `audit_numeric_claims.py`, which recomputes every `x/y` and `%`
+    token in README from the freshly regenerated artifacts (audit PASS, 12
+    VERIFIED). `make reproduce-check` adds a determinism proof: regenerating the
+    byte-deterministic artifacts yields zero git diff (the headline JSON is
+    excluded because it records a volatile `elapsed_s`; its scientific content
+    is instead validated by the audit's recompute). Honest scope: CUDA/HF/Lean
+    artifacts are validated-not-regenerated (`QUALIFIED_ENV`, command recorded),
+    regenerable via `make reproduce-full`. Pinned by
+    `tests/test_reproduce_harness.py` (end-to-end run + audit-pass,
+    byte-identical-to-HEAD determinism, volatile-field exclusion, path-list
+    consistency, and a `make`-guarded `make reproduce-check` integration test).
+    Referenced from README.*
 
 ## Phase 2 — Correctness core: precision and recall on real PyTorch
 

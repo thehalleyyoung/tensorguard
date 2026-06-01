@@ -332,6 +332,33 @@ MIT — see [LICENSE](LICENSE) for details.
 The released benchmark artefacts and reproducibility scripts live
 under `experiments_v5/` and `reproducibility/`.
 
+### One command: `make reproduce`
+
+The whole CI-reproducible pipeline is wired into a single target:
+
+```bash
+make reproduce          # regenerate every CI-reproducible artifact + audit
+make reproduce-check    # also assert byte-identical regeneration (no git diff)
+```
+
+`make reproduce` regenerates, from source and in dependency order, the
+generated spec docs/tables (`SOUNDNESS_CONTRACT.md`,
+`VERIFIABLE_FRAGMENT.md`, `operator_confidence_table.json`), the frozen
+benchmark corpus and its audit artifact (`real_benchmarks/`), and the
+headline 60-bug Refuted-Proof figure — then runs the numeric-claim audit,
+which recomputes every `x/y` ratio and `%` token in `README.md` from the
+freshly regenerated artifacts. `make reproduce-check` additionally proves
+determinism: regenerating the byte-deterministic artifacts must produce no
+git diff. The orchestrator is `reproducibility/reproduce_all.py`, pinned by
+`tests/test_reproduce_harness.py`.
+
+**Honest scope.** Artifacts that need CUDA, a HuggingFace download, or a
+Lean toolchain cannot be rebuilt in a standard CI box; their committed
+copies are validated by the numeric audit (reported as `QUALIFIED_ENV`,
+with the regeneration command recorded) rather than regenerated in place.
+`make reproduce-full` regenerates those too in an environment that has the
+required toolchains.
+
 ### One-command reproduction of the headline RP figure
 
 The paper headline "**Refuted-Proof on 53/60** historical bugs" and
