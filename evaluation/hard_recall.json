@@ -1,0 +1,160 @@
+{
+  "by_family": {
+    "path_flag": {
+      "bl_caught": 0,
+      "tg_caught": 3,
+      "total": 3
+    },
+    "phase_eval": {
+      "bl_caught": 0,
+      "tg_caught": 3,
+      "total": 3
+    },
+    "silent_freeze": {
+      "bl_caught": 0,
+      "tg_caught": 0,
+      "total": 2
+    }
+  },
+  "meta": {
+    "command": "python3 evaluation/hard_recall.py",
+    "design": "every bug is proven genuine by exercising the latent fault and is proven silent under one seeded train() forward+backward pass; static analysis is compared against that strongest dynamic baseline on latent bugs it cannot observe",
+    "families": [
+      "path_flag",
+      "phase_eval",
+      "silent_freeze"
+    ],
+    "generated_by": "evaluation/hard_recall.py",
+    "n_bugs": 8,
+    "strongest_baseline": "runtime_backward"
+  },
+  "per_model": [
+    {
+      "family": "phase_eval",
+      "genuine_bug": "eval:RuntimeError",
+      "id": "phase_eval_view",
+      "runtime_backward": {
+        "caught": false,
+        "detail": "ran_clean"
+      },
+      "tensorguard": {
+        "bug_count": 1,
+        "caught": true
+      }
+    },
+    {
+      "family": "phase_eval",
+      "genuine_bug": "eval:RuntimeError",
+      "id": "phase_eval_view37",
+      "runtime_backward": {
+        "caught": false,
+        "detail": "ran_clean"
+      },
+      "tensorguard": {
+        "bug_count": 1,
+        "caught": true
+      }
+    },
+    {
+      "family": "phase_eval",
+      "genuine_bug": "eval:RuntimeError",
+      "id": "phase_eval_reshape",
+      "runtime_backward": {
+        "caught": false,
+        "detail": "ran_clean"
+      },
+      "tensorguard": {
+        "bug_count": 1,
+        "caught": true
+      }
+    },
+    {
+      "family": "path_flag",
+      "genuine_bug": "branch:RuntimeError",
+      "id": "path_flag_view",
+      "runtime_backward": {
+        "caught": false,
+        "detail": "ran_clean"
+      },
+      "tensorguard": {
+        "bug_count": 1,
+        "caught": true
+      }
+    },
+    {
+      "family": "path_flag",
+      "genuine_bug": "branch:RuntimeError",
+      "id": "path_flag_reshape",
+      "runtime_backward": {
+        "caught": false,
+        "detail": "ran_clean"
+      },
+      "tensorguard": {
+        "bug_count": 1,
+        "caught": true
+      }
+    },
+    {
+      "family": "path_flag",
+      "genuine_bug": "branch:RuntimeError",
+      "id": "path_flag_cat",
+      "runtime_backward": {
+        "caught": false,
+        "detail": "ran_clean"
+      },
+      "tensorguard": {
+        "bug_count": 1,
+        "caught": true
+      }
+    },
+    {
+      "family": "silent_freeze",
+      "genuine_bug": "frozen_params:2",
+      "id": "silent_freeze_fc1",
+      "runtime_backward": {
+        "caught": false,
+        "detail": "ran_clean"
+      },
+      "tensorguard": {
+        "bug_count": 0,
+        "caught": false
+      },
+      "tensorguard_miss_root_cause": "post-construction `requires_grad = False` mutation: the gradient domain reasons about detach/grad-flow in `forward`, not about a sub-module frozen in `__init__`, so the silent freeze is not modelled"
+    },
+    {
+      "family": "silent_freeze",
+      "genuine_bug": "frozen_params:2",
+      "id": "silent_freeze_conv",
+      "runtime_backward": {
+        "caught": false,
+        "detail": "ran_clean"
+      },
+      "tensorguard": {
+        "bug_count": 0,
+        "caught": false
+      },
+      "tensorguard_miss_root_cause": "post-construction `requires_grad = False` mutation: the gradient domain reasons about detach/grad-flow in `forward`, not about a sub-module frozen in `__init__`, so the silent freeze is not modelled"
+    }
+  ],
+  "summary": {
+    "n_bugs": 8,
+    "recall_advantage": 0.75,
+    "runtime_backward_caught": 0,
+    "runtime_backward_recall": 0.0,
+    "tensorguard_caught": 6,
+    "tensorguard_misses": 2,
+    "tensorguard_recall": 0.75
+  },
+  "tensorguard_misses": [
+    {
+      "family": "silent_freeze",
+      "id": "silent_freeze_fc1",
+      "root_cause": "post-construction `requires_grad = False` mutation: the gradient domain reasons about detach/grad-flow in `forward`, not about a sub-module frozen in `__init__`, so the silent freeze is not modelled"
+    },
+    {
+      "family": "silent_freeze",
+      "id": "silent_freeze_conv",
+      "root_cause": "post-construction `requires_grad = False` mutation: the gradient domain reasons about detach/grad-flow in `forward`, not about a sub-module frozen in `__init__`, so the silent freeze is not modelled"
+    }
+  ]
+}

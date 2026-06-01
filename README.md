@@ -464,6 +464,32 @@ artifacts live in `evaluation/sound_mode_fp.json` and
 `evaluation/sound_mode_fp.md` and are pinned by
 `tests/test_sound_mode_fp.py`.
 
+### Latent-bug recall vs the strongest dynamic baseline
+
+On the small balanced corpus TensorGuard already ties the strongest dynamic
+baseline (`runtime_backward` — one seeded `train()` forward+backward, then a
+grad-presence check) at perfect recall, because every bug there is exercised by
+that single pass. The interesting question for a *static* verifier is the class
+of **latent** bugs no single concrete execution can observe.
+`evaluation/hard_recall.py` builds such a corpus — phase-dependent faults that
+only manifest in `eval()`, path-dependent faults on an untaken branch, and
+silent gradient-freeze faults — where every model is *proven genuine* (the
+latent fault really fails when exercised) and *proven silent* under the
+strongest dynamic baseline (the seeded pass runs clean):
+
+```bash
+PYTHONPATH=. python3 evaluation/hard_recall.py     # or: make hard-recall
+```
+
+The strongest dynamic baseline catches none of these latent bugs, while
+TensorGuard's static analysis catches the phase-dependent and path-dependent
+families in full — a recall advantage of three quarters on bugs that are
+invisible to dynamic testing by construction. The two residual misses (silent
+`requires_grad = False` freezes) are not hidden: each carries a root-cause tag
+in the committed artifact, documenting exactly which static-analysis gap is
+responsible. Artifacts live in `evaluation/hard_recall.json` and
+`evaluation/hard_recall.md` and are pinned by `tests/test_hard_recall.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
@@ -491,6 +517,7 @@ in `lean/TensorGuard/` live inside docstring comments.
 | 488-block + 60-bug headline triple                             | `experiments_v5/run_v5_benchmark.py`                    |
 | Precision/recall confusion matrices vs PyTea/runtime/no-op     | `evaluation/precision_recall.py`                        |
 | Sound-mode false-positive hunt (clean executing models)        | `evaluation/sound_mode_fp.py`                           |
+| Latent-bug recall vs the strongest dynamic baseline            | `evaluation/hard_recall.py`                             |
 | 60-bug headline RP reproducer (single command)                 | `reproducibility/reproduce_headline_60bug.py`           |
 | Verdict reclassification (RP / CV / LW)                        | `experiments_v5/run_verdict_reclassification.py`        |
 | 10-bug real-public corpus                                      | `experiments_v5/v8/verify_real_bugs.py`                 |
