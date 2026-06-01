@@ -52,9 +52,25 @@ measured, and reproducible.
    encoder), so they are covered by the shape view. The old flat
    `feature_ablation.json` ladder is superseded (notes added in its runner).
    Pinned by `tests/test_domain_contribution.py` (11 tests).*
-4. Audit every numeric claim in `README.md`, `neurips.tex`, and the workshop
+4. [x] Audit every numeric claim in `README.md`, `neurips.tex`, and the workshop
    paper against a single regeneration script; delete or qualify any number
    that cannot be rerun from the current tree.
+   *Done: `reproducibility/audit_numeric_claims.py` is a single harness with a
+   registry of every headline numeric claim. For each it (a) checks the number
+   is still literally present at its cited source and (b) recomputes it from the
+   committed regeneration artifact(s), supporting ratios, percentages, and
+   p-values with tolerance. Classifies VERIFIED / MISMATCH / QUALIFIED_REGIME /
+   QUALIFIED_ENV / ORPHAN / SOURCE_MISSING and a README scanner fails on any
+   uncovered `x/y` or `%` token (script-catalogue rows exempt). Live result:
+   10 VERIFIED, 1 QUALIFIED_REGIME (Pytea 25/34 fragment-fair vs. 22/34 stricter
+   regime — pinned to the correct artifact so it is not a false mismatch),
+   1 QUALIFIED_ENV (Lean 28 rules). Resolved that the paper's `9/9` HF claim is
+   the union of two artifacts (7 + Gemma-2 2) and that `25/34`/`32/34`/McNemar
+   `p=0.0156` come from `pytea_fragment_fair.json`. Honest scope documented:
+   audits committed artifacts (+ optional `--regenerate`), not a from-scratch
+   rerun. Output `reproducibility/numeric_claims_audit.json`; pinned by
+   `tests/test_numeric_claims_audit.py` (6 tests, incl. negative MISMATCH /
+   ORPHAN / SOURCE_MISSING cases).*
 5. Define and publish a precise **soundness contract**: exactly which programs
    TensorGuard guarantees to never miss-pass, and which constructs are
    over-approximated, under-approximated, or skipped.

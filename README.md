@@ -317,6 +317,37 @@ per-bug `INPUT_SHAPES` lifted), see
 `reproducibility/reproduce_headline_60bug.md` for the full
 explanation.
 
+### Numeric-claim audit (every headline number is backed)
+
+Every headline numeric claim in `README.md`, `neurips.tex`, and
+`workshop_fmai.tex` is registered in a single audit harness and checked
+against the committed regeneration artifacts under `reproducibility/`:
+
+```bash
+PYTHONPATH=. python3 reproducibility/audit_numeric_claims.py
+```
+
+For each claim the harness (a) confirms the number is still literally
+present in the prose at its cited source, and (b) recomputes it from the
+backing artifact(s) — supporting ratios, percentages, and p-values with
+tolerance. It classifies each claim as `VERIFIED`, `MISMATCH`,
+`QUALIFIED_REGIME` (regime-specific — e.g. the fragment-fair Pytea
+score vs. the stricter 2024-catalogue score, both legitimate),
+`QUALIFIED_ENV` (requires Lean/HF/CUDA, regeneration command recorded
+rather than asserted here), `ORPHAN`, or `SOURCE_MISSING`. A scanner also
+fails the audit if any `x/y` ratio or `%` token appears in `README.md`
+without a registry claim (script-catalogue rows that name their own
+regeneration script in-row are exempt). Results are written to
+`reproducibility/numeric_claims_audit.json` and pinned by
+`tests/test_numeric_claims_audit.py`.
+
+**Honest scope.** This audits the committed artifacts (the outputs of the
+last committed regeneration run) and the prose that cites them; it is not
+a from-scratch regeneration in this process (several artifacts need CUDA,
+HuggingFace downloads, or a Lean toolchain). Pass `--regenerate` to
+additionally invoke each artifact's recorded `meta.command` where the
+environment supports it.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

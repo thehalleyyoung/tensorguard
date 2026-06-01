@@ -1,0 +1,165 @@
+{
+  "meta": {
+    "note": "Audits committed regeneration artifacts; not a fresh regeneration (see module docstring).",
+    "n_claims": 12,
+    "counts": {
+      "VERIFIED": 10,
+      "QUALIFIED_REGIME": 1,
+      "QUALIFIED_ENV": 1
+    }
+  },
+  "claims": [
+    {
+      "id": "rp_53_of_60",
+      "regime": "headline default regime (verify_architecture(src), RP@0.99)",
+      "claim": "53/60 Refuted-Proof",
+      "artifacts": [
+        "reproduce_headline_60bug.json"
+      ],
+      "actual": [
+        53,
+        60
+      ],
+      "status": "VERIFIED"
+    },
+    {
+      "id": "raw_refute_56_of_60",
+      "regime": "raw-refute regime (lifted INPUT_SHAPES, cegar=3)",
+      "claim": "56/60 raw refute",
+      "artifacts": [
+        "reproduce_headline_60bug.json"
+      ],
+      "actual": [
+        56,
+        60
+      ],
+      "status": "VERIFIED"
+    },
+    {
+      "id": "rp_percent_88_3",
+      "regime": "headline default regime, derived percentage",
+      "claim": "88.3% (=53/60)",
+      "artifacts": [
+        "reproduce_headline_60bug.json"
+      ],
+      "actual": 88.33333333333333,
+      "status": "VERIFIED"
+    },
+    {
+      "id": "tg_32_of_34_fragmentfair",
+      "regime": "fragment-fair N=34 head-to-head vs Pytea",
+      "claim": "32/34 TensorGuard",
+      "artifacts": [
+        "pytea_fragment_fair.json"
+      ],
+      "actual": [
+        32,
+        34
+      ],
+      "status": "VERIFIED"
+    },
+    {
+      "id": "pytea_25_of_34_fragmentfair",
+      "regime": "fragment-fair N=34 (Pytea 2024 fragment); a STRICTER 2024 catalogue regime gives 22/34 \u2014 different regime, both valid",
+      "claim": "25/34 Pytea",
+      "artifacts": [
+        "pytea_fragment_fair.json"
+      ],
+      "actual": [
+        25,
+        34
+      ],
+      "status": "QUALIFIED_REGIME"
+    },
+    {
+      "id": "mcnemar_p_0_0156",
+      "regime": "fragment-fair McNemar exact two-sided p",
+      "claim": "p=0.0156",
+      "artifacts": [
+        "pytea_fragment_fair.json"
+      ],
+      "actual": 0.015625,
+      "status": "VERIFIED"
+    },
+    {
+      "id": "hf_9_of_9_natural",
+      "regime": "naturally-occurring HF cross-family bugs (union of the Llama/Qwen2/Mistral/Phi-3 set + the Gemma 2 round-5 set)",
+      "claim": "9/9 HuggingFace natural shape bugs",
+      "artifacts": [
+        "cross_family_natural_bugs.json",
+        "upstream_gemma2_round5.json"
+      ],
+      "actual": [
+        9,
+        9
+      ],
+      "status": "VERIFIED"
+    },
+    {
+      "id": "block_488_unconditional_0",
+      "regime": "unrestricted 488-block corpus, unconditional RP",
+      "claim": "0/488 unconditional Refuted-Proof",
+      "artifacts": [
+        "block_corpus_488_reconciliation.json"
+      ],
+      "actual": 488,
+      "status": "VERIFIED"
+    },
+    {
+      "id": "unconditional_rp_26",
+      "regime": "empty-assume_M subset unconditional RP count",
+      "claim": "26 unconditional RP (26/356)",
+      "artifacts": [
+        "audited_footprint_unconditional_rp.json"
+      ],
+      "actual": 26,
+      "status": "VERIFIED"
+    },
+    {
+      "id": "audited_footprint_5",
+      "regime": "blocks firing inside the audited handler footprint",
+      "claim": "5 fire inside the audited handler footprint",
+      "artifacts": [
+        "audited_footprint_per_block_lean_pinning.json"
+      ],
+      "actual": 5,
+      "status": "VERIFIED"
+    },
+    {
+      "id": "lean_operator_rules_28",
+      "regime": "Lean 4 operator-rule audit (requires Lean toolchain)",
+      "claim": "28 Lean operator rules",
+      "artifacts": [],
+      "status": "QUALIFIED_ENV",
+      "detail": "requires `lake build TensorGuard.V5OperatorRules` (Lean 4)"
+    },
+    {
+      "id": "false_positive_rate_0",
+      "regime": "--high-confidence mode false-positive rate",
+      "claim": "0% false positives in --high-confidence mode",
+      "artifacts": [
+        "reproduce_headline_60bug.json"
+      ],
+      "actual": 0,
+      "status": "VERIFIED"
+    }
+  ],
+  "readme_uncovered_tokens": [],
+  "readme_ignored_catalogue_rows": [
+    {
+      "line": 388,
+      "tokens": [
+        "80%"
+      ],
+      "reason": "script-catalogue row (regen script named in-row)"
+    },
+    {
+      "line": 389,
+      "tokens": [
+        "2/3"
+      ],
+      "reason": "script-catalogue row (regen script named in-row)"
+    }
+  ],
+  "passed": true
+}
