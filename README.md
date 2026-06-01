@@ -490,6 +490,29 @@ in the committed artifact, documenting exactly which static-analysis gap is
 responsible. Artifacts live in `evaluation/hard_recall.json` and
 `evaluation/hard_recall.md` and are pinned by `tests/test_hard_recall.py`.
 
+### Differential fuzzing for false positives
+
+`evaluation/diff_fuzz.py` is a *random-architecture* false-positive hunt. A
+fuzzer grows valid `nn.Module`s by threading the running tensor shape through a
+random chain of layers — Linear, Conv2d, BatchNorm, LayerNorm, pooling, flatten
+and activations, entering at either rank-two (vector) or rank-four (image)
+inputs — so each network is dimensionally valid by construction, and is then
+**validated to execute without error** in eager PyTorch before admission. Every
+admitted model is checked differentially: runtime says "ran clean", so
+TensorGuard in strict `sound` mode must never Refute it.
+
+```bash
+PYTHONPATH=. python3 evaluation/diff_fuzz.py     # or: make diff-fuzz
+```
+
+Across two hundred random seeds every admitted model executed cleanly,
+TensorGuard raised **zero false positives**, and — crucially — verified every
+one SAFE (total coverage, no abstentions), so the zero-false-positive result is
+not a vacuous "always abstain". The verdicts stay non-vacuous: feeding a
+mismatched input dimension to the same fuzzed model makes TensorGuard Refute it.
+The committed artifacts live in `evaluation/diff_fuzz.json` and
+`evaluation/diff_fuzz.md` and are pinned by `tests/test_diff_fuzz.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
@@ -518,6 +541,7 @@ in `lean/TensorGuard/` live inside docstring comments.
 | Precision/recall confusion matrices vs PyTea/runtime/no-op     | `evaluation/precision_recall.py`                        |
 | Sound-mode false-positive hunt (clean executing models)        | `evaluation/sound_mode_fp.py`                           |
 | Latent-bug recall vs the strongest dynamic baseline            | `evaluation/hard_recall.py`                             |
+| Differential fuzz false-positive hunt (random valid models)    | `evaluation/diff_fuzz.py`                               |
 | 60-bug headline RP reproducer (single command)                 | `reproducibility/reproduce_headline_60bug.py`           |
 | Verdict reclassification (RP / CV / LW)                        | `experiments_v5/run_verdict_reclassification.py`        |
 | 10-bug real-public corpus                                      | `experiments_v5/v8/verify_real_bugs.py`                 |

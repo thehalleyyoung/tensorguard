@@ -1,0 +1,23 @@
+{
+  "false_positive_models": [],
+  "meta": {
+    "command": "python3 evaluation/diff_fuzz.py",
+    "design": "randomly grow a valid nn.Module by threading the running tensor shape through each op, validate it executes in eager PyTorch, then assert TensorGuard never Refutes a cleanly executing model (differential false-positive hunt)",
+    "generated_by": "evaluation/diff_fuzz.py",
+    "n_seeds": 200,
+    "soundness_mode": "sound"
+  },
+  "summary": {
+    "abstained": 0,
+    "admitted_clean_executing": 200,
+    "false_positives": 0,
+    "rank_breakdown": {
+      "rank2": 94,
+      "rank4": 106
+    },
+    "safe_coverage": 1.0,
+    "seeds_attempted": 200,
+    "skipped_nonexecuting": 0,
+    "verified_safe": 200
+  }
+}
