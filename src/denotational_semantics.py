@@ -349,6 +349,73 @@ def concrete_identity(shapes: List[ShapeTuple], **kwargs: Any) -> ShapeTuple:
     return shapes[0]
 
 
+def concrete_permute(shapes: List[ShapeTuple], dims: Sequence[int] = (), **kwargs: Any) -> ShapeTuple:
+    """⟦PERMUTE⟧(A, dims) = (A[dims[0]], ..., A[dims[r-1]]).
+
+    ``dims`` must be a permutation of ``range(rank)`` (negative indices allowed),
+    matching ``torch.Tensor.permute``.
+    """
+    a = shapes[0]
+    rank = len(a)
+    if len(dims) != rank:
+        raise ValueError("PERMUTE expects %d dims, got %d" % (rank, len(dims)))
+    norm = [d % rank for d in dims]
+    if sorted(norm) != list(range(rank)):
+        raise ValueError("PERMUTE dims %r is not a permutation of range(%d)"
+                         % (list(dims), rank))
+    return tuple(a[d] for d in norm)
+
+
+def concrete_expand(shapes: List[ShapeTuple], sizes: Sequence[int] = (), **kwargs: Any) -> ShapeTuple:
+    """⟦EXPAND⟧(A, sizes) following ``torch.Tensor.expand`` broadcasting rules.
+
+    ``len(sizes) >= rank``; the extra leading entries prepend new dimensions
+    (which may not be ``-1``). For right-aligned existing dims, ``-1`` keeps the
+    original size, a size-1 dim may expand to any size, and a non-1 dim must
+    match the requested size.
+    """
+    a = shapes[0]
+    rank = len(a)
+    if len(sizes) < rank:
+        raise ValueError("EXPAND expects at least %d sizes, got %d"
+                         % (rank, len(sizes)))
+    extra = len(sizes) - rank
+    out: List[int] = []
+    for i in range(extra):
+        if sizes[i] < 0:
+            raise ValueError("EXPAND: new leading dim cannot be -1")
+        out.append(sizes[i])
+    for j in range(rank):
+        want = sizes[extra + j]
+        have = a[j]
+        if want == -1:
+            out.append(have)
+        elif have == 1 or have == want:
+            out.append(want)
+        else:
+            raise ValueError(
+                "EXPAND: cannot expand dim %d of size %d to %d" % (j, have, want))
+    return tuple(out)
+
+
+def concrete_repeat(shapes: List[ShapeTuple], repeats: Sequence[int] = (), **kwargs: Any) -> ShapeTuple:
+    """⟦REPEAT⟧(A, repeats) following ``torch.Tensor.repeat`` (tiling).
+
+    ``len(repeats) >= rank``; the original shape is right-aligned (left-padded
+    with 1s) and each dim is multiplied by its repeat count.
+    """
+    a = shapes[0]
+    rank = len(a)
+    if len(repeats) < rank:
+        raise ValueError("REPEAT expects at least %d repeats, got %d"
+                         % (rank, len(repeats)))
+    if any(r < 0 for r in repeats):
+        raise ValueError("REPEAT counts must be non-negative")
+    pad = len(repeats) - rank
+    padded = (1,) * pad + tuple(a)
+    return tuple(p * r for p, r in zip(padded, repeats))
+
+
 # ── Abstract semantics ⟦op⟧♯ ─────────────────────────────────────────────────
 
 def abstract_matmul(shapes: List[AbstractShape], **kwargs: Any) -> AbstractShape:
@@ -468,6 +535,72 @@ def abstract_identity(shapes: List[AbstractShape], **kwargs: Any) -> AbstractSha
     return shapes[0]
 
 
+def abstract_permute(shapes: List[AbstractShape], dims: Sequence[int] = (), **kwargs: Any) -> AbstractShape:
+    """⟦PERMUTE⟧♯(A, dims) = reorder A's (possibly symbolic) dims."""
+    a = shapes[0]
+    rank = a.rank
+    if len(dims) != rank:
+        raise ValueError("PERMUTE expects %d dims, got %d" % (rank, len(dims)))
+    norm = [d % rank for d in dims]
+    if sorted(norm) != list(range(rank)):
+        raise ValueError("PERMUTE dims %r is not a permutation of range(%d)"
+                         % (list(dims), rank))
+    return AbstractShape(dims=tuple(a.dims[d] for d in norm))
+
+
+def abstract_expand(shapes: List[AbstractShape], sizes: Sequence[int] = (), **kwargs: Any) -> AbstractShape:
+    """⟦EXPAND⟧♯(A, sizes) over-approximating ``torch.Tensor.expand``.
+
+    For each aligned dim: ``-1`` keeps the (possibly symbolic) original; any
+    other request yields that concrete target size, which is sound because every
+    valid concretization of a size-1 / matching dim produces exactly that size.
+    """
+    a = shapes[0]
+    rank = a.rank
+    if len(sizes) < rank:
+        raise ValueError("EXPAND expects at least %d sizes, got %d"
+                         % (rank, len(sizes)))
+    extra = len(sizes) - rank
+    out: List[Union[int, str]] = []
+    for i in range(extra):
+        if sizes[i] < 0:
+            raise ValueError("EXPAND: new leading dim cannot be -1")
+        out.append(sizes[i])
+    for j in range(rank):
+        want = sizes[extra + j]
+        have = a.dims[j]
+        if want == -1:
+            out.append(have)
+        elif isinstance(have, int) and have != 1 and have != want:
+            raise ValueError(
+                "EXPAND: cannot expand dim %d of size %d to %d" % (j, have, want))
+        else:
+            out.append(want)
+    return AbstractShape(dims=tuple(out))
+
+
+def abstract_repeat(shapes: List[AbstractShape], repeats: Sequence[int] = (), **kwargs: Any) -> AbstractShape:
+    """⟦REPEAT⟧♯(A, repeats) = tile A; symbolic dims with repeat≠1 stay symbolic."""
+    a = shapes[0]
+    rank = a.rank
+    if len(repeats) < rank:
+        raise ValueError("REPEAT expects at least %d repeats, got %d"
+                         % (rank, len(repeats)))
+    if any(r < 0 for r in repeats):
+        raise ValueError("REPEAT counts must be non-negative")
+    pad = len(repeats) - rank
+    padded: List[Union[int, str]] = [1] * pad + list(a.dims)
+    out: List[Union[int, str]] = []
+    for dim, r in zip(padded, repeats):
+        if isinstance(dim, int):
+            out.append(dim * r)
+        elif r == 1:
+            out.append(dim)
+        else:
+            out.append("%s_times_%d" % (dim, r))
+    return AbstractShape(dims=tuple(out))
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # 4.  Operation semantics registry
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -556,6 +689,24 @@ OP_SEMANTICS: Dict[OpKind, OpSemantics] = {
         concrete_fn=concrete_identity,
         abstract_fn=abstract_identity,
         description="⟦CONTIGUOUS⟧(A) = A  (shape-preserving)",
+    ),
+    OpKind.PERMUTE: OpSemantics(
+        op=OpKind.PERMUTE,
+        concrete_fn=concrete_permute,
+        abstract_fn=abstract_permute,
+        description="⟦PERMUTE⟧(A, dims) = (A[dims[0]], ..., A[dims[r-1]])",
+    ),
+    OpKind.EXPAND: OpSemantics(
+        op=OpKind.EXPAND,
+        concrete_fn=concrete_expand,
+        abstract_fn=abstract_expand,
+        description="⟦EXPAND⟧(A, sizes) = broadcast A to sizes (size-1 dims grow)",
+    ),
+    OpKind.REPEAT: OpSemantics(
+        op=OpKind.REPEAT,
+        concrete_fn=concrete_repeat,
+        abstract_fn=abstract_repeat,
+        description="⟦REPEAT⟧(A, repeats) = tile A (right-aligned dim products)",
     ),
 }
 

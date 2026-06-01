@@ -652,6 +652,35 @@ when the local torch version equals the committed one, otherwise it reports a
 QUALIFIED skip. Committed artifacts: `evaluation/operator_coverage.json` and
 `evaluation/operator_coverage.md`.
 
+### Operator frequency census (real model corpora)
+
+Where the coverage matrix counts the *static* operator surface, this harness
+measures which operators actually **occur**, and how often, in real models.
+`evaluation/operator_frequency.py` symbolically traces a fixed corpus of
+thirteen torchvision models with `torch.fx` and counts every `call_function`,
+`call_method`, and `call_module` target, then cross-references each against the
+operators TensorGuard reasons about to produce a list ranked by **frequency**.
+This turns the Phase 3 long-tail into a priority queue: implement what models
+actually use most. The frequency-weighted coverage is high — the engine reasons
+about over nine tenths of all operator occurrences in the corpus.
+
+Step 22 used this census to find and close the highest-impact gaps: `permute`
+(the single most frequent previously-uncovered shape operator), `expand`, and
+`repeat` now have soundness-backed denotational transfer functions in
+`src/denotational_semantics.py`, differential-tested against `torch` and proven
+to satisfy the per-node soundness theorem
+(`tests/test_denotational_permute_expand_repeat.py`).
+
+```bash
+PYTHONPATH=. python3 evaluation/operator_frequency.py            # regenerate census
+PYTHONPATH=. python3 evaluation/operator_frequency.py --check    # version-gated freshness
+```
+
+Because fx traces depend on the torch/torchvision versions, the artifact records
+both; `--check` enforces a byte-identical match only when both versions equal the
+committed ones, otherwise it reports a QUALIFIED skip. Committed artifacts:
+`evaluation/operator_frequency.json` and `evaluation/operator_frequency.md`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

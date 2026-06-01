@@ -1,0 +1,291 @@
+{
+  "meta": {
+    "command": "PYTHONPATH=. python3 evaluation/operator_frequency.py",
+    "corpus": [
+      "resnet18",
+      "resnet50",
+      "vgg11",
+      "densenet121",
+      "mobilenet_v2",
+      "efficientnet_b0",
+      "squeezenet1_0",
+      "shufflenet_v2_x1_0",
+      "mnasnet1_0",
+      "regnet_y_400mf",
+      "convnext_tiny",
+      "vit_b_16",
+      "swin_t"
+    ],
+    "generated_by": "evaluation/operator_frequency.py",
+    "n_models": 13,
+    "torch_version": "2.9.1",
+    "torchvision_version": "0.24.1"
+  },
+  "operators": [
+    {
+      "covered": true,
+      "frequency": 577,
+      "operator": "Conv2d"
+    },
+    {
+      "covered": true,
+      "frequency": 456,
+      "operator": "BatchNorm2d"
+    },
+    {
+      "covered": true,
+      "frequency": 359,
+      "operator": "ReLU"
+    },
+    {
+      "covered": true,
+      "frequency": 136,
+      "operator": "add"
+    },
+    {
+      "covered": true,
+      "frequency": 120,
+      "operator": "getitem"
+    },
+    {
+      "covered": true,
+      "frequency": 101,
+      "operator": "Linear"
+    },
+    {
+      "covered": true,
+      "frequency": 87,
+      "operator": "cat"
+    },
+    {
+      "covered": true,
+      "frequency": 72,
+      "operator": "LayerNorm"
+    },
+    {
+      "covered": true,
+      "frequency": 67,
+      "operator": "Dropout"
+    },
+    {
+      "covered": true,
+      "frequency": 51,
+      "operator": "mul"
+    },
+    {
+      "covered": false,
+      "frequency": 51,
+      "operator": "stochastic_depth"
+    },
+    {
+      "covered": true,
+      "frequency": 49,
+      "operator": "SiLU"
+    },
+    {
+      "covered": true,
+      "frequency": 49,
+      "operator": "permute"
+    },
+    {
+      "covered": true,
+      "frequency": 42,
+      "operator": "GELU"
+    },
+    {
+      "covered": true,
+      "frequency": 40,
+      "operator": "AdaptiveAvgPool2d"
+    },
+    {
+      "covered": true,
+      "frequency": 35,
+      "operator": "ReLU6"
+    },
+    {
+      "covered": true,
+      "frequency": 32,
+      "operator": "Sigmoid"
+    },
+    {
+      "covered": true,
+      "frequency": 32,
+      "operator": "view"
+    },
+    {
+      "covered": false,
+      "frequency": 18,
+      "operator": "floordiv"
+    },
+    {
+      "covered": true,
+      "frequency": 16,
+      "operator": "contiguous"
+    },
+    {
+      "covered": false,
+      "frequency": 16,
+      "operator": "size"
+    },
+    {
+      "covered": true,
+      "frequency": 16,
+      "operator": "transpose"
+    },
+    {
+      "covered": true,
+      "frequency": 15,
+      "operator": "_assert"
+    },
+    {
+      "covered": true,
+      "frequency": 15,
+      "operator": "eq"
+    },
+    {
+      "covered": true,
+      "frequency": 15,
+      "operator": "getattr"
+    },
+    {
+      "covered": true,
+      "frequency": 13,
+      "operator": "chunk"
+    },
+    {
+      "covered": false,
+      "frequency": 13,
+      "operator": "dim"
+    },
+    {
+      "covered": true,
+      "frequency": 12,
+      "operator": "MaxPool2d"
+    },
+    {
+      "covered": true,
+      "frequency": 12,
+      "operator": "MultiheadAttention"
+    },
+    {
+      "covered": false,
+      "frequency": 12,
+      "operator": "_get_relative_position_bias"
+    },
+    {
+      "covered": false,
+      "frequency": 12,
+      "operator": "shifted_window_attention"
+    },
+    {
+      "covered": true,
+      "frequency": 8,
+      "operator": "flatten"
+    },
+    {
+      "covered": false,
+      "frequency": 5,
+      "operator": "layer_norm"
+    },
+    {
+      "covered": true,
+      "frequency": 3,
+      "operator": "AvgPool2d"
+    },
+    {
+      "covered": false,
+      "frequency": 3,
+      "operator": "_patch_merging_pad"
+    },
+    {
+      "covered": true,
+      "frequency": 2,
+      "operator": "Flatten"
+    },
+    {
+      "covered": false,
+      "frequency": 2,
+      "operator": "adaptive_avg_pool2d"
+    },
+    {
+      "covered": true,
+      "frequency": 2,
+      "operator": "mean"
+    },
+    {
+      "covered": true,
+      "frequency": 1,
+      "operator": "expand"
+    },
+    {
+      "covered": true,
+      "frequency": 1,
+      "operator": "relu"
+    },
+    {
+      "covered": true,
+      "frequency": 1,
+      "operator": "reshape"
+    }
+  ],
+  "step22_implemented": [
+    "permute",
+    "expand",
+    "repeat"
+  ],
+  "summary": {
+    "covered_occurrences": 2437,
+    "distinct_operators": 41,
+    "distinct_uncovered": 9,
+    "frequency_coverage_ratio": 0.9486,
+    "total_op_occurrences": 2569,
+    "uncovered_occurrences": 132
+  },
+  "uncovered_ranked": [
+    {
+      "covered": false,
+      "frequency": 51,
+      "operator": "stochastic_depth"
+    },
+    {
+      "covered": false,
+      "frequency": 18,
+      "operator": "floordiv"
+    },
+    {
+      "covered": false,
+      "frequency": 16,
+      "operator": "size"
+    },
+    {
+      "covered": false,
+      "frequency": 13,
+      "operator": "dim"
+    },
+    {
+      "covered": false,
+      "frequency": 12,
+      "operator": "_get_relative_position_bias"
+    },
+    {
+      "covered": false,
+      "frequency": 12,
+      "operator": "shifted_window_attention"
+    },
+    {
+      "covered": false,
+      "frequency": 5,
+      "operator": "layer_norm"
+    },
+    {
+      "covered": false,
+      "frequency": 3,
+      "operator": "_patch_merging_pad"
+    },
+    {
+      "covered": false,
+      "frequency": 2,
+      "operator": "adaptive_avg_pool2d"
+    }
+  ]
+}

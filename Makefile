@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-frequency test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -36,6 +36,7 @@ help:
 	@echo "  dashboard-check  Gate the dashboard against the frozen baseline (non-zero on regression)"
 	@echo "  dashboard-gate   Verify artifacts are fresh, then gate the dashboard (full merge gate)"
 	@echo "  operator-coverage  Regenerate the public torch/nn/functional operator coverage matrix"
+	@echo "  operator-frequency Regenerate the frequency-weighted operator census over real models"
 	@echo "  audit            Run the numeric-claim audit over committed artifacts"
 	@echo "  test             Run the pytest suite"
 
@@ -102,6 +103,9 @@ dashboard-gate:
 
 operator-coverage:
 	$(PYTHON) evaluation/operator_coverage.py
+
+operator-frequency:
+	$(PYTHON) evaluation/operator_frequency.py
 
 audit:
 	$(PYTHON) reproducibility/audit_numeric_claims.py
