@@ -558,6 +558,29 @@ mechanism, and is locally minimal under op removal and coordinate-wise dim
 shrinking. Committed artifacts live in `evaluation/minimize_demo.json` and
 `evaluation/minimize_demo.md` and are pinned by `tests/test_minimize.py`.
 
+### Disagreement triage + frozen regression suite
+
+`evaluation/triage.py` triages the false-positive / false-negative hunts and
+turns their signal into a frozen regression suite. The combined fuzzing
+population — the random clean models of Step 15 plus the injected faults of
+Step 16, over four hundred models in total — produced no TensorGuard/runtime
+disagreements, so there is nothing to fix. Instead the harness freezes **fifty
+minimal bug reproducers** spanning a catalogue of distinct fault mechanisms
+(Linear in/out width, Conv channel/kernel, invalid view/reshape, matmul
+inner-dim, broadcast add, cat non-cat-dim, flatten→Linear), each paired with a
+minimal **clean sibling**.
+
+```bash
+PYTHONPATH=. python3 evaluation/triage.py     # or: make triage
+```
+
+Every buggy entry is verified to raise at runtime *and* be refuted by
+TensorGuard; every clean sibling is verified to run clean *and* be accepted. The
+frozen entries are replayed as parametrized regression tests by
+`tests/test_triage.py`, so any future regression — a missed bug or a false
+alarm on a clean sibling — fails CI. Committed artifacts live in
+`evaluation/triage_regressions.json` and `evaluation/triage_regressions.md`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
@@ -589,6 +612,7 @@ in `lean/TensorGuard/` live inside docstring comments.
 | Differential fuzz false-positive hunt (random valid models)    | `evaluation/diff_fuzz.py`                               |
 | Negative-fuzz false-negative hunt (injected faults)            | `evaluation/neg_fuzz.py`                                |
 | Minimal-reproducer shrinker (delta-debug disagreements)        | `evaluation/minimize.py`                                |
+| Disagreement triage + 50-case regression suite                 | `evaluation/triage.py`                                  |
 | 60-bug headline RP reproducer (single command)                 | `reproducibility/reproduce_headline_60bug.py`           |
 | Verdict reclassification (RP / CV / LW)                        | `experiments_v5/run_verdict_reclassification.py`        |
 | 10-bug real-public corpus                                      | `experiments_v5/v8/verify_real_bugs.py`                 |

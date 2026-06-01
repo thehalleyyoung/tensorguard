@@ -1,0 +1,862 @@
+{
+  "disagreement_triage": {
+    "clean_models_examined": 200,
+    "false_negatives": 0,
+    "false_positives": 0,
+    "faulty_models_examined": 281,
+    "population_total": 481,
+    "total_disagreements": 0
+  },
+  "meta": {
+    "command": "python3 evaluation/triage.py",
+    "generated_by": "evaluation/triage.py",
+    "n_categories": 9,
+    "n_regressions": 50
+  },
+  "regression_suite": {
+    "by_category": {
+      "add_broadcast": 6,
+      "cat_noncat_dim": 5,
+      "conv_in": 6,
+      "conv_kernel": 6,
+      "flatten_linear": 3,
+      "invalid_reshape": 6,
+      "invalid_view": 6,
+      "linear_in": 6,
+      "matmul_inner": 6
+    },
+    "count": 50,
+    "entries": [
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(5, 10)\n\n    def forward(self, x):\n        return self.l(x)\n",
+        "category": "linear_in",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(4, 10)\n\n    def forward(self, x):\n        return self.l(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "linear_in_0",
+        "input_shapes": {
+          "x": [
+            4,
+            4
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(9, 10)\n\n    def forward(self, x):\n        return self.l(x)\n",
+        "category": "linear_in",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(8, 10)\n\n    def forward(self, x):\n        return self.l(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "linear_in_1",
+        "input_shapes": {
+          "x": [
+            4,
+            8
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(17, 10)\n\n    def forward(self, x):\n        return self.l(x)\n",
+        "category": "linear_in",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(16, 10)\n\n    def forward(self, x):\n        return self.l(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "linear_in_2",
+        "input_shapes": {
+          "x": [
+            4,
+            16
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(33, 10)\n\n    def forward(self, x):\n        return self.l(x)\n",
+        "category": "linear_in",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(32, 10)\n\n    def forward(self, x):\n        return self.l(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "linear_in_3",
+        "input_shapes": {
+          "x": [
+            4,
+            32
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(65, 10)\n\n    def forward(self, x):\n        return self.l(x)\n",
+        "category": "linear_in",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(64, 10)\n\n    def forward(self, x):\n        return self.l(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "linear_in_4",
+        "input_shapes": {
+          "x": [
+            4,
+            64
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(129, 10)\n\n    def forward(self, x):\n        return self.l(x)\n",
+        "category": "linear_in",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(128, 10)\n\n    def forward(self, x):\n        return self.l(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "linear_in_5",
+        "input_shapes": {
+          "x": [
+            4,
+            128
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.view(x.size(0), 5)\n",
+        "category": "invalid_view",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.view(x.size(0), 4)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "invalid_view_0",
+        "input_shapes": {
+          "x": [
+            4,
+            4
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.view(x.size(0), 9)\n",
+        "category": "invalid_view",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.view(x.size(0), 8)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "invalid_view_1",
+        "input_shapes": {
+          "x": [
+            4,
+            8
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.view(x.size(0), 17)\n",
+        "category": "invalid_view",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.view(x.size(0), 16)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "invalid_view_2",
+        "input_shapes": {
+          "x": [
+            4,
+            16
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.view(x.size(0), 33)\n",
+        "category": "invalid_view",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.view(x.size(0), 32)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "invalid_view_3",
+        "input_shapes": {
+          "x": [
+            4,
+            32
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.view(x.size(0), 65)\n",
+        "category": "invalid_view",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.view(x.size(0), 64)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "invalid_view_4",
+        "input_shapes": {
+          "x": [
+            4,
+            64
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.view(x.size(0), 129)\n",
+        "category": "invalid_view",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.view(x.size(0), 128)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "invalid_view_5",
+        "input_shapes": {
+          "x": [
+            4,
+            128
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.W = nn.Parameter(torch.randn(5, 4))\n\n    def forward(self, x):\n        return torch.matmul(x, self.W)\n",
+        "category": "matmul_inner",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.W = nn.Parameter(torch.randn(4, 4))\n\n    def forward(self, x):\n        return torch.matmul(x, self.W)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "matmul_inner_0",
+        "input_shapes": {
+          "x": [
+            4,
+            4
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.W = nn.Parameter(torch.randn(9, 4))\n\n    def forward(self, x):\n        return torch.matmul(x, self.W)\n",
+        "category": "matmul_inner",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.W = nn.Parameter(torch.randn(8, 4))\n\n    def forward(self, x):\n        return torch.matmul(x, self.W)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "matmul_inner_1",
+        "input_shapes": {
+          "x": [
+            4,
+            8
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.W = nn.Parameter(torch.randn(17, 4))\n\n    def forward(self, x):\n        return torch.matmul(x, self.W)\n",
+        "category": "matmul_inner",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.W = nn.Parameter(torch.randn(16, 4))\n\n    def forward(self, x):\n        return torch.matmul(x, self.W)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "matmul_inner_2",
+        "input_shapes": {
+          "x": [
+            4,
+            16
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.W = nn.Parameter(torch.randn(33, 4))\n\n    def forward(self, x):\n        return torch.matmul(x, self.W)\n",
+        "category": "matmul_inner",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.W = nn.Parameter(torch.randn(32, 4))\n\n    def forward(self, x):\n        return torch.matmul(x, self.W)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "matmul_inner_3",
+        "input_shapes": {
+          "x": [
+            4,
+            32
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.W = nn.Parameter(torch.randn(65, 4))\n\n    def forward(self, x):\n        return torch.matmul(x, self.W)\n",
+        "category": "matmul_inner",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.W = nn.Parameter(torch.randn(64, 4))\n\n    def forward(self, x):\n        return torch.matmul(x, self.W)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "matmul_inner_4",
+        "input_shapes": {
+          "x": [
+            4,
+            64
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.W = nn.Parameter(torch.randn(129, 4))\n\n    def forward(self, x):\n        return torch.matmul(x, self.W)\n",
+        "category": "matmul_inner",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.W = nn.Parameter(torch.randn(128, 4))\n\n    def forward(self, x):\n        return torch.matmul(x, self.W)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "matmul_inner_5",
+        "input_shapes": {
+          "x": [
+            4,
+            128
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.b = nn.Parameter(torch.randn(4))\n\n    def forward(self, x):\n        return x + self.b\n",
+        "category": "add_broadcast",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.b = nn.Parameter(torch.randn(3))\n\n    def forward(self, x):\n        return x + self.b\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "add_broadcast_0",
+        "input_shapes": {
+          "x": [
+            4,
+            3
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.b = nn.Parameter(torch.randn(6))\n\n    def forward(self, x):\n        return x + self.b\n",
+        "category": "add_broadcast",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.b = nn.Parameter(torch.randn(5))\n\n    def forward(self, x):\n        return x + self.b\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "add_broadcast_1",
+        "input_shapes": {
+          "x": [
+            4,
+            5
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.b = nn.Parameter(torch.randn(9))\n\n    def forward(self, x):\n        return x + self.b\n",
+        "category": "add_broadcast",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.b = nn.Parameter(torch.randn(8))\n\n    def forward(self, x):\n        return x + self.b\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "add_broadcast_2",
+        "input_shapes": {
+          "x": [
+            4,
+            8
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.b = nn.Parameter(torch.randn(17))\n\n    def forward(self, x):\n        return x + self.b\n",
+        "category": "add_broadcast",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.b = nn.Parameter(torch.randn(16))\n\n    def forward(self, x):\n        return x + self.b\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "add_broadcast_3",
+        "input_shapes": {
+          "x": [
+            4,
+            16
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.b = nn.Parameter(torch.randn(33))\n\n    def forward(self, x):\n        return x + self.b\n",
+        "category": "add_broadcast",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.b = nn.Parameter(torch.randn(32))\n\n    def forward(self, x):\n        return x + self.b\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "add_broadcast_4",
+        "input_shapes": {
+          "x": [
+            4,
+            32
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.b = nn.Parameter(torch.randn(65))\n\n    def forward(self, x):\n        return x + self.b\n",
+        "category": "add_broadcast",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.b = nn.Parameter(torch.randn(64))\n\n    def forward(self, x):\n        return x + self.b\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "add_broadcast_5",
+        "input_shapes": {
+          "x": [
+            4,
+            64
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(4, 5)\n\n    def forward(self, x):\n        y = self.l(x)\n        return torch.cat([x, y], dim=0)\n",
+        "category": "cat_noncat_dim",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(4, 4)\n\n    def forward(self, x):\n        y = self.l(x)\n        return torch.cat([x, y], dim=0)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "cat_noncat_dim_0",
+        "input_shapes": {
+          "x": [
+            4,
+            4
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(8, 9)\n\n    def forward(self, x):\n        y = self.l(x)\n        return torch.cat([x, y], dim=0)\n",
+        "category": "cat_noncat_dim",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(8, 8)\n\n    def forward(self, x):\n        y = self.l(x)\n        return torch.cat([x, y], dim=0)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "cat_noncat_dim_1",
+        "input_shapes": {
+          "x": [
+            4,
+            8
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(16, 17)\n\n    def forward(self, x):\n        y = self.l(x)\n        return torch.cat([x, y], dim=0)\n",
+        "category": "cat_noncat_dim",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(16, 16)\n\n    def forward(self, x):\n        y = self.l(x)\n        return torch.cat([x, y], dim=0)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "cat_noncat_dim_2",
+        "input_shapes": {
+          "x": [
+            4,
+            16
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(32, 33)\n\n    def forward(self, x):\n        y = self.l(x)\n        return torch.cat([x, y], dim=0)\n",
+        "category": "cat_noncat_dim",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(32, 32)\n\n    def forward(self, x):\n        y = self.l(x)\n        return torch.cat([x, y], dim=0)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "cat_noncat_dim_3",
+        "input_shapes": {
+          "x": [
+            4,
+            32
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(64, 65)\n\n    def forward(self, x):\n        y = self.l(x)\n        return torch.cat([x, y], dim=0)\n",
+        "category": "cat_noncat_dim",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l = nn.Linear(64, 64)\n\n    def forward(self, x):\n        y = self.l(x)\n        return torch.cat([x, y], dim=0)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "cat_noncat_dim_4",
+        "input_shapes": {
+          "x": [
+            4,
+            64
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(4, 8, kernel_size=3, padding=1)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "category": "conv_in",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(3, 8, kernel_size=3, padding=1)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "conv_in_0",
+        "input_shapes": {
+          "x": [
+            2,
+            3,
+            16,
+            16
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(2, 4, kernel_size=3, padding=1)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "category": "conv_in",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(1, 4, kernel_size=3, padding=1)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "conv_in_1",
+        "input_shapes": {
+          "x": [
+            2,
+            1,
+            8,
+            8
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(4, 16, kernel_size=3, padding=1)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "category": "conv_in",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(3, 16, kernel_size=3, padding=1)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "conv_in_2",
+        "input_shapes": {
+          "x": [
+            2,
+            3,
+            32,
+            32
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(9, 8, kernel_size=3, padding=1)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "category": "conv_in",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(8, 8, kernel_size=3, padding=1)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "conv_in_3",
+        "input_shapes": {
+          "x": [
+            2,
+            8,
+            16,
+            16
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(4, 4, kernel_size=3, padding=1)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "category": "conv_in",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(3, 4, kernel_size=3, padding=1)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "conv_in_4",
+        "input_shapes": {
+          "x": [
+            2,
+            3,
+            8,
+            8
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(17, 8, kernel_size=3, padding=1)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "category": "conv_in",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(16, 8, kernel_size=3, padding=1)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "conv_in_5",
+        "input_shapes": {
+          "x": [
+            2,
+            16,
+            8,
+            8
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(3, 8, kernel_size=10)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "category": "conv_kernel",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(3, 8, kernel_size=3)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "conv_kernel_0",
+        "input_shapes": {
+          "x": [
+            2,
+            3,
+            8,
+            8
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(1, 4, kernel_size=8)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "category": "conv_kernel",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(1, 4, kernel_size=3)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "conv_kernel_1",
+        "input_shapes": {
+          "x": [
+            2,
+            1,
+            6,
+            6
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(3, 16, kernel_size=12)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "category": "conv_kernel",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(3, 16, kernel_size=3)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "conv_kernel_2",
+        "input_shapes": {
+          "x": [
+            2,
+            3,
+            10,
+            10
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(8, 8, kernel_size=10)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "category": "conv_kernel",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(8, 8, kernel_size=3)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "conv_kernel_3",
+        "input_shapes": {
+          "x": [
+            2,
+            8,
+            8,
+            8
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(3, 4, kernel_size=14)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "category": "conv_kernel",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(3, 4, kernel_size=3)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "conv_kernel_4",
+        "input_shapes": {
+          "x": [
+            2,
+            3,
+            12,
+            12
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(16, 8, kernel_size=8)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "category": "conv_kernel",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.c = nn.Conv2d(16, 8, kernel_size=3)\n\n    def forward(self, x):\n        return self.c(x)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "conv_kernel_5",
+        "input_shapes": {
+          "x": [
+            2,
+            16,
+            6,
+            6
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.reshape(x.size(0), 4, 5)\n",
+        "category": "invalid_reshape",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.reshape(x.size(0), 4, 4)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "invalid_reshape_0",
+        "input_shapes": {
+          "x": [
+            4,
+            16
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.reshape(x.size(0), 4, 7)\n",
+        "category": "invalid_reshape",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.reshape(x.size(0), 4, 6)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "invalid_reshape_1",
+        "input_shapes": {
+          "x": [
+            4,
+            24
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.reshape(x.size(0), 4, 9)\n",
+        "category": "invalid_reshape",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.reshape(x.size(0), 4, 8)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "invalid_reshape_2",
+        "input_shapes": {
+          "x": [
+            4,
+            32
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.reshape(x.size(0), 4, 4)\n",
+        "category": "invalid_reshape",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.reshape(x.size(0), 4, 3)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "invalid_reshape_3",
+        "input_shapes": {
+          "x": [
+            4,
+            12
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.reshape(x.size(0), 4, 6)\n",
+        "category": "invalid_reshape",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.reshape(x.size(0), 4, 5)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "invalid_reshape_4",
+        "input_shapes": {
+          "x": [
+            4,
+            20
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.reshape(x.size(0), 4, 8)\n",
+        "category": "invalid_reshape",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        pass\n\n    def forward(self, x):\n        return x.reshape(x.size(0), 4, 7)\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "invalid_reshape_5",
+        "input_shapes": {
+          "x": [
+            4,
+            28
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.f = nn.Flatten()\n        self.l = nn.Linear(197, 10)\n\n    def forward(self, x):\n        return self.l(self.f(x))\n",
+        "category": "flatten_linear",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.f = nn.Flatten()\n        self.l = nn.Linear(192, 10)\n\n    def forward(self, x):\n        return self.l(self.f(x))\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "flatten_linear_0",
+        "input_shapes": {
+          "x": [
+            2,
+            3,
+            8,
+            8
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.f = nn.Flatten()\n        self.l = nn.Linear(69, 10)\n\n    def forward(self, x):\n        return self.l(self.f(x))\n",
+        "category": "flatten_linear",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.f = nn.Flatten()\n        self.l = nn.Linear(64, 10)\n\n    def forward(self, x):\n        return self.l(self.f(x))\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "flatten_linear_1",
+        "input_shapes": {
+          "x": [
+            2,
+            1,
+            8,
+            8
+          ]
+        }
+      },
+      {
+        "buggy_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.f = nn.Flatten()\n        self.l = nn.Linear(53, 10)\n\n    def forward(self, x):\n        return self.l(self.f(x))\n",
+        "category": "flatten_linear",
+        "clean_source": "import torch\nimport torch.nn as nn\n\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.f = nn.Flatten()\n        self.l = nn.Linear(48, 10)\n\n    def forward(self, x):\n        return self.l(self.f(x))\n",
+        "expected_buggy_runtime": "raises",
+        "expected_buggy_tensorguard": "REFUTED",
+        "expected_clean_runtime": "clean",
+        "expected_clean_tensorguard": "ACCEPTED",
+        "id": "flatten_linear_2",
+        "input_shapes": {
+          "x": [
+            2,
+            3,
+            4,
+            4
+          ]
+        }
+      }
+    ]
+  }
+}
