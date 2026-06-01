@@ -152,8 +152,8 @@ def make_expression_symbolic(
     elif isinstance(node, ast.Constant) and isinstance(node.value, int):
         return node.value
     
-    elif isinstance(node, ast.Num):
-        return node.n
+    elif hasattr(ast, "Num") and isinstance(node, ast.Num):  # Python <3.8 legacy node
+        return node.n  # type: ignore[attr-defined]
     
     elif isinstance(node, ast.BinOp):
         left = make_expression_symbolic(node.left, config_param_name, symbolic_fields, scalar_attrs)

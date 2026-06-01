@@ -75,12 +75,18 @@ the feature list above.
   `experiments_v5/feature_ablation.json` is still a flat line: no
   real-world block in either corpus exhibited a category-specific
   violation that the L1 view did not already cover.
-* **`--cegar-iterations N` controls how many refinement rounds run,
-  but the discovered predicates are stored as metadata only.**  They
-  are not promoted to additional `Bug` objects, so the headline RP
-  count is invariant to N for N ≥ 1; see the L0 vs L1 row of the
-  same ablation JSON.  A future release will surface unsatisfiable
-  predicates as `Bug(category=cegar_refined_contract)` entries.
+* **`--cegar-iterations N` controls how many refinement rounds run.**
+  Discovered predicates are stored as metadata, **and** unsatisfiable
+  refined contracts are now promoted to real
+  `Bug(category=cegar_refined_contract)` entries (Step 1 of
+  `100_STEPS.md`).  When the predicates CEGAR proposes for a forward
+  parameter across iterations are jointly unsatisfiable — e.g. an input
+  that must be both `shape[-1] == 768` and `shape[-1] == 512` — the
+  module can never run, and the conflict is surfaced as a sound,
+  Z3-discharged bug.  Because these predicates only exist once refinement
+  runs, the reported bug set now varies with `N` (with `N = 0` the
+  contract-level conflict is not surfaced).  See
+  `tests/test_cegar_refined_contract.py`.
 
 ---
 

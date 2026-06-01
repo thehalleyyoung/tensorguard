@@ -48,6 +48,10 @@ class BugCategory(Enum):
     INDEX_OUT_OF_BOUNDS = "index_out_of_bounds"
     TYPE_ERROR = "type_error"
     ATTRIBUTE_ERROR = "attribute_error"
+    # A shape contract that CEGAR refined to an unsatisfiable set of
+    # predicates: no input shape can satisfy every requirement the forward
+    # pass imposes on a parameter, so the module can never run successfully.
+    CEGAR_REFINED_CONTRACT = "cegar_refined_contract"
 
 
 @dataclass
@@ -677,10 +681,100 @@ try:
         run_shape_cegar,
         verify_and_discover,
         ShapeCEGARResult,
+        ShapeRefinement,
+        ShapePredicate,
     )
     _HAS_SHAPE_CEGAR = True
 except Exception:
     _HAS_SHAPE_CEGAR = False
+
+
+def _cegar_refined_contract_bugs(
+    cegar_result: "ShapeCEGARResult",
+    filename: str,
+) -> List[Bug]:
+    """Surface unsatisfiable refined shape contracts as concrete bugs.
+
+    CEGAR proposes shape predicates for each forward parameter while trying
+    to prove the module safe.  The quality filter keeps only a mutually
+    *consistent* surviving subset, so ``discovered_predicates`` always looks
+    feasible.  But the *union* of every predicate proposed across iterations
+    (``iteration_log[*].predicates_added``) can be jointly unsatisfiable —
+    e.g. an input that must simultaneously have ``shape[-1] == 768`` (for one
+    layer) and ``shape[-1] == 512`` (for another).  Such a contract can never
+    be satisfied by any input, so the module is guaranteed to fail at runtime.
+
+    This makes the reported bug set depend on how much CEGAR runs: with
+    ``max_cegar_iterations == 0`` no predicates are proposed and nothing is
+    surfaced; once refinement runs, the conflict becomes visible.  Detection
+    is discharged by Z3 (``ShapeRefinement.check_feasibility``), so a reported
+    infeasibility is sound — there are no false positives here.
+    """
+    if not _HAS_SHAPE_CEGAR:
+        return []
+
+    # Collect every predicate ever proposed, grouped by the tensor it
+    # constrains (the surviving set alone hides filtered-out conflicts).
+    by_tensor: Dict[str, List["ShapePredicate"]] = {}
+    proposed: List["ShapePredicate"] = list(
+        getattr(cegar_result, "discovered_predicates", []) or []
+    )
+    for rec in getattr(cegar_result, "iteration_log", []) or []:
+        proposed.extend(getattr(rec, "predicates_added", []) or [])
+
+    for pred in proposed:
+        tensor = getattr(pred, "tensor", None)
+        if tensor is None:
+            continue
+        by_tensor.setdefault(tensor, []).append(pred)
+
+    bugs: List[Bug] = []
+    for tensor, preds in by_tensor.items():
+        # Deduplicate structurally-identical predicates before the SAT check.
+        unique = list(dict.fromkeys(preds))
+        if len(unique) < 2:
+            continue
+        try:
+            feasible = ShapeRefinement.check_feasibility(unique)
+        except Exception:
+            continue
+        if feasible:
+            continue
+        # Find a minimal conflicting pair for a readable explanation.
+        conflict = _minimal_conflict(unique)
+        detail = " and ".join(p.pretty() for p in conflict) if conflict else \
+            "; ".join(p.pretty() for p in unique)
+        bugs.append(Bug(
+            category=BugCategory.CEGAR_REFINED_CONTRACT,
+            message=(
+                f"Unsatisfiable shape contract for '{tensor}': the forward "
+                f"pass requires {detail}, which no input can satisfy"
+            ),
+            location=SourceLocation(file=filename, line=0, column=0),
+            severity="error",
+            confidence=1.0,
+            fix_suggestion=(
+                f"Reconcile the layers that consume '{tensor}' so they agree "
+                f"on its shape, or route them through separate inputs."
+            ),
+        ))
+    return bugs
+
+
+def _minimal_conflict(preds: List["ShapePredicate"]) -> List["ShapePredicate"]:
+    """Return a smallest subset of *preds* that is already infeasible."""
+    if not _HAS_SHAPE_CEGAR:
+        return []
+    n = len(preds)
+    for i in range(n):
+        for j in range(i + 1, n):
+            pair = [preds[i], preds[j]]
+            try:
+                if not ShapeRefinement.check_feasibility(pair):
+                    return pair
+            except Exception:
+                continue
+    return []
 
 
 def verify_architecture(
@@ -923,11 +1017,21 @@ def verify_architecture(
     if _HAS_SHAPE_CEGAR and max_cegar_iterations > 0:
         cegar_result = run_shape_cegar(
             source,
+            input_shapes=input_shapes or None,
             max_iterations=max_cegar_iterations,
         )
         # Store discovered contracts
         result._shape_contracts = cegar_result.discovered_predicates  # type: ignore[attr-defined]
         result._cegar_iterations = cegar_result.iterations  # type: ignore[attr-defined]
+
+        # Surface unsatisfiable refined contracts as concrete bugs.  Unlike
+        # the inert metadata of earlier releases, these are real Bug objects
+        # whose presence depends on CEGAR actually running (so the reported
+        # count now varies with --cegar-iterations).  Z3 discharges the
+        # infeasibility, so this is sound (no false positives).
+        for _cb in _cegar_refined_contract_bugs(cegar_result, filename):
+            if _cb.message not in {b.message for b in result.bugs}:
+                result.bugs.append(_cb)
 
         # Surface any CEGAR-confirmed real shape bugs as Bug objects.
         # Note: in the current implementation _is_real_bug() only fires

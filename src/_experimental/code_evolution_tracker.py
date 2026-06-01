@@ -28,7 +28,7 @@ def _normalize_function_body(node: ast.FunctionDef) -> str:
     node.decorator_list = []
     if (node.body
             and isinstance(node.body[0], ast.Expr)
-            and isinstance(node.body[0].value, (ast.Constant, ast.Str))):
+            and isinstance(node.body[0].value, ast.Constant)):
         node.body = node.body[1:]
     return ast.dump(node, annotate_fields=False)
 

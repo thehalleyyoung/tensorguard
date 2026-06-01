@@ -382,7 +382,7 @@ def _is_none(node: ast.AST) -> bool:
     """Check if a node represents ``None``."""
     if isinstance(node, ast.Constant) and node.value is None:
         return True
-    if isinstance(node, ast.NameConstant) and node.value is None:  # type: ignore[attr-defined]
+    if hasattr(ast, "NameConstant") and isinstance(node, ast.NameConstant) and node.value is None:  # type: ignore[attr-defined]  # Python <3.8 legacy node
         return True
     return False
 
