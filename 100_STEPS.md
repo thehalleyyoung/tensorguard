@@ -28,9 +28,16 @@ measured, and reproducible.
    proven on a 768-vs-512 in_features conflict where CEGAR=0 → 0 bugs and
    CEGAR=10 → 1 sound bug. Regression tests in
    `tests/test_cegar_refined_contract.py`.*
-2. Make `--no-phase-check`/`--no-device-check`/`--no-grad-check` gate the
+2. [x] Make `--no-phase-check`/`--no-device-check`/`--no-grad-check` gate the
    *solver*, not just post-hoc filter the verdict, so timing and witnesses
    reflect the real per-domain cost.
+   *Done: threaded `check_devices/phases/gradients` into `ConstraintVerifier`;
+   the per-step encoders `_encode_{device,phase,gradient}_safety` return no
+   constraints when their domain is disabled, and the device/phase theory
+   solver checks are skipped. Proven that disabled-domain encoders emit zero
+   constraints (no solver work / witnesses) while enabled ones do; post-hoc
+   filter kept only as a defensive net. Tests in
+   `tests/test_solver_domain_gating.py`.*
 3. Replace the flat `feature_ablation.json` line with a corpus where each
    domain (Shape/Device/Phase/Stride/Permutation) demonstrably contributes at
    least one bug the L1 shape view misses; if a domain never contributes,

@@ -6677,6 +6677,9 @@ class ConstraintVerifier:
         constraints: Optional[Dict[str, Union[str, int]]] = None,
         produce_certificates: bool = False,
         use_kb_normalization: bool = False,
+        check_devices: bool = True,
+        check_phases: bool = True,
+        check_gradients: bool = True,
     ) -> None:
         self.graph = graph
         self.input_shapes = input_shapes or {}
@@ -6685,6 +6688,13 @@ class ConstraintVerifier:
         self.max_k = max_k if max_k is not None else graph.num_steps
         self.produce_certificates = produce_certificates
         self.use_kb_normalization = use_kb_normalization and HAS_KB_NORMALIZATION
+        # When a domain is disabled we skip *generating and solving* its
+        # constraints entirely (not merely filtering the verdict afterwards),
+        # so the disabled domain costs no solver time and contributes no
+        # cross-domain witnesses.  See _filter_domain_checks().
+        self.check_devices = check_devices
+        self.check_phases = check_phases
+        self.check_gradients = check_gradients
         self.ctx = _Z3Context()
         self._stride_check_id = 0
         self.relational_constraints = constraints or {}
@@ -6698,6 +6708,37 @@ class ConstraintVerifier:
             )
         else:
             self._relational_z3 = []
+
+    # ------------------------------------------------------------------
+    # Domain gating (solver-level, not post-hoc filtering)
+    # ------------------------------------------------------------------
+
+    _DOMAIN_OF_KIND = {
+        "device_mismatch": "devices",
+        "phase_violation": "phases",
+        "phase_error": "phases",
+        "gradient_violation": "gradients",
+        "gradient_broken": "gradients",
+    }
+
+    def _domain_enabled(self, kind: str) -> bool:
+        """Whether the domain a violation *kind* belongs to is enabled."""
+        domain = self._DOMAIN_OF_KIND.get(kind)
+        if domain == "devices":
+            return self.check_devices
+        if domain == "phases":
+            return self.check_phases
+        if domain == "gradients":
+            return self.check_gradients
+        return True  # shape / cross-domain / structural checks always run
+
+    def _filter_domain_checks(self, pairs):
+        """Drop ``(kind, encoder)`` pairs whose domain is disabled.
+
+        This gates the solver: disabled domains are never encoded into Z3
+        nor checked, so they incur no solver cost and produce no witnesses.
+        """
+        return [(kind, enc) for (kind, enc) in pairs if self._domain_enabled(kind)]
 
     # ------------------------------------------------------------------
     # Knuth-Bendix constraint normalization
@@ -7483,6 +7524,8 @@ class ConstraintVerifier:
         idx: int,
     ) -> List:
         """Encode device-consistency constraints for *step*."""
+        if not self.check_devices:
+            return []
         cs: list = []
         # Binary ops: all inputs on the same device
         if step.op in (OpKind.MATMUL, OpKind.ADD, OpKind.CAT, OpKind.MULTIPLY):
@@ -7514,6 +7557,8 @@ class ConstraintVerifier:
         Also registers phase-dependent behaviour with the PhaseTheoryPlugin
         (if available) for eager propagation on the phase solver.
         """
+        if not self.check_phases:
+            return []
         cs: list = []
         if k.phase_var is None:
             return cs
@@ -7587,6 +7632,8 @@ class ConstraintVerifier:
         idx: int,
     ) -> List:
         """Encode gradient-validity constraints for *step*."""
+        if not self.check_gradients:
+            return []
         cs: list = []
         # Detach: output must not require grad (checked in post-state)
         if step.op == OpKind.DETACH:
@@ -7980,7 +8027,7 @@ class ConstraintVerifier:
             if dev is not None:
                 input_devices.append((inp, dev))
 
-        if len(input_devices) >= 2:
+        if self.check_devices and len(input_devices) >= 2:
             first_name, first_dev = input_devices[0]
             for other_name, other_dev in input_devices[1:]:
                 if first_dev != other_dev:
@@ -8046,7 +8093,7 @@ class ConstraintVerifier:
                     state.shape_env[step.inputs[0]]
                 )
             # Warn if detach kills gradient from a trainable input
-            if step.inputs:
+            if self.check_gradients and step.inputs:
                 inp = step.inputs[0]
                 if state.gradient_status.get(inp, False):
                     violations.append(SafetyViolation(
@@ -8983,7 +9030,7 @@ class ConstraintVerifier:
             kripke_states.append(post_k)
 
             # 3. Z3 safety checks per domain
-            for kind, encoder in [
+            for kind, encoder in self._filter_domain_checks([
                 ("shape_incompatible",
                  lambda: self._encode_shape_safety(
                      cur_k, step, cur_model, idx)),
@@ -8996,7 +9043,7 @@ class ConstraintVerifier:
                 ("gradient_violation",
                  lambda: self._encode_gradient_safety(
                      cur_k, step, cur_model, idx)),
-            ]:
+            ]):
                 safety = encoder()
                 if safety:
                     v = self._z3_check_safety(
@@ -9006,7 +9053,7 @@ class ConstraintVerifier:
                         all_viols.append(v)
 
             # 3b. Check device theory solver
-            if self.ctx.device_theory is not None:
+            if self.check_devices and self.ctx.device_theory is not None:
                 device_result = self.ctx.timed_check(self.ctx._device_solver)
                 if device_result == z3.unsat:
                     all_viols.append(SafetyViolation(
@@ -9017,7 +9064,7 @@ class ConstraintVerifier:
                     ))
 
             # 3c. Check phase theory solver
-            if self.ctx.phase_theory is not None:
+            if self.check_phases and self.ctx.phase_theory is not None:
                 phase_result = self.ctx.timed_check(self.ctx._phase_solver)
                 if phase_result == z3.unsat:
                     all_viols.append(SafetyViolation(
@@ -9198,7 +9245,7 @@ class ConstraintVerifier:
                 solver.add(c)
 
             # Per-domain inductive checks at post-state
-            for kind, encoder in [
+            for kind, encoder in self._filter_domain_checks([
                 ("shape_incompatible",
                  lambda: self._encode_shape_safety(
                      post_k, next_step, post_model, idx + 1)),
@@ -9211,7 +9258,7 @@ class ConstraintVerifier:
                 ("gradient_violation",
                  lambda: self._encode_gradient_safety(
                      post_k, next_step, post_model, idx + 1)),
-            ]:
+            ]):
                 post_safety = encoder()
                 if post_safety:
                     solver.push()
@@ -10302,6 +10349,9 @@ def verify_model(
         constraints=constraints,
         produce_certificates=produce_certificates,
         use_kb_normalization=use_kb_normalization,
+        check_devices=check_devices,
+        check_phases=check_phases,
+        check_gradients=check_gradients,
     )
 
     result = checker.verify()
@@ -10312,7 +10362,7 @@ def verify_model(
     # (register_buffer tensors are pinned to CPU in _build_initial_state;
     # if inputs/layer-outputs are on CUDA the cat/add will fail at runtime.)
     # ----------------------------------------------------------------
-    if graph.buffer_shapes and default_device == Device.CPU:
+    if check_devices and graph.buffer_shapes and default_device == Device.CPU:
         cuda_checker = ConstraintVerifier(
             graph,
             input_shapes=input_shapes or {},
