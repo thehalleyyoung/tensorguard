@@ -51,7 +51,11 @@ runtime errors in ML codebases before any code runs.
   `experiments_v5/domain_contribution.json`), and pinned by
   `tests/test_domain_contribution.py`.
 - **Z3-backed** — all shape constraints are discharged by the Z3 SMT solver
-  for soundness (0% false positives in `--high-confidence` mode)
+  for soundness (0% false positives in `--high-confidence` mode).  The precise
+  guarantee — exactly which programs are never miss-passed, and which
+  constructs are over-/under-approximated or skipped — is published in
+  [`SOUNDNESS_CONTRACT.md`](SOUNDNESS_CONTRACT.md) (generated from
+  `src/soundness_contract.py`, including the currently-known unsoundness gaps).
 - **SARIF 2.1.0 output** — integrates with GitHub Code Scanning / Advanced Security
 - **Sub-second analysis** — typical models verified in < 1 second
 

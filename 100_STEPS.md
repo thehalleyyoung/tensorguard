@@ -71,9 +71,23 @@ measured, and reproducible.
    rerun. Output `reproducibility/numeric_claims_audit.json`; pinned by
    `tests/test_numeric_claims_audit.py` (6 tests, incl. negative MISMATCH /
    ORPHAN / SOURCE_MISSING cases).*
-5. Define and publish a precise **soundness contract**: exactly which programs
+5. [x] Define and publish a precise **soundness contract**: exactly which programs
    TensorGuard guarantees to never miss-pass, and which constructs are
    over-approximated, under-approximated, or skipped.
+   *Done: `src/soundness_contract.py` is the single importable source of truth.
+   It states both directions explicitly — Refutation soundness (no false alarm,
+   Z3-discharged) and Verification soundness (never miss-pass, scoped to the
+   verifiable fragment + modeled bug classes + SOUND operators) — and
+   classifies every construct as `sound` / `over_approximated` /
+   `under_approximated` / `skipped`, with a clause per `UnsupportedCategory`.
+   Crucially it surfaces (not hides) the known unsoundness gaps: U1 —
+   `verify_architecture` does not yet gate on the fragment, so an out-of-fragment
+   module currently gets a silent SAFE (fix = Step 8); U2 — `shape_cegar`
+   SAFE-on-infeasible. Published to `SOUNDNESS_CONTRACT.md` (generated;
+   referenced from README). Empirical claims pinned against real code in
+   `tests/test_soundness_contract.py` (7 tests): fragment boundary
+   (clean in / data-dependent-CF out), the U1 silent-SAFE gap, a refutation
+   probe, and doc/module sync.*
 6. Tag every operator transfer function as `sound`, `complete`, or `heuristic`
    in a machine-readable table; surface the tag in output so users know the
    confidence of each inference.
