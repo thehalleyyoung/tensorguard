@@ -600,6 +600,34 @@ example-based `tests/test_denotational_semantics.py`.
 PYTHONPATH=. python3 -m pytest tests/test_shape_algebra_properties.py -q   # or: make shape-props
 ```
 
+### Precision/recall regression dashboard (merge gate)
+
+`evaluation/dashboard.py` aggregates the headline metrics from every committed
+evaluation artifact (the confusion matrices, sound-mode false-positive hunt,
+differential and negative fuzzing, latent-bug recall, and the frozen triage
+suite) into a single dashboard and gates them against a frozen baseline,
+`evaluation/dashboard_baseline.json`. Quality metrics (precision, recall, F1,
+false positives, false negatives, coverage) are gated by direction; corpus-size
+("integrity") metrics must never shrink. Integer counts are compared exactly;
+non-finite or missing values are treated as failures.
+
+```bash
+PYTHONPATH=. python3 evaluation/dashboard.py            # regenerate dashboard.md
+PYTHONPATH=. python3 evaluation/dashboard.py --check    # gate; non-zero on regression
+PYTHONPATH=. python3 evaluation/dashboard.py --update-baseline   # accept an intentional change
+```
+
+In `--check` mode (`make dashboard-check`) the dashboard exits non-zero on any
+regression or metric drift, so it can block a merge. The baseline is a
+**reviewed regression ratchet**, not a tamper-proof boundary: any intentional
+metric change must appear as a reviewable diff to the baseline file. Because the
+dashboard reads committed artifacts, CI runs each harness in `--check` mode
+(byte-identical regeneration) **before** the dashboard gate so a source
+regression that left stale artifacts behind is still caught — see the
+`dashboard-gate` job in `.github/workflows/tensorguard-ci.yml` and the
+`make dashboard-gate` target. Committed artifacts: `evaluation/dashboard.md` and
+`evaluation/dashboard_baseline.json`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
@@ -633,6 +661,7 @@ in `lean/TensorGuard/` live inside docstring comments.
 | Minimal-reproducer shrinker (delta-debug disagreements)        | `evaluation/minimize.py`                                |
 | Disagreement triage + 50-case regression suite                 | `evaluation/triage.py`                                  |
 | Shape-algebra property tests (Hypothesis)                      | `tests/test_shape_algebra_properties.py`                |
+| Precision/recall regression dashboard (merge gate)             | `evaluation/dashboard.py`                               |
 | 60-bug headline RP reproducer (single command)                 | `reproducibility/reproduce_headline_60bug.py`           |
 | Verdict reclassification (RP / CV / LW)                        | `experiments_v5/run_verdict_reclassification.py`        |
 | 10-bug real-public corpus                                      | `experiments_v5/v8/verify_real_bugs.py`                 |

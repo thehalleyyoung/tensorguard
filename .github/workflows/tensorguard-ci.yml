@@ -23,3 +23,26 @@ jobs:
           python-version: "3.11"
       - run: pip install -e ".[dev]" z3-solver
       - run: python -m src.cli.main verify examples/ --format=json
+
+  dashboard-gate:
+    # Regression ratchet: regenerate-and-compare every evaluation artifact
+    # (catches stale artifacts from a source regression), then gate the
+    # aggregated precision/recall dashboard against the frozen baseline.
+    # Any drop in verifier quality fails this job and blocks the merge.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]" z3-solver
+      - name: Verify evaluation artifacts are fresh
+        run: |
+          PYTHONPATH=. python evaluation/precision_recall.py --check
+          PYTHONPATH=. python evaluation/sound_mode_fp.py --check
+          PYTHONPATH=. python evaluation/diff_fuzz.py --check
+          PYTHONPATH=. python evaluation/neg_fuzz.py --check
+          PYTHONPATH=. python evaluation/hard_recall.py --check
+          PYTHONPATH=. python evaluation/triage.py --check
+      - name: Gate precision/recall dashboard against frozen baseline
+        run: PYTHONPATH=. python evaluation/dashboard.py --check

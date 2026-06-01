@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -32,6 +32,9 @@ help:
 	@echo "  minimize         Regenerate the minimal-reproducer shrinker demo (delta-debug a caught fault)"
 	@echo "  triage           Regenerate the disagreement triage + 50-case minimal-reproducer regression suite"
 	@echo "  shape-props      Run the Hypothesis property tests over the shape-algebra transfer functions"
+	@echo "  dashboard        Regenerate the precision/recall regression dashboard (dashboard.md)"
+	@echo "  dashboard-check  Gate the dashboard against the frozen baseline (non-zero on regression)"
+	@echo "  dashboard-gate   Verify artifacts are fresh, then gate the dashboard (full merge gate)"
 	@echo "  audit            Run the numeric-claim audit over committed artifacts"
 	@echo "  test             Run the pytest suite"
 
@@ -80,6 +83,21 @@ triage:
 
 shape-props:
 	$(PYTHON) -m pytest tests/test_shape_algebra_properties.py -q
+
+dashboard:
+	$(PYTHON) evaluation/dashboard.py
+
+dashboard-check:
+	$(PYTHON) evaluation/dashboard.py --check
+
+dashboard-gate:
+	$(PYTHON) evaluation/precision_recall.py --check
+	$(PYTHON) evaluation/sound_mode_fp.py --check
+	$(PYTHON) evaluation/diff_fuzz.py --check
+	$(PYTHON) evaluation/neg_fuzz.py --check
+	$(PYTHON) evaluation/hard_recall.py --check
+	$(PYTHON) evaluation/triage.py --check
+	$(PYTHON) evaluation/dashboard.py --check
 
 audit:
 	$(PYTHON) reproducibility/audit_numeric_claims.py

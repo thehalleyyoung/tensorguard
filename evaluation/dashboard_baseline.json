@@ -1,0 +1,165 @@
+{
+  "_doc": "Frozen regression ratchet for evaluation/dashboard.py. Higher_better metrics must not drop; lower_better must not rise; integrity (corpus-size) metrics must not shrink. Intentional changes appear as a reviewable diff here.",
+  "metrics": {
+    "benchmark_population": {
+      "artifact": "confusion_matrices.json",
+      "direction": "higher_better",
+      "kind": "integrity",
+      "label": "Benchmark population size",
+      "path": "confusion.tensorguard.all.N",
+      "value": 16
+    },
+    "diff_fuzz_false_positives": {
+      "artifact": "diff_fuzz.json",
+      "direction": "lower_better",
+      "kind": "quality",
+      "label": "Differential-fuzz false positives",
+      "path": "summary.false_positives",
+      "value": 0
+    },
+    "diff_fuzz_population": {
+      "artifact": "diff_fuzz.json",
+      "direction": "higher_better",
+      "kind": "integrity",
+      "label": "Differential-fuzz verified-safe population",
+      "path": "summary.verified_safe",
+      "value": 200
+    },
+    "diff_fuzz_safe_coverage": {
+      "artifact": "diff_fuzz.json",
+      "direction": "higher_better",
+      "kind": "quality",
+      "label": "Differential-fuzz safe coverage",
+      "path": "summary.safe_coverage",
+      "value": 1.0
+    },
+    "hard_recall_advantage": {
+      "artifact": "hard_recall.json",
+      "direction": "higher_better",
+      "kind": "quality",
+      "label": "Latent-bug recall advantage over baseline",
+      "path": "summary.recall_advantage",
+      "value": 0.75
+    },
+    "hard_recall_tensorguard_misses": {
+      "artifact": "hard_recall.json",
+      "direction": "lower_better",
+      "kind": "quality",
+      "label": "TG latent-bug misses",
+      "path": "summary.tensorguard_misses",
+      "value": 2
+    },
+    "hard_recall_tensorguard_recall": {
+      "artifact": "hard_recall.json",
+      "direction": "higher_better",
+      "kind": "quality",
+      "label": "TG latent-bug recall",
+      "path": "summary.tensorguard_recall",
+      "value": 0.75
+    },
+    "neg_fuzz_false_negatives": {
+      "artifact": "neg_fuzz.json",
+      "direction": "lower_better",
+      "kind": "quality",
+      "label": "Negative-fuzz false negatives",
+      "path": "summary.false_negatives",
+      "value": 0
+    },
+    "neg_fuzz_genuine_faults": {
+      "artifact": "neg_fuzz.json",
+      "direction": "higher_better",
+      "kind": "integrity",
+      "label": "Negative-fuzz genuine-fault population",
+      "path": "summary.genuine_faults",
+      "value": 281
+    },
+    "neg_fuzz_recall": {
+      "artifact": "neg_fuzz.json",
+      "direction": "higher_better",
+      "kind": "quality",
+      "label": "Negative-fuzz recall on injected faults",
+      "path": "summary.recall",
+      "value": 1.0
+    },
+    "sound_mode_false_positive_rate": {
+      "artifact": "sound_mode_fp.json",
+      "direction": "lower_better",
+      "kind": "quality",
+      "label": "Sound-mode false-positive rate",
+      "path": "summary.false_positive_rate",
+      "value": 0.0
+    },
+    "sound_mode_false_positives": {
+      "artifact": "sound_mode_fp.json",
+      "direction": "lower_better",
+      "kind": "quality",
+      "label": "Sound-mode false positives (clean models)",
+      "path": "summary.false_positives",
+      "value": 0
+    },
+    "sound_mode_population": {
+      "artifact": "sound_mode_fp.json",
+      "direction": "higher_better",
+      "kind": "integrity",
+      "label": "Sound-mode clean population size",
+      "path": "summary.total",
+      "value": 80
+    },
+    "tg_f1": {
+      "artifact": "confusion_matrices.json",
+      "direction": "higher_better",
+      "kind": "quality",
+      "label": "TG F1 (real benchmarks)",
+      "path": "confusion.tensorguard.all.f1",
+      "value": 1.0
+    },
+    "tg_false_negatives": {
+      "artifact": "confusion_matrices.json",
+      "direction": "lower_better",
+      "kind": "quality",
+      "label": "TG false negatives (real benchmarks)",
+      "path": "confusion.tensorguard.all.FN",
+      "value": 0
+    },
+    "tg_false_positives": {
+      "artifact": "confusion_matrices.json",
+      "direction": "lower_better",
+      "kind": "quality",
+      "label": "TG false positives (real benchmarks)",
+      "path": "confusion.tensorguard.all.FP",
+      "value": 0
+    },
+    "tg_precision": {
+      "artifact": "confusion_matrices.json",
+      "direction": "higher_better",
+      "kind": "quality",
+      "label": "TG precision (real benchmarks)",
+      "path": "confusion.tensorguard.all.precision",
+      "value": 1.0
+    },
+    "tg_recall": {
+      "artifact": "confusion_matrices.json",
+      "direction": "higher_better",
+      "kind": "quality",
+      "label": "TG recall (real benchmarks)",
+      "path": "confusion.tensorguard.all.recall",
+      "value": 1.0
+    },
+    "triage_regression_suite": {
+      "artifact": "triage_regressions.json",
+      "direction": "higher_better",
+      "kind": "integrity",
+      "label": "Frozen regression-suite size",
+      "path": "regression_suite.count",
+      "value": 50
+    },
+    "triage_total_disagreements": {
+      "artifact": "triage_regressions.json",
+      "direction": "lower_better",
+      "kind": "quality",
+      "label": "Triage total disagreements",
+      "path": "disagreement_triage.total_disagreements",
+      "value": 0
+    }
+  }
+}
