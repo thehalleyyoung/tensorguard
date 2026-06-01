@@ -676,6 +676,93 @@ def compute_broadcast_shape(
     return TensorShape(tuple(result_dims))
 
 
+def compute_expand_shape(
+    input_shape: "TensorShape", target_dims: Tuple, allow_neg_one: bool = True
+) -> Tuple[Optional["TensorShape"], Optional[str]]:
+    """Compute the result of ``input_shape.expand(*target_dims)``.
+
+    Implements ``torch.Tensor.expand`` semantics exactly:
+
+      * The target rank must be ``>= `` the input rank.  Any extra **leading**
+        dimensions are *new* — they must be given a concrete, non-negative size
+        (``-1`` is **not** allowed for a leading/new dimension).
+      * Remaining dimensions are right-aligned with the input.  For each:
+          - ``-1`` keeps the input size;
+          - a size equal to the input size is a no-op;
+          - a size may differ from the input size *only* when the input size is
+            ``1`` (singleton expansion);
+          - expanding a **non-singleton** dimension to a different size is an
+            error (``RuntimeError`` in eager mode).
+
+    Returns ``(shape, None)`` on success or ``(None, message)`` when the expand
+    is provably illegal.  Symbolic dimensions are handled conservatively: a
+    comparison that cannot be decided statically abstains (no error) to preserve
+    the sound-mode false-positive-free invariant.
+    """
+    di = input_shape.ndim
+    dt = len(target_dims)
+    if dt < di:
+        return None, (
+            f"expand: the number of sizes provided ({dt}) must be greater or "
+            f"equal to the number of dimensions in the tensor ({di})"
+        )
+
+    lead = dt - di
+    out: List[ShapeDim] = []
+
+    # Leading (new) dimensions: must be concrete and non-negative, no -1.
+    for j in range(lead):
+        t = target_dims[j]
+        if isinstance(t, str):
+            out.append(ShapeDim(t))
+            continue
+        if t == -1:
+            return None, (
+                "expand: the expanded size of the tensor (-1) isn't allowed in "
+                f"a leading, non-existing dimension {j}"
+            )
+        if not isinstance(t, int) or t < 0:
+            return None, (
+                f"expand: invalid expanded size {t} for new dimension {j}"
+            )
+        out.append(ShapeDim(t))
+
+    # Right-aligned existing dimensions.
+    for k in range(di):
+        t = target_dims[lead + k]
+        ind = input_shape.dims[k]
+        if isinstance(t, str):
+            # Symbolic target size — abstain on legality, take the target.
+            out.append(ShapeDim(t))
+            continue
+        if t == -1:
+            if not allow_neg_one:
+                return None, (
+                    "broadcast_to: size -1 is not allowed; an explicit size "
+                    f"must be given at dimension {k}"
+                )
+            out.append(ind)
+            continue
+        if not isinstance(t, int) or t < 0:
+            return None, (
+                f"expand: invalid expanded size {t} at dimension {k}"
+            )
+        if ind.is_symbolic:
+            # Cannot prove (in)compatibility; expand sets the dim to ``t``.
+            out.append(ShapeDim(t))
+            continue
+        iv = ind.value
+        if iv == t or iv == 1:
+            out.append(ShapeDim(t))
+        else:
+            return None, (
+                f"expand: the expanded size of the tensor ({t}) must match the "
+                f"existing size ({iv}) at non-singleton dimension {k}"
+            )
+
+    return TensorShape(tuple(out)), None
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Tensor Shape Analyzer: the main analysis engine
 # ═══════════════════════════════════════════════════════════════════════════

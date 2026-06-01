@@ -120,6 +120,7 @@ from src.tensor_shapes import (
     compute_matmul_shape,
     check_matmul_compatible,
     compute_broadcast_shape,
+    compute_expand_shape,
     compute_reshape_shape,
 )
 
@@ -3713,14 +3714,22 @@ class _ForwardExtractor(ast.NodeVisitor):
                     elif method == "cpu":
                         params["device"] = "cpu"
                     elif method == "expand":
+                        eargs = node.args
+                        if (len(eargs) == 1
+                                and isinstance(eargs[0], (ast.Tuple, ast.List))):
+                            eargs = eargs[0].elts
                         params["dims"] = tuple(
-                            _const_value(a) for a in node.args
+                            _const_value(a) for a in eargs
                         )
                     elif method in ("expand_as", "repeat_interleave"):
                         pass  # shape-preserving approximation
                     elif method == "repeat":
+                        rargs = node.args
+                        if (len(rargs) == 1
+                                and isinstance(rargs[0], (ast.Tuple, ast.List))):
+                            rargs = rargs[0].elts
                         params["dims"] = tuple(
-                            _const_value(a) for a in node.args
+                            _const_value(a) for a in rargs
                         )
                     elif method in ("mean", "sum", "max", "min",
                                     "norm", "std", "var"):
@@ -8265,18 +8274,34 @@ class ConstraintVerifier:
             if step.inputs and step.inputs[0] in state.shape_env:
                 inp_shape = state.shape_env[step.inputs[0]]
                 dims = step.params.get("dims")
+                # ``expand_as(other)`` / ``broadcast_to`` against a reference
+                # tensor: derive the target sizes from the second operand's
+                # shape when explicit dims weren't captured.
+                if (not dims and len(step.inputs) > 1
+                        and step.inputs[1] in state.shape_env):
+                    ref = state.shape_env[step.inputs[1]]
+                    dims = tuple(
+                        d.value if not d.is_symbolic else str(d.value)
+                        for d in ref.dims
+                    )
                 if dims and all(d is not None for d in dims):
-                    new_dims = []
-                    for i, d in enumerate(dims):
-                        if d == -1:
-                            # -1 means keep from input
-                            if i < inp_shape.ndim:
-                                new_dims.append(inp_shape.dims[i])
-                            else:
-                                new_dims.append(ShapeDim("_exp"))
-                        else:
-                            new_dims.append(ShapeDim(d))
-                    new_state.shape_env[step.output] = TensorShape(tuple(new_dims))
+                    allow_neg_one = (
+                        step.params.get("expand_kind") != "broadcast_to"
+                    )
+                    out_shape, err = compute_expand_shape(
+                        inp_shape, tuple(dims), allow_neg_one=allow_neg_one
+                    )
+                    if err is not None:
+                        violations.append(SafetyViolation(
+                            kind="shape_incompatible",
+                            step_index=-1,
+                            step=step,
+                            message=err,
+                            tensor_a=step.inputs[0],
+                            shape_a=inp_shape,
+                        ))
+                    if out_shape is not None:
+                        new_state.shape_env[step.output] = out_shape
                 else:
                     new_state.shape_env[step.output] = inp_shape
         elif step.op == OpKind.REPEAT:
@@ -9939,17 +9964,24 @@ class SymbolicShapePropagator:
             inp_shape = env.get(inp) if inp else None
             if inp_shape:
                 dims = step.params.get("dims")
+                if (not dims and len(step.inputs) > 1
+                        and step.inputs[1] in env):
+                    ref = env[step.inputs[1]]
+                    dims = tuple(
+                        d.value if not d.is_symbolic else str(d.value)
+                        for d in ref.dims
+                    )
                 if dims and all(d is not None for d in dims):
-                    new_dims = []
-                    for i, d in enumerate(dims):
-                        if d == -1:
-                            if i < inp_shape.ndim:
-                                new_dims.append(inp_shape.dims[i])
-                            else:
-                                new_dims.append(ShapeDim("_exp"))
-                        else:
-                            new_dims.append(ShapeDim(d))
-                    env[step.output] = TensorShape(tuple(new_dims))
+                    allow_neg_one = (
+                        step.params.get("expand_kind") != "broadcast_to"
+                    )
+                    out_shape, _err = compute_expand_shape(
+                        inp_shape, tuple(dims), allow_neg_one=allow_neg_one
+                    )
+                    if out_shape is not None:
+                        env[step.output] = out_shape
+                    else:
+                        env[step.output] = inp_shape
                 else:
                     env[step.output] = inp_shape
 

@@ -372,6 +372,7 @@ def _function_to_op(fn) -> Optional[OpKind]:
         torch.stack: OpKind.STACK,
         torch.flatten: OpKind.FLATTEN,
         torch.reshape: OpKind.RESHAPE,
+        torch.broadcast_to: OpKind.EXPAND,
         torch.relu: OpKind.ACTIVATION,
         torch.sigmoid: OpKind.ACTIVATION,
         torch.tanh: OpKind.ACTIVATION,
@@ -663,6 +664,13 @@ def _parse_reshape_dims(shape_args: Tuple) -> Optional[Tuple]:
     """
     if len(shape_args) == 1 and isinstance(shape_args[0], (tuple, list)):
         seq = list(shape_args[0])
+    elif len(shape_args) == 1 and not isinstance(shape_args[0], (int, bool)):
+        # A single non-int, non-sequence arg (e.g. a traced ``y.shape`` /
+        # ``y.size()`` node) represents an *entire* shape tuple of unknown
+        # rank.  Inventing a rank-1 ``_dyn0`` placeholder here would corrupt
+        # the rank and can produce false positives (e.g. ``x.expand(y.shape)``
+        # flagged as rank-mismatch).  Abstain instead.
+        return None
     else:
         seq = list(shape_args)
     if not seq:
@@ -708,6 +716,12 @@ def _extract_function_params(
             int_dims = tuple(d for d in dims if isinstance(d, int))
             if int_dims:
                 params["target_shape"] = int_dims
+    elif op_kind == OpKind.EXPAND:
+        # torch.broadcast_to(x, shape): ``shape`` is the dim spec.
+        dims = _parse_reshape_dims(tuple(node.args[1:]))
+        if dims is not None:
+            params["dims"] = dims
+        params["expand_kind"] = "broadcast_to"
     elif op_kind == OpKind.FLATTEN:
         if len(node.args) > 1 and isinstance(node.args[1], int):
             params["start_dim"] = node.args[1]
@@ -753,6 +767,16 @@ def _extract_method_params(
             params["start_dim"] = node.args[1]
         if len(node.args) > 2 and isinstance(node.args[2], int):
             params["end_dim"] = node.args[2]
+    elif method_name in ("expand", "broadcast_to"):
+        # ``x.expand(2, 3, 4)`` / ``x.expand((2, 3, 4))`` /
+        # ``x.broadcast_to((2, 3, 4))``.  Same arg shapes as reshape: varargs or
+        # a single tuple/list, with ``-1`` allowed (keep dim) and dynamic args
+        # captured as ``_dynN`` placeholders.
+        dims = _parse_reshape_dims(tuple(node.args[1:]))
+        if dims is not None:
+            params["dims"] = dims
+        if method_name == "broadcast_to":
+            params["expand_kind"] = "broadcast_to"
     elif method_name in ("squeeze", "unsqueeze"):
         if len(node.args) > 1 and isinstance(node.args[1], int):
             params["dim"] = node.args[1]
@@ -1166,6 +1190,9 @@ _METHOD_OP_MAP: Dict[str, OpKind] = {
     "sum": OpKind.SUM_REDUCE,
     "contiguous": OpKind.CONTIGUOUS,
     "detach": OpKind.DETACH,
+    "expand": OpKind.EXPAND,
+    "expand_as": OpKind.EXPAND,
+    "broadcast_to": OpKind.EXPAND,
 }
 
 # torch.xxx(...) → OpKind

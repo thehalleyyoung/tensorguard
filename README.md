@@ -726,6 +726,32 @@ over many random valid and invalid shapes, and `verify_module` reports
 incompatible reshapes end-to-end while leaving valid and dynamic reshapes — and
 9 real torchvision models — safe. See `tests/test_reshape_precise.py`.
 
+### Precise broadcasting / expand / broadcast_to checking
+
+`Tensor.expand`, `Tensor.expand_as`, `torch.broadcast_to`, and implicit
+elementwise broadcasting are now checked with exact PyTorch semantics. Before
+this, `expand` was silently unchecked: the operative method map dropped it, so
+`x.expand(...)` traced as a no-op. The extractor now routes the whole
+expand family through the method/function maps and captures the dim spec.
+
+`compute_expand_shape` models torch's rule precisely: the target rank is at
+least the input rank; extra leading dims are new (a concrete size, with `-1`
+illegal there); each right-aligned dim accepts `-1` (keep input), an equal
+size, or a singleton input dim, and anything else is flagged
+`shape_incompatible`. A symbolic input or target dim abstains. The oracle is
+differential-tested against `torch.expand` over 4000 random cases with zero
+mismatches. `broadcast_to` forbids `-1` (unlike `expand`), and that distinction
+is enforced. A whole-shape expand such as `x.expand(y.shape)` abstains rather
+than inventing a rank-1 spec, avoiding a false positive. Implicit op
+broadcasting (e.g. `x + y`) emits a violation on a concrete mismatch like
+`(3, 4)` against `(5, 4)` and stays safe on a compatible pair like `(3, 4)`
+against `(1, 4)`.
+
+`verify_module` flags bad expand/broadcast_to end-to-end while leaving good
+expand/expand_as/broadcast_to and whole-shape expands safe; seven real
+torchvision models stay free of new false positives. See
+`tests/test_broadcast_expand_precise.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
