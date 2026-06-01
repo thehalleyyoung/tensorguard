@@ -513,6 +513,27 @@ mismatched input dimension to the same fuzzed model makes TensorGuard Refute it.
 The committed artifacts live in `evaluation/diff_fuzz.json` and
 `evaluation/diff_fuzz.md` and are pinned by `tests/test_diff_fuzz.py`.
 
+### Negative fuzzing (false-negative hunting)
+
+`evaluation/neg_fuzz.py` is the dual hunt: instead of checking that TensorGuard
+stays silent on clean code, it **injects a fault** into a valid random
+`nn.Module` and asserts TensorGuard catches it. Faults are drawn from a
+catalogue — corrupting a `Linear`'s input or output width, a `Conv2d`'s input
+channels, or splicing an incompatible `reshape` — and every injected fault is
+**proven genuine** by observing a real eager-PyTorch `RuntimeError`; a mutation
+that happens to still execute is not admitted.
+
+```bash
+PYTHONPATH=. python3 evaluation/neg_fuzz.py     # or: make neg-fuzz
+```
+
+Across the genuine injected faults TensorGuard's recall is perfect — it catches
+every one, with **zero false negatives** — and the result is broken out
+per injector family. Any fault it missed would be tagged with a root cause in
+the artifact rather than hidden. The committed artifacts live in
+`evaluation/neg_fuzz.json` and `evaluation/neg_fuzz.md` and are pinned by
+`tests/test_neg_fuzz.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
@@ -542,6 +563,7 @@ in `lean/TensorGuard/` live inside docstring comments.
 | Sound-mode false-positive hunt (clean executing models)        | `evaluation/sound_mode_fp.py`                           |
 | Latent-bug recall vs the strongest dynamic baseline            | `evaluation/hard_recall.py`                             |
 | Differential fuzz false-positive hunt (random valid models)    | `evaluation/diff_fuzz.py`                               |
+| Negative-fuzz false-negative hunt (injected faults)            | `evaluation/neg_fuzz.py`                                |
 | 60-bug headline RP reproducer (single command)                 | `reproducibility/reproduce_headline_60bug.py`           |
 | Verdict reclassification (RP / CV / LW)                        | `experiments_v5/run_verdict_reclassification.py`        |
 | 10-bug real-public corpus                                      | `experiments_v5/v8/verify_real_bugs.py`                 |

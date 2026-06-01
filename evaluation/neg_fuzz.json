@@ -1,0 +1,49 @@
+{
+  "by_family": {
+    "bad_reshape": {
+      "caught": 120,
+      "genuine": 120,
+      "injected": 120
+    },
+    "conv_in": {
+      "caught": 44,
+      "genuine": 44,
+      "injected": 44
+    },
+    "linear_in": {
+      "caught": 76,
+      "genuine": 76,
+      "injected": 76
+    },
+    "linear_out": {
+      "caught": 41,
+      "genuine": 41,
+      "injected": 76
+    }
+  },
+  "false_negatives": [],
+  "meta": {
+    "command": "python3 evaluation/neg_fuzz.py",
+    "design": "inject a fault into a valid random nn.Module, prove the fault genuine by observing a real eager-PyTorch RuntimeError, then assert TensorGuard catches it (false-negative hunt); residual misses are root-cause tagged",
+    "generated_by": "evaluation/neg_fuzz.py",
+    "injector_families": [
+      "linear_in",
+      "linear_out",
+      "conv_in",
+      "bad_reshape"
+    ],
+    "n_base_seeds": 120
+  },
+  "per_family_recall": {
+    "bad_reshape": 1.0,
+    "conv_in": 1.0,
+    "linear_in": 1.0,
+    "linear_out": 1.0
+  },
+  "summary": {
+    "caught": 281,
+    "false_negatives": 0,
+    "genuine_faults": 281,
+    "recall": 1.0
+  }
+}
