@@ -147,8 +147,26 @@ measured, and reproducible.
    category + clean + syntax-error, the sound-mode UNKNOWN fallback proof for
    each category, every category documented, doc↔code sync, script entrypoint).
    Referenced from README.*
-9. Establish a frozen, versioned **ground-truth bug corpus** (real models,
+9. [x] Establish a frozen, versioned **ground-truth bug corpus** (real models,
    labeled buggy/clean) checked into `real_benchmarks/` with provenance.
+   *Done. `real_benchmarks/` holds 16 self-contained PyTorch `nn.Module`s —
+   8 clean (verify SAFE) and 8 buggy (verify UNSAFE) — spanning the shape,
+   device, phase, and gradient domains. `corpus_def.py` is the single source of
+   truth; `build_manifest.py` materializes `clean/*.py`+`buggy/*.py` and freezes
+   a SHA-256 per file into `manifest.json`; `load.py` re-verifies every hash
+   before use (raising `CorpusIntegrityError` on drift) and runs TensorGuard to
+   confirm verdicts. Labels are PROVEN against real code: 6/8 buggy models raise
+   a real eager-PyTorch `RuntimeError` (e.g. `mat1 and mat2 shapes cannot be
+   multiplied (32x256 and 128x10)`), `buggy_device_mismatch` only raises on a
+   CUDA host (TG catches it statically with no GPU), and `buggy_gradient_detach`
+   is a SILENT bug (no exception at all — runtime testing misses it; TG flags the
+   severed gradient path statically). 6 buggy items cite tracked
+   `pytorch/pytorch` issue URLs; the 2 canonical patterns are labeled as such.
+   `python -m real_benchmarks.load` reports 16/16 verdicts match frozen labels.
+   Pinned by `tests/test_real_benchmarks.py` (23 tests: hash-sync integrity,
+   generator determinism, manifest well-formedness, provenance, and a
+   per-item TG-verdict-matches-frozen-label parametrization). Referenced from
+   README.*
 10. Stand up a reproducibility harness (`make reproduce`) that regenerates
     every paper table and README number from scratch in CI.
 

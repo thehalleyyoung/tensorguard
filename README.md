@@ -77,6 +77,15 @@ runtime errors in ML codebases before any code runs.
   `src/verifiable_fragment.py`; the instance-free `analyze_source()` exposes the
   statically-checkable fallback). Pinned by
   `tests/test_verifiable_fragment_spec.py`.
+- **Frozen ground-truth benchmark corpus** — [`real_benchmarks/`](real_benchmarks/)
+  holds 16 self-contained PyTorch `nn.Module`s (8 clean / 8 buggy) across the
+  shape, device, phase, and gradient domains, each content-addressed by SHA-256
+  in `manifest.json` so the corpus cannot silently drift. Labels are proven
+  against real code (6/8 buggy raise a real eager `RuntimeError`, one is
+  CUDA-only, one is a *silent* gradient-detach bug TG catches statically).
+  Run `python -m real_benchmarks.load` to re-verify integrity and that 16/16
+  TensorGuard verdicts match the frozen labels; pinned by
+  `tests/test_real_benchmarks.py`.
 - **SARIF 2.1.0 output** — integrates with GitHub Code Scanning / Advanced Security
 - **Sub-second analysis** — typical models verified in < 1 second
 

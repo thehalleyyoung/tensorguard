@@ -1,0 +1,139 @@
+{
+  "corpus_version": "1.0.0",
+  "n_total": 16,
+  "n_clean": 8,
+  "n_buggy": 8,
+  "n_verdict_match": 16,
+  "all_verdicts_match": true,
+  "n_buggy_runtime_error": 6,
+  "items": [
+    {
+      "id": "clean_mlp",
+      "label": "clean",
+      "expected_verdict": "SAFE",
+      "tensorguard_verdict": "SAFE",
+      "verdict_match": true
+    },
+    {
+      "id": "clean_cnn",
+      "label": "clean",
+      "expected_verdict": "SAFE",
+      "tensorguard_verdict": "SAFE",
+      "verdict_match": true
+    },
+    {
+      "id": "clean_resblock",
+      "label": "clean",
+      "expected_verdict": "SAFE",
+      "tensorguard_verdict": "SAFE",
+      "verdict_match": true
+    },
+    {
+      "id": "clean_layernorm_mlp",
+      "label": "clean",
+      "expected_verdict": "SAFE",
+      "tensorguard_verdict": "SAFE",
+      "verdict_match": true
+    },
+    {
+      "id": "clean_conv_bn_pool",
+      "label": "clean",
+      "expected_verdict": "SAFE",
+      "tensorguard_verdict": "SAFE",
+      "verdict_match": true
+    },
+    {
+      "id": "clean_self_attention",
+      "label": "clean",
+      "expected_verdict": "SAFE",
+      "tensorguard_verdict": "SAFE",
+      "verdict_match": true
+    },
+    {
+      "id": "clean_groupnorm",
+      "label": "clean",
+      "expected_verdict": "SAFE",
+      "tensorguard_verdict": "SAFE",
+      "verdict_match": true
+    },
+    {
+      "id": "clean_dropout_mlp",
+      "label": "clean",
+      "expected_verdict": "SAFE",
+      "tensorguard_verdict": "SAFE",
+      "verdict_match": true
+    },
+    {
+      "id": "buggy_linear_inout_mismatch",
+      "label": "buggy",
+      "expected_verdict": "UNSAFE",
+      "tensorguard_verdict": "UNSAFE",
+      "verdict_match": true,
+      "eager_runtime_error": true,
+      "eager_error": "mat1 and mat2 shapes cannot be multiplied (32x256 and 128x10)"
+    },
+    {
+      "id": "buggy_view_total_size",
+      "label": "buggy",
+      "expected_verdict": "UNSAFE",
+      "tensorguard_verdict": "UNSAFE",
+      "verdict_match": true,
+      "eager_runtime_error": true,
+      "eager_error": "shape '[2048, 640]' is invalid for input of size 786432"
+    },
+    {
+      "id": "buggy_conv_channel_mismatch",
+      "label": "buggy",
+      "expected_verdict": "UNSAFE",
+      "tensorguard_verdict": "UNSAFE",
+      "verdict_match": true,
+      "eager_runtime_error": true,
+      "eager_error": "Given groups=1, weight of size [32, 8, 3, 3], expected input[8, 16, 32, 32] to have 8 channels, but got 16 channels inst"
+    },
+    {
+      "id": "buggy_flatten_fc_mismatch",
+      "label": "buggy",
+      "expected_verdict": "UNSAFE",
+      "tensorguard_verdict": "UNSAFE",
+      "verdict_match": true,
+      "eager_runtime_error": true,
+      "eager_error": "mat1 and mat2 shapes cannot be multiplied (8x1024 and 999x10)"
+    },
+    {
+      "id": "buggy_cat_dim_mismatch",
+      "label": "buggy",
+      "expected_verdict": "UNSAFE",
+      "tensorguard_verdict": "UNSAFE",
+      "verdict_match": true,
+      "eager_runtime_error": true,
+      "eager_error": "Sizes of tensors must match except in dimension 0. Expected size 4 but got size 6 for tensor number 1 in the list."
+    },
+    {
+      "id": "buggy_matmul_inner_mismatch",
+      "label": "buggy",
+      "expected_verdict": "UNSAFE",
+      "tensorguard_verdict": "UNSAFE",
+      "verdict_match": true,
+      "eager_runtime_error": true,
+      "eager_error": "mat1 and mat2 shapes cannot be multiplied (4x8 and 16x4)"
+    },
+    {
+      "id": "buggy_device_mismatch",
+      "label": "buggy",
+      "expected_verdict": "UNSAFE",
+      "tensorguard_verdict": "UNSAFE",
+      "verdict_match": true,
+      "eager_runtime_error": false,
+      "eager_error": "AssertionError: Torch not compiled with CUDA enabled"
+    },
+    {
+      "id": "buggy_gradient_detach",
+      "label": "buggy",
+      "expected_verdict": "UNSAFE",
+      "tensorguard_verdict": "UNSAFE",
+      "verdict_match": true,
+      "eager_runtime_error": false,
+      "eager_error": null
+    }
+  ]
+}

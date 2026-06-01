@@ -1,0 +1,369 @@
+{
+  "meta": {
+    "name": "tensorguard-real-benchmarks",
+    "version": "1.0.0",
+    "frozen": true,
+    "total": 16,
+    "clean": 8,
+    "buggy": 8,
+    "schema_version": 1,
+    "generated_by": "real_benchmarks/build_manifest.py",
+    "description": "Frozen, versioned ground-truth corpus of real PyTorch nn.Module architectures labeled clean (should verify SAFE) or buggy (should verify UNSAFE). Each file is content-addressed by sha256 so the corpus cannot silently drift; load.py re-verifies every hash."
+  },
+  "items": [
+    {
+      "id": "clean_mlp",
+      "label": "clean",
+      "domain": "shape",
+      "category": "clean",
+      "provenance_type": "canonical_clean",
+      "source_url": null,
+      "note": "Two-layer MLP with matching feature dimensions.",
+      "expected_error_substring": null,
+      "input_shapes": {
+        "x": [
+          32,
+          784
+        ]
+      },
+      "expected_verdict": "SAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "clean/clean_mlp.py",
+      "sha256": "9c504919d1b296240341aaa28e8a0d0694d3b4c5a1e66b5dea3485200380f6c1"
+    },
+    {
+      "id": "clean_cnn",
+      "label": "clean",
+      "domain": "shape",
+      "category": "clean",
+      "provenance_type": "canonical_clean",
+      "source_url": null,
+      "note": "Small convolutional classifier with a correctly sized head.",
+      "expected_error_substring": null,
+      "input_shapes": {
+        "x": [
+          8,
+          3,
+          32,
+          32
+        ]
+      },
+      "expected_verdict": "SAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "clean/clean_cnn.py",
+      "sha256": "8399b7b08b19042ddba3bf6a8a7a7c36fb25252cd86a2720722589aff7fef32a"
+    },
+    {
+      "id": "clean_resblock",
+      "label": "clean",
+      "domain": "shape",
+      "category": "clean",
+      "provenance_type": "canonical_clean",
+      "source_url": null,
+      "note": "Residual block; the skip connection shape matches the main path.",
+      "expected_error_substring": null,
+      "input_shapes": {
+        "x": [
+          4,
+          64,
+          16,
+          16
+        ]
+      },
+      "expected_verdict": "SAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "clean/clean_resblock.py",
+      "sha256": "2dc7f40e6ec4c637a2d5b77edc7f37f12c2fedf453445e100783e045a455e29d"
+    },
+    {
+      "id": "clean_layernorm_mlp",
+      "label": "clean",
+      "domain": "shape",
+      "category": "clean",
+      "provenance_type": "canonical_clean",
+      "source_url": null,
+      "note": "Token-wise MLP with LayerNorm over the feature dimension.",
+      "expected_error_substring": null,
+      "input_shapes": {
+        "x": [
+          16,
+          32,
+          128
+        ]
+      },
+      "expected_verdict": "SAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "clean/clean_layernorm_mlp.py",
+      "sha256": "e99a0f148bbdcc61171992dc6ad49046b28dd72b5155c4ba35b883b0184e1e16"
+    },
+    {
+      "id": "clean_conv_bn_pool",
+      "label": "clean",
+      "domain": "shape",
+      "category": "clean",
+      "provenance_type": "canonical_clean",
+      "source_url": null,
+      "note": "Conv -> BatchNorm -> ReLU -> MaxPool -> flatten -> Linear, all sized correctly.",
+      "expected_error_substring": null,
+      "input_shapes": {
+        "x": [
+          4,
+          1,
+          28,
+          28
+        ]
+      },
+      "expected_verdict": "SAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "clean/clean_conv_bn_pool.py",
+      "sha256": "616185bd19896455eac62a54ebb27ebaaa6afea140d6bda69758e966a096ecea"
+    },
+    {
+      "id": "clean_self_attention",
+      "label": "clean",
+      "domain": "shape",
+      "category": "clean",
+      "provenance_type": "canonical_clean",
+      "source_url": null,
+      "note": "Single-head scaled dot-product attention with consistent projections.",
+      "expected_error_substring": null,
+      "input_shapes": {
+        "x": [
+          2,
+          10,
+          64
+        ]
+      },
+      "expected_verdict": "SAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "clean/clean_self_attention.py",
+      "sha256": "9889a6c4602820c824283cb805ebb44c43ba8c4a9990035ee390118ad51e6944"
+    },
+    {
+      "id": "clean_groupnorm",
+      "label": "clean",
+      "domain": "shape",
+      "category": "clean",
+      "provenance_type": "canonical_clean",
+      "source_url": null,
+      "note": "Conv followed by GroupNorm whose channel count divides evenly.",
+      "expected_error_substring": null,
+      "input_shapes": {
+        "x": [
+          2,
+          16,
+          8,
+          8
+        ]
+      },
+      "expected_verdict": "SAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "clean/clean_groupnorm.py",
+      "sha256": "758642dcca06bc9de05092e20fdc5f9faac1dbb1a368f8f743ef2d463194b911"
+    },
+    {
+      "id": "clean_dropout_mlp",
+      "label": "clean",
+      "domain": "phase",
+      "category": "clean",
+      "provenance_type": "canonical_clean",
+      "source_url": null,
+      "note": "Regression MLP using Dropout; correct in both train and eval phases.",
+      "expected_error_substring": null,
+      "input_shapes": {
+        "x": [
+          64,
+          100
+        ]
+      },
+      "expected_verdict": "SAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "clean/clean_dropout_mlp.py",
+      "sha256": "cfb1d9cce43912bd79bed81159ca4b77f37015d1f8a034ece453dec3afcecd9e"
+    },
+    {
+      "id": "buggy_linear_inout_mismatch",
+      "label": "buggy",
+      "domain": "shape",
+      "category": "linear_inout_mismatch",
+      "provenance_type": "pytorch_issue",
+      "source_url": "https://github.com/pytorch/pytorch/issues/179789",
+      "note": "fc2 expects 128 in-features but receives 256 from fc1.",
+      "expected_error_substring": "mat1 and mat2 shapes cannot be multiplied",
+      "input_shapes": {
+        "x": [
+          32,
+          784
+        ]
+      },
+      "expected_verdict": "UNSAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "buggy/buggy_linear_inout_mismatch.py",
+      "sha256": "7fc04051db59b977b732e59ac5121124f709acb8d0c84bbc8f660e330745c379"
+    },
+    {
+      "id": "buggy_view_total_size",
+      "label": "buggy",
+      "domain": "shape",
+      "category": "view_reshape_total_size",
+      "provenance_type": "pytorch_issue",
+      "source_url": "https://github.com/pytorch/pytorch/issues/177691",
+      "note": "view target has a different total element count than the input.",
+      "expected_error_substring": "is invalid for input of size",
+      "input_shapes": {
+        "x": [
+          2048,
+          384
+        ]
+      },
+      "expected_verdict": "UNSAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "buggy/buggy_view_total_size.py",
+      "sha256": "55232697643e288c546f913ab295b2353e010551fbdd6c750b89d098d962eb2a"
+    },
+    {
+      "id": "buggy_conv_channel_mismatch",
+      "label": "buggy",
+      "domain": "shape",
+      "category": "conv_channel_mismatch",
+      "provenance_type": "pytorch_issue",
+      "source_url": "https://github.com/pytorch/pytorch/issues/179931",
+      "note": "conv2 expects 8 input channels but conv1 emits 16.",
+      "expected_error_substring": "channels",
+      "input_shapes": {
+        "x": [
+          8,
+          3,
+          32,
+          32
+        ]
+      },
+      "expected_verdict": "UNSAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "buggy/buggy_conv_channel_mismatch.py",
+      "sha256": "aba46294b3960017cdd22358c42201b75b40880afbbb23a9b8e290ad4de44dc0"
+    },
+    {
+      "id": "buggy_flatten_fc_mismatch",
+      "label": "buggy",
+      "domain": "shape",
+      "category": "linear_inout_mismatch",
+      "provenance_type": "pytorch_issue",
+      "source_url": "https://github.com/pytorch/pytorch/issues/172739",
+      "note": "Flattened conv features are 16*8*8=1024 but the head expects 999.",
+      "expected_error_substring": "mat1 and mat2 shapes cannot be multiplied",
+      "input_shapes": {
+        "x": [
+          8,
+          3,
+          8,
+          8
+        ]
+      },
+      "expected_verdict": "UNSAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "buggy/buggy_flatten_fc_mismatch.py",
+      "sha256": "b0d44a831dfc4e8c6bdaf23dca5ec784637bb279a1bae8352ce3859411ace5f0"
+    },
+    {
+      "id": "buggy_cat_dim_mismatch",
+      "label": "buggy",
+      "domain": "shape",
+      "category": "broadcasting",
+      "provenance_type": "pytorch_issue",
+      "source_url": "https://github.com/pytorch/pytorch/issues/175683",
+      "note": "Concatenation along dim 0 then added to one branch whose dim-0 differs.",
+      "expected_error_substring": "size of tensor",
+      "input_shapes": {
+        "x": [
+          3,
+          8
+        ]
+      },
+      "expected_verdict": "UNSAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "buggy/buggy_cat_dim_mismatch.py",
+      "sha256": "35daa49a82aff5068b6fc015578e5b3434edfef9df11a3d34fc02a1b02849de4"
+    },
+    {
+      "id": "buggy_matmul_inner_mismatch",
+      "label": "buggy",
+      "domain": "shape",
+      "category": "linear_inout_mismatch",
+      "provenance_type": "pytorch_issue",
+      "source_url": "https://github.com/pytorch/pytorch/issues/176230",
+      "note": "Inner dimensions of the two matmul operands do not agree (8 vs 16).",
+      "expected_error_substring": "mat1 and mat2 shapes cannot be multiplied",
+      "input_shapes": {
+        "x": [
+          4,
+          8
+        ],
+        "y": [
+          16,
+          4
+        ]
+      },
+      "expected_verdict": "UNSAFE",
+      "check_devices": false,
+      "check_gradients": false,
+      "repro_file": "buggy/buggy_matmul_inner_mismatch.py",
+      "sha256": "1ce6c057c0072cdeca404e4230b22be0f288fb2169f5a9b18bae793341388cc9"
+    },
+    {
+      "id": "buggy_device_mismatch",
+      "label": "buggy",
+      "domain": "device",
+      "category": "device_mismatch",
+      "provenance_type": "canonical_pattern",
+      "source_url": null,
+      "note": "A CUDA buffer is added to a CPU activation -- the canonical 'Expected all tensors to be on the same device' failure. The device mismatch only raises at runtime on a CUDA-enabled host; TensorGuard detects it statically without any GPU.",
+      "expected_error_substring": "Expected all tensors to be on the same device",
+      "input_shapes": {
+        "x": [
+          4,
+          8
+        ]
+      },
+      "expected_verdict": "UNSAFE",
+      "check_devices": true,
+      "check_gradients": false,
+      "repro_file": "buggy/buggy_device_mismatch.py",
+      "sha256": "ef77360d5b6aad5c42c583cf458f34cc5118a649f944c21f01b10e787ded9a42"
+    },
+    {
+      "id": "buggy_gradient_detach",
+      "label": "buggy",
+      "domain": "gradient",
+      "category": "gradient_detach",
+      "provenance_type": "canonical_pattern",
+      "source_url": null,
+      "note": "An intermediate activation is detached, silently severing the gradient path to fc1 -- the canonical 'parameters never update' bug. This is a SILENT bug: it raises no runtime exception, so runtime testing misses it; TensorGuard flags it statically.",
+      "expected_error_substring": null,
+      "input_shapes": {
+        "x": [
+          4,
+          8
+        ]
+      },
+      "expected_verdict": "UNSAFE",
+      "check_devices": false,
+      "check_gradients": true,
+      "repro_file": "buggy/buggy_gradient_detach.py",
+      "sha256": "d8be42a1aea8953a7b4f76648bd7e149a53eca40dc8153a4cee9cea5acf8bf5c"
+    }
+  ]
+}

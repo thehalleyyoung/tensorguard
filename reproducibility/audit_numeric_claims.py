@@ -240,6 +240,28 @@ REGISTRY: List[Dict[str, Any]] = [
         "compute": lambda: _art("reproduce_headline_60bug.json")["headline_regime"]["refuted_low_confidence"],
         "check": lambda a: a == 0,
     },
+    {
+        "id": "real_benchmarks_16_of_16",
+        "regime": "frozen real_benchmarks corpus: TG verdict vs frozen label",
+        "claim": "16/16 verdicts match frozen labels",
+        "sources": [_R(README, r"16/16")],
+        "artifacts": ["real_benchmarks_audit.json"],
+        "compute": lambda: (_art("real_benchmarks_audit.json")["n_verdict_match"],
+                            _art("real_benchmarks_audit.json")["n_total"]),
+        "check": lambda a: a == (16, 16),
+    },
+    {
+        "id": "real_benchmarks_6_of_8_runtime",
+        "regime": "frozen real_benchmarks corpus: buggy models raising a real "
+                  "eager-PyTorch RuntimeError on this host (device bug is "
+                  "CUDA-only, gradient-detach bug is silent)",
+        "claim": "6/8 buggy raise a real eager RuntimeError",
+        "sources": [_R(README, r"6/8 buggy raise a real eager")],
+        "artifacts": ["real_benchmarks_audit.json"],
+        "compute": lambda: (_art("real_benchmarks_audit.json")["n_buggy_runtime_error"],
+                            _art("real_benchmarks_audit.json")["n_buggy"]),
+        "check": lambda a: a == (6, 8),
+    },
 ]
 
 
