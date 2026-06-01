@@ -3677,6 +3677,16 @@ class _ForwardExtractor(ast.NodeVisitor):
                     elif method == "flatten":
                         sd = _const_value(node.args[0]) if node.args else 1
                         params["start_dim"] = sd
+                        if len(node.args) > 1:
+                            ed = _const_value(node.args[1])
+                            if ed is not None:
+                                params["end_dim"] = ed
+                        elif "end_dim" in {kw.arg for kw in node.keywords}:
+                            for kw in node.keywords:
+                                if kw.arg == "end_dim":
+                                    ed = _const_value(kw.value)
+                                    if ed is not None:
+                                        params["end_dim"] = ed
                     elif method in ("squeeze", "unsqueeze"):
                         if node.args:
                             params["dim"] = _const_value(node.args[0])
@@ -3833,6 +3843,10 @@ class _ForwardExtractor(ast.NodeVisitor):
                     params_dict_flat["start_dim"] = _const_value(node.args[1])
                 else:
                     params_dict_flat["start_dim"] = 0
+                if len(node.args) > 2:
+                    ed = _const_value(node.args[2])
+                    if ed is not None:
+                        params_dict_flat["end_dim"] = ed
                 self.steps.append(ComputationStep(
                     op=OpKind.FLATTEN,
                     inputs=inputs[:1] if inputs else [],
@@ -5123,28 +5137,42 @@ def _propagate_embedding(
 
 
 def _propagate_flatten(
-    input_shape: TensorShape, start_dim: int = 1
+    input_shape: TensorShape, start_dim: int = 1, end_dim: int = -1
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """Flatten from start_dim to end."""
-    if start_dim < 0:
-        start_dim = input_shape.ndim + start_dim
-    if start_dim >= input_shape.ndim:
+    """Flatten dims ``[start_dim, end_dim]`` (inclusive) into a single dim.
+
+    Mirrors ``torch.flatten``: dims before ``start_dim`` and after ``end_dim``
+    are preserved; the span in between is collapsed into one dimension whose
+    size is the product of the spanned dims (symbolic if any spanned dim is
+    symbolic).  ``end_dim`` defaults to ``-1`` (flatten to the end).
+    """
+    nd = input_shape.ndim
+    if nd == 0:
+        return input_shape, None
+    s = start_dim + nd if start_dim < 0 else start_dim
+    e = end_dim + nd if end_dim < 0 else end_dim
+    if s < 0:
+        s = 0
+    if e >= nd:
+        e = nd - 1
+    if s > e or s >= nd:
+        # Nothing to flatten (e.g. start_dim past the end, or empty span).
         return input_shape, None
 
-    kept = input_shape.dims[:start_dim]
+    prefix = input_shape.dims[:s]
+    span = input_shape.dims[s:e + 1]
+    suffix = input_shape.dims[e + 1:]
 
-    # Compute flattened size
-    flat_parts = input_shape.dims[start_dim:]
-    all_concrete = all(not d.is_symbolic for d in flat_parts)
+    all_concrete = all(not d.is_symbolic for d in span)
     if all_concrete:
         total = 1
-        for d in flat_parts:
+        for d in span:
             total *= d.value
         flat_dim = ShapeDim(total)
     else:
         flat_dim = ShapeDim("_flat")
 
-    return TensorShape(kept + (flat_dim,)), None
+    return TensorShape(prefix + (flat_dim,) + suffix), None
 
 
 def _propagate_adaptive_avgpool2d(
@@ -8637,33 +8665,63 @@ class ConstraintVerifier:
             result = compute_reshape_shape(inp_shape, dims)
             if result is not None:
                 state.shape_env[step.output] = result
-            elif violations is not None:
-                # Soundness: if either side contains free symbolic dims
-                # (e.g. an unresolved Linear out_features ``_unk_lin_out_qkv``
-                # or a config-derived symbol), we cannot prove the reshape
-                # is incompatible — the symbol may bind to a value that
-                # makes it compatible.  Abstain (do not record a violation)
-                # rather than emit a false positive.
-                _has_free_sym = any(
-                    d.is_symbolic and isinstance(d.value, str)
-                    and (d.value.startswith("_unk_") or "_" in d.value)
-                    for d in inp_shape.dims
-                )
-                _dims_have_str = any(
-                    isinstance(d, str) for d in (dims or ())
-                )
-                if not (_has_free_sym or _dims_have_str):
-                    violations.append(SafetyViolation(
-                        kind="shape_incompatible",
-                        step_index=-1,
-                        step=step,
-                        message=(
-                            f"Reshape incompatible: cannot reshape "
-                            f"{inp_shape} to {dims}"
-                        ),
-                        tensor_a=inp,
-                        shape_a=inp_shape,
-                    ))
+            if violations is not None:
+                # Sound symbolic reasoning: when Z3 is available it is the
+                # authoritative oracle.  ``check_reshape_compatible`` flags the
+                # reshape ONLY when the element-count equation is UNSAT for all
+                # dimension assignments >= 1 (provably impossible) — coupling
+                # equal-named symbolic dims across input and target.  When Z3
+                # runs (returning a message or abstaining) we trust it and skip
+                # the legacy syntactic check, which both misses symbolic
+                # incompatibilities (e.g. (B,5)->(B,3)) and can false-positive
+                # on divisible-but-symbolic cases (e.g. (B,10)->(-1,3)).
+                z3_ran = False
+                if HAS_Z3:
+                    try:
+                        from src.smt.reshape_theory import (
+                            check_reshape_compatible,
+                        )
+                        z3_msg = check_reshape_compatible(inp_shape, dims)
+                        z3_ran = True
+                    except Exception:
+                        z3_ran = False
+                        z3_msg = None
+                    if z3_ran and z3_msg is not None:
+                        violations.append(SafetyViolation(
+                            kind="shape_incompatible",
+                            step_index=-1,
+                            step=step,
+                            message=z3_msg,
+                            tensor_a=inp,
+                            shape_a=inp_shape,
+                        ))
+                if not z3_ran and result is None:
+                    # Legacy syntactic fallback (Z3 unavailable / errored).
+                    # Soundness: if either side contains free symbolic dims
+                    # (e.g. an unresolved Linear out_features ``_unk_lin_out``
+                    # or a config-derived symbol), we cannot prove the reshape
+                    # is incompatible — abstain rather than emit a false
+                    # positive.
+                    _has_free_sym = any(
+                        d.is_symbolic and isinstance(d.value, str)
+                        and (d.value.startswith("_unk_") or "_" in d.value)
+                        for d in inp_shape.dims
+                    )
+                    _dims_have_str = any(
+                        isinstance(d, str) for d in (dims or ())
+                    )
+                    if not (_has_free_sym or _dims_have_str):
+                        violations.append(SafetyViolation(
+                            kind="shape_incompatible",
+                            step_index=-1,
+                            step=step,
+                            message=(
+                                f"Reshape incompatible: cannot reshape "
+                                f"{inp_shape} to {dims}"
+                            ),
+                            tensor_a=inp,
+                            shape_a=inp_shape,
+                        ))
 
     def _apply_flatten(
         self, state: ModelState, step: ComputationStep
@@ -8672,7 +8730,8 @@ class ConstraintVerifier:
         inp_shape = state.shape_env.get(inp) if inp else None
         if inp_shape is not None:
             sd = step.params.get("start_dim", 1)
-            out, _ = _propagate_flatten(inp_shape, sd)
+            ed = step.params.get("end_dim", -1)
+            out, _ = _propagate_flatten(inp_shape, sd, ed)
             if out is not None:
                 state.shape_env[step.output] = out
 
@@ -9733,7 +9792,8 @@ class SymbolicShapePropagator:
             inp_shape = env.get(inp) if inp else None
             if inp_shape:
                 sd = step.params.get("start_dim", 1)
-                out, _ = _propagate_flatten(inp_shape, sd)
+                ed = step.params.get("end_dim", -1)
+                out, _ = _propagate_flatten(inp_shape, sd, ed)
                 if out:
                     env[step.output] = out
 

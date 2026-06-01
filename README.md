@@ -699,6 +699,33 @@ the fx extractor (which captures the equation string), so a buggy einsum is
 reported end-to-end via `verify_module`. See
 `tests/test_einsum_precise.py`.
 
+### Precise reshape / view / flatten checking
+
+`reshape`, `view` and `flatten` are now checked soundly on the `torch.fx` path.
+The fx extractor captures the **full** shape spec under `params["dims"]`
+(previously it emitted only an int-only `target_shape`, which no handler read —
+so reshape was silently unchecked), handling the varargs form `reshape(2, 3)`,
+the tuple/list form `reshape((2, 3))`, and `torch.reshape(x, shape)`. Dynamic
+arguments such as `x.shape[0]` become unique placeholders so the output rank is
+preserved instead of dropped.
+
+Compatibility is decided by a sound Z3 element-count oracle
+(`src/smt/reshape_theory.py`): each symbolic dimension is an integer `>= 1`,
+each `-1` is an existentially-inferred dimension `>= 1`, and a reshape is
+flagged **only** when `prod(input) == prod(output)` is unsatisfiable for every
+valid assignment — so `(B, 5) -> (B, 3)` is reported as a bug while
+`(B, 10) -> (-1, 3)` (valid for `B = 3`) is not. When Z3 cannot decide it
+abstains, preserving the sound-mode false-positive-free invariant; opaque
+placeholder dims are never coupled across operations, so the channel-shuffle
+reshape in ShuffleNet stays safe. `flatten` now honours `end_dim`, collapsing
+only the `[start_dim, end_dim]` span (e.g. `(B, 3, 4, 5).flatten(1, 2)` yields
+`(B, 12, 5)`).
+
+The oracle is differential-tested against real `torch.reshape`/`torch.flatten`
+over many random valid and invalid shapes, and `verify_module` reports
+incompatible reshapes end-to-end while leaving valid and dynamic reshapes — and
+9 real torchvision models — safe. See `tests/test_reshape_precise.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

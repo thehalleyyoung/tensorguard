@@ -371,6 +371,7 @@ def _function_to_op(fn) -> Optional[OpKind]:
         torch.cat: OpKind.CAT,
         torch.stack: OpKind.STACK,
         torch.flatten: OpKind.FLATTEN,
+        torch.reshape: OpKind.RESHAPE,
         torch.relu: OpKind.ACTIVATION,
         torch.sigmoid: OpKind.ACTIVATION,
         torch.tanh: OpKind.ACTIVATION,
@@ -645,6 +646,42 @@ def _collect_node_inputs(
     return inputs
 
 
+def _parse_reshape_dims(shape_args: Tuple) -> Optional[Tuple]:
+    """Parse the shape-spec args of a reshape/view call into a dim tuple.
+
+    Handles both the varargs form (``reshape(2, 3)`` →
+    ``shape_args == (2, 3)``) and the single tuple/list form
+    (``reshape((2, 3))`` or ``torch.reshape(x, (2, 3))`` →
+    ``shape_args == ((2, 3),)``).
+
+    Each element becomes an ``int`` (including ``-1``) when concrete, or a
+    unique placeholder string ``"_dynN"`` when it is a dynamic / non-int
+    argument (e.g. a traced ``Node`` such as ``x.shape[0]``).  Placeholders
+    preserve the output rank while signalling an unknown symbolic size, so the
+    verifier abstains on that dimension instead of dropping it (which would
+    silently corrupt the rank and hide reshape bugs).
+    """
+    if len(shape_args) == 1 and isinstance(shape_args[0], (tuple, list)):
+        seq = list(shape_args[0])
+    else:
+        seq = list(shape_args)
+    if not seq:
+        return None
+    dims: List[Any] = []
+    dyn = 0
+    for a in seq:
+        if isinstance(a, bool):
+            # bool is an int subclass but never a valid dim spec.
+            dims.append(f"_dyn{dyn}")
+            dyn += 1
+        elif isinstance(a, int):
+            dims.append(a)
+        else:
+            dims.append(f"_dyn{dyn}")
+            dyn += 1
+    return tuple(dims)
+
+
 def _extract_function_params(
     node: "torch.fx.Node",
     op_kind: OpKind,
@@ -660,13 +697,17 @@ def _extract_function_params(
         else:
             params["dim"] = 0
     elif op_kind == OpKind.RESHAPE:
-        # shape argument
-        shape_args = []
-        for arg in node.args[1:]:
-            if isinstance(arg, int):
-                shape_args.append(arg)
-        if shape_args:
-            params["target_shape"] = tuple(shape_args)
+        # shape argument(s): torch.reshape(x, shape) — ``shape`` may be a
+        # single tuple/list or (rarely) varargs.  Capture the full dim spec
+        # (with placeholders for dynamic args) under ``dims`` so the model
+        # checker's reshape handlers can see it; keep the int-only
+        # ``target_shape`` for backward compatibility with thread_modular.
+        dims = _parse_reshape_dims(tuple(node.args[1:]))
+        if dims is not None:
+            params["dims"] = dims
+            int_dims = tuple(d for d in dims if isinstance(d, int))
+            if int_dims:
+                params["target_shape"] = int_dims
     elif op_kind == OpKind.FLATTEN:
         if len(node.args) > 1 and isinstance(node.args[1], int):
             params["start_dim"] = node.args[1]
@@ -689,12 +730,13 @@ def _extract_method_params(
     """Extract shape-relevant params from a method call node."""
     params: Dict[str, Any] = {}
     if method_name in ("view", "reshape"):
-        shape_args = []
-        for arg in node.args[1:]:
-            if isinstance(arg, int):
-                shape_args.append(arg)
-        if shape_args:
-            params["target_shape"] = tuple(shape_args)
+        # ``x.view(2, 3)`` / ``x.reshape((2, 3))`` / ``x.reshape(b, -1)``.
+        dims = _parse_reshape_dims(tuple(node.args[1:]))
+        if dims is not None:
+            params["dims"] = dims
+            int_dims = tuple(d for d in dims if isinstance(d, int))
+            if int_dims:
+                params["target_shape"] = int_dims
     elif method_name == "transpose":
         if len(node.args) >= 3:
             params["dim0"] = node.args[1] if isinstance(node.args[1], int) else 0
