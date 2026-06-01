@@ -84,11 +84,31 @@ class AnalysisResult:
     counterexample: Optional[Dict[str, Any]] = None  # Z3 witness assignment
     abstained: bool = False  # True iff verifier hit an out-of-fragment construct
     opaque_layer_count: int = 0  # number of LayerKind.UNKNOWN entries
+    soundness_mode: str = "balanced"  # sound | balanced | heuristic (Step 7)
+    unknown_reasons: List[str] = field(default_factory=list)  # why verdict is UNKNOWN
 
     @property
     def status(self) -> str:
-        """Return ``"SAFE"`` when no bugs were found, ``"UNSAFE"`` otherwise."""
+        """Return ``"SAFE"`` when no bugs were found, ``"UNSAFE"`` otherwise.
+
+        Legacy two-valued verdict (kept for backward compatibility). Prefer the
+        soundness-aware :pyattr:`verdict`, which can also report ``"UNKNOWN"``.
+        """
         return "SAFE" if not self.bugs else "UNSAFE"
+
+    @property
+    def verdict(self) -> str:
+        """Soundness-aware three-valued verdict (Step 7).
+
+        ``"UNSAFE"`` if a bug was refuted; ``"UNKNOWN"`` if the verifier
+        abstained (and the mode does not tolerate abstention); else ``"SAFE"``.
+        In ``heuristic`` mode abstention is tolerated and yields ``"SAFE"``.
+        """
+        if self.bugs:
+            return "UNSAFE"
+        if self.abstained and self.soundness_mode != "heuristic":
+            return "UNKNOWN"
+        return "SAFE"
 
     @property
     def bug_count(self) -> int:
@@ -787,6 +807,7 @@ def verify_architecture(
     filename: str = "<string>",
     high_confidence_only: bool = False,
     hooks: Optional[List] = None,
+    soundness_mode: str = "balanced",
 ) -> AnalysisResult:
     """Verify an nn.Module architecture via constraint-based verification.
 
@@ -812,6 +833,15 @@ def verify_architecture(
         hooks: Optional list of integration hooks (e.g. WandbHook,
             MLflowHook, CIHook). Hooks are called at verification
             start/end and after each CEGAR iteration.
+        soundness_mode: One of ``"sound"``, ``"balanced"`` (default) or
+            ``"heuristic"``. Governs the three-valued ``verdict`` only (it does
+            NOT change which bugs are reported). In ``sound`` mode a ``SAFE``
+            verdict is emitted only when the module is fully inside the
+            verifiable fragment (no opaque layers, no static fragment
+            violations such as data-dependent control flow, and no
+            heuristic-tagged operators); otherwise the verdict is ``UNKNOWN``.
+            ``balanced`` abstains (``UNKNOWN``) only on opaque layers;
+            ``heuristic`` tolerates abstention (``SAFE``).
 
     Returns:
         AnalysisResult. If verification succeeds, bugs list is empty.
@@ -821,6 +851,9 @@ def verify_architecture(
     hooks = hooks or []
     t0 = time.perf_counter()
     result = AnalysisResult()
+    from src.soundness_contract import SoundnessMode
+    mode = SoundnessMode.from_str(soundness_mode)
+    result.soundness_mode = mode.value
     result.lines_analyzed = len(source.splitlines())
 
     # Notify hooks: verification starting
@@ -1139,8 +1172,43 @@ def verify_architecture(
         n_opaque = sum(1 for L in layers.values() if getattr(L, "kind", None) == _LK.UNKNOWN)
         result.opaque_layer_count = n_opaque
         result.abstained = n_opaque > 0
+        if n_opaque > 0:
+            result.unknown_reasons.append(
+                f"{n_opaque} opaque (out-of-fragment) layer(s) could not be modeled"
+            )
     except Exception:
         pass
+
+    # Step 7: in `sound` mode a SAFE verdict requires the whole module to be
+    # inside the verifiable fragment. Fold in static fragment violations (e.g.
+    # data-dependent control flow) and heuristic-tagged operators, which the
+    # opaque-layer check above does not catch, so they yield UNKNOWN rather
+    # than a silent SAFE.
+    if mode == SoundnessMode.SOUND:
+        try:
+            from src.verifiable_fragment import _analyze_source
+            blocking = [
+                c for c in _analyze_source(source)[0]
+                if getattr(c, "severity", "blocking") == "blocking"
+            ]
+            if blocking:
+                result.abstained = True
+                cats = sorted({getattr(c.category, "name", str(c.category)) for c in blocking})
+                result.unknown_reasons.append(
+                    "static fragment violation(s): " + ", ".join(cats)
+                )
+        except Exception:
+            pass
+        try:
+            from src.operator_confidence import heuristic_ops_in_source
+            heur = heuristic_ops_in_source(source)
+            if heur:
+                result.abstained = True
+                result.unknown_reasons.append(
+                    "heuristic-tagged operator(s) used: " + ", ".join(heur)
+                )
+        except Exception:
+            pass
 
     # Notify hooks: verification finished
     for hook in hooks:

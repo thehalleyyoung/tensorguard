@@ -68,6 +68,44 @@ REFUTATION = "refutation (no false alarm)"
 VERIFICATION = "verification (never miss-pass)"
 
 
+class SoundnessMode(Enum):
+    """Verification strictness mode (Step 7).
+
+    Controls how a verdict is rendered when the verifier cannot fully prove a
+    module is in-fragment. Does NOT change which bugs are reported (recall /
+    precision are governed separately by ``high_confidence_only``); it only
+    governs whether a non-refuted module is reported ``SAFE`` or ``UNKNOWN``.
+    """
+
+    SOUND = "sound"
+    """Strictest. A ``SAFE`` verdict is the contract PyTorch could rely on: it
+    is emitted ONLY when the module is fully inside the verifiable fragment —
+    no opaque/out-of-fragment layers, no static fragment violations (e.g.
+    data-dependent control flow), and no operators whose transfer function is
+    merely ``heuristic``. Anything else becomes ``UNKNOWN`` (never a silent
+    ``SAFE``)."""
+
+    BALANCED = "balanced"
+    """Default. A ``SAFE`` verdict is downgraded to ``UNKNOWN`` only when the
+    verifier hit an opaque (out-of-fragment) layer it could not model."""
+
+    HEURISTIC = "heuristic"
+    """Most permissive / best-effort. Abstention is tolerated: a non-refuted
+    module is reported ``SAFE`` even if parts were out of fragment."""
+
+    @classmethod
+    def from_str(cls, value: "str | SoundnessMode") -> "SoundnessMode":
+        if isinstance(value, cls):
+            return value
+        try:
+            return cls(str(value).strip().lower())
+        except ValueError:
+            valid = ", ".join(m.value for m in cls)
+            raise ValueError(
+                f"invalid soundness_mode {value!r}; expected one of: {valid}"
+            )
+
+
 @dataclass(frozen=True)
 class ContractClause:
     construct: str

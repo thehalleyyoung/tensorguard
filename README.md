@@ -62,6 +62,13 @@ runtime errors in ML codebases before any code runs.
   Inspect the table with `tensorguard operator-confidence [--json]` (machine-readable
   table committed to `operator_confidence_table.json`, source of truth
   `src/operator_confidence.py`, pinned by `tests/test_operator_confidence.py`).
+- **Soundness modes** — `tensorguard verify --soundness-mode {sound,balanced,heuristic}`
+  selects a three-valued verdict (`SAFE`/`UNKNOWN`/`UNSAFE`). `sound` is the
+  contract you can rely on: it reports `SAFE` only when the module is fully
+  inside the verifiable fragment (no opaque layers, no data-dependent control
+  flow, no heuristic-tagged operators), otherwise `UNKNOWN` (CLI exit 2) — never
+  a silent pass. The mode never changes which bugs are reported. Source of truth
+  `src/soundness_contract.py`, pinned by `tests/test_soundness_mode.py`.
 - **SARIF 2.1.0 output** — integrates with GitHub Code Scanning / Advanced Security
 - **Sub-second analysis** — typical models verified in < 1 second
 

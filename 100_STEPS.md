@@ -106,9 +106,27 @@ measured, and reproducible.
    so the tag travels with each transfer function. Pinned by
    `tests/test_operator_confidence.py` (10 tests: full-registry coverage,
    defensible spot-checks, heuristic default, table↔code sync, CLI).*
-7. Add a `--soundness-mode {sound,balanced,heuristic}` flag and make `sound`
+7. [x] Add a `--soundness-mode {sound,balanced,heuristic}` flag and make `sound`
    the contract that PyTorch could rely on (no false negatives within the
    declared fragment).
+   *Done. `SoundnessMode` enum added to `src/soundness_contract.py` (single
+   source of truth). `verify_architecture(..., soundness_mode="balanced")` and
+   a `--soundness-mode` flag on `tensorguard verify`. The mode governs only the
+   new three-valued `AnalysisResult.verdict` (SAFE/UNKNOWN/UNSAFE) — it does
+   NOT change which bugs are reported, so refutation precision/recall are
+   untouched (proven: a real shape bug is refuted identically in all three
+   modes). `sound` emits SAFE only when the module is fully in the verifiable
+   fragment: it folds opaque (out-of-fragment) layers, static fragment
+   violations from `verifiable_fragment._analyze_source` (e.g. data-dependent
+   control flow — the U1 silent-SAFE gap from Step 5), and any
+   heuristic-tagged operator (via `operator_confidence.heuristic_ops_in_source`,
+   Step 6) into abstention → `verdict=UNKNOWN` with `unknown_reasons`.
+   `balanced` (default) abstains only on opaque layers; `heuristic` tolerates
+   abstention → SAFE. In `sound` mode the CLI exits 2 on UNKNOWN (a real CI
+   gate); other modes keep the legacy exit-0-on-no-bugs behavior. Pinned by
+   `tests/test_soundness_mode.py` (12 tests: enum, verdict unit logic, the full
+   3×scenario verdict matrix on real modules incl. the U1 data-dependent gap,
+   no-recall-change proof, and CLI exit codes / JSON verdict fields).*
 8. Write `verifiable_fragment.py` into a formal spec doc: grammar of supported
    `nn.Module`/`forward` constructs, with an explicit "unsupported → reported
    as `unknown`" fallback rather than silent pass.

@@ -239,5 +239,55 @@ def annotate_registry() -> int:
     return count
 
 
+# Base operator names whose transfer function is only ``heuristic`` and which
+# can be spotted by a lightweight source scan (used by ``sound`` mode to refuse
+# a confident SAFE). ``torch.linalg.*`` is matched via the namespace.
+_HEURISTIC_BASE_OPS = frozenset(_DATA_DEPENDENT)
+_HEURISTIC_NAMESPACES = ("linalg",)
+
+
+def heuristic_ops_in_source(source: str) -> List[str]:
+    """Return sorted qualified names of heuristic-tagged ops called in *source*.
+
+    A best-effort static scan of call expressions (e.g. ``torch.unique(...)``,
+    ``x.einsum(...)``, ``torch.linalg.svd(...)``). Used so ``sound`` mode can
+    abstain rather than emit a confident SAFE when an inference would rely on a
+    heuristic transfer function.
+    """
+    import ast
+
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return []
+
+    found = set()
+
+    def _qualified(node: ast.AST) -> str:
+        parts = []
+        cur = node
+        while isinstance(cur, ast.Attribute):
+            parts.append(cur.attr)
+            cur = cur.value
+        if isinstance(cur, ast.Name):
+            parts.append(cur.id)
+        return ".".join(reversed(parts))
+
+    for n in ast.walk(tree):
+        if not isinstance(n, ast.Call):
+            continue
+        func = n.func
+        if not isinstance(func, ast.Attribute):
+            continue
+        base = func.attr
+        qualified = _qualified(func)
+        parents = qualified.split(".")
+        if base in _HEURISTIC_BASE_OPS:
+            found.add(qualified)
+        elif len(parents) >= 2 and parents[-2] in _HEURISTIC_NAMESPACES:
+            found.add(qualified)
+    return sorted(found)
+
+
 if __name__ == "__main__":  # pragma: no cover
     print(to_json())

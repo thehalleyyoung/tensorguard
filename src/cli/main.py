@@ -3159,6 +3159,14 @@ class VerifyCommand:
             "--high-confidence", action="store_true",
             help="Only report high-confidence (Z3-proven) bugs. Reduces FP rate to 0%% for CI/CD gating."
         )
+        parser.add_argument(
+            "--soundness-mode", choices=["sound", "balanced", "heuristic"],
+            default="balanced",
+            help="Verdict strictness (Step 7). 'sound' emits SAFE only when the "
+            "module is fully in the verifiable fragment (else UNKNOWN, exit 2); "
+            "'balanced' (default) abstains on opaque layers; 'heuristic' "
+            "tolerates abstention. Does not change which bugs are reported."
+        )
 
     def execute(self, args: argparse.Namespace) -> int:
         filepath = pathlib.Path(args.file)
@@ -3199,12 +3207,15 @@ class VerifyCommand:
                 max_cegar_iterations=args.cegar_iterations,
                 filename=str(filepath),
                 high_confidence_only=args.high_confidence,
+                soundness_mode=getattr(args, "soundness_mode", "balanced"),
             )
         except RuntimeError as e:
             sys.stderr.write(f"Error: {e}\n")
             return 1
 
         fmt = getattr(args, "format", "text")
+        verdict = getattr(result, "verdict", "SAFE" if not result.bugs else "UNSAFE")
+        unknown_reasons = list(getattr(result, "unknown_reasons", []))
         if fmt == "json":
             out = {
                 "file": str(filepath),
@@ -3214,22 +3225,33 @@ class VerifyCommand:
                 ],
                 "duration_ms": result.duration_ms,
                 "status": "SAFE" if not result.bugs else "UNSAFE",
+                "verdict": verdict,
+                "soundness_mode": getattr(result, "soundness_mode", "balanced"),
                 "abstained": bool(getattr(result, "abstained", False)),
                 "opaque_layer_count": int(getattr(result, "opaque_layer_count", 0)),
+                "unknown_reasons": unknown_reasons,
             }
             sys.stdout.write(json.dumps(out, indent=2) + "\n")
         elif fmt == "text":
             if not result.bugs:
-                sys.stdout.write(
-                    f"✓ {filepath.name}: Architecture verified safe "
-                    f"({result.duration_ms:.1f}ms)\n"
-                )
-                # Show discovered contracts if any
-                contracts = getattr(result, "_shape_contracts", [])
-                if contracts:
-                    sys.stdout.write(f"  Discovered {len(contracts)} shape contracts:\n")
-                    for c in contracts[:5]:
-                        sys.stdout.write(f"    {c}\n")
+                if verdict == "UNKNOWN":
+                    sys.stdout.write(
+                        f"? {filepath.name}: Cannot certify safe — UNKNOWN "
+                        f"({result.duration_ms:.1f}ms)\n"
+                    )
+                    for reason in unknown_reasons:
+                        sys.stdout.write(f"  - {reason}\n")
+                else:
+                    sys.stdout.write(
+                        f"✓ {filepath.name}: Architecture verified safe "
+                        f"({result.duration_ms:.1f}ms)\n"
+                    )
+                    # Show discovered contracts if any
+                    contracts = getattr(result, "_shape_contracts", [])
+                    if contracts:
+                        sys.stdout.write(f"  Discovered {len(contracts)} shape contracts:\n")
+                        for c in contracts[:5]:
+                            sys.stdout.write(f"    {c}\n")
             else:
                 sys.stdout.write(
                     f"✗ {filepath.name}: {len(result.bugs)} verification errors "
@@ -3243,7 +3265,14 @@ class VerifyCommand:
             sarif = result.to_sarif()
             sys.stdout.write(json.dumps(sarif, indent=2) + "\n")
 
-        return 0 if not result.bugs else 1
+        if result.bugs:
+            return 1
+        # Sound mode is an opt-in CI gate: an UNKNOWN verdict cannot certify
+        # safety, so it fails with a distinct exit code. Other modes preserve
+        # the legacy "no bugs → exit 0" behavior for backward compatibility.
+        if verdict == "UNKNOWN" and getattr(args, "soundness_mode", "balanced") == "sound":
+            return 2
+        return 0
 
 
 # ---------------------------------------------------------------------------
