@@ -191,8 +191,25 @@ measured, and reproducible.
 
 ## Phase 2 — Correctness core: precision and recall on real PyTorch
 
-11. Mine 500+ real shape/device bugs from public GitHub history (CI failures,
+11. [x] Mine 500+ real shape/device bugs from public GitHub history (CI failures,
     "RuntimeError: size mismatch" commits) into a labeled dataset.
+    *Done. Built a reproducible miner `experiments_v5/github_bug_mining/mine_github_bugs.py`
+    that queries the GitHub Search API across all public repos for eight verbatim
+    PyTorch runtime error signatures (e.g. `mat1 and mat2 shapes cannot be
+    multiplied`, `Given groups=1, weight of size`, `is invalid for input of
+    size`, `Expected all tensors to be on the same device`), dedups by URL, and
+    labels each hit by the category its matched signature denotes. Mined **2704
+    unique real labeled bugs** (5x the 500 target) — 2394 shape + 310 device,
+    across 8 categories — frozen into `mined_bugs_dataset.jsonl` +
+    `mined_bugs_manifest.json` with a `dataset_sha256` content hash. Labels are
+    grounded in real code: a 6/6 spot-check re-fetched sampled issue bodies and
+    confirmed every one literally contains its matched signature. `load.py`
+    verifies the hash + that every (domain, category) label is consistent with
+    its signature (offline). Pinned by `tests/test_github_bug_mining.py` (7
+    offline tests: hash integrity, >=500 target, GitHub provenance,
+    label-signature consistency, domain/category coverage, dedup, manifest-vs-
+    dataset breakdown). Network-qualified (GitHub Search is a live, growing
+    index; committed snapshot is frozen). Referenced from README.*
 12. Measure precision/recall against PyTea, runtime tools (e.g. shape
     assertions), and a no-op baseline; commit the confusion matrices.
 13. Drive false-positive rate to **0%** in `sound` mode on the clean half of

@@ -1,0 +1,75 @@
+{
+  "meta": {
+    "name": "tensorguard-github-mined-bugs",
+    "description": "Real PyTorch shape/device bugs mined from public GitHub issues and PRs by matching verbatim PyTorch runtime error signatures. Each record's category is the category the matched signature denotes. Frozen snapshot; re-mining is a live network op that only grows the count.",
+    "mined_at_utc": "2026-06-01T20:27:09.632402+00:00",
+    "total": 2704,
+    "by_domain": {
+      "device": 310,
+      "shape": 2394
+    },
+    "by_category": {
+      "broadcast_mismatch": 398,
+      "cat_stack_mismatch": 398,
+      "conv_channel_mismatch": 399,
+      "device_mismatch": 291,
+      "dim_out_of_range": 400,
+      "dtype_device_input_mismatch": 19,
+      "matmul_linear_mismatch": 400,
+      "view_reshape_total_size": 399
+    },
+    "signatures": [
+      {
+        "signature": "mat1 and mat2 shapes cannot be multiplied",
+        "domain": "shape",
+        "category": "matmul_linear_mismatch",
+        "unique_contributed": 400
+      },
+      {
+        "signature": "Given groups=1, weight of size",
+        "domain": "shape",
+        "category": "conv_channel_mismatch",
+        "unique_contributed": 399
+      },
+      {
+        "signature": "is invalid for input of size",
+        "domain": "shape",
+        "category": "view_reshape_total_size",
+        "unique_contributed": 399
+      },
+      {
+        "signature": "The size of tensor a",
+        "domain": "shape",
+        "category": "broadcast_mismatch",
+        "unique_contributed": 398
+      },
+      {
+        "signature": "Sizes of tensors must match except in dimension",
+        "domain": "shape",
+        "category": "cat_stack_mismatch",
+        "unique_contributed": 398
+      },
+      {
+        "signature": "Dimension out of range",
+        "domain": "shape",
+        "category": "dim_out_of_range",
+        "unique_contributed": 400
+      },
+      {
+        "signature": "Expected all tensors to be on the same device",
+        "domain": "device",
+        "category": "device_mismatch",
+        "unique_contributed": 291
+      },
+      {
+        "signature": "Input type",
+        "domain": "device",
+        "category": "dtype_device_input_mismatch",
+        "unique_contributed": 19
+      }
+    ],
+    "dataset_sha256": "f64276fbba37541d229e34ccfb145407ac67169a211a25d6e7c0a4c2ba8c815a",
+    "generated_by": "experiments_v5/github_bug_mining/mine_github_bugs.py",
+    "network_qualified": true
+  }
+}

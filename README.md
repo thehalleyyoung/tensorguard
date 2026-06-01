@@ -86,6 +86,13 @@ runtime errors in ML codebases before any code runs.
   Run `python -m real_benchmarks.load` to re-verify integrity and that 16/16
   TensorGuard verdicts match the frozen labels; pinned by
   `tests/test_real_benchmarks.py`.
+- **GitHub-mined bug dataset** — [`experiments_v5/github_bug_mining/`](experiments_v5/github_bug_mining/)
+  is a frozen, labeled dataset of thousands of real PyTorch shape/device bugs
+  mined from public GitHub issues/PRs by matching verbatim PyTorch runtime error
+  signatures, content-addressed by sha256. Verify it offline with
+  `python experiments_v5/github_bug_mining/load.py`; pinned by
+  `tests/test_github_bug_mining.py`. Re-mine from live GitHub with
+  `experiments_v5/github_bug_mining/mine_github_bugs.py`.
 - **SARIF 2.1.0 output** — integrates with GitHub Code Scanning / Advanced Security
 - **Sub-second analysis** — typical models verified in < 1 second
 
