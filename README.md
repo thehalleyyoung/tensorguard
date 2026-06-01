@@ -628,6 +628,30 @@ regression that left stale artifacts behind is still caught — see the
 `make dashboard-gate` target. Committed artifacts: `evaluation/dashboard.md` and
 `evaluation/dashboard_baseline.json`.
 
+### Operator surface coverage matrix
+
+`evaluation/operator_coverage.py` introspects the *live* public operator surface
+of `torch`, `torch.nn`, and `torch.nn.functional` and cross-references it against
+every operator TensorGuard recognises — the universal transfer-function registry,
+the `nn.Module` layer map, the functional/torch/method dispatch tables, and the
+denotational transfer functions. It reports, per namespace, the public operator
+count, the covered count, the coverage ratio, and the full sorted covered and
+uncovered name lists, so the Phase 3 operator long-tail can be prioritised
+against a real census. The `nn.Module` surface is the most complete (coverage
+ratio above four tenths); the broad `torch` free-function surface includes many
+non-tensor utilities and is the lowest.
+
+```bash
+PYTHONPATH=. python3 evaluation/operator_coverage.py            # regenerate matrix
+PYTHONPATH=. python3 evaluation/operator_coverage.py --check    # version-gated freshness
+```
+
+Because the public surface depends on the installed PyTorch version, the
+artifact records `torch_version`; `--check` enforces a byte-identical match only
+when the local torch version equals the committed one, otherwise it reports a
+QUALIFIED skip. Committed artifacts: `evaluation/operator_coverage.json` and
+`evaluation/operator_coverage.md`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
@@ -662,6 +686,7 @@ in `lean/TensorGuard/` live inside docstring comments.
 | Disagreement triage + 50-case regression suite                 | `evaluation/triage.py`                                  |
 | Shape-algebra property tests (Hypothesis)                      | `tests/test_shape_algebra_properties.py`                |
 | Precision/recall regression dashboard (merge gate)             | `evaluation/dashboard.py`                               |
+| Operator surface coverage matrix (torch/nn/functional)         | `evaluation/operator_coverage.py`                       |
 | 60-bug headline RP reproducer (single command)                 | `reproducibility/reproduce_headline_60bug.py`           |
 | Verdict reclassification (RP / CV / LW)                        | `experiments_v5/run_verdict_reclassification.py`        |
 | 10-bug real-public corpus                                      | `experiments_v5/v8/verify_real_bugs.py`                 |

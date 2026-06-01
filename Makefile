@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -35,6 +35,7 @@ help:
 	@echo "  dashboard        Regenerate the precision/recall regression dashboard (dashboard.md)"
 	@echo "  dashboard-check  Gate the dashboard against the frozen baseline (non-zero on regression)"
 	@echo "  dashboard-gate   Verify artifacts are fresh, then gate the dashboard (full merge gate)"
+	@echo "  operator-coverage  Regenerate the public torch/nn/functional operator coverage matrix"
 	@echo "  audit            Run the numeric-claim audit over committed artifacts"
 	@echo "  test             Run the pytest suite"
 
@@ -98,6 +99,9 @@ dashboard-gate:
 	$(PYTHON) evaluation/hard_recall.py --check
 	$(PYTHON) evaluation/triage.py --check
 	$(PYTHON) evaluation/dashboard.py --check
+
+operator-coverage:
+	$(PYTHON) evaluation/operator_coverage.py
 
 audit:
 	$(PYTHON) reproducibility/audit_numeric_claims.py
