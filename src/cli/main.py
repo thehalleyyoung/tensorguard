@@ -2524,6 +2524,69 @@ class VersionCommand:
 # ── ConfigCommand ─────────────────────────────────────────────────────────
 
 
+class OperatorConfidenceCommand:
+    """Print the per-operator confidence table (sound/complete/heuristic)."""
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "operators",
+            nargs="*",
+            help="Optional operator names to query (e.g. torch.matmul F.relu). "
+            "If omitted, the full table is printed.",
+        )
+        parser.add_argument("--json", action="store_true", dest="as_json")
+
+    def execute(self, args: argparse.Namespace) -> int:
+        from src.operator_confidence import (
+            ConfidenceTag,
+            confidence_table,
+            rationale_for,
+            tag_for,
+            to_json,
+        )
+
+        queried = list(getattr(args, "operators", []) or [])
+
+        if queried:
+            rows = [
+                {
+                    "operator": op,
+                    "confidence": tag_for(op).value,
+                    "rationale": rationale_for(op),
+                }
+                for op in queried
+            ]
+        else:
+            rows = confidence_table()
+
+        if getattr(args, "as_json", False):
+            if queried:
+                sys.stdout.write(json.dumps({"operators": rows}, indent=2) + "\n")
+            else:
+                sys.stdout.write(to_json() + "\n")
+            return 0
+
+        width = max((len(r["operator"]) for r in rows), default=8)
+        for r in rows:
+            sys.stdout.write(f"{r['operator']:<{width}}  {r['confidence']:<9}\n")
+        if not queried:
+            summary: Dict[str, int] = {t.value: 0 for t in ConfidenceTag}
+            for r in rows:
+                summary[r["confidence"]] += 1
+            sys.stdout.write(
+                "\n"
+                f"{len(rows)} operators: "
+                f"{summary['complete']} complete, "
+                f"{summary['sound']} sound, "
+                f"{summary['heuristic']} heuristic "
+                "(unknown ops default to heuristic)\n"
+            )
+        return 0
+
+
+# ── ConfigCommand ─────────────────────────────────────────────────────────
+
+
 class ConfigCommand:
     """Show or edit configuration."""
 
@@ -3204,6 +3267,7 @@ class ReftypeCliApp:
         "server": lambda: ServerCommand(),
         "version": lambda: VersionCommand(),
         "config": lambda: ConfigCommand(),
+        "operator-confidence": lambda: OperatorConfidenceCommand(),
     }
 
     def __init__(self) -> None:
@@ -3259,6 +3323,7 @@ class ReftypeCliApp:
             "server": "Start the LSP server",
             "version": "Show version information",
             "config": "Show or edit configuration",
+            "operator-confidence": "Show per-operator confidence tags (sound/complete/heuristic)",
         }
         return helps.get(name, "")
 

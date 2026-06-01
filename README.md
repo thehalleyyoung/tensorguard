@@ -56,6 +56,12 @@ runtime errors in ML codebases before any code runs.
   constructs are over-/under-approximated or skipped — is published in
   [`SOUNDNESS_CONTRACT.md`](SOUNDNESS_CONTRACT.md) (generated from
   `src/soundness_contract.py`, including the currently-known unsoundness gaps).
+- **Per-operator confidence** — every one of the 117 registered operator
+  transfer functions is tagged `complete`, `sound`, or `heuristic` so you know
+  how much to trust each inference (unknown ops default to `heuristic`).
+  Inspect the table with `tensorguard operator-confidence [--json]` (machine-readable
+  table committed to `operator_confidence_table.json`, source of truth
+  `src/operator_confidence.py`, pinned by `tests/test_operator_confidence.py`).
 - **SARIF 2.1.0 output** — integrates with GitHub Code Scanning / Advanced Security
 - **Sub-second analysis** — typical models verified in < 1 second
 

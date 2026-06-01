@@ -88,9 +88,24 @@ measured, and reproducible.
    `tests/test_soundness_contract.py` (7 tests): fragment boundary
    (clean in / data-dependent-CF out), the U1 silent-SAFE gap, a refutation
    probe, and doc/module sync.*
-6. Tag every operator transfer function as `sound`, `complete`, or `heuristic`
+6. [x] Tag every operator transfer function as `sound`, `complete`, or `heuristic`
    in a machine-readable table; surface the tag in output so users know the
    confidence of each inference.
+   *Done. `src/operator_confidence.py` is the single source of truth: a
+   `ConfidenceTag` enum (COMPLETE/SOUND/HEURISTIC) + principled classifier
+   covering all 117 registered transfer functions (75 complete, 36 sound,
+   6 heuristic). complete = shape-preserving pointwise (activations,
+   elementwise unary, comparisons) → exact (sound & complete); sound =
+   exact structural rules enforced soundly (matmul family, reductions,
+   gather/scatter, sort/topk, FFTs, static-shape sampling); heuristic =
+   data-dependent output or approximated rule (unique, multinomial, einsum,
+   linalg.*). Unknown/unregistered ops default to `heuristic` (honest, never
+   over-claims). Surfaced three ways: machine-readable `operator_confidence_table.json`
+   (committed, sync-tested), a new `tensorguard operator-confidence [ops...] [--json]`
+   CLI command, and `annotate_registry()` which stamps `TransferFunction.confidence`
+   so the tag travels with each transfer function. Pinned by
+   `tests/test_operator_confidence.py` (10 tests: full-registry coverage,
+   defensible spot-checks, heuristic default, table↔code sync, CLI).*
 7. Add a `--soundness-mode {sound,balanced,heuristic}` flag and make `sound`
    the contract that PyTorch could rely on (no false negatives within the
    declared fragment).

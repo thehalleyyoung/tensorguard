@@ -1,0 +1,597 @@
+{
+  "schema": "tensorguard.operator_confidence/v1",
+  "default_tag": "heuristic",
+  "summary": {
+    "complete": 75,
+    "sound": 36,
+    "heuristic": 6
+  },
+  "total": 117,
+  "operators": [
+    {
+      "operator": "F.celu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.elu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.gelu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.hardshrink",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.hardsigmoid",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.hardswish",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.leaky_relu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.logsigmoid",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.mish",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.prelu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.relu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.rrelu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.selu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.sigmoid",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.silu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.softplus",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.softshrink",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.softsign",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.tanh",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "F.tanhshrink",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.abs",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.acos",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.all",
+      "confidence": "sound",
+      "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.amax",
+      "confidence": "sound",
+      "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.amin",
+      "confidence": "sound",
+      "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.any",
+      "confidence": "sound",
+      "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.argsort",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
+      "operator": "torch.asin",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.atan",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.bernoulli",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
+      "operator": "torch.bmm",
+      "confidence": "sound",
+      "rationale": "Matmul-family op with an exact, well-defined contraction rule that is enforced soundly (full completeness not claimed for every broadcasting / zero-dim edge case)."
+    },
+    {
+      "operator": "torch.cdist",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
+      "operator": "torch.ceil",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.celu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.clamp",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.clip",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.cos",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.cosh",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.cross",
+      "confidence": "sound",
+      "rationale": "Matmul-family op with an exact, well-defined contraction rule that is enforced soundly (full completeness not claimed for every broadcasting / zero-dim edge case)."
+    },
+    {
+      "operator": "torch.einsum",
+      "confidence": "heuristic",
+      "rationale": "Output shape depends on runtime values or is approximated generically; best-effort, neither sound nor complete in general."
+    },
+    {
+      "operator": "torch.elu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.eq",
+      "confidence": "complete",
+      "rationale": "Elementwise comparison: shape-preserving boolean output, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.equal",
+      "confidence": "complete",
+      "rationale": "Elementwise comparison: shape-preserving boolean output, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.erf",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.erfc",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.exp",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.fft.fft",
+      "confidence": "sound",
+      "rationale": "FFT family: exact, well-defined output-shape rule (e.g. rfft maps the last dim n -> n//2 + 1) enforced soundly."
+    },
+    {
+      "operator": "torch.fft.fft2",
+      "confidence": "sound",
+      "rationale": "FFT family: exact, well-defined output-shape rule (e.g. rfft maps the last dim n -> n//2 + 1) enforced soundly."
+    },
+    {
+      "operator": "torch.fft.ifft",
+      "confidence": "sound",
+      "rationale": "FFT family: exact, well-defined output-shape rule (e.g. rfft maps the last dim n -> n//2 + 1) enforced soundly."
+    },
+    {
+      "operator": "torch.fft.ifft2",
+      "confidence": "sound",
+      "rationale": "FFT family: exact, well-defined output-shape rule (e.g. rfft maps the last dim n -> n//2 + 1) enforced soundly."
+    },
+    {
+      "operator": "torch.fft.irfft",
+      "confidence": "sound",
+      "rationale": "FFT family: exact, well-defined output-shape rule (e.g. rfft maps the last dim n -> n//2 + 1) enforced soundly."
+    },
+    {
+      "operator": "torch.fft.rfft",
+      "confidence": "sound",
+      "rationale": "FFT family: exact, well-defined output-shape rule (e.g. rfft maps the last dim n -> n//2 + 1) enforced soundly."
+    },
+    {
+      "operator": "torch.floor",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.gather",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
+      "operator": "torch.ge",
+      "confidence": "complete",
+      "rationale": "Elementwise comparison: shape-preserving boolean output, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.gelu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.gt",
+      "confidence": "complete",
+      "rationale": "Elementwise comparison: shape-preserving boolean output, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.hardshrink",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.hardsigmoid",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.hardswish",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.index_select",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
+      "operator": "torch.isfinite",
+      "confidence": "complete",
+      "rationale": "Elementwise comparison: shape-preserving boolean output, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.isinf",
+      "confidence": "complete",
+      "rationale": "Elementwise comparison: shape-preserving boolean output, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.isnan",
+      "confidence": "complete",
+      "rationale": "Elementwise comparison: shape-preserving boolean output, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.kron",
+      "confidence": "sound",
+      "rationale": "Matmul-family op with an exact, well-defined contraction rule that is enforced soundly (full completeness not claimed for every broadcasting / zero-dim edge case)."
+    },
+    {
+      "operator": "torch.le",
+      "confidence": "complete",
+      "rationale": "Elementwise comparison: shape-preserving boolean output, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.leaky_relu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.linalg.qr",
+      "confidence": "heuristic",
+      "rationale": "Linear-algebra decomposition with multiple outputs and value-dependent / approximated shape handling."
+    },
+    {
+      "operator": "torch.linalg.solve",
+      "confidence": "heuristic",
+      "rationale": "Linear-algebra decomposition with multiple outputs and value-dependent / approximated shape handling."
+    },
+    {
+      "operator": "torch.linalg.svd",
+      "confidence": "heuristic",
+      "rationale": "Linear-algebra decomposition with multiple outputs and value-dependent / approximated shape handling."
+    },
+    {
+      "operator": "torch.log",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.log10",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.log2",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.logsigmoid",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.logsumexp",
+      "confidence": "sound",
+      "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.lt",
+      "confidence": "complete",
+      "rationale": "Elementwise comparison: shape-preserving boolean output, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.matmul",
+      "confidence": "sound",
+      "rationale": "Matmul-family op with an exact, well-defined contraction rule that is enforced soundly (full completeness not claimed for every broadcasting / zero-dim edge case)."
+    },
+    {
+      "operator": "torch.max",
+      "confidence": "sound",
+      "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.mean",
+      "confidence": "sound",
+      "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.min",
+      "confidence": "sound",
+      "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.mish",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.mm",
+      "confidence": "sound",
+      "rationale": "Matmul-family op with an exact, well-defined contraction rule that is enforced soundly (full completeness not claimed for every broadcasting / zero-dim edge case)."
+    },
+    {
+      "operator": "torch.multinomial",
+      "confidence": "heuristic",
+      "rationale": "Output shape depends on runtime values or is approximated generically; best-effort, neither sound nor complete in general."
+    },
+    {
+      "operator": "torch.mv",
+      "confidence": "sound",
+      "rationale": "Matmul-family op with an exact, well-defined contraction rule that is enforced soundly (full completeness not claimed for every broadcasting / zero-dim edge case)."
+    },
+    {
+      "operator": "torch.nan_to_num",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.ne",
+      "confidence": "complete",
+      "rationale": "Elementwise comparison: shape-preserving boolean output, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.neg",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.norm",
+      "confidence": "sound",
+      "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.outer",
+      "confidence": "sound",
+      "rationale": "Matmul-family op with an exact, well-defined contraction rule that is enforced soundly (full completeness not claimed for every broadcasting / zero-dim edge case)."
+    },
+    {
+      "operator": "torch.poisson",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
+      "operator": "torch.prelu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.prod",
+      "confidence": "sound",
+      "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.relu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.round",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.rrelu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.rsqrt",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.scatter",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
+      "operator": "torch.selu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.sigmoid",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.sign",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.silu",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.sin",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.sinh",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.softplus",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.softshrink",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.softsign",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.sort",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
+      "operator": "torch.sqrt",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.std",
+      "confidence": "sound",
+      "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.sum",
+      "confidence": "sound",
+      "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.tan",
+      "confidence": "complete",
+      "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.tanh",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.tanhshrink",
+      "confidence": "complete",
+      "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.tensordot",
+      "confidence": "sound",
+      "rationale": "Matmul-family op with an exact, well-defined contraction rule that is enforced soundly (full completeness not claimed for every broadcasting / zero-dim edge case)."
+    },
+    {
+      "operator": "torch.topk",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
+      "operator": "torch.unique",
+      "confidence": "heuristic",
+      "rationale": "Output shape depends on runtime values or is approximated generically; best-effort, neither sound nor complete in general."
+    },
+    {
+      "operator": "torch.var",
+      "confidence": "sound",
+      "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    }
+  ]
+}

@@ -281,6 +281,7 @@ class TransferFunction:
     preserves_shape: bool = False
     reduces_dim: Optional[int] = None
     doc: str = ""
+    confidence: Optional[str] = None  # sound | complete | heuristic (Step 6)
 
 
 # Registry of all supported transfer functions
