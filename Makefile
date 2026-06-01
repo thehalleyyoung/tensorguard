@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -25,6 +25,7 @@ help:
 	@echo "  corpus           Regenerate only the frozen benchmark corpus + its audit artifact"
 	@echo "  headline         Regenerate only the headline 60-bug Refuted-Proof figure"
 	@echo "  precision-recall Regenerate the precision/recall confusion matrices vs baselines (needs node for PyTea)"
+	@echo "  sound-fp         Regenerate the sound-mode false-positive hunt over clean, executing models"
 	@echo "  audit            Run the numeric-claim audit over committed artifacts"
 	@echo "  test             Run the pytest suite"
 
@@ -52,6 +53,9 @@ headline:
 
 precision-recall:
 	$(PYTHON) evaluation/precision_recall.py
+
+sound-fp:
+	$(PYTHON) evaluation/sound_mode_fp.py
 
 audit:
 	$(PYTHON) reproducibility/audit_numeric_claims.py

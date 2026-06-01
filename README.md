@@ -442,6 +442,28 @@ execution, concrete inputs, or GPU required. The committed matrices live in
 `evaluation/confusion_matrices.json` and `evaluation/confusion_matrices.md`
 and are pinned by `tests/test_precision_recall.py`.
 
+### Sound-mode false-positive hunt
+
+For a tool meant to ship inside PyTorch a single false alarm destroys trust,
+so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a
+large, diverse corpus of clean PyTorch modules — every model is validated to
+execute without error in eager PyTorch before admission — spanning MLP,
+residual-MLP, CNN, LayerNorm, attention and GroupNorm templates, then runs
+TensorGuard in the strict `sound` soundness mode on each:
+
+```bash
+PYTHONPATH=. python3 evaluation/sound_mode_fp.py     # or: make sound-fp
+```
+
+The hard requirement is **zero Refuted (false-positive) verdicts** on clean,
+executing code. Across eighty clean models (the eight hand-written clean
+benchmarks plus seventy-two seeded-generated models) TensorGuard raises zero
+false alarms and verifies every one SAFE in sound mode — a result that is not
+achieved by trivially abstaining, since SAFE coverage is total. The committed
+artifacts live in `evaluation/sound_mode_fp.json` and
+`evaluation/sound_mode_fp.md` and are pinned by
+`tests/test_sound_mode_fp.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
@@ -468,6 +490,7 @@ in `lean/TensorGuard/` live inside docstring comments.
 |----------------------------------------------------------------|---------------------------------------------------------|
 | 488-block + 60-bug headline triple                             | `experiments_v5/run_v5_benchmark.py`                    |
 | Precision/recall confusion matrices vs PyTea/runtime/no-op     | `evaluation/precision_recall.py`                        |
+| Sound-mode false-positive hunt (clean executing models)        | `evaluation/sound_mode_fp.py`                           |
 | 60-bug headline RP reproducer (single command)                 | `reproducibility/reproduce_headline_60bug.py`           |
 | Verdict reclassification (RP / CV / LW)                        | `experiments_v5/run_verdict_reclassification.py`        |
 | 10-bug real-public corpus                                      | `experiments_v5/v8/verify_real_bugs.py`                 |
