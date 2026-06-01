@@ -8304,45 +8304,42 @@ class ConstraintVerifier:
                 else:
                     new_state.shape_env[step.output] = inp_shape
         elif step.op == OpKind.EINSUM:
+            # Precise einsum: parse the equation (explicit/implicit output,
+            # diagonals, ellipsis broadcasting) rather than a heuristic. We only
+            # run the parser-backed inference once the equation is a known string
+            # and every operand shape is resolved; otherwise we fall back to a
+            # best-effort placeholder. The verifier never emits a violation for
+            # symbolic dims (only genuine concrete mismatches), preserving the
+            # sound-mode false-positive-free invariant.
             equation = step.params.get("equation", "")
-            if step.inputs and "->" in equation:
-                parts = equation.replace(" ", "").split("->")
-                if len(parts) == 2:
-                    output_spec = parts[1]
-                    dim_sizes: Dict[str, "ShapeDim"] = {}
-                    input_specs = parts[0].split(",")
-                    for inp_idx, spec in enumerate(input_specs):
-                        if inp_idx < len(step.inputs) and step.inputs[inp_idx] in state.shape_env:
-                            inp_shape = state.shape_env[step.inputs[inp_idx]]
-                            for dim_idx, char in enumerate(spec):
-                                if dim_idx < inp_shape.ndim:
-                                    cur_dim = inp_shape.dims[dim_idx]
-                                    if char in dim_sizes:
-                                        prev = dim_sizes[char]
-                                        # Check contracted dimension consistency
-                                        if (not prev.is_symbolic
-                                                and not cur_dim.is_symbolic
-                                                and prev.value != cur_dim.value):
-                                            violations.append(SafetyViolation(
-                                                kind="shape_incompatible",
-                                                step_index=-1, step=step,
-                                                message=(
-                                                    f"einsum '{equation}': dimension "
-                                                    f"'{char}' has size {prev.value} "
-                                                    f"in one input but {cur_dim.value} "
-                                                    f"in another"
-                                                ),
-                                            ))
-                                    dim_sizes[char] = cur_dim
-                    out_dims = []
-                    for char in output_spec:
-                        if char in dim_sizes:
-                            out_dims.append(dim_sizes[char])
-                        else:
-                            out_dims.append(ShapeDim("_einsum"))
-                    new_state.shape_env[step.output] = TensorShape(tuple(out_dims))
+            einsum_inputs: List["TensorShape"] = []
+            all_known_ein = bool(step.inputs) and isinstance(equation, str) \
+                and bool(equation)
+            if all_known_ein:
+                for inp in step.inputs:
+                    if inp in state.shape_env:
+                        einsum_inputs.append(state.shape_env[inp])
+                    else:
+                        all_known_ein = False
+                        break
+            if all_known_ein:
+                from src.smt.einsum_theory import (
+                    check_einsum_compatible as _chk_einsum,
+                    infer_einsum_shape as _infer_einsum,
+                )
+                err_ein = _chk_einsum(equation, einsum_inputs)
+                if err_ein is not None:
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible",
+                        step_index=-1, step=step,
+                        message=f"einsum '{equation}': {err_ein}",
+                    ))
+                out_shape_ein = _infer_einsum(equation, einsum_inputs)
+                if out_shape_ein is not None:
+                    new_state.shape_env[step.output] = out_shape_ein
             elif step.inputs:
-                # Fallback: preserve first input shape
+                # Equation unknown (e.g. sublist/interleaved API) or operand
+                # shapes not yet resolved: best-effort placeholder.
                 for inp in step.inputs:
                     if inp in state.shape_env:
                         new_state.shape_env[step.output] = state.shape_env[inp]
@@ -9950,7 +9947,18 @@ class SymbolicShapePropagator:
                     env[step.output] = inp_shape
 
         elif step.op == OpKind.EINSUM:
-            if step.inputs:
+            equation = step.params.get("equation", "")
+            out_sh_ein = None
+            if step.inputs and isinstance(equation, str) and equation:
+                in_shapes_ein = [env[i] for i in step.inputs if i in env]
+                if len(in_shapes_ein) == len(step.inputs):
+                    from src.smt.einsum_theory import (
+                        infer_einsum_shape as _infer_einsum_ai,
+                    )
+                    out_sh_ein = _infer_einsum_ai(equation, in_shapes_ein)
+            if out_sh_ein is not None:
+                env[step.output] = out_sh_ein
+            elif step.inputs:
                 for inp in step.inputs:
                     if inp in env:
                         env[step.output] = env[inp]

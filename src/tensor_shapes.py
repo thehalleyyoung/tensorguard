@@ -2697,37 +2697,18 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
     ) -> Optional[TensorShape]:
         """Infer output shape from an einsum equation string.
 
-        Parses equations like ``'ij,jk->ik'`` and maps dimension labels
-        to the corresponding shapes from the operands.
+        Delegates to the canonical, torch-equivalent parser in
+        ``src.smt.einsum_theory`` (handles explicit/implicit output, diagonals,
+        and ellipsis broadcasting). Imported locally to avoid a circular import
+        (``einsum_theory`` depends on this module).
         """
-        if '->' not in equation:
-            return None
-        lhs, rhs = equation.split('->', 1)
-        input_specs = [s.strip() for s in lhs.split(',')]
-        output_spec = rhs.strip()
-
-        if len(input_specs) != len(operand_shapes):
-            return None
         if any(s is None for s in operand_shapes):
             return None
-
-        # Build label → ShapeDim mapping from operands
-        label_to_dim: Dict[str, ShapeDim] = {}
-        for spec, shape in zip(input_specs, operand_shapes):
-            spec_clean = spec.replace(' ', '')
-            if shape is None or len(spec_clean) != shape.ndim:
-                return None
-            for ch, sd in zip(spec_clean, shape.dims):
-                label_to_dim[ch] = sd
-
-        # Build output shape from output spec
-        out_dims: List[ShapeDim] = []
-        for ch in output_spec.replace(' ', ''):
-            if ch in label_to_dim:
-                out_dims.append(label_to_dim[ch])
-            else:
-                out_dims.append(ShapeDim(f"_einsum_{ch}"))
-        return TensorShape(tuple(out_dims))
+        try:
+            from src.smt.einsum_theory import infer_einsum_shape
+        except Exception:
+            return None
+        return infer_einsum_shape(equation, list(operand_shapes))
 
     @staticmethod
     def _get_call_name(node: ast.Call) -> Optional[str]:

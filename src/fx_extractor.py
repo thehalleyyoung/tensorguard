@@ -672,6 +672,12 @@ def _extract_function_params(
             params["start_dim"] = node.args[1]
         if len(node.args) > 2 and isinstance(node.args[2], int):
             params["end_dim"] = node.args[2]
+    elif op_kind == OpKind.EINSUM:
+        # torch.einsum(equation, *tensors): the equation is the first arg.
+        if node.args and isinstance(node.args[0], str):
+            params["equation"] = node.args[0]
+        elif "equation" in node.kwargs and isinstance(node.kwargs["equation"], str):
+            params["equation"] = node.kwargs["equation"]
     return params
 
 

@@ -681,6 +681,24 @@ both; `--check` enforces a byte-identical match only when both versions equal th
 committed ones, otherwise it reports a QUALIFIED skip. Committed artifacts:
 `evaluation/operator_frequency.json` and `evaluation/operator_frequency.md`.
 
+### Precise einsum shape inference
+
+`torch.einsum` is now handled by a torch-equivalent equation parser
+(`src/smt/einsum_theory.py`) rather than a heuristic. It infers the output shape
+for explicit and implicit output notation, diagonals (`ii->i`), and ellipsis
+broadcasting (`...qd,...kd->...qk`) — placing the broadcast ellipsis block
+exactly where `...` appears in the output and reducing it away when the output
+omits it. The inferred shape matches real `torch.einsum` across a large random
+differential test, and the checker emits a violation for genuine bugs (a shared
+contraction label with mismatched concrete sizes, a wrong operand rank, or a
+malformed equation) while never flagging symbolic dimensions, preserving the
+sound-mode false-positive-free invariant.
+
+The parser is wired into the verification engine (`src/model_checker.py`) and
+the fx extractor (which captures the equation string), so a buggy einsum is
+reported end-to-end via `verify_module`. See
+`tests/test_einsum_precise.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
