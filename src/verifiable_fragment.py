@@ -474,6 +474,24 @@ def _analyze_source(source: str) -> Tuple[List[UnsupportedConstruct], List[str]]
     return analyzer.issues, analyzer.warnings
 
 
+def analyze_source(source: str) -> List[UnsupportedConstruct]:
+    """Public, instance-free fragment check over module *source*.
+
+    Returns the list of blocking constructs (those that place the module
+    OUTSIDE the verifiable fragment). An empty list means no statically
+    detectable out-of-fragment construct was found.
+
+    This is the explicit "unsupported → reported, never silently passed"
+    fallback: callers (e.g. ``verify_architecture`` in ``sound`` mode) use it to
+    turn a would-be silent ``SAFE`` into an honest ``UNKNOWN``. Unlike
+    :func:`check_traceability`, it needs no instantiated module and performs no
+    ``torch.fx`` tracing, so it is cheap and side-effect free.
+    """
+    issues, _warnings = _analyze_source(source)
+    return [c for c in issues if c.severity == "blocking"]
+
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Dynamic (torch.fx) traceability check
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -665,3 +683,192 @@ def extract_grammar(module: "nn.Module") -> Optional[ModuleDef]:
             ))
 
     return module_def
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Formal specification document (Step 8)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Canonical grammar of the verifiable fragment V_TG. Single source of truth for
+# the generated spec document (see ``render_spec_markdown``). Kept in sync with
+# the module docstring and the SUPPORTED_* tables below.
+VERIFIABLE_FRAGMENT_GRAMMAR = """\
+Module      ::=  class C(nn.Module):
+                     __init__(self, <params>): <InitBody>
+                     forward(self, <inputs>): <FwdBody>
+
+InitBody    ::=  (self.<attr> = <LayerExpr>)*
+LayerExpr   ::=  nn.<SupportedLayer>(<literal>*)
+              |  nn.Sequential(<LayerExpr>*)
+              |  nn.ModuleList([<LayerExpr>*])
+
+FwdBody     ::=  <Stmt>*; return <Expr>
+
+Stmt        ::=  <var> = <Expr>
+              |  <var> = self.<attr>(<Expr>*)          # submodule call
+              |  for <var> in self.<modulelist>:       # static iteration
+                     <Stmt>*
+
+Expr        ::=  <var>
+              |  self.<attr>(<Expr>*)                  # nn.Module call
+              |  <SupportedFunc>(<Expr>*)              # torch.* / F.*
+              |  <Expr>.<SupportedMethod>(<literal>*)  # tensor method
+              |  <Expr> <BinOp> <Expr>                 # +, *, @
+              |  <literal>
+"""
+
+# Human-readable description + detection mechanism for every out-of-fragment
+# category. ``detected_by`` is one of "static" (AST source scan, instance-free),
+# "fx" (torch.fx trace error classification), or "static+fx".
+UNSUPPORTED_CATEGORY_INFO: Dict[UnsupportedCategory, Dict[str, str]] = {
+    UnsupportedCategory.DATA_DEPENDENT_CONTROL_FLOW: {
+        "description": "Branch (if/while) whose condition depends on a tensor value.",
+        "detected_by": "static+fx",
+    },
+    UnsupportedCategory.DATA_DEPENDENT_ITERATION: {
+        "description": "Loop whose trip count depends on runtime data (e.g. range(int(x.item()))).",
+        "detected_by": "static+fx",
+    },
+    UnsupportedCategory.DYNAMIC_ASSERTION: {
+        "description": "assert statement in forward (may reference tensor values).",
+        "detected_by": "static+fx",
+    },
+    UnsupportedCategory.TENSOR_TO_SCALAR: {
+        "description": ".item() / .tolist() / .numpy() converts a tensor to a Python value.",
+        "detected_by": "static+fx",
+    },
+    UnsupportedCategory.CUSTOM_AUTOGRAD: {
+        "description": "Custom torch.autograd.Function subclass with opaque shape behaviour.",
+        "detected_by": "fx",
+    },
+    UnsupportedCategory.INPLACE_MUTATION: {
+        "description": "In-place mutation that torch.fx cannot trace soundly.",
+        "detected_by": "fx",
+    },
+    UnsupportedCategory.JIT_SCRIPT: {
+        "description": "torch.jit.script / scripted submodule opaque to torch.fx.",
+        "detected_by": "fx",
+    },
+    UnsupportedCategory.OPAQUE_EXTERNAL_CALL: {
+        "description": "Call into an external/undefined symbol opaque to the tracer.",
+        "detected_by": "fx",
+    },
+    UnsupportedCategory.DYNAMIC_MODULE_CONSTRUCTION: {
+        "description": "Submodules constructed dynamically at forward time.",
+        "detected_by": "fx",
+    },
+    UnsupportedCategory.UNSUPPORTED_BUILTIN: {
+        "description": "Python builtin not modelled by the shape semantics.",
+        "detected_by": "fx",
+    },
+    UnsupportedCategory.OTHER: {
+        "description": "Any other torch.fx trace failure not otherwise classified.",
+        "detected_by": "fx",
+    },
+}
+
+
+def _md_table_block(title: str, items: Set[str]) -> str:
+    ordered = sorted(items)
+    lines = [f"### {title} ({len(ordered)})", ""]
+    lines.append("```")
+    # wrap at a reasonable width for readability
+    row: List[str] = []
+    width = 0
+    for it in ordered:
+        if width + len(it) + 2 > 76 and row:
+            lines.append(", ".join(row) + ",")
+            row, width = [], 0
+        row.append(it)
+        width += len(it) + 2
+    if row:
+        lines.append(", ".join(row))
+    lines.append("```")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_spec_markdown() -> str:
+    """Render the formal verifiable-fragment specification as Markdown.
+
+    Generated from this module's single source of truth (the grammar constant,
+    the SUPPORTED_* tables and the UnsupportedCategory taxonomy), so the doc can
+    never silently drift from the code. Regenerate with::
+
+        python -m src.verifiable_fragment > VERIFIABLE_FRAGMENT.md
+    """
+    static_cats = sorted(
+        c.name for c, info in UNSUPPORTED_CATEGORY_INFO.items()
+        if "static" in info["detected_by"]
+    )
+    parts: List[str] = []
+    parts.append("# TensorGuard Verifiable Fragment (V_TG)")
+    parts.append("")
+    parts.append(
+        "> **Generated file — do not edit by hand.** Regenerate with "
+        "`python -m src.verifiable_fragment > VERIFIABLE_FRAGMENT.md`. "
+        "Single source of truth: `src/verifiable_fragment.py`."
+    )
+    parts.append("")
+    parts.append(
+        "This document formally characterizes the subset of PyTorch "
+        "`nn.Module` code that TensorGuard can analyze. A module inside the "
+        "fragment is amenable to sound shape/device/gradient verification; a "
+        "module outside it is **reported as `UNKNOWN`, never silently passed** "
+        "(see the fallback policy below)."
+    )
+    parts.append("")
+    parts.append("## Grammar")
+    parts.append("")
+    parts.append("```")
+    parts.append(VERIFIABLE_FRAGMENT_GRAMMAR.rstrip())
+    parts.append("```")
+    parts.append("")
+    parts.append("## Supported constructs")
+    parts.append("")
+    parts.append(_md_table_block("Layer types", SUPPORTED_LAYER_TYPES))
+    parts.append(_md_table_block("Tensor methods", SUPPORTED_TENSOR_METHODS))
+    parts.append(_md_table_block("torch.* functions", SUPPORTED_TORCH_FUNCTIONS))
+    parts.append(_md_table_block("torch.nn.functional (F.*) functions", SUPPORTED_F_FUNCTIONS))
+    parts.append("## Excluded constructs (outside V_TG)")
+    parts.append("")
+    parts.append("| Category | Description | Detected by |")
+    parts.append("| --- | --- | --- |")
+    for cat in UnsupportedCategory:
+        info = UNSUPPORTED_CATEGORY_INFO.get(cat)
+        if not info:
+            continue
+        parts.append(f"| `{cat.name}` | {info['description']} | {info['detected_by']} |")
+    parts.append("")
+    parts.append("*Detected by:* `static` = instance-free AST scan "
+                 "(`analyze_source`); `fx` = `torch.fx` trace-error "
+                 "classification during `check_traceability`; `static+fx` = both.")
+    parts.append("")
+    parts.append("## Fallback policy: unsupported → `UNKNOWN`, never a silent pass")
+    parts.append("")
+    parts.append(
+        "When a module contains any construct above, TensorGuard does **not** "
+        "emit a confident `SAFE`. Two complementary mechanisms enforce this:"
+    )
+    parts.append("")
+    parts.append(
+        "1. **Pre-verification** — `check_traceability(module)` returns "
+        "`in_verifiable_fragment=False` with the offending "
+        "`UnsupportedConstruct`s. The instance-free `analyze_source(source)` "
+        "exposes the statically detectable subset "
+        f"({', '.join('`' + c + '`' for c in static_cats)})."
+    )
+    parts.append(
+        "2. **During verification** — in `--soundness-mode sound`, "
+        "`verify_architecture` folds these signals (plus opaque "
+        "out-of-fragment layers and heuristic-tagged operators) into "
+        "abstention, yielding `verdict=UNKNOWN` with `unknown_reasons` rather "
+        "than a silent `SAFE`. See `SOUNDNESS_CONTRACT.md`."
+    )
+    parts.append("")
+    return "\n".join(parts) + "\n"
+
+
+if __name__ == "__main__":  # pragma: no cover
+    import sys as _sys
+    _sys.stdout.write(render_spec_markdown())

@@ -127,9 +127,26 @@ measured, and reproducible.
    `tests/test_soundness_mode.py` (12 tests: enum, verdict unit logic, the full
    3×scenario verdict matrix on real modules incl. the U1 data-dependent gap,
    no-recall-change proof, and CLI exit codes / JSON verdict fields).*
-8. Write `verifiable_fragment.py` into a formal spec doc: grammar of supported
+8. [x] Write `verifiable_fragment.py` into a formal spec doc: grammar of supported
    `nn.Module`/`forward` constructs, with an explicit "unsupported → reported
    as `unknown`" fallback rather than silent pass.
+   *Done. `render_spec_markdown()` generates `VERIFIABLE_FRAGMENT.md` from the
+   module's single source of truth: the canonical `VERIFIABLE_FRAGMENT_GRAMMAR`
+   constant, the `SUPPORTED_*` tables (70 layers, 39 tensor methods, 23 torch.*
+   funcs, 21 F.* funcs) and the full `UnsupportedCategory` taxonomy (11
+   categories, each with a description + detection mechanism in the new
+   `UNSUPPORTED_CATEGORY_INFO` table). Added a public, instance-free
+   `analyze_source(source) -> List[UnsupportedConstruct]` exposing the
+   statically-checkable fallback (no torch.fx tracing needed). The
+   "unsupported → UNKNOWN, never a silent pass" policy is documented and
+   PROVEN: all 4 statically-detectable out-of-fragment categories
+   (DATA_DEPENDENT_CONTROL_FLOW, DATA_DEPENDENT_ITERATION, DYNAMIC_ASSERTION,
+   TENSOR_TO_SCALAR) yield `verdict=UNKNOWN` in sound mode (closing the U1
+   silent-SAFE gap from Step 5 across the whole static category set). Pinned by
+   `tests/test_verifiable_fragment_spec.py` (15 tests: analyze_source per
+   category + clean + syntax-error, the sound-mode UNKNOWN fallback proof for
+   each category, every category documented, doc↔code sync, script entrypoint).
+   Referenced from README.*
 9. Establish a frozen, versioned **ground-truth bug corpus** (real models,
    labeled buggy/clean) checked into `real_benchmarks/` with provenance.
 10. Stand up a reproducibility harness (`make reproduce`) that regenerates

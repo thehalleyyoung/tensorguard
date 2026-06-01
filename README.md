@@ -69,6 +69,14 @@ runtime errors in ML codebases before any code runs.
   flow, no heuristic-tagged operators), otherwise `UNKNOWN` (CLI exit 2) — never
   a silent pass. The mode never changes which bugs are reported. Source of truth
   `src/soundness_contract.py`, pinned by `tests/test_soundness_mode.py`.
+- **Formal verifiable fragment** — the exact grammar of `nn.Module`/`forward`
+  constructs TensorGuard can analyze, the full supported-construct tables, the
+  out-of-fragment taxonomy, and the "unsupported → `UNKNOWN`, never a silent
+  pass" fallback policy are published in
+  [`VERIFIABLE_FRAGMENT.md`](VERIFIABLE_FRAGMENT.md) (generated from
+  `src/verifiable_fragment.py`; the instance-free `analyze_source()` exposes the
+  statically-checkable fallback). Pinned by
+  `tests/test_verifiable_fragment_spec.py`.
 - **SARIF 2.1.0 output** — integrates with GitHub Code Scanning / Advanced Security
 - **Sub-second analysis** — typical models verified in < 1 second
 
