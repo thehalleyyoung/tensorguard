@@ -416,6 +416,32 @@ HuggingFace downloads, or a Lean toolchain). Pass `--regenerate` to
 additionally invoke each artifact's recorded `meta.command` where the
 environment supports it.
 
+### Precision/recall vs baselines
+
+`evaluation/precision_recall.py` scores five detectors on the frozen,
+balanced, executable ground-truth corpus in `real_benchmarks/` (clean and
+buggy PyTorch modules spanning the shape, device, phase and gradient
+domains) and emits per-method confusion matrices with precision, recall and
+F1:
+
+```bash
+PYTHONPATH=. python3 evaluation/precision_recall.py     # or: make precision-recall
+```
+
+The baselines are real, not strawmen: a forward-only runtime smoke test, a
+stronger runtime baseline that also runs a backward pass and inspects every
+parameter's gradient, the published academic static shape analyser
+[PyTea](https://github.com/ropas/pytea) (built from source and run live on an
+auto-generated entry wrapper), and a no-op floor that always predicts clean.
+On pure shape bugs every real analyser ties with zero false positives; the
+forward-only runtime baseline misses the *silent* gradient-severing bug
+(it raises no exception), and PyTea — shape-only by construction — misses
+both the device and gradient bugs. TensorGuard is the only detector that is
+simultaneously static, sound, and correct across all four domains, with no
+execution, concrete inputs, or GPU required. The committed matrices live in
+`evaluation/confusion_matrices.json` and `evaluation/confusion_matrices.md`
+and are pinned by `tests/test_precision_recall.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
@@ -441,6 +467,7 @@ in `lean/TensorGuard/` live inside docstring comments.
 | Artefact                                                       | Script                                                  |
 |----------------------------------------------------------------|---------------------------------------------------------|
 | 488-block + 60-bug headline triple                             | `experiments_v5/run_v5_benchmark.py`                    |
+| Precision/recall confusion matrices vs PyTea/runtime/no-op     | `evaluation/precision_recall.py`                        |
 | 60-bug headline RP reproducer (single command)                 | `reproducibility/reproduce_headline_60bug.py`           |
 | Verdict reclassification (RP / CV / LW)                        | `experiments_v5/run_verdict_reclassification.py`        |
 | 10-bug real-public corpus                                      | `experiments_v5/v8/verify_real_bugs.py`                 |

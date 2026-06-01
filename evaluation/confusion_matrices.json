@@ -1,0 +1,1165 @@
+{
+  "capabilities": {
+    "noop": {
+      "domains": [],
+      "needs_concrete_inputs": false,
+      "needs_execution": false,
+      "needs_gpu_for_device_bugs": false,
+      "sound_mode_available": false,
+      "static": true
+    },
+    "pytea": {
+      "domains": [
+        "shape"
+      ],
+      "needs_concrete_inputs": false,
+      "needs_execution": false,
+      "needs_gpu_for_device_bugs": false,
+      "sound_mode_available": false,
+      "static": true
+    },
+    "runtime_backward": {
+      "domains": [
+        "shape",
+        "device(runtime)",
+        "gradient"
+      ],
+      "needs_concrete_inputs": true,
+      "needs_execution": true,
+      "needs_gpu_for_device_bugs": true,
+      "sound_mode_available": false,
+      "static": false
+    },
+    "runtime_forward": {
+      "domains": [
+        "shape",
+        "device(runtime)"
+      ],
+      "needs_concrete_inputs": true,
+      "needs_execution": true,
+      "needs_gpu_for_device_bugs": true,
+      "sound_mode_available": false,
+      "static": false
+    },
+    "tensorguard": {
+      "domains": [
+        "shape",
+        "device",
+        "phase",
+        "gradient"
+      ],
+      "needs_concrete_inputs": false,
+      "needs_execution": false,
+      "needs_gpu_for_device_bugs": false,
+      "sound_mode_available": true,
+      "static": true
+    }
+  },
+  "confusion": {
+    "noop": {
+      "all": {
+        "FN": 8,
+        "FP": 0,
+        "N": 16,
+        "NA": 0,
+        "TN": 8,
+        "TP": 0,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 8,
+          "FP": 0,
+          "TN": 8,
+          "TP": 0,
+          "f1": 0.0,
+          "precision": null,
+          "recall": 0.0
+        },
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0
+      },
+      "by_domain": {
+        "device": {
+          "FN": 1,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 0,
+          "TP": 0,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 1,
+            "FP": 0,
+            "TN": 0,
+            "TP": 0,
+            "f1": 0.0,
+            "precision": null,
+            "recall": 0.0
+          },
+          "f1": 0.0,
+          "precision": null,
+          "recall": 0.0
+        },
+        "gradient": {
+          "FN": 1,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 0,
+          "TP": 0,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 1,
+            "FP": 0,
+            "TN": 0,
+            "TP": 0,
+            "f1": 0.0,
+            "precision": null,
+            "recall": 0.0
+          },
+          "f1": 0.0,
+          "precision": null,
+          "recall": 0.0
+        },
+        "phase": {
+          "FN": 0,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 1,
+          "TP": 0,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 1,
+            "TP": 0,
+            "f1": null,
+            "precision": null,
+            "recall": null
+          },
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "shape": {
+          "FN": 6,
+          "FP": 0,
+          "N": 13,
+          "NA": 0,
+          "TN": 7,
+          "TP": 0,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 6,
+            "FP": 0,
+            "TN": 7,
+            "TP": 0,
+            "f1": 0.0,
+            "precision": null,
+            "recall": 0.0
+          },
+          "f1": 0.0,
+          "precision": null,
+          "recall": 0.0
+        }
+      },
+      "shape_only": {
+        "FN": 6,
+        "FP": 0,
+        "N": 13,
+        "NA": 0,
+        "TN": 7,
+        "TP": 0,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 6,
+          "FP": 0,
+          "TN": 7,
+          "TP": 0,
+          "f1": 0.0,
+          "precision": null,
+          "recall": 0.0
+        },
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0
+      }
+    },
+    "pytea": {
+      "all": {
+        "FN": 2,
+        "FP": 0,
+        "N": 16,
+        "NA": 0,
+        "TN": 8,
+        "TP": 6,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 2,
+          "FP": 0,
+          "TN": 8,
+          "TP": 6,
+          "f1": 0.8571,
+          "precision": 1.0,
+          "recall": 0.75
+        },
+        "f1": 0.8571,
+        "precision": 1.0,
+        "recall": 0.75
+      },
+      "by_domain": {
+        "device": {
+          "FN": 1,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 0,
+          "TP": 0,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 1,
+            "FP": 0,
+            "TN": 0,
+            "TP": 0,
+            "f1": 0.0,
+            "precision": null,
+            "recall": 0.0
+          },
+          "f1": 0.0,
+          "precision": null,
+          "recall": 0.0
+        },
+        "gradient": {
+          "FN": 1,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 0,
+          "TP": 0,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 1,
+            "FP": 0,
+            "TN": 0,
+            "TP": 0,
+            "f1": 0.0,
+            "precision": null,
+            "recall": 0.0
+          },
+          "f1": 0.0,
+          "precision": null,
+          "recall": 0.0
+        },
+        "phase": {
+          "FN": 0,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 1,
+          "TP": 0,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 1,
+            "TP": 0,
+            "f1": null,
+            "precision": null,
+            "recall": null
+          },
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "shape": {
+          "FN": 0,
+          "FP": 0,
+          "N": 13,
+          "NA": 0,
+          "TN": 7,
+          "TP": 6,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 7,
+            "TP": 6,
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        }
+      },
+      "shape_only": {
+        "FN": 0,
+        "FP": 0,
+        "N": 13,
+        "NA": 0,
+        "TN": 7,
+        "TP": 6,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 7,
+          "TP": 6,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      }
+    },
+    "runtime_backward": {
+      "all": {
+        "FN": 0,
+        "FP": 0,
+        "N": 16,
+        "NA": 0,
+        "TN": 8,
+        "TP": 8,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 8,
+          "TP": 8,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "by_domain": {
+        "device": {
+          "FN": 0,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 0,
+          "TP": 1,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 0,
+            "TP": 1,
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "gradient": {
+          "FN": 0,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 0,
+          "TP": 1,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 0,
+            "TP": 1,
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "phase": {
+          "FN": 0,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 1,
+          "TP": 0,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 1,
+            "TP": 0,
+            "f1": null,
+            "precision": null,
+            "recall": null
+          },
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "shape": {
+          "FN": 0,
+          "FP": 0,
+          "N": 13,
+          "NA": 0,
+          "TN": 7,
+          "TP": 6,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 7,
+            "TP": 6,
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        }
+      },
+      "shape_only": {
+        "FN": 0,
+        "FP": 0,
+        "N": 13,
+        "NA": 0,
+        "TN": 7,
+        "TP": 6,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 7,
+          "TP": 6,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      }
+    },
+    "runtime_forward": {
+      "all": {
+        "FN": 1,
+        "FP": 0,
+        "N": 16,
+        "NA": 0,
+        "TN": 8,
+        "TP": 7,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 1,
+          "FP": 0,
+          "TN": 8,
+          "TP": 7,
+          "f1": 0.9333,
+          "precision": 1.0,
+          "recall": 0.875
+        },
+        "f1": 0.9333,
+        "precision": 1.0,
+        "recall": 0.875
+      },
+      "by_domain": {
+        "device": {
+          "FN": 0,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 0,
+          "TP": 1,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 0,
+            "TP": 1,
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "gradient": {
+          "FN": 1,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 0,
+          "TP": 0,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 1,
+            "FP": 0,
+            "TN": 0,
+            "TP": 0,
+            "f1": 0.0,
+            "precision": null,
+            "recall": 0.0
+          },
+          "f1": 0.0,
+          "precision": null,
+          "recall": 0.0
+        },
+        "phase": {
+          "FN": 0,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 1,
+          "TP": 0,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 1,
+            "TP": 0,
+            "f1": null,
+            "precision": null,
+            "recall": null
+          },
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "shape": {
+          "FN": 0,
+          "FP": 0,
+          "N": 13,
+          "NA": 0,
+          "TN": 7,
+          "TP": 6,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 7,
+            "TP": 6,
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        }
+      },
+      "shape_only": {
+        "FN": 0,
+        "FP": 0,
+        "N": 13,
+        "NA": 0,
+        "TN": 7,
+        "TP": 6,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 7,
+          "TP": 6,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      }
+    },
+    "tensorguard": {
+      "all": {
+        "FN": 0,
+        "FP": 0,
+        "N": 16,
+        "NA": 0,
+        "TN": 8,
+        "TP": 8,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 8,
+          "TP": 8,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "by_domain": {
+        "device": {
+          "FN": 0,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 0,
+          "TP": 1,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 0,
+            "TP": 1,
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "gradient": {
+          "FN": 0,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 0,
+          "TP": 1,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 0,
+            "TP": 1,
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "phase": {
+          "FN": 0,
+          "FP": 0,
+          "N": 1,
+          "NA": 0,
+          "TN": 1,
+          "TP": 0,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 1,
+            "TP": 0,
+            "f1": null,
+            "precision": null,
+            "recall": null
+          },
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "shape": {
+          "FN": 0,
+          "FP": 0,
+          "N": 13,
+          "NA": 0,
+          "TN": 7,
+          "TP": 6,
+          "coverage": 1.0,
+          "covered_only": {
+            "FN": 0,
+            "FP": 0,
+            "TN": 7,
+            "TP": 6,
+            "f1": 1.0,
+            "precision": 1.0,
+            "recall": 1.0
+          },
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        }
+      },
+      "shape_only": {
+        "FN": 0,
+        "FP": 0,
+        "N": 13,
+        "NA": 0,
+        "TN": 7,
+        "TP": 6,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 7,
+          "TP": 6,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      }
+    }
+  },
+  "meta": {
+    "command": "python3 evaluation/precision_recall.py",
+    "corpus": "real_benchmarks",
+    "corpus_version": "1.0.0",
+    "device_domain_note": "On a CPU-only host the device bug raises at construction (CUDA unavailable); runtime baselines flag it via that crash, not by detecting the device mismatch. See per-model detail.",
+    "generated_by": "evaluation/precision_recall.py",
+    "methods": [
+      "tensorguard",
+      "runtime_forward",
+      "runtime_backward",
+      "pytea",
+      "noop"
+    ],
+    "n_buggy": 8,
+    "n_clean": 8,
+    "n_models": 16,
+    "na_policy": "headline counts NA as wrong (FN on buggy, FP on clean); covered_only excludes NA; coverage = decided/total",
+    "pytea_available": true,
+    "runtime_single_draw_note": "All runtime-detectable bugs are structural (value-independent), so one seeded random draw per input shape is representative.",
+    "torch_seed": 0
+  },
+  "per_model": [
+    {
+      "domain": "shape",
+      "id": "clean_mlp",
+      "label": "clean",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "success_path=1",
+          "pred": "clean"
+        },
+        "runtime_backward": {
+          "detail": "all_params_grad",
+          "pred": "clean"
+        },
+        "runtime_forward": {
+          "detail": "ran_ok",
+          "pred": "clean"
+        },
+        "tensorguard": {
+          "detail": "bug_count=0",
+          "pred": "clean"
+        }
+      }
+    },
+    {
+      "domain": "shape",
+      "id": "clean_cnn",
+      "label": "clean",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "success_path=1",
+          "pred": "clean"
+        },
+        "runtime_backward": {
+          "detail": "all_params_grad",
+          "pred": "clean"
+        },
+        "runtime_forward": {
+          "detail": "ran_ok",
+          "pred": "clean"
+        },
+        "tensorguard": {
+          "detail": "bug_count=0",
+          "pred": "clean"
+        }
+      }
+    },
+    {
+      "domain": "shape",
+      "id": "clean_resblock",
+      "label": "clean",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "success_path=1",
+          "pred": "clean"
+        },
+        "runtime_backward": {
+          "detail": "all_params_grad",
+          "pred": "clean"
+        },
+        "runtime_forward": {
+          "detail": "ran_ok",
+          "pred": "clean"
+        },
+        "tensorguard": {
+          "detail": "bug_count=0",
+          "pred": "clean"
+        }
+      }
+    },
+    {
+      "domain": "shape",
+      "id": "clean_layernorm_mlp",
+      "label": "clean",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "success_path=1",
+          "pred": "clean"
+        },
+        "runtime_backward": {
+          "detail": "all_params_grad",
+          "pred": "clean"
+        },
+        "runtime_forward": {
+          "detail": "ran_ok",
+          "pred": "clean"
+        },
+        "tensorguard": {
+          "detail": "bug_count=0",
+          "pred": "clean"
+        }
+      }
+    },
+    {
+      "domain": "shape",
+      "id": "clean_conv_bn_pool",
+      "label": "clean",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "success_path=1",
+          "pred": "clean"
+        },
+        "runtime_backward": {
+          "detail": "all_params_grad",
+          "pred": "clean"
+        },
+        "runtime_forward": {
+          "detail": "ran_ok",
+          "pred": "clean"
+        },
+        "tensorguard": {
+          "detail": "bug_count=0",
+          "pred": "clean"
+        }
+      }
+    },
+    {
+      "domain": "shape",
+      "id": "clean_self_attention",
+      "label": "clean",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "success_path=1",
+          "pred": "clean"
+        },
+        "runtime_backward": {
+          "detail": "all_params_grad",
+          "pred": "clean"
+        },
+        "runtime_forward": {
+          "detail": "ran_ok",
+          "pred": "clean"
+        },
+        "tensorguard": {
+          "detail": "bug_count=0",
+          "pred": "clean"
+        }
+      }
+    },
+    {
+      "domain": "shape",
+      "id": "clean_groupnorm",
+      "label": "clean",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "success_path=1",
+          "pred": "clean"
+        },
+        "runtime_backward": {
+          "detail": "all_params_grad",
+          "pred": "clean"
+        },
+        "runtime_forward": {
+          "detail": "ran_ok",
+          "pred": "clean"
+        },
+        "tensorguard": {
+          "detail": "bug_count=0",
+          "pred": "clean"
+        }
+      }
+    },
+    {
+      "domain": "phase",
+      "id": "clean_dropout_mlp",
+      "label": "clean",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "success_path=1",
+          "pred": "clean"
+        },
+        "runtime_backward": {
+          "detail": "all_params_grad",
+          "pred": "clean"
+        },
+        "runtime_forward": {
+          "detail": "ran_ok",
+          "pred": "clean"
+        },
+        "tensorguard": {
+          "detail": "bug_count=0",
+          "pred": "clean"
+        }
+      }
+    },
+    {
+      "domain": "shape",
+      "id": "buggy_linear_inout_mismatch",
+      "label": "buggy",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "failed_path=1",
+          "pred": "buggy"
+        },
+        "runtime_backward": {
+          "detail": "forward_or_backward:RuntimeError",
+          "pred": "buggy"
+        },
+        "runtime_forward": {
+          "detail": "forward:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard": {
+          "detail": "bug_count=2",
+          "pred": "buggy"
+        }
+      }
+    },
+    {
+      "domain": "shape",
+      "id": "buggy_view_total_size",
+      "label": "buggy",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "failed_path=1",
+          "pred": "buggy"
+        },
+        "runtime_backward": {
+          "detail": "forward_or_backward:RuntimeError",
+          "pred": "buggy"
+        },
+        "runtime_forward": {
+          "detail": "forward:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard": {
+          "detail": "bug_count=1",
+          "pred": "buggy"
+        }
+      }
+    },
+    {
+      "domain": "shape",
+      "id": "buggy_conv_channel_mismatch",
+      "label": "buggy",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "failed_path=1",
+          "pred": "buggy"
+        },
+        "runtime_backward": {
+          "detail": "forward_or_backward:RuntimeError",
+          "pred": "buggy"
+        },
+        "runtime_forward": {
+          "detail": "forward:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard": {
+          "detail": "bug_count=2",
+          "pred": "buggy"
+        }
+      }
+    },
+    {
+      "domain": "shape",
+      "id": "buggy_flatten_fc_mismatch",
+      "label": "buggy",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "failed_path=1",
+          "pred": "buggy"
+        },
+        "runtime_backward": {
+          "detail": "forward_or_backward:RuntimeError",
+          "pred": "buggy"
+        },
+        "runtime_forward": {
+          "detail": "forward:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard": {
+          "detail": "bug_count=2",
+          "pred": "buggy"
+        }
+      }
+    },
+    {
+      "domain": "shape",
+      "id": "buggy_cat_dim_mismatch",
+      "label": "buggy",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "failed_path=1",
+          "pred": "buggy"
+        },
+        "runtime_backward": {
+          "detail": "forward_or_backward:RuntimeError",
+          "pred": "buggy"
+        },
+        "runtime_forward": {
+          "detail": "forward:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard": {
+          "detail": "bug_count=1",
+          "pred": "buggy"
+        }
+      }
+    },
+    {
+      "domain": "shape",
+      "id": "buggy_matmul_inner_mismatch",
+      "label": "buggy",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "failed_path=1",
+          "pred": "buggy"
+        },
+        "runtime_backward": {
+          "detail": "forward_or_backward:RuntimeError",
+          "pred": "buggy"
+        },
+        "runtime_forward": {
+          "detail": "forward:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard": {
+          "detail": "bug_count=2",
+          "pred": "buggy"
+        }
+      }
+    },
+    {
+      "domain": "device",
+      "id": "buggy_device_mismatch",
+      "label": "buggy",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "success_path=1",
+          "pred": "clean"
+        },
+        "runtime_backward": {
+          "detail": "construct:AssertionError",
+          "pred": "buggy"
+        },
+        "runtime_forward": {
+          "detail": "construct:AssertionError",
+          "pred": "buggy"
+        },
+        "tensorguard": {
+          "detail": "bug_count=2",
+          "pred": "buggy"
+        }
+      }
+    },
+    {
+      "domain": "gradient",
+      "id": "buggy_gradient_detach",
+      "label": "buggy",
+      "predictions": {
+        "noop": {
+          "detail": "always_clean",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "success_path=1",
+          "pred": "clean"
+        },
+        "runtime_backward": {
+          "detail": "no_grad:fc1.bias,fc1.weight",
+          "pred": "buggy"
+        },
+        "runtime_forward": {
+          "detail": "ran_ok",
+          "pred": "clean"
+        },
+        "tensorguard": {
+          "detail": "bug_count=2",
+          "pred": "buggy"
+        }
+      }
+    }
+  ]
+}
