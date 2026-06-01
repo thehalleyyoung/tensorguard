@@ -298,6 +298,14 @@ class OpKind(Enum):
     EINSUM = auto()           # torch.einsum(...)
     MEAN_REDUCE = auto()      # x.mean(dim=...)
     SUM_REDUCE = auto()       # x.sum(dim=...)
+    GATHER = auto()           # torch.gather(input, dim, index) → index.shape
+    INDEX_SELECT = auto()     # torch.index_select(input, dim, index)
+    SCATTER = auto()          # scatter/scatter_/scatter_add → input.shape
+    MASKED_SELECT = auto()    # masked_select(input, mask) → rank-1 dynamic
+    MASKED_FILL = auto()      # masked_fill(input, mask, value) → input.shape
+    NARROW = auto()           # narrow(input, dim, start, length)
+    SELECT_DIM = auto()       # select(input, dim, index) → removes dim
+    TAKE = auto()             # take(input, index) → index.shape
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -8397,6 +8405,12 @@ class ConstraintVerifier:
                     if inp in state.shape_env:
                         new_state.shape_env[step.output] = state.shape_env[inp]
                         break
+        elif step.op in (
+            OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
+            OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
+            OpKind.SELECT_DIM, OpKind.TAKE,
+        ):
+            self._apply_indexing(new_state.shape_env, step, violations)
 
         # ---- Propagate device if not explicitly set ----------------------
         if step.output not in new_state.device_map:
@@ -8660,6 +8674,185 @@ class ConstraintVerifier:
             state.shape_env[step.output] = x_shape
         elif y_shape is not None:
             state.shape_env[step.output] = y_shape
+
+    def _apply_indexing(
+        self,
+        shape_env: Dict[str, "TensorShape"],
+        step: ComputationStep,
+        violations: Optional[List[SafetyViolation]],
+    ) -> None:
+        """Shape effects of indexing / gather / scatter / masked ops.
+
+        Sound posture: only emit a violation when the relevant dimensions are
+        fully concrete and the error is provable; otherwise propagate the
+        best-effort output shape with no violation. ``violations is None`` (the
+        abstract ``_propagate_step`` path) suppresses all violation emission.
+        """
+        if not step.inputs:
+            return
+        inp_name = step.inputs[0]
+        inp_shape = shape_env.get(inp_name)
+        if inp_shape is None:
+            return
+
+        dim = step.params.get("dim")
+        ndim = inp_shape.ndim
+        norm_dim: Optional[int] = None
+        if isinstance(dim, int):
+            norm_dim = dim + ndim if dim < 0 else dim
+            # Provable dim-out-of-range (input rank concrete by construction).
+            if not (0 <= norm_dim < ndim) and norm_dim is not None:
+                if violations is not None:
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible", step_index=-1, step=step,
+                        message=(
+                            f"{step.op.name.lower()}: dim {dim} out of range "
+                            f"for tensor of rank {ndim}"
+                        ),
+                        tensor_a=inp_name, shape_a=inp_shape,
+                    ))
+                # Still propagate a best-effort shape below using clamped dim.
+                norm_dim = None
+
+        # Second tensor operand (index / mask / src), when present.
+        idx_name = step.inputs[1] if len(step.inputs) > 1 else None
+        idx_shape = shape_env.get(idx_name) if idx_name else None
+
+        if step.op == OpKind.GATHER:
+            # output.shape == index.shape; require equal rank (no broadcast);
+            # for d != dim, index.size(d) <= input.size(d).
+            if idx_shape is not None:
+                if idx_shape.ndim != ndim:
+                    if violations is not None:
+                        violations.append(SafetyViolation(
+                            kind="shape_incompatible", step_index=-1, step=step,
+                            message=(
+                                f"gather: index rank {idx_shape.ndim} must equal "
+                                f"input rank {ndim}"
+                            ),
+                            tensor_a=inp_name, tensor_b=idx_name,
+                            shape_a=inp_shape, shape_b=idx_shape,
+                        ))
+                elif norm_dim is not None:
+                    for d in range(ndim):
+                        if d == norm_dim:
+                            continue
+                        a, b = inp_shape.dims[d], idx_shape.dims[d]
+                        if (not a.is_symbolic and not b.is_symbolic
+                                and isinstance(a.value, int)
+                                and isinstance(b.value, int)
+                                and b.value > a.value):
+                            if violations is not None:
+                                violations.append(SafetyViolation(
+                                    kind="shape_incompatible", step_index=-1,
+                                    step=step,
+                                    message=(
+                                        f"gather: index size {b.value} exceeds "
+                                        f"input size {a.value} at dim {d}"
+                                    ),
+                                    tensor_a=inp_name, tensor_b=idx_name,
+                                    shape_a=inp_shape, shape_b=idx_shape,
+                                ))
+                            break
+                shape_env[step.output] = idx_shape
+            else:
+                shape_env[step.output] = inp_shape
+
+        elif step.op == OpKind.TAKE:
+            # output.shape == index.shape (arbitrary rank allowed).
+            shape_env[step.output] = idx_shape if idx_shape is not None else inp_shape
+
+        elif step.op == OpKind.INDEX_SELECT:
+            # output = input with size(dim) replaced by index length (1-D index).
+            new_dims = list(inp_shape.dims)
+            if idx_shape is not None and idx_shape.ndim != 1:
+                if violations is not None:
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible", step_index=-1, step=step,
+                        message=(
+                            f"index_select: index must be 1-D, got rank "
+                            f"{idx_shape.ndim}"
+                        ),
+                        tensor_a=inp_name, tensor_b=idx_name,
+                        shape_a=inp_shape, shape_b=idx_shape,
+                    ))
+            if norm_dim is not None and 0 <= norm_dim < len(new_dims):
+                if idx_shape is not None and idx_shape.ndim == 1:
+                    new_dims[norm_dim] = idx_shape.dims[0]
+                else:
+                    new_dims[norm_dim] = ShapeDim(f"_idxsel{step.output}")
+            shape_env[step.output] = TensorShape(tuple(new_dims))
+
+        elif step.op == OpKind.SCATTER:
+            # Conservative: output == input.shape; only flag a concrete rank
+            # mismatch between input and the tensor index operand.
+            if (idx_shape is not None and idx_shape.ndim != ndim
+                    and violations is not None):
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible", step_index=-1, step=step,
+                    message=(
+                        f"scatter: index rank {idx_shape.ndim} must equal input "
+                        f"rank {ndim}"
+                    ),
+                    tensor_a=inp_name, tensor_b=idx_name,
+                    shape_a=inp_shape, shape_b=idx_shape,
+                ))
+            shape_env[step.output] = inp_shape
+
+        elif step.op == OpKind.MASKED_FILL:
+            # output == input.shape; mask broadcasts to input. Only flag a
+            # provably-impossible broadcast (both concrete, unequal, neither 1).
+            if idx_shape is not None and violations is not None:
+                if compute_broadcast_shape(inp_shape, idx_shape) is None:
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible", step_index=-1, step=step,
+                        message=(
+                            f"masked_fill: mask {idx_shape.pretty()} cannot "
+                            f"broadcast to input {inp_shape.pretty()}"
+                        ),
+                        tensor_a=inp_name, tensor_b=idx_name,
+                        shape_a=inp_shape, shape_b=idx_shape,
+                    ))
+            shape_env[step.output] = inp_shape
+
+        elif step.op == OpKind.MASKED_SELECT:
+            # Always rank-1 with a data-dependent (fresh symbolic) length.
+            shape_env[step.output] = TensorShape(
+                (ShapeDim(f"_masked{step.output}"),)
+            )
+
+        elif step.op == OpKind.NARROW:
+            # output = input with size(dim) replaced by `length`.
+            new_dims = list(inp_shape.dims)
+            length = step.params.get("length")
+            start = step.params.get("start")
+            if norm_dim is not None and 0 <= norm_dim < len(new_dims):
+                d = inp_shape.dims[norm_dim]
+                if (isinstance(length, int) and isinstance(start, int)
+                        and not d.is_symbolic and isinstance(d.value, int)
+                        and start + length > d.value and violations is not None):
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible", step_index=-1, step=step,
+                        message=(
+                            f"narrow: start {start} + length {length} exceeds "
+                            f"size {d.value} at dim {norm_dim}"
+                        ),
+                        tensor_a=inp_name, shape_a=inp_shape,
+                    ))
+                if isinstance(length, int):
+                    new_dims[norm_dim] = ShapeDim(length)
+                else:
+                    new_dims[norm_dim] = ShapeDim(f"_narrow{step.output}")
+            shape_env[step.output] = TensorShape(tuple(new_dims))
+
+        elif step.op == OpKind.SELECT_DIM:
+            # output = input with `dim` removed.
+            if norm_dim is not None and 0 <= norm_dim < ndim:
+                new_dims = [d for i, d in enumerate(inp_shape.dims)
+                            if i != norm_dim]
+                shape_env[step.output] = TensorShape(tuple(new_dims))
+            else:
+                shape_env[step.output] = inp_shape
 
     def _apply_reshape(
         self, state: ModelState, step: ComputationStep,
@@ -9877,6 +10070,13 @@ class SymbolicShapePropagator:
             inp = step.inputs[0] if step.inputs else None
             if inp and inp in env:
                 env[step.output] = env[inp]
+
+        elif step.op in (
+            OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
+            OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
+            OpKind.SELECT_DIM, OpKind.TAKE,
+        ):
+            self._apply_indexing(env, step, None)
 
         elif step.op in (OpKind.RETURN, OpKind.CUSTOM):
             pass

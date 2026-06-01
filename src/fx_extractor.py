@@ -382,6 +382,14 @@ def _function_to_op(fn) -> Optional[OpKind]:
         torch.chunk: OpKind.CHUNK,
         torch.split: OpKind.SPLIT,
         torch.einsum: OpKind.EINSUM,
+        torch.gather: OpKind.GATHER,
+        torch.index_select: OpKind.INDEX_SELECT,
+        torch.scatter: OpKind.SCATTER,
+        torch.scatter_add: OpKind.SCATTER,
+        torch.masked_select: OpKind.MASKED_SELECT,
+        torch.narrow: OpKind.NARROW,
+        torch.select: OpKind.SELECT_DIM,
+        torch.take: OpKind.TAKE,
     }
     # Also handle torch.nn.functional
     import torch.nn.functional as F
@@ -690,6 +698,47 @@ def _parse_reshape_dims(shape_args: Tuple) -> Optional[Tuple]:
     return tuple(dims)
 
 
+def _extract_indexing_params(
+    node: "torch.fx.Node",
+    op_kind: OpKind,
+) -> Dict[str, Any]:
+    """Extract `dim` / `start` / `length` for gather/scatter/index ops.
+
+    For both fx ``call_method`` (``node.args[0]`` is the receiver tensor) and
+    ``call_function`` (``node.args[0]`` is the input tensor), the ``dim``
+    argument is consistently ``node.args[1]``; ``narrow`` additionally takes
+    ``start`` at ``args[2]`` and ``length`` at ``args[3]``.  Tensor operands
+    (index / mask / src) are collected separately as graph inputs, so only the
+    scalar params are captured here.
+    """
+    params: Dict[str, Any] = {}
+    args = node.args
+    kwargs = node.kwargs
+
+    def _int_arg(pos: int, key: str) -> Optional[int]:
+        if len(args) > pos and isinstance(args[pos], int) and not isinstance(args[pos], bool):
+            return args[pos]
+        if key in kwargs and isinstance(kwargs[key], int) and not isinstance(kwargs[key], bool):
+            return kwargs[key]
+        return None
+
+    if op_kind in (
+        OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
+        OpKind.SELECT_DIM, OpKind.NARROW,
+    ):
+        d = _int_arg(1, "dim")
+        if d is not None:
+            params["dim"] = d
+    if op_kind == OpKind.NARROW:
+        s = _int_arg(2, "start")
+        if s is not None:
+            params["start"] = s
+        ln = _int_arg(3, "length")
+        if ln is not None:
+            params["length"] = ln
+    return params
+
+
 def _extract_function_params(
     node: "torch.fx.Node",
     op_kind: OpKind,
@@ -733,6 +782,12 @@ def _extract_function_params(
             params["equation"] = node.args[0]
         elif "equation" in node.kwargs and isinstance(node.kwargs["equation"], str):
             params["equation"] = node.kwargs["equation"]
+    elif op_kind in (
+        OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
+        OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
+        OpKind.SELECT_DIM, OpKind.TAKE,
+    ):
+        params.update(_extract_indexing_params(node, op_kind))
     return params
 
 
@@ -780,6 +835,12 @@ def _extract_method_params(
     elif method_name in ("squeeze", "unsqueeze"):
         if len(node.args) > 1 and isinstance(node.args[1], int):
             params["dim"] = node.args[1]
+    elif op_kind in (
+        OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
+        OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
+        OpKind.SELECT_DIM, OpKind.TAKE,
+    ):
+        params.update(_extract_indexing_params(node, op_kind))
     return params
 
 
@@ -1193,6 +1254,18 @@ _METHOD_OP_MAP: Dict[str, OpKind] = {
     "expand": OpKind.EXPAND,
     "expand_as": OpKind.EXPAND,
     "broadcast_to": OpKind.EXPAND,
+    "gather": OpKind.GATHER,
+    "index_select": OpKind.INDEX_SELECT,
+    "scatter": OpKind.SCATTER,
+    "scatter_": OpKind.SCATTER,
+    "scatter_add": OpKind.SCATTER,
+    "scatter_add_": OpKind.SCATTER,
+    "masked_select": OpKind.MASKED_SELECT,
+    "masked_fill": OpKind.MASKED_FILL,
+    "masked_fill_": OpKind.MASKED_FILL,
+    "narrow": OpKind.NARROW,
+    "select": OpKind.SELECT_DIM,
+    "take": OpKind.TAKE,
 }
 
 # torch.xxx(...) → OpKind
