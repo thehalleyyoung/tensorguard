@@ -581,6 +581,25 @@ frozen entries are replayed as parametrized regression tests by
 alarm on a clean sibling — fails CI. Committed artifacts live in
 `evaluation/triage_regressions.json` and `evaluation/triage_regressions.md`.
 
+### Shape-algebra property tests (Hypothesis)
+
+`tests/test_shape_algebra_properties.py` exercises the concrete and abstract
+shape transfer functions in `src/denotational_semantics.py` with property-based
+testing. Hypothesis generates thousands of random shapes (bounded rank and
+dimensions) per run and checks the algebraic laws of the shape algebra —
+transpose involution, reshape and flatten element-count preservation with
+reverse round-trips, squeeze/unsqueeze inversion, global-squeeze size-one
+removal, cat dimension summation, matmul output shape with inner-dim-mismatch
+rejection, add-broadcast commutativity, and identity. Most importantly it pins
+the per-node soundness theorem `α(⟦op⟧(σ)) ⊑ ⟦op⟧♯(α(σ))` for every operator,
+asserting the abstract transfer over-approximates the concrete one over a large
+random input space rather than a handful of examples. This complements the
+example-based `tests/test_denotational_semantics.py`.
+
+```bash
+PYTHONPATH=. python3 -m pytest tests/test_shape_algebra_properties.py -q   # or: make shape-props
+```
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
@@ -613,6 +632,7 @@ in `lean/TensorGuard/` live inside docstring comments.
 | Negative-fuzz false-negative hunt (injected faults)            | `evaluation/neg_fuzz.py`                                |
 | Minimal-reproducer shrinker (delta-debug disagreements)        | `evaluation/minimize.py`                                |
 | Disagreement triage + 50-case regression suite                 | `evaluation/triage.py`                                  |
+| Shape-algebra property tests (Hypothesis)                      | `tests/test_shape_algebra_properties.py`                |
 | 60-bug headline RP reproducer (single command)                 | `reproducibility/reproduce_headline_60bug.py`           |
 | Verdict reclassification (RP / CV / LW)                        | `experiments_v5/run_verdict_reclassification.py`        |
 | 10-bug real-public corpus                                      | `experiments_v5/v8/verify_real_bugs.py`                 |
