@@ -80,6 +80,8 @@ GENERATED_DETERMINISTIC = [
     "corpus_extended/blind_manifest.json",
     "reproducibility/blind_split_eval.json",
     "reproducibility/blind_split_eval.md",
+    "reproducibility/cross_version_stability.json",
+    "reproducibility/cross_version_stability.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -179,6 +181,8 @@ STEPS = [
      [PY, "-m", "corpus_extended.blind_build"], None),
     ("blind: pre-registered blind-split evaluation (no overfitting)",
      [PY, "reproducibility/blind_split_eval.py"], None),
+    ("robustness: cross-version verdict-stability matrix (torch 2.1-2.9)",
+     [PY, "reproducibility/cross_version_stability.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]
