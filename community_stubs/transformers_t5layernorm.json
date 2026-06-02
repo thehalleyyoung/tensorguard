@@ -1,0 +1,21 @@
+{
+  "class_name": "T5LayerNorm",
+  "kind": "shape_preserving",
+  "provenance": {
+    "author": "tensorguard-maintainers",
+    "source_url": "https://github.com/huggingface/transformers/blob/main/src/transformers/models/t5/modeling_t5.py",
+    "license": "Apache-2.0",
+    "reviewed_by": "tensorguard-maintainers",
+    "notes": "T5's RMS-style LayerNorm (a.k.a. T5LayerNorm). Normalization is element-wise over the last dim and never changes the tensor shape."
+  },
+  "conformance": [
+    {
+      "input": ["batch", "seq", 512],
+      "expect": {"output": ["batch", "seq", 512]}
+    },
+    {
+      "input": ["batch", 1024],
+      "expect": {"output": ["batch", 1024]}
+    }
+  ]
+}

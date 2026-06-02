@@ -59,22 +59,12 @@ runtime errors in ML codebases before any code runs.
   refutation-sound, the property lifts to their reduced product, and the very Z3
   encoding the solver runs for them is **proved faithful**
   (`SmtEncoding.lean`/`CrossDomain.lean`), all cross-checked against real Z3 and
-  the live torch dispatcher on real modules — including the per-`forward` **chain
-  transfers** for device placement, train/eval phase, reduction rank, dtype
-  promotion, broadcasting and contiguity
-  (`DevicePlacement`/`PhaseFlow`/`RankTransfer`/`DtypePromoteChain`/
-  `BroadcastChain`/`ContigFlow.lean`), each replayed op-by-op on real
-  `cpu`/`mps` tensors and `nn.Module`s. The **per-operator shape rules** are
-  machine-checked the same way — `nn.Linear`/`Conv1d`/`Conv2d`/pooling
-  (output-size formulas: monotone, identity, positive-output guard),
-  `ConvTranspose` (upsampling lower bound), `LayerNorm`/`BatchNorm`
-  (suffix/feature guards), `PixelShuffle` (numel-preserving, divisible by `r²`),
-  flatten/`Unflatten` (numel-preserving inverse), `torch.cat`, `nn.Embedding`
-  (rank+1, index-range guard) and reshape/`view` `-1`-inference — each
-  cross-checked against real torch *and* the verifier's own propagators. Every one
-  of the library's 371
-  public theorems is machine-audited **sorry-free**, on only the trusted kernel
-  axioms.
+  the live torch dispatcher on real modules — including the per-`forward` chain
+  transfers and per-operator shape rules (`nn.Linear`/`Conv`/pooling/`LayerNorm`/
+  `BatchNorm`/`PixelShuffle`/flatten/`cat`/`Embedding`/reshape-`-1`), each
+  replayed op-by-op on real tensors and cross-checked against torch *and* the
+  verifier's own propagators. Every one of the library's 371 public theorems is
+  machine-audited **sorry-free**, on only the trusted kernel axioms.
 - **Per-domain verification** — beyond shape, the device and gradient
   domains each refute real bugs that the base shape view misses (a cuda
   buffer added to a cpu input; a `.detach()` that severs gradient flow).
@@ -131,6 +121,15 @@ runtime errors in ML codebases before any code runs.
   `tests/test_github_bug_mining.py`. Re-mine from live GitHub with
   `experiments_v5/github_bug_mining/mine_github_bugs.py`.
 - **SARIF 2.1.0 output** — integrates with GitHub Code Scanning / Advanced Security
+- **Beyond PyTorch** — the same Z3-backed verifier core analyzes a **second
+  framework**: a Flax/JAX (`nnx.Sequential`) frontend lowers Linear/LayerNorm/
+  BatchNorm/Dropout to the shared IR and refutes real shape bugs, abstaining
+  soundly on layouts it can't prove (`src/flax_extractor.py`,
+  `tests/test_flax_frontend.py`). Coverage extends safely via a **governed
+  community stub registry**: declarative manifests (no executable code, with
+  mandatory provenance and *executed* conformance cases) turn `UNKNOWN`
+  abstentions into precise checks (`community_stubs/`, `src/stub_governance.py`).
+  Five executable **Colab tutorials** (`examples/tutorials/`) onboard new users.
 - **Sub-second analysis** — typical models verified in < 1 second
 
 ---

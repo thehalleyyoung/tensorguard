@@ -136,9 +136,7 @@ gradient-flow breaks. Hattori et al.\ \citep{hattori} propose a
 gradual-typing system for tensor shapes in Python with
 user-supplied type annotations; their guarantees are sound only
 on annotated boundaries and the system requires intrusive
-program edits. The broader gradual-typing-for-tensors line
-\citep{griffin2021tensors,gradualshape} similarly trades
-analyzer power for annotation burden, which is the wrong
+program edits, which is the wrong
 trade-off for code an agent emits and re-emits.
 
 \paragraph{Dynamic shape inference inside PyTorch.}
@@ -160,9 +158,8 @@ diagnostic coverage of the failure classes we target.
 \paragraph{Mechanized tensor semantics.}
 A growing body of work formalizes tensor operators in proof
 assistants. The Lean Mathlib4 community maintains array and
-multilinear-algebra libraries; recent papers
-mechanize broadcasting~\citep{leanbcast} and matrix multiplication
-soundness~\citep{coqmatmul}. Our two lemmas (\S\ref{sec:lean})
+multilinear-algebra libraries.
+Our two lemmas (\S\ref{sec:lean})
 follow this template but are integrated with an executable
 checker that downstream consumers (here, a coding agent) call as
 a library, rather than living inside a proof-assistant project.
@@ -174,8 +171,8 @@ Recent agent-evaluation work~\citep{swebench,agentbench,taubench}
 documents that LLM agents fail predominantly on
 \emph{environment-coupled} edits---file-system state, library
 versions, dtype/device assumptions---rather than on reasoning
-benchmarks. Failure-mode taxonomies for agents
-\citep{agentfailures2024,langchainfm} list ``silent runtime errors''
+benchmarks. Failure-mode catalogues from agent-tooling vendors
+\citep{langchainfm} list ``silent runtime errors''
 and ``incorrect tool output not surfaced'' as top categories, but
 provide no diagnostic instruments for them. The FMAI workshop
 call explicitly asks for tools that close this gap with
@@ -194,8 +191,9 @@ We name four agent-recurrent classes. Each is detected by one
 \textsc{TensorGuard} pass and each has a 1-line trigger.
 
 \paragraph{F1 -- Shape mismatch.} Linear/conv/attention input rank or last-dim
-disagrees with the declared parameter.
-{\small\verb|self.proj = nn.Linear(d, h); self.proj(x.transpose(-1,-2))|}
+disagrees with the declared parameter.\\
+{\scriptsize\verb|self.proj = nn.Linear(d, h);|}\\
+{\scriptsize\verb|self.proj(x.transpose(-1,-2))|}
 
 \paragraph{F2 -- Device mismatch.} A buffer or constant is created on
 \texttt{cpu} while activations live on \texttt{cuda}.
@@ -244,7 +242,7 @@ as the reproducible-trigger benchmark for F4 detectors.
 
 \begin{table}[h]
 \centering\small
-\setlength{\tabcolsep}{4pt}
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}llll@{}}
 \toprule
 ID & Pattern & Site & TG \\
@@ -601,7 +599,8 @@ diagnostic that did not localise the broken edge.
 
 \begin{table}[h]
 \centering\small
-\setlength{\tabcolsep}{4pt}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 ID & FakeTensor & torch.compile & Pytea & TG \\
@@ -613,7 +612,7 @@ G4 (long-cast mid-graph)     & $\times$ & $\times$ & $\times$ & \checkmark \\
 G5 (buffer-not-parameter)    & $\times$ & $\times$ & $\times$ & \checkmark \\
 G6 (clone+detach teacher)    & $\times$ & $\times$ & $\times$ & \checkmark \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \caption{Per-snippet F4 detection outcome. The shape-only abstraction
 shared by \texttt{FakeTensorMode}, \texttt{torch.compile} (TorchDynamo),
 and Pytea cannot in principle observe a broken autograd edge: none of
@@ -748,8 +747,8 @@ $11$, $7$ failed \texttt{check\_gradients} alone---i.e., the
 agent's edits silently broke gradient flow on parameters the
 task asked it to train. This is the failure-mode prevalence
 estimate that the FMAI primitives were designed to surface, and
-it matches the qualitative claims of the
-agent-failure-taxonomy literature \citep{agentfailures2024}
+it matches the qualitative claims of agent-failure catalogues
+\citep{langchainfm}
 without relying on manual triage.
 
 \paragraph{Reproducible-trigger discipline.} The 6-snippet corpus and the
@@ -879,13 +878,41 @@ of a small ($<10\%$) number of additional repair iterations per
 task; confirming or falsifying this is the natural follow-up
 contribution.
 
+\section*{Artifact Availability}
+\label{sec:artifact}
+All claims in this paper are reproduced by a single self-checking
+\emph{reproducibility capsule} shipped with the source release. From a
+checkout, one command
+%
+\begin{center}
+\texttt{bash capsule/reproduce.sh}
+\end{center}
+%
+(i) verifies the environment against the pinned lockfile
+(\texttt{capsule/requirements.lock.txt}), (ii) regenerates every
+deterministic artifact from source in dependency order, asserting
+byte-identical determinism, and (iii) re-audits every numeric claim in the
+project \texttt{README} by recomputing each ratio and percentage from the
+freshly regenerated files. The harness exits non-zero on the first mismatch,
+so a green run \emph{is} the reproduction. The six-snippet gradient-flow
+corpus of Section~\ref{sec:corpus}, the three-way diagnostic comparison of
+Section~\ref{sec:headtohead}, and the verified rewrite rules of
+Section~\ref{sec:lean} are each regenerated and validated by this capsule;
+the claim$\to$command map and badge justification are in
+\texttt{docs/artifact/} (Artifact Appendix, \texttt{INSTALL.md},
+\texttt{REQUIREMENTS.md}, \texttt{STATUS.md}). The wiring between this
+submission and the capsule is itself checked in CI
+(\texttt{tests/test\_paper\_capsule\_wiring.py}), so the paper cannot drift
+from the artifact it cites.
+
 \bibliographystyle{icml2024}
 \begin{thebibliography}{9}
 \small
-\bibitem[Vorobeychik et al.(2022)]{pytea}
-H.~Y.~Vorobeychik et al.
-\newblock Pytea: Static Error Checker for PyTorch Tensor Shapes.
-\newblock In \emph{ICSE}, 2022.
+\bibitem[Jhoo et al.(2022)]{pytea}
+H.~Y.~Jhoo, S.~Kim, W.~Song, K.~Park, D.~Lee, and K.~Yi.
+\newblock A Static Analyzer for Detecting Tensor Shape Errors in Deep Neural
+Network Training Code.
+\newblock In \emph{ICSE Companion}, 2022.
 
 \bibitem[PyTorch Team(2023)]{faketensor}
 PyTorch Team.
@@ -919,19 +946,9 @@ Cursor Team.
 \newblock 2024.
 
 \bibitem[Hattori et al.(2023)]{hattori}
-M.~Hattori et al.
+M.~Hattori, N.~Kobayashi, and R.~Sato.
 \newblock Gradual Tensor Shape Checking.
-\newblock In \emph{ECOOP}, 2023.
-
-\bibitem[Griffin et al.(2021)]{griffin2021tensors}
-D.~Griffin et al.
-\newblock Pythonic Tensor Types for Practical Deep Learning.
-\newblock arXiv:2104.00253, 2021.
-
-\bibitem[Chen et al.(2022)]{gradualshape}
-J.~Chen et al.
-\newblock Towards Gradual Shape Typing for Tensor Programs.
-\newblock In \emph{PLDI Workshop on Tensor Computations}, 2022.
+\newblock In \emph{ESOP}, 2023.
 
 \bibitem[PyTorch JIT Team(2022)]{torchscript}
 PyTorch JIT Team.
@@ -943,16 +960,6 @@ PyTorch Team.
 \newblock TorchDynamo Export and Symbolic Shapes.
 \newblock 2024.
 
-\bibitem[Bordg et al.(2023)]{leanbcast}
-A.~Bordg et al.
-\newblock Mechanized Broadcasting in Lean~4.
-\newblock In \emph{ITP}, 2023.
-
-\bibitem[Cohen et al.(2022)]{coqmatmul}
-C.~Cohen et al.
-\newblock A Verified Linear Algebra Kernel for Coq's MathComp.
-\newblock In \emph{CPP}, 2022.
-
 \bibitem[Liu et al.(2023)]{agentbench}
 X.~Liu et al.
 \newblock AgentBench: Evaluating LLMs as Agents.
@@ -960,29 +967,24 @@ X.~Liu et al.
 
 \bibitem[Yao et al.(2024)]{taubench}
 S.~Yao et al.
-\newblock $\tau$-bench: A Benchmark for Tool-Use and Reasoning in Realistic
-Agent Tasks.
+\newblock $\tau$-bench: A Benchmark for Tool-Agent-User Interaction in
+Real-World Domains.
 \newblock arXiv:2406.12045, 2024.
-
-\bibitem[Bansal et al.(2024)]{agentfailures2024}
-A.~Bansal et al.
-\newblock A Taxonomy of Failure Modes in LLM Agent Pipelines.
-\newblock arXiv:2403.18796, 2024.
 
 \bibitem[LangChain Team(2024)]{langchainfm}
 LangChain Team.
 \newblock LangSmith Failure-Mode Catalog.
 \newblock 2024.
 
-\bibitem[Xia et al.(2024)]{verifiedrepair}
-C.~S.~Xia et al.
-\newblock Verifier-in-the-Loop Program Repair with LLMs.
-\newblock In \emph{ICSE}, 2024.
+\bibitem[Xia et al.(2023)]{verifiedrepair}
+C.~S.~Xia, Y.~Wei, and L.~Zhang.
+\newblock Automated Program Repair in the Era of Large Pre-Trained Language Models.
+\newblock In \emph{ICSE}, 2023.
 
 \bibitem[Sobania et al.(2023)]{sketchrepair}
-D.~Sobania et al.
-\newblock Sketch-Guided LLM Program Repair.
-\newblock In \emph{ASE}, 2023.
+D.~Sobania, M.~Briesch, C.~Hanna, and J.~Petke.
+\newblock An Analysis of the Automatic Bug Fixing Performance of ChatGPT.
+\newblock In \emph{APR Workshop at ICSE}, 2023.
 \end{thebibliography}
 
 \end{document}

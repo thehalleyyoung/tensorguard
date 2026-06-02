@@ -1,0 +1,33 @@
+name: Tutorial notebooks
+
+# Step 175 — keep the Colab-runnable tutorial notebooks from bit-rotting. On any
+# change to the tutorials (or the integrations they exercise), assert the
+# committed notebooks match their single-source generator and execute each one
+# end-to-end against the real libraries.
+on:
+  pull_request:
+    paths:
+      - "examples/tutorials/**"
+      - "tests/test_tutorial_notebooks.py"
+      - "src/torch_integration.py"
+      - "src/api.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  run-notebooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: |
+          pip install -e .
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install onnx pytorch_lightning nbformat nbclient ipykernel
+      - name: Notebooks are in sync + run end-to-end
+        run: PYTHONPATH=. python -m pytest tests/test_tutorial_notebooks.py -q

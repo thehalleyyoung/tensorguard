@@ -85,6 +85,11 @@ dimensions, proving safety for all valid inputs rather than for
 concrete test shapes alone.  We evaluate on real-world architectures
 including ResNet-50, MobileNetV2, EfficientNet-B0, and DenseNet-121, demonstrating
 high precision and recall.
+The same verified core analyzes a \emph{second framework}---a Flax/JAX front end
+lowers to the identical IR and SMT encoding---and its operator frontier is
+extensible through a \emph{governed}, code-free community stub registry whose
+manifests must ship provenance and \emph{executed} conformance cases before they
+can merge.
 The repository also contains a \emph{compiled}, \texttt{sorry}-free Lean~4 formalization (18 modules, $\sim$3{,}800 lines, 210 theorems/lemmas, pinned toolchain, \texttt{lake build} green) in which \emph{every one} of the 210 public theorems is machine-audited to depend only on the trusted Lean kernel axioms $\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}$ and never on \texttt{sorryAx}---covering the operator transfer functions, the reduced-product abstraction, CEGAR termination with a tight iteration bound, the two known-unsoundness gaps (one closed, one made mode-precise), the device/dtype/phase/gradient transfer functions, and the \emph{faithfulness of the Z3 encoding} the solver actually runs---each cross-checked against the live verifier, real Z3, and the live PyTorch dispatcher.
 \end{abstract}
 
@@ -1563,6 +1568,28 @@ abstains everywhere is scored at its true recall of zero. Finally,
 \texttt{torch.nn.verifiable} surface onto the live namespace with no core
 changes---a reversible, idempotent preview of the RFC's Phase-1 API, exercised
 directly against real \texttt{torch}.
+
+\paragraph{One core, a second framework, and a governed extension path.} The
+verified core is not bound to a single front end: a Flax/JAX adapter lowers an
+\texttt{nnx.Sequential} of \texttt{Linear}/\texttt{LayerNorm}/\texttt{BatchNorm}/
+\texttt{Dropout} modules into the \emph{same} intermediate representation and
+discharges the \emph{same} SMT constraints, refuting a real last-dimension
+mismatch in a JAX model while soundly abstaining (\textsc{Unknown}, never a
+silent pass) on layouts it cannot prove---e.g. Flax's NHWC convolutions, which
+the NCHW propagators decline rather than mis-type. Because abstention is the
+sound default, breadth of coverage is itself a contribution surface: a
+\emph{governed community stub registry} lets third parties extend the operator
+frontier through purely \emph{declarative} manifests (a supported \texttt{kind}
+such as \texttt{shape\_preserving} or \texttt{last\_dim\_linear} plus parameters)
+that carry \emph{no executable code}---any code-bearing field is a hard
+reject---mandatory provenance (author, source URL, license, reviewer), and at
+least one \emph{conformance} case (input shape $\mapsto$ expected output or
+expected error) that is \emph{executed} against an isolated registry before the
+manifest can merge, so a stub that does not behave as claimed cannot land. A
+dedicated CI workflow gates every pull request touching the registry. Finally,
+five executable Colab notebooks (quickstart through CI/pre-commit) onboard new
+users against the real \texttt{torch}/\texttt{onnx} stack, each run end-to-end in
+CI so a drifting API breaks the tutorial build rather than the user.
 
 \paragraph{One engine, many doors.} Table~\ref{tab:cli} summarizes the
 developer-facing entry points; crucially, all of them route through the same

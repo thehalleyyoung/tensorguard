@@ -1,0 +1,33 @@
+{
+  "class_name": "Linear8bitLt",
+  "kind": "last_dim_linear",
+  "spec": {
+    "in_arg": "input_features",
+    "out_arg": "output_features",
+    "arg_names": ["input_features", "output_features", "bias"]
+  },
+  "provenance": {
+    "author": "tensorguard-maintainers",
+    "source_url": "https://github.com/bitsandbytes-foundation/bitsandbytes/blob/main/bitsandbytes/nn/modules.py",
+    "license": "MIT",
+    "reviewed_by": "tensorguard-maintainers",
+    "notes": "8-bit linear layer; shape contract identical to nn.Linear: (*, input_features) -> (*, output_features). Quantization is value-only and does not affect shapes."
+  },
+  "conformance": [
+    {
+      "input": ["batch", 768],
+      "ctor_args": [768, 3072],
+      "expect": {"output": ["batch", 3072]}
+    },
+    {
+      "input": ["batch", "seq", 768],
+      "ctor_args": [768, 768],
+      "expect": {"output": ["batch", "seq", 768]}
+    },
+    {
+      "input": ["batch", 512],
+      "ctor_args": [768, 3072],
+      "expect": {"error_contains": "expects last dim=768, got 512"}
+    }
+  ]
+}

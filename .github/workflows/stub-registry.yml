@@ -1,0 +1,36 @@
+name: Community stub registry
+
+# Step 178 — governance for community-contributed shape stubs. On any PR that
+# adds/edits a manifest under community_stubs/, validate every manifest:
+#   * reject code-bearing fields (declarative-only — no untrusted code runs),
+#   * require complete provenance (author, source_url, license, reviewed_by),
+#   * register the declared stub in an isolated registry and run every
+#     conformance case (output shape and/or expected error).
+# The job fails if any manifest is malformed, lacks provenance, or does not
+# conform to its own declared cases.
+on:
+  pull_request:
+    paths:
+      - "community_stubs/**"
+      - "src/stub_governance.py"
+      - "src/stub_governance_cli.py"
+      - "src/shape_stub_registry.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-stubs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: pip install -e .
+      - name: Validate community stub manifests
+        run: PYTHONPATH=. python -m src.stub_governance_cli --check community_stubs/
+      - name: Governance test suite
+        run: PYTHONPATH=. python -m pytest tests/test_stub_governance.py -q
