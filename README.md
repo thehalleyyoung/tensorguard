@@ -1459,6 +1459,27 @@ with their aligned diagnostics. Pass `--config PATH` to point at an explicit
 file or `--no-config` to ignore configuration entirely. See
 `tests/test_tg_config.py`.
 
+### GitHub Action (PR diff annotations)
+
+A production composite action (`action.yml`) runs TensorGuard on a pull request
+and renders each shape, device, dtype, phase, or gradient bug as a native
+annotation on the exact offending line of the diff:
+
+```yaml
+- uses: thehalleyyoung/tensorguard@v1
+  with:
+    paths: src
+    soundness-mode: sound
+    fail-on: any            # fail the check on any issue (or "never" to annotate only)
+    input-shapes: "x=batch,3,32,32"   # optional, for ambiguous-rank models
+```
+
+It emits `issues`, `files-with-issues`, and `files-checked` outputs and writes a
+job summary. The annotation rendering (GitHub workflow-command escaping,
+diagnostics-first mapping, de-duplication) and the gate are pure and tested in
+`tests/test_github_action.py`; the repo dogfoods the action in
+`.github/workflows/tensorguard-pr.yml`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

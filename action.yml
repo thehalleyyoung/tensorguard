@@ -1,0 +1,66 @@
+name: "TensorGuard"
+description: >-
+  Sound static verifier for PyTorch nn.Modules. Proves the absence of
+  shape/device/dtype/phase/gradient bugs before you run the model, and annotates
+  the offending lines directly on the pull-request diff.
+author: "TensorGuard Authors"
+branding:
+  icon: "shield"
+  color: "purple"
+
+inputs:
+  paths:
+    description: >-
+      Space-separated files or directories to verify (directories are searched
+      recursively for *.py).
+    required: false
+    default: "."
+  soundness-mode:
+    description: "Verdict strictness: sound | balanced | heuristic."
+    required: false
+    default: "balanced"
+  input-shapes:
+    description: >-
+      Optional input shapes for ambiguous-rank models, e.g.
+      "x=batch,3,32,32;y=batch,10" (semicolon-separated specs).
+    required: false
+    default: ""
+  fail-on:
+    description: 'Gate behavior: "any" (fail if any issue) or "never" (annotate only).'
+    required: false
+    default: "any"
+  python-version:
+    description: "Python version to set up."
+    required: false
+    default: "3.11"
+
+outputs:
+  issues:
+    description: "Total number of verification issues found."
+    value: ${{ steps.tensorguard.outputs.issues }}
+  files-with-issues:
+    description: "Number of files that had at least one issue."
+    value: ${{ steps.tensorguard.outputs.files-with-issues }}
+  files-checked:
+    description: "Number of files verified."
+    value: ${{ steps.tensorguard.outputs.files-checked }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Install TensorGuard
+      shell: bash
+      run: pip install -e "${{ github.action_path }}" z3-solver
+    - name: Run TensorGuard
+      id: tensorguard
+      shell: bash
+      env:
+        INPUT_PATHS: ${{ inputs.paths }}
+        INPUT_SOUNDNESS_MODE: ${{ inputs.soundness-mode }}
+        INPUT_INPUT_SHAPES: ${{ inputs.input-shapes }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        PYTHONPATH: ${{ github.action_path }}
+      run: python -m src.github_action
