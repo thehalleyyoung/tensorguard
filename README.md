@@ -1169,6 +1169,24 @@ the medium tier in about one second, and the large tier in roughly ten seconds �
 comfortably inside budget, establishing the baseline that the performance work
 in the following steps tightens. See `tests/test_latency_budgets.py`.
 
+### Solver-call avoidance (syntactic short-circuit)
+
+A single Z3 context (and its theory propagators) is reused across every step of
+the bounded model check, and per-step safety obligations are batched per domain.
+On top of this, each safety check first attempts a **fast syntactic
+short-circuit**: if the conjunction of safety constraints is valid on its own
+(Z3's cheap simplifier rewrites it to literal True), its negation is
+unsatisfiable in any context, so the obligation is discharged without invoking
+`solver.check()` at all. This is sound — a property valid independent of the
+accumulated context is a fortiori valid under it — and is reported through a new
+`syntactic_skips` statistic. On a deep forty-block stack hundreds of per-step
+obligations are discharged this way without touching the SMT solver, while every
+verdict is provably unchanged (the path is disabled under certificate
+extraction so the proof-replay machinery is preserved exactly). The two pure
+safety encoders (shape, gradient) are additionally memoized per step so the
+combined checks reuse them instead of rebuilding the constraints. See
+`tests/test_solver_short_circuit.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

@@ -5279,6 +5279,9 @@ class _Z3Context:
         self._sat_count: int = 0
         self._unsat_count: int = 0
         self._total_solve_time_ms: float = 0.0
+        # Number of safety checks discharged by the fast syntactic short-circuit
+        # (constraints valid on their own) without invoking the SMT solver.
+        self._syntactic_skips: int = 0
 
         # --- Theory solver constraint counters ---
         self._device_constraints_registered: int = 0
@@ -5542,6 +5545,7 @@ class _Z3Context:
             "z3_total_time_ms": self._total_solve_time_ms,
             "z3_sat_count": self._sat_count,
             "z3_unsat_count": self._unsat_count,
+            "syntactic_skips": self._syntactic_skips,
         }
         if self.broadcast_theory is not None:
             prop = self.broadcast_theory.propagator
@@ -8947,6 +8951,22 @@ class ConstraintVerifier:
         """
         if not constraints:
             return None
+        # --- Fast syntactic short-circuit (Step 47) -----------------------
+        # If the conjunction of safety constraints is *valid on its own*
+        # (Z3's cheap simplifier rewrites it to literal True), then its
+        # negation is unsatisfiable in ANY context, so no violation is
+        # possible -- skip the expensive solver.check() entirely.  This is
+        # sound: a property valid independent of the accumulated context is a
+        # fortiori valid under it.  Disabled when extracting certificates so
+        # the per-step proof replay path is preserved exactly.
+        if not self.produce_certificates:
+            try:
+                simp = z3.simplify(z3.And(*constraints))
+            except Exception:
+                simp = None
+            if simp is not None and z3.is_true(simp):
+                self.ctx._syntactic_skips += 1
+                return None
         neg = z3.Not(z3.And(*constraints))
         solver.push()
         solver.add(neg)
@@ -10620,20 +10640,26 @@ class ConstraintVerifier:
             post_k = self._build_kripke_state(idx + 1, new_model)
             kripke_states.append(post_k)
 
+            # Encode the two *pure* safety domains (shape, gradient) exactly
+            # once per step and reuse the result in the combined checks below
+            # (items 11/12).  The device/phase encoders have side effects
+            # (they register constraints with their theory propagators) and so
+            # are deliberately re-invoked each time to preserve their call
+            # counts and theory-solver state.
+            shape_enc = self._encode_shape_safety(cur_k, step, cur_model, idx)
+            grad_enc = self._encode_gradient_safety(
+                cur_k, step, cur_model, idx)
+
             # 3. Z3 safety checks per domain
             for kind, encoder in self._filter_domain_checks([
-                ("shape_incompatible",
-                 lambda: self._encode_shape_safety(
-                     cur_k, step, cur_model, idx)),
+                ("shape_incompatible", lambda: shape_enc),
                 ("device_mismatch",
                  lambda: self._encode_device_safety(
                      cur_k, step, cur_model, idx)),
                 ("phase_violation",
                  lambda: self._encode_phase_safety(
                      cur_k, step, cur_model, idx)),
-                ("gradient_violation",
-                 lambda: self._encode_gradient_safety(
-                     cur_k, step, cur_model, idx)),
+                ("gradient_violation", lambda: grad_enc),
             ]):
                 safety = encoder()
                 if safety:
@@ -10742,8 +10768,7 @@ class ConstraintVerifier:
 
             # 11. Shape-device combined check
             sd_combined: list = []
-            sd_combined.extend(self._encode_shape_safety(
-                cur_k, step, cur_model, idx))
+            sd_combined.extend(shape_enc)
             sd_combined.extend(self._encode_device_safety(
                 cur_k, step, cur_model, idx))
             if sd_combined:
@@ -10753,14 +10778,12 @@ class ConstraintVerifier:
 
             # 12. Full combined safety (all four domains)
             combined: list = []
-            combined.extend(self._encode_shape_safety(
-                cur_k, step, cur_model, idx))
+            combined.extend(shape_enc)
             combined.extend(self._encode_device_safety(
                 cur_k, step, cur_model, idx))
             combined.extend(self._encode_phase_safety(
                 cur_k, step, cur_model, idx))
-            combined.extend(self._encode_gradient_safety(
-                cur_k, step, cur_model, idx))
+            combined.extend(grad_enc)
             if combined:
                 self._z3_check_safety(
                     solver, combined, step, idx, "combined_violation"
