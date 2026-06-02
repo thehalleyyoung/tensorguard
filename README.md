@@ -857,6 +857,35 @@ end-to-end cases for both phases and both statistics settings and torchvision
 regression showing no new false positives. See
 `tests/test_norm_phase_precise.py`.
 
+### Element dtype inference and promotion
+
+Some PyTorch operations raise a `RuntimeError` purely because of an element-type
+mismatch, independently of shape. TensorGuard tracks an element dtype for every
+tensor as a second algebra alongside shape, device, phase, and gradient status.
+`Linear` and the convolution family perform a matmul or convolution against a
+stored parameter and require the input dtype to exactly equal the parameter
+dtype, otherwise torch raises `mat1 and mat2 must have the same dtype` or
+`Input type and bias type should be the same`; `matmul`, `mm`, and `bmm` require
+their operands to share a dtype; and `Embedding` requires an integer index
+tensor. Element-wise `add` and `cat` are deliberately left unflagged because
+torch type-promotes them.
+
+The dtype algebra reasons only about dtypes it actually knows: an explicit input
+dtype annotation, a layer's real parameter dtype (read from the live module, so a
+`.half()` or `.to(dtype=...)` cast is captured), or an explicit
+`.half()`/`.float()`/`.double()`/`.bfloat16()` cast in the forward. Any unknown
+dtype makes the relevant check abstain, and the whole pass abstains under
+autocast, so the analysis never raises a false positive: every reported dtype
+error corresponds to a real torch runtime error under the recorded dtypes.
+
+This is proven by differential sweeps in which the verifier's verdict must agree
+exactly with whether real `torch` raises, across the full cast grid of input and
+parameter dtypes for `Linear` and `Conv2d`, with zero disagreements, plus
+end-to-end cases covering input-independent mixed-precision models, whole-model
+half precision with matching and mismatching inputs, floating embedding indices,
+mixed-dtype addition, unknown-dtype abstention, and torchvision regression
+showing no new false positives. See `tests/test_dtype_precise.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

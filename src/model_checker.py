@@ -308,6 +308,7 @@ class OpKind(Enum):
     SELECT_DIM = auto()       # select(input, dim, index) → removes dim
     TAKE = auto()             # take(input, index) → index.shape
     SDPA = auto()             # F.scaled_dot_product_attention(q, k, v)
+    DTYPE_CAST = auto()       # x.half() / x.float() / x.to(dtype=...) → dtype change
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -446,16 +447,19 @@ class ComputationGraph:
 class ModelState:
     """State tracked at each computation step during verification.
 
-    This combines four orthogonal concerns:
+    This combines five orthogonal concerns:
       • shape_env:        symbolic tensor shapes
       • device_map:       device placement of each tensor
       • phase:            train / eval
       • gradient_status:  which tensors require grad
+      • dtype_env:        element dtype of each tensor (only *known* dtypes are
+                          recorded; absence means "unknown" → checks abstain)
     """
     shape_env: Dict[str, TensorShape] = field(default_factory=dict)
     device_map: Dict[str, Device] = field(default_factory=dict)
     phase: Phase = Phase.TRAIN
     gradient_status: Dict[str, bool] = field(default_factory=dict)
+    dtype_env: Dict[str, str] = field(default_factory=dict)
 
     def copy(self) -> "ModelState":
         return ModelState(
@@ -463,6 +467,7 @@ class ModelState:
             device_map=dict(self.device_map),
             phase=self.phase,
             gradient_status=dict(self.gradient_status),
+            dtype_env=dict(self.dtype_env),
         )
 
 
@@ -6545,6 +6550,80 @@ _NORM_CANONICAL_RANK = {
 }
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# Dtype algebra (Step 30) — a second algebra alongside shape.
+#
+# We track a *known* element dtype for each tensor.  Absence from ``dtype_env``
+# means the dtype is unknown and every dtype check abstains on that tensor, so
+# the analysis never raises a false positive on an unannotated value.  Only an
+# explicit annotation (input_dtypes), a layer's real parameter dtype (read from
+# the live module), or an explicit cast (.half()/.float()/.to(dtype=...)) makes
+# a dtype *known*.  Checks only fire when *both* participating dtypes are known.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Canonical torch dtype spellings (alias → canonical).
+_DTYPE_ALIASES = {
+    "half": "float16",
+    "float": "float32",
+    "double": "float64",
+    "bfloat16": "bfloat16",
+    "float16": "float16",
+    "float32": "float32",
+    "float64": "float64",
+    "long": "int64",
+    "int": "int32",
+    "short": "int16",
+    "char": "int8",
+    "byte": "uint8",
+    "bool": "bool",
+    "int8": "int8",
+    "int16": "int16",
+    "int32": "int32",
+    "int64": "int64",
+    "uint8": "uint8",
+    "cfloat": "complex64",
+    "cdouble": "complex128",
+    "complex64": "complex64",
+    "complex128": "complex128",
+}
+
+_FLOAT_DTYPES = frozenset(
+    {"float16", "bfloat16", "float32", "float64", "complex64", "complex128"}
+)
+_INT_DTYPES = frozenset({"int8", "int16", "int32", "int64", "uint8"})
+
+# Layers whose forward performs a matmul/convolution against a stored parameter
+# and therefore require the *input* dtype to exactly equal the *parameter*
+# dtype (torch raises e.g. "mat1 and mat2 must have the same dtype" /
+# "Input type (...) and bias type (...) should be the same").
+_DTYPE_PARAM_MATCH_KINDS = frozenset({
+    LayerKind.LINEAR, LayerKind.BILINEAR,
+    LayerKind.CONV1D, LayerKind.CONV2D, LayerKind.CONV3D,
+    LayerKind.CONVTRANSPOSE1D, LayerKind.CONVTRANSPOSE2D,
+    LayerKind.CONVTRANSPOSE3D,
+})
+
+
+def _canon_dtype(raw: Any) -> Optional[str]:
+    """Canonicalise a dtype spelling (e.g. ``torch.float16``, ``"half"``) to a
+    canonical string, or ``None`` if it cannot be recognised."""
+    if raw is None:
+        return None
+    s = str(raw)
+    if s.startswith("torch."):
+        s = s[len("torch."):]
+    s = s.strip().lower()
+    return _DTYPE_ALIASES.get(s)
+
+
+def _is_float_dtype(dt: Optional[str]) -> bool:
+    return dt in _FLOAT_DTYPES
+
+
+def _is_int_dtype(dt: Optional[str]) -> bool:
+    return dt in _INT_DTYPES
+
+
 _LAYER_PROPAGATORS = {
     LayerKind.LINEAR: _propagate_linear,
     LayerKind.CONV2D: _propagate_conv2d,
@@ -6864,9 +6943,12 @@ class ConstraintVerifier:
         check_devices: bool = True,
         check_phases: bool = True,
         check_gradients: bool = True,
+        check_dtypes: bool = True,
+        input_dtypes: Optional[Dict[str, str]] = None,
     ) -> None:
         self.graph = graph
         self.input_shapes = input_shapes or {}
+        self.input_dtypes = input_dtypes or {}
         self.default_device = default_device
         self.default_phase = default_phase
         self.max_k = max_k if max_k is not None else graph.num_steps
@@ -6879,6 +6961,16 @@ class ConstraintVerifier:
         self.check_devices = check_devices
         self.check_phases = check_phases
         self.check_gradients = check_gradients
+        self.check_dtypes = check_dtypes
+        # Under autocast / mixed-precision contexts torch silently inserts casts,
+        # so a statically-mismatched dtype may run fine.  Abstain on dtype checks
+        # entirely when the graph indicates autocast to stay sound (no FPs).
+        _feats = getattr(graph, "dynamic_features", {}) or {}
+        self._dtype_abstain = bool(
+            _feats.get("forward_uses_autocast")
+            or _feats.get("mixed_precision_api")
+            or _feats.get("uses_autocast")
+        )
         self.ctx = _Z3Context()
         self._stride_check_id = 0
         self.relational_constraints = constraints or {}
@@ -6903,6 +6995,8 @@ class ConstraintVerifier:
         "phase_error": "phases",
         "gradient_violation": "gradients",
         "gradient_broken": "gradients",
+        "dtype_error": "dtypes",
+        "dtype_mismatch": "dtypes",
     }
 
     def _domain_enabled(self, kind: str) -> bool:
@@ -6914,6 +7008,8 @@ class ConstraintVerifier:
             return self.check_phases
         if domain == "gradients":
             return self.check_gradients
+        if domain == "dtypes":
+            return self.check_dtypes
         return True  # shape / cross-domain / structural checks always run
 
     def _filter_domain_checks(self, pairs):
@@ -6960,6 +7056,11 @@ class ConstraintVerifier:
             state.shape_env[name] = TensorShape(tuple(dims))
             state.device_map[name] = self.default_device
             state.gradient_status[name] = False
+            # Only record an input dtype when the caller explicitly annotated it;
+            # otherwise the dtype stays *unknown* so dtype checks abstain.
+            dt = _canon_dtype(self.input_dtypes.get(name))
+            if dt is not None:
+                state.dtype_env[name] = dt
         # Pre-populate buffer shapes from register_buffer() calls in __init__.
         # Buffers are always registered on CPU (torch.randn / torch.zeros etc.
         # default to CPU).  They move with the model when .cuda() is called, but
@@ -8249,6 +8350,12 @@ class ConstraintVerifier:
                 new_state.shape_env[step.output] = (
                     state.shape_env[step.inputs[0]]
                 )
+        elif step.op == OpKind.DTYPE_CAST:
+            # dtype cast is shape- and device-preserving; dtype handled below.
+            if step.inputs and step.inputs[0] in state.shape_env:
+                new_state.shape_env[step.output] = (
+                    state.shape_env[step.inputs[0]]
+                )
         elif step.op == OpKind.DROPOUT:
             if step.inputs and step.inputs[0] in state.shape_env:
                 new_state.shape_env[step.output] = (
@@ -8586,9 +8693,129 @@ class ConstraintVerifier:
                     any_grad = True
             new_state.gradient_status[step.output] = any_grad
 
+        # ---- Dtype propagation & consistency checks ----------------------
+        self._propagate_and_check_dtype(state, new_state, step, violations)
+
         return new_state, violations
 
     # --- per-operation helpers (concrete) ---------------------------------
+
+    def _propagate_and_check_dtype(
+        self,
+        state: ModelState,
+        new_state: ModelState,
+        step: ComputationStep,
+        violations: List[SafetyViolation],
+    ) -> None:
+        """Propagate element dtypes across one step and flag dtype-incompatible
+        operations that raise at runtime.
+
+        Soundness: only *known* dtypes (present in ``dtype_env``) are reasoned
+        about; any operand with an unknown dtype causes the check to abstain.
+        Under autocast the whole pass abstains.  This guarantees no false
+        positives: a reported ``dtype_error`` corresponds to a torch
+        ``RuntimeError`` under the recorded dtypes.
+        """
+        if self._dtype_abstain:
+            return
+
+        def known(name: Optional[str]) -> Optional[str]:
+            if name is None:
+                return None
+            return state.dtype_env.get(name) or new_state.dtype_env.get(name)
+
+        out = step.output
+
+        # --- Explicit dtype casts -------------------------------------
+        # .half()/.float()/.double()/.to(dtype=...) carry a canonical target.
+        cast_dt = _canon_dtype(step.params.get("cast_dtype")) if step.params else None
+        if step.op == OpKind.DTYPE_CAST or cast_dt is not None:
+            if cast_dt is not None:
+                new_state.dtype_env[out] = cast_dt
+                return
+            # DTYPE_CAST with an unrecognised target → result dtype unknown.
+            new_state.dtype_env.pop(out, None)
+            return
+
+        # --- Parametric layer calls (matmul/conv against a stored param) ---
+        if step.op == OpKind.LAYER_CALL and step.layer_ref:
+            layer = self.graph.layers.get(step.layer_ref)
+            if layer is not None:
+                param_dt = _canon_dtype(layer.params.get("param_dtype"))
+                inp = step.inputs[0] if step.inputs else None
+                inp_dt = known(inp)
+
+                if layer.kind in _DTYPE_PARAM_MATCH_KINDS and param_dt is not None:
+                    if self.check_dtypes and inp_dt is not None and inp_dt != param_dt:
+                        violations.append(SafetyViolation(
+                            kind="dtype_error",
+                            step_index=-1,
+                            step=step,
+                            message=(
+                                f"{layer.kind.name}: input dtype '{inp_dt}' does "
+                                f"not match parameter dtype '{param_dt}'. torch "
+                                f"raises at runtime (e.g. \"mat1 and mat2 must "
+                                f"have the same dtype\" / \"Input type and bias "
+                                f"type should be the same\")"
+                            ),
+                            tensor_a=inp,
+                            confidence=Confidence.HIGH,
+                        ))
+                    # Output dtype is the parameter dtype (= input dtype when ok).
+                    new_state.dtype_env[out] = param_dt
+                    return
+
+                if layer.kind == LayerKind.EMBEDDING:
+                    # Index tensor must be int32/int64; output is the weight dtype.
+                    if (self.check_dtypes and inp_dt is not None
+                            and _is_float_dtype(inp_dt)):
+                        violations.append(SafetyViolation(
+                            kind="dtype_error",
+                            step_index=-1,
+                            step=step,
+                            message=(
+                                f"Embedding: index dtype '{inp_dt}' is floating; "
+                                f"torch requires int32/int64 indices "
+                                f"(\"Expected tensor for argument index to have "
+                                f"scalar type Long\")"
+                            ),
+                            tensor_a=inp,
+                            confidence=Confidence.HIGH,
+                        ))
+                    if param_dt is not None:
+                        new_state.dtype_env[out] = param_dt
+                    return
+
+        # --- Matmul: both operands must share dtype -----------------------
+        if step.op == OpKind.MATMUL and len(step.inputs) >= 2:
+            a, b = step.inputs[0], step.inputs[1]
+            da, db = known(a), known(b)
+            if self.check_dtypes and da is not None and db is not None and da != db:
+                violations.append(SafetyViolation(
+                    kind="dtype_error",
+                    step_index=-1,
+                    step=step,
+                    message=(
+                        f"matmul: operand dtypes differ ('{da}' vs '{db}'); "
+                        f"torch raises \"mat1 and mat2 must have the same dtype\""
+                    ),
+                    tensor_a=a,
+                    tensor_b=b,
+                    confidence=Confidence.HIGH,
+                ))
+            if da is not None:
+                new_state.dtype_env[out] = da
+            elif db is not None:
+                new_state.dtype_env[out] = db
+            return
+
+        # --- Default: preserve the first known input dtype ----------------
+        if out not in new_state.dtype_env:
+            for inp in step.inputs:
+                dt = known(inp)
+                if dt is not None:
+                    new_state.dtype_env[out] = dt
+                    break
 
     def _check_norm_stats_mode(
         self,
@@ -10815,6 +11042,8 @@ def verify_model(
     check_devices: bool = True,
     check_phases: bool = True,
     check_gradients: bool = True,
+    check_dtypes: bool = True,
+    input_dtypes: Optional[Dict[str, str]] = None,
 ) -> VerificationResult:
     """One-shot verification of an nn.Module defined in *source*.
 
@@ -10918,6 +11147,8 @@ def verify_model(
         check_devices=check_devices,
         check_phases=check_phases,
         check_gradients=check_gradients,
+        check_dtypes=check_dtypes,
+        input_dtypes=input_dtypes,
     )
 
     result = checker.verify()
@@ -10992,6 +11223,7 @@ def verify_model(
     # see filtered results regardless of which API layer they use.
     _PHASE_KINDS = {"phase_violation", "phase_error"}
     _GRAD_KINDS = {"gradient_broken", "gradient_violation"}
+    _DTYPE_KINDS = {"dtype_error", "dtype_mismatch"}
 
     def _filter_violations(res: VerificationResult, keep_pred) -> VerificationResult:
         if res.safe or not res.counterexample:
@@ -11035,6 +11267,8 @@ def verify_model(
         result = _filter_violations(result, lambda v: v.kind not in _PHASE_KINDS)
     if not check_gradients:
         result = _filter_violations(result, lambda v: v.kind not in _GRAD_KINDS)
+    if not check_dtypes:
+        result = _filter_violations(result, lambda v: v.kind not in _DTYPE_KINDS)
 
     if return_kripke:
         result.kripke_structure = extract_kripke_structure(

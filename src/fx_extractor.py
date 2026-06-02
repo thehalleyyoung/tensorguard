@@ -305,6 +305,11 @@ def _extract_layer_params(module: "nn.Module", kind: LayerKind) -> Dict[str, Any
             params["dilation"] = module.dilation
         if hasattr(module, 'groups'):
             params["groups"] = module.groups
+    # Record the layer's parameter dtype (used by the dtype algebra). Reading
+    # the live weight captures .half()/.to(dtype=) casts applied to the module.
+    w = getattr(module, "weight", None)
+    if w is not None and hasattr(w, "dtype"):
+        params["param_dtype"] = str(w.dtype).replace("torch.", "")
     return params
 
 
@@ -479,6 +484,15 @@ _METHOD_OP_MAP = {
     "mean": OpKind.MEAN_REDUCE,
     "sum": OpKind.SUM_REDUCE,
     # mean/sum handled specially via _handle_reduction_method
+    "half": OpKind.DTYPE_CAST,
+    "float": OpKind.DTYPE_CAST,
+    "double": OpKind.DTYPE_CAST,
+    "bfloat16": OpKind.DTYPE_CAST,
+    "long": OpKind.DTYPE_CAST,
+    "int": OpKind.DTYPE_CAST,
+    "short": OpKind.DTYPE_CAST,
+    "bool": OpKind.DTYPE_CAST,
+    "type_as": OpKind.DTYPE_CAST,
 }
 
 # Methods that reduce dimensions (need special handling)
@@ -813,6 +827,20 @@ def _extract_function_params(
     return params
 
 
+def _extract_to_dtype(node: "torch.fx.Node") -> Optional[str]:
+    """Extract a dtype target from a ``.to(...)`` call node, if present.
+
+    Handles ``x.to(torch.float16)``, ``x.to(dtype=torch.float16)`` and
+    ``x.to(some_device, torch.float16)``.  Returns ``None`` when no static
+    dtype argument is present (pure device move, or dtype taken from another
+    traced tensor)."""
+    import torch as _torch
+    for arg in list(node.args[1:]) + list(node.kwargs.values()):
+        if isinstance(arg, _torch.dtype):
+            return str(arg).replace("torch.", "")
+    return None
+
+
 def _extract_method_params(
     node: "torch.fx.Node",
     method_name: str,
@@ -863,6 +891,16 @@ def _extract_method_params(
         OpKind.SELECT_DIM, OpKind.TAKE,
     ):
         params.update(_extract_indexing_params(node, op_kind))
+    elif op_kind == OpKind.DTYPE_CAST:
+        # x.half()/x.float()/x.double()/x.bfloat16()/x.long()/... — the target
+        # dtype is the method name itself (type_as has no static target).
+        if method_name != "type_as":
+            params["cast_dtype"] = method_name
+    elif op_kind == OpKind.TO_DEVICE:
+        # x.to(...) may also change dtype: x.to(torch.float16) / x.to(dtype=...).
+        dt = _extract_to_dtype(node)
+        if dt is not None:
+            params["cast_dtype"] = dt
     return params
 
 
@@ -941,6 +979,8 @@ def verify_module(
     high_confidence_only: bool = False,
     class_name: Optional[str] = None,
     backend: str = "auto",
+    check_dtypes: bool = True,
+    input_dtypes: Optional[Dict[str, str]] = None,
 ) -> VerificationResult:
     """Verify an ``nn.Module`` instance by tracing it with ``torch.fx``.
 
@@ -1044,6 +1084,8 @@ def verify_module(
                     default_phase=default_phase,
                     max_k=max_k,
                     constraints=constraints,
+                    check_dtypes=check_dtypes,
+                    input_dtypes=input_dtypes,
                 )
                 result = checker.verify()
                 if high_confidence_only:
@@ -1082,6 +1124,8 @@ def verify_module(
                         default_phase=default_phase,
                         max_k=max_k,
                         constraints=constraints,
+                        check_dtypes=check_dtypes,
+                        input_dtypes=input_dtypes,
                     )
                     result = checker.verify()
                     if high_confidence_only:
@@ -1115,6 +1159,8 @@ def verify_module(
         default_phase=default_phase,
         max_k=max_k,
         constraints=constraints,
+        check_dtypes=check_dtypes,
+        input_dtypes=input_dtypes,
     )
 
     result = checker.verify()
@@ -1288,6 +1334,15 @@ _METHOD_OP_MAP: Dict[str, OpKind] = {
     "narrow": OpKind.NARROW,
     "select": OpKind.SELECT_DIM,
     "take": OpKind.TAKE,
+    "half": OpKind.DTYPE_CAST,
+    "float": OpKind.DTYPE_CAST,
+    "double": OpKind.DTYPE_CAST,
+    "bfloat16": OpKind.DTYPE_CAST,
+    "long": OpKind.DTYPE_CAST,
+    "int": OpKind.DTYPE_CAST,
+    "short": OpKind.DTYPE_CAST,
+    "bool": OpKind.DTYPE_CAST,
+    "type_as": OpKind.DTYPE_CAST,
 }
 
 # torch.xxx(...) → OpKind
