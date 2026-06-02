@@ -64,3 +64,15 @@ import TensorGuard
 #print axioms TensorGuard.CegarU2.fix_abstains_on_infeasible
 #print axioms TensorGuard.CegarU2.fix_keeps_safe_when_feasible
 #print axioms TensorGuard.CegarU2.old_always_safe
+
+-- Known-unsoundness U1 re-audited (Step 133): the verifiable-fragment boundary
+-- is mode-dependent. `sound` mode abstains on every fragment violation and is
+-- sound (sound_safeSound); `balanced`/`heuristic` may report SAFE on an
+-- out-of-fragment construct hiding a real bug (balanced_unsound,
+-- heuristic_unsound). The modes agree in-fragment and differ exactly on a
+-- fragment violation.
+#print axioms TensorGuard.FragmentU1.sound_safeSound
+#print axioms TensorGuard.FragmentU1.balanced_unsound
+#print axioms TensorGuard.FragmentU1.heuristic_unsound
+#print axioms TensorGuard.FragmentU1.modes_agree_in_fragment
+#print axioms TensorGuard.FragmentU1.modes_differ_iff_violation

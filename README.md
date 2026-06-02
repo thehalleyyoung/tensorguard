@@ -50,7 +50,10 @@ runtime errors in ML codebases before any code runs.
   the loop's termination are now **machine-checked in Lean**
   (`lean/TensorGuard/CegarBound.lean`), and the once-known SAFE-on-infeasible
   unsoundness gap is **closed with a Lean-checked fix** that abstains instead of
-  reporting safe (`lean/TensorGuard/CegarInfeasible.lean`).
+  reporting safe (`lean/TensorGuard/CegarInfeasible.lean`). The mode-dependent
+  fragment boundary itself (gap U1) is likewise Lean-backed: `sound` mode is
+  proved sound while the permissive modes' recall trade-off is made precise
+  (`lean/TensorGuard/FragmentModes.lean`).
 - **Per-domain verification** — beyond shape, the device and gradient
   domains each refute real bugs that the base shape view misses (a cuda
   buffer added to a cpu input; a `.detach()` that severs gradient flow).
