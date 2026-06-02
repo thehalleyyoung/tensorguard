@@ -1,0 +1,86 @@
+{
+  "corpus": {
+    "buggy": 8,
+    "clean": 8,
+    "fingerprint_sha256": "ddad8f8a047c6fae0b58b40dc6b7c3f05a2078a231657feb069b19655aee9de4",
+    "name": "tensorguard-real-benchmarks",
+    "total": 16
+  },
+  "entries": [
+    {
+      "description": "Sound static shape/device/gradient verifier (refinement types + Z3 + reduced-product domain).",
+      "name": "TensorGuard",
+      "rank": 1,
+      "scorecard": {
+        "abstain": 0,
+        "accuracy": 1.0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "n": 16,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tn": 8,
+        "tp": 8
+      },
+      "source": "reference",
+      "submitted_verdicts": {
+        "buggy_cat_dim_mismatch": "UNSAFE",
+        "buggy_conv_channel_mismatch": "UNSAFE",
+        "buggy_device_mismatch": "UNSAFE",
+        "buggy_flatten_fc_mismatch": "UNSAFE",
+        "buggy_gradient_detach": "UNSAFE",
+        "buggy_linear_inout_mismatch": "UNSAFE",
+        "buggy_matmul_inner_mismatch": "UNSAFE",
+        "buggy_view_total_size": "UNSAFE",
+        "clean_cnn": "SAFE",
+        "clean_conv_bn_pool": "SAFE",
+        "clean_dropout_mlp": "SAFE",
+        "clean_groupnorm": "SAFE",
+        "clean_layernorm_mlp": "SAFE",
+        "clean_mlp": "SAFE",
+        "clean_resblock": "SAFE",
+        "clean_self_attention": "SAFE"
+      },
+      "url": "https://github.com/thehalleyyoung/tensorguard"
+    },
+    {
+      "description": "Illustrative trivial baseline that reports SAFE for every module (no analysis). Included to demonstrate the leaderboard re-scoring and to set the recall floor.",
+      "name": "trivial-always-safe",
+      "rank": 2,
+      "scorecard": {
+        "abstain": 0,
+        "accuracy": 0.5,
+        "f1": 0.0,
+        "fn": 8,
+        "fp": 0,
+        "n": 16,
+        "precision": 0.0,
+        "recall": 0.0,
+        "tn": 8,
+        "tp": 0
+      },
+      "source": "community",
+      "submitted_verdicts": {
+        "buggy_cat_dim_mismatch": "SAFE",
+        "buggy_conv_channel_mismatch": "SAFE",
+        "buggy_device_mismatch": "SAFE",
+        "buggy_flatten_fc_mismatch": "SAFE",
+        "buggy_gradient_detach": "SAFE",
+        "buggy_linear_inout_mismatch": "SAFE",
+        "buggy_matmul_inner_mismatch": "SAFE",
+        "buggy_view_total_size": "SAFE",
+        "clean_cnn": "SAFE",
+        "clean_conv_bn_pool": "SAFE",
+        "clean_dropout_mlp": "SAFE",
+        "clean_groupnorm": "SAFE",
+        "clean_layernorm_mlp": "SAFE",
+        "clean_mlp": "SAFE",
+        "clean_resblock": "SAFE",
+        "clean_self_attention": "SAFE"
+      },
+      "url": ""
+    }
+  ],
+  "n_entries": 2
+}

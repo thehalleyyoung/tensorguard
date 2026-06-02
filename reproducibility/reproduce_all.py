@@ -56,6 +56,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/smt_backend_comparison.md",
     "reproducibility/soundness_boundary.json",
     "reproducibility/soundness_boundary.md",
+    "reproducibility/leaderboard.json",
+    "reproducibility/leaderboard.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -114,6 +116,8 @@ STEPS = [
      [PY, "reproducibility/smt_backend_comparison.py"], None),
     ("boundary: soundness/incompleteness boundary vs live verifier",
      [PY, "reproducibility/soundness_boundary.py"], None),
+    ("leaderboard: open benchmark leaderboard over frozen corpus",
+     [PY, "reproducibility/leaderboard.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]

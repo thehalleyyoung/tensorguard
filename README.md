@@ -562,6 +562,28 @@ recall trade-off surfaced as known gap U1, not hidden. See
 [`reproducibility/soundness_boundary.md`](reproducibility/soundness_boundary.md)
 and `tests/test_soundness_boundary.py`.
 
+### Open benchmark leaderboard
+
+To let the community drive recall up, `reproducibility/leaderboard.py` scores
+tools on the frozen, content-addressed `real_benchmarks/` corpus (sixteen real
+`nn.Module` cases, eight clean and eight buggy, each pinned by sha256 so the
+benchmark cannot drift):
+
+```bash
+PYTHONPATH=. python3 reproducibility/leaderboard.py   # writes leaderboard.{json,md}
+```
+
+TensorGuard is the reference entry and scores perfect recall and precision on
+the frozen corpus. Community tools are added by dropping a per-case verdict
+file in `benchmarks/leaderboard_entries/`; the harness **recomputes** every
+metric from the raw verdicts, so a submission cannot self-report inflated
+numbers (a committed trivial always-SAFE baseline illustrates the recall floor).
+Precision must stay at one to be taken seriously — the open challenge is higher
+recall on ever-harder real-world bugs with no new false alarms. See
+[`reproducibility/leaderboard.md`](reproducibility/leaderboard.md),
+[`docs/leaderboard/CONTRIBUTING.md`](docs/leaderboard/CONTRIBUTING.md) and
+`tests/test_leaderboard.py`.
+
 ### Sound-mode false-positive hunt
 
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
