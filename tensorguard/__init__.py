@@ -63,6 +63,7 @@ from src.named_tensor_verify import (  # noqa: F401  (re-export)
     verify_named_tensor_source,
     verify_refine_names,
 )
+from src.vmap_verify import verify_vmap  # noqa: F401  (re-export)
 
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
 from src import api as api  # noqa: F401
@@ -100,6 +101,7 @@ __all__ = [
     "verify_refine_names",
     "verify_align_to",
     "verify_named_tensor_source",
+    "verify_vmap",
     "TensorGuardViolation",
     "api",
     "torch",

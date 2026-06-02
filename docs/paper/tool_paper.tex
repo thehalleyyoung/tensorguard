@@ -49,8 +49,9 @@
 \tg{} is a zero-annotation static verifier for PyTorch \texttt{nn.Module}
 architectures and adjacent training/deployment code.  It checks tensor shape,
 dtype, device, phase, gradient-flow, stride/layout, probabilistic batch/event
-contracts, complex view/FFT shape-dtype rules, named-axis alignment, and
-library-specific contracts before a forward pass runs, then reports a
+contracts, complex view/FFT shape-dtype rules, named-axis alignment,
+\texttt{vmap} batched-dimension transfers, and library-specific contracts before
+a forward pass runs, then reports a
 three-valued verdict:
 \safe{}, \unknown{}, or \unsafe{}.  The implementation is intentionally more
 than a prototype: it ships a formal soundness contract, a verifiable-fragment
@@ -143,11 +144,9 @@ hooks.
 The CLI entrypoint is \texttt{tensorguard}.  Its central command verifies a file
 or module and supports independent check toggles, soundness modes, and machine
 readable output.  The public Python API mirrors the CLI through
-\texttt{verify\_architecture}, \texttt{verify\_module}, and specialized helpers
-such as \texttt{verify\_einops}, \texttt{verify\_einops\_source},
-\texttt{verify\_sdpa}, \texttt{verify\_fft},
-\texttt{verify\_view\_as\_real}, and \texttt{verify\_align\_to}.  A typical
-workflow is:
+\texttt{verify\_architecture} and \texttt{verify\_module}.  Specialized helpers
+cover einops, SDPA, distributions, named tensors, complex FFT/view contracts,
+and \texttt{vmap} batched-dimension transfer.  A typical workflow is:
 
 \begin{lstlisting}
 import torch.nn as nn
@@ -365,7 +364,7 @@ accumulation argument.
 
 \subsection{Specialized library contracts}
 
-Five high-value library checkers demonstrate the pattern for precision without
+Six high-value library checkers demonstrate the pattern for precision without
 unsoundness:
 
 \begin{itemize}[leftmargin=2em]
@@ -413,6 +412,16 @@ unsoundness:
   refine/alignment cases against real PyTorch named tensors, including
   duplicate names, invalid identifiers, explicit \texttt{None} axes, and
   symbolic sizes carried through unchanged.
+  \item \textbf{\texttt{torch.vmap}/functorch.}
+  \path{src/vmap_verify.py} models the higher-order shape transfer used by
+  \texttt{torch.vmap} and \texttt{torch.func.vmap}: mapped input axes are
+  removed before the body, concrete mapped batch sizes must agree, and the
+  shared batch axis is reinserted according to \texttt{out\_dims}.  The checker
+  supports nested output pytrees and treats symbolic batch dimensions by
+  abstention.  For PyTorch's version-sensitive constant-output corner, it
+  records an unknown shape rather than refuting.  A 500-case randomized
+  differential test checks mapped-axis removal and out-dim insertion against
+  real \texttt{vmap}.
 \end{itemize}
 
 \section{Beyond \texttt{forward}: deployment and training hazards}
@@ -839,8 +848,7 @@ not more marketing metrics; they are higher-value coverage and stronger
 evidence:
 
 \begin{itemize}[leftmargin=2em]
-  \item deeper operator coverage for functorch/vmap, sparse tensors, grid
-  sampling, MultiheadAttention,
+  \item deeper operator coverage for sparse tensors, grid sampling, MultiheadAttention,
   split/chunk, masked selection, nonzero, and exact einsum diagonal semantics;
   \item deployment correctness for quantization, mixed precision, dynamic
   \texttt{torch.export} constraints, AOTInductor layouts, ONNX opsets, GGUF
@@ -958,6 +966,9 @@ Are probabilistic batch/event shapes modeled faithfully? &
 Are named-tensor refinements and alignments modeled faithfully? &
 \path{src/named_tensor_verify.py} &
 \path{tests/test_named_tensor_verify.py} \\
+Is \texttt{vmap} batched-shape transfer modeled faithfully? &
+\path{src/vmap_verify.py} &
+\path{tests/test_vmap_verify.py} \\
 Are training-loop hazards checked? &
 \path{reproducibility/training_loop_hazards.md} &
 \path{tests/test_training_loop_checks.py} \\
@@ -1061,6 +1072,9 @@ Library model & \texttt{torch.distributions} batch/event/log-prob shape checker 
 Library model & PyTorch named-tensor \texttt{refine\_names}/\texttt{align\_to}
 checker with source-level bug reports &
 \path{src/named_tensor_verify.py}, \path{tests/test_named_tensor_verify.py} \\
+Library model & \texttt{torch.vmap}/functorch mapped-axis removal and
+\texttt{out\_dims} insertion &
+\path{src/vmap_verify.py}, \path{tests/test_vmap_verify.py} \\
 Frontends & Safe AST source parser for untrusted model files &
 \path{src/safe_loader.py}, \path{tests/test_security.py} \\
 Frontends & \texttt{torch.fx} trace lowering across real torchvision models &
