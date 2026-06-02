@@ -1110,6 +1110,20 @@ shape. Annotations take priority over example tensors, scalar parameters
 verification. Pass `infer_inputs=False` to opt out. See
 `tests/test_input_spec_inference.py`.
 
+### Graceful degradation for unanalyzable regions
+
+Real-world `forward` methods occasionally contain a construct the frontend
+cannot model, or trip an internal extraction edge case. Rather than abandon the
+whole module, TensorGuard now isolates the offending statement and keeps going:
+the failed statement is recorded in `result.isolated_regions` (with its line,
+reason, and source), its target is rebound to a sound fully-symbolic tensor (an
+abstaining `UNSUPPORTED` step), and the remaining statements are still verified.
+The isolated value is treated conservatively downstream — never a source of a
+false positive — yet genuine bugs on independent, analyzable paths are still
+caught. A fully-analyzable model reports an empty `isolated_regions`, so the
+field doubles as a precise coverage signal. See
+`tests/test_graceful_degradation.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

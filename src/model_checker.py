@@ -423,6 +423,11 @@ class ComputationGraph:
     const_shapes: Dict[str, "TensorShape"] = field(default_factory=dict)
     const_devices: Dict[str, "Device"] = field(default_factory=dict)
     dynamic_features: Dict[str, Any] = field(default_factory=dict)
+    # Step 43 — graceful degradation: forward statements that could not be
+    # analyzed and were isolated (their outputs treated as fully symbolic).
+    # Each entry is {"line", "reason", "source"}.  Empty for fully-analyzed
+    # models.
+    isolated_regions: List[Dict[str, Any]] = field(default_factory=list)
 
     # Convenience ----------------------------------------------------------
 
@@ -762,6 +767,10 @@ class VerificationResult:
     proof_certificate: Optional["ProofCertificate"] = None
     kripke_structure: Optional[KripkeStructure] = None
     unsupported_op_tracker: Optional[UnsupportedOpTracker] = None
+    # Step 43 — forward statements that were isolated (unanalyzable) while the
+    # rest of the model was still verified.  Each entry is
+    # {"line", "reason", "source"}.
+    isolated_regions: List[Dict[str, Any]] = field(default_factory=list)
 
     def filter_by_confidence(self, min_level: Confidence = Confidence.MEDIUM) -> "VerificationResult":
         """Return a copy with violations below the confidence threshold removed."""
@@ -2676,6 +2685,10 @@ class _ForwardExtractor(ast.NodeVisitor):
         self.steps: List[ComputationStep] = []
         self.input_names: List[str] = []
         self.output_names: List[str] = []
+        # Step 43 — graceful degradation: top-level forward statements whose
+        # extraction raised are isolated here (line + reason) so the rest of the
+        # model can still be verified instead of failing wholesale.
+        self.isolated_regions: List[Dict[str, Any]] = []
         self._tmp_counter = 0
         self._current_names: Dict[int, str] = {}  # ast node id → tensor name
         self._aliases: Dict[str, str] = {}  # variable alias tracking
@@ -3033,7 +3046,88 @@ class _ForwardExtractor(ast.NodeVisitor):
             if arg.arg != "self":
                 self.input_names.append(arg.arg)
 
-        self.visit(func_node)
+        self._visit_body_resilient(func_node.body)
+
+    def _visit_body_resilient(self, body: List[ast.stmt]) -> None:
+        """Visit each top-level statement, isolating any that fail to extract.
+
+        Step 43 — graceful degradation.  If processing a single statement raises
+        (an unsupported construct or an internal extraction bug), we record the
+        offending region and continue with the remaining statements rather than
+        abandoning the whole model.  When the failed statement is an assignment,
+        its target is rebound to a sound fully-symbolic tensor so downstream code
+        that references it stays analyzable (and soundly abstains for that
+        value), instead of crashing on an undefined name.
+        """
+        for stmt in body:
+            try:
+                self.visit(stmt)
+            except Exception as exc:  # isolate this region, keep going
+                self.isolated_regions.append({
+                    "line": getattr(stmt, "lineno", -1),
+                    "reason": f"{type(exc).__name__}: {exc}",
+                    "source": self._safe_unparse(stmt),
+                })
+                self._isolate_statement(stmt)
+
+    @staticmethod
+    def _safe_unparse(node: ast.AST) -> str:
+        try:
+            return ast.unparse(node).strip().splitlines()[0][:120]
+        except Exception:
+            return "<unparseable>"
+
+    def _isolate_statement(self, stmt: ast.stmt) -> None:
+        """Rebind the targets of a failed assignment to fresh symbolic tensors.
+
+        Emitting an ``UNSUPPORTED`` step (sound symbolic abstention) keeps the
+        dataflow graph connected: any input we can resolve is consumed, and the
+        output is a fully-symbolic fresh tensor that downstream layers treat
+        conservatively.  Non-assignment statements are simply skipped.
+        """
+        targets: List[ast.expr] = []
+        if isinstance(stmt, ast.Assign):
+            targets = list(stmt.targets)
+        elif isinstance(stmt, (ast.AnnAssign, ast.AugAssign)):
+            targets = [stmt.target]
+        names: List[str] = []
+        for tgt in targets:
+            if isinstance(tgt, ast.Name):
+                names.append(tgt.id)
+            elif isinstance(tgt, ast.Tuple):
+                for elt in tgt.elts:
+                    if isinstance(elt, ast.Name) and elt.id != "_":
+                        names.append(elt.id)
+        if not names:
+            return
+        # Best-effort: feed any resolvable input names so device/dtype facts can
+        # still flow; otherwise produce a standalone fresh symbolic output.
+        line = getattr(stmt, "lineno", -1)
+        col = getattr(stmt, "col_offset", 0)
+        inputs: List[str] = []
+        try:
+            value = getattr(stmt, "value", None)
+            if value is not None:
+                for sub in ast.walk(value):
+                    if isinstance(sub, ast.Name) and sub.id in self._known_names():
+                        inputs.append(self._resolve_name(sub))
+        except Exception:
+            inputs = []
+        for name in names:
+            self.steps.append(ComputationStep(
+                op=OpKind.UNSUPPORTED,
+                inputs=list(dict.fromkeys(inputs)),
+                output=name,
+                params={"op_name": "<isolated>", "isolated": True},
+                line=line, col=col,
+            ))
+
+    def _known_names(self) -> set:
+        known = set(self.input_names)
+        known.update(self._aliases.keys())
+        for step in self.steps:
+            known.add(step.output)
+        return known
 
     # --- visitors ----------------------------------------------------------
 
@@ -4524,6 +4618,7 @@ def _extract_submodule_graph(
         graph.steps = fwd_ext.steps
         graph.input_names = fwd_ext.input_names
         graph.output_names = fwd_ext.output_names
+        graph.isolated_regions = fwd_ext.isolated_regions
 
     return graph
 
@@ -4645,6 +4740,7 @@ def extract_computation_graph(source: str) -> ComputationGraph:
         graph.steps = fwd_ext.steps
         graph.input_names = fwd_ext.input_names
         graph.output_names = fwd_ext.output_names
+        graph.isolated_regions = fwd_ext.isolated_regions
 
         # Detect dynamic patterns in forward body
         _detect_forward_dynamic_patterns(fwd_fn, graph.dynamic_features)
@@ -10823,6 +10919,7 @@ class ConstraintVerifier:
                 ),
                 graph=self.graph,
                 unsupported_op_tracker=self._build_unsupported_tracker(),
+                isolated_regions=list(self.graph.isolated_regions),
             )
 
         # Phase 1: base case (concrete + Z3)
@@ -10863,6 +10960,7 @@ class ConstraintVerifier:
                 dynamic_feature_warnings=_generate_dynamic_warnings(
                     getattr(self.graph, 'dynamic_features', {})),
                 unsupported_op_tracker=self._build_unsupported_tracker(),
+                isolated_regions=list(self.graph.isolated_regions),
             )
 
         cert = SafetyCertificate(
@@ -10940,6 +11038,7 @@ class ConstraintVerifier:
                 getattr(self.graph, 'dynamic_features', {})),
             proof_certificate=proof_cert,
             unsupported_op_tracker=self._build_unsupported_tracker(),
+            isolated_regions=list(self.graph.isolated_regions),
         )
 
     # ------------------------------------------------------------------
