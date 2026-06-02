@@ -1671,6 +1671,17 @@ into CI (`.github/workflows/coverage.yml`), its configuration is pinned in
 `pyproject.toml` `[tool.coverage]`, and `tests/test_coverage_gate.py` asserts the
 module list cannot drift from that config and runs the gate end to end.
 
+### Tested across OSes, Pythons, and PyTorch versions
+
+A compatibility matrix (`.github/workflows/matrix.yml`) runs the supported-surface
+test suite on Linux, macOS, and Windows across Python 3.9 through 3.13, each
+paired with a compatible pinned PyTorch (2.2, 2.4, and 2.6 lines). A separate
+non-blocking job runs against `torch` nightly as an early-warning signal for
+upstream breakage. `tests/test_ci_matrix.py` parses the workflow and asserts the
+matrix is internally consistent — every Python/PyTorch pairing is valid, all
+three OSes and the full Python range are covered, and every referenced test file
+exists — so an impossible combination can never silently merge.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
