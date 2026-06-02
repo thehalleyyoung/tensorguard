@@ -68,6 +68,9 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/stub_autogen_coverage.md",
     "reproducibility/upstream_hook_demo.json",
     "reproducibility/upstream_hook_demo.md",
+    "corpus_extended/manifest.json",
+    "reproducibility/corpus_extended_score.json",
+    "reproducibility/corpus_extended_score.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -95,6 +98,16 @@ def _corpus_repro_paths():
             for f in sorted(os.listdir(d)):
                 if f.endswith(".py"):
                     paths.append(f"real_benchmarks/{sub}/{f}")
+    return paths
+
+
+def _corpus_extended_paths():
+    paths = []
+    d = os.path.join(ROOT, "corpus_extended", "cases")
+    if os.path.isdir(d):
+        for f in sorted(os.listdir(d)):
+            if f.endswith(".py"):
+                paths.append(f"corpus_extended/cases/{f}")
     return paths
 
 
@@ -138,6 +151,10 @@ STEPS = [
      [PY, "reproducibility/stub_autogen_coverage.py"], None),
     ("upstream: proposed nn.Module verification hook vs real torch",
      [PY, "reproducibility/upstream_hook_demo.py"], None),
+    ("corpus+: extended benchmark corpus (materialize + runtime-validate)",
+     [PY, "-m", "corpus_extended.build"], None),
+    ("corpus+: TensorGuard score over extended corpus (Wilson CIs)",
+     [PY, "reproducibility/corpus_extended_score.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]
@@ -176,7 +193,7 @@ def run(check=False):
 
     print("-" * 72)
     print("Regenerated in CI (from source):")
-    for p in GENERATED_DETERMINISTIC + _corpus_repro_paths() + VOLATILE_REGENERATED:
+    for p in GENERATED_DETERMINISTIC + _corpus_repro_paths() + _corpus_extended_paths() + VOLATILE_REGENERATED:
         print(f"  + {p}")
     print("\nValidated against committed artifacts (env-qualified, not "
           "regenerated in this box):")
@@ -195,7 +212,7 @@ def run(check=False):
 
 
 def _determinism_check():
-    paths = GENERATED_DETERMINISTIC + _corpus_repro_paths()
+    paths = GENERATED_DETERMINISTIC + _corpus_repro_paths() + _corpus_extended_paths()
     proc = subprocess.run(
         ["git", "diff", "--exit-code", "--"] + paths,
         cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,

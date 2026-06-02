@@ -712,6 +712,28 @@ See
 [`reproducibility/upstream_hook_demo.md`](reproducibility/upstream_hook_demo.md)
 and `tests/test_upstream_hook.py`.
 
+### Extended benchmark corpus (scale evidence)
+
+The frozen 16-case real-bug corpus is great for provenance but too small to
+report rates with confidence. `corpus_extended/` adds a **parameterized,
+content-addressed corpus of two hundred twenty-seven cases** (one hundred
+fifty-three buggy, seventy-four clean) spanning nine shape-error families
+(chained-`Linear` in/out mismatches, `Conv2d` channel mismatches, flatten→FC
+head mismatches, `matmul` inner-dim mismatches, `cat`/`add` shape mismatches,
+plus clean MLP, conv and normalized-MLP families). Every case label is **ground
+truth by construction**: `corpus_extended/build.py` instantiates each generated
+module and runs a real `forward` with the recorded input shapes, requiring that
+buggy cases raise with the expected error substring and clean cases run cleanly,
+then content-hashes each into a frozen manifest. `reproducibility/corpus_extended_score.py`
+scores the real verifier over **every** case (no cherry-picking) in both
+`balanced` and `sound` modes and reports recall, precision, specificity and
+per-family recall, each with a **Wilson score ninety-five percent confidence
+interval**. On this corpus TensorGuard catches all one hundred fifty-three
+runtime-failing cases with zero false positives on the seventy-four clean
+modules in both modes. See
+[`reproducibility/corpus_extended_score.md`](reproducibility/corpus_extended_score.md)
+and `tests/test_corpus_extended.py`.
+
 ### Sound-mode false-positive hunt
 
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
