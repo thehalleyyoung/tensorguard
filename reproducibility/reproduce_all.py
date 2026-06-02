@@ -94,6 +94,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/fp_stress_eval.md",
     "reproducibility/mutation_clean_models.json",
     "reproducibility/mutation_clean_models.md",
+    "reproducibility/differential_dispatcher.json",
+    "reproducibility/differential_dispatcher.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -208,6 +210,8 @@ STEPS = [
      [PY, "reproducibility/fp_stress_eval.py"], None),
     ("mutation testing: inject bugs into clean models, measure kill rate",
      [PY, "reproducibility/mutation_clean_models.py"], None),
+    ("differential testing: 2000 random modules vs the live torch dispatcher",
+     [PY, "reproducibility/differential_dispatcher.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]

@@ -913,6 +913,24 @@ normalisation), including inside a Sequential, went unflagged. See
 `tests/test_mutation_clean_models.py` and
 `tests/test_sequential_soundness_fixes.py`.
 
+### Differential testing against the live torch dispatcher
+The strongest possible oracle for a static verifier is the framework it reasons
+about. `reproducibility/differential_dispatcher.py` generates two thousand random
+PyTorch modules across five architectural families (Linear MLPs, Conv stacks,
+Conv into flatten into Linear, reshape pipelines and concatenation branches),
+choosing each dimension so that adjacent-layer boundaries are compatible or not
+purely by chance. Every module is judged twice: by a real eager-PyTorch forward
+pass, which either runs cleanly or raises, and by TensorGuard's sound-mode
+verdict. The two judgements are crossed into an agreement matrix whose two
+load-bearing cells must stay empty: a soundness violation would be a module
+proved SAFE that torch nonetheless rejects, and a false alarm would be a clean
+module rejected as UNSAFE. On all two thousand modules TensorGuard agrees with
+the live dispatcher exactly: zero soundness violations, zero false alarms and not
+a single abstention, so every one of the two thousand verdicts is both decided
+and correct. See
+[`reproducibility/differential_dispatcher.md`](reproducibility/differential_dispatcher.md)
+and `tests/test_differential_dispatcher.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a
