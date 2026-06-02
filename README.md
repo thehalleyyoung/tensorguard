@@ -1104,6 +1104,11 @@ abstention and false-positive artifacts —
 four classical validity categories and *computes* each residual-risk level from
 the real figures, so the honesty section stays in lock-step with the data
 ([`reproducibility/threats_to_validity.md`](reproducibility/threats_to_validity.md)).
+A single `make paper-evidence` target regenerates every table and figure and
+rebuilds one catalogue —
+[`reproducibility/paper_evidence_index.md`](reproducibility/paper_evidence_index.md) —
+listing each regenerable artifact and the script that produces it, so the
+write-up and the evidence base can never silently diverge.
 
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,

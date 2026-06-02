@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency paper-evidence test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -38,6 +38,7 @@ help:
 	@echo "  operator-coverage  Regenerate the public torch/nn/functional operator coverage matrix"
 	@echo "  operator-frequency Regenerate the frequency-weighted operator census over real models"
 	@echo "  audit            Run the numeric-claim audit over committed artifacts"
+	@echo "  paper-evidence   Regenerate every table/figure + the single paper-evidence index"
 	@echo "  test             Run the pytest suite"
 
 reproduce:
@@ -154,6 +155,12 @@ operator-frequency:
 
 audit:
 	$(PYTHON) reproducibility/audit_numeric_claims.py
+
+paper-evidence: reproduce-check
+	@echo "Building the single paper-evidence index (all tables/figures)..."
+	$(PYTHON) reproducibility/paper_evidence_index.py
+	$(PYTHON) reproducibility/paper_evidence_index.py --check
+	@echo "Paper evidence regenerated; index at reproducibility/paper_evidence_index.md"
 
 test:
 	$(PYTHON) -m pytest tests -q --no-header

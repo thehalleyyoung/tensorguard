@@ -1,0 +1,50 @@
+# Paper-evidence index (Step 125)
+
+`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **44** evidence items (30 render a table); every generator script is present: **False**.
+
+| stem | generator | table? | json | md |
+| --- | --- | --- | --- | --- |
+| DATASHEET | `(missing)` | True | - | y |
+| SOUNDNESS_CONTRACT | `src/SOUNDNESS_CONTRACT.py` | False | - | y |
+| VERIFIABLE_FRAGMENT | `src/VERIFIABLE_FRAGMENT.py` | True | - | y |
+| artifact_badges | `reproducibility/artifact_badges.py` | True | y | y |
+| baseline_head_to_head | `reproducibility/baseline_head_to_head.py` | True | y | y |
+| blind_manifest | `(missing)` | False | y | - |
+| blind_split_eval | `reproducibility/blind_split_eval.py` | True | y | y |
+| capsule_manifest | `reproducibility/capsule_manifest.py` | True | y | y |
+| cegar_convergence | `reproducibility/cegar_convergence.py` | True | y | y |
+| cegar_depth_ablation | `reproducibility/cegar_depth_ablation.py` | True | y | y |
+| corpus_extended_score | `reproducibility/corpus_extended_score.py` | True | y | y |
+| corpus_provenance_audit | `reproducibility/corpus_provenance_audit.py` | True | y | y |
+| corpus_stratified | `reproducibility/corpus_stratified.py` | True | y | y |
+| cross_python_determinism | `reproducibility/cross_python_determinism.py` | True | y | y |
+| cross_version_stability | `reproducibility/cross_version_stability.py` | True | y | y |
+| data | `(missing)` | False | y | - |
+| differential_dispatcher | `reproducibility/differential_dispatcher.py` | True | y | y |
+| domain_ablation | `reproducibility/domain_ablation.py` | True | y | y |
+| effect_sizes | `reproducibility/effect_sizes.py` | True | y | y |
+| fp_stress_eval | `reproducibility/fp_stress_eval.py` | True | y | y |
+| hypothesis_module_ast | `reproducibility/hypothesis_module_ast.py` | False | y | y |
+| issue_miner_demo | `reproducibility/issue_miner_demo.py` | True | y | y |
+| leaderboard | `reproducibility/leaderboard.py` | False | y | y |
+| localization_effort | `evaluation/localization_effort.py` | True | y | y |
+| manifest | `(missing)` | False | y | - |
+| mutation_clean_models | `reproducibility/mutation_clean_models.py` | True | y | y |
+| natural_distribution_study | `reproducibility/natural_distribution_study.py` | True | y | y |
+| numeric_claims_audit | `(missing)` | False | y | - |
+| operator_confidence_table | `(missing)` | False | y | - |
+| paper_evidence_index | `reproducibility/paper_evidence_index.py` | True | y | y |
+| quant_export_safety | `reproducibility/quant_export_safety.py` | True | y | y |
+| real_benchmarks_audit | `(missing)` | False | y | - |
+| reduced_product_ablation | `reproducibility/reduced_product_ablation.py` | True | y | y |
+| scaling_study | `reproducibility/scaling_study.py` | True | y | y |
+| significance | `evaluation/significance.py` | True | y | y |
+| smt_backend_comparison | `reproducibility/smt_backend_comparison.py` | True | y | y |
+| soundness_boundary | `reproducibility/soundness_boundary.py` | False | y | y |
+| statistical_power | `reproducibility/statistical_power.py` | True | y | y |
+| stub_autogen_coverage | `reproducibility/stub_autogen_coverage.py` | True | y | y |
+| tensor_parallel_sharding | `reproducibility/tensor_parallel_sharding.py` | False | y | y |
+| threats_to_validity | `reproducibility/threats_to_validity.py` | False | y | y |
+| time_to_detect | `reproducibility/time_to_detect.py` | False | y | y |
+| training_loop_hazards | `reproducibility/training_loop_hazards.py` | False | y | y |
+| upstream_hook_demo | `reproducibility/upstream_hook_demo.py` | True | y | y |
