@@ -1499,6 +1499,30 @@ The output is validated against the bundled SARIF validator and an explicit
 encoding of GitHub's ingestion requirements in
 `tests/test_sarif_codescan.py`.
 
+### pre-commit, nox/tox, and a pytest gate
+
+TensorGuard plugs into the standard Python quality toolchain:
+
+```yaml
+# .pre-commit-config.yaml in your repo
+repos:
+  - repo: https://github.com/thehalleyyoung/tensorguard
+    rev: v0.1.0
+    hooks:
+      - id: tensorguard
+```
+
+The hook verifies the staged modules and blocks the commit on a real bug. The
+package also ships a `pytest` plugin so a test session can double as a
+verification gate:
+
+```bash
+pytest --tensorguard --tensorguard-path=src
+```
+
+and `noxfile.py` / `tox.ini` expose `tensorguard` sessions that self-verify the
+examples. See `tests/test_precommit.py` and `tests/test_pytest_plugin.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

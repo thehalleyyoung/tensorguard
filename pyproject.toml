@@ -39,6 +39,10 @@ Repository = "https://github.com/tensorguard/tensorguard"
 
 [project.scripts]
 tensorguard = "src.cli.main:main"
+tensorguard-precommit = "src.precommit:main"
+
+[project.entry-points.pytest11]
+tensorguard = "src.pytest_tensorguard"
 
 [tool.setuptools.packages.find]
 include = ["src*"]

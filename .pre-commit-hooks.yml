@@ -1,0 +1,19 @@
+# Step 68 — pre-commit hook definition.
+#
+# Lets any repo use TensorGuard as a pre-commit hook:
+#
+#   repos:
+#     - repo: https://github.com/thehalleyyoung/tensorguard
+#       rev: v0.1.0
+#       hooks:
+#         - id: tensorguard
+#
+# pre-commit passes the staged Python files as arguments; the hook verifies them
+# and blocks the commit on a real shape/device/dtype/phase/gradient bug.
+- id: tensorguard
+  name: TensorGuard static verification
+  description: Verify PyTorch nn.Module shapes/devices/dtypes/phases/gradients.
+  entry: tensorguard-precommit
+  language: python
+  types: [python]
+  require_serial: true
