@@ -1257,6 +1257,20 @@ read as a proof. The new `completed`, `timed_out`, `steps_checked`, and
 "inconclusive": gate on `completed`, never on `safe` alone. See
 `tests/test_anytime_budget.py`.
 
+### Import / analysis cost (torch-free)
+
+TensorGuard verifies a model from its *source* — AST plus Z3 — and never
+imports the deep-learning runtime to do so. `evaluation/cost_benchmarks.py`
+measures, in fresh subprocesses, the time to import `verify_model` and to run a
+full verification on a small and a medium model, and asserts the load-bearing
+invariant that none of it imports `torch` (which alone costs on the order of a
+second). On the dev machine importing the analysis API takes about 0.15 s and
+stays torch-free; a small model verifies in about 0.03 s and a medium one in
+about 0.9 s, still without ever importing torch. The committed manifest records
+the torch-free invariants and generous ceilings; `make cost-benchmarks-gate`
+enforces them live and fails the build if importing the API drags in torch or a
+ceiling is breached. See `tests/test_cost_benchmarks.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
