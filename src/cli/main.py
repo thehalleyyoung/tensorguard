@@ -3201,11 +3201,21 @@ class VerifyCommand:
         )
         parser.add_argument(
             "--soundness-mode", choices=["sound", "balanced", "heuristic"],
-            default="balanced",
+            default=None,
             help="Verdict strictness (Step 7). 'sound' emits SAFE only when the "
             "module is fully in the verifiable fragment (else UNKNOWN, exit 2); "
             "'balanced' (default) abstains on opaque layers; 'heuristic' "
-            "tolerates abstention. Does not change which bugs are reported."
+            "tolerates abstention. Does not change which bugs are reported. "
+            "Overrides any tensorguard.toml setting."
+        )
+        parser.add_argument(
+            "--config", default=None,
+            help="Path to a tensorguard.toml config file (default: auto-discover "
+            "by walking up from the file under analysis)."
+        )
+        parser.add_argument(
+            "--no-config", action="store_true",
+            help="Ignore any tensorguard.toml / pyproject [tool.tensorguard] config."
         )
 
     def execute(self, args: argparse.Namespace) -> int:
@@ -3284,23 +3294,51 @@ class VerifyCommand:
             sys.stderr.write("\nWatch stopped.\n")
         return 0
 
+    def _resolve_config(self, args: argparse.Namespace, path: str):
+        """Load tensorguard.toml (unless --no-config) for *path*."""
+        from src.tg_config import TGConfig, load_tg_config
+        if getattr(args, "no_config", False):
+            return TGConfig()
+        return load_tg_config(path, explicit_path=getattr(args, "config", None))
+
+    def _effective_verify_kwargs(self, args: argparse.Namespace, cfg) -> dict:
+        """Merge CLI flags over config defaults (CLI wins).
+
+        The CLI ``--no-*`` flags can only *disable* a check, so the effective
+        value is ``config_value and not cli_disabled``.  ``--soundness-mode`` and
+        explicit ``--cegar-iterations`` override the config; otherwise the config
+        value (or the built-in default) applies.
+        """
+        soundness = getattr(args, "soundness_mode", None)
+        if soundness is None:
+            soundness = cfg.soundness_mode or "balanced"
+        cegar = getattr(args, "cegar_iterations", 10)
+        if cegar == 10 and cfg.cegar_iterations:
+            cegar = cfg.cegar_iterations
+        return {
+            "check_devices": cfg.check_devices and not args.no_device_check,
+            "check_phases": cfg.check_phases and not args.no_phase_check,
+            "check_gradients": cfg.check_gradients and not args.no_grad_check,
+            "max_cegar_iterations": cegar,
+            "high_confidence_only": args.high_confidence or cfg.high_confidence,
+            "soundness_mode": soundness,
+            "infer_inputs": cfg.infer_inputs and not getattr(args, "no_infer", False),
+        }
+
     def _verify_value(self, path: str, args: argparse.Namespace):
         """Verify *path* and return the AnalysisResult (used by watch mode)."""
         from src.api import verify_architecture
+        from src.tg_config import filter_result
         source = pathlib.Path(path).read_text(encoding="utf-8")
         input_shapes = self._parse_input_shapes(args.input_shape)
-        return verify_architecture(
+        cfg = self._resolve_config(args, path)
+        result = verify_architecture(
             source,
             input_shapes=input_shapes,
-            check_devices=not args.no_device_check,
-            check_phases=not args.no_phase_check,
-            check_gradients=not args.no_grad_check,
-            max_cegar_iterations=args.cegar_iterations,
             filename=path,
-            high_confidence_only=args.high_confidence,
-            soundness_mode=getattr(args, "soundness_mode", "balanced"),
-            infer_inputs=not getattr(args, "no_infer", False),
+            **self._effective_verify_kwargs(args, cfg),
         )
+        return filter_result(cfg, result)
 
     @staticmethod
     def _parse_input_shapes(specs) -> Dict[str, tuple]:
@@ -3347,20 +3385,25 @@ class VerifyCommand:
                     dims.append(d)  # symbolic dim
             input_shapes[name] = tuple(dims)
 
+        # Load per-repo configuration and honor file ignores up-front.
+        cfg = self._resolve_config(args, str(filepath))
+        from src.tg_config import is_ignored_file
+        if is_ignored_file(cfg, str(filepath)):
+            sys.stdout.write(
+                f"- {filepath.name}: ignored by tensorguard config\n"
+            )
+            return 0
+
         try:
             from src.api import verify_architecture
+            from src.tg_config import filter_result
             result = verify_architecture(
                 source,
                 input_shapes=input_shapes,
-                check_devices=not args.no_device_check,
-                check_phases=not args.no_phase_check,
-                check_gradients=not args.no_grad_check,
-                max_cegar_iterations=args.cegar_iterations,
                 filename=str(filepath),
-                high_confidence_only=args.high_confidence,
-                soundness_mode=getattr(args, "soundness_mode", "balanced"),
-                infer_inputs=not getattr(args, "no_infer", False),
+                **self._effective_verify_kwargs(args, cfg),
             )
+            result = filter_result(cfg, result)
         except RuntimeError as e:
             sys.stderr.write(f"Error: {e}\n")
             return 1

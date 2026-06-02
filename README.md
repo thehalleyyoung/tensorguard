@@ -1425,6 +1425,35 @@ models pass `input_shapes`. If a class's source cannot be recovered the
 decorator abstains silently rather than blocking the import. See
 `tests/test_runtime_check.py`.
 
+### Per-repo configuration (`tensorguard.toml`)
+
+Drop a `tensorguard.toml` at your repo root (or a `[tool.tensorguard]` table in
+`pyproject.toml`) to set project-wide defaults for `tensorguard verify`. The
+config is discovered by walking up from the file under analysis, so one root
+file governs the whole tree:
+
+```toml
+[tensorguard]
+soundness_mode   = "sound"             # sound | balanced | heuristic
+infer_inputs     = true
+high_confidence  = false
+cegar_iterations = 12
+ignore           = ["experiments/**", "legacy/old.py"]
+ignore_rules     = ["cegar-real-bug"]  # suppress bugs by [KIND] tag
+
+[tensorguard.checks]
+devices   = true
+phases    = false
+gradients = true
+```
+
+Command-line flags always win over the config, which in turn wins over the
+built-in defaults. Files matching an `ignore` glob are skipped and reported as
+ignored; bugs whose `[KIND]` tag is listed in `ignore_rules` are dropped along
+with their aligned diagnostics. Pass `--config PATH` to point at an explicit
+file or `--no-config` to ignore configuration entirely. See
+`tests/test_tg_config.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
