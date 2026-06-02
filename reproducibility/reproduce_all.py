@@ -58,6 +58,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/soundness_boundary.md",
     "reproducibility/leaderboard.json",
     "reproducibility/leaderboard.md",
+    "reproducibility/training_loop_hazards.json",
+    "reproducibility/training_loop_hazards.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -118,6 +120,8 @@ STEPS = [
      [PY, "reproducibility/soundness_boundary.py"], None),
     ("leaderboard: open benchmark leaderboard over frozen corpus",
      [PY, "reproducibility/leaderboard.py"], None),
+    ("training: training-loop hazard analyzer vs real torch",
+     [PY, "reproducibility/training_loop_hazards.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]

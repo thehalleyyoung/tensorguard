@@ -1,0 +1,129 @@
+{
+  "all_ok": true,
+  "cases": [
+    {
+      "expected_hazards": [],
+      "live_expected": {
+        "backward_raised": false,
+        "param_changed": true
+      },
+      "live_observed": {
+        "backward_raised": false,
+        "param_changed": true
+      },
+      "live_ok": true,
+      "live_supported": true,
+      "name": "clean",
+      "ok": true,
+      "static_hazards": [],
+      "static_ok": true
+    },
+    {
+      "expected_hazards": [
+        "gradient_flow_break"
+      ],
+      "live_expected": {
+        "backward_raised": true,
+        "param_changed": false
+      },
+      "live_observed": {
+        "backward_raised": true,
+        "param_changed": false
+      },
+      "live_ok": true,
+      "live_supported": true,
+      "name": "gradient_flow_break_detach",
+      "ok": true,
+      "static_hazards": [
+        "gradient_flow_break"
+      ],
+      "static_ok": true
+    },
+    {
+      "expected_hazards": [
+        "gradient_flow_break"
+      ],
+      "live_expected": {
+        "backward_raised": true,
+        "param_changed": false
+      },
+      "live_observed": {
+        "backward_raised": true,
+        "param_changed": false
+      },
+      "live_ok": true,
+      "live_supported": true,
+      "name": "gradient_flow_break_no_grad_block",
+      "ok": true,
+      "static_hazards": [
+        "gradient_flow_break"
+      ],
+      "static_ok": true
+    },
+    {
+      "expected_hazards": [
+        "missing_zero_grad"
+      ],
+      "live_expected": {
+        "backward_raised": false,
+        "grads_accumulated": true
+      },
+      "live_observed": {
+        "backward_raised": false,
+        "grads_accumulated": true
+      },
+      "live_ok": true,
+      "live_supported": true,
+      "name": "missing_zero_grad",
+      "ok": true,
+      "static_hazards": [
+        "missing_zero_grad"
+      ],
+      "static_ok": true
+    },
+    {
+      "expected_hazards": [
+        "missing_optimizer_step"
+      ],
+      "live_expected": {
+        "backward_raised": false,
+        "param_changed": false
+      },
+      "live_observed": {
+        "backward_raised": false,
+        "param_changed": false
+      },
+      "live_ok": true,
+      "live_supported": true,
+      "name": "missing_optimizer_step",
+      "ok": true,
+      "static_hazards": [
+        "missing_optimizer_step"
+      ],
+      "static_ok": true
+    },
+    {
+      "expected_hazards": [
+        "backward_before_zero_grad"
+      ],
+      "live_expected": {
+        "backward_raised": false,
+        "param_changed": false
+      },
+      "live_observed": {
+        "backward_raised": false,
+        "param_changed": false
+      },
+      "live_ok": true,
+      "live_supported": true,
+      "name": "backward_before_zero_grad",
+      "ok": true,
+      "static_hazards": [
+        "backward_before_zero_grad"
+      ],
+      "static_ok": true
+    }
+  ],
+  "n_cases": 6,
+  "seed": 0
+}

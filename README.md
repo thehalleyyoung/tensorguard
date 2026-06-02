@@ -584,6 +584,31 @@ recall on ever-harder real-world bugs with no new false alarms. See
 [`docs/leaderboard/CONTRIBUTING.md`](docs/leaderboard/CONTRIBUTING.md) and
 `tests/test_leaderboard.py`.
 
+### Beyond the architecture: training-loop hazard checks
+
+Phase 10 extends TensorGuard past the `nn.Module` forward pass to the training
+loop around it, where bugs are silent: a detached loss trains nothing, a
+missing `zero_grad()` accumulates gradients across steps, an optimizer that is
+never stepped never learns. `src/training_loop_checks.py` adds an AST-based
+analyzer for a curated set of these hazards (gradient-flow break, missing
+`zero_grad`, missing `optimizer.step`, `zero_grad` ordered after `backward`,
+and an fp16 autocast with no `GradScaler`), each tagged sound or heuristic.
+
+`reproducibility/training_loop_hazards.py` proves the analyzer against **real
+PyTorch execution**: for every case it runs the equivalent seeded loop and
+confirms the static verdict matches the runtime symptom (does `backward` raise,
+do parameters change, do gradients accumulate):
+
+```bash
+PYTHONPATH=. python3 reproducibility/training_loop_hazards.py   # writes training_loop_hazards.{json,md}
+```
+
+Across the six cases the static verdict matches real runtime behaviour every
+time — clean loops stay silent and train, each buggy loop raises exactly the
+expected hazard and exhibits the matching failure. See
+[`reproducibility/training_loop_hazards.md`](reproducibility/training_loop_hazards.md)
+and `tests/test_training_loop_checks.py`.
+
 ### Sound-mode false-positive hunt
 
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
