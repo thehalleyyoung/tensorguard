@@ -128,9 +128,20 @@ def reduceNulTag (p : PVal) : PVal :=
   | .notnull => ⟨⟨false, p.tag.mayOther⟩, p.nul⟩
   | _        => p
 
-/-- One reduction pass: apply both directions. -/
+/-- One reduction pass: apply both directions, then **canonicalise** — if either
+    component collapsed to the unreachable bottom (an empty type-tag or a ⊥
+    nullity, which a reduction produces exactly when the two sub-domains carry
+    contradictory facts), return the single canonical bottom value. This keeps
+    `reduce` both reductive and monotone on the canonical sublattice. -/
+def botPV : PVal := ⟨⟨false, false⟩, .bot⟩
+
+def isBot (p : PVal) : Bool :=
+  (!p.tag.mayNone && !p.tag.mayOther) ||
+    (match p.nul with | .bot => true | _ => false)
+
 def reduce (p : PVal) : PVal :=
-  reduceNulTag (reduceTagNul p)
+  if isBot (reduceNulTag (reduceTagNul p)) then botPV
+  else reduceNulTag (reduceTagNul p)
 
 /-! ## Step 126 obligations: the model is well-formed.
 
@@ -212,13 +223,77 @@ theorem ple_trans {a b c : PVal}
   simp only [PVal.ple, Bool.and_eq_true] at *
   exact ⟨tag_leb_trans h1.1 h2.1, nul_leb_trans h1.2 h2.2⟩
 
+/-- The canonical bottom is below every abstract value. -/
+theorem botPV_le (p : PVal) : botPV.ple p = true := by
+  cases p with
+  | mk t n => cases t with
+    | mk a b => cases a <;> cases b <;> cases n <;> rfl
+
 /-- **The full reduction is reductive.** A complete reduced-product reduction
     pass returns an abstract value below its input: it never loses precision and
     never adds spurious concrete points. This is the structural soundness
     obligation for Step 126. -/
 theorem reduce_reductive (p : PVal) : (reduce p).ple p = true := by
   unfold reduce
-  exact ple_trans (reduceNulTag_reductive _) (reduceTagNul_reductive p)
+  split
+  · exact botPV_le p
+  · exact ple_trans (reduceNulTag_reductive _) (reduceTagNul_reductive p)
+
+/-! ## Step 127 obligations: monotonicity of the transfer functions.
+
+A reduced-product operator is only sound to iterate to a fixed point if it is
+*monotone*: refining an input can never coarsen an output. Two facts hold over
+this finite lattice and are decided by exhaustive case analysis.
+
+* The lattice **meet** (used by the worklist/fixpoint engine) is monotone in
+  both arguments — unconditionally.
+* The **reduction** `reduce` is monotone on *consistent* abstract values. A
+  reduction need not be monotone on ill-formed values (e.g. an empty type-tag,
+  which already denotes ⊥, paired with a non-⊥ nullity): those are exactly the
+  non-canonical points the reduced product never materialises. `consistent`
+  pins down the canonical sublattice, and on it monotonicity holds. -/
+
+/-- The nullity meet is monotone in both arguments. -/
+theorem nul_meet_mono {a a' b b' : Nullity}
+    (ha : a.leb a' = true) (hb : b.leb b' = true) :
+    (Nullity.meet a b).leb (Nullity.meet a' b') = true := by
+  cases a <;> cases a' <;> cases b <;> cases b' <;> revert ha hb <;> decide
+
+/-- The tag meet is monotone in both arguments. -/
+theorem tag_meet_mono {a a' b b' : Tag}
+    (ha : a.leb a' = true) (hb : b.leb b' = true) :
+    (Tag.meet a b).leb (Tag.meet a' b') = true := by
+  cases a with | mk a1 a2 => cases a' with | mk a1' a2' =>
+  cases b with | mk b1 b2 => cases b' with | mk b1' b2' =>
+  cases a1 <;> cases a2 <;> cases a1' <;> cases a2' <;>
+    cases b1 <;> cases b2 <;> cases b1' <;> cases b2' <;>
+    revert ha hb <;> decide
+
+/-- The product meet is monotone in both arguments (the fixpoint engine's join
+    of facts is order-preserving). -/
+theorem pmeet_mono {a a' b b' : PVal}
+    (ha : a.ple a' = true) (hb : b.ple b' = true) :
+    (PVal.pmeet a b).ple (PVal.pmeet a' b') = true := by
+  simp only [PVal.ple, PVal.pmeet, Bool.and_eq_true] at *
+  exact ⟨tag_meet_mono ha.1 hb.1, nul_meet_mono ha.2 hb.2⟩
+
+/-- A *consistent* (canonical) abstract value: the type-tag is non-empty (the
+    empty tag already denotes ⊥) and the nullity is not the unreachable ⊥. These
+    are the values the reduced product actually materialises. -/
+def consistent (p : PVal) : Bool :=
+  (p.tag.mayNone || p.tag.mayOther) &&
+    (match p.nul with | .bot => false | _ => true)
+
+/-- **The full reduction pass is monotone on consistent values.** Refining a
+    canonical abstract value can never coarsen the result of a reduction pass —
+    the property that makes the reduced-product fixpoint iteration sound. -/
+theorem reduce_mono_consistent {a b : PVal}
+    (hca : consistent a = true) (hcb : consistent b = true)
+    (h : a.ple b = true) : (reduce a).ple (reduce b) = true := by
+  cases a with | mk ta na => cases ta with | mk an ao =>
+  cases b with | mk tb nb => cases tb with | mk bn bo =>
+  cases an <;> cases ao <;> cases na <;> cases bn <;> cases bo <;> cases nb <;>
+    revert hca hcb h <;> decide
 
 end RP
 end TensorGuard

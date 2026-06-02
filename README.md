@@ -2408,6 +2408,9 @@ models the Tag×Nullity product that `src/domains/product.py`
 implements and proves each reduction *reductive* and the product meet
 a component-wise lower bound, sorry-free; `AxiomAudit.lean` audits
 those theorems too and `tests/test_lean_reduced_product.py` gates them.
+The reductions are also proved *monotone* (the meet unconditionally,
+and `reduce` on the canonical sublattice — the property that makes the
+reduced-product fixpoint iteration sound).
 
 ### Other artefacts
 

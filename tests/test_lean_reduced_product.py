@@ -31,6 +31,8 @@ _RP_THEOREMS = [
     "TensorGuard.RP.reduce_reductive",
     "TensorGuard.RP.pmeet_le_left",
     "TensorGuard.RP.pmeet_le_right",
+    "TensorGuard.RP.pmeet_mono",
+    "TensorGuard.RP.reduce_mono_consistent",
 ]
 
 

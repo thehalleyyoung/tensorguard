@@ -38,3 +38,7 @@ import TensorGuard
 #print axioms TensorGuard.RP.reduce_reductive
 #print axioms TensorGuard.RP.pmeet_le_left
 #print axioms TensorGuard.RP.pmeet_le_right
+-- Reduced-product monotonicity (Step 127): the meet is monotone and the
+-- reduction is monotone on the canonical (consistent) sublattice.
+#print axioms TensorGuard.RP.pmeet_mono
+#print axioms TensorGuard.RP.reduce_mono_consistent
