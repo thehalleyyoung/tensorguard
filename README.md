@@ -1571,6 +1571,15 @@ silences only the listed rule tags). Both work everywhere the shared verify core
 runs — the GitHub Action (`baseline:` input), the pre-commit hook, and the pytest
 plugin. See `src/baseline.py` and `tests/test_baseline.py`.
 
+### Reporters (JSON, JUnit-XML, GitHub, SARIF)
+
+Alongside Code Scanning SARIF, TensorGuard emits the same findings as structured
+JSON (a stable `tensorguard-report` schema for dashboards and bots), JUnit-XML
+(one `<testcase>` per analysed file, a `<failure>` per finding) so any JUnit
+consumer renders results, and GitHub workflow-command annotations. All four
+formats derive from one canonical finding stream, so no report can drift from
+another. See `src/reporters.py` and `tests/test_reporters.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
