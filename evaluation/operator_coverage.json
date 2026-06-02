@@ -8,7 +8,7 @@
   },
   "namespaces": {
     "torch": {
-      "coverage_ratio": 0.1219,
+      "coverage_ratio": 0.1315,
       "covered": [
         "abs",
         "acos",
@@ -22,6 +22,7 @@
         "atan",
         "bernoulli",
         "bmm",
+        "broadcast_to",
         "cat",
         "cdist",
         "ceil",
@@ -55,6 +56,8 @@
         "log2",
         "logsumexp",
         "lt",
+        "masked_fill",
+        "masked_select",
         "matmul",
         "max",
         "mean",
@@ -63,6 +66,7 @@
         "multinomial",
         "mv",
         "nan_to_num",
+        "narrow",
         "ne",
         "neg",
         "norm",
@@ -78,6 +82,8 @@
         "rrelu",
         "rsqrt",
         "scatter",
+        "scatter_add",
+        "select",
         "selu",
         "sigmoid",
         "sign",
@@ -91,6 +97,7 @@
         "std",
         "sum",
         "svd",
+        "take",
         "tan",
         "tanh",
         "tensordot",
@@ -100,7 +107,7 @@
         "unsqueeze",
         "var"
       ],
-      "covered_count": 89,
+      "covered_count": 96,
       "total": 730,
       "uncovered": [
         "abs_",
@@ -187,7 +194,6 @@
         "block_diag",
         "broadcast_shapes",
         "broadcast_tensors",
-        "broadcast_to",
         "bucketize",
         "can_cast",
         "cartesian_prod",
@@ -464,9 +470,7 @@
         "lu_unpack",
         "manual_seed",
         "margin_ranking_loss",
-        "masked_fill",
         "masked_scatter",
-        "masked_select",
         "matrix_exp",
         "matrix_power",
         "matrix_rank",
@@ -504,7 +508,6 @@
         "nanmedian",
         "nanquantile",
         "nansum",
-        "narrow",
         "narrow_copy",
         "native_batch_norm",
         "native_channel_shuffle",
@@ -605,12 +608,10 @@
         "saddmm",
         "save",
         "scalar_tensor",
-        "scatter_add",
         "scatter_reduce",
         "searchsorted",
         "seed",
         "segment_reduce",
-        "select",
         "select_copy",
         "select_scatter",
         "selu_",
@@ -687,7 +688,6 @@
         "symeig",
         "t",
         "t_copy",
-        "take",
         "take_along_dim",
         "tan_",
         "tanh_",
@@ -745,7 +745,7 @@
         "zeros",
         "zeros_like"
       ],
-      "uncovered_count": 641
+      "uncovered_count": 634
     },
     "torch.nn": {
       "coverage_ratio": 0.4198,
@@ -1070,8 +1070,8 @@
     }
   },
   "summary": {
-    "overall_coverage_ratio": 0.1746,
-    "total_covered": 180,
+    "overall_coverage_ratio": 0.1814,
+    "total_covered": 187,
     "total_public_operators": 1031
   }
 }

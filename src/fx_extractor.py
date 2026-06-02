@@ -449,7 +449,10 @@ def _function_to_op(fn) -> Optional[OpKind]:
     import operator
     fn_map.update({
         operator.add: OpKind.ADD,
+        operator.sub: OpKind.ADD,        # element-wise; same broadcast rule
         operator.mul: OpKind.MULTIPLY,
+        operator.truediv: OpKind.MULTIPLY,  # element-wise broadcast
+        operator.matmul: OpKind.MATMUL,  # the ``@`` operator
         operator.getitem: OpKind.ACTIVATION,  # indexing preserves shape info
     })
     return fn_map.get(fn)
@@ -636,6 +639,20 @@ def fx_trace_to_graph(
             step_idx += 1
 
         elif node.op == "call_function":
+            # Functional embedding: F.embedding(input, weight) /
+            # torch.embedding(weight, input) produces input.shape + (embed_dim,).
+            # Mapping it to a shape-preserving ACTIVATION (the generic fallback)
+            # would be confidently wrong, so build a synthetic Embedding layer
+            # from the weight constant's shape and emit a LAYER_CALL.
+            emb_step = _maybe_functional_embedding(
+                node, node_to_tensor, graph, step_idx
+            )
+            if emb_step is not None:
+                graph.steps.append(emb_step)
+                node_to_tensor[node.name] = emb_step.output
+                step_idx += 1
+                continue
+
             op_kind = _function_to_op(node.target)
             if op_kind is None:
                 # Unknown function — treat as shape-preserving activation
@@ -977,6 +994,73 @@ def _extract_method_params(
     return params
 
 
+def _maybe_functional_embedding(
+    node: "torch.fx.Node",
+    node_to_tensor: Dict[str, str],
+    graph: ComputationGraph,
+    step_idx: int,
+) -> Optional[ComputationStep]:
+    """Build a synthetic Embedding ``LAYER_CALL`` step for functional embedding.
+
+    Handles ``F.embedding(input, weight, ...)`` and ``torch.embedding(weight,
+    input, ...)``.  The output shape is ``input.shape + (embedding_dim,)`` where
+    ``embedding_dim`` is the weight's last dimension; the weight constant's shape
+    is taken from ``graph.const_shapes`` (recorded for every ``get_attr``
+    tensor).  Returns ``None`` when the node is not an embedding or the weight
+    shape is unavailable (sound abstention via the generic path).
+    """
+    if not HAS_TORCH:
+        return None
+    target = node.target
+    name = getattr(target, "__name__", "")
+    module = getattr(target, "__module__", "")
+    is_emb = name == "embedding" and (
+        "functional" in module or module.startswith("torch")
+    )
+    if not is_emb:
+        return None
+
+    node_args = [a for a in node.args if isinstance(a, torch.fx.Node)]
+    if len(node_args) < 2:
+        return None
+    # Identify the weight (a 2-D constant) and the input (the indices).
+    weight_node = None
+    input_node = None
+    for a in node_args[:2]:
+        tname = node_to_tensor.get(a.name, a.name)
+        cshape = graph.const_shapes.get(tname)
+        if cshape is not None and cshape.ndim == 2:
+            weight_node = (a, cshape)
+        else:
+            input_node = a
+    if weight_node is None or input_node is None:
+        return None
+    _, wshape = weight_node
+    emb_dim = wshape.dims[-1]
+    num_emb = wshape.dims[0]
+    if not isinstance(emb_dim.value, int):
+        return None
+
+    layer_name = f"_func_embedding_{step_idx}"
+    ldef = LayerDef(
+        attr_name=layer_name,
+        kind=LayerKind.EMBEDDING,
+        params={},
+    )
+    ldef.embedding_dim = emb_dim.value
+    if isinstance(num_emb.value, int):
+        ldef.num_embeddings = num_emb.value
+    graph.layers[layer_name] = ldef
+
+    return ComputationStep(
+        op=OpKind.LAYER_CALL,
+        inputs=[node_to_tensor.get(input_node.name, input_node.name)],
+        output=f"_t{step_idx}",
+        layer_ref=layer_name,
+        params={"embedding_dim": emb_dim.value},
+    )
+
+
 def _handle_reduction_method(
     node: "torch.fx.Node",
     input_names: List[str],
@@ -984,23 +1068,36 @@ def _handle_reduction_method(
     step_idx: int,
     graph: ComputationGraph,
 ) -> List[ComputationStep]:
-    """Handle mean/sum with dimension args as adaptive pooling + flatten.
+    """Handle mean/sum reductions.
 
-    When ``mean([2, 3])`` is called on a 4D tensor (common global average
-    pooling pattern), convert to AdaptiveAvgPool2d(1,1) + flatten to enable
-    correct shape propagation.
+    The global-average-pooling idiom ``mean([2, 3])`` on a 4D tensor is mapped
+    to AdaptiveAvgPool2d(1,1) + flatten.  Every other reduction is emitted as a
+    real ``MEAN_REDUCE`` / ``SUM_REDUCE`` step carrying its ``dim``/``keepdim``
+    so the shape propagator computes the correct reduced shape instead of
+    (unsoundly) treating the op as shape-preserving.
     """
-    # Extract reduction dims from args
+    method_name = str(node.target)
+
+    # Extract reduction dims from args OR kwargs (fx may place either way).
     reduce_dims = None
+    dim_arg = None
     if len(node.args) > 1:
-        arg1 = node.args[1]
-        if isinstance(arg1, (list, tuple)):
-            reduce_dims = list(arg1)
-        elif isinstance(arg1, int):
-            reduce_dims = [arg1]
+        dim_arg = node.args[1]
+    elif "dim" in node.kwargs:
+        dim_arg = node.kwargs["dim"]
+    if isinstance(dim_arg, (list, tuple)):
+        reduce_dims = list(dim_arg)
+    elif isinstance(dim_arg, int) and not isinstance(dim_arg, bool):
+        reduce_dims = [dim_arg]
+
+    keepdim = False
+    if len(node.args) > 2 and isinstance(node.args[2], bool):
+        keepdim = node.args[2]
+    elif "keepdim" in node.kwargs:
+        keepdim = bool(node.kwargs["keepdim"])
 
     # Pattern: mean([2, 3]) on 4D tensor = global average pooling
-    if reduce_dims and set(reduce_dims) == {2, 3}:
+    if reduce_dims and set(reduce_dims) == {2, 3} and not keepdim:
         # Create synthetic AdaptiveAvgPool2d layer
         pool_name = f"_gap_{step_idx}"
         pool_ldef = LayerDef(
@@ -1030,11 +1127,19 @@ def _handle_reduction_method(
         )
         return [pool_step, flatten_step]
 
-    # Fallback: treat as shape-preserving
+    op_kind = (OpKind.MEAN_REDUCE if method_name == "mean"
+               else OpKind.SUM_REDUCE)
+    params: Dict[str, Any] = {"keepdim": keepdim}
+    if reduce_dims is not None:
+        # The propagator handles a single int dim or a list of dims; pass a
+        # bare int when there is exactly one for maximum precision.
+        params["dim"] = reduce_dims[0] if len(reduce_dims) == 1 else reduce_dims
+    # dim omitted entirely → full reduction to a scalar (handled downstream).
     return [ComputationStep(
-        op=OpKind.ACTIVATION,
-        inputs=input_names,
+        op=op_kind,
+        inputs=input_names[:1],
         output=output_name,
+        params=params,
     )]
 
 

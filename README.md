@@ -924,6 +924,26 @@ lets genuine cross-device bugs surface while leaving normal models untouched.
 Soundness is preserved by abstaining whenever a factory size is data dependent,
 such as `torch.randn(x.shape[0], 4)`. See `tests/test_rng_shape_precise.py`.
 
+### Conformance oracle: transfer functions cross-checked against real PyTorch
+
+Every shape transfer function is only as trustworthy as its agreement with the
+framework it models. The conformance oracle closes that gap with differential
+validation: for a battery of single-operator modules it samples concrete input
+shapes, runs the genuine `torch` forward pass to obtain the ground-truth output
+shape, and compares it against the shape TensorGuard predicts. Each comparison
+is classified as conformant, abstained, or — the outcome a sound verifier must
+never produce — a disagreement, where TensorGuard confidently predicts a
+concrete shape that PyTorch contradicts. The headline guarantee enforced in CI
+is zero disagreements across the battery, with the great majority of core
+operators resolving to a concrete, correct shape rather than abstaining.
+
+Building this oracle paid for itself immediately: it caught the `torch.fx`
+frontend modelling `x.mean(dim=...)` and `x.sum(dim=...)` as shape-preserving,
+the matrix product `x @ w` as a plain activation, and functional `embedding` as
+shape-preserving — each one a confidently-wrong shape that could have masked a
+real downstream mismatch. All were fixed and are now regression-guarded. See
+`reproducibility/conformance_oracle.py` and `tests/test_conformance_oracle.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

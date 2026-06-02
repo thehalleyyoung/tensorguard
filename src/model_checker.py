@@ -10894,7 +10894,20 @@ class SymbolicShapePropagator:
             if inp_shape:
                 dim = step.params.get("dim")
                 keepdim = step.params.get("keepdim", False)
-                if dim is not None and isinstance(dim, int):
+                if isinstance(dim, (list, tuple)):
+                    norm = sorted(
+                        (d if d >= 0 else inp_shape.ndim + d) for d in dim
+                    )
+                    new_dims = []
+                    for i, sd in enumerate(inp_shape.dims):
+                        if i in norm:
+                            if keepdim:
+                                new_dims.append(ShapeDim(1))
+                            # else: drop this dim
+                        else:
+                            new_dims.append(sd)
+                    env[step.output] = TensorShape(tuple(new_dims))
+                elif dim is not None and isinstance(dim, int):
                     if dim < 0:
                         dim = inp_shape.ndim + dim
                     new_dims = list(inp_shape.dims)
