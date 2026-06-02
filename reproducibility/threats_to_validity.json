@@ -1,0 +1,105 @@
+{
+  "all_four_categories_covered": true,
+  "categories_covered": [
+    "conclusion",
+    "construct",
+    "external",
+    "internal"
+  ],
+  "n_high_residual": 0,
+  "n_low_residual": 3,
+  "n_medium_residual": 1,
+  "n_threats": 4,
+  "step": 124,
+  "summary": {
+    "blind_overfitting_gap": 0.0,
+    "blind_recall_point": 1.0,
+    "extended_abstained_buggy": 0,
+    "extended_abstained_clean": 0,
+    "extended_buggy_decided": 153,
+    "extended_false_positives": 0,
+    "extended_recall_point": 1.0,
+    "fp_abstention_rate": {
+      "balanced": 0.0,
+      "heuristic": 0.0,
+      "sound": 0.0
+    },
+    "fp_clean_n": 101,
+    "fp_false_alarm_rate": {
+      "balanced": 0.0,
+      "heuristic": 0.0,
+      "sound": 0.0
+    },
+    "max_abstention_rate_any_mode": 0.0,
+    "modes": [
+      "sound",
+      "balanced",
+      "heuristic"
+    ],
+    "natural_abstention_rate": {
+      "balanced": 0.0,
+      "heuristic": 0.0,
+      "sound": 0.0
+    },
+    "natural_coverage": {
+      "balanced": 1.0,
+      "heuristic": 1.0,
+      "sound": 1.0
+    },
+    "natural_n": 29,
+    "smallest_clean_sample": 29,
+    "smallest_clean_sample_individually_powered": false,
+    "total_false_positives_observed": 0.0
+  },
+  "threats": [
+    {
+      "category": "construct",
+      "evidence": {
+        "buggy_items_abstained_extended_corpus": 0,
+        "buggy_items_decided_extended_corpus": 153,
+        "max_abstention_rate_any_mode": 0.0
+      },
+      "id": "construct_abstention_masking",
+      "mitigation": "Recall is reported on the full buggy set, not the decided subset, and the corpus records zero abstained buggy items, so no hard case is hidden behind UNKNOWN.",
+      "residual_risk": "low",
+      "threat": "The three-valued verdict lets the tool abstain (UNKNOWN); if buggy models were disproportionately abstained on, recall would be inflated by silently dropping the hard cases."
+    },
+    {
+      "category": "conclusion",
+      "evidence": {
+        "clean_models_false_positive_stress": 101,
+        "false_alarm_rate_sound_mode": 0.0,
+        "false_positives_observed_total": 0.0
+      },
+      "id": "conclusion_false_alarm_undercount",
+      "mitigation": "False alarms are counted across multiple independent clean corpora and cross-checked against a live eager-PyTorch differential oracle; the exact-binomial power analysis (Step 120) bounds the residual rate even at zero observed alarms.",
+      "residual_risk": "low",
+      "threat": "A 'zero false positives' headline is only as strong as the clean corpus behind it; too few clean models, or a lenient oracle, would let real false alarms go uncounted."
+    },
+    {
+      "category": "external",
+      "evidence": {
+        "natural_coverage_sound_mode": 1.0,
+        "natural_models_evaluated": 29,
+        "natural_recall_via_blind_split": 1.0,
+        "smallest_clean_sample": 29,
+        "smallest_clean_sample_individually_powered": false
+      },
+      "id": "external_synthetic_generalisation",
+      "mitigation": "A natural-distribution study and a pre-registered held-out blind split corroborate the synthetic results on hand-written models; where a single natural sample is small it is backed by the pooled clean-model bound rather than read in isolation.",
+      "residual_risk": "medium",
+      "threat": "Much of the corpus is programmatically generated; results might not transfer to hand-written, naturally-distributed models."
+    },
+    {
+      "category": "internal",
+      "evidence": {
+        "blind_split_overfitting_gap": 0.0,
+        "blind_split_recall": 1.0
+      },
+      "id": "internal_overfitting",
+      "mitigation": "Hypotheses and the held-out split were pre-registered before evaluation; the observed dev-vs-blind overfitting gap is zero.",
+      "residual_risk": "low",
+      "threat": "Detector thresholds and operator rules could be tuned to the development corpus, overstating performance on it."
+    }
+  ]
+}

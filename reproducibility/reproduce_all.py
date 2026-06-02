@@ -116,6 +116,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/capsule_manifest.md",
     "reproducibility/artifact_badges.json",
     "reproducibility/artifact_badges.md",
+    "reproducibility/threats_to_validity.json",
+    "reproducibility/threats_to_validity.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -251,6 +253,8 @@ STEPS = [
      [PY, "reproducibility/capsule_manifest.py"], None),
     ("artifact badges: ACM/USENIX badge-to-evidence map (existence-checked)",
      [PY, "reproducibility/artifact_badges.py"], None),
+    ("threats-to-validity: generated from abstention + false-positive data",
+     [PY, "reproducibility/threats_to_validity.py"], None),
     ("dashboard: rebuild the static evidence site from committed artifacts",
      [PY, "reproducibility/build_dashboard.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",

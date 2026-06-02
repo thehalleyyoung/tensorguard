@@ -1098,6 +1098,12 @@ Reproduced): `reproducibility/artifact_badges.py` maps every badge criterion to
 in-tree evidence and fails if any cited path is missing — all four badges have
 complete, existence-checked evidence
 ([`reproducibility/artifact_badges.md`](reproducibility/artifact_badges.md)).
+The accompanying threats-to-validity analysis is itself generated from the
+abstention and false-positive artifacts —
+`reproducibility/threats_to_validity.py` instantiates a threat for each of the
+four classical validity categories and *computes* each residual-risk level from
+the real figures, so the honesty section stays in lock-step with the data
+([`reproducibility/threats_to_validity.md`](reproducibility/threats_to_validity.md)).
 
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
