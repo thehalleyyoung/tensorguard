@@ -629,7 +629,45 @@ PixelShuffle, repeat, and variants) produce QF\_NIA constraints,
 for which satisfiability is NP-hard (captured in a Lean~4
 reduction from SUBSET-PRODUCT).
 
-\subsection{Real-World Model Verification}
+\subsection{Library-Faithful Differential Verification}\label{sec:differential-lib}
+
+Two operator families dominate modern transformer and diffusion code yet
+escape conventional shape checkers because their contracts live \emph{inside}
+opaque library calls: \texttt{einops} pattern rewrites
+(\texttt{rearrange}/\texttt{reduce}/\texttt{repeat}) and
+\texttt{F.scaled\_dot\_product\_attention} (SDPA). A non-divisible patch
+embedding such as \texttt{rearrange(x,\,"b c (h p1) (w p2) -> b (h w) (c p1
+p2)",\,p1=5)} on a $14\times14$ feature map, or an attention block whose head
+dimension fails to match between \texttt{query} and \texttt{key}, raises only
+inside a fused kernel---and often only for a particular sequence length a
+single-shape smoke test never exercises.
+
+\tguard{} ships pure, shape-only models of both contracts
+(\texttt{verify\_einops}, \texttt{verify\_sdpa}) that reproduce the exact
+conditions under which the real libraries raise---non-divisible decomposition,
+under-determined split, per-operation axis-set mismatch, missing repeat length,
+anonymous-axis and rank mismatches, and ellipsis handling for einops;
+contracted head-dim equality, batch/head broadcasting, and
+$\langle L_q,L_k\rangle$ mask broadcasting for SDPA---while inferring the
+output shape. Crucially, both honour the soundness contract: a dimension that
+cannot be decided statically (a symbolic length) is \emph{never} refuted.
+
+We validate these models \emph{differentially against the real libraries}. A
+randomised fuzzer draws 3{,}000 einops cases and 400 SDPA cases (varying axis
+groupings, head counts, broadcasting, and mask shapes); for every case the
+static verdict (accept/reject) and, on acceptance, the predicted output shape
+must match what real \texttt{einops}/\texttt{torch} produce on a concrete
+tensor. All cases agree, and an AST-level checker
+(\texttt{verify\_einops\_source}) lifts the einops model to real
+\texttt{nn.Module} source: in our grounded tests, every buggy module whose
+forward genuinely raises at runtime is caught statically, every correct module
+stays silent, and symbolic/unknown shapes produce no false positives. The same
+methodology---\emph{a shape-only abstraction whose verdicts are pinned to the
+ground-truth library by mass differential testing}---underwrites the per-release
+benchmark-delta gate (\S\ref{sec:deploy}), which blocks any release that
+silently degrades recall or inflates the headline silent-miss count.
+
+
 
 We evaluate \tguard{} on 8 real-world convolutional architectures from
 torchvision using \texttt{torch.fx} symbolic tracing.  For each model,

@@ -47,6 +47,9 @@ from src.torch_integration import (  # noqa: F401  (re-export)
     verify_module,
 )
 
+from src.einops_verify import verify_einops  # noqa: F401  (re-export)
+from src.einops_source import verify_einops_source  # noqa: F401  (re-export)
+
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
 from src import api as api  # noqa: F401
 from src import torch_integration as torch  # noqa: F401
@@ -73,6 +76,8 @@ __all__ = [
     "guarded_onnx_export",
     "verify_exported_program",
     "guarded_aot_package",
+    "verify_einops",
+    "verify_einops_source",
     "TensorGuardViolation",
     "api",
     "torch",

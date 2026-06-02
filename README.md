@@ -19,18 +19,22 @@ runtime errors in ML codebases before any code runs.
 - **142 operator transfer functions** — covers `matmul`, `conv2d`, `cat`,
   `view`, `reshape`, `transpose`, `permute`, `einsum`, `bmm`, attention
   patterns, and more
+- **einops & SDPA verified against the real libraries** — `rearrange` /
+  `reduce` / `repeat` and `scaled_dot_product_attention` are statically
+  checked by shape-only models that are **differentially fuzzed** (3000 +
+  400 random cases) to match real `einops` / `torch` verdicts *and* output
+  shapes exactly; a non-divisible patch-embed or a head-dim-mismatched
+  attention is caught before the kernel raises, symbolic dims are never
+  refuted (`tensorguard.verify_einops` / `verify_einops_source`)
 - **5-theory product domain** — jointly reasons over
   **Shape × Device × Phase × Stride × Permutation** for each tensor
 - **Zero annotations required** — shapes are inferred from constructors,
   `torch.randn`, `nn.Linear(in, out)`, reshapes, and data flow
 - **Train/eval phase tagging** — every tensor is annotated with the
-  phase context in which it is produced; `BatchNorm` / `Dropout`
-  misuse patterns can be detected from the resulting trace.  Note:
-  the `--no-phase-check` CLI flag is wired through the public API as
-  a post-hoc filter on phase-violation bugs (the phase predicates
-  are computed and stored on every tensor regardless); see
-  *Known limitations* below for the practical implication on the
-  real corpora.
+  phase context in which it is produced, so `BatchNorm` / `Dropout`
+  misuse patterns can be detected from the resulting trace (the
+  `--no-phase-check` flag post-filters phase bugs; see *Known
+  limitations*).
 - **Device tracking** — catches silent CPU ↔ CUDA mismatches before they
   become runtime errors
 - **CEGAR predicate discovery** — a counterexample-guided refinement
