@@ -765,8 +765,19 @@ reproduced failure and explicit human acceptance. See
 [`reproducibility/issue_miner_demo.md`](reproducibility/issue_miner_demo.md) and
 `tests/test_issue_miner.py`.
 
-### Sound-mode false-positive hunt
+### Stratified per-class evaluation
 
+A strong average can hide a weak bug class, so
+`reproducibility/corpus_stratified.py` stratifies the extended corpus **by
+class** and reports per-bug-class recall and per-clean-class specificity, each
+with a Wilson 95 percent confidence interval, plus macro-averages (each class
+weighted equally) and the honest *worst-class* recall lower bound. On this corpus
+every buggy class is fully caught and every clean class is free of false
+positives in both modes, with a macro recall and macro specificity of one. See
+[`reproducibility/corpus_stratified.md`](reproducibility/corpus_stratified.md)
+and `tests/test_corpus_stratified.py`.
+
+### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a
 large, diverse corpus of clean PyTorch modules — every model is validated to
