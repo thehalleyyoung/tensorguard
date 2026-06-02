@@ -1485,14 +1485,14 @@ def transfer_einsum(
     equation: str,
     *operands: TensorShape,
 ) -> Optional[TensorShape]:
-    """Shape rule for torch.einsum — simplified subscript parser."""
-    if '->' not in equation:
+    """Shape rule for torch.einsum using the canonical PyTorch-equivalent parser."""
+    if not isinstance(equation, str):
         return None
-    _, rhs = equation.split('->')
-    rhs = rhs.strip()
-    if not rhs:
-        return TensorShape((ShapeDim(1),))
-    return TensorShape(tuple(ShapeDim(f"_ein_{c}") for c in rhs if c.isalpha()))
+    try:
+        from src.smt.einsum_theory import infer_einsum_shape
+    except Exception:
+        return None
+    return infer_einsum_shape(equation, list(operands))
 
 
 def transfer_cartesian_prod(

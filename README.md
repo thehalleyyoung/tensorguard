@@ -1418,16 +1418,15 @@ committed ones, otherwise it reports a QUALIFIED skip. Committed artifacts:
 
 ### Precise einsum shape inference
 
-`torch.einsum` is now handled by a torch-equivalent equation parser
-(`src/smt/einsum_theory.py`) rather than a heuristic. It infers the output shape
-for explicit and implicit output notation, diagonals (`ii->i`), and ellipsis
-broadcasting (`...qd,...kd->...qk`) — placing the broadcast ellipsis block
-exactly where `...` appears in the output and reducing it away when the output
-omits it. The inferred shape matches real `torch.einsum` across a large random
-differential test, and the checker emits a violation for genuine bugs (a shared
-contraction label with mismatched concrete sizes, a wrong operand rank, or a
-malformed equation) while never flagging symbolic dimensions, preserving the
-sound-mode false-positive-free invariant.
+`torch.einsum` is handled by a torch-equivalent equation parser
+(`src/smt/einsum_theory.py`) rather than a heuristic. It infers explicit and
+implicit outputs, repeated-label diagonals (`i...i->...i`), ASCII output-order
+corner cases, and ellipsis broadcasting (`...qd,...kd->...qk`) — placing the
+broadcast ellipsis block exactly where `...` appears in the output and reducing
+it away when omitted. The inferred shape matches real `torch.einsum` across a
+randomized diagonal/ellipsis differential battery, and the checker emits a
+violation for genuine bugs (mismatched concrete labels, wrong operand rank, or
+malformed equations) while never flagging symbolic dimensions.
 
 The parser is wired into the verification engine (`src/model_checker.py`) and
 the fx extractor (which captures the equation string), so a buggy einsum is

@@ -249,6 +249,14 @@ attention masks, key-padding masks, per-head weight shapes, and valid symbolic
 cases.  Tests replay these contracts against real PyTorch modules and functional
 calls.
 
+The \texttt{einsum} rule is deliberately parser-backed rather than a rank
+heuristic.  It models explicit and implicit outputs, ASCII label ordering,
+repeated-label diagonals within an operand, ellipsis blocks before or after named
+axes, and output ellipses that appear in non-leading positions.  The public
+registry transfer and the verifier use the same parser, and the Z3 encoding
+maps output labels after the broadcasted ellipsis positions instead of assuming
+that labels always start at dimension zero.
+
 Data-dependent operators are treated honestly.  \texttt{masked\_select},
 \texttt{nonzero}, single-argument \texttt{where}, and boolean-mask indexing can
 produce extents that depend on runtime tensor values.  \tg{} now first checks
@@ -679,8 +687,9 @@ Multi-head attention conformance against real \texttt{nn.MultiheadAttention}
 and functional attention calls. \\
 \hline
 \texttt{tests/test\_einsum\_precise.py} &
-Equation parser and output-shape tests for einsum, including diagonals and
-ellipsis handling. \\
+Equation parser and output-shape tests for einsum, including repeated-label
+diagonals, ellipsis placement, ASCII output ordering, registry-transfer parity,
+and Z3 output-position constraints. \\
 \hline
 \texttt{tests/test\_reshape\_precise.py},
 \texttt{tests/test\_reshape\_divisibility\_opt.py} &
@@ -840,7 +849,7 @@ data-dependent ranks. \\
 \hline
 Einsum &
 Equation parser handles explicit and implicit outputs, ellipses, broadcasting,
-and repeated-label diagonal constraints where supported. &
+ASCII output order, and repeated-label diagonal constraints where supported. &
 Einsum theory tests, precise einsum tests, and randomized torch differential
 batteries. \\
 \hline

@@ -24,6 +24,7 @@ rather than silently accepting them.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from string import ascii_letters
 from typing import Any, Dict, List, Optional, Tuple
 
 try:
@@ -36,6 +37,7 @@ except ImportError:
 from src.tensor_shapes import ShapeDim, TensorShape
 
 _ELLIPSIS = "..."
+_VALID_LABELS = set(ascii_letters)
 
 
 @dataclass
@@ -76,7 +78,7 @@ def _split_ellipsis(spec: str) -> EinsumOperand:
     else:
         pre, post, has_ell = spec, "", False
     for ch in pre + post:
-        if not ch.isalpha():
+        if ch not in _VALID_LABELS:
             raise ValueError("einsum: invalid label %r in %r" % (ch, spec))
     return EinsumOperand(pre=pre, post=post, has_ellipsis=has_ell)
 
@@ -287,10 +289,11 @@ def encode_einsum_constraints_z3(
 ) -> Optional[Any]:
     """Encode einsum dimension constraints as Z3 formulas.
 
-    For each shared subscript character, all corresponding dimensions must be
-    equal; output dimensions map to their subscript's value. Ellipsis dims are
-    treated as right-aligned leading batch dims (an approximation for the SMT
-    encoding only). Returns a Z3 BoolRef, or None if Z3 is unavailable.
+    For each shared subscript character (including repeated labels within one
+    operand), all corresponding dimensions must be equal. Ellipsis blocks are
+    right-aligned and broadcast; output dimensions map to their label or to the
+    broadcasted ellipsis position wherever ``...`` appears in the output.
+    Returns a Z3 BoolRef, or None if Z3 is unavailable.
     """
     if not HAS_Z3:
         return None
@@ -299,16 +302,29 @@ def encode_einsum_constraints_z3(
     except ValueError:
         return None
 
+    if len(input_shape_vars) != len(parsed.operands):
+        return z3.BoolVal(False)
+
     constraints: List[Any] = []
     subscript_vars: Dict[str, List[Any]] = {}
+    ellipsis_slices: List[List[Any]] = []
     for inp_idx, op in enumerate(parsed.operands):
-        if inp_idx >= len(input_shape_vars):
-            continue
         shape_vars = input_shape_vars[inp_idx]
         n_pre, n_post = len(op.pre), len(op.post)
-        named_vars = (list(shape_vars[:n_pre])
-                      + (list(shape_vars[len(shape_vars) - n_post:])
-                         if n_post else []))
+        n_named = n_pre + n_post
+        if op.has_ellipsis:
+            if len(shape_vars) < n_named:
+                return z3.BoolVal(False)
+            ell_end = len(shape_vars) - n_post if n_post else len(shape_vars)
+            named_vars = (
+                list(shape_vars[:n_pre])
+                + (list(shape_vars[ell_end:]) if n_post else [])
+            )
+            ellipsis_slices.append(list(shape_vars[n_pre:ell_end]))
+        else:
+            if len(shape_vars) != n_named:
+                return z3.BoolVal(False)
+            named_vars = list(shape_vars)
         for ch, v in zip(op.labels, named_vars):
             subscript_vars.setdefault(ch, []).append(v)
 
@@ -316,10 +332,40 @@ def encode_einsum_constraints_z3(
         for i in range(1, len(var_list)):
             constraints.append(var_list[0] == var_list[i])
 
-    out_labels = parsed.out.pre + parsed.out.post
-    for i, ch in enumerate(out_labels):
-        if i < len(output_shape_vars) and ch in subscript_vars:
-            constraints.append(output_shape_vars[i] == subscript_vars[ch][0])
+    ellipsis_len = max((len(s) for s in ellipsis_slices), default=0)
+    expected_output_rank = (
+        len(parsed.out.pre)
+        + (ellipsis_len if parsed.out.has_ellipsis else 0)
+        + len(parsed.out.post)
+    )
+    if len(output_shape_vars) != expected_output_rank:
+        return z3.BoolVal(False)
+
+    out_idx = 0
+    for ch in parsed.out.pre:
+        if ch in subscript_vars:
+            constraints.append(output_shape_vars[out_idx] == subscript_vars[ch][0])
+        out_idx += 1
+
+    if parsed.out.has_ellipsis:
+        for ell_pos in range(ellipsis_len):
+            out_var = output_shape_vars[out_idx + ell_pos]
+            aligned_inputs = []
+            for ell in ellipsis_slices:
+                offset = ellipsis_len - len(ell)
+                local = ell_pos - offset
+                if 0 <= local < len(ell):
+                    aligned_inputs.append(ell[local])
+            if aligned_inputs:
+                constraints.append(z3.Or(*[out_var == v for v in aligned_inputs]))
+                for v in aligned_inputs:
+                    constraints.append(z3.Or(v == out_var, v == 1))
+        out_idx += ellipsis_len
+
+    for ch in parsed.out.post:
+        if ch in subscript_vars:
+            constraints.append(output_shape_vars[out_idx] == subscript_vars[ch][0])
+        out_idx += 1
 
     for var_list in input_shape_vars:
         for v in var_list:

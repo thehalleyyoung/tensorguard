@@ -26,10 +26,12 @@ import pytest
 from src.tensor_shapes import ShapeDim, TensorShape
 from src.smt.einsum_theory import (
     check_einsum_compatible,
+    encode_einsum_constraints_z3,
     infer_einsum_shape,
     parse_einsum,
 )
 from src.fx_extractor import verify_module
+from src.stdlib.modern_ops import transfer_einsum
 
 
 def TS(*ds):
@@ -58,6 +60,15 @@ EQ_CASES = [
     ("i...,i...->i...", [(2, 1, 4), (2, 3, 1)]),
     ("abc->cba", [(2, 3, 4)]),
     ("ij->", [(3, 3)]),                               # full reduction
+    ("i...i->...i", [(4, 2, 3, 4)]),                  # diagonal around ell.
+    ("i...i", [(4, 2, 3, 4)]),                        # implicit ell. output
+    ("...ii->...i", [(2, 3, 4, 4)]),                  # repeated post label
+    ("...ijj", [(2, 1, 3, 4, 4)]),                    # diagonal + implicit
+    ("i...j,j...i->...", [(2, 3, 4, 5), (5, 3, 4, 2)]),
+    ("...i,i...->...i", [(2, 3, 4), (4, 2, 3)]),
+    ("zZ", [(2, 3)]),                                 # implicit ASCII order
+    ("baC", [(2, 3, 4)]),                             # uppercase sorts first
+    ("->", [()]),                                     # explicit scalar
 ]
 
 
@@ -101,6 +112,74 @@ def test_random_differential_against_torch():
     assert checked > 200
 
 
+def test_random_diagonal_ellipsis_output_order_differential():
+    import random
+    rng = random.Random(192)
+    labels = "abcABC"
+    checked = 0
+
+    def insert_ellipsis(chars):
+        pos = rng.randint(0, len(chars))
+        return "".join(chars[:pos]) + "..." + "".join(chars[pos:])
+
+    for _ in range(1200):
+        nin = rng.randint(1, 3)
+        sizes = {c: rng.randint(1, 4) for c in labels}
+        ellipsis_target = tuple(rng.randint(1, 4) for _ in range(rng.randint(0, 3)))
+        specs, shapes = [], []
+        any_ellipsis = False
+
+        for _ in range(nin):
+            chars = [rng.choice(labels) for _ in range(rng.randint(0, 4))]
+            use_ellipsis = rng.random() < 0.7
+            if use_ellipsis:
+                any_ellipsis = True
+                spec = insert_ellipsis(chars)
+                ell_rank = rng.randint(0, len(ellipsis_target))
+                ell_dims = tuple(
+                    rng.choice((d, 1))
+                    for d in ellipsis_target[len(ellipsis_target) - ell_rank:]
+                )
+                ell_pos = spec.index("...")
+                pre = spec[:ell_pos]
+                post = spec[ell_pos + 3:]
+                shape = (
+                    tuple(sizes[c] for c in pre)
+                    + ell_dims
+                    + tuple(sizes[c] for c in post)
+                )
+            else:
+                spec = "".join(chars)
+                shape = tuple(sizes[c] for c in chars)
+            specs.append(spec)
+            shapes.append(shape)
+
+        if rng.random() < 0.55:
+            unique_labels = sorted(set("".join(s.replace(".", "") for s in specs)))
+            rng.shuffle(unique_labels)
+            chosen = unique_labels[:rng.randint(0, len(unique_labels))]
+            if any_ellipsis and rng.random() < 0.75:
+                split = rng.randint(0, len(chosen))
+                out = "".join(chosen[:split]) + "..." + "".join(chosen[split:])
+            else:
+                out = "".join(chosen)
+            eq = ",".join(specs) + "->" + out
+        else:
+            eq = ",".join(specs)
+
+        ins = [TS(*s) if s else TensorShape(()) for s in shapes]
+        ts = [torch.zeros(*s) if s else torch.zeros(()) for s in shapes]
+        try:
+            exp = tuple(torch.einsum(eq, *ts).shape)
+        except Exception:
+            continue
+        assert _shp(infer_einsum_shape(eq, ins)) == exp, eq
+        assert check_einsum_compatible(eq, ins) is None, eq
+        checked += 1
+
+    assert checked > 500
+
+
 # ---- validation / error detection ----------------------------------------
 def test_contraction_mismatch_detected():
     assert "mismatched" in check_einsum_compatible("ij,jk->ik", [TS(3, 4), TS(5, 6)])
@@ -117,6 +196,8 @@ def test_rank_mismatch_detected():
     "i->j",         # output label not in inputs
     "ij->i->j",     # multiple arrows
     "i1->i",        # non-letter label
+    "é->é",         # PyTorch labels are restricted to ASCII [a-zA-Z]
+    "α->α",
 ])
 def test_malformed_or_invalid_rejected(eq):
     # Use a generic single/double input; the malformed ones should error on
@@ -137,11 +218,41 @@ def test_ellipsis_not_broadcastable_detected():
     assert err is not None and "broadcast" in err
 
 
+def test_repeated_label_diagonal_mismatch_detected():
+    err = check_einsum_compatible("...ii->...", [TS(2, 3, 4, 5)])
+    assert err is not None and "mismatched" in err
+    assert infer_einsum_shape("...ii->...", [TS(2, 3, 4, 5)]) is None
+
+
 def test_symbolic_dims_no_false_positive():
     sym = TensorShape((ShapeDim("n"), ShapeDim(4)))
     assert check_einsum_compatible("ij,jk->ik", [sym, TS(4, 5)]) is None
     out = infer_einsum_shape("ij,jk->ik", [sym, TS(4, 5)])
     assert [d.value for d in out.dims] == ["n", 5]
+
+
+def test_registry_transfer_uses_canonical_einsum_parser():
+    got = transfer_einsum("i...j,j...i->...ij", TS(2, 3, 4, 5), TS(5, 3, 4, 2))
+    assert _shp(got) == (3, 4, 2, 5)
+    assert transfer_einsum("...ii->...", TS(2, 3, 4, 5)) is None
+
+
+def test_z3_encoding_respects_output_ellipsis_position():
+    z3 = pytest.importorskip("z3")
+    a = [z3.Int(f"a{i}") for i in range(4)]
+    b = [z3.Int(f"b{i}") for i in range(4)]
+    out = [z3.Int(f"o{i}") for i in range(4)]
+    constraints = encode_einsum_constraints_z3(
+        "i...j,j...i->...ij",
+        [a, b],
+        out,
+    )
+    solver = z3.Solver()
+    solver.add(constraints)
+    solver.add(a[0] == 2, a[1] == 3, a[2] == 4, a[3] == 5)
+    solver.add(b[0] == 5, b[1] == 3, b[2] == 4, b[3] == 2)
+    solver.add(z3.Or(out[0] != 3, out[1] != 4, out[2] != 2, out[3] != 5))
+    assert solver.check() == z3.unsat
 
 
 # ---- end-to-end through the engine ---------------------------------------
