@@ -49,8 +49,8 @@
 \tg{} is a zero-annotation static verifier for PyTorch \texttt{nn.Module}
 architectures and adjacent training/deployment code.  It checks tensor shape,
 dtype, device, phase, gradient-flow, stride/layout, probabilistic batch/event
-contracts, and library-specific
-contracts before a forward pass runs, then reports a three-valued verdict:
+contracts, named-axis alignment, and library-specific contracts before a
+forward pass runs, then reports a three-valued verdict:
 \safe{}, \unknown{}, or \unsafe{}.  The implementation is intentionally more
 than a prototype: it ships a formal soundness contract, a verifiable-fragment
 specification, operator confidence tags, SARIF/JSON/JUnit/GitHub reporters,
@@ -86,7 +86,8 @@ bugs, but only when the test constructs the right input and executes the failing
 path.  Smoke tests miss latent eval-only branches, CUDA-only device mismatches
 on CPU machines, silent gradient breaks, and shape constraints hidden inside
 library calls such as \texttt{einops.rearrange} or
-\texttt{scaled\_dot\_product\_attention}.
+\texttt{scaled\_dot\_product\_attention}, or PyTorch named-tensor
+\texttt{align\_to}.
 
 \tg{} attacks that failure mode with static verification.  Given model source
 or a live module, it extracts a symbolic tensor program, propagates abstract
@@ -142,8 +143,8 @@ The CLI entrypoint is \texttt{tensorguard}.  Its central command verifies a file
 or module and supports independent check toggles, soundness modes, and machine
 readable output.  The public Python API mirrors the CLI through
 \texttt{verify\_architecture}, \texttt{verify\_module}, and specialized helpers
-such as \texttt{verify\_einops}, \texttt{verify\_einops\_source}, and
-\texttt{verify\_sdpa}.  A typical workflow is:
+such as \texttt{verify\_einops}, \texttt{verify\_einops\_source},
+\texttt{verify\_sdpa}, and \texttt{verify\_align\_to}.  A typical workflow is:
 
 \begin{lstlisting}
 import torch.nn as nn
@@ -361,7 +362,7 @@ accumulation argument.
 
 \subsection{Specialized library contracts}
 
-Three high-value library checkers demonstrate the pattern for precision without
+Four high-value library checkers demonstrate the pattern for precision without
 unsoundness:
 
 \begin{itemize}[leftmargin=2em]
@@ -387,6 +388,16 @@ unsoundness:
   PyTorch can build a malformed multivariate distribution that only fails when
   used.  Differential tests compare against real PyTorch distributions with
   support validation disabled so the oracle isolates shape failures.
+  \item \textbf{PyTorch named tensors.}
+  \path{src/named_tensor_verify.py} models \texttt{refine\_names} and
+  \texttt{align\_to}: an existing concrete axis name cannot be renamed or
+  demoted, Ellipsis carries omitted axes in torch's order, new target names
+  insert singleton dimensions, and unnamed dimensions are moved only when
+  covered by Ellipsis.  A conservative source checker reports invalid literal
+  named-tensor calls in real code.  Differential tests compare random
+  refine/alignment cases against real PyTorch named tensors, including
+  duplicate names, invalid identifiers, explicit \texttt{None} axes, and
+  symbolic sizes carried through unchanged.
 \end{itemize}
 
 \section{Beyond \texttt{forward}: deployment and training hazards}
@@ -836,7 +847,7 @@ evidence:
 \tg{} turns tensor metadata checking from a runtime accident into an auditable
 static contract.  It is already useful as a developer tool: it catches shape,
 device, dtype, phase, gradient, training-loop, distributed, quantization,
-export, einops, and SDPA hazards before execution; it reports precise
+export, einops, SDPA, distribution, and named-axis hazards before execution; it reports precise
 diagnostics; it integrates with CI and code scanning; and it defaults to
 abstention rather than false certainty when the program leaves its fragment.
 It is also unusually well-supported as a research artifact: every headline
@@ -928,6 +939,9 @@ Is SDPA modeled faithfully? &
 Are probabilistic batch/event shapes modeled faithfully? &
 \path{src/distributions_verify.py} &
 \path{tests/test_distributions_verify.py} \\
+Are named-tensor refinements and alignments modeled faithfully? &
+\path{src/named_tensor_verify.py} &
+\path{tests/test_named_tensor_verify.py} \\
 Are training-loop hazards checked? &
 \path{reproducibility/training_loop_hazards.md} &
 \path{tests/test_training_loop_checks.py} \\
@@ -1028,6 +1042,9 @@ Library model & SDPA shape and mask checker for attention hot paths &
 Library model & \texttt{torch.distributions} batch/event/log-prob shape checker &
 \path{src/distributions_verify.py},
 \path{tests/test_distributions_verify.py} \\
+Library model & PyTorch named-tensor \texttt{refine\_names}/\texttt{align\_to}
+checker with source-level bug reports &
+\path{src/named_tensor_verify.py}, \path{tests/test_named_tensor_verify.py} \\
 Frontends & Safe AST source parser for untrusted model files &
 \path{src/safe_loader.py}, \path{tests/test_security.py} \\
 Frontends & \texttt{torch.fx} trace lowering across real torchvision models &

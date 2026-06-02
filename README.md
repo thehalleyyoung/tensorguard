@@ -21,13 +21,15 @@ runtime errors in ML codebases before any code runs.
   patterns, and more
 - **High-value library contracts checked against the real libraries** —
   `einops` (`rearrange` / `reduce` / `repeat`), SDPA, and
-  `torch.distributions` batch/event/log-prob shapes are verified by
+  `torch.distributions` batch/event/log-prob shapes, plus PyTorch
+  named-tensor `refine_names` / `align_to` alignment, are verified by
   shape-only models that are **differentially fuzzed** against real
   `einops` / `torch`; non-divisible patch embeds, head-dim-mismatched
-  attention, and unusable probabilistic batch/event contracts are caught
-  before kernels raise, while symbolic dims are never refuted
+  attention, unusable probabilistic batch/event contracts, and invalid
+  named-axis refinements/reorderings are caught before kernels raise,
+  while symbolic dims are never refuted
   (`verify_einops`, `verify_einops_source`, `verify_distribution`,
-  `verify_log_prob`)
+  `verify_log_prob`, `verify_refine_names`, `verify_align_to`)
 - **5-theory product domain** — jointly reasons over
   **Shape × Device × Phase × Stride × Permutation** for each tensor
 - **Zero annotations required** — shapes are inferred from constructors,
