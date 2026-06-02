@@ -66,6 +66,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/quant_export_safety.md",
     "reproducibility/stub_autogen_coverage.json",
     "reproducibility/stub_autogen_coverage.md",
+    "reproducibility/upstream_hook_demo.json",
+    "reproducibility/upstream_hook_demo.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -134,6 +136,8 @@ STEPS = [
      [PY, "reproducibility/quant_export_safety.py"], None),
     ("coverage: auto-generated shape stubs vs live torch forwards",
      [PY, "reproducibility/stub_autogen_coverage.py"], None),
+    ("upstream: proposed nn.Module verification hook vs real torch",
+     [PY, "reproducibility/upstream_hook_demo.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]

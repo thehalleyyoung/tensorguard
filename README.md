@@ -684,6 +684,34 @@ from its signature alone — its predicted shape matches the real forward. See
 [`reproducibility/stub_autogen_coverage.md`](reproducibility/stub_autogen_coverage.md)
 and `tests/test_stub_autogen.py`.
 
+### Upstream: an opt-in verification hook for `nn.Module`
+
+The end-goal is for static verification to be a one-line opt-in inside PyTorch
+itself, so entire classes of runtime errors disappear from the ecosystem.
+[`docs/upstream/pytorch_proposal.md`](docs/upstream/pytorch_proposal.md) is a
+draft RFC for exactly that, and `src/upstream_hook.py` is a **working reference
+implementation** built on stock `register_forward_pre_hook` — no core changes
+required for the prototype:
+
+```python
+from src.upstream_hook import attach_verifier
+attach_verifier(model, input_shapes={"x": (2, 8)})   # opt-in, non-breaking
+model(x)   # verified once on first forward; precise error if unsafe, transparent if safe
+```
+
+It exposes three layers — instance verification, an attached pre-hook, and a
+`@verifiable` class decorator — each verifying a live module with **zero changes
+to model code** (the source is extracted automatically). Verdicts are
+three-valued and abstention-aware, so a default-on policy never blocks on
+`UNKNOWN`. `reproducibility/upstream_hook_demo.py` proves it against **real
+PyTorch**: a buggy chained-`Linear` module whose real `forward` raises is
+rejected at the boundary with a one-line diagnostic *before* the kernel runs,
+while a clean module is proven `SAFE`, runs transparently, and returns the
+expected shape — static rejection holding if and only if the real runtime fails.
+See
+[`reproducibility/upstream_hook_demo.md`](reproducibility/upstream_hook_demo.md)
+and `tests/test_upstream_hook.py`.
+
 ### Sound-mode false-positive hunt
 
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
