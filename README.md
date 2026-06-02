@@ -944,6 +944,27 @@ shape-preserving — each one a confidently-wrong shape that could have masked a
 real downstream mismatch. All were fixed and are now regression-guarded. See
 `reproducibility/conformance_oracle.py` and `tests/test_conformance_oracle.py`.
 
+### Unsupported-op diagnostics: abstain, never guess
+
+A sound verifier must never silently assume it understands an operator it does
+not. Previously the `torch.fx` frontend mapped any unrecognised function or
+method to a shape-preserving activation — a confidently-wrong assumption for the
+many ops that reshape their input, and exactly the kind of guess that lets a real
+bug slip through. TensorGuard now classifies such ops as a distinct
+`UNSUPPORTED` kind that abstains soundly: the output is modelled as fully opaque
+(fresh symbolic dimensions), opacity propagates to every downstream consumer, and
+the shape encoder is barred from fabricating a violation from those free
+dimensions. The result is no false positives on graphs containing unknown ops,
+while genuine, allow-listed elementwise operators (activations and unary math)
+still propagate their shapes exactly, and tensor factories are modelled as
+freshly-allocated tensors of known shape rather than being lumped in as unknown.
+
+Each abstention is surfaced precisely. Every `VerificationResult` now carries an
+`UnsupportedOpTracker` naming the unrecognised operators (for example
+`Tensor.unfold`) alongside the supported ones, so coverage gaps are reported as
+actionable diagnostics instead of being papered over. See
+`tests/test_unsupported_op_diagnostics.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

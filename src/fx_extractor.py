@@ -50,6 +50,7 @@ from src.model_checker import (
     Confidence,
     TensorShape,
     ShapeDim,
+    _TENSOR_FACTORY_FNS,
 )
 
 
@@ -504,6 +505,129 @@ _METHOD_OP_MAP = {
 _REDUCTION_METHODS = {"mean", "sum"}
 
 
+# Unary, element-wise operations whose output shape is provably identical to the
+# input shape. Mapping these to a shape-preserving ACTIVATION is sound. Anything
+# *not* on an allowlist and not otherwise modelled is treated as UNSUPPORTED (a
+# sound abstention) rather than guessed to be shape-preserving.
+_SHAPE_PRESERVING_METHODS = frozenset({
+    # activations / nonlinearities not already in _METHOD_OP_MAP
+    "relu", "relu_", "sigmoid", "sigmoid_", "tanh", "tanh_",
+    "gelu", "silu", "elu", "selu", "celu", "hardswish", "hardsigmoid",
+    "hardtanh", "leaky_relu", "mish", "softplus", "softsign", "relu6",
+    "logsigmoid",
+    # elementwise math (all unary, shape-preserving)
+    "abs", "absolute", "neg", "negative", "exp", "exp2", "expm1", "log",
+    "log2", "log10", "log1p", "sqrt", "rsqrt", "square", "reciprocal",
+    "sin", "cos", "tan", "asin", "acos", "atan", "sinh", "cosh", "asinh",
+    "acosh", "atanh", "erf", "erfc", "erfinv", "sign", "sgn", "signbit",
+    "floor", "ceil", "round", "trunc", "frac", "clamp", "clamp_min",
+    "clamp_max", "clip", "nan_to_num", "sigmoid_", "pow", "clone",
+    "isnan", "isinf", "isfinite", "logical_not", "bitwise_not",
+    "masked_fill", "tril", "triu", "deg2rad", "rad2deg", "positive",
+})
+
+if HAS_TORCH:
+    import torch.nn.functional as _F
+
+    def _maybe(mod, name):
+        return getattr(mod, name, None)
+
+    _SHAPE_PRESERVING_FUNCTIONS = frozenset(
+        fn for fn in (
+            _maybe(torch, "abs"), _maybe(torch, "neg"), _maybe(torch, "exp"),
+            _maybe(torch, "expm1"), _maybe(torch, "log"), _maybe(torch, "log2"),
+            _maybe(torch, "log10"), _maybe(torch, "log1p"),
+            _maybe(torch, "sqrt"), _maybe(torch, "rsqrt"),
+            _maybe(torch, "square"), _maybe(torch, "reciprocal"),
+            _maybe(torch, "sin"), _maybe(torch, "cos"), _maybe(torch, "tan"),
+            _maybe(torch, "erf"), _maybe(torch, "erfc"), _maybe(torch, "sign"),
+            _maybe(torch, "floor"), _maybe(torch, "ceil"),
+            _maybe(torch, "round"), _maybe(torch, "trunc"),
+            _maybe(torch, "frac"), _maybe(torch, "clamp"),
+            _maybe(torch, "clip"), _maybe(torch, "nan_to_num"),
+            _maybe(torch, "logical_not"), _maybe(torch, "isnan"),
+            _maybe(torch, "isinf"), _maybe(torch, "isfinite"),
+            _maybe(torch, "tril"), _maybe(torch, "triu"),
+            _maybe(_F, "gelu"), _maybe(_F, "silu"), _maybe(_F, "mish"),
+            _maybe(_F, "hardswish"), _maybe(_F, "hardsigmoid"),
+            _maybe(_F, "hardtanh"), _maybe(_F, "softplus"),
+            _maybe(_F, "softsign"), _maybe(_F, "logsigmoid"),
+            _maybe(_F, "log_softmax"), _maybe(_F, "celu"), _maybe(_F, "selu"),
+        )
+        if fn is not None
+    )
+else:
+    _SHAPE_PRESERVING_FUNCTIONS = frozenset()
+
+
+def _maybe_tensor_factory(node, output_name: str):
+    """If ``node`` is a tensor-factory call with statically-known size
+    (``torch.zeros(4, 6)``, ``torch.randn((2, 3))``, ``torch.full((2, 2), v)``,
+    ``torch.randint(10, (3,))``, ``torch.randperm(n)``), build a NEW_TENSOR step
+    carrying the fixed shape. Seed-independent: the values are random/zero but
+    the shape is statically determined. Returns ``None`` for non-factory calls
+    or dynamic sizes (→ caller abstains)."""
+    target = node.target
+    short = getattr(target, "__name__", None)
+    if short is None:
+        return None
+    if short != "randperm" and short not in _TENSOR_FACTORY_FNS:
+        return None
+
+    def _as_dims(vals) -> Optional[list]:
+        dims = []
+        for v in vals:
+            if isinstance(v, bool) or not isinstance(v, int):
+                return None
+            dims.append(ShapeDim(v))
+        return dims
+
+    args = list(node.args)
+    if short == "randperm":
+        if not args or not isinstance(args[0], int) or isinstance(args[0], bool):
+            return None
+        shape = TensorShape((ShapeDim(args[0]),))
+        dtype_family = "int"
+    else:
+        if short == "full":
+            size_args = [args[0]] if args else []
+        elif short == "randint":
+            size_args = [args[-1]] if args else []
+        else:
+            size_args = args
+        if len(size_args) == 1 and isinstance(size_args[0], (tuple, list)):
+            elts = list(size_args[0])
+        else:
+            elts = size_args
+        if not elts:
+            return None
+        dims = _as_dims(elts)
+        if dims is None:
+            return None
+        shape = TensorShape(tuple(dims))
+        dtype_family = _TENSOR_FACTORY_FNS.get(short, "")
+
+    params: Dict[str, Any] = {"shape": shape, "dtype_family": dtype_family}
+    dev = node.kwargs.get("device")
+    if isinstance(dev, str):
+        params["device"] = dev
+    return ComputationStep(
+        op=OpKind.NEW_TENSOR, inputs=[], output=output_name, params=params,
+    )
+
+
+def _op_display_name(target) -> str:
+    """Human-readable name of an fx call target for the unsupported-op
+    diagnostic, e.g. ``torch.fft.fft`` or ``Tensor.unfold``."""
+    mod = getattr(target, "__module__", None)
+    name = getattr(target, "__name__", None)
+    if name:
+        if mod and mod not in ("builtins", "_operator"):
+            return f"{mod}.{name}"
+        return name
+    return repr(target)
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Core: torch.fx.Graph → ComputationGraph
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -654,15 +778,30 @@ def fx_trace_to_graph(
                 continue
 
             op_kind = _function_to_op(node.target)
+            output_name = f"_t{step_idx}"
             if op_kind is None:
-                # Unknown function — treat as shape-preserving activation
-                op_kind = OpKind.ACTIVATION
+                factory_step = _maybe_tensor_factory(node, output_name)
+                if factory_step is not None:
+                    # Tensor factory with statically-known shape (seed-independent).
+                    graph.steps.append(factory_step)
+                    node_to_tensor[node.name] = output_name
+                    step_idx += 1
+                    continue
+                if node.target in _SHAPE_PRESERVING_FUNCTIONS:
+                    # Provably shape-preserving unary elementwise op.
+                    op_kind = OpKind.ACTIVATION
+                else:
+                    # Unknown function — do NOT guess that it preserves shape
+                    # (unsound for shape-changing ops). Abstain soundly and
+                    # record the op for an "unsupported op: …" diagnostic.
+                    op_kind = OpKind.UNSUPPORTED
 
             input_names = _collect_node_inputs(node, node_to_tensor)
-            output_name = f"_t{step_idx}"
             node_to_tensor[node.name] = output_name
 
             params = _extract_function_params(node, op_kind)
+            if op_kind == OpKind.UNSUPPORTED:
+                params["op_name"] = _op_display_name(node.target)
 
             step = ComputationStep(
                 op=op_kind,
@@ -690,8 +829,17 @@ def fx_trace_to_graph(
                 step_idx += len(steps_to_add)
                 continue
 
-            op_kind = _METHOD_OP_MAP.get(method_name, OpKind.ACTIVATION)
+            if method_name in _METHOD_OP_MAP:
+                op_kind = _METHOD_OP_MAP[method_name]
+            elif method_name in _SHAPE_PRESERVING_METHODS:
+                op_kind = OpKind.ACTIVATION
+            else:
+                # Unknown method — abstain soundly rather than assume it
+                # preserves shape, and surface it as an unsupported op.
+                op_kind = OpKind.UNSUPPORTED
             params = _extract_method_params(node, method_name, op_kind)
+            if op_kind == OpKind.UNSUPPORTED:
+                params["op_name"] = f"Tensor.{method_name}"
 
             step = ComputationStep(
                 op=op_kind,
@@ -1525,6 +1673,31 @@ _METHOD_OP_MAP: Dict[str, OpKind] = {
     "cuda": OpKind.TO_DEVICE,
     "cpu": OpKind.TO_DEVICE,
     "pin_memory": OpKind.TO_DEVICE,
+    # Arithmetic methods (broadcast semantics) — modelled precisely rather than
+    # left to the shape-preserving default, which is only correct when the
+    # other operand does not broaden the result.
+    "add": OpKind.ADD,
+    "add_": OpKind.ADD,
+    "sub": OpKind.ADD,
+    "sub_": OpKind.ADD,
+    "subtract": OpKind.ADD,
+    "mul": OpKind.MULTIPLY,
+    "mul_": OpKind.MULTIPLY,
+    "multiply": OpKind.MULTIPLY,
+    "div": OpKind.MULTIPLY,
+    "div_": OpKind.MULTIPLY,
+    "divide": OpKind.MULTIPLY,
+    "true_divide": OpKind.MULTIPLY,
+    "matmul": OpKind.MATMUL,
+    "bmm": OpKind.MATMUL,
+    "mm": OpKind.MATMUL,
+    "softmax": OpKind.SOFTMAX,
+    "log_softmax": OpKind.SOFTMAX,
+    "type": OpKind.DTYPE_CAST,
+    "chunk": OpKind.CHUNK,
+    "split": OpKind.SPLIT,
+    "repeat": OpKind.REPEAT,
+    "t": OpKind.TRANSPOSE,
 }
 
 # torch.xxx(...) → OpKind

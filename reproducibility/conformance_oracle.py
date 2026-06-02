@@ -214,7 +214,9 @@ def _default_cases() -> List[OracleCase]:
 
     class _Factory(nn.Module):
         def forward(self, x):
-            return torch.zeros(4, 6) + x.sum() * 0.0
+            # Two statically-shaped factory tensors; the output shape is fully
+            # determined by the factories (seed-independent), independent of x.
+            return torch.zeros(4, 6) + torch.ones(4, 6)
 
     class _BNWrap(nn.Module):
         # Standalone BatchNorm cannot be fx-traced (its _check_input_dim uses

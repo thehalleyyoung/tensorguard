@@ -313,6 +313,11 @@ class OpKind(Enum):
                               # — a fresh tensor whose shape is RNG-independent
                               # (seed-independent reasoning: value is random,
                               #  shape/device/dtype are statically determined)
+    UNSUPPORTED = auto()      # an operator with no shape transfer function — the
+                              # output shape is left fully symbolic (a SOUND
+                              # abstention) and the op name is recorded for a
+                              # "unsupported op: …" diagnostic, instead of
+                              # silently guessing that it preserves shape.
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -7095,6 +7100,11 @@ class ConstraintVerifier:
         self.ctx = _Z3Context()
         self._stride_check_id = 0
         self.relational_constraints = constraints or {}
+        # Tensors whose shape is opaque because they are produced by — or
+        # derived from — an operator with no shape transfer function
+        # (OpKind.UNSUPPORTED). Shape safety checks abstain on these to avoid
+        # fabricating a violation against a free, unconstrained dimension.
+        self._opaque_cache: Optional[Set[str]] = None
 
         self._init_state = self._build_initial_state()
 
@@ -7831,6 +7841,29 @@ class ConstraintVerifier:
     # Safety-property encoders
     # ------------------------------------------------------------------
 
+    def _opaque_tensors(self) -> Set[str]:
+        """Names of tensors whose shape cannot be trusted because they are the
+        output of an unsupported op or are (transitively) derived from one.
+        Shape checks abstain on these so a free, unconstrained dimension can
+        never be turned into a spurious violation."""
+        if self._opaque_cache is not None:
+            return self._opaque_cache
+        opaque: Set[str] = set()
+
+        def _scan(steps: List[ComputationStep]) -> None:
+            for s in steps:
+                if s.op == OpKind.UNSUPPORTED:
+                    opaque.add(s.output)
+                elif any(i in opaque for i in s.inputs):
+                    opaque.add(s.output)
+                if s.op == OpKind.CONDITIONAL:
+                    _scan(s.true_branch or [])
+                    _scan(s.false_branch or [])
+
+        _scan(self.graph.steps)
+        self._opaque_cache = opaque
+        return opaque
+
     def _encode_shape_safety(
         self,
         k: KripkeState,
@@ -7840,6 +7873,11 @@ class ConstraintVerifier:
     ) -> List:
         """Encode shape compatibility constraints for *step*."""
         cs: list = []
+        # Abstain entirely when any input is opaque (an unsupported op or
+        # derived from one): its dimensions are free unknowns and asserting a
+        # compatibility constraint against them would fabricate a violation.
+        if any(i in self._opaque_tensors() for i in step.inputs):
+            return cs
         if step.op == OpKind.LAYER_CALL and step.layer_ref:
             layer = self.graph.layers.get(step.layer_ref)
             inp = step.inputs[0] if step.inputs else None
@@ -8197,6 +8235,9 @@ class ConstraintVerifier:
         """
         cs: list = []
         inp_name = consumer_step.inputs[0] if consumer_step.inputs else None
+        # Abstain on consumers fed by an opaque (unsupported-derived) tensor.
+        if any(i in self._opaque_tensors() for i in consumer_step.inputs):
+            return cs
 
         if consumer_step.op == OpKind.LAYER_CALL and consumer_step.layer_ref:
             layer = self.graph.layers.get(consumer_step.layer_ref)
@@ -8558,6 +8599,22 @@ class ConstraintVerifier:
             # Conservative: assume custom ops preserve shape of first input
             if step.inputs and step.inputs[0] in state.shape_env:
                 new_state.shape_env[step.output] = state.shape_env[step.inputs[0]]
+        elif step.op == OpKind.UNSUPPORTED:
+            # Operator with no shape transfer function. Guessing that it
+            # preserves shape (as CUSTOM/ACTIVATION do) is unsound for
+            # shape-changing ops, so abstain: emit a fully-symbolic output of
+            # the same rank as the input (when known). Fresh, never-unified
+            # dims mean no downstream concrete check can fire against them, so
+            # we neither fabricate a violation nor confidently miss one — we
+            # simply decline to reason past the unsupported op. The op name is
+            # surfaced separately via the UnsupportedOpTracker diagnostic.
+            inp = step.inputs[0] if step.inputs else None
+            inp_shape = state.shape_env.get(inp) if inp else None
+            if inp_shape is not None:
+                new_state.shape_env[step.output] = TensorShape(tuple(
+                    ShapeDim(f"_unsup_{step.output}_{i}")
+                    for i in range(inp_shape.ndim)
+                ))
         elif step.op == OpKind.NEW_TENSOR:
             self._apply_new_tensor(new_state, step)
         elif step.op == OpKind.INTERPOLATE:
@@ -10387,6 +10444,27 @@ class ConstraintVerifier:
     # Top-level verify()
     # ======================================================================
 
+    def _build_unsupported_tracker(self) -> UnsupportedOpTracker:
+        """Scan the graph and record every operator that has no shape transfer
+        function (``OpKind.UNSUPPORTED``) so the result can surface a precise
+        "unsupported op: …" diagnostic instead of the verifier silently
+        guessing. Supported ops are counted too, giving an op-coverage fraction.
+        """
+        tracker = UnsupportedOpTracker()
+
+        def _scan(steps: List[ComputationStep]) -> None:
+            for s in steps:
+                if s.op == OpKind.UNSUPPORTED:
+                    tracker.record(str(s.params.get("op_name", "<unknown>")))
+                else:
+                    tracker.record_supported()
+                if s.op == OpKind.CONDITIONAL:
+                    _scan(s.true_branch or [])
+                    _scan(s.false_branch or [])
+
+        _scan(self.graph.steps)
+        return tracker
+
     def verify(self) -> VerificationResult:
         """Run constraint-based verification with forward symbolic
         propagation over the product theory T_shape × T_device × T_phase.
@@ -10410,6 +10488,7 @@ class ConstraintVerifier:
                     k=0, checked_steps=0, verification_time_ms=0.0,
                 ),
                 graph=self.graph,
+                unsupported_op_tracker=self._build_unsupported_tracker(),
             )
 
         # Phase 1: base case (concrete + Z3)
@@ -10449,6 +10528,7 @@ class ConstraintVerifier:
                 dynamic_features=getattr(self.graph, 'dynamic_features', {}),
                 dynamic_feature_warnings=_generate_dynamic_warnings(
                     getattr(self.graph, 'dynamic_features', {})),
+                unsupported_op_tracker=self._build_unsupported_tracker(),
             )
 
         cert = SafetyCertificate(
@@ -10525,6 +10605,7 @@ class ConstraintVerifier:
             dynamic_feature_warnings=_generate_dynamic_warnings(
                 getattr(self.graph, 'dynamic_features', {})),
             proof_certificate=proof_cert,
+            unsupported_op_tracker=self._build_unsupported_tracker(),
         )
 
     # ------------------------------------------------------------------
@@ -10765,7 +10846,7 @@ class SymbolicShapePropagator:
         elif step.op == OpKind.SDPA:
             self._apply_sdpa(env, step, None)
 
-        elif step.op in (OpKind.RETURN, OpKind.CUSTOM):
+        elif step.op in (OpKind.RETURN, OpKind.CUSTOM, OpKind.UNSUPPORTED):
             pass
 
         elif step.op == OpKind.SUBSCRIPT:
