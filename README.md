@@ -1226,6 +1226,22 @@ summary (safe flag, violation count, sorted violation kinds) rather than the
 heavyweight Z3-derived result, so verdicts cross the process boundary cheaply.
 See `tests/test_parallel.py`.
 
+### Memoized shape-transfer
+
+Each layer shape-transfer `propagator(input_shape, layer)` is a pure function of
+the (immutable-during-a-run) layer object and the input `TensorShape`, yet the
+bounded model checker re-applies the same layer to identically-shaped inputs
+many times — across BMC unrollings, branch exploration, and submodule re-entry.
+`ConstraintVerifier` therefore memoizes transfer results on `(id(layer), input
+shape)`: the first application records the result and every later one is served
+from the cache. Keying on the layer identity (not its content) is deliberate —
+propagators derive symbolic output-dim names from the layer's attribute name, so
+two distinct layers with identical hyper-parameters never share a cached
+symbolic dimension. The cache is instance-local, so a recycled object id from a
+prior run can never alias. `transfer_cache_stats()` exposes hits, misses, and
+live entries; the memo is proven sound (cached value bit-for-bit equal to a
+fresh propagator call across nine layer kinds) in `tests/test_transfer_memoization.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

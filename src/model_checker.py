@@ -7642,6 +7642,22 @@ class ConstraintVerifier:
         # fabricating a violation against a free, unconstrained dimension.
         self._opaque_cache: Optional[Set[str]] = None
 
+        # Step 51: per-verifier memo for layer shape-transfer results. The
+        # propagator `(input_shape, layer) -> (out_shape, err)` is a pure
+        # function of the (immutable-during-verify) layer object and the input
+        # shape, so its result can be cached on `(id(layer), input_shape)`.
+        # Keying on id(layer) (rather than layer content) keeps the symbolic
+        # output-dim names — which propagators derive from `layer.attr_name` —
+        # in one-to-one correspondence with the originating layer, so two
+        # distinct layers never share a cached symbolic dimension. The cache is
+        # local to this verifier instance (and thus this verification run), so
+        # a reused id from a previous, garbage-collected run can never alias.
+        self._transfer_cache: Dict[Tuple[int, TensorShape],
+                                   Tuple[Optional[TensorShape],
+                                         Optional[str]]] = {}
+        self._transfer_cache_hits: int = 0
+        self._transfer_cache_misses: int = 0
+
         self._init_state = self._build_initial_state()
 
         # Eagerly parse relational constraints so Z3 variables are created
@@ -7652,10 +7668,22 @@ class ConstraintVerifier:
         else:
             self._relational_z3 = []
 
+    def transfer_cache_stats(self) -> Dict[str, int]:
+        """Return memoization counters for the layer shape-transfer cache.
+
+        ``hits`` is the number of layer-call propagations served from the
+        memo (Step 51); ``misses`` is the number that invoked the underlying
+        propagator; ``entries`` is the live cache size.
+        """
+        return {
+            "hits": self._transfer_cache_hits,
+            "misses": self._transfer_cache_misses,
+            "entries": len(self._transfer_cache),
+        }
+
     # ------------------------------------------------------------------
     # Domain gating (solver-level, not post-hoc filtering)
     # ------------------------------------------------------------------
-
     _DOMAIN_OF_KIND = {
         "device_mismatch": "devices",
         "phase_violation": "phases",
@@ -9721,7 +9749,15 @@ class ConstraintVerifier:
 
         propagator = _LAYER_PROPAGATORS.get(layer.kind)
         if propagator is not None:
-            out_shape, err = propagator(inp_shape, layer)
+            cache_key = (id(layer), inp_shape)
+            cached = self._transfer_cache.get(cache_key)
+            if cached is not None:
+                out_shape, err = cached
+                self._transfer_cache_hits += 1
+            else:
+                out_shape, err = propagator(inp_shape, layer)
+                self._transfer_cache[cache_key] = (out_shape, err)
+                self._transfer_cache_misses += 1
             if err:
                 violations.append(SafetyViolation(
                     kind="shape_incompatible",
