@@ -1580,6 +1580,17 @@ consumer renders results, and GitHub workflow-command annotations. All four
 formats derive from one canonical finding stream, so no report can drift from
 another. See `src/reporters.py` and `tests/test_reporters.py`.
 
+### torch.compile / torch.export pre-pass
+
+Verification can run as an optional pre-pass in the compile pipeline, catching a
+shape, device, or phase bug *before* a model reaches `torch.compile` (where the
+same bug surfaces as an opaque guard failure or a deep inductor traceback).
+`guarded_compile(model, input_shapes=…)` verifies a live `nn.Module`, raises a
+`TensorGuardViolation` (or warns) on a real bug, then returns
+`torch.compile(model)`; `make_tensorguard_backend(model)` is a `torch.compile`
+backend that gates verification inside the pipeline; `verify_exported_program`
+does the same before `torch.export.export`. See `src/torch_integration.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
