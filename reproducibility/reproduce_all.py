@@ -77,6 +77,9 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/issue_miner_demo.md",
     "reproducibility/corpus_stratified.json",
     "reproducibility/corpus_stratified.md",
+    "corpus_extended/blind_manifest.json",
+    "reproducibility/blind_split_eval.json",
+    "reproducibility/blind_split_eval.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -114,6 +117,11 @@ def _corpus_extended_paths():
         for f in sorted(os.listdir(d)):
             if f.endswith(".py"):
                 paths.append(f"corpus_extended/cases/{f}")
+    d2 = os.path.join(ROOT, "corpus_extended", "blind_cases")
+    if os.path.isdir(d2):
+        for f in sorted(os.listdir(d2)):
+            if f.endswith(".py"):
+                paths.append(f"corpus_extended/blind_cases/{f}")
     return paths
 
 
@@ -167,6 +175,10 @@ STEPS = [
      [PY, "reproducibility/issue_miner_demo.py"], None),
     ("corpus+: stratified per-class recall/specificity (Wilson CIs)",
      [PY, "reproducibility/corpus_stratified.py"], None),
+    ("blind: held-out blind split (materialize + runtime-validate)",
+     [PY, "-m", "corpus_extended.blind_build"], None),
+    ("blind: pre-registered blind-split evaluation (no overfitting)",
+     [PY, "reproducibility/blind_split_eval.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]

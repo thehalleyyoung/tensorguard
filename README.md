@@ -777,6 +777,24 @@ positives in both modes, with a macro recall and macro specificity of one. See
 [`reproducibility/corpus_stratified.md`](reproducibility/corpus_stratified.md)
 and `tests/test_corpus_stratified.py`.
 
+### Held-out blind split (pre-registered, no overfitting)
+
+To rule out overfitting the verifier to its development corpus,
+`corpus_extended/blind_split.py` freezes a **held-out blind split** of one
+hundred eighty-six cases generated from parameter grids **disjoint** from the dev
+corpus (every blind case id is provably absent from the dev set). The hypotheses
+are pre-registered in
+[`corpus_extended/PRE_REGISTRATION.md`](corpus_extended/PRE_REGISTRATION.md) —
+which names the frozen manifest's SHA-256 — *before* the verifier is scored on
+the split. `reproducibility/blind_split_eval.py` then scores TensorGuard exactly
+once and checks the registration: zero false positives on clean blind modules,
+recall above the registered floor, and an overfitting gap within the registered
+bound. On the blind split TensorGuard catches all one hundred thirty-eight
+runtime-failing cases with zero false positives on the forty-eight clean modules
+and a zero overfitting gap in both modes. See
+[`reproducibility/blind_split_eval.md`](reproducibility/blind_split_eval.md) and
+`tests/test_blind_split.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a
