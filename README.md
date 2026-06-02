@@ -1271,6 +1271,20 @@ the torch-free invariants and generous ceilings; `make cost-benchmarks-gate`
 enforces them live and fails the build if importing the API drags in torch or a
 ceiling is breached. See `tests/test_cost_benchmarks.py`.
 
+### Latency regression benchmark (Criterion-style)
+
+Budgets catch absolute blow-ups; `evaluation/regression_bench.py` catches
+*relative* regressions the way Criterion or Google Benchmark do. Each
+benchmark's verification time is normalized by a calibration workload — the
+anchor model's median time — measured in the same run, so the committed
+baseline stores machine-independent ratios: a slower machine slows the
+calibration equally and the ratio is unchanged, so only an algorithmic slowdown
+moves it. `make regression-bench-gate` re-measures and fails CI when any case
+regresses past the committed tolerance of ten percent; `make
+regression-bench-check` validates the baseline (cases, step counts, markdown
+sync) with no live timing. The comparison is a pure, unit-tested function. See
+`tests/test_regression_bench.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

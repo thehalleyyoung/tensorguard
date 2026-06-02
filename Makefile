@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate cost-benchmarks cost-benchmarks-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -133,6 +133,15 @@ cost-benchmarks:
 
 cost-benchmarks-gate:
 	$(PYTHON) evaluation/cost_benchmarks.py --gate
+
+regression-bench:
+	$(PYTHON) evaluation/regression_bench.py
+
+regression-bench-check:
+	$(PYTHON) evaluation/regression_bench.py --check
+
+regression-bench-gate:
+	$(PYTHON) evaluation/regression_bench.py --gate
 
 frontend-reconciliation:
 	$(PYTHON) evaluation/frontend_reconciliation.py
