@@ -1154,6 +1154,21 @@ versions. The release gate (`make frontend-parse-sla-gate`) fails on any
 parse-success regression below the floor (currently total success: 35 of 35
 sources lower to a non-empty graph). See `tests/test_frontend_parse_sla.py`.
 
+### End-to-end latency budgets
+
+A verifier that cannot keep up with CI is shelfware. `evaluation/latency_budgets.py`
+profiles the full `verify_model` pipeline (source parse, graph extraction,
+bounded model checking, Z3) across three size tiers — small classifiers/CNNs, a
+dozen-block transformer-style stack, and a deep 40-block stack (~120 computation
+steps) — and enforces a per-model wall-clock budget (3 s / 12 s / 30 s). The
+committed manifest is deterministic (budgets and extracted step counts only, so
+it is byte-reproducible across machines and torch versions); the latency itself
+is measured live by `make latency-budgets-gate`, which fails on any budget
+breach. On reference hardware the small tier verifies in tens of milliseconds,
+the medium tier in about one second, and the large tier in roughly ten seconds —
+comfortably inside budget, establishing the baseline that the performance work
+in the following steps tightens. See `tests/test_latency_budgets.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

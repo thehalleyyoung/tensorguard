@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "command": "PYTHONPATH=. python3 evaluation/latency_budgets.py",
+    "generated_by": "evaluation/latency_budgets.py",
+    "note": "Manifest records deterministic budgets and graph sizes only; wall-clock latency is machine-dependent and is checked live by --gate.",
+    "python_version": "3.14"
+  },
+  "models": [
+    {
+      "budget_s": 30.0,
+      "model": "large_stack_40",
+      "steps": 121,
+      "tier": "large"
+    },
+    {
+      "budget_s": 12.0,
+      "model": "medium_stack_12",
+      "steps": 37,
+      "tier": "medium"
+    },
+    {
+      "budget_s": 3.0,
+      "model": "small_cnn",
+      "steps": 8,
+      "tier": "small"
+    },
+    {
+      "budget_s": 3.0,
+      "model": "small_mlp",
+      "steps": 4,
+      "tier": "small"
+    }
+  ],
+  "tiers": [
+    "large",
+    "medium",
+    "small"
+  ]
+}
