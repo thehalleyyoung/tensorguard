@@ -84,6 +84,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/cross_version_stability.md",
     "reproducibility/cross_python_determinism.json",
     "reproducibility/cross_python_determinism.md",
+    "reproducibility/natural_distribution_study.json",
+    "reproducibility/natural_distribution_study.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -187,6 +189,8 @@ STEPS = [
      [PY, "reproducibility/cross_version_stability.py"], None),
     ("robustness: cross-Python determinism proof (hash-seed invariance)",
      [PY, "reproducibility/cross_python_determinism.py"], None),
+    ("coverage: natural-distribution study (abstention + false-alarm rate)",
+     [PY, "reproducibility/natural_distribution_study.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]

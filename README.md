@@ -830,6 +830,23 @@ mechanism that makes the matrix pass. See
 [`reproducibility/cross_python_determinism.md`](reproducibility/cross_python_determinism.md)
 and `tests/test_cross_python_determinism.py`.
 
+### Natural-distribution coverage
+Bug corpora answer "does it catch real bugs"; the complementary usability
+question is how often the verifier returns a definite answer on ordinary,
+idiomatic model code instead of abstaining. The study
+`reproducibility/natural_distribution_study.py` scores a curated sample of
+twenty-nine clean, public-style architectures spanning fourteen families
+(MLPs, CNNs, ResNet and U-Net blocks, single-head and multi-head attention,
+full transformer-encoder and GPT blocks, LSTM and GRU classifiers,
+autoencoders, a DCGAN discriminator, embedding text models, and more). Every
+model is clean by construction, executing under eager PyTorch with its declared
+input shapes, which the regression test re-verifies live. Across all three
+soundness modes TensorGuard returns a decided verdict on every model, giving
+full coverage with zero abstention and zero false alarms on this natural
+sample. See
+[`reproducibility/natural_distribution_study.md`](reproducibility/natural_distribution_study.md)
+and `tests/test_natural_distribution_study.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a
