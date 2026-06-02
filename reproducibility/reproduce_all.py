@@ -50,6 +50,8 @@ GENERATED_DETERMINISTIC = [
     "evaluation/significance.md",
     "evaluation/localization_effort.json",
     "evaluation/localization_effort.md",
+    "reproducibility/cegar_convergence.json",
+    "reproducibility/cegar_convergence.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -102,6 +104,8 @@ STEPS = [
      [PY, "evaluation/significance.py"], None),
     ("user study: localization-effort proxy (effect sizes)",
      [PY, "evaluation/localization_effort.py"], None),
+    ("theory: measured CEGAR convergence (real loop)",
+     [PY, "reproducibility/cegar_convergence.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]
