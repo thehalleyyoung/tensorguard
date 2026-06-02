@@ -609,6 +609,32 @@ expected hazard and exhibits the matching failure. See
 [`reproducibility/training_loop_hazards.md`](reproducibility/training_loop_hazards.md)
 and `tests/test_training_loop_checks.py`.
 
+### Tensor-parallel sharding consistency
+
+Tensor parallelism is the distributed pattern with no good static tool today:
+a column-parallel `Linear` shards its weight along the output dimension and a
+row-parallel `Linear` along the input dimension, and the two must chain with
+exactly the right `gather_output` / `input_is_parallel` flags and divisible
+dimensions, or the model silently mis-computes or crashes on N GPUs that a
+single-GPU test never exercises. `src/tensor_parallel_checks.py` models a
+Megatron-style parallel linear stack and checks shard divisibility, contracted
+dimension match, and communication-flag consistency.
+
+`reproducibility/tensor_parallel_sharding.py` proves it against **real
+PyTorch** by hand-sharding a reference linear stack across simulated ranks:
+
+```bash
+PYTHONPATH=. python3 reproducibility/tensor_parallel_sharding.py   # writes tensor_parallel_sharding.{json,md}
+```
+
+The canonical Megatron MLP reproduces the unsharded forward exactly (up to
+floating-point tolerance) at two and four ranks, and every inconsistent config
+(gathered output fed to a parallel-input row layer, an indivisible shard, or a
+contracted-dimension mismatch) is flagged statically and also fails when
+actually sharded. See
+[`reproducibility/tensor_parallel_sharding.md`](reproducibility/tensor_parallel_sharding.md)
+and `tests/test_tensor_parallel_checks.py`.
+
 ### Sound-mode false-positive hunt
 
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,

@@ -1,0 +1,84 @@
+{
+  "all_ok": true,
+  "cases": [
+    {
+      "expect_live_match": true,
+      "expect_static_ok": true,
+      "live_match": true,
+      "live_matches_reference": true,
+      "live_ran": true,
+      "live_reason": "",
+      "name": "megatron_mlp_tp2_correct",
+      "ok": true,
+      "static_issues": [],
+      "static_match": true,
+      "static_ok": true,
+      "tp_size": 2
+    },
+    {
+      "expect_live_match": true,
+      "expect_static_ok": true,
+      "live_match": true,
+      "live_matches_reference": true,
+      "live_ran": true,
+      "live_reason": "",
+      "name": "megatron_mlp_tp4_correct",
+      "ok": true,
+      "static_issues": [],
+      "static_match": true,
+      "static_ok": true,
+      "tp_size": 4
+    },
+    {
+      "expect_live_match": false,
+      "expect_static_ok": false,
+      "live_match": true,
+      "live_matches_reference": false,
+      "live_ran": false,
+      "live_reason": "runtime shape error: mat1 and mat2 shapes cannot be multiplied (3x16 ",
+      "name": "comm_flag_mismatch_gather_then_parallel",
+      "ok": true,
+      "static_issues": [
+        "comm_flag_mismatch"
+      ],
+      "static_match": true,
+      "static_ok": false,
+      "tp_size": 2
+    },
+    {
+      "expect_live_match": false,
+      "expect_static_ok": false,
+      "live_match": true,
+      "live_matches_reference": false,
+      "live_ran": false,
+      "live_reason": "ffn not divisible by tp (no even shard)",
+      "name": "indivisible_ffn15_tp2",
+      "ok": true,
+      "static_issues": [
+        "indivisible_shard"
+      ],
+      "static_match": true,
+      "static_ok": false,
+      "tp_size": 2
+    },
+    {
+      "expect_live_match": false,
+      "expect_static_ok": false,
+      "live_match": true,
+      "live_matches_reference": null,
+      "live_ran": null,
+      "live_reason": "structural (no runtime simulation)",
+      "name": "inner_dim_mismatch",
+      "ok": true,
+      "static_issues": [
+        "inner_dim_mismatch"
+      ],
+      "static_match": true,
+      "static_ok": false,
+      "tp_size": 2
+    }
+  ],
+  "n_cases": 5,
+  "seed": 0,
+  "tolerance": 0.0001
+}

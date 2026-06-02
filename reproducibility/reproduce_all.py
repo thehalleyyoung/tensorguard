@@ -60,6 +60,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/leaderboard.md",
     "reproducibility/training_loop_hazards.json",
     "reproducibility/training_loop_hazards.md",
+    "reproducibility/tensor_parallel_sharding.json",
+    "reproducibility/tensor_parallel_sharding.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -122,6 +124,8 @@ STEPS = [
      [PY, "reproducibility/leaderboard.py"], None),
     ("training: training-loop hazard analyzer vs real torch",
      [PY, "reproducibility/training_loop_hazards.py"], None),
+    ("distributed: tensor-parallel sharding checker vs real torch",
+     [PY, "reproducibility/tensor_parallel_sharding.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]
