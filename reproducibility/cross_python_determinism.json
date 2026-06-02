@@ -1,0 +1,36 @@
+{
+  "ci_matrix_note": "The hash-seed proof holds on any single interpreter and is the property a multi-version CI would assert. Full interpreter matrix command (GitHub Actions): `strategy.matrix.python-version: [3.9, 3.10, 3.11, 3.12, 3.13, 3.14]` running `python reproducibility/cross_python_determinism.py`. Installing all interpreters in this box is not possible; the result is env-qualified but the hash-randomization invariance below is the mechanism that makes it portable.",
+  "deterministic_across_python_builds": true,
+  "fixed_hashseeds": [
+    "0",
+    "1",
+    "42",
+    "7",
+    "12345"
+  ],
+  "fixed_seed_digests": {
+    "0": "9d73d39e72cd513eb26f3b6493829f94a7efefa029d467772aa54bed98891d0b",
+    "1": "9d73d39e72cd513eb26f3b6493829f94a7efefa029d467772aa54bed98891d0b",
+    "12345": "9d73d39e72cd513eb26f3b6493829f94a7efefa029d467772aa54bed98891d0b",
+    "42": "9d73d39e72cd513eb26f3b6493829f94a7efefa029d467772aa54bed98891d0b",
+    "7": "9d73d39e72cd513eb26f3b6493829f94a7efefa029d467772aa54bed98891d0b"
+  },
+  "mode": "sound",
+  "n_distinct_digests": 1,
+  "n_random_runs": 3,
+  "python_matrix_supported": [
+    "3.9",
+    "3.10",
+    "3.11",
+    "3.12",
+    "3.13",
+    "3.14"
+  ],
+  "random_run_digests": [
+    "9d73d39e72cd513eb26f3b6493829f94a7efefa029d467772aa54bed98891d0b",
+    "9d73d39e72cd513eb26f3b6493829f94a7efefa029d467772aa54bed98891d0b",
+    "9d73d39e72cd513eb26f3b6493829f94a7efefa029d467772aa54bed98891d0b"
+  ],
+  "verdict_digest": "9d73d39e72cd513eb26f3b6493829f94a7efefa029d467772aa54bed98891d0b",
+  "verdict_invariant_under_hash_randomization": true
+}

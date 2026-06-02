@@ -82,6 +82,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/blind_split_eval.md",
     "reproducibility/cross_version_stability.json",
     "reproducibility/cross_version_stability.md",
+    "reproducibility/cross_python_determinism.json",
+    "reproducibility/cross_python_determinism.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -183,6 +185,8 @@ STEPS = [
      [PY, "reproducibility/blind_split_eval.py"], None),
     ("robustness: cross-version verdict-stability matrix (torch 2.1-2.9)",
      [PY, "reproducibility/cross_version_stability.py"], None),
+    ("robustness: cross-Python determinism proof (hash-seed invariance)",
+     [PY, "reproducibility/cross_python_determinism.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]
