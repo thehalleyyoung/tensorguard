@@ -1610,6 +1610,14 @@ benchmark checkout and its `node_modules`) are pruned from every distribution
 artifact. See `THIRD_PARTY_NOTICES.md`, enforced by
 `tests/test_distribution_hygiene.py`.
 
+### Versioning & stability
+
+TensorGuard follows Semantic Versioning, with the public API, the Phase-7
+integration modules, and the CLI subcommands covered by a stability guarantee:
+nothing is removed without a `DeprecationWarning` shipped for at least one minor
+release. See `DEPRECATION_POLICY.md`, the `src.deprecation` helpers, and the
+pinning tests `tests/test_api_stability.py` / `tests/test_deprecation.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
