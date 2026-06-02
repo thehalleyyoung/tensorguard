@@ -540,6 +540,28 @@ the default for its `UserPropagator` interface; cvc5 serves as an independent
 oracle. See [`docs/decidability/smt_backends.md`](docs/decidability/smt_backends.md)
 and `tests/test_smt_backend_comparison.py`.
 
+### The unsound/incomplete boundary, validated against real code
+
+A static verifier is only trustworthy if it states precisely where it stops
+guaranteeing. TensorGuard's contract lives in
+[`SOUNDNESS_CONTRACT.md`](SOUNDNESS_CONTRACT.md) (generated from
+`src/soundness_contract.py`), and `reproducibility/soundness_boundary.py`
+proves the contract's empirical half by running the live verifier across the
+boundary in all three soundness modes:
+
+```bash
+PYTHONPATH=. python3 reproducibility/soundness_boundary.py   # writes soundness_boundary.{json,md}
+```
+
+The four probes confirm the documented behaviour exactly: an in-fragment shape
+bug is refuted in every mode (no false alarm), an in-fragment clean module is
+SAFE in every mode, and an out-of-fragment construct (data-dependent control
+flow, or a tensor coerced to a Python scalar) abstains with UNKNOWN in `sound`
+mode while the permissive `balanced` and `heuristic` modes report SAFE — the
+recall trade-off surfaced as known gap U1, not hidden. See
+[`reproducibility/soundness_boundary.md`](reproducibility/soundness_boundary.md)
+and `tests/test_soundness_boundary.py`.
+
 ### Sound-mode false-positive hunt
 
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,

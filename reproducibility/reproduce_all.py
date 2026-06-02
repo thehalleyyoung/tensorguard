@@ -54,6 +54,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/cegar_convergence.md",
     "reproducibility/smt_backend_comparison.json",
     "reproducibility/smt_backend_comparison.md",
+    "reproducibility/soundness_boundary.json",
+    "reproducibility/soundness_boundary.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -110,6 +112,8 @@ STEPS = [
      [PY, "reproducibility/cegar_convergence.py"], None),
     ("theory: Z3 vs cvc5 backend concordance + decidability",
      [PY, "reproducibility/smt_backend_comparison.py"], None),
+    ("boundary: soundness/incompleteness boundary vs live verifier",
+     [PY, "reproducibility/soundness_boundary.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]

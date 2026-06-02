@@ -1,0 +1,92 @@
+{
+  "all_match": true,
+  "contract": {
+    "domain_clauses": 5,
+    "known_unsoundness_gaps": [
+      {
+        "affected_direction": "verification (never miss-pass)",
+        "id": "U1",
+        "location": "src/api.py verify_architecture (balanced/heuristic do not gate on check_traceability static violations; sound mode does)"
+      },
+      {
+        "affected_direction": "verification (never miss-pass)",
+        "id": "U2",
+        "location": "src/shape_cegar.py (SAFE return on infeasible accumulated predicates, ~lines 2954-2962)"
+      }
+    ],
+    "out_of_fragment_clauses": 11,
+    "under_approximated_bug_classes": 3
+  },
+  "modes": [
+    "sound",
+    "balanced",
+    "heuristic"
+  ],
+  "n_probes": 4,
+  "probes": [
+    {
+      "expected": {
+        "balanced": "SAFE",
+        "heuristic": "SAFE",
+        "sound": "SAFE"
+      },
+      "match": true,
+      "name": "in_fragment_clean",
+      "note": "Clean MLP fully inside the verifiable fragment is SAFE in every mode.",
+      "observed": {
+        "balanced": "SAFE",
+        "heuristic": "SAFE",
+        "sound": "SAFE"
+      },
+      "region": "verification soundness (in-fragment, modeled scope)"
+    },
+    {
+      "expected": {
+        "balanced": "UNSAFE",
+        "heuristic": "UNSAFE",
+        "sound": "UNSAFE"
+      },
+      "match": true,
+      "name": "in_fragment_shape_bug",
+      "note": "Real in-fragment Linear inner-dim mismatch is REFUTED in every mode (Z3-discharged).",
+      "observed": {
+        "balanced": "UNSAFE",
+        "heuristic": "UNSAFE",
+        "sound": "UNSAFE"
+      },
+      "region": "refutation soundness (no false alarm)"
+    },
+    {
+      "expected": {
+        "balanced": "SAFE",
+        "heuristic": "SAFE",
+        "sound": "UNKNOWN"
+      },
+      "match": true,
+      "name": "out_of_fragment_data_dependent_control_flow",
+      "note": "Data-dependent branch leaves the fragment: sound mode abstains (UNKNOWN); balanced/heuristic report SAFE (the U1 recall trade-off).",
+      "observed": {
+        "balanced": "SAFE",
+        "heuristic": "SAFE",
+        "sound": "UNKNOWN"
+      },
+      "region": "fragment boundary / KNOWN_UNSOUNDNESS U1 (mode-dependent)"
+    },
+    {
+      "expected": {
+        "balanced": "SAFE",
+        "heuristic": "SAFE",
+        "sound": "UNKNOWN"
+      },
+      "match": true,
+      "name": "out_of_fragment_tensor_to_scalar",
+      "note": "`.item()` coerces a tensor to a Python scalar (out of fragment): sound mode abstains; permissive modes report SAFE.",
+      "observed": {
+        "balanced": "SAFE",
+        "heuristic": "SAFE",
+        "sound": "UNKNOWN"
+      },
+      "region": "fragment boundary / KNOWN_UNSOUNDNESS U1 (mode-dependent)"
+    }
+  ]
+}

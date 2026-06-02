@@ -261,11 +261,12 @@ def _out_of_fragment_clauses() -> List[ContractClause]:
             soundness_class=SoundnessClass.SKIPPED,
             direction=VERIFICATION,
             rationale="Outside the verifiable fragment. `check_traceability` "
-                      "detects it (in_verifiable_fragment=False). NOTE: the "
-                      "current `verify_architecture` does not yet gate on the "
-                      "fragment, so such a module may receive a silent SAFE "
-                      "(see KNOWN_UNSOUNDNESS U1); Step 8 makes this an "
-                      "explicit `unknown`/abstain.",
+                      "detects it (in_verifiable_fragment=False). In "
+                      "`sound` mode `verify_architecture` abstains (UNKNOWN) on "
+                      "such a static fragment violation; in `balanced`/"
+                      "`heuristic` mode it may still report SAFE (the "
+                      "intentional recall trade-off documented as "
+                      "KNOWN_UNSOUNDNESS U1).",
             evidence="src/verifiable_fragment.py UnsupportedCategory."
                      f"{cat.name}; check_traceability",
         ))
@@ -290,15 +291,20 @@ class KnownGap:
 KNOWN_UNSOUNDNESS: List[KnownGap] = [
     KnownGap(
         id="U1",
-        description="verify_architecture does not gate on the verifiable "
-                    "fragment: an out-of-fragment module (e.g. data-dependent "
-                    "control flow) can be reported SAFE/Verified instead of "
-                    "abstaining, so a real bug hidden by the unmodeled "
-                    "construct can be missed.",
+        description="In `balanced`/`heuristic` modes, verify_architecture does "
+                    "not abstain on a static fragment violation (e.g. "
+                    "data-dependent control flow): such an out-of-fragment "
+                    "module is reported SAFE, so a real bug hidden by the "
+                    "unmodeled construct can be missed. This is an intentional "
+                    "recall-vs-soundness trade-off of the permissive modes; the "
+                    "`sound` mode CLOSES this gap by abstaining (UNKNOWN).",
         affected_direction=VERIFICATION,
-        location="src/api.py verify_architecture (no check_traceability gate)",
-        remediation="100_STEPS.md Step 8: report out-of-fragment constructs as "
-                    "`unknown`/abstain rather than silent pass.",
+        location="src/api.py verify_architecture (balanced/heuristic do not "
+                 "gate on check_traceability static violations; sound mode does)",
+        remediation="Use soundness_mode='sound' for the never-miss-pass "
+                    "contract — it abstains (UNKNOWN) on any static fragment "
+                    "violation. balanced/heuristic deliberately trade this for "
+                    "recall and must not be read as a soundness guarantee.",
     ),
     KnownGap(
         id="U2",

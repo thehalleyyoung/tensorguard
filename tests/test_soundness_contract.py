@@ -6,9 +6,10 @@ These pin three things:
      SKIPPED clause; every clause has a real evidence string);
   3. the contract's empirical claims hold against real code — in particular
      the verifiable-fragment boundary and the documented KNOWN_UNSOUNDNESS
-     gap U1 (out-of-fragment modules currently receive a silent SAFE through
-     verify_architecture). Pinning the *current* (gap) behaviour keeps the
-     contract honest; when Step 8 fixes U1 this test is updated in lockstep.
+     gap U1, which is *mode-dependent*: out-of-fragment modules receive a
+     silent SAFE in `balanced`/`heuristic` mode (the recall trade-off) but an
+     explicit UNKNOWN abstention in `sound` mode. Pinning both keeps the
+     contract honest and neither over- nor under-claiming.
 """
 from __future__ import annotations
 
@@ -86,13 +87,15 @@ def test_fragment_boundary_is_real():
     }
 
 
-def test_known_unsoundness_U1_is_currently_real():
-    """KNOWN_UNSOUNDNESS U1: verify_architecture does NOT yet gate on the
-    fragment, so an out-of-fragment module gets a silent SAFE. This asserts
-    the gap is honestly documented (and not already silently fixed)."""
+def test_known_unsoundness_U1_is_mode_dependent():
+    """KNOWN_UNSOUNDNESS U1: the silent SAFE on an out-of-fragment construct
+    only happens in `balanced`/`heuristic` mode (the recall trade-off); the
+    `sound` mode CLOSES the gap by abstaining (UNKNOWN). This asserts both the
+    documented gap (default mode) and its sound-mode remediation hold against
+    real code, so the contract is neither over- nor under-claiming."""
     u1 = next(g for g in sc.KNOWN_UNSOUNDNESS if g.id == "U1")
+    assert "sound" in u1.remediation.lower()
     assert "abstain" in u1.description.lower()
-    assert "silent pass" in u1.remediation.lower()
 
     ddcf = PRE + (
         "class M(nn.Module):\n"
@@ -104,11 +107,16 @@ def test_known_unsoundness_U1_is_currently_real():
         "            return self.lin(x)\n"
         "        return x\n"
     )
-    res = verify_architecture(ddcf, input_shapes={"x": (4, 10)},
-                              filename="<contract>")
-    # Documented current behaviour: silent SAFE, no abstain (the U1 gap).
-    assert res.status == "SAFE"
-    assert res.bug_count == 0
+    # balanced (default): documented U1 gap — silent SAFE, no abstain.
+    bal = verify_architecture(ddcf, input_shapes={"x": (4, 10)},
+                              filename="<contract>", soundness_mode="balanced")
+    assert bal.verdict == "SAFE"
+    assert bal.abstained is False
+    # sound: gap closed — abstains with an explicit UNKNOWN.
+    snd = verify_architecture(ddcf, input_shapes={"x": (4, 10)},
+                              filename="<contract>", soundness_mode="sound")
+    assert snd.verdict == "UNKNOWN"
+    assert snd.abstained is True
 
 
 def test_refutation_soundness_probe():
