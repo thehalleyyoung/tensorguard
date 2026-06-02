@@ -1,0 +1,76 @@
+{
+  "all_export_consistent": true,
+  "all_quant_consistent": true,
+  "export_cases": [
+    {
+      "consistent": true,
+      "live_exports_clean": true,
+      "name": "clean_linear",
+      "static_export_hazard": false,
+      "static_kinds": []
+    },
+    {
+      "consistent": true,
+      "live_exports_clean": false,
+      "name": "data_dependent_branch",
+      "static_export_hazard": true,
+      "static_kinds": [
+        "export_data_dependent_control_flow"
+      ]
+    },
+    {
+      "consistent": true,
+      "live_exports_clean": false,
+      "name": "tensor_to_scalar_item",
+      "static_export_hazard": true,
+      "static_kinds": [
+        "export_tensor_to_scalar"
+      ]
+    },
+    {
+      "consistent": true,
+      "live_exports_clean": false,
+      "name": "data_dependent_loop",
+      "static_export_hazard": true,
+      "static_kinds": [
+        "export_tensor_to_scalar"
+      ]
+    }
+  ],
+  "n_export_cases": 4,
+  "n_quant_cases": 4,
+  "quant_cases": [
+    {
+      "consistent": true,
+      "live_raises": true,
+      "name": "quant_add_no_floatfunctional",
+      "static_kinds": [
+        "quant_arith_without_floatfunctional"
+      ],
+      "static_quant_hazard": true
+    },
+    {
+      "consistent": true,
+      "live_raises": null,
+      "name": "quant_add_with_floatfunctional",
+      "static_kinds": [],
+      "static_quant_hazard": false
+    },
+    {
+      "consistent": true,
+      "live_raises": null,
+      "name": "missing_dequantstub",
+      "static_kinds": [
+        "missing_dequantstub"
+      ],
+      "static_quant_hazard": true
+    },
+    {
+      "consistent": true,
+      "live_raises": null,
+      "name": "plain_float_model",
+      "static_kinds": [],
+      "static_quant_hazard": false
+    }
+  ]
+}

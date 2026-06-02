@@ -635,6 +635,31 @@ actually sharded. See
 [`reproducibility/tensor_parallel_sharding.md`](reproducibility/tensor_parallel_sharding.md)
 and `tests/test_tensor_parallel_checks.py`.
 
+### Quantization & export safety
+
+Two of the most common ways a model that passes every float unit test still
+fails in production are **quantization placement** and **export tracing**.
+`src/quant_export_checks.py` adds an instance-free analyzer for both, and
+`reproducibility/quant_export_safety.py` cross-checks every verdict against the
+live behaviour of real PyTorch:
+
+```bash
+PYTHONPATH=. python3 reproducibility/quant_export_safety.py   # writes quant_export_safety.{json,md}
+```
+
+On the quantization side, performing tensor-tensor arithmetic (`a + b`) inside a
+quantized module instead of routing it through `FloatFunctional` has no
+quantized `aten::add` kernel and raises `NotImplementedError` at runtime; the
+analyzer flags exactly that, plus asymmetric `QuantStub` / `DeQuantStub`
+boundaries. On the export side it reuses the verifiable-fragment grammar as the
+single source of truth and surfaces the subset of out-of-fragment constructs
+(data-dependent control flow, data-dependent iteration, tensor-to-scalar
+`.item()`) that make `torch.export` tracing fail with a data-dependent guard
+error. Every export case is consistent with live `torch.export`, and the
+quantized-add hazard matches the live runtime exception. See
+[`reproducibility/quant_export_safety.md`](reproducibility/quant_export_safety.md)
+and `tests/test_quant_export_checks.py`.
+
 ### Sound-mode false-positive hunt
 
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
