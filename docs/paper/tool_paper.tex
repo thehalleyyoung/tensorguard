@@ -1018,12 +1018,12 @@ is what lets the claims above be checked rather than trusted.
 
 The repository ships a \emph{compiled}, \texttt{sorry}-free Lean~4
 formalization (pinned \texttt{lean-toolchain} \texttt{v4.14.0},
-\texttt{lakefile.lean}, \texttt{lake build} green) comprising 21 modules,
-$\sim$4{,}300 lines and 240 theorems/lemmas. Soundness is not asserted by
+\texttt{lakefile.lean}, \texttt{lake build} green) comprising 24 modules,
+$\sim$4{,}600 lines and 272 theorems/lemmas. Soundness is not asserted by
 inspection: \texttt{TensorGuard/AxiomAudit.lean} runs \texttt{\#print axioms}
 on the headline results, and---crucially---\texttt{tests/test\_lean\_whole\_%
 pipeline\_audit.py} makes the audit \emph{total and drift-proof}: it
-auto-discovers \emph{every one} of the library's 240 public theorems, elaborates
+auto-discovers \emph{every one} of the library's 272 public theorems, elaborates
 a \texttt{\#print axioms} for each through the Lean kernel, and asserts each
 depends only on the trusted kernel set $\{\texttt{propext},
 \texttt{Classical.choice}, \texttt{Quot.sound}\}$ and \emph{never} on
@@ -1105,9 +1105,22 @@ The mechanization covers six components:
     \texttt{train}/\texttt{eval} bit is last-setter-wins with child propagation,
     and \texttt{RankTransfer.lean} proves the reduction rank transfer is monotone
     non-increasing with closed form $\mathit{rank}_0 - \#\{\texttt{keepdim=False}\}$.
+    Three further chain-transfer modules complete the per-\texttt{forward} scalar
+    algebras: \texttt{DtypePromoteChain.lean} lifts the promotion semilattice to a
+    multi-operand fold and proves it an upper bound of every operand
+    (promotion never narrows) and order-independent, cross-checked against
+    \texttt{torch.promote\_types}; \texttt{BroadcastChain.lean} proves the
+    per-dimension broadcast fold commutative with \texttt{1} a two-sided identity,
+    the compatible size exactly the \texttt{max}, and refutation-sound (flags iff
+    genuinely incompatible), cross-checked against \texttt{torch.broadcast\_shapes};
+    and \texttt{ContigFlow.lean} proves the contiguity bit transfer---\texttt{.t()}
+    an involution, \texttt{.contiguous()} history-erasing---cross-checked against
+    the live torch stride engine. The faithfulness of the matmul dtype-equality
+    encoding is likewise machine-checked (\texttt{dtype\_smt\_matches\_dtMatmulBug})
+    and validated on the real Z3 solver and the torch dispatcher.
     These results narrow the
     trusted computing base: the previously-trusted faithfulness of the device,
-    phase and gradient enum encodings is now \emph{proved}.
+    phase, gradient and dtype enum encodings is now \emph{proved}.
 \end{enumerate}
 
 \begin{table}[t]
@@ -1127,6 +1140,10 @@ Lean module & Cross-check & Guarantee \\
 \texttt{DevicePlacement.lean} & real torch (cpu/mps) & device-tag chain; last-move-wins; binary op valid $\Leftrightarrow$ same device \\
 \texttt{PhaseFlow.lean}    & real \texttt{nn.Module} & train/eval bit chain; last-setter-wins, child propagation \\
 \texttt{RankTransfer.lean} & real torch \texttt{sum} & reduction rank chain; monotone, closed-form rank drop \\
+\texttt{DtypePromoteChain.lean} & \texttt{torch.promote\_types} & promotion fold; upper bound of every operand, order-independent \\
+\texttt{BroadcastChain.lean} & \texttt{torch.broadcast\_shapes} & per-dim broadcast fold; \texttt{1} identity, compat $=\max$, flags iff incompatible \\
+\texttt{ContigFlow.lean} & real torch strides & contiguity bit chain; \texttt{.t()} involution, \texttt{.contiguous()} history-erasing \\
+\texttt{SmtEncoding.lean} (dtype) & real Z3 + torch matmul & matmul dtype encoding UNSAT $\Leftrightarrow$ dtypes differ $\Leftrightarrow$ \texttt{dtMatmulBug} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1784,7 +1801,7 @@ predicates of \texttt{DeviceDtype.lean}.
 
 Each item is gated by a Python test that reproduces the predicted
 SAT/UNSAT/verdict on the \emph{real} solver or the \emph{real} torch dispatcher;
-the whole library's 240 theorems are audited \texttt{sorry}-free by
+the whole library's 272 theorems are audited \texttt{sorry}-free by
 \texttt{test\_lean\_whole\_pipeline\_audit.py}.
 
 
@@ -1861,7 +1878,7 @@ PyTEA fragment-fair set ($N{=}34$) & shape-bug parity vs.\ a published checker; 
 Frozen ground-truth corpus & 16 SHA-pinned real \texttt{nn.Module}s (8 clean / 8 buggy), verdicts replayed in eager torch \\
 Per-domain ablation corpus & device and gradient domains each refute bugs the shape view misses \\
 Operator confidence table & all 117 transfer functions tagged complete/sound/heuristic, code$\leftrightarrow$table synced \\
-Lean~4 library & 240 \texttt{sorry}-free theorems, kernel-axiom audited, drift-proof \\
+Lean~4 library & 272 \texttt{sorry}-free theorems, kernel-axiom audited, drift-proof \\
 Conformance + chain-transfer tests & Lean predictions replayed on real Z3, autograd, \texttt{cpu}/\texttt{mps}, \texttt{nn.Module}s \\
 Test suite & 3{,}709 unit/integration/property tests gating the above \\
 \bottomrule

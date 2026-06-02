@@ -110,5 +110,40 @@ theorem grad_smt_unsat_iff_ne (gset greq : Bool) :
 
 theorem grad_consistent_sat (g : Bool) : Sat g g := eq_is_sat g
 
+/- ===================================================================== -/
+/- 5. Dtype sort: matmul's exact-dtype encoding coincides with           -/
+/-    `dtMatmulBug` (Step 146)                                           -/
+/- ===================================================================== -/
+
+/-- The dtype-equality encoder (`mm`/`bmm`/`matmul` require identical operand
+    dtypes) pins two dtype variables to concrete endpoints and constrains them
+    equal; it is UNSAT iff the dtypes differ. -/
+theorem dtype_smt_unsat_iff_ne (da db : Dt) :
+    (¬ Sat da db) ↔ da ≠ db :=
+  unsat_iff_ne da db
+
+/-- **Faithfulness for the matmul dtype check.** For two **known** dtypes the
+    real solver's UNSAT verdict on the dtype-equality formula is exactly the
+    abstract `dtMatmulBug` — the SMT layer flags a matmul dtype error iff the
+    abstract rule does. -/
+theorem dtype_smt_matches_dtMatmulBug (da db : Dt)
+    (ha : da ≠ Dt.unknown) (hb : db ≠ Dt.unknown) :
+    (¬ Sat da db) ↔ dtMatmulBug da db = true := by
+  rw [unsat_iff_ne]
+  constructor
+  · intro hne
+    have hu : ¬ (da = Dt.unknown ∨ db = Dt.unknown) := by
+      rintro (h | h); exact ha h; exact hb h
+    simp [dtMatmulBug, hu, hne]
+  · intro hbug
+    have hu : ¬ (da = Dt.unknown ∨ db = Dt.unknown) := by
+      rintro (h | h); exact ha h; exact hb h
+    have : decide (da ≠ db) = true := by simpa [dtMatmulBug, hu] using hbug
+    simpa using this
+
+/-- Equal dtypes ⇒ the dtype-equality constraint is satisfiable (no spurious
+    matmul dtype error). -/
+theorem dtype_same_sat (d : Dt) : Sat d d := eq_is_sat d
+
 end SmtEncoding
 end TensorGuard

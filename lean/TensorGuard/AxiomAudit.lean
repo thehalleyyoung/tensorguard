@@ -110,6 +110,12 @@ import TensorGuard
 #print axioms TensorGuard.SmtEncoding.phase_smt_unsat_iff_ne
 #print axioms TensorGuard.SmtEncoding.grad_smt_unsat_iff_ne
 
+-- Dtype matmul encoding faithfulness (Step 146): the dtype-equality formula is
+-- UNSAT iff the dtypes differ, and for known dtypes coincides with dtMatmulBug.
+#print axioms TensorGuard.SmtEncoding.dtype_smt_unsat_iff_ne
+#print axioms TensorGuard.SmtEncoding.dtype_smt_matches_dtMatmulBug
+#print axioms TensorGuard.SmtEncoding.dtype_same_sat
+
 -- Cross-domain (shape × device) encoding faithfulness (Step 136): a transfer op
 -- preserves shape exactly (device free); a non-transfer op preserves device
 -- exactly (shape free), so the solver flags a cross-domain violation iff the
@@ -183,3 +189,34 @@ import TensorGuard
 #print axioms TensorGuard.RankTransfer.rankRun_le
 #print axioms TensorGuard.RankTransfer.rankRun_allKeep
 #print axioms TensorGuard.RankTransfer.rankRun_exact
+
+-- Dtype-promotion chain transfer (Step 143): the multi-operand promotion fold is
+-- compositional, an upper bound of every operand, order-independent, and
+-- unknown-absorbing along the chain.
+#print axioms TensorGuard.DtypePromoteChain.promoteRun_append
+#print axioms TensorGuard.DtypePromoteChain.promoteRun_ge_acc
+#print axioms TensorGuard.DtypePromoteChain.promoteRun_ge_elem
+#print axioms TensorGuard.DtypePromoteChain.promoteRun_swap
+#print axioms TensorGuard.DtypePromoteChain.promoteRun_unknown
+
+-- Broadcast dim-chain transfer (Step 144): per-dimension broadcasting is
+-- commutative, 1 is a two-sided identity, the compatible size is the max, the
+-- rule flags iff genuinely incompatible, and the chain fold is compositional /
+-- none-absorbing.
+#print axioms TensorGuard.BroadcastChain.bcDim_comm
+#print axioms TensorGuard.BroadcastChain.bcDim_one_left
+#print axioms TensorGuard.BroadcastChain.bcDim_one_right
+#print axioms TensorGuard.BroadcastChain.bcDim_self
+#print axioms TensorGuard.BroadcastChain.bcDim_compat_max
+#print axioms TensorGuard.BroadcastChain.bcDim_none_iff
+#print axioms TensorGuard.BroadcastChain.bcRun_append
+#print axioms TensorGuard.BroadcastChain.bcRun_none
+#print axioms TensorGuard.BroadcastChain.bcRun_ones
+
+-- Contiguity transfer under transpose/contiguous chain (Step 145): compositional,
+-- .contiguous() erases history, transpose is an involution, keep-only preserves.
+#print axioms TensorGuard.ContigFlow.ctgRun_append
+#print axioms TensorGuard.ContigFlow.run_cons_contig
+#print axioms TensorGuard.ContigFlow.run_after_contig
+#print axioms TensorGuard.ContigFlow.run_transpose_involution
+#print axioms TensorGuard.ContigFlow.run_allKeep

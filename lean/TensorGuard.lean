@@ -18,3 +18,6 @@ import TensorGuard.GradFlow
 import TensorGuard.DevicePlacement
 import TensorGuard.PhaseFlow
 import TensorGuard.RankTransfer
+import TensorGuard.DtypePromoteChain
+import TensorGuard.BroadcastChain
+import TensorGuard.ContigFlow
