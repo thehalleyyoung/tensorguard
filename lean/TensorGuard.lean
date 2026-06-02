@@ -12,3 +12,4 @@ import TensorGuard.CegarBound
 import TensorGuard.CegarInfeasible
 import TensorGuard.FragmentModes
 import TensorGuard.DeviceDtype
+import TensorGuard.SmtEncoding

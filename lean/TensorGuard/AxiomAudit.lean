@@ -96,3 +96,15 @@ import TensorGuard
 #print axioms TensorGuard.DevDtype.gradBrokenBug_refutation_sound
 #print axioms TensorGuard.DevDtype.productBug_false_iff
 #print axioms TensorGuard.DevDtype.productBug_refutation_sound
+
+-- SMT-encoding faithfulness (Step 135): the enum-equality constraint the
+-- verifier hands Z3 for device/phase/gradient checks is UNSAT iff the pinned
+-- endpoints differ, so the solver's verdict coincides exactly with the abstract
+-- `*Bug` predicate.
+#print axioms TensorGuard.SmtEncoding.sat_iff_eq
+#print axioms TensorGuard.SmtEncoding.unsat_iff_ne
+#print axioms TensorGuard.SmtEncoding.unsat_sound
+#print axioms TensorGuard.SmtEncoding.eq_is_sat
+#print axioms TensorGuard.SmtEncoding.device_smt_matches_devBug
+#print axioms TensorGuard.SmtEncoding.phase_smt_unsat_iff_ne
+#print axioms TensorGuard.SmtEncoding.grad_smt_unsat_iff_ne
