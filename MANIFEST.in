@@ -8,6 +8,7 @@ include SOUNDNESS_CONTRACT.md
 include VERIFIABLE_FRAGMENT.md
 include GETTING_STARTED.md
 include LIMITATIONS.md
+include THIRD_PARTY_NOTICES.md
 include py.typed
 recursive-include src *.py py.typed
 
@@ -16,9 +17,12 @@ exclude 100_STEPS.md
 prune tests
 prune docs
 prune experiments
+prune experiments_v5
 prune reproducibility
 prune .github
 prune conda-recipe
 exclude Dockerfile
 exclude .dockerignore
 global-exclude __pycache__ *.pyc *.pyo .DS_Store
+# Never ship vendored third-party trees (dev-time references only).
+global-exclude node_modules

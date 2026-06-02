@@ -1601,6 +1601,15 @@ A real shape/device/phase bug raises `TensorGuardViolation` at `fit`/`train`
 time instead of crashing mid-epoch. Both degrade gracefully when the framework
 is not installed. See `src/framework_hooks.py` and `tests/test_framework_hooks.py`.
 
+### License & redistribution
+
+TensorGuard is MIT-licensed, which is compatible with PyTorch's BSD-3-Clause.
+The published package contains only the original `src/` code plus docs and the
+`LICENSE`; large development-time third-party references (the vendored PyTea
+benchmark checkout and its `node_modules`) are pruned from every distribution
+artifact. See `THIRD_PARTY_NOTICES.md`, enforced by
+`tests/test_distribution_hygiene.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
