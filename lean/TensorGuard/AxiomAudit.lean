@@ -47,3 +47,11 @@ import TensorGuard
 #print axioms TensorGuard.RP.gamma_mono
 #print axioms TensorGuard.RP.pmeet_gamma
 #print axioms TensorGuard.RP.reduce_gamma
+
+-- Shape-CEGAR termination & tight iteration bound (Steps 129–130): a productive
+-- run terminates inside a finite predicate universe and obeys
+-- iterations ≤ 1 + |discovered predicates|.
+#print axioms TensorGuard.Cegar.length_le_lsum
+#print axioms TensorGuard.Cegar.cegar_iter_bound
+#print axioms TensorGuard.Cegar.cegar_terminates
+#print axioms TensorGuard.Cegar.tight_below_naive
