@@ -1548,6 +1548,11 @@ twine check dist/*
 
 See `tests/test_packaging.py` for the metadata contract that guards this.
 
+A `conda-recipe/meta.yaml` provides a `noarch: python` conda-forge recipe that
+mirrors the same metadata (version, the pinned z3 range, the Python floor, the
+entry points, and the MIT license); `tests/test_conda_recipe.py` renders the
+template and asserts it never drifts from `pyproject.toml`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

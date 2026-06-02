@@ -1,0 +1,58 @@
+{% set name = "tensorguard" %}
+{% set version = "0.1.0" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  # For a conda-forge submission, point at the published sdist on PyPI and pin
+  # its sha256. Until the first PyPI upload, build from the in-tree sdist via
+  #   conda build conda-recipe/ --no-test
+  # after `python -m build --sdist`.
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  # sha256 is filled in by `grayskull`/the conda-forge bot from the uploaded
+  # sdist; left as a placeholder so the recipe stays version-controlled.
+  sha256: 0000000000000000000000000000000000000000000000000000000000000000
+
+build:
+  noarch: python
+  number: 0
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  entry_points:
+    - tensorguard = src.cli.main:main
+    - tensorguard-precommit = src.precommit:main
+
+requirements:
+  host:
+    - python >=3.9
+    - pip
+    - setuptools >=64
+    - wheel
+  run:
+    - python >=3.9
+    - z3 >=4.12,<5
+
+test:
+  imports:
+    - src
+  commands:
+    - tensorguard --help
+
+about:
+  home: https://github.com/thehalleyyoung/tensorguard
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  summary: Sound static shape/device/phase/dtype/gradient verification for PyTorch nn.Module
+  description: |
+    TensorGuard harvests the implicit guards in a PyTorch model and discharges
+    them with an SMT solver, catching shape mismatches, broadcast bugs, device
+    inconsistencies, dtype errors, and train/eval phase-dependent failures
+    before a single training step runs.
+  dev_url: https://github.com/thehalleyyoung/tensorguard
+  doc_url: https://github.com/thehalleyyoung/tensorguard/blob/main/README.md
+
+extra:
+  recipe-maintainers:
+    - thehalleyyoung
