@@ -1213,6 +1213,19 @@ equalities (concrete dims equal to themselves) are folded away, reported through
 a `folded_constraints` statistic, with every verdict provably unchanged. See
 `tests/test_constraint_simplification.py`.
 
+### Deterministic parallel verification
+
+`src/parallel.py` verifies many `nn.Module` sources (a package, a model zoo, a
+CI batch) across CPU cores while guaranteeing **bit-for-bit deterministic
+output**: `verify_parallel(jobs)` returns verdicts in the caller's input order
+and identical to a sequential run for any worker count. Determinism follows from
+`verify_model` being a pure function of (source, input shapes, options),
+reassembly by input index rather than completion order, and a fixed
+multiprocessing start method. Workers return a small picklable `ParallelVerdict`
+summary (safe flag, violation count, sorted violation kinds) rather than the
+heavyweight Z3-derived result, so verdicts cross the process boundary cheaply.
+See `tests/test_parallel.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
