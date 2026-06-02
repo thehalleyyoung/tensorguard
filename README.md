@@ -998,6 +998,25 @@ this path also restored precision for the functional forms `torch.permute`,
 `torch.transpose` and `torch.swapaxes`, which had been needlessly abstracted.
 See `tests/test_fx_trace_success.py`.
 
+### Two frontends, one verdict: torch.export reconciled with torch.fx
+
+TensorGuard now ingests models through two entirely independent capture paths:
+the `torch.fx` symbolic tracer and PyTorch's ahead-of-time `torch.export` (ATen
+IR with lifted parameters), the latter lowered by `src/export_extractor.py`. The
+export frontend recovers each layer's static parameters by mapping the lifted
+weight inputs back to the originating `nn.Module` via the export graph signature,
+reuses the same layer machinery, models pooling functionals precisely, and
+abstains soundly (Step 34) on unknown ATen ops — then hands the graph to the very
+same Z3 verification engine. Because both frontends are two views of one program,
+a sound verifier must reach the same safe/unsafe verdict through either. The
+reconciliation harness in `evaluation/frontend_reconciliation.py` runs a corpus
+of real modules through both and enforces, via `make frontend-reconciliation-gate`,
+the headline invariant of zero divergences, while also checking every captured
+verdict against ground truth. Where `torch.export` validates shapes eagerly and
+declines to capture a shape-buggy model, that is recorded as a capture gap rather
+than a disagreement: both frontends still conclude the model is unsafe, merely at
+different stages. See `tests/test_export_frontend.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

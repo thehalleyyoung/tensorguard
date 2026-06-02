@@ -1,0 +1,137 @@
+{
+  "meta": {
+    "command": "PYTHONPATH=. python3 evaluation/frontend_reconciliation.py",
+    "generated_by": "evaluation/frontend_reconciliation.py",
+    "python_version": "3.14",
+    "torch_version": "2.9.1"
+  },
+  "models": [
+    {
+      "both_captured": true,
+      "divergent": false,
+      "expected_safe": true,
+      "export": {
+        "captured": true,
+        "error": null,
+        "safe": true
+      },
+      "export_correct": true,
+      "fx": {
+        "captured": true,
+        "safe": true
+      },
+      "fx_correct": true,
+      "model": "mlp"
+    },
+    {
+      "both_captured": true,
+      "divergent": false,
+      "expected_safe": true,
+      "export": {
+        "captured": true,
+        "error": null,
+        "safe": true
+      },
+      "export_correct": true,
+      "fx": {
+        "captured": true,
+        "safe": true
+      },
+      "fx_correct": true,
+      "model": "deep_mlp"
+    },
+    {
+      "both_captured": true,
+      "divergent": false,
+      "expected_safe": true,
+      "export": {
+        "captured": true,
+        "error": null,
+        "safe": true
+      },
+      "export_correct": true,
+      "fx": {
+        "captured": true,
+        "safe": true
+      },
+      "fx_correct": true,
+      "model": "residual_mlp"
+    },
+    {
+      "both_captured": true,
+      "divergent": false,
+      "expected_safe": true,
+      "export": {
+        "captured": true,
+        "error": null,
+        "safe": true
+      },
+      "export_correct": true,
+      "fx": {
+        "captured": true,
+        "safe": true
+      },
+      "fx_correct": true,
+      "model": "cnn"
+    },
+    {
+      "both_captured": true,
+      "divergent": false,
+      "expected_safe": true,
+      "export": {
+        "captured": true,
+        "error": null,
+        "safe": true
+      },
+      "export_correct": true,
+      "fx": {
+        "captured": true,
+        "safe": true
+      },
+      "fx_correct": true,
+      "model": "conv_bn_stack"
+    },
+    {
+      "both_captured": false,
+      "divergent": false,
+      "expected_safe": false,
+      "export": {
+        "captured": false,
+        "error": "torch.export extraction failed: a and b must have same reduction dim, but got [4, 32] X [99, 8].",
+        "safe": false
+      },
+      "export_correct": true,
+      "fx": {
+        "captured": true,
+        "safe": false
+      },
+      "fx_correct": true,
+      "model": "mlp_bad_in_features"
+    },
+    {
+      "both_captured": false,
+      "divergent": false,
+      "expected_safe": false,
+      "export": {
+        "captured": false,
+        "error": "torch.export extraction failed: a and b must have same reduction dim, but got [1, 512] X [999, 10].",
+        "safe": false
+      },
+      "export_correct": true,
+      "fx": {
+        "captured": true,
+        "safe": false
+      },
+      "fx_correct": true,
+      "model": "cnn_bad_flatten"
+    }
+  ],
+  "summary": {
+    "agreement_rate": 1.0,
+    "both_captured": 5,
+    "divergences": 0,
+    "export_correct": 7,
+    "fx_correct": 7,
+    "n_models": 7
+  }
+}
