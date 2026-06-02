@@ -101,6 +101,10 @@ class AnalysisResult:
     # Populated only when a bug is reported; printed by `tensorguard verify
     # --explain`.
     inference_chain: Optional[Any] = None
+    # Step 59 — mechanical autofix suggestions (concrete single-line edits) for
+    # the small sound set of repairable bugs (wrong nn.Linear in_features /
+    # nn.Conv*d in_channels).  Printed by `tensorguard verify --fix`.
+    autofixes: List[Any] = field(default_factory=list)
 
     @property
     def status(self) -> str:
@@ -1300,6 +1304,20 @@ def verify_architecture(
                 result.inference_chain = chain
     except Exception:
         result.inference_chain = None
+
+    # Step 59 — mechanical autofix suggestions for the sound, unambiguous set
+    # of repairable bugs (wrong Linear in_features / Conv*d in_channels).  Built
+    # from the same raw violations; advisory and never affects the verdict.
+    try:
+        ce = getattr(vr, "counterexample", None)
+        raw_violations = list(getattr(ce, "violations", []) or []) if ce else []
+        if raw_violations and result.bugs:
+            from src.autofix import build_autofixes
+            result.autofixes = build_autofixes(
+                source, raw_violations, getattr(vr, "graph", None)
+            )
+    except Exception:
+        result.autofixes = []
 
     # Notify hooks: verification finished
     for hook in hooks:

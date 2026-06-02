@@ -1356,6 +1356,23 @@ expects thirty, the chain shows the twenty-wide tensor being produced and then
 rejected one line later. The explainer is also available as structured JSON via
 `--format json --explain`. See `tests/test_inference_chain_explain.py`.
 
+### Mechanical autofixes (`--fix`)
+
+Some shape bugs have a single, unambiguous repair: a `nn.Linear` whose
+`in_features` does not match the dimension actually flowing into it, or a
+`nn.Conv*d` whose `in_channels` does not match the channel count it receives.
+Because the verifier already knows the concrete dimension the layer is fed, the
+fix is simply to set that constructor argument to the observed value. Pass
+`--fix` to print these suggestions as a red and green diff, or `--fix --write`
+to apply them in place. Suggestions are emitted only when the repair is
+unambiguous: the layer must be defined on a single source line, the offending
+dimension must be concrete rather than symbolic, and the original value must
+appear where expected in the constructor call. Anything uncertain yields no
+suggestion rather than a wrong one, and applying a stale suggestion leaves the
+file untouched. In practice a layer that wrongly expects thirty input features
+while receiving twenty is rewritten to expect twenty, after which the model
+verifies clean and runs under eager torch. See `tests/test_autofix.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

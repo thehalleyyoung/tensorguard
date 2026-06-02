@@ -3172,6 +3172,15 @@ class VerifyCommand:
             "failing step) that led to each reported bug."
         )
         parser.add_argument(
+            "--fix", action="store_true",
+            help="Print mechanical autofix suggestions (concrete single-line "
+            "edits) for repairable bugs such as a wrong nn.Linear in_features."
+        )
+        parser.add_argument(
+            "--write", action="store_true",
+            help="With --fix, apply the suggested edits to the file in place."
+        )
+        parser.add_argument(
             "--high-confidence", action="store_true",
             help="Only report high-confidence (Z3-proven) bugs. Reduces FP rate to 0%% for CI/CD gating."
         )
@@ -3279,6 +3288,21 @@ class VerifyCommand:
                             for l in chain.links
                         ],
                     }
+            if getattr(args, "fix", False):
+                fixes = list(getattr(result, "autofixes", []) or [])
+                out["autofixes"] = [
+                    {
+                        "layer": f.layer,
+                        "kind": f.kind,
+                        "line": f.line,
+                        "original": f.original,
+                        "suggested": f.suggested,
+                        "description": f.description,
+                        "old_value": f.old_value,
+                        "new_value": f.new_value,
+                    }
+                    for f in fixes
+                ]
             sys.stdout.write(json.dumps(out, indent=2) + "\n")
         elif fmt == "text":
             if inferred_shapes and not args.input_shape:
@@ -3350,9 +3374,43 @@ class VerifyCommand:
                         sys.stdout.write("\n")
                         for ln in rendered.split("\n"):
                             sys.stdout.write(f"  {ln}\n")
+                if getattr(args, "fix", False):
+                    fixes = list(getattr(result, "autofixes", []) or [])
+                    if fixes:
+                        from src.autofix import (
+                            format_autofixes_ansi, format_autofixes_plain,
+                        )
+                        use_color = (
+                            not getattr(args, "no_color", False)
+                            and sys.stdout.isatty()
+                        )
+                        rendered = (
+                            format_autofixes_ansi(fixes) if use_color
+                            else format_autofixes_plain(fixes)
+                        )
+                        sys.stdout.write("\n")
+                        for ln in rendered.split("\n"):
+                            sys.stdout.write(f"  {ln}\n")
         else:
             sarif = result.to_sarif()
             sys.stdout.write(json.dumps(sarif, indent=2) + "\n")
+
+        # Step 59 — optionally apply the mechanical fixes in place.
+        if getattr(args, "fix", False) and getattr(args, "write", False):
+            fixes = list(getattr(result, "autofixes", []) or [])
+            if fixes:
+                from src.autofix import apply_autofixes
+                new_source = apply_autofixes(source, fixes)
+                if new_source != source:
+                    try:
+                        filepath.write_text(new_source, encoding="utf-8")
+                        sys.stdout.write(
+                            f"Applied {len(fixes)} fix"
+                            f"{'' if len(fixes) == 1 else 'es'} to "
+                            f"{filepath.name}\n"
+                        )
+                    except Exception as e:
+                        sys.stderr.write(f"Could not write fixes: {e}\n")
 
         if result.bugs:
             return 1
