@@ -24,10 +24,24 @@ attribute carries the structured findings.
 from __future__ import annotations
 
 import inspect
+import re
 import warnings
 from typing import Any, Dict, List, Optional, Tuple
 
 _IMPORT_PRELUDE = "import torch\nimport torch.nn as nn\nimport torch.nn.functional as F\n"
+
+_CLASS_HEADER_RE = re.compile(r"^(\s*class\s+\w+\s*)\([^)]*\)(\s*:)", re.MULTILINE)
+
+
+def _rewrite_bases_to_nn_module(src: str) -> str:
+    """Rewrite the first class header's bases to ``nn.Module``.
+
+    A live instance may be an ``nn.Module`` *subclass* whose declared base is a
+    framework class (e.g. ``pl.LightningModule``) the static analyzer doesn't
+    recognise.  Since we already know ``isinstance(model, nn.Module)``, retarget
+    the base to ``nn.Module`` so verification analyses the model's ``forward``.
+    """
+    return _CLASS_HEADER_RE.sub(r"\1(nn.Module)\2", src, count=1)
 
 
 class TensorGuardViolation(RuntimeError):
@@ -53,6 +67,13 @@ def module_source(model: Any) -> Optional[str]:
         cls_src = inspect.getsource(type(model))
     except (OSError, TypeError):
         return None
+    try:
+        import torch.nn as _nn
+
+        if isinstance(model, _nn.Module):
+            cls_src = _rewrite_bases_to_nn_module(cls_src)
+    except Exception:
+        pass
     return _IMPORT_PRELUDE + cls_src
 
 

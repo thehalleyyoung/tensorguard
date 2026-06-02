@@ -1591,6 +1591,16 @@ same bug surfaces as an opaque guard failure or a deep inductor traceback).
 backend that gates verification inside the pipeline; `verify_exported_program`
 does the same before `torch.export.export`. See `src/torch_integration.py`.
 
+### Framework hooks (Lightning, HF Trainer)
+
+Framework users get a one-line pre-flight check that runs before the first
+training step. `TensorGuardCallback` is a `pytorch_lightning.Callback` that
+verifies the `LightningModule` in `on_fit_start`; `TensorGuardTrainerCallback`
+is a Hugging Face `TrainerCallback` that verifies the model in `on_train_begin`.
+A real shape/device/phase bug raises `TensorGuardViolation` at `fit`/`train`
+time instead of crashing mid-epoch. Both degrade gracefully when the framework
+is not installed. See `src/framework_hooks.py` and `tests/test_framework_hooks.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
