@@ -877,6 +877,22 @@ that is simultaneously static, input-free, and complete on the corpus. See
 [`reproducibility/baseline_head_to_head.md`](reproducibility/baseline_head_to_head.md)
 and `tests/test_baseline_head_to_head.py`.
 
+### False-positive stress test
+The single most important promise of a sound verifier is no false alarms, so it
+deserves a dedicated adversarial-for-clean corpus. The study
+`reproducibility/fp_stress_eval.py` scores
+`corpus_extended/fp_stress.py`, a generated corpus of one hundred one clean
+models across ten parametric families, each swept over a grid of widths, depths,
+kernel sizes and channel counts and built around the tricky-but-valid shape,
+broadcast, reshape, concat and normalisation patterns most likely to trip a
+shape checker. Every model executes under eager PyTorch, which the regression
+test re-verifies live. A false alarm is an UNSAFE verdict on such a clean model;
+abstention is reported separately as coverage. TensorGuard raises zero false
+alarms across all one hundred one models in every soundness mode, with a Wilson
+upper bound below four percent. See
+[`reproducibility/fp_stress_eval.md`](reproducibility/fp_stress_eval.md) and
+`tests/test_fp_stress.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a
