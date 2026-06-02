@@ -1,0 +1,253 @@
+{
+  "meta": {
+    "backends": [
+      "Z3Solver",
+      "CVC5Solver"
+    ],
+    "command": "python3 reproducibility/smt_backend_comparison.py",
+    "cvc5_available": true,
+    "determinism": "verdicts only (no wall-clock field); SAT/UNSAT is deterministic for these decidable VCs",
+    "fragments": {
+      "NIA (reshape/flatten product-equality)": "NP-hard (SUBSET-PRODUCT reduction) but still decidable; both solvers must agree on these too",
+      "QF_LIA + finite domains": "shape (matmul/linear/cat/broadcast), device, phase -- decidable in P (Tinelli-Zarba combination of QF_LIA with the finite device/phase theories)"
+    },
+    "generated_by": "reproducibility/smt_backend_comparison.py",
+    "n_vcs": 14,
+    "trust_boundary": "Any VC where Z3 and cvc5 disagree, or either is wrong, is a soundness trust-boundary failure. The verifier's soundness must not depend on the choice of SMT backend."
+  },
+  "per_vc": [
+    {
+      "agree": true,
+      "complexity": "P",
+      "cvc5_correct": true,
+      "cvc5_verdict": "sat",
+      "description": "add of dims (1, 10): 1 broadcasts -> ok",
+      "expected": "sat",
+      "fragment": [
+        "T_SHAPE_BROADCAST",
+        "T_SHAPE_LINEAR"
+      ],
+      "id": "broadcast_compatible",
+      "np_hard": false,
+      "z3_correct": true,
+      "z3_verdict": "sat"
+    },
+    {
+      "agree": true,
+      "complexity": "P",
+      "cvc5_correct": true,
+      "cvc5_verdict": "unsat",
+      "description": "add of dims (3, 10), neither 1: require equality -> bug",
+      "expected": "unsat",
+      "fragment": [
+        "T_SHAPE_BROADCAST",
+        "T_SHAPE_LINEAR"
+      ],
+      "id": "broadcast_incompatible",
+      "np_hard": false,
+      "z3_correct": true,
+      "z3_verdict": "unsat"
+    },
+    {
+      "agree": true,
+      "complexity": "P",
+      "cvc5_correct": true,
+      "cvc5_verdict": "sat",
+      "description": "cat([8,x],[8,y],dim=1): row counts match -> ok",
+      "expected": "sat",
+      "fragment": [
+        "T_SHAPE_LINEAR"
+      ],
+      "id": "cat_nondim_match",
+      "np_hard": false,
+      "z3_correct": true,
+      "z3_verdict": "sat"
+    },
+    {
+      "agree": true,
+      "complexity": "P",
+      "cvc5_correct": true,
+      "cvc5_verdict": "unsat",
+      "description": "cat([8,x],[16,y],dim=1): row counts differ -> bug",
+      "expected": "unsat",
+      "fragment": [
+        "T_SHAPE_LINEAR"
+      ],
+      "id": "cat_nondim_mismatch",
+      "np_hard": false,
+      "z3_correct": true,
+      "z3_verdict": "unsat"
+    },
+    {
+      "agree": true,
+      "complexity": "P",
+      "cvc5_correct": true,
+      "cvc5_verdict": "unsat",
+      "description": "cpu tensor used with cuda tensor -> device bug",
+      "expected": "unsat",
+      "fragment": [
+        "T_DEVICE",
+        "T_SHAPE_LINEAR"
+      ],
+      "id": "device_conflict_bug",
+      "np_hard": false,
+      "z3_correct": true,
+      "z3_verdict": "unsat"
+    },
+    {
+      "agree": true,
+      "complexity": "P",
+      "cvc5_correct": true,
+      "cvc5_verdict": "sat",
+      "description": "matmul of two cuda:0 tensors -> ok",
+      "expected": "sat",
+      "fragment": [
+        "T_DEVICE",
+        "T_SHAPE_LINEAR"
+      ],
+      "id": "device_same_ok",
+      "np_hard": false,
+      "z3_correct": true,
+      "z3_verdict": "sat"
+    },
+    {
+      "agree": true,
+      "complexity": "P",
+      "cvc5_correct": true,
+      "cvc5_verdict": "unsat",
+      "description": "Linear(in=128) fed a width-256 tensor -> bug",
+      "expected": "unsat",
+      "fragment": [
+        "T_SHAPE_LINEAR"
+      ],
+      "id": "linear_in_features_bug",
+      "np_hard": false,
+      "z3_correct": true,
+      "z3_verdict": "unsat"
+    },
+    {
+      "agree": true,
+      "complexity": "P",
+      "cvc5_correct": true,
+      "cvc5_verdict": "sat",
+      "description": "Linear(in=128) fed a width-128 tensor -> ok",
+      "expected": "sat",
+      "fragment": [
+        "T_SHAPE_LINEAR"
+      ],
+      "id": "linear_in_features_ok",
+      "np_hard": false,
+      "z3_correct": true,
+      "z3_verdict": "sat"
+    },
+    {
+      "agree": true,
+      "complexity": "P",
+      "cvc5_correct": true,
+      "cvc5_verdict": "sat",
+      "description": "A[m,64] @ B[64,n]: inner dims agree -> satisfiable",
+      "expected": "sat",
+      "fragment": [
+        "T_SHAPE_LINEAR",
+        "T_SHAPE_MATMUL"
+      ],
+      "id": "matmul_inner_compatible",
+      "np_hard": false,
+      "z3_correct": true,
+      "z3_verdict": "sat"
+    },
+    {
+      "agree": true,
+      "complexity": "P",
+      "cvc5_correct": true,
+      "cvc5_verdict": "unsat",
+      "description": "A[m,64] @ B[32,n]: inner dims clash -> unsatisfiable (bug)",
+      "expected": "unsat",
+      "fragment": [
+        "T_SHAPE_LINEAR",
+        "T_SHAPE_MATMUL"
+      ],
+      "id": "matmul_inner_mismatch",
+      "np_hard": false,
+      "z3_correct": true,
+      "z3_verdict": "unsat"
+    },
+    {
+      "agree": true,
+      "complexity": "P",
+      "cvc5_correct": true,
+      "cvc5_verdict": "sat",
+      "description": "dropout active under training=True -> ok",
+      "expected": "sat",
+      "fragment": [
+        "T_PHASE",
+        "T_SHAPE_LINEAR"
+      ],
+      "id": "phase_consistent_ok",
+      "np_hard": false,
+      "z3_correct": true,
+      "z3_verdict": "sat"
+    },
+    {
+      "agree": true,
+      "complexity": "P",
+      "cvc5_correct": true,
+      "cvc5_verdict": "unsat",
+      "description": "module required to be train and eval at once -> bug",
+      "expected": "unsat",
+      "fragment": [
+        "T_PHASE",
+        "T_SHAPE_LINEAR"
+      ],
+      "id": "phase_contradiction_bug",
+      "np_hard": false,
+      "z3_correct": true,
+      "z3_verdict": "unsat"
+    },
+    {
+      "agree": true,
+      "complexity": "NP-hard",
+      "cvc5_correct": true,
+      "cvc5_verdict": "unsat",
+      "description": "view to (4,8) from 30 elements -> total-size bug (nonlinear)",
+      "expected": "unsat",
+      "fragment": [
+        "T_SHAPE_LINEAR",
+        "T_SHAPE_RESHAPE"
+      ],
+      "id": "reshape_total_size_bug",
+      "np_hard": true,
+      "z3_correct": true,
+      "z3_verdict": "unsat"
+    },
+    {
+      "agree": true,
+      "complexity": "NP-hard",
+      "cvc5_correct": true,
+      "cvc5_verdict": "sat",
+      "description": "view to (4,8) from 32 elements -> ok (nonlinear m*n)",
+      "expected": "sat",
+      "fragment": [
+        "T_SHAPE_LINEAR",
+        "T_SHAPE_RESHAPE"
+      ],
+      "id": "reshape_total_size_ok",
+      "np_hard": true,
+      "z3_correct": true,
+      "z3_verdict": "sat"
+    }
+  ],
+  "summary": {
+    "concordant": 14,
+    "cvc5_all_correct": true,
+    "cvc5_available": true,
+    "cvc5_correct": 14,
+    "full_concordance": true,
+    "n_decidable_in_p": 12,
+    "n_np_hard": 2,
+    "n_vcs": 14,
+    "np_hard_concordant": true,
+    "z3_all_correct": true,
+    "z3_correct": 14
+  }
+}

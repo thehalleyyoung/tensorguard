@@ -519,6 +519,27 @@ this is a proxy and not a human trial, the full randomized controlled trial is
 pre-registered and powered from this effect in
 [`docs/user_study/protocol.md`](docs/user_study/protocol.md).
 
+### Backend-agnostic soundness: Z3 vs cvc5 + decidability
+
+Soundness must not hinge on which SMT solver runs. Every verification condition
+is built in a shared predicate IR and can be discharged by either the Z3 or the
+cvc5 backend. `reproducibility/smt_backend_comparison.py` runs a curated suite of
+shape, device, phase and reshape VCs through **both** solvers and tags each with
+its decidability fragment (`src/decidability.py`): the linear shape, device and
+phase patterns are QF_LIA plus finite domains and decidable in P, while
+reshape/flatten total-size is the NP-hard but still decidable NIA fragment.
+
+```bash
+PYTHONPATH=. python3 reproducibility/smt_backend_comparison.py   # writes smt_backend_comparison.{json,md}
+```
+
+Across the suite both solvers return the intended verdict on every VC and are in
+full concordance — identical SAT and UNSAT answers — including on the NP-hard
+reshape fragment, so the result is not an artifact of Z3's propagators. Z3 stays
+the default for its `UserPropagator` interface; cvc5 serves as an independent
+oracle. See [`docs/decidability/smt_backends.md`](docs/decidability/smt_backends.md)
+and `tests/test_smt_backend_comparison.py`.
+
 ### Sound-mode false-positive hunt
 
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,

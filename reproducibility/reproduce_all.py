@@ -52,6 +52,8 @@ GENERATED_DETERMINISTIC = [
     "evaluation/localization_effort.md",
     "reproducibility/cegar_convergence.json",
     "reproducibility/cegar_convergence.md",
+    "reproducibility/smt_backend_comparison.json",
+    "reproducibility/smt_backend_comparison.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -106,6 +108,8 @@ STEPS = [
      [PY, "evaluation/localization_effort.py"], None),
     ("theory: measured CEGAR convergence (real loop)",
      [PY, "reproducibility/cegar_convergence.py"], None),
+    ("theory: Z3 vs cvc5 backend concordance + decidability",
+     [PY, "reproducibility/smt_backend_comparison.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]
