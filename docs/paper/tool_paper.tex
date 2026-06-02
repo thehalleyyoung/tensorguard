@@ -51,7 +51,8 @@ architectures and adjacent training/deployment code.  It checks tensor shape,
 dtype, device, phase, gradient-flow, stride/layout, probabilistic batch/event
 contracts, complex view/FFT shape-dtype rules, named-axis alignment,
 \texttt{vmap} batched-dimension transfers, sparse layout/blocksize invariants,
-geometric sampler grids, and library-specific contracts before
+packed/unpacked MultiheadAttention q/k/v and mask contracts, geometric sampler
+grids, and library-specific contracts before
 a forward pass runs, then reports a
 three-valued verdict:
 \safe{}, \unknown{}, or \unsafe{}.  The implementation is intentionally more
@@ -146,9 +147,9 @@ The CLI entrypoint is \texttt{tensorguard}.  Its central command verifies a file
 or module and supports independent check toggles, soundness modes, and machine
 readable output.  The public Python API mirrors the CLI through
 \texttt{verify\_architecture} and \texttt{verify\_module}.  Specialized helpers
-cover einops, SDPA, distributions, named tensors, complex FFT/view contracts,
-\texttt{vmap} batched-dimension transfer, sparse tensor layouts, and
-\texttt{grid\_sample}/\texttt{affine\_grid}.  A typical
+cover einops, SDPA, MultiheadAttention, distributions, named tensors, complex
+FFT/view contracts, \texttt{vmap} batched-dimension transfer, sparse tensor
+layouts, and \texttt{grid\_sample}/\texttt{affine\_grid}.  A typical
 workflow is:
 
 \begin{lstlisting}
@@ -443,6 +444,14 @@ unsoundness:
   tests replay hand edge cases and randomized cases against real PyTorch,
   including the easy-to-get-wrong distinction that \texttt{grid\_sample} accepts
   empty output grids while rejecting empty input spatial axes.
+  \item \textbf{\texttt{nn.MultiheadAttention}.}
+  \path{src/mha_verify.py} models packed and separate q/k/v projections,
+  \texttt{kdim}/\texttt{vdim}, \texttt{batch\_first}, 2-D and 3-D attention
+  masks, key-padding masks, and attention-weight output shapes.  Nested tensors
+  abstain rather than fabricating rectangular dimensions.  Differential tests
+  compare module and \texttt{multi\_head\_attention\_forward} calls against real
+  PyTorch, and the \texttt{torch.fx} module path carries explicit q/k/v/mask
+  roles into the verifier.
 \end{itemize}
 
 \section{Beyond \texttt{forward}: deployment and training hazards}
@@ -870,8 +879,8 @@ directions are not more marketing metrics; they are higher-value coverage and
 stronger evidence:
 
 \begin{itemize}[leftmargin=2em]
-  \item deeper operator coverage for MultiheadAttention, split/chunk, masked
-  selection, nonzero, and exact einsum diagonal semantics;
+  \item deeper operator coverage for split/chunk, masked selection, nonzero,
+  exact einsum diagonal semantics, and recurrent layers;
   \item deployment correctness for quantization, mixed precision, dynamic
   \texttt{torch.export} constraints, AOTInductor layouts, ONNX opsets, GGUF
   export, FSDP2, and pipeline-parallel stage boundaries;
@@ -892,8 +901,8 @@ stronger evidence:
 \tg{} turns tensor metadata checking from a runtime accident into an auditable
 static contract.  It is already useful as a developer tool: it catches shape,
 device, dtype, phase, gradient, training-loop, distributed, quantization,
-export, einops, SDPA, distribution, complex FFT/view, named-axis, vmap,
-sparse-layout, and sampler-grid hazards
+export, einops, SDPA, MultiheadAttention, distribution, complex FFT/view,
+named-axis, vmap, sparse-layout, and sampler-grid hazards
 before execution; it reports precise
 diagnostics; it integrates with CI and code scanning; and it defaults to
 abstention rather than false certainty when the program leaves its fragment.
@@ -983,6 +992,9 @@ Are einops contracts faithful? &
 Is SDPA modeled faithfully? &
 \path{src/sdpa_verify.py} &
 \path{tests/test_sdpa_verify.py} \\
+Is MultiheadAttention q/k/v and mask handling modeled faithfully? &
+\path{src/mha_verify.py} &
+\path{tests/test_mha_verify.py} \\
 Are probabilistic batch/event shapes modeled faithfully? &
 \path{src/distributions_verify.py} &
 \path{tests/test_distributions_verify.py} \\
@@ -1095,6 +1107,9 @@ checker with source-level bug reports &
 \path{src/einops_verify.py}, \path{src/einops_source.py} \\
 Library model & SDPA shape and mask checker for attention hot paths &
 \path{src/sdpa_verify.py}, \path{tests/test_sdpa_verify.py} \\
+Library model & MultiheadAttention packed/unpacked q/k/v, mask, key-padding,
+and weight-output contracts &
+\path{src/mha_verify.py}, \path{tests/test_mha_verify.py} \\
 Library model & \texttt{torch.distributions} batch/event/log-prob shape checker &
 \path{src/distributions_verify.py},
 \path{tests/test_distributions_verify.py} \\

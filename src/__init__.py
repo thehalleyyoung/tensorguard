@@ -36,6 +36,7 @@ from .sparse_verify import (
     verify_sparse_csr,
 )
 from .grid_sample_verify import verify_affine_grid, verify_grid_sample
+from .mha_verify import verify_multihead_attention
 from .vmap_verify import verify_vmap
 
 __all__ = [
@@ -69,6 +70,7 @@ __all__ = [
     "verify_sparse_bsc",
     "verify_grid_sample",
     "verify_affine_grid",
+    "verify_multihead_attention",
     "verify_vmap",
     "__version__",
 ]

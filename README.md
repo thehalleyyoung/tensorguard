@@ -21,6 +21,7 @@ runtime errors in ML codebases before any code runs.
   patterns, and more
 - **High-value library contracts checked against the real libraries** —
   `einops` (`rearrange` / `reduce` / `repeat`), SDPA,
+  `nn.MultiheadAttention` packed/unpacked q/k/v + masks,
   `grid_sample` / `affine_grid`, and `torch.distributions`
   batch/event/log-prob shapes, plus PyTorch
   named-tensor `refine_names` / `align_to` alignment, complex
@@ -32,14 +33,16 @@ runtime errors in ML codebases before any code runs.
   attention, unusable probabilistic batch/event contracts, invalid
   named-axis refinements/reorderings, unsupported complex FFT dtypes, and
   impossible vmap batch/out-dim contracts, unusable sparse compressed
-  layouts, and invalid sampler grids are caught before kernels raise, while
+  layouts, invalid sampler grids, and broken MHA key/value/mask contracts are
+  caught before kernels raise, while
   symbolic dims are never refuted
   (`verify_einops`, `verify_einops_source`, `verify_distribution`,
   `verify_log_prob`, `verify_refine_names`, `verify_align_to`,
   `verify_view_as_real`, `verify_view_as_complex`, `verify_fft`,
   `verify_vmap`, `verify_sparse_coo`, `verify_sparse_csr`,
   `verify_sparse_csc`, `verify_sparse_bsr`, `verify_sparse_bsc`,
-  `verify_grid_sample`, `verify_affine_grid`)
+  `verify_grid_sample`, `verify_affine_grid`,
+  `verify_multihead_attention`)
 - **5-theory product domain** — jointly reasons over
   **Shape × Device × Phase × Stride × Permutation** for each tensor
 - **Zero annotations required** — shapes are inferred from constructors,
@@ -1514,8 +1517,10 @@ Real torchvision models stay free of new false positives. See
 
 The modern functional core of attention, `F.scaled_dot_product_attention`, is
 now modelled with exact shape semantics instead of being dropped as a no-op
-(`nn.MultiheadAttention` the layer was already handled, including its
-`embed_dim % num_heads` check). For `query` of shape `(*batch, L, E)`, `key` of
+and `nn.MultiheadAttention` now has an exact packed/unpacked q/k/v contract:
+`kdim`, `vdim`, `batch_first`, 2-D/3-D attention masks, key-padding masks,
+`need_weights`, and nested-tensor abstention are modeled against real PyTorch.
+For `query` of shape `(*batch, L, E)`, `key` of
 `(*batch, S, E)` and `value` of `(*batch, S, Ev)`, the output is `(*batch, L,
 Ev)` — the query shape with its last dimension replaced by the value's last
 dimension.
@@ -1530,9 +1535,10 @@ positives. Because the output shape is exact, downstream projections are checked
 against the post-attention shape.
 
 This is proven end-to-end on a from-scratch multi-head attention block (linear
-projections, head reshape/transpose, SDPA, output projection) and on a real timm
-Vision Transformer whose traced graph contains a dozen SDPA nodes. See
-`tests/test_attention_sdpa_precise.py`.
+projections, head reshape/transpose, SDPA, output projection), real
+`nn.MultiheadAttention` modules and functional calls, and on a real timm Vision
+Transformer whose traced graph contains a dozen SDPA nodes. See
+`tests/test_attention_sdpa_precise.py` and `tests/test_mha_verify.py`.
 
 ### Convolution family precision
 

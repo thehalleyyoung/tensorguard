@@ -200,6 +200,11 @@ def _extract_layer_params(module: "nn.Module", kind: LayerKind) -> Dict[str, Any
     elif kind == LayerKind.MULTIHEAD_ATTENTION:
         params["embed_dim"] = module.embed_dim
         params["num_heads"] = module.num_heads
+        params["kdim"] = getattr(module, "kdim", module.embed_dim)
+        params["vdim"] = getattr(module, "vdim", module.embed_dim)
+        params["batch_first"] = getattr(module, "batch_first", False)
+        same_qkv = getattr(module, "_qkv_same_embed_dim", True)
+        params["use_separate_proj_weight"] = not bool(same_qkv)
     elif kind == LayerKind.MAXPOOL2D:
         params["kernel_size"] = module.kernel_size
         params["stride"] = module.stride
@@ -348,6 +353,7 @@ def _make_layer_def(name: str, module: "nn.Module") -> LayerDef:
     elif kind == LayerKind.MULTIHEAD_ATTENTION:
         ldef.num_heads = params.get("num_heads")
         ldef.in_features = params.get("embed_dim")
+        ldef.batch_first = bool(params.get("batch_first", False))
     elif kind == LayerKind.ADAPTIVE_AVGPOOL2D:
         out = params.get("output_size")
         if isinstance(out, int):
@@ -755,6 +761,19 @@ def fx_trace_to_graph(
                     output=output_name,
                     layer_ref=flat_target,
                 )
+            elif kind == LayerKind.MULTIHEAD_ATTENTION:
+                mha_inputs, mha_params = _collect_mha_call_inputs(
+                    node, node_to_tensor
+                )
+                layer_params = _extract_layer_params(submodule, kind)
+                layer_params.update(mha_params)
+                step = ComputationStep(
+                    op=OpKind.LAYER_CALL,
+                    inputs=mha_inputs,
+                    output=output_name,
+                    layer_ref=flat_target,
+                    params=layer_params,
+                )
             else:
                 step = ComputationStep(
                     op=OpKind.LAYER_CALL,
@@ -883,6 +902,50 @@ def _collect_node_inputs(
                 if isinstance(a, torch.fx.Node):
                     inputs.append(node_to_tensor.get(a.name, a.name))
     return inputs
+
+
+def _collect_mha_call_inputs(
+    node: "torch.fx.Node",
+    node_to_tensor: Dict[str, str],
+) -> Tuple[List[str], Dict[str, Any]]:
+    """Collect q/k/v and mask operands for a MultiheadAttention module call.
+
+    ``step.inputs`` is positional and otherwise loses whether a tensor came from
+    ``query``, ``key``, ``value``, ``attn_mask`` or ``key_padding_mask``.  Store a
+    parallel role list so the verifier can consume kwargs soundly.
+    """
+    inputs: List[str] = []
+    roles: List[str] = []
+
+    def add(role: str, value: Any) -> None:
+        if isinstance(value, torch.fx.Node):
+            inputs.append(node_to_tensor.get(value.name, value.name))
+            roles.append(role)
+
+    positional_roles = ("query", "key", "value")
+    for role, arg in zip(positional_roles, node.args):
+        add(role, arg)
+    for role in positional_roles[len(node.args):]:
+        if role in node.kwargs:
+            add(role, node.kwargs[role])
+    if len(node.args) > 3:
+        add("key_padding_mask", node.args[3])
+    if len(node.args) > 5:
+        add("attn_mask", node.args[5])
+    add("key_padding_mask", node.kwargs.get("key_padding_mask"))
+    add("attn_mask", node.kwargs.get("attn_mask"))
+
+    params: Dict[str, Any] = {"__mha_input_roles__": roles}
+    if len(node.args) > 4 and isinstance(node.args[4], bool):
+        params["need_weights"] = node.args[4]
+    if len(node.args) > 6 and isinstance(node.args[6], bool):
+        params["average_attn_weights"] = node.args[6]
+    if len(node.args) > 7 and isinstance(node.args[7], bool):
+        params["is_causal"] = node.args[7]
+    for name in ("need_weights", "average_attn_weights", "is_causal"):
+        if name in node.kwargs:
+            params[name] = node.kwargs[name]
+    return inputs, params
 
 
 def _parse_reshape_dims(shape_args: Tuple) -> Optional[Tuple]:

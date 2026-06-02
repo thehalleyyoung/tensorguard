@@ -124,6 +124,7 @@ from src.tensor_shapes import (
     compute_reshape_shape,
     compute_sdpa_shape,
 )
+from src.mha_verify import verify_multihead_attention
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1451,9 +1452,20 @@ def _extract_layer_params(kind: LayerKind, call: ast.Call,
     elif kind == LayerKind.MULTIHEAD_ATTENTION:
         embed = pos[0] if len(pos) > 0 else kw.get("embed_dim")
         heads = pos[1] if len(pos) > 1 else kw.get("num_heads")
+        kdim = pos[6] if len(pos) > 6 else kw.get("kdim", embed)
+        vdim = pos[7] if len(pos) > 7 else kw.get("vdim", embed)
+        batch_first = pos[8] if len(pos) > 8 else kw.get("batch_first", False)
         layer.in_features = embed
         layer.num_heads = heads
-        layer.params = {"embed_dim": embed, "num_heads": heads}
+        layer.batch_first = bool(batch_first)
+        layer.params = {
+            "embed_dim": embed,
+            "num_heads": heads,
+            "kdim": kdim,
+            "vdim": vdim,
+            "batch_first": bool(batch_first),
+            "use_separate_proj_weight": bool(kdim != embed or vdim != embed),
+        }
 
     elif kind == LayerKind.ADAPTIVE_AVGPOOL2D:
         out = pos[0] if len(pos) > 0 else kw.get("output_size")
@@ -9952,6 +9964,10 @@ class ConstraintVerifier:
 
         self._check_norm_stats_mode(state, step, layer, inp_shape, violations)
 
+        if layer.kind == LayerKind.MULTIHEAD_ATTENTION:
+            self._apply_mha_layer_call(state, step, layer, violations)
+            return
+
         propagator = _LAYER_PROPAGATORS.get(layer.kind)
         if propagator is not None:
             cache_key = (id(layer), inp_shape)
@@ -9999,6 +10015,89 @@ class ConstraintVerifier:
                       for i in range(inp_shape.ndim))
             )
             state.shape_env[step.output] = unknown_shape
+
+    def _apply_mha_layer_call(
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        layer: LayerDef,
+        violations: List[SafetyViolation],
+    ) -> None:
+        params: Dict[str, Any] = {}
+        params.update(layer.params or {})
+        params.update(step.params or {})
+        roles = params.get("__mha_input_roles__")
+        if not roles or len(roles) != len(step.inputs):
+            default = ["query", "key", "value", "key_padding_mask", "attn_mask"]
+            roles = default[:len(step.inputs)]
+
+        by_role: Dict[str, str] = {}
+        for role, name in zip(roles, step.inputs):
+            by_role.setdefault(role, name)
+
+        q_name = by_role.get("query") or (step.inputs[0] if step.inputs else None)
+        k_name = by_role.get("key") or q_name
+        v_name = by_role.get("value") or k_name
+        if q_name is None or k_name is None or v_name is None:
+            return
+
+        q = state.shape_env.get(q_name)
+        k = state.shape_env.get(k_name)
+        v = state.shape_env.get(v_name)
+        if q is None or k is None or v is None:
+            if q is not None:
+                state.shape_env[step.output] = q
+            return
+
+        attn_mask_name = by_role.get("attn_mask")
+        key_padding_mask_name = by_role.get("key_padding_mask")
+        attn_mask = (
+            state.shape_env.get(attn_mask_name) if attn_mask_name else None
+        )
+        key_padding_mask = (
+            state.shape_env.get(key_padding_mask_name)
+            if key_padding_mask_name else None
+        )
+        verdict = verify_multihead_attention(
+            tuple(d.value for d in q.dims),
+            tuple(d.value for d in k.dims),
+            tuple(d.value for d in v.dims),
+            params.get("embed_dim", layer.in_features),
+            params.get("num_heads", layer.num_heads),
+            kdim=params.get("kdim"),
+            vdim=params.get("vdim"),
+            batch_first=bool(params.get("batch_first", layer.batch_first)),
+            attn_mask=(
+                tuple(d.value for d in attn_mask.dims)
+                if attn_mask is not None else None
+            ),
+            key_padding_mask=(
+                tuple(d.value for d in key_padding_mask.dims)
+                if key_padding_mask is not None else None
+            ),
+            need_weights=bool(params.get("need_weights", True)),
+            average_attn_weights=bool(params.get("average_attn_weights", True)),
+            use_separate_proj_weight=params.get("use_separate_proj_weight"),
+            nested_tensor=bool(params.get("nested_tensor", False)),
+        )
+        if not verdict.ok:
+            violations.append(SafetyViolation(
+                kind="shape_incompatible",
+                step_index=-1,
+                step=step,
+                message=verdict.error or "MultiheadAttention shape mismatch",
+                tensor_a=q_name,
+                tensor_b=k_name,
+                shape_a=q,
+                shape_b=k,
+            ))
+            return
+        if verdict.output_shape is not None:
+            state.shape_env[step.output] = TensorShape(
+                tuple(ShapeDim(d) for d in verdict.output_shape)
+            )
+        else:
+            state.shape_env[step.output] = q
 
     def _apply_stub_call(
         self,
