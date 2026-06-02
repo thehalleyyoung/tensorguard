@@ -1017,6 +1017,20 @@ declines to capture a shape-buggy model, that is recorded as a capture gap rathe
 than a disagreement: both frontends still conclude the model is unsafe, merely at
 different stages. See `tests/test_export_frontend.py`.
 
+### Inheritance, `super().forward()`, and mixins
+
+Models that build behaviour through class inheritance are now handled uniformly
+rather than mis-analysed. Layers defined in a base class's `__init__` are merged
+into the child (the child wins on any name collision), so an inherited `self.fc`
+is visible wherever it is used. A `super().forward(x)` call is inlined: the base
+class's forward computation is spliced into the graph with fresh internal names,
+its input bound to the actual argument and its output to the call site — so the
+inherited steps are genuinely verified instead of silently skipped (which was an
+unsound false negative). This works across multi-level chains (`C(B)`, `B(A)`,
+`A(nn.Module)`) where each level calls `super().forward`, across cooperative
+mixins, and when a child inherits `forward` wholesale without overriding it.
+Submodule composition is unchanged. See `tests/test_inheritance.py`.
+
 ### First-class symbolic batch & sequence dimensions
 
 Shape names supplied as strings — `input_shapes={"x": ("B", "S", 8)}` — are

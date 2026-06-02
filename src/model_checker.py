@@ -2641,8 +2641,19 @@ class _ForwardExtractor(ast.NodeVisitor):
     """Extracts computation steps from an nn.Module's ``forward()``."""
 
     def __init__(self, layers: Dict[str, LayerDef],
-                 scalar_attrs: Optional[Dict[str, Any]] = None) -> None:
+                 scalar_attrs: Optional[Dict[str, Any]] = None,
+                 super_forward_fn: Optional["ast.FunctionDef"] = None,
+                 super_forward_chain: Optional[List["ast.FunctionDef"]] = None
+                 ) -> None:
         self.layers = layers
+        # Chain of base-class ``forward`` methods (nearest first) to inline when
+        # ``super().forward(x)`` is called — supports multi-level inheritance.
+        if super_forward_chain is not None:
+            self._super_forward_chain = super_forward_chain
+        elif super_forward_fn is not None:
+            self._super_forward_chain = [super_forward_fn]
+        else:
+            self._super_forward_chain = []
         self.steps: List[ComputationStep] = []
         self.input_names: List[str] = []
         self.output_names: List[str] = []
@@ -3734,10 +3745,95 @@ class _ForwardExtractor(ast.NodeVisitor):
             line=line, col=col,
         )
 
+    def _inline_super_forward(
+        self, node: ast.Call, target: str, line: int, col: int
+    ) -> None:
+        """Inline a ``super().forward(x)`` call.
+
+        The base class's ``forward`` is extracted into its own steps, then those
+        steps are spliced into the current graph with all tensor names renamed
+        to fresh unique names — except the base's input (bound to the actual
+        argument tensor) and the base's final output (bound to ``target``).
+        Falls back to a sound opaque pass-through when the base forward is
+        unavailable.
+        """
+        # Resolve the actual argument tensor name (e.g. ``x``).
+        actual = (self._resolve_arg(node.args[0]) if node.args
+                  else self._fresh("super_in"))
+
+        if not self._super_forward_chain:
+            # No base forward to inline: emit a sound opaque op (CUSTOM keeps
+            # the shape — base forwards are overwhelmingly shape-preserving
+            # wrappers, but we register it so it is not silently dropped).
+            self.steps.append(ComputationStep(
+                op=OpKind.CUSTOM, inputs=[actual], output=target,
+                line=line, col=col,
+            ))
+            return
+
+        base_fwd = self._super_forward_chain[0]
+        sub = _ForwardExtractor(
+            self.layers,
+            super_forward_chain=self._super_forward_chain[1:])
+        sub._scalar_attrs = dict(self._scalar_attrs)
+        sub.extract(base_fwd)
+
+        base_in = sub.input_names[0] if sub.input_names else None
+        final_out = None
+        if sub.output_names:
+            final_out = sub.output_names[-1]
+        elif sub.steps:
+            final_out = sub.steps[-1].output
+
+        tag = self._fresh("sf")
+        name_map: Dict[str, str] = {}
+
+        def rn(nm: str) -> str:
+            if nm == base_in:
+                return actual
+            if nm == final_out:
+                return target
+            if nm not in name_map:
+                name_map[nm] = f"{tag}__{nm}"
+            return name_map[nm]
+
+        def remap_step(s: ComputationStep) -> ComputationStep:
+            return ComputationStep(
+                op=s.op,
+                inputs=[rn(i) for i in s.inputs],
+                output=rn(s.output),
+                layer_ref=s.layer_ref,
+                params=dict(s.params) if s.params else {},
+                line=s.line, col=s.col,
+                condition=s.condition,
+                true_branch=([remap_step(b) for b in s.true_branch]
+                             if s.true_branch else None),
+                false_branch=([remap_step(b) for b in s.false_branch]
+                              if s.false_branch else None),
+            )
+
+        for s in sub.steps:
+            # Skip the base's RETURN bookkeeping op — the caller decides what to
+            # do with the result (assign to target / return it again).
+            if s.op == OpKind.RETURN:
+                continue
+            self.steps.append(remap_step(s))
+
     def _process_call(
         self, node: ast.Call, target: str, line: int, col: int
     ) -> None:
         func = node.func
+
+        # --- super().forward(x) ---------------------------------------------
+        # Inline the base class's forward computation so inherited layers are
+        # verified rather than silently skipped (which would be unsound).
+        if (isinstance(func, ast.Attribute)
+                and func.attr == "forward"
+                and isinstance(func.value, ast.Call)
+                and isinstance(func.value.func, ast.Name)
+                and func.value.func.id == "super"):
+            self._inline_super_forward(node, target, line, col)
+            return
 
         # --- self.<layer>(x) ------------------------------------------------
         if (isinstance(func, ast.Attribute) and
@@ -4158,6 +4254,58 @@ def _find_method(cls_node: ast.ClassDef, name: str) -> Optional[ast.FunctionDef]
     return None
 
 
+def _user_base_chain(
+    cls_node: ast.ClassDef,
+    class_map: Dict[str, ast.ClassDef],
+) -> List[ast.ClassDef]:
+    """Return *cls_node*'s user-defined ``nn.Module`` ancestors, nearest first.
+
+    Only locally-defined classes present in *class_map* are followed (the
+    chain stops at ``nn.Module`` / library bases). Supports multi-level
+    inheritance (``C(B)``, ``B(A)``) and is cycle-safe.
+    """
+    chain: List[ast.ClassDef] = []
+    seen: Set[str] = {cls_node.name}
+    frontier = list(cls_node.bases)
+    while frontier:
+        base = frontier.pop(0)
+        base_name = _name_or_attr(base)
+        if base_name in class_map and base_name not in seen:
+            seen.add(base_name)
+            base_cls = class_map[base_name]
+            chain.append(base_cls)
+            frontier.extend(base_cls.bases)
+    return chain
+
+
+def _nearest_super_forward(
+    cls_node: ast.ClassDef,
+    class_map: Dict[str, ast.ClassDef],
+) -> Optional[ast.FunctionDef]:
+    """Return the ``forward`` method of the nearest user-defined ancestor that
+    defines one, so ``super().forward(x)`` can be inlined."""
+    chain = _super_forward_chain(cls_node, class_map)
+    return chain[0] if chain else None
+
+
+def _super_forward_chain(
+    cls_node: ast.ClassDef,
+    class_map: Dict[str, ast.ClassDef],
+) -> List[ast.FunctionDef]:
+    """Return the ordered list of ancestor ``forward`` methods (nearest first).
+
+    Supports chained ``super().forward(x)`` across multi-level inheritance:
+    inlining the nearest base's forward may itself contain a ``super().forward``
+    that must resolve to the next ancestor in this chain.
+    """
+    out: List[ast.FunctionDef] = []
+    for base_cls in _user_base_chain(cls_node, class_map):
+        fwd = _find_method(base_cls, "forward")
+        if fwd is not None:
+            out.append(fwd)
+    return out
+
+
 def _collect_helper_functions(tree: ast.AST) -> Dict[str, ast.FunctionDef]:
     """Return top-level ``def helper(...): return nn.<Layer>(...)`` functions.
 
@@ -4257,13 +4405,19 @@ def _collect_module_classes(tree: ast.AST) -> List[ast.ClassDef]:
             )
             if is_module:
                 classes.append(node)
-    # Also check if any base is another locally-defined nn.Module
-    local_module_names = {c.name for c in classes}
-    for node in body:
-        if isinstance(node, ast.ClassDef) and node not in classes:
-            bases = [_name_or_attr(b) for b in node.bases]
-            if any(b in local_module_names for b in bases if b is not None):
-                classes.append(node)
+    # Also check if any base is another locally-defined nn.Module.  Iterate to
+    # a fixpoint so multi-level chains (``C(B)``, ``B(A)``, ``A(nn.Module)``)
+    # are all collected, not just direct children of an nn.Module subclass.
+    changed = True
+    while changed:
+        changed = False
+        local_module_names = {c.name for c in classes}
+        for node in body:
+            if isinstance(node, ast.ClassDef) and node not in classes:
+                bases = [_name_or_attr(b) for b in node.bases]
+                if any(b in local_module_names for b in bases if b is not None):
+                    classes.append(node)
+                    changed = True
     return classes
 
 
@@ -4397,12 +4551,22 @@ def extract_computation_graph(source: str) -> ComputationGraph:
         if dec_name in ("torch.compile", "compile"):
             graph.dynamic_features["torch_compile"] = True
 
-    # --- __init__: extract layers (with submodule awareness) ---
+    # --- __init__: extract layers (with submodule + inheritance awareness) ---
     init_fn = _find_method(root_cls, "__init__")
     scalar_attrs: Dict[str, Any] = {}
+    # Inherited layers from user-defined base classes are merged first
+    # (farthest ancestor → nearest), so that the child's own __init__ wins on
+    # any attribute-name collision. This makes ``self.fc`` defined in a base
+    # class visible when the child calls it (directly or via super().forward()).
+    base_chain = _user_base_chain(root_cls, class_map)
+    extractor = _InitExtractor(class_map=class_map, function_map=function_map)
+    for ancestor in reversed(base_chain):
+        anc_init = _find_method(ancestor, "__init__")
+        if anc_init is not None:
+            extractor.extract(anc_init)
     if init_fn:
-        extractor = _InitExtractor(class_map=class_map, function_map=function_map)
         extractor.extract(init_fn)
+    if init_fn or base_chain:
         graph.layers = extractor.layers
         graph.buffer_shapes = extractor.buffer_shapes
         graph.param_shapes = extractor.param_shapes
@@ -4438,7 +4602,12 @@ def extract_computation_graph(source: str) -> ComputationGraph:
             )
 
     # --- forward: extract steps ---
-    fwd_fn = _find_method(root_cls, "forward")
+    own_fwd = _find_method(root_cls, "forward")
+    fwd_fn = own_fwd
+    # A child may inherit forward entirely (no override): fall back to the
+    # nearest user-defined ancestor's forward so its computation is verified.
+    if fwd_fn is None:
+        fwd_fn = _nearest_super_forward(root_cls, class_map)
     if fwd_fn:
         # Check for @torch.compile on forward
         for dec in fwd_fn.decorator_list:
@@ -4446,7 +4615,13 @@ def extract_computation_graph(source: str) -> ComputationGraph:
             if dec_name in ("torch.compile", "compile"):
                 graph.dynamic_features["torch_compile_forward"] = True
 
-        fwd_ext = _ForwardExtractor(graph.layers, scalar_attrs=scalar_attrs)
+        super_chain = _super_forward_chain(root_cls, class_map)
+        # If forward was inherited (no own override), fwd_fn IS the nearest
+        # ancestor's forward, so super() inside it resolves to the REST.
+        if own_fwd is None and super_chain:
+            super_chain = super_chain[1:]
+        fwd_ext = _ForwardExtractor(graph.layers, scalar_attrs=scalar_attrs,
+                                    super_forward_chain=super_chain)
         fwd_ext.extract(fwd_fn)
         graph.steps = fwd_ext.steps
         graph.input_names = fwd_ext.input_names
