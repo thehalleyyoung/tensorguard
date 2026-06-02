@@ -429,6 +429,13 @@ def _function_to_op(fn) -> Optional[OpKind]:
         torch.narrow: OpKind.NARROW,
         torch.select: OpKind.SELECT_DIM,
         torch.take: OpKind.TAKE,
+        torch.take_along_dim: OpKind.TAKE_ALONG_DIM,
+        torch.argsort: OpKind.ARGSORT,
+        torch.sort: OpKind.SORT,
+        torch.topk: OpKind.TOPK,
+        torch.kthvalue: OpKind.KTHVALUE,
+        torch.argmax: OpKind.ARG_REDUCE,
+        torch.argmin: OpKind.ARG_REDUCE,
     }
     # Also handle torch.nn.functional
     import torch.nn.functional as F
@@ -498,6 +505,13 @@ _METHOD_OP_MAP = {
     "split": OpKind.SPLIT,
     "expand": OpKind.EXPAND,
     "repeat": OpKind.REPEAT,
+    "take_along_dim": OpKind.TAKE_ALONG_DIM,
+    "argsort": OpKind.ARGSORT,
+    "sort": OpKind.SORT,
+    "topk": OpKind.TOPK,
+    "kthvalue": OpKind.KTHVALUE,
+    "argmax": OpKind.ARG_REDUCE,
+    "argmin": OpKind.ARG_REDUCE,
     "mean": OpKind.MEAN_REDUCE,
     "sum": OpKind.SUM_REDUCE,
     # mean/sum handled specially via _handle_reduction_method
@@ -683,6 +697,7 @@ def fx_trace_to_graph(
     # Step 2: Walk fx nodes and convert to ComputationSteps
     step_idx = 0
     node_to_tensor: Dict[str, str] = {}  # fx node name → tensor name
+    tuple_output_info: Dict[str, Dict[str, Any]] = {}
 
     for node in traced.graph.nodes:
         if node.op == "placeholder":
@@ -803,7 +818,20 @@ def fx_trace_to_graph(
 
             op_kind = _function_to_op(node.target)
             output_name = f"_t{step_idx}"
-            if _op_display_name(node.target) == "getitem" and len(node.args) >= 2:
+            tuple_getitem_params: Dict[str, Any] = {}
+            display_name = _op_display_name(node.target)
+            if display_name == "getattr" and len(node.args) >= 2:
+                base_arg = node.args[0]
+                attr_arg = node.args[1]
+                if (isinstance(base_arg, torch.fx.Node)
+                        and base_arg.name in tuple_output_info
+                        and attr_arg in ("values", "indices")):
+                    op_kind = OpKind.ACTIVATION
+                    tuple_getitem_params = dict(tuple_output_info[base_arg.name])
+                    tuple_getitem_params["tuple_index"] = (
+                        1 if attr_arg == "indices" else 0
+                    )
+            if display_name == "getitem" and len(node.args) >= 2:
                 def _has_tensor_index(value: Any) -> bool:
                     if isinstance(value, torch.fx.Node):
                         return True
@@ -811,7 +839,16 @@ def fx_trace_to_graph(
                         return any(_has_tensor_index(v) for v in value)
                     return False
 
-                if _has_tensor_index(node.args[1]):
+                base_arg = node.args[0]
+                item_arg = node.args[1]
+                if (isinstance(base_arg, torch.fx.Node)
+                        and base_arg.name in tuple_output_info
+                        and isinstance(item_arg, int)
+                        and not isinstance(item_arg, bool)):
+                    op_kind = OpKind.ACTIVATION
+                    tuple_getitem_params = dict(tuple_output_info[base_arg.name])
+                    tuple_getitem_params["tuple_index"] = item_arg
+                elif _has_tensor_index(node.args[1]):
                     op_kind = OpKind.BOOLEAN_INDEX
             if op_kind is None:
                 factory_step = _maybe_tensor_factory(node, output_name)
@@ -834,6 +871,7 @@ def fx_trace_to_graph(
             node_to_tensor[node.name] = output_name
 
             params = _extract_function_params(node, op_kind)
+            params.update(tuple_getitem_params)
             if op_kind == OpKind.UNSUPPORTED:
                 params["op_name"] = _op_display_name(node.target)
 
@@ -844,6 +882,10 @@ def fx_trace_to_graph(
                 params=params,
             )
             graph.steps.append(step)
+            if op_kind in (OpKind.SORT, OpKind.TOPK, OpKind.KTHVALUE):
+                tuple_output_info[node.name] = {
+                    "tuple_source_op": op_kind.name.lower(),
+                }
             step_idx += 1
 
         elif node.op == "call_method":
@@ -882,6 +924,10 @@ def fx_trace_to_graph(
                 params=params,
             )
             graph.steps.append(step)
+            if op_kind in (OpKind.SORT, OpKind.TOPK, OpKind.KTHVALUE):
+                tuple_output_info[node.name] = {
+                    "tuple_source_op": op_kind.name.lower(),
+                }
             step_idx += 1
 
         elif node.op == "output":
@@ -1045,6 +1091,36 @@ def _extract_indexing_params(
             params["as_tuple"] = args[1]
         if "as_tuple" in kwargs and isinstance(kwargs["as_tuple"], bool):
             params["as_tuple"] = kwargs["as_tuple"]
+    if op_kind == OpKind.TAKE_ALONG_DIM:
+        d = _int_arg(2, "dim")
+        if d is not None:
+            params["dim"] = d
+        elif "dim" in kwargs and kwargs["dim"] is None:
+            params["dim"] = None
+    if op_kind in (OpKind.ARGSORT, OpKind.SORT):
+        d = _int_arg(1, "dim")
+        params["dim"] = d if d is not None else -1
+    if op_kind == OpKind.ARG_REDUCE:
+        d = _int_arg(1, "dim")
+        if d is not None:
+            params["dim"] = d
+        elif "dim" in kwargs:
+            params["dim"] = kwargs["dim"] if kwargs["dim"] is None else params.get("dim")
+        if len(args) > 2 and isinstance(args[2], bool):
+            params["keepdim"] = args[2]
+        if "keepdim" in kwargs and isinstance(kwargs["keepdim"], bool):
+            params["keepdim"] = kwargs["keepdim"]
+    if op_kind in (OpKind.TOPK, OpKind.KTHVALUE):
+        k = _int_arg(1, "k")
+        if k is not None:
+            params["k"] = k
+        d = _int_arg(2, "dim")
+        params["dim"] = d if d is not None else -1
+        if op_kind == OpKind.KTHVALUE:
+            if len(args) > 3 and isinstance(args[3], bool):
+                params["keepdim"] = args[3]
+            if "keepdim" in kwargs and isinstance(kwargs["keepdim"], bool):
+                params["keepdim"] = kwargs["keepdim"]
     return params
 
 
@@ -1109,7 +1185,8 @@ def _extract_function_params(
         OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
         OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
         OpKind.SELECT_DIM, OpKind.TAKE, OpKind.NONZERO,
-        OpKind.BOOLEAN_INDEX,
+        OpKind.BOOLEAN_INDEX, OpKind.TAKE_ALONG_DIM, OpKind.ARGSORT,
+        OpKind.SORT, OpKind.TOPK, OpKind.KTHVALUE, OpKind.ARG_REDUCE,
     ):
         params.update(_extract_indexing_params(node, op_kind))
         if op_kind == OpKind.NONZERO and "as_tuple" in node.kwargs:
@@ -1211,7 +1288,8 @@ def _extract_method_params(
         OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
         OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
         OpKind.SELECT_DIM, OpKind.TAKE, OpKind.NONZERO,
-        OpKind.BOOLEAN_INDEX,
+        OpKind.BOOLEAN_INDEX, OpKind.TAKE_ALONG_DIM, OpKind.ARGSORT,
+        OpKind.SORT, OpKind.TOPK, OpKind.KTHVALUE, OpKind.ARG_REDUCE,
     ):
         params.update(_extract_indexing_params(node, op_kind))
         if op_kind == OpKind.NONZERO and "as_tuple" in node.kwargs:
@@ -1764,6 +1842,13 @@ _METHOD_OP_MAP: Dict[str, OpKind] = {
     "narrow": OpKind.NARROW,
     "select": OpKind.SELECT_DIM,
     "take": OpKind.TAKE,
+    "take_along_dim": OpKind.TAKE_ALONG_DIM,
+    "argsort": OpKind.ARGSORT,
+    "sort": OpKind.SORT,
+    "topk": OpKind.TOPK,
+    "kthvalue": OpKind.KTHVALUE,
+    "argmax": OpKind.ARG_REDUCE,
+    "argmin": OpKind.ARG_REDUCE,
     "half": OpKind.DTYPE_CAST,
     "float": OpKind.DTYPE_CAST,
     "double": OpKind.DTYPE_CAST,

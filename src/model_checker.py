@@ -314,6 +314,12 @@ class OpKind(Enum):
     NARROW = auto()           # narrow(input, dim, start, length)
     SELECT_DIM = auto()       # select(input, dim, index) → removes dim
     TAKE = auto()             # take(input, index) → index.shape
+    TAKE_ALONG_DIM = auto()   # take_along_dim(input, indices, dim) → indices/flat shape
+    ARGSORT = auto()          # argsort(input, dim) → input.shape, int64
+    SORT = auto()             # sort(input, dim) → values/indices, input.shape
+    TOPK = auto()             # topk(input, k, dim) → dim replaced by k
+    KTHVALUE = auto()         # kthvalue(input, k, dim) → reduced values/indices
+    ARG_REDUCE = auto()       # argmax/argmin(input, dim) → int64 reduced shape
     SDPA = auto()             # F.scaled_dot_product_attention(q, k, v)
     DTYPE_CAST = auto()       # x.half() / x.float() / x.to(dtype=...) → dtype change
     NEW_TENSOR = auto()       # torch.rand/randn/zeros/ones/empty/full/randint/randperm
@@ -872,6 +878,7 @@ def _is_config_param_name(name: str) -> bool:
     low = name.lower()
     if low in _CONFIG_PARAM_BASE_NAMES:
         return True
+
     for base in _CONFIG_PARAM_BASE_NAMES:
         if low.startswith(base + "_"):
             return True
@@ -2539,6 +2546,13 @@ _FUNCTIONAL_OPS: Dict[str, OpKind] = {
     "split": OpKind.SPLIT,
     "masked_select": OpKind.MASKED_SELECT,
     "nonzero": OpKind.NONZERO,
+    "take_along_dim": OpKind.TAKE_ALONG_DIM,
+    "argsort": OpKind.ARGSORT,
+    "sort": OpKind.SORT,
+    "topk": OpKind.TOPK,
+    "kthvalue": OpKind.KTHVALUE,
+    "argmax": OpKind.ARG_REDUCE,
+    "argmin": OpKind.ARG_REDUCE,
     "interpolate": OpKind.INTERPOLATE,
     "pad": OpKind.PAD,
     "grid_sample": OpKind.ACTIVATION,
@@ -2705,6 +2719,13 @@ _METHOD_OPS: Dict[str, OpKind] = {
     "masked_select": OpKind.MASKED_SELECT,
     "masked_fill": OpKind.MASKED_FILL,
     "nonzero": OpKind.NONZERO,
+    "take_along_dim": OpKind.TAKE_ALONG_DIM,
+    "argsort": OpKind.ARGSORT,
+    "sort": OpKind.SORT,
+    "topk": OpKind.TOPK,
+    "kthvalue": OpKind.KTHVALUE,
+    "argmax": OpKind.ARG_REDUCE,
+    "argmin": OpKind.ARG_REDUCE,
     "mean": OpKind.MEAN_REDUCE,
     "sum": OpKind.SUM_REDUCE,
     "max": OpKind.MEAN_REDUCE,
@@ -3288,6 +3309,12 @@ class _ForwardExtractor(ast.NodeVisitor):
                     self.generic_visit(node)
                     return
 
+                # --- values, indices = x.sort()/topk()/kthvalue(...) ----------
+                if self._try_emit_value_index_unpack(
+                        target, node.value, node.lineno, node.col_offset):
+                    self.generic_visit(node)
+                    return
+
                 # Handle nested tuple for LSTM hidden state extraction:
                 #   _, (h, _) = self.lstm(x)  or  output, (h_n, c_n) = self.lstm(x)
                 # The inner tuple contains the hidden state which has a different
@@ -3560,6 +3587,100 @@ class _ForwardExtractor(ast.NodeVisitor):
             if layer.kind in (LayerKind.LSTM, LayerKind.GRU):
                 return func.attr
         return None
+
+    def _try_emit_value_index_unpack(
+        self, target: ast.Tuple, value: ast.expr, line: int, col: int
+    ) -> bool:
+        """Emit separate value/index steps for PyTorch namedtuple outputs."""
+        if not isinstance(value, ast.Call) or len(target.elts) < 2:
+            return False
+
+        func = value.func
+        method: Optional[str] = None
+        base_expr: Optional[ast.expr] = None
+        params_args: List[ast.expr] = list(value.args)
+
+        def _kw(*names: str) -> Optional[ast.expr]:
+            for kw in value.keywords:
+                if kw.arg in names:
+                    return kw.value
+            return None
+
+        supported = {"sort", "topk", "kthvalue"}
+        if isinstance(func, ast.Attribute) and func.attr in supported:
+            method = func.attr
+            owner = _name_or_attr(func.value)
+            if owner in ("torch", "F", "nn", "torch.nn", "torch.nn.functional"):
+                base_expr = params_args[0] if params_args else _kw("input", "tensor")
+                params_args = params_args[1:] if params_args else []
+            else:
+                base_expr = func.value
+        elif isinstance(func, ast.Name) and func.id in supported:
+            method = func.id
+            base_expr = params_args[0] if params_args else _kw("input", "tensor")
+            params_args = params_args[1:] if params_args else []
+        else:
+            return False
+
+        if method is None or base_expr is None:
+            return False
+
+        base = self._resolve_arg(base_expr)
+        params: Dict[str, Any] = {"tuple_source_op": method}
+        dim_expr = None
+        if method == "sort" and params_args:
+            dim_expr = params_args[0]
+        elif method in ("topk", "kthvalue") and len(params_args) > 1:
+            dim_expr = params_args[1]
+        dim_kw = _kw("dim")
+        if dim_kw is not None:
+            dim_expr = dim_kw
+        dim_val = (
+            _const_value(dim_expr, self._scalar_attrs)
+            if dim_expr is not None else -1
+        )
+        if isinstance(dim_val, int):
+            params["dim"] = dim_val
+
+        if method in ("topk", "kthvalue"):
+            k_expr = params_args[0] if params_args else _kw("k")
+            if k_expr is not None:
+                k_val = _const_value(k_expr, self._scalar_attrs)
+                if isinstance(k_val, int):
+                    params["k"] = k_val
+        if method == "kthvalue":
+            keep_expr = _kw("keepdim")
+            if len(params_args) > 2:
+                keep_expr = params_args[2]
+            keep_val = (
+                _const_value(keep_expr, self._scalar_attrs)
+                if keep_expr is not None else False
+            )
+            if isinstance(keep_val, bool):
+                params["keepdim"] = keep_val
+
+        op = {
+            "sort": OpKind.SORT,
+            "topk": OpKind.TOPK,
+            "kthvalue": OpKind.KTHVALUE,
+        }[method]
+        for tuple_i, elt in enumerate(target.elts[:2]):
+            out_name = (
+                elt.id
+                if isinstance(elt, ast.Name) and elt.id != "_"
+                else self._fresh(f"{method}_out")
+            )
+            out_params = dict(params)
+            out_params["tuple_index"] = tuple_i
+            self.steps.append(ComputationStep(
+                op=op,
+                inputs=[base],
+                output=out_name,
+                params=out_params,
+                line=line,
+                col=col,
+            ))
+        return True
 
     def visit_Return(self, node: ast.Return) -> None:
         if node.value is not None:
@@ -4447,9 +4568,57 @@ class _ForwardExtractor(ast.NodeVisitor):
                         for kw_node in node.keywords:
                             if kw_node.arg == "as_tuple":
                                 params["as_tuple"] = _const_value(kw_node.value)
+                    elif method == "take_along_dim":
+                        if len(node.args) > 1:
+                            params["dim"] = _const_value(
+                                node.args[1], self._scalar_attrs)
+                        for kw_node in node.keywords:
+                            if kw_node.arg == "dim":
+                                params["dim"] = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                    elif method in ("argsort", "argmax", "argmin"):
+                        if node.args:
+                            params["dim"] = _const_value(
+                                node.args[0], self._scalar_attrs)
+                        for kw_node in node.keywords:
+                            if kw_node.arg == "dim":
+                                params["dim"] = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                            elif kw_node.arg == "keepdim":
+                                params["keepdim"] = _const_value(kw_node.value)
+                        if method in ("argmax", "argmin"):
+                            params["arg_op"] = method
+                    elif method == "sort":
+                        params["dim"] = -1
+                        if node.args:
+                            params["dim"] = _const_value(
+                                node.args[0], self._scalar_attrs)
+                        for kw_node in node.keywords:
+                            if kw_node.arg == "dim":
+                                params["dim"] = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                    elif method in ("topk", "kthvalue"):
+                        params["dim"] = -1
+                        if node.args:
+                            params["k"] = _const_value(
+                                node.args[0], self._scalar_attrs)
+                        if len(node.args) > 1:
+                            params["dim"] = _const_value(
+                                node.args[1], self._scalar_attrs)
+                        if method == "kthvalue" and len(node.args) > 2:
+                            params["keepdim"] = _const_value(node.args[2])
+                        for kw_node in node.keywords:
+                            if kw_node.arg == "k":
+                                params["k"] = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                            elif kw_node.arg == "dim":
+                                params["dim"] = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                            elif kw_node.arg == "keepdim":
+                                params["keepdim"] = _const_value(kw_node.value)
 
                     method_inputs = [base]
-                    if method in ("masked_select", "masked_fill") and node.args:
+                    if method in ("masked_select", "masked_fill", "take_along_dim") and node.args:
                         method_inputs.append(self._resolve_arg(node.args[0]))
                     self.steps.append(ComputationStep(
                         op=_METHOD_OPS[method],
@@ -4472,6 +4641,13 @@ class _ForwardExtractor(ast.NodeVisitor):
                 if op in (OpKind.CAT, OpKind.STACK) and node.args and isinstance(node.args[0], ast.List):
                     inputs = [self._resolve_arg(elt) for elt in node.args[0].elts]
                 elif op in (OpKind.CHUNK, OpKind.SPLIT):
+                    inputs = [self._resolve_arg(node.args[0])] if node.args else []
+                elif op == OpKind.TAKE_ALONG_DIM:
+                    inputs = [self._resolve_arg(a) for a in node.args[:2]]
+                elif op in (
+                    OpKind.ARGSORT, OpKind.SORT, OpKind.TOPK,
+                    OpKind.KTHVALUE, OpKind.ARG_REDUCE,
+                ):
                     inputs = [self._resolve_arg(node.args[0])] if node.args else []
                 else:
                     inputs = [self._resolve_arg(a) for a in node.args]
@@ -4526,6 +4702,50 @@ class _ForwardExtractor(ast.NodeVisitor):
                     for kw in node.keywords:
                         if kw.arg == "as_tuple":
                             params_dict["as_tuple"] = _const_value(kw.value)
+
+                if op == OpKind.TAKE_ALONG_DIM:
+                    if len(node.args) >= 3:
+                        params_dict["dim"] = _const_value(
+                            node.args[2], self._scalar_attrs)
+                    for kw in node.keywords:
+                        if kw.arg == "dim":
+                            params_dict["dim"] = _const_value(
+                                kw.value, self._scalar_attrs)
+
+                if op in (OpKind.ARGSORT, OpKind.ARG_REDUCE, OpKind.SORT):
+                    default_dim: Any = -1 if op in (OpKind.ARGSORT, OpKind.SORT) else None
+                    params_dict.setdefault("dim", default_dim)
+                    if len(node.args) >= 2:
+                        params_dict["dim"] = _const_value(
+                            node.args[1], self._scalar_attrs)
+                    for kw in node.keywords:
+                        if kw.arg == "dim":
+                            params_dict["dim"] = _const_value(
+                                kw.value, self._scalar_attrs)
+                        elif kw.arg == "keepdim":
+                            params_dict["keepdim"] = _const_value(kw.value)
+                    if short in ("argmax", "argmin"):
+                        params_dict["arg_op"] = short
+
+                if op in (OpKind.TOPK, OpKind.KTHVALUE):
+                    params_dict.setdefault("dim", -1)
+                    if len(node.args) >= 2:
+                        params_dict["k"] = _const_value(
+                            node.args[1], self._scalar_attrs)
+                    if len(node.args) >= 3:
+                        params_dict["dim"] = _const_value(
+                            node.args[2], self._scalar_attrs)
+                    if op == OpKind.KTHVALUE and len(node.args) >= 4:
+                        params_dict["keepdim"] = _const_value(node.args[3])
+                    for kw in node.keywords:
+                        if kw.arg == "k":
+                            params_dict["k"] = _const_value(
+                                kw.value, self._scalar_attrs)
+                        elif kw.arg == "dim":
+                            params_dict["dim"] = _const_value(
+                                kw.value, self._scalar_attrs)
+                        elif kw.arg == "keepdim":
+                            params_dict["keepdim"] = _const_value(kw.value)
 
                 # For functional calls that map to LAYER_CALL, create a
                 # synthetic LayerDef so shape propagation actually works.
@@ -6051,6 +6271,57 @@ def _propagate_flatten(
         flat_dim = ShapeDim("_flat")
 
     return TensorShape(prefix + (flat_dim,) + suffix), None
+
+
+def _numel_dim(shape: TensorShape, name: str) -> ShapeDim:
+    total = 1
+    for dim in shape.dims:
+        if dim.is_symbolic or not isinstance(dim.value, int):
+            return ShapeDim(name)
+        total *= dim.value
+    return ShapeDim(total)
+
+
+def _arg_reduce_shape(input_shape: TensorShape, dim: Any, keepdim: bool) -> TensorShape:
+    """Shape of argmax/argmin. ``dim=None`` reduces all dims."""
+    if dim is None:
+        if keepdim and input_shape.ndim > 0:
+            return TensorShape(tuple(ShapeDim(1) for _ in input_shape.dims))
+        return TensorShape(())
+    if isinstance(dim, int):
+        norm = dim + input_shape.ndim if dim < 0 else dim
+        if 0 <= norm < input_shape.ndim:
+            dims = list(input_shape.dims)
+            if keepdim:
+                dims[norm] = ShapeDim(1)
+            else:
+                dims.pop(norm)
+            return TensorShape(tuple(dims))
+    return input_shape
+
+
+def _topk_shape(input_shape: TensorShape, dim: Any, k: Any, output: str) -> TensorShape:
+    dims = list(input_shape.dims)
+    if isinstance(dim, int):
+        norm = dim + input_shape.ndim if dim < 0 else dim
+        if 0 <= norm < len(dims):
+            dims[norm] = ShapeDim(k) if isinstance(k, int) else ShapeDim(f"_topk{output}")
+    return TensorShape(tuple(dims))
+
+
+def _kthvalue_shape(
+    input_shape: TensorShape, dim: Any, keepdim: bool
+) -> TensorShape:
+    if isinstance(dim, int):
+        norm = dim + input_shape.ndim if dim < 0 else dim
+        if 0 <= norm < input_shape.ndim:
+            dims = list(input_shape.dims)
+            if keepdim:
+                dims[norm] = ShapeDim(1)
+            else:
+                dims.pop(norm)
+            return TensorShape(tuple(dims))
+    return input_shape
 
 
 def _propagate_adaptive_avgpool2d(
@@ -9643,7 +9914,8 @@ class ConstraintVerifier:
             OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
             OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
             OpKind.SELECT_DIM, OpKind.TAKE, OpKind.NONZERO,
-            OpKind.BOOLEAN_INDEX,
+            OpKind.BOOLEAN_INDEX, OpKind.TAKE_ALONG_DIM, OpKind.ARGSORT,
+            OpKind.SORT, OpKind.TOPK, OpKind.KTHVALUE, OpKind.ARG_REDUCE,
         ):
             self._apply_indexing(
                 new_state.shape_env, step, violations, new_state.dtype_env
@@ -9900,6 +10172,51 @@ class ConstraintVerifier:
                 new_state.dtype_env[out] = da
             elif db is not None:
                 new_state.dtype_env[out] = db
+            return
+
+        if step.op == OpKind.TAKE_ALONG_DIM and len(step.inputs) >= 2:
+            inp, idx = step.inputs[0], step.inputs[1]
+            inp_dt, idx_dt = known(inp), known(idx)
+            if self.check_dtypes and idx_dt is not None and idx_dt != "int64":
+                violations.append(SafetyViolation(
+                    kind="dtype_error",
+                    step_index=-1,
+                    step=step,
+                    message=(
+                        f"take_along_dim: indices dtype '{idx_dt}' is invalid; "
+                        "torch requires int64/Long indices"
+                    ),
+                    tensor_a=idx,
+                    confidence=Confidence.HIGH,
+                ))
+            if inp_dt is not None:
+                new_state.dtype_env[out] = inp_dt
+            return
+
+        if step.op in (OpKind.ARGSORT, OpKind.ARG_REDUCE):
+            new_state.dtype_env[out] = "int64"
+            return
+
+        if step.op in (OpKind.SORT, OpKind.TOPK, OpKind.KTHVALUE):
+            if step.params.get("tuple_index") == 1:
+                new_state.dtype_env[out] = "int64"
+                return
+            for inp in step.inputs:
+                dt = known(inp)
+                if dt is not None:
+                    new_state.dtype_env[out] = dt
+                    break
+            return
+
+        if step.params.get("tuple_source_op") in ("sort", "topk", "kthvalue"):
+            if step.params.get("tuple_index") == 1:
+                new_state.dtype_env[out] = "int64"
+                return
+            for inp in step.inputs:
+                dt = known(inp)
+                if dt is not None:
+                    new_state.dtype_env[out] = dt
+                    break
             return
 
         # --- Default: preserve the first known input dtype ----------------
@@ -10506,6 +10823,114 @@ class ConstraintVerifier:
         elif step.op == OpKind.TAKE:
             # output.shape == index.shape (arbitrary rank allowed).
             shape_env[step.output] = idx_shape if idx_shape is not None else inp_shape
+
+        elif step.op == OpKind.TAKE_ALONG_DIM:
+            if dim is None:
+                if idx_shape is not None:
+                    shape_env[step.output] = TensorShape((
+                        _numel_dim(idx_shape, f"_take_along{step.output}"),
+                    ))
+                else:
+                    shape_env[step.output] = TensorShape((
+                        _numel_dim(inp_shape, f"_take_along{step.output}"),
+                    ))
+            elif idx_shape is not None:
+                if idx_shape.ndim != ndim:
+                    if violations is not None:
+                        violations.append(SafetyViolation(
+                            kind="shape_incompatible", step_index=-1, step=step,
+                            message=(
+                                "take_along_dim: input and indices must have "
+                                f"the same rank, got {ndim} and {idx_shape.ndim}"
+                            ),
+                            tensor_a=inp_name, tensor_b=idx_name,
+                            shape_a=inp_shape, shape_b=idx_shape,
+                        ))
+                elif norm_dim is not None:
+                    for d in range(ndim):
+                        if d == norm_dim:
+                            continue
+                        a, b = inp_shape.dims[d], idx_shape.dims[d]
+                        if (not a.is_symbolic and not b.is_symbolic
+                                and isinstance(a.value, int)
+                                and isinstance(b.value, int)
+                                and a.value != b.value
+                                and a.value != 1 and b.value != 1):
+                            if violations is not None:
+                                violations.append(SafetyViolation(
+                                    kind="shape_incompatible", step_index=-1,
+                                    step=step,
+                                    message=(
+                                        "take_along_dim: input size "
+                                        f"{a.value} and indices size {b.value} "
+                                        f"are not broadcastable at dim {d}"
+                                    ),
+                                    tensor_a=inp_name, tensor_b=idx_name,
+                                    shape_a=inp_shape, shape_b=idx_shape,
+                                ))
+                            break
+                shape_env[step.output] = idx_shape
+            else:
+                shape_env[step.output] = inp_shape
+
+        elif step.op == OpKind.ARGSORT:
+            shape_env[step.output] = inp_shape
+
+        elif step.op == OpKind.SORT:
+            shape_env[step.output] = inp_shape
+
+        elif step.op == OpKind.TOPK:
+            k = step.params.get("k")
+            if isinstance(k, int) and k < 0 and violations is not None:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible", step_index=-1, step=step,
+                    message=f"topk: k must be non-negative, got {k}",
+                    tensor_a=inp_name, shape_a=inp_shape,
+                ))
+            if (isinstance(k, int) and norm_dim is not None
+                    and 0 <= norm_dim < ndim):
+                d = inp_shape.dims[norm_dim]
+                if (not d.is_symbolic and isinstance(d.value, int)
+                        and k > d.value and violations is not None):
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible", step_index=-1, step=step,
+                        message=(
+                            f"topk: k={k} exceeds input size {d.value} "
+                            f"at dim {norm_dim}"
+                        ),
+                        tensor_a=inp_name, shape_a=inp_shape,
+                    ))
+            shape_env[step.output] = _topk_shape(inp_shape, dim, k, step.output)
+
+        elif step.op == OpKind.KTHVALUE:
+            k = step.params.get("k")
+            if isinstance(k, int) and k < 1 and violations is not None:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible", step_index=-1, step=step,
+                    message=f"kthvalue: k must be >= 1, got {k}",
+                    tensor_a=inp_name, shape_a=inp_shape,
+                ))
+            if (isinstance(k, int) and norm_dim is not None
+                    and 0 <= norm_dim < ndim):
+                d = inp_shape.dims[norm_dim]
+                if (not d.is_symbolic and isinstance(d.value, int)
+                        and k > d.value and violations is not None):
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible", step_index=-1, step=step,
+                        message=(
+                            f"kthvalue: k={k} exceeds input size {d.value} "
+                            f"at dim {norm_dim}"
+                        ),
+                        tensor_a=inp_name, shape_a=inp_shape,
+                    ))
+            shape_env[step.output] = _kthvalue_shape(
+                inp_shape, dim, bool(step.params.get("keepdim", False))
+            )
+
+        elif step.op == OpKind.ARG_REDUCE:
+            shape_env[step.output] = _arg_reduce_shape(
+                inp_shape, dim, bool(step.params.get("keepdim", False))
+            )
 
         elif step.op == OpKind.INDEX_SELECT:
             # output = input with size(dim) replaced by index length (1-D index).
@@ -12024,6 +12449,32 @@ class SymbolicShapePropagator:
 
         if step.op in (OpKind.GATHER, OpKind.TAKE):
             env[step.output] = idx_shape if idx_shape is not None else inp_shape
+        elif step.op == OpKind.TAKE_ALONG_DIM:
+            dim = step.params.get("dim")
+            if dim is None:
+                src = idx_shape if idx_shape is not None else inp_shape
+                env[step.output] = TensorShape((
+                    _numel_dim(src, f"_take_along{step.output}"),
+                ))
+            else:
+                env[step.output] = idx_shape if idx_shape is not None else inp_shape
+        elif step.op in (OpKind.ARGSORT, OpKind.SORT):
+            env[step.output] = inp_shape
+        elif step.op == OpKind.TOPK:
+            env[step.output] = _topk_shape(
+                inp_shape, step.params.get("dim", -1),
+                step.params.get("k"), step.output,
+            )
+        elif step.op == OpKind.KTHVALUE:
+            env[step.output] = _kthvalue_shape(
+                inp_shape, step.params.get("dim", -1),
+                bool(step.params.get("keepdim", False)),
+            )
+        elif step.op == OpKind.ARG_REDUCE:
+            env[step.output] = _arg_reduce_shape(
+                inp_shape, step.params.get("dim"),
+                bool(step.params.get("keepdim", False)),
+            )
         elif step.op == OpKind.INDEX_SELECT:
             dims = list(inp_shape.dims)
             dim = step.params.get("dim", 0)
@@ -12242,7 +12693,8 @@ class SymbolicShapePropagator:
             OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
             OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
             OpKind.SELECT_DIM, OpKind.TAKE, OpKind.NONZERO,
-            OpKind.BOOLEAN_INDEX,
+            OpKind.BOOLEAN_INDEX, OpKind.TAKE_ALONG_DIM, OpKind.ARGSORT,
+            OpKind.SORT, OpKind.TOPK, OpKind.KTHVALUE, OpKind.ARG_REDUCE,
         ):
             self._apply_indexing(env, step, None)
         elif step.op == OpKind.SDPA:

@@ -196,37 +196,37 @@ convolution families, pooling, flatten, reshape/view with product reasoning,
 broadcasting, reductions, cat/stack, transpose/permute, squeeze/unsqueeze,
 embedding, dtype casts, device moves, and stochastic tensor factories whose
 shapes are seed-independent.  Extended coverage includes einsum parsing,
-advanced indexing, gather/scatter, index select, masked select, take-along-dim,
-sort/topk families, sparse COO/CSR/CSC/BSR/BSC layout invariants, FFT/complex
-view contracts, named tensor alignment, vmap/functorch batch dimensions,
+advanced indexing, gather/scatter, index select, masked select,
+\texttt{take\_along\_dim}, \texttt{argsort}, \texttt{sort}/\texttt{topk}/
+\texttt{kthvalue}, arg reductions, sparse COO/CSR/CSC/BSR/BSC layout invariants,
+FFT/complex view contracts, named tensor alignment, vmap/functorch batch dimensions,
 distribution batch/event/log-prob shapes, grid sampling, affine grids,
 multi-head attention, scaled dot-product attention, LoRA adapter compatibility,
 training-loop checks, quantization/export safety, distributed sharding, tensor
 parallel attention variants, and deployment schemas.
 
-\subsection{Exact Partition Operators}
+\subsection{Exact Index-Value Operators}
 
-The latest completed implementation round strengthens \texttt{torch.chunk} and
-\texttt{torch.split}.  These operators look simple, but their PyTorch semantics
-matter in downstream checks.  \texttt{torch.chunk(x, chunks)} may return fewer
-than \texttt{chunks} outputs when the split dimension is positive and smaller
-than requested.  For example, chunking a length-5 dimension into 8 chunks
-returns five length-1 tensors, not eight tensors with empty tails.  A zero-length
-dimension is special: chunking length 0 into 3 chunks returns three empty
-tensors.  Integer \texttt{torch.split} produces fixed-size chunks with a
-possibly smaller final chunk; section-list \texttt{split} requires the section
-sizes to sum exactly to the dimension and permits zero-sized sections.
+The latest completed implementation round strengthens a family that returns
+indices, values, or both: \texttt{torch.take\_along\_dim}, \texttt{argsort},
+\texttt{sort}, \texttt{topk}, \texttt{kthvalue}, \texttt{argmax}, and
+\texttt{argmin}.  These operators are small but security-critical for a static
+shape tool because the index tensors often feed a later gather.  Losing the fact
+that an unpacked \texttt{indices} output is \texttt{int64}, or treating
+\texttt{topk} as shape-preserving, can hide a real downstream error.
 
-\tg{} now uses shared PyTorch-faithful calculators for these rules.  Tuple
-unpacking records one graph step per output element, so
-\texttt{a,b,c = x.chunk(3, dim=-1)} gives \texttt{c} the actual final-chunk
-width.  This is essential for catching a downstream \texttt{nn.Linear} that
-expects the first chunk's width but receives the smaller final chunk.  The same
-rule handles method and functional forms, negative dimensions, empty sections,
-and concrete unpack-count mismatches.  When the partition size or output count
-depends on a symbolic dimension, the split axis is replaced with a fresh
-symbolic dimension while non-split dimensions are preserved.  That preserves
-useful downstream checks without inventing a false concrete chunk size.
+\tg{} now models the PyTorch contracts directly.  \texttt{take\_along\_dim}
+returns the index shape when a dimension is supplied, checks same-rank and
+non-dimension broadcastability, rejects non-\texttt{int64} indices, and flattens
+to the index numel when \texttt{dim=None}.  \texttt{argsort}, \texttt{argmax},
+and \texttt{argmin} produce \texttt{int64} outputs with the same or reduced
+shape according to \texttt{keepdim}.  \texttt{sort}, \texttt{topk}, and
+\texttt{kthvalue} propagate value tensors with the input dtype and index tensors
+with \texttt{int64}, including FX \texttt{getitem}, namedtuple
+\texttt{.values}/\texttt{.indices}, tensor-method calls, functional calls, and
+source-level tuple unpacking.  Static \texttt{k} errors are refuted before
+runtime.  The tests run real PyTorch tensors and compare both successful shapes
+and runtime exceptions.
 
 \subsection{Examples of Transfer Precision}
 
@@ -411,9 +411,10 @@ that construct real tensors, run the corresponding PyTorch operator, and compare
 the resulting shape or runtime exception to \tg{}'s predicted contract.  This
 pattern appears for cat, einsum, reshape, broadcasting, convolution, attention,
 grid sampling, sparse layouts, complex FFT views, named tensors, distributions,
-vmap, and now chunk/split partitioning.  When PyTorch's edge-case behavior is
-surprising, as with \texttt{torch.chunk} returning fewer tensors than requested,
-the static rule follows PyTorch rather than a simplified textbook semantics.
+vmap, chunk/split partitioning, and index-value operators.  When PyTorch's
+edge-case behavior is surprising, as with \texttt{take\_along\_dim(dim=None)}
+flattening before selection or \texttt{topk} rejecting oversized \texttt{k}, the
+static rule follows PyTorch rather than a simplified textbook semantics.
 
 The ablation suite makes the multi-domain design measurable.  Shape alone
 catches the most common architectural errors, but device and gradient domains
@@ -580,7 +581,7 @@ both principled and practical.  The repository combines a refinement-type view
 of tensors, a multi-domain abstract state, Z3-backed checks, CEGAR refinement,
 soundness modes, precise operator transfer functions, real frontends, formal
 artifacts, and an unusually broad reproducibility harness.  The latest
-chunk/split work illustrates the project's standard: match PyTorch's exact
+index-value work illustrates the project's standard: match PyTorch's exact
 edge-case semantics, propagate precision to downstream model checks, abstain
 on symbolic uncertainty, and pin the behavior with live-library tests.
 
@@ -690,6 +691,11 @@ and functional attention calls. \\
 Equation parser and output-shape tests for einsum, including repeated-label
 diagonals, ellipsis placement, ASCII output ordering, registry-transfer parity,
 and Z3 output-position constraints. \\
+\hline
+\texttt{tests/test\_index\_value\_ops\_precise.py} &
+Live PyTorch conformance for \texttt{take\_along\_dim}, \texttt{argsort},
+\texttt{sort}, \texttt{topk}, \texttt{kthvalue}, \texttt{argmax}, and
+\texttt{argmin}, including tuple index dtypes and static error cases. \\
 \hline
 \texttt{tests/test\_reshape\_precise.py},
 \texttt{tests/test\_reshape\_divisibility\_opt.py} &
@@ -835,10 +841,12 @@ Reduction tests for mean, sum, min, max, variance, standard deviation, and
 arg reductions. \\
 \hline
 Indexing and gather &
-Gather and take-along-dim return index shapes; index-select replaces the
-selected dimension; scatter preserves the input shape; narrow replaces a
-dimension with a known length. &
-Indexing/gather tests and extended operator tests. \\
+Gather and \texttt{take\_along\_dim} return index-derived shapes
+(\texttt{dim=None} flattens); index-select replaces the selected dimension;
+scatter preserves the input shape; narrow replaces a dimension with a known
+length; sort/topk/kthvalue preserve value dtypes while producing \texttt{int64}
+indices. &
+Indexing/gather tests, index-value precise tests, and extended operator tests. \\
 \hline
 Masked and value-dependent ops &
 Masked select, nonzero, one-argument where, and boolean masks check static mask
@@ -1165,10 +1173,10 @@ to the artifact that must be rebuilt. \\
 
 A reviewer can inspect the trust boundary by reading
 \texttt{SOUNDNESS\_CONTRACT.md}, \texttt{VERIFIABLE\_FRAGMENT.md}, and
-\texttt{operator\_confidence\_table.json}.  They can run the new partition
+\texttt{operator\_confidence\_table.json}.  They can run the new index-value
 tests with:
 \[
-\texttt{python -m pytest -q tests/test\_split\_chunk\_precise.py}.
+\texttt{python -m pytest -q tests/test\_index\_value\_ops\_precise.py}.
 \]
 They can inspect the empirical story through \texttt{make reproduce}, the
 dashboard tests, real benchmark loaders, baseline comparisons, and the
