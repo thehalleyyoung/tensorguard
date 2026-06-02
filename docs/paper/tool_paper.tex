@@ -51,7 +51,7 @@ architectures and adjacent training/deployment code.  It checks tensor shape,
 dtype, device, phase, gradient-flow, stride/layout, probabilistic batch/event
 contracts, complex view/FFT shape-dtype rules, named-axis alignment,
 \texttt{vmap} batched-dimension transfers, sparse layout/blocksize invariants,
-and library-specific contracts before
+geometric sampler grids, and library-specific contracts before
 a forward pass runs, then reports a
 three-valued verdict:
 \safe{}, \unknown{}, or \unsafe{}.  The implementation is intentionally more
@@ -88,9 +88,9 @@ export path reaches the wrong operator.  Runtime tests catch some of these
 bugs, but only when the test constructs the right input and executes the failing
 path.  Smoke tests miss latent eval-only branches, CUDA-only device mismatches
 on CPU machines, silent gradient breaks, and shape constraints hidden inside
-library calls such as \texttt{einops.rearrange} or
-\texttt{scaled\_dot\_product\_attention}, or PyTorch named-tensor
-\texttt{align\_to}.
+library calls such as \texttt{einops.rearrange},
+\texttt{scaled\_dot\_product\_attention}, \texttt{grid\_sample}, or PyTorch
+named-tensor \texttt{align\_to}.
 
 \tg{} attacks that failure mode with static verification.  Given model source
 or a live module, it extracts a symbolic tensor program, propagates abstract
@@ -147,7 +147,8 @@ or module and supports independent check toggles, soundness modes, and machine
 readable output.  The public Python API mirrors the CLI through
 \texttt{verify\_architecture} and \texttt{verify\_module}.  Specialized helpers
 cover einops, SDPA, distributions, named tensors, complex FFT/view contracts,
-\texttt{vmap} batched-dimension transfer, and sparse tensor layouts.  A typical
+\texttt{vmap} batched-dimension transfer, sparse tensor layouts, and
+\texttt{grid\_sample}/\texttt{affine\_grid}.  A typical
 workflow is:
 
 \begin{lstlisting}
@@ -434,6 +435,14 @@ unsoundness:
   reports them as unusable layouts.  The tests compare valid and invalid cases
   against real PyTorch constructors with \texttt{check\_invariants=True}, plus
   the live dense-materialization failure and symbolic no-false-positive probes.
+  \item \textbf{\texttt{grid\_sample}/\texttt{affine\_grid}.}
+  \path{src/grid_sample_verify.py} models the 2-D and 3-D geometric sampler
+  contracts: input/grid rank, batch equality, coordinate-grid trailing size,
+  non-empty input spatial axes, bicubic's 4-D restriction, dtype agreement, and
+  \texttt{affine\_grid}'s theta-matrix and positive-size requirements.  The
+  tests replay hand edge cases and randomized cases against real PyTorch,
+  including the easy-to-get-wrong distinction that \texttt{grid\_sample} accepts
+  empty output grids while rejecting empty input spatial axes.
 \end{itemize}
 
 \section{Beyond \texttt{forward}: deployment and training hazards}
@@ -860,8 +869,8 @@ not more marketing metrics; they are higher-value coverage and stronger
 evidence:
 
 \begin{itemize}[leftmargin=2em]
-  \item deeper operator coverage for grid sampling, MultiheadAttention,
-  split/chunk, masked selection, nonzero, and exact einsum diagonal semantics;
+  \item deeper operator coverage for MultiheadAttention, split/chunk, masked
+  selection, nonzero, and exact einsum diagonal semantics;
   \item deployment correctness for quantization, mixed precision, dynamic
   \texttt{torch.export} constraints, AOTInductor layouts, ONNX opsets, GGUF
   export, FSDP2, and pipeline-parallel stage boundaries;
@@ -882,8 +891,8 @@ evidence:
 \tg{} turns tensor metadata checking from a runtime accident into an auditable
 static contract.  It is already useful as a developer tool: it catches shape,
 device, dtype, phase, gradient, training-loop, distributed, quantization,
-export, einops, SDPA, distribution, complex FFT/view, named-axis, vmap, and
-sparse-layout hazards
+export, einops, SDPA, distribution, complex FFT/view, named-axis, vmap,
+sparse-layout, and sampler-grid hazards
 before execution; it reports precise
 diagnostics; it integrates with CI and code scanning; and it defaults to
 abstention rather than false certainty when the program leaves its fragment.
@@ -985,6 +994,9 @@ Is \texttt{vmap} batched-shape transfer modeled faithfully? &
 Are sparse layout and blocksize contracts modeled faithfully? &
 \path{src/sparse_verify.py} &
 \path{tests/test_sparse_verify.py} \\
+Are geometric sampler grids modeled faithfully? &
+\path{src/grid_sample_verify.py} &
+\path{tests/test_grid_sample_verify.py} \\
 Are training-loop hazards checked? &
 \path{reproducibility/training_loop_hazards.md} &
 \path{tests/test_training_loop_checks.py} \\
@@ -1094,6 +1106,9 @@ Library model & \texttt{torch.vmap}/functorch mapped-axis removal and
 Library model & \texttt{torch.sparse} COO/CSR/CSC/BSR/BSC layout and blocksize
 checks &
 \path{src/sparse_verify.py}, \path{tests/test_sparse_verify.py} \\
+Library model & \texttt{grid\_sample}/\texttt{affine\_grid} sampler-rank,
+batch, dtype, and output-grid contracts &
+\path{src/grid_sample_verify.py}, \path{tests/test_grid_sample_verify.py} \\
 Frontends & Safe AST source parser for untrusted model files &
 \path{src/safe_loader.py}, \path{tests/test_security.py} \\
 Frontends & \texttt{torch.fx} trace lowering across real torchvision models &

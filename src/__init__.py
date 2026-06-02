@@ -35,6 +35,7 @@ from .sparse_verify import (
     verify_sparse_csc,
     verify_sparse_csr,
 )
+from .grid_sample_verify import verify_affine_grid, verify_grid_sample
 from .vmap_verify import verify_vmap
 
 __all__ = [
@@ -66,6 +67,8 @@ __all__ = [
     "verify_sparse_csc",
     "verify_sparse_bsr",
     "verify_sparse_bsc",
+    "verify_grid_sample",
+    "verify_affine_grid",
     "verify_vmap",
     "__version__",
 ]

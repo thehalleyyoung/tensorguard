@@ -70,6 +70,10 @@ from src.sparse_verify import (  # noqa: F401  (re-export)
     verify_sparse_csc,
     verify_sparse_csr,
 )
+from src.grid_sample_verify import (  # noqa: F401  (re-export)
+    verify_affine_grid,
+    verify_grid_sample,
+)
 from src.vmap_verify import verify_vmap  # noqa: F401  (re-export)
 
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
@@ -113,6 +117,8 @@ __all__ = [
     "verify_sparse_csc",
     "verify_sparse_bsr",
     "verify_sparse_bsc",
+    "verify_grid_sample",
+    "verify_affine_grid",
     "verify_vmap",
     "TensorGuardViolation",
     "api",
