@@ -309,6 +309,8 @@ class OpKind(Enum):
     SCATTER = auto()          # scatter/scatter_/scatter_add → input.shape
     MASKED_SELECT = auto()    # masked_select(input, mask) → rank-1 dynamic
     MASKED_FILL = auto()      # masked_fill(input, mask, value) → input.shape
+    NONZERO = auto()          # nonzero(input) → data-dependent indices
+    BOOLEAN_INDEX = auto()    # input[bool_mask] → data-dependent leading dim
     NARROW = auto()           # narrow(input, dim, start, length)
     SELECT_DIM = auto()       # select(input, dim, index) → removes dim
     TAKE = auto()             # take(input, index) → index.shape
@@ -793,6 +795,9 @@ class VerificationResult:
     # supplied shapes explicitly or nothing could be inferred.
     inferred_input_shapes: Dict[str, tuple] = field(default_factory=dict)
     inferred_input_sources: Dict[str, str] = field(default_factory=dict)
+    # Explicit abstention reasons for shape transfers whose rank is known but
+    # whose extents depend on tensor values (e.g. nonzero / boolean masks).
+    unknown_reasons: List[str] = field(default_factory=list)
 
     def filter_by_confidence(self, min_level: Confidence = Confidence.MEDIUM) -> "VerificationResult":
         """Return a copy with violations below the confidence threshold removed."""
@@ -807,6 +812,7 @@ class VerificationResult:
                 safe=True, certificate=None, graph=self.graph,
                 verification_time_ms=self.verification_time_ms,
                 confidence=Confidence.MEDIUM,
+                unknown_reasons=list(self.unknown_reasons),
             )
         new_cex = CounterexampleTrace(
             model_name=self.counterexample.model_name,
@@ -821,6 +827,7 @@ class VerificationResult:
             safe=False, counterexample=new_cex, graph=self.graph,
             verification_time_ms=self.verification_time_ms,
             confidence=worst_conf,
+            unknown_reasons=list(self.unknown_reasons),
         )
 
     def pretty(self) -> str:
@@ -840,6 +847,10 @@ class VerificationResult:
             lines.append("\n⚠ Modern PyTorch pattern warnings:")
             for w in self.dynamic_feature_warnings:
                 lines.append(f"  • {w}")
+        if self.unknown_reasons:
+            lines.append("\n? Unknown shape facts:")
+            for reason in self.unknown_reasons:
+                lines.append(f"  • {reason}")
         return "\n".join(lines)
 
 
@@ -2523,8 +2534,11 @@ _FUNCTIONAL_OPS: Dict[str, OpKind] = {
     "log_softmax": OpKind.SOFTMAX,
     "cat": OpKind.CAT,
     "stack": OpKind.STACK,
+    "where": OpKind.WHERE,
     "chunk": OpKind.CHUNK,
     "split": OpKind.SPLIT,
+    "masked_select": OpKind.MASKED_SELECT,
+    "nonzero": OpKind.NONZERO,
     "interpolate": OpKind.INTERPOLATE,
     "pad": OpKind.PAD,
     "grid_sample": OpKind.ACTIVATION,
@@ -2688,6 +2702,9 @@ _METHOD_OPS: Dict[str, OpKind] = {
     "chunk": OpKind.CHUNK,
     "split": OpKind.SPLIT,
     "unbind": OpKind.UNBIND,
+    "masked_select": OpKind.MASKED_SELECT,
+    "masked_fill": OpKind.MASKED_FILL,
+    "nonzero": OpKind.NONZERO,
     "mean": OpKind.MEAN_REDUCE,
     "sum": OpKind.SUM_REDUCE,
     "max": OpKind.MEAN_REDUCE,
@@ -3746,6 +3763,14 @@ class _ForwardExtractor(ast.NodeVisitor):
         # --- subscript: out[:, -1, :] ---
         if isinstance(node, ast.Subscript):
             base = self._resolve_arg(node.value)
+            if isinstance(node.slice, ast.Name):
+                self.steps.append(ComputationStep(
+                    op=OpKind.BOOLEAN_INDEX,
+                    inputs=[base, self._resolve_name(node.slice)],
+                    output=target,
+                    line=line, col=col,
+                ))
+                return
             # Parse the subscript indices to determine which dims are kept/dropped
             indices = self._parse_subscript_indices(node.slice)
             if indices is not None:
@@ -4418,10 +4443,17 @@ class _ForwardExtractor(ast.NodeVisitor):
                                 params["dim"] = _const_value(kw_node.value)
                     elif method in _CAST_METHOD_DTYPE:
                         params["cast_dtype"] = _CAST_METHOD_DTYPE[method]
+                    elif method == "nonzero":
+                        for kw_node in node.keywords:
+                            if kw_node.arg == "as_tuple":
+                                params["as_tuple"] = _const_value(kw_node.value)
 
+                    method_inputs = [base]
+                    if method in ("masked_select", "masked_fill") and node.args:
+                        method_inputs.append(self._resolve_arg(node.args[0]))
                     self.steps.append(ComputationStep(
                         op=_METHOD_OPS[method],
-                        inputs=[base],
+                        inputs=method_inputs,
                         output=target,
                         params=params,
                         line=line, col=col,
@@ -4489,6 +4521,11 @@ class _ForwardExtractor(ast.NodeVisitor):
                         elif kw.arg == "dim":
                             params_dict["dim"] = _const_value(
                                 kw.value, self._scalar_attrs)
+
+                if op == OpKind.NONZERO:
+                    for kw in node.keywords:
+                        if kw.arg == "as_tuple":
+                            params_dict["as_tuple"] = _const_value(kw.value)
 
                 # For functional calls that map to LAYER_CALL, create a
                 # synthetic LayerDef so shape propagation actually works.
@@ -7807,6 +7844,7 @@ class ConstraintVerifier:
         self.check_phases = check_phases
         self.check_gradients = check_gradients
         self.check_dtypes = check_dtypes
+        self.unknown_reasons: List[str] = []
         # Under autocast / mixed-precision contexts torch silently inserts casts,
         # so a statically-mismatched dtype may run fine.  Abstain on dtype checks
         # entirely when the graph indicates autocast to stay sound (no FPs).
@@ -9604,9 +9642,12 @@ class ConstraintVerifier:
         elif step.op in (
             OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
             OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
-            OpKind.SELECT_DIM, OpKind.TAKE,
+            OpKind.SELECT_DIM, OpKind.TAKE, OpKind.NONZERO,
+            OpKind.BOOLEAN_INDEX,
         ):
-            self._apply_indexing(new_state.shape_env, step, violations)
+            self._apply_indexing(
+                new_state.shape_env, step, violations, new_state.dtype_env
+            )
         elif step.op == OpKind.SDPA:
             self._apply_sdpa(new_state.shape_env, step, violations)
 
@@ -10278,8 +10319,21 @@ class ConstraintVerifier:
     ) -> None:
         """torch.where(cond, x, y) — broadcast all three inputs pairwise."""
         if len(step.inputs) < 3:
-            # Fallback: single-arg torch.where(cond) → indices, treat as _apply_add
-            self._apply_add(state, step, violations)
+            # Single-arg torch.where(cond) is torch.nonzero(cond, as_tuple=True):
+            # the number of returned indices depends on tensor values.  Preserve
+            # a conservative rank-2 carrier shape and surface an UNKNOWN reason
+            # rather than pretending this is a binary broadcast op.
+            cond_name = step.inputs[0] if step.inputs else None
+            cond_shape = state.shape_env.get(cond_name) if cond_name else None
+            if cond_shape is not None:
+                state.shape_env[step.output] = TensorShape((
+                    ShapeDim(f"_where{step.output}_nnz"),
+                    ShapeDim(cond_shape.ndim),
+                ))
+                self._record_unknown_reason(
+                    "torch.where(condition) returns data-dependent indices; "
+                    f"rank/length past {step.output} is UNKNOWN"
+                )
             return
         cond_name, x_name, y_name = step.inputs[0], step.inputs[1], step.inputs[2]
         cond_shape = state.shape_env.get(cond_name)
@@ -10322,11 +10376,55 @@ class ConstraintVerifier:
         elif y_shape is not None:
             state.shape_env[step.output] = y_shape
 
+    def _record_unknown_reason(self, reason: str) -> None:
+        if reason not in self.unknown_reasons:
+            self.unknown_reasons.append(reason)
+
+    @staticmethod
+    def _mask_broadcast_error(
+        op_name: str,
+        inp_shape: TensorShape,
+        mask_shape: TensorShape,
+    ) -> Optional[str]:
+        if compute_broadcast_shape(inp_shape, mask_shape) is None:
+            return (
+                f"{op_name}: mask {mask_shape.pretty()} cannot broadcast "
+                f"to input {inp_shape.pretty()}"
+            )
+        return None
+
+    @staticmethod
+    def _boolean_index_error(
+        inp_shape: TensorShape,
+        mask_shape: TensorShape,
+    ) -> Optional[str]:
+        if mask_shape.ndim > inp_shape.ndim:
+            return (
+                f"boolean_index: mask rank {mask_shape.ndim} exceeds input "
+                f"rank {inp_shape.ndim}"
+            )
+        for dim_idx, (inp_dim, mask_dim) in enumerate(
+            zip(inp_shape.dims, mask_shape.dims)
+        ):
+            if (
+                not inp_dim.is_symbolic
+                and not mask_dim.is_symbolic
+                and isinstance(inp_dim.value, int)
+                and isinstance(mask_dim.value, int)
+                and inp_dim.value != mask_dim.value
+            ):
+                return (
+                    f"boolean_index: mask size {mask_dim.value} must match "
+                    f"input size {inp_dim.value} at dim {dim_idx}"
+                )
+        return None
+
     def _apply_indexing(
         self,
         shape_env: Dict[str, "TensorShape"],
         step: ComputationStep,
         violations: Optional[List[SafetyViolation]],
+        dtype_env: Optional[Dict[str, str]] = None,
     ) -> None:
         """Shape effects of indexing / gather / scatter / masked ops.
 
@@ -10450,22 +10548,89 @@ class ConstraintVerifier:
             # output == input.shape; mask broadcasts to input. Only flag a
             # provably-impossible broadcast (both concrete, unequal, neither 1).
             if idx_shape is not None and violations is not None:
-                if compute_broadcast_shape(inp_shape, idx_shape) is None:
+                err = self._mask_broadcast_error(
+                    "masked_fill", inp_shape, idx_shape
+                )
+                if err is not None:
                     violations.append(SafetyViolation(
                         kind="shape_incompatible", step_index=-1, step=step,
-                        message=(
-                            f"masked_fill: mask {idx_shape.pretty()} cannot "
-                            f"broadcast to input {inp_shape.pretty()}"
-                        ),
+                        message=err,
                         tensor_a=inp_name, tensor_b=idx_name,
                         shape_a=inp_shape, shape_b=idx_shape,
                     ))
             shape_env[step.output] = inp_shape
 
         elif step.op == OpKind.MASKED_SELECT:
-            # Always rank-1 with a data-dependent (fresh symbolic) length.
+            # Always rank-1 with a data-dependent (fresh symbolic) length, after
+            # the mask has broadcast to the input.
+            if idx_shape is not None and violations is not None:
+                err = self._mask_broadcast_error(
+                    "masked_select", inp_shape, idx_shape
+                )
+                if err is not None:
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible", step_index=-1, step=step,
+                        message=err,
+                        tensor_a=inp_name, tensor_b=idx_name,
+                        shape_a=inp_shape, shape_b=idx_shape,
+                    ))
             shape_env[step.output] = TensorShape(
                 (ShapeDim(f"_masked{step.output}"),)
+            )
+            self._record_unknown_reason(
+                "masked_select output length is data-dependent; "
+                f"{step.output}.shape[0] is UNKNOWN"
+            )
+
+        elif step.op == OpKind.NONZERO:
+            nnz = ShapeDim(f"_nonzero{step.output}_nnz")
+            if step.params.get("as_tuple") is True:
+                # The true value is a tuple of ndim one-dimensional tensors.
+                # The graph IR has one output slot, so keep a rank-1 carrier and
+                # make the tuple/rank loss explicit via UNKNOWN metadata.
+                shape_env[step.output] = TensorShape((nnz,))
+                self._record_unknown_reason(
+                    "nonzero(as_tuple=True) returns a tuple whose lengths are "
+                    f"data-dependent; {step.output} is UNKNOWN"
+                )
+            else:
+                shape_env[step.output] = TensorShape((nnz, ShapeDim(ndim)))
+                self._record_unknown_reason(
+                    "nonzero output row count is data-dependent; "
+                    f"{step.output}.shape[0] is UNKNOWN"
+                )
+
+        elif step.op == OpKind.BOOLEAN_INDEX:
+            idx_dtype = (
+                dtype_env.get(idx_name) if dtype_env is not None and idx_name else None
+            )
+            is_bool_mask = idx_dtype == "bool" or step.params.get("index_dtype") == "bool"
+            if idx_shape is not None and violations is not None and is_bool_mask:
+                err = self._boolean_index_error(inp_shape, idx_shape)
+                if err is not None:
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible", step_index=-1, step=step,
+                        message=err,
+                        tensor_a=inp_name, tensor_b=idx_name,
+                        shape_a=inp_shape, shape_b=idx_shape,
+                    ))
+            if idx_shape is None or not is_bool_mask:
+                shape_env[step.output] = TensorShape((
+                    ShapeDim(f"_boolidx{step.output}"),
+                ))
+                if idx_shape is not None and not is_bool_mask:
+                    self._record_unknown_reason(
+                        "tensor indexing dtype is unknown or non-bool; "
+                        f"{step.output} shape is UNKNOWN"
+                    )
+            else:
+                trailing = inp_shape.dims[idx_shape.ndim:]
+                shape_env[step.output] = TensorShape((
+                    ShapeDim(f"_boolidx{step.output}"),
+                ) + trailing)
+            self._record_unknown_reason(
+                "boolean indexing output length is data-dependent; "
+                f"{step.output}.shape[0] is UNKNOWN"
             )
 
         elif step.op == OpKind.NARROW:
@@ -11602,6 +11767,7 @@ class ConstraintVerifier:
                 graph=self.graph,
                 unsupported_op_tracker=self._build_unsupported_tracker(),
                 isolated_regions=list(self.graph.isolated_regions),
+                unknown_reasons=list(self.unknown_reasons),
             )
 
         # Phase 1: base case (concrete + Z3)
@@ -11651,6 +11817,7 @@ class ConstraintVerifier:
                 timed_out=self._timed_out,
                 steps_checked=self._steps_checked,
                 steps_total=steps_total,
+                unknown_reasons=list(self.unknown_reasons),
             )
 
         # Budget expired with no violation found so far: return a SOUND PARTIAL
@@ -11679,6 +11846,7 @@ class ConstraintVerifier:
                 timed_out=True,
                 steps_checked=self._steps_checked,
                 steps_total=steps_total,
+                unknown_reasons=list(self.unknown_reasons),
             )
 
         cert = SafetyCertificate(
@@ -11761,6 +11929,7 @@ class ConstraintVerifier:
             timed_out=False,
             steps_checked=steps_total,
             steps_total=steps_total,
+            unknown_reasons=list(self.unknown_reasons),
         )
 
     # ------------------------------------------------------------------
@@ -11838,6 +12007,71 @@ class SymbolicShapePropagator:
             self._propagate_step(env, step)
 
         return env
+
+    def _apply_indexing(
+        self,
+        env: Dict[str, TensorShape],
+        step: ComputationStep,
+        violations: Optional[List[SafetyViolation]] = None,
+    ) -> None:
+        if not step.inputs:
+            return
+        inp_shape = env.get(step.inputs[0])
+        if inp_shape is None:
+            return
+        idx_name = step.inputs[1] if len(step.inputs) > 1 else None
+        idx_shape = env.get(idx_name) if idx_name else None
+
+        if step.op in (OpKind.GATHER, OpKind.TAKE):
+            env[step.output] = idx_shape if idx_shape is not None else inp_shape
+        elif step.op == OpKind.INDEX_SELECT:
+            dims = list(inp_shape.dims)
+            dim = step.params.get("dim", 0)
+            if isinstance(dim, int):
+                dim = dim + inp_shape.ndim if dim < 0 else dim
+                if 0 <= dim < len(dims):
+                    dims[dim] = (
+                        idx_shape.dims[0]
+                        if idx_shape is not None and idx_shape.ndim == 1
+                        else ShapeDim(f"_idxsel{step.output}")
+                    )
+            env[step.output] = TensorShape(tuple(dims))
+        elif step.op in (OpKind.SCATTER, OpKind.MASKED_FILL):
+            env[step.output] = inp_shape
+        elif step.op == OpKind.MASKED_SELECT:
+            env[step.output] = TensorShape((ShapeDim(f"_masked{step.output}"),))
+        elif step.op == OpKind.NONZERO:
+            nnz = ShapeDim(f"_nonzero{step.output}_nnz")
+            if step.params.get("as_tuple") is True:
+                env[step.output] = TensorShape((nnz,))
+            else:
+                env[step.output] = TensorShape((nnz, ShapeDim(inp_shape.ndim)))
+        elif step.op == OpKind.BOOLEAN_INDEX:
+            trailing = inp_shape.dims[idx_shape.ndim:] if idx_shape is not None else ()
+            env[step.output] = TensorShape(
+                (ShapeDim(f"_boolidx{step.output}"),) + trailing
+            )
+        elif step.op == OpKind.NARROW:
+            dims = list(inp_shape.dims)
+            dim = step.params.get("dim", 0)
+            if isinstance(dim, int):
+                dim = dim + inp_shape.ndim if dim < 0 else dim
+                if 0 <= dim < len(dims):
+                    length = step.params.get("length")
+                    dims[dim] = (
+                        ShapeDim(length)
+                        if isinstance(length, int)
+                        else ShapeDim(f"_narrow{step.output}")
+                    )
+            env[step.output] = TensorShape(tuple(dims))
+        elif step.op == OpKind.SELECT_DIM:
+            dim = step.params.get("dim", 0)
+            if isinstance(dim, int):
+                dim = dim + inp_shape.ndim if dim < 0 else dim
+                if 0 <= dim < inp_shape.ndim:
+                    env[step.output] = TensorShape(tuple(
+                        d for i, d in enumerate(inp_shape.dims) if i != dim
+                    ))
 
     def _propagate_step(
         self, env: Dict[str, TensorShape], step: ComputationStep
@@ -12007,7 +12241,8 @@ class SymbolicShapePropagator:
         elif step.op in (
             OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
             OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
-            OpKind.SELECT_DIM, OpKind.TAKE,
+            OpKind.SELECT_DIM, OpKind.TAKE, OpKind.NONZERO,
+            OpKind.BOOLEAN_INDEX,
         ):
             self._apply_indexing(env, step, None)
         elif step.op == OpKind.SDPA:
@@ -12712,6 +12947,11 @@ def verify_model(
                                 errors=result.errors,
                                 verification_time_ms=result.verification_time_ms,
                                 confidence=result.confidence,
+                                dynamic_features=result.dynamic_features,
+                                dynamic_feature_warnings=result.dynamic_feature_warnings,
+                                unsupported_op_tracker=result.unsupported_op_tracker,
+                                isolated_regions=list(result.isolated_regions),
+                                unknown_reasons=list(result.unknown_reasons),
                             )
                         elif result.counterexample:
                             result.counterexample.violations.append(viol)
@@ -12743,6 +12983,8 @@ def verify_model(
                 dynamic_features=res.dynamic_features,
                 dynamic_feature_warnings=res.dynamic_feature_warnings,
                 unsupported_op_tracker=res.unsupported_op_tracker,
+                isolated_regions=list(res.isolated_regions),
+                unknown_reasons=list(res.unknown_reasons),
             )
         new_cex = CounterexampleTrace(
             model_name=res.counterexample.model_name,
@@ -12761,6 +13003,8 @@ def verify_model(
             dynamic_features=res.dynamic_features,
             dynamic_feature_warnings=res.dynamic_feature_warnings,
             unsupported_op_tracker=res.unsupported_op_tracker,
+            isolated_regions=list(res.isolated_regions),
+            unknown_reasons=list(res.unknown_reasons),
         )
 
     if not check_devices:

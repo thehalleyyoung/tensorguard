@@ -1491,27 +1491,31 @@ torchvision models stay free of new false positives. See
 
 Tensor indexing and gather-family ops now have exact shape effects on the
 `torch.fx` path instead of being dropped as no-ops. `gather`, `index_select`,
-`scatter`/`scatter_add`, `masked_select`, `masked_fill`, `narrow`, `select` and
-`take` are routed through the method/function maps, their `dim`/`start`/`length`
-captured and their index/mask/src operands collected as inputs, and a shared
+`scatter`/`scatter_add`, `masked_select`, `masked_fill`, `nonzero`,
+single-argument `where`, boolean-mask indexing, `narrow`, `select` and `take`
+are routed through the method/function maps, their scalar parameters captured
+and their index/mask/src operands collected as inputs, and a shared
 `_apply_indexing` handler propagates the result shape on both engine paths.
 
 The shape rules follow PyTorch exactly: `gather` returns the index shape (equal
 rank, no broadcast); `index_select` replaces the indexed dimension with the
 1-D index length; `scatter` returns the input shape; `masked_select` returns a
-rank-1 tensor of data-dependent (fresh symbolic) length; `masked_fill` returns
-the input shape with the mask broadcast; `narrow` replaces the dimension with
-`length`; `select` removes the dimension; `take` returns the index shape. A
-violation is raised only when the relevant dimensions are concrete and the
-error is provable — a `gather` rank mismatch, a two-dimensional `index_select`
-index, a `scatter` rank mismatch, a provably-impossible `masked_fill` broadcast,
-a `narrow` whose `start + length` overruns the axis, or an out-of-range `dim`.
-Negative dimensions are normalised, and symbolic dimensions abstain.
+rank-1 tensor of data-dependent (fresh symbolic) length; `nonzero` and
+`where(mask)` surface explicit `UNKNOWN` reasons for value-dependent index
+counts; boolean masks preserve trailing dimensions while the selected length is
+unknown; `masked_fill` returns the input shape with the mask broadcast; `narrow`
+replaces the dimension with `length`; `select` removes the dimension; `take`
+returns the index shape. A violation is raised only when the relevant dimensions
+are concrete and the error is provable — a `gather` rank mismatch, a two-
+dimensional `index_select` index, a `scatter` rank mismatch, a provably-
+impossible mask broadcast, a boolean-mask prefix mismatch, a `narrow` overrun, or
+an out-of-range `dim`. Negative dimensions are normalised, and symbolic or
+value-dependent dimensions abstain.
 
 Because the result shapes are exact, downstream layers are checked against the
 post-index shape (for example a `gather` or `narrow` result feeding a `Linear`).
 Real torchvision models stay free of new false positives. See
-`tests/test_indexing_gather_precise.py`.
+`tests/test_indexing_gather_precise.py` and `tests/test_boolean_mask_unknowns.py`.
 
 ### Precise attention / scaled_dot_product_attention
 

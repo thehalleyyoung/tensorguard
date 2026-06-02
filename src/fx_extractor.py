@@ -425,6 +425,7 @@ def _function_to_op(fn) -> Optional[OpKind]:
         torch.scatter: OpKind.SCATTER,
         torch.scatter_add: OpKind.SCATTER,
         torch.masked_select: OpKind.MASKED_SELECT,
+        torch.nonzero: OpKind.NONZERO,
         torch.narrow: OpKind.NARROW,
         torch.select: OpKind.SELECT_DIM,
         torch.take: OpKind.TAKE,
@@ -464,7 +465,7 @@ def _function_to_op(fn) -> Optional[OpKind]:
         operator.mul: OpKind.MULTIPLY,
         operator.truediv: OpKind.MULTIPLY,  # element-wise broadcast
         operator.matmul: OpKind.MATMUL,  # the ``@`` operator
-        operator.getitem: OpKind.ACTIVATION,  # indexing preserves shape info
+        operator.getitem: OpKind.ACTIVATION,  # refined per-node below
     })
     return fn_map.get(fn)
 
@@ -802,6 +803,16 @@ def fx_trace_to_graph(
 
             op_kind = _function_to_op(node.target)
             output_name = f"_t{step_idx}"
+            if _op_display_name(node.target) == "getitem" and len(node.args) >= 2:
+                def _has_tensor_index(value: Any) -> bool:
+                    if isinstance(value, torch.fx.Node):
+                        return True
+                    if isinstance(value, (tuple, list)):
+                        return any(_has_tensor_index(v) for v in value)
+                    return False
+
+                if _has_tensor_index(node.args[1]):
+                    op_kind = OpKind.BOOLEAN_INDEX
             if op_kind is None:
                 factory_step = _maybe_tensor_factory(node, output_name)
                 if factory_step is not None:
@@ -1029,6 +1040,11 @@ def _extract_indexing_params(
         ln = _int_arg(3, "length")
         if ln is not None:
             params["length"] = ln
+    if op_kind == OpKind.NONZERO:
+        if len(args) > 1 and isinstance(args[1], bool):
+            params["as_tuple"] = args[1]
+        if "as_tuple" in kwargs and isinstance(kwargs["as_tuple"], bool):
+            params["as_tuple"] = kwargs["as_tuple"]
     return params
 
 
@@ -1092,9 +1108,12 @@ def _extract_function_params(
     elif op_kind in (
         OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
         OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
-        OpKind.SELECT_DIM, OpKind.TAKE,
+        OpKind.SELECT_DIM, OpKind.TAKE, OpKind.NONZERO,
+        OpKind.BOOLEAN_INDEX,
     ):
         params.update(_extract_indexing_params(node, op_kind))
+        if op_kind == OpKind.NONZERO and "as_tuple" in node.kwargs:
+            params["as_tuple"] = node.kwargs["as_tuple"]
     return params
 
 
@@ -1191,9 +1210,12 @@ def _extract_method_params(
     elif op_kind in (
         OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
         OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
-        OpKind.SELECT_DIM, OpKind.TAKE,
+        OpKind.SELECT_DIM, OpKind.TAKE, OpKind.NONZERO,
+        OpKind.BOOLEAN_INDEX,
     ):
         params.update(_extract_indexing_params(node, op_kind))
+        if op_kind == OpKind.NONZERO and "as_tuple" in node.kwargs:
+            params["as_tuple"] = node.kwargs["as_tuple"]
     elif op_kind == OpKind.DTYPE_CAST:
         # x.half()/x.float()/x.double()/x.bfloat16()/x.long()/... — the target
         # dtype is the method name itself (type_as has no static target).
@@ -1738,6 +1760,7 @@ _METHOD_OP_MAP: Dict[str, OpKind] = {
     "masked_select": OpKind.MASKED_SELECT,
     "masked_fill": OpKind.MASKED_FILL,
     "masked_fill_": OpKind.MASKED_FILL,
+    "nonzero": OpKind.NONZERO,
     "narrow": OpKind.NARROW,
     "select": OpKind.SELECT_DIM,
     "take": OpKind.TAKE,
@@ -1785,6 +1808,9 @@ _METHOD_OP_MAP: Dict[str, OpKind] = {
 _TORCH_FUNC_MAP: Dict[str, OpKind] = {
     "cat": OpKind.CAT,
     "stack": OpKind.STACK,
+    "where": OpKind.WHERE,
+    "masked_select": OpKind.MASKED_SELECT,
+    "nonzero": OpKind.NONZERO,
 }
 
 # F.xxx(...) → OpKind

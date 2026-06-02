@@ -1702,6 +1702,33 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                 elif y_shape:
                     result = y_shape
                 return result
+            if len(node.args) == 1:
+                cond_shape = self._infer_shape(node.args[0])
+                if cond_shape is not None:
+                    return TensorShape((
+                        ShapeDim("_where_nnz"),
+                        ShapeDim(cond_shape.ndim),
+                    ))
+
+        # nonzero(input, as_tuple=False) → (nnz, input.ndim); as_tuple=True
+        # returns a tuple of 1-D index tensors, represented by a rank-1 carrier.
+        if base_name == "nonzero":
+            obj_shape = None
+            if isinstance(node.func, ast.Attribute):
+                obj_shape = self._infer_shape(node.func.value)
+            elif node.args:
+                obj_shape = self._infer_shape(node.args[0])
+            if obj_shape is not None:
+                as_tuple = False
+                for kw in node.keywords:
+                    if kw.arg == "as_tuple" and isinstance(kw.value, ast.Constant):
+                        as_tuple = bool(kw.value.value)
+                if as_tuple:
+                    return TensorShape((ShapeDim("_nonzero_nnz"),))
+                return TensorShape((
+                    ShapeDim("_nonzero_nnz"),
+                    ShapeDim(obj_shape.ndim),
+                ))
 
         # torch.einsum(equation, *tensors) → shape from equation string
         if base_name == "einsum":
@@ -2209,6 +2236,17 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                 dims.pop(0)
                 return TensorShape(tuple(dims))
             return TensorShape(())
+
+        # Boolean mask indexing: x[mask].  The leading result length is the
+        # number of true mask elements, so keep it symbolic and preserve any
+        # trailing input dimensions not consumed by the mask rank.
+        if isinstance(node.slice, ast.Name):
+            mask_shape = self._infer_shape(node.slice)
+            if mask_shape is not None:
+                trailing = obj_shape.dims[mask_shape.ndim:]
+            else:
+                trailing = ()
+            return TensorShape((ShapeDim("_boolidx_nnz"),) + trailing)
 
         return None
 

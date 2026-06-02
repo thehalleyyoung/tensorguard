@@ -249,12 +249,14 @@ attention masks, key-padding masks, per-head weight shapes, and valid symbolic
 cases.  Tests replay these contracts against real PyTorch modules and functional
 calls.
 
-Data-dependent operators are treated honestly.  \texttt{masked\_select} and
-\texttt{nonzero}-style operations can produce ranks or lengths that depend on
-runtime tensor values.  Rather than guessing, \tg{} emits symbolic or unknown
-facts and, where supported, reports explicit \unknown{} reasons.  This design
-is repeated throughout the codebase: useful exactness where the contract is
-shape-determined, conservative abstention where it is not.
+Data-dependent operators are treated honestly.  \texttt{masked\_select},
+\texttt{nonzero}, single-argument \texttt{where}, and boolean-mask indexing can
+produce extents that depend on runtime tensor values.  \tg{} now first checks
+the static part of the contract---mask broadcastability or boolean-mask prefix
+shape---and then emits symbolic extents plus explicit \unknown{} reasons instead
+of guessing a concrete selected length.  This design is repeated throughout the
+codebase: useful exactness where the contract is shape-determined, conservative
+abstention where it is not.
 
 \clearpage
 
@@ -830,10 +832,11 @@ dimension with a known length. &
 Indexing/gather tests and extended operator tests. \\
 \hline
 Masked and value-dependent ops &
-Masked select and nonzero-like behavior can depend on tensor values; the
-verifier uses symbolic dynamic lengths and explicit unknown reasons where
-appropriate. &
-Masked-select tests and soundness-boundary tests for data-dependent ranks. \\
+Masked select, nonzero, one-argument where, and boolean masks check static mask
+contracts, then use symbolic selected lengths and explicit unknown reasons for
+value-dependent extents. &
+Boolean-mask tests against live PyTorch plus soundness-boundary tests for
+data-dependent ranks. \\
 \hline
 Einsum &
 Equation parser handles explicit and implicit outputs, ellipses, broadcasting,

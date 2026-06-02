@@ -903,6 +903,10 @@ def verify_architecture(
     )
     result.inferred_input_shapes = dict(getattr(vr, "inferred_input_shapes", {}) or {})
     result.inferred_input_sources = dict(getattr(vr, "inferred_input_sources", {}) or {})
+    vr_unknown_reasons = list(getattr(vr, "unknown_reasons", []) or [])
+    if vr_unknown_reasons:
+        result.abstained = True
+        result.unknown_reasons.extend(vr_unknown_reasons)
 
     # Convert verification errors to Bug objects
     for error in vr.errors:
@@ -1194,7 +1198,7 @@ def verify_architecture(
         layers = getattr(getattr(vr, "graph", None), "layers", {}) or {}
         n_opaque = sum(1 for L in layers.values() if getattr(L, "kind", None) == _LK.UNKNOWN)
         result.opaque_layer_count = n_opaque
-        result.abstained = n_opaque > 0
+        result.abstained = result.abstained or n_opaque > 0
         if n_opaque > 0:
             result.unknown_reasons.append(
                 f"{n_opaque} opaque (out-of-fragment) layer(s) could not be modeled"
