@@ -348,6 +348,7 @@ TORCH_SHAPE_OPS = {
     "reshape": "reshape", "view": "reshape",
     "flatten": "flatten", "squeeze": "squeeze", "unsqueeze": "unsqueeze",
     "permute": "permute", "transpose": "transpose",
+    "chunk": "chunk", "split": "split",
     # Reduction ops
     "sum": "reduce", "mean": "reduce", "max": "reduce", "min": "reduce",
     "prod": "reduce", "norm": "reduce",
@@ -674,6 +675,109 @@ def compute_broadcast_shape(
 
     result_dims.reverse()
     return TensorShape(tuple(result_dims))
+
+
+def _normalize_dim(dim: int, ndim: int) -> Optional[int]:
+    if dim < 0:
+        dim += ndim
+    if dim < 0 or dim >= ndim:
+        return None
+    return dim
+
+
+def _shape_with_dim(shape: TensorShape, dim: int, size: Union[int, str]) -> TensorShape:
+    dims = list(shape.dims)
+    dims[dim] = ShapeDim(size)
+    return TensorShape(tuple(dims))
+
+
+def symbolic_split_shape(
+    shape: TensorShape, dim: int = 0, label: str = "_split"
+) -> Optional[TensorShape]:
+    """Return a sound abstention shape for chunk/split with symbolic size.
+
+    The rank and non-split dimensions remain known, but the split dimension is
+    replaced by a fresh symbolic token so downstream checks cannot refute a
+    concrete mismatch that depends on an unknown partition size.
+    """
+    norm = _normalize_dim(dim, shape.ndim)
+    if norm is None:
+        return None
+    return _shape_with_dim(shape, norm, label)
+
+
+def compute_chunk_shapes(
+    input_shape: TensorShape, chunks: int, dim: int = 0
+) -> Optional[List[TensorShape]]:
+    """Compute exact ``torch.chunk`` output shapes for a concrete split axis.
+
+    PyTorch may return fewer chunks than requested when the split dimension is
+    positive and smaller than ``chunks``.  A zero-sized split dimension is the
+    exception: PyTorch returns ``chunks`` empty tensors.
+    """
+    norm = _normalize_dim(dim, input_shape.ndim)
+    if norm is None or not isinstance(chunks, int) or chunks <= 0:
+        return None
+    axis = input_shape.dims[norm]
+    if axis.is_symbolic or not isinstance(axis.value, int):
+        return None
+    size = axis.value
+    if size < 0:
+        return None
+    if size == 0:
+        sizes = [0] * chunks
+    else:
+        chunk_size = (size + chunks - 1) // chunks
+        n_outputs = (size + chunk_size - 1) // chunk_size
+        sizes = [
+            max(0, min(chunk_size, size - i * chunk_size))
+            for i in range(n_outputs)
+        ]
+    return [_shape_with_dim(input_shape, norm, out_size) for out_size in sizes]
+
+
+def compute_split_shapes(
+    input_shape: TensorShape,
+    split_size_or_sections: Union[int, List[int], Tuple[int, ...]],
+    dim: int = 0,
+) -> Optional[List[TensorShape]]:
+    """Compute exact ``torch.split`` output shapes for a concrete split axis."""
+    norm = _normalize_dim(dim, input_shape.ndim)
+    if norm is None:
+        return None
+    axis = input_shape.dims[norm]
+    if axis.is_symbolic or not isinstance(axis.value, int):
+        return None
+    size = axis.value
+    if size < 0:
+        return None
+
+    if isinstance(split_size_or_sections, int):
+        split_size = split_size_or_sections
+        if split_size < 0:
+            return None
+        if split_size == 0:
+            if size != 0:
+                return None
+            sizes = [0]
+        elif size == 0:
+            sizes = [0]
+        else:
+            n_outputs = (size + split_size - 1) // split_size
+            sizes = [
+                max(0, min(split_size, size - i * split_size))
+                for i in range(n_outputs)
+            ]
+    elif isinstance(split_size_or_sections, (list, tuple)):
+        if not all(isinstance(v, int) and v >= 0 for v in split_size_or_sections):
+            return None
+        sizes = list(split_size_or_sections)
+        if sum(sizes) != size:
+            return None
+    else:
+        return None
+
+    return [_shape_with_dim(input_shape, norm, out_size) for out_size in sizes]
 
 
 def compute_expand_shape(
@@ -1029,10 +1133,40 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
         
         # Handle chunk/split: a, b = torch.chunk(x, 2)
         elif base_name in ("chunk", "split"):
-            elem_shape = self._infer_shape(value)
-            if elem_shape:
-                for elt in target.elts:
+            shapes, error, symbolic_shape = self._chunk_split_shapes_from_call(value)
+            if error:
+                self.errors.append(ShapeError(
+                    kind=ShapeErrorKind.DIM_MISMATCH,
+                    line=getattr(value, "lineno", 0),
+                    col=getattr(value, "col_offset", 0),
+                    message=error,
+                    function=self.func_name,
+                    variable="",
+                ))
+                return
+            if shapes is not None:
+                if len(shapes) != len(target.elts):
+                    self.errors.append(ShapeError(
+                        kind=ShapeErrorKind.DIM_MISMATCH,
+                        line=getattr(value, "lineno", 0),
+                        col=getattr(value, "col_offset", 0),
+                        message=(
+                            f"{base_name}: unpack expects {len(target.elts)} "
+                            f"outputs but PyTorch returns {len(shapes)}"
+                        ),
+                        function=self.func_name,
+                        variable="",
+                    ))
+                    return
+                for elt, elem_shape in zip(target.elts, shapes):
                     if isinstance(elt, ast.Name):
+                        self.shape_env = self.shape_env.set(elt.id, elem_shape)
+            elif symbolic_shape is not None:
+                for i, elt in enumerate(target.elts):
+                    if isinstance(elt, ast.Name):
+                        label = f"_{base_name}_{elt.id}_{i}"
+                        elem_shape = self._fresh_symbolic_split_shape(
+                            symbolic_shape, value, label)
                         self.shape_env = self.shape_env.set(elt.id, elem_shape)
 
     def _analyze_if(self, node: ast.If):
@@ -1639,12 +1773,16 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                             new_dims.append(ShapeDim(cn if cn else "_expand"))
                     return TensorShape(tuple(new_dims))
 
-        # split: x.split(size, dim) → returns tuple, take first
-        if base_name == "split":
-            if isinstance(node.func, ast.Attribute):
-                obj_shape = self._infer_shape(node.func.value)
-                if obj_shape and node.args:
-                    return obj_shape
+        # chunk/split return tuples.  When a call is used as a tensor expression,
+        # expose the first element as a conservative fallback; tuple-unpacking is
+        # handled precisely in _handle_tuple_unpacking.
+        if base_name in ("chunk", "split"):
+            shapes, error, symbolic_shape = self._chunk_split_shapes_from_call(node)
+            if error:
+                return None
+            if shapes:
+                return shapes[0]
+            return symbolic_shape
 
         # size / shape access: x.size() returns shape, x.size(dim) returns int
         if base_name == "size":
@@ -2571,6 +2709,19 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
         """Check that all tensors in cat have matching shapes on non-cat dims."""
         self.constraints_generated += 1
         ref = shapes[0]
+        norm_dim = dim + ref.ndim if dim < 0 else dim
+        if norm_dim < 0 or norm_dim >= ref.ndim:
+            self.errors.append(ShapeError(
+                kind=ShapeErrorKind.CAT_INCOMPAT,
+                line=getattr(node, "lineno", 0),
+                col=getattr(node, "col_offset", 0),
+                message=f"cat dim {dim} out of range for {ref.ndim}D tensor",
+                function=self.func_name,
+                variable="",
+                actual_shape=ref,
+            ))
+            self.constraints_checked += 1
+            return
         has_symbolic_mismatch = False
         for i, s in enumerate(shapes[1:], 1):
             if s.ndim != ref.ndim:
@@ -2587,7 +2738,7 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                 ))
                 continue
             for j in range(ref.ndim):
-                if j == dim:
+                if j == norm_dim:
                     continue
                 d_ref = ref.dims[j]
                 d_s = s.dims[j]
@@ -2804,6 +2955,150 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                     return None
         return tuple(dims)
 
+    @staticmethod
+    def _expr_name(node: ast.expr) -> Optional[str]:
+        if isinstance(node, ast.Name):
+            return node.id
+        if isinstance(node, ast.Attribute):
+            base = TensorShapeAnalyzer._expr_name(node.value)
+            if base:
+                return f"{base}.{node.attr}"
+        return None
+
+    def _literal_int_sequence(self, node: ast.expr) -> Optional[List[int]]:
+        if isinstance(node, (ast.List, ast.Tuple)):
+            vals = [self._const_val(e) for e in node.elts]
+            if all(v is not None for v in vals):
+                return [int(v) for v in vals]
+        if (isinstance(node, ast.Constant)
+                and isinstance(node.value, (list, tuple))
+                and all(isinstance(v, int) for v in node.value)):
+            return [int(v) for v in node.value]
+        return None
+
+    def _fresh_symbolic_split_shape(
+        self, shape: TensorShape, node: ast.Call, label: str
+    ) -> TensorShape:
+        dim = self._chunk_split_dim_from_call(node)
+        if dim is None:
+            dim = 0
+        symbolic = symbolic_split_shape(shape, dim, label)
+        return symbolic if symbolic is not None else shape
+
+    def _chunk_split_dim_from_call(self, node: ast.Call) -> Optional[int]:
+        func_name = self._get_call_name(node)
+        if not func_name:
+            return None
+        base_name = func_name.split(".")[-1] if "." in func_name else func_name
+        if base_name not in ("chunk", "split"):
+            return None
+        is_function_form = False
+        params = list(node.args)
+        if isinstance(node.func, ast.Attribute):
+            owner = self._expr_name(node.func.value)
+            is_function_form = owner in (
+                "torch", "np", "numpy", "F", "torch.nn.functional")
+        if isinstance(node.func, ast.Name):
+            is_function_form = True
+        if is_function_form and params:
+            params = params[1:]
+        dim = None
+        if len(params) > 1:
+            dim = self._const_val(params[1])
+        for kw in node.keywords:
+            if kw.arg == "dim":
+                dim = self._const_val(kw.value)
+        return dim if isinstance(dim, int) else 0
+
+    def _chunk_split_shapes_from_call(
+        self, node: ast.Call
+    ) -> Tuple[Optional[List[TensorShape]], Optional[str], Optional[TensorShape]]:
+        """Return exact chunk/split element shapes, an error, or abstention."""
+        func_name = self._get_call_name(node)
+        if not func_name:
+            return None, None, None
+        base_name = func_name.split(".")[-1] if "." in func_name else func_name
+        if base_name not in ("chunk", "split"):
+            return None, None, None
+
+        is_function_form = False
+        input_node: Optional[ast.expr] = None
+        params = list(node.args)
+        if isinstance(node.func, ast.Attribute):
+            owner = self._expr_name(node.func.value)
+            is_function_form = owner in (
+                "torch", "np", "numpy", "F", "torch.nn.functional")
+            if is_function_form:
+                if params:
+                    input_node = params[0]
+                    params = params[1:]
+            else:
+                input_node = node.func.value
+        elif isinstance(node.func, ast.Name):
+            is_function_form = True
+            if params:
+                input_node = params[0]
+                params = params[1:]
+
+        if input_node is None:
+            return None, None, None
+        input_shape = self._infer_shape(input_node)
+        if input_shape is None:
+            return None, None, None
+
+        dim = self._chunk_split_dim_from_call(node)
+        if dim is None:
+            dim = 0
+        norm_dim = _normalize_dim(dim, input_shape.ndim)
+        if norm_dim is None:
+            return None, (
+                f"{base_name}: dim {dim} out of range for "
+                f"{input_shape.ndim}D tensor"
+            ), None
+        axis = input_shape.dims[norm_dim]
+        abstain_shape = symbolic_split_shape(
+            input_shape, dim,
+            f"_{base_name}_{getattr(node, 'lineno', 0)}")
+
+        if base_name == "chunk":
+            chunks = None
+            if params:
+                chunks = self._const_val(params[0])
+            for kw in node.keywords:
+                if kw.arg == "chunks":
+                    chunks = self._const_val(kw.value)
+            if not isinstance(chunks, int):
+                return None, None, abstain_shape
+            if chunks <= 0:
+                return None, f"chunk: chunks must be positive, got {chunks}", None
+            if axis.is_symbolic:
+                return None, None, abstain_shape
+            shapes = compute_chunk_shapes(input_shape, chunks, dim)
+            if shapes is None:
+                return None, "chunk: could not compute output shapes", None
+            return shapes, None, None
+
+        split_arg = None
+        if params:
+            first = params[0]
+            seq = self._literal_int_sequence(first)
+            split_arg = seq if seq is not None else self._const_val(first)
+        for kw in node.keywords:
+            if kw.arg in ("split_size_or_sections", "split_size", "sections"):
+                seq = self._literal_int_sequence(kw.value)
+                split_arg = seq if seq is not None else self._const_val(kw.value)
+        if split_arg is None:
+            return None, None, abstain_shape
+        if axis.is_symbolic:
+            return None, None, abstain_shape
+        shapes = compute_split_shapes(input_shape, split_arg, dim)
+        if shapes is None:
+            return None, (
+                f"split: invalid split specification {split_arg!r} "
+                f"for dim {dim} of size {axis.value}"
+            ), None
+        return shapes, None, None
+
     def _compute_cat_shape(self, shapes: List[Optional[TensorShape]],
                             dim: int) -> Optional[TensorShape]:
         """Compute result shape of torch.cat."""
@@ -2811,20 +3106,23 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
         if not valid:
             return None
         base = valid[0]
+        norm_dim = dim + base.ndim if dim < 0 else dim
+        if norm_dim < 0 or norm_dim >= base.ndim:
+            return None
         total_dim = ShapeDim(0)
         all_concrete = True
         cat_total = 0
         for s in valid:
-            d = s.dims[dim] if dim < s.ndim else ShapeDim(0)
+            d = s.dims[norm_dim] if norm_dim < s.ndim else ShapeDim(0)
             if d.is_symbolic:
                 all_concrete = False
             else:
                 cat_total += d.value
         result_dims = list(base.dims)
         if all_concrete:
-            result_dims[dim] = ShapeDim(cat_total)
+            result_dims[norm_dim] = ShapeDim(cat_total)
         else:
-            result_dims[dim] = ShapeDim("_cat_dim")
+            result_dims[norm_dim] = ShapeDim("_cat_dim")
         return TensorShape(tuple(result_dims))
 
     def _shape_from_annotation(self, ann: ast.expr) -> Optional[TensorShape]:

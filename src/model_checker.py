@@ -121,8 +121,11 @@ from src.tensor_shapes import (
     check_matmul_compatible,
     compute_broadcast_shape,
     compute_expand_shape,
+    compute_chunk_shapes,
+    compute_split_shapes,
     compute_reshape_shape,
     compute_sdpa_shape,
+    symbolic_split_shape,
 )
 from src.mha_verify import verify_multihead_attention
 
@@ -2520,6 +2523,8 @@ _FUNCTIONAL_OPS: Dict[str, OpKind] = {
     "log_softmax": OpKind.SOFTMAX,
     "cat": OpKind.CAT,
     "stack": OpKind.STACK,
+    "chunk": OpKind.CHUNK,
+    "split": OpKind.SPLIT,
     "interpolate": OpKind.INTERPOLATE,
     "pad": OpKind.PAD,
     "grid_sample": OpKind.ACTIVATION,
@@ -3344,66 +3349,66 @@ class _ForwardExtractor(ast.NodeVisitor):
 
     def _try_emit_split_unpack(self, target: ast.Tuple, value: ast.expr,
                                 line: int, col: int) -> bool:
-        """Detect ``q, k, v = X.split(...)`` / ``X.chunk(...)`` and emit a
-        SPLIT step per output element so that each q/k/v's shape reflects its
-        own slice of the split dimension.
-
-        Returns True if handled, False to fall through to default tuple logic.
-        """
+        """Emit one CHUNK/SPLIT step per tuple-unpacked output element."""
         if not isinstance(value, ast.Call):
             return False
-        if not (isinstance(value.func, ast.Attribute)
-                and value.func.attr in ("split", "chunk")):
-            return False
-        method = value.func.attr
-        # Skip torch.split(...) functional form — base would be 'torch'.
-        base_name = _name_or_attr(value.func.value)
-        if base_name in ("torch", "F", "nn", "torch.nn",
-                         "torch.nn.functional"):
-            # torch.split(x, split_size, dim) — input is value.args[0]
-            return False  # don't handle here
 
-        base = self._resolve_arg(value.func.value)
+        method: Optional[str] = None
+        base_expr: Optional[ast.expr] = None
+        params_args: List[ast.expr] = list(value.args)
+
+        def _kw(*names: str) -> Optional[ast.expr]:
+            for kw in value.keywords:
+                if kw.arg in names:
+                    return kw.value
+            return None
+
+        if isinstance(value.func, ast.Attribute) and value.func.attr in ("split", "chunk"):
+            method = value.func.attr
+            owner = _name_or_attr(value.func.value)
+            if owner in ("torch", "F", "nn", "torch.nn", "torch.nn.functional"):
+                base_expr = params_args[0] if params_args else _kw("input", "tensor")
+                params_args = params_args[1:] if params_args else []
+            else:
+                base_expr = value.func.value
+        elif isinstance(value.func, ast.Name) and value.func.id in ("split", "chunk"):
+            method = value.func.id
+            base_expr = params_args[0] if params_args else _kw("input", "tensor")
+            params_args = params_args[1:] if params_args else []
+        else:
+            return False
+
+        if method is None or base_expr is None:
+            return False
+
+        base = self._resolve_arg(base_expr)
         n = len(target.elts)
         if n == 0:
             return False
 
         # dim
         dim_val = None
-        if len(value.args) > 1:
-            dim_val = _const_value(value.args[1], self._scalar_attrs)
+        if len(params_args) > 1:
+            dim_val = _const_value(params_args[1], self._scalar_attrs)
         for kw in value.keywords:
             if kw.arg == "dim":
                 dim_val = _const_value(kw.value, self._scalar_attrs)
         if not isinstance(dim_val, int):
             dim_val = 0
 
-        # split_size_or_sizes (per-chunk size) for .split, chunks for .chunk
-        sizes: List[Any] = []  # length n; each entry is int|str|None
-        chunks_count: Optional[int] = None
+        split_spec: Any = None
+        chunks_count: Any = None
         if method == "split":
-            if value.args:
-                first = value.args[0]
-                if isinstance(first, ast.List):
-                    sizes = [_const_value(e, self._scalar_attrs) for e in first.elts]
-                else:
-                    raw = _const_value(first, self._scalar_attrs)
-                    if raw is None:
-                        # try resolution via scalar_attrs which may hold strings
-                        # _const_value already does that for self.X if str.
-                        # Fall back: attempt direct attr lookup
-                        if (isinstance(first, ast.Attribute)
-                                and isinstance(first.value, ast.Name)
-                                and first.value.id == "self"
-                                and first.attr in [k.split(".",1)[1] if "." in k else k
-                                                    for k in self._scalar_attrs]):
-                            raw = self._scalar_attrs.get(f"self.{first.attr}")
-                    sizes = [raw] * n
+            first = params_args[0] if params_args else _kw(
+                "split_size_or_sections", "split_size", "sections")
+            if first is not None:
+                split_spec = _const_value(first, self._scalar_attrs)
+                if isinstance(split_spec, tuple):
+                    split_spec = list(split_spec)
         else:  # chunk
-            if value.args:
-                cn = _const_value(value.args[0], self._scalar_attrs)
-                if isinstance(cn, int) and cn > 0:
-                    chunks_count = cn
+            first = params_args[0] if params_args else _kw("chunks")
+            if first is not None:
+                chunks_count = _const_value(first, self._scalar_attrs)
 
         # Emit per-element steps
         for i, elt in enumerate(target.elts):
@@ -3414,19 +3419,15 @@ class _ForwardExtractor(ast.NodeVisitor):
             params: Dict[str, Any] = {"dim": dim_val, "split_index": i,
                                        "n_outputs": n}
             if method == "split":
-                if sizes and i < len(sizes):
-                    params["split_size"] = sizes[i]
-                # Only set "chunks" when split_size is concretely an int —
-                # if symbolic, downstream propagation should prefer the
-                # n_outputs-based fallback to detect divisibility bugs.
-                if (sizes and i < len(sizes)
-                        and isinstance(sizes[i], int)):
-                    params["chunks"] = n
+                if isinstance(split_spec, list):
+                    params["split_sizes"] = split_spec
+                    if i < len(split_spec):
+                        params["split_size"] = split_spec[i]
+                elif split_spec is not None:
+                    params["split_size"] = split_spec
             else:  # chunk
                 if chunks_count is not None:
                     params["chunks"] = chunks_count
-                else:
-                    params["chunks"] = n
             self.steps.append(ComputationStep(
                 op=OpKind.SPLIT if method == "split" else OpKind.CHUNK,
                 inputs=[base], output=out_name,
@@ -4370,14 +4371,45 @@ class _ForwardExtractor(ast.NodeVisitor):
                                 params["dim"] = _const_value(kw_node.value)
                             elif kw_node.arg == "keepdim":
                                 params["keepdim"] = _const_value(kw_node.value)
-                    elif method in ("chunk", "split"):
+                    elif method == "chunk":
                         if node.args:
-                            params["chunks"] = _const_value(node.args[0])
+                            params["chunks"] = _const_value(
+                                node.args[0], self._scalar_attrs)
                         if len(node.args) > 1:
-                            params["dim"] = _const_value(node.args[1])
+                            params["dim"] = _const_value(
+                                node.args[1], self._scalar_attrs)
                         for kw_node in node.keywords:
                             if kw_node.arg == "dim":
-                                params["dim"] = _const_value(kw_node.value)
+                                params["dim"] = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                            elif kw_node.arg == "chunks":
+                                params["chunks"] = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                    elif method == "split":
+                        if node.args:
+                            spec = _const_value(node.args[0], self._scalar_attrs)
+                            if isinstance(spec, tuple):
+                                spec = list(spec)
+                            key = "split_sizes" if isinstance(spec, list) else "split_size"
+                            params[key] = spec
+                        if len(node.args) > 1:
+                            params["dim"] = _const_value(
+                                node.args[1], self._scalar_attrs)
+                        for kw_node in node.keywords:
+                            if kw_node.arg == "dim":
+                                params["dim"] = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                            elif kw_node.arg in (
+                                    "split_size_or_sections", "split_size",
+                                    "sections"):
+                                spec = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                if isinstance(spec, tuple):
+                                    spec = list(spec)
+                                key = (
+                                    "split_sizes"
+                                    if isinstance(spec, list) else "split_size")
+                                params[key] = spec
                     elif method in ("softmax", "log_softmax"):
                         if node.args:
                             params["dim"] = _const_value(node.args[0])
@@ -4407,12 +4439,56 @@ class _ForwardExtractor(ast.NodeVisitor):
                 # For cat/stack, first arg is a list of tensors
                 if op in (OpKind.CAT, OpKind.STACK) and node.args and isinstance(node.args[0], ast.List):
                     inputs = [self._resolve_arg(elt) for elt in node.args[0].elts]
+                elif op in (OpKind.CHUNK, OpKind.SPLIT):
+                    inputs = [self._resolve_arg(node.args[0])] if node.args else []
                 else:
                     inputs = [self._resolve_arg(a) for a in node.args]
                 params_dict: Dict[str, Any] = {}
                 for kw in node.keywords:
                     if kw.arg:
                         params_dict[kw.arg] = _const_value(kw.value)
+
+                if op == OpKind.CHUNK:
+                    if len(node.args) >= 2:
+                        params_dict["chunks"] = _const_value(
+                            node.args[1], self._scalar_attrs)
+                    if len(node.args) >= 3:
+                        params_dict["dim"] = _const_value(
+                            node.args[2], self._scalar_attrs)
+                    for kw in node.keywords:
+                        if kw.arg == "chunks":
+                            params_dict["chunks"] = _const_value(
+                                kw.value, self._scalar_attrs)
+                        elif kw.arg == "dim":
+                            params_dict["dim"] = _const_value(
+                                kw.value, self._scalar_attrs)
+
+                if op == OpKind.SPLIT:
+                    if len(node.args) >= 2:
+                        spec = _const_value(node.args[1], self._scalar_attrs)
+                        if isinstance(spec, tuple):
+                            spec = list(spec)
+                        key = (
+                            "split_sizes"
+                            if isinstance(spec, list) else "split_size")
+                        params_dict[key] = spec
+                    if len(node.args) >= 3:
+                        params_dict["dim"] = _const_value(
+                            node.args[2], self._scalar_attrs)
+                    for kw in node.keywords:
+                        if kw.arg in (
+                                "split_size_or_sections", "split_size",
+                                "sections"):
+                            spec = _const_value(kw.value, self._scalar_attrs)
+                            if isinstance(spec, tuple):
+                                spec = list(spec)
+                            key = (
+                                "split_sizes"
+                                if isinstance(spec, list) else "split_size")
+                            params_dict[key] = spec
+                        elif kw.arg == "dim":
+                            params_dict["dim"] = _const_value(
+                                kw.value, self._scalar_attrs)
 
                 # For functional calls that map to LAYER_CALL, create a
                 # synthetic LayerDef so shape propagation actually works.
@@ -9359,70 +9435,7 @@ class ConstraintVerifier:
             # torch.where(cond, x, y): broadcast all three pairwise
             self._apply_where(new_state, step, violations)
         elif step.op in (OpKind.CHUNK, OpKind.SPLIT):
-            # chunk/split: divide the split dimension
-            if step.inputs and step.inputs[0] in state.shape_env:
-                inp_shape = state.shape_env[step.inputs[0]]
-                chunks = step.params.get("chunks")
-                dim = step.params.get("dim", 0)
-                split_size = step.params.get("split_size")  # may be int|str|None
-                n_outputs = step.params.get("n_outputs")
-                if isinstance(dim, int) and dim < 0:
-                    dim = inp_shape.ndim + dim
-                concrete_dim = (isinstance(dim, int)
-                                and 0 <= dim < inp_shape.ndim
-                                and not inp_shape.dims[dim].is_symbolic)
-                # SOUNDNESS: if the split dim is CONCRETE but split_size is
-                # symbolic, fall back to the chunks-based path so that
-                # downstream bugs (e.g. wrong split axis with concrete shape)
-                # remain detectable.
-                use_split_size = (
-                    split_size is not None
-                    and isinstance(dim, int)
-                    and 0 <= dim < inp_shape.ndim
-                    and (not concrete_dim or isinstance(split_size, int))
-                )
-                if use_split_size:
-                    new_dims = list(inp_shape.dims)
-                    new_dims[dim] = ShapeDim(split_size)
-                    new_state.shape_env[step.output] = TensorShape(tuple(new_dims))
-                elif (chunks is not None and isinstance(chunks, int)
-                        and chunks > 0 and concrete_dim):
-                    new_dims = list(inp_shape.dims)
-                    orig = inp_shape.dims[dim].value
-                    chunk_size = (orig + chunks - 1) // chunks
-                    new_dims[dim] = ShapeDim(chunk_size)
-                    new_state.shape_env[step.output] = TensorShape(tuple(new_dims))
-                elif (n_outputs is not None and isinstance(n_outputs, int)
-                        and n_outputs > 0 and concrete_dim):
-                    # Symbolic split_size on a concrete dim — recover via
-                    # n_outputs to keep bug detection sound.
-                    new_dims = list(inp_shape.dims)
-                    orig = inp_shape.dims[dim].value
-                    # Soundness: q,k,v = X.split(sz, dim) requires
-                    # n_outputs * sz == orig, so orig must be divisible by
-                    # n_outputs. Otherwise a wrong-axis split (e.g. dim=1
-                    # instead of dim=2) produces a concrete contradiction.
-                    if (violations is not None
-                            and step.params.get("split_index", 0) == 0
-                            and orig % n_outputs != 0):
-                        violations.append(SafetyViolation(
-                            kind="shape_incompatible",
-                            step_index=-1, step=step,
-                            message=(
-                                f"Split incompatible: cannot split dim {dim} "
-                                f"of size {orig} into {n_outputs} chunks of "
-                                f"size {split_size!r} "
-                                f"({orig} not divisible by {n_outputs}) — "
-                                f"likely wrong split axis"
-                            ),
-                            tensor_a=step.inputs[0],
-                            shape_a=inp_shape,
-                        ))
-                    chunk_size = (orig + n_outputs - 1) // n_outputs
-                    new_dims[dim] = ShapeDim(chunk_size)
-                    new_state.shape_env[step.output] = TensorShape(tuple(new_dims))
-                else:
-                    new_state.shape_env[step.output] = inp_shape
+            self._apply_chunk_split(new_state, step, violations)
         elif step.op == OpKind.UNBIND:
             # unbind(dim) removes the split dimension entirely.
             # q, k, v = X.unbind(0) where X has shape (3, B, H, D)
@@ -10818,6 +10831,116 @@ class ConstraintVerifier:
         n_tensors = len(shapes)
         out_dims.insert(stack_dim, ShapeDim(n_tensors))
         state.shape_env[step.output] = TensorShape(tuple(out_dims))
+
+    def _apply_chunk_split(
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        violations: List[SafetyViolation],
+    ) -> None:
+        """Apply exact torch.chunk / torch.split shape rules when decidable."""
+        if not step.inputs or step.inputs[0] not in state.shape_env:
+            return
+        inp_shape = state.shape_env[step.inputs[0]]
+        dim = step.params.get("dim", 0)
+        split_index = step.params.get("split_index", 0)
+        n_outputs = step.params.get("n_outputs")
+
+        def _abstain() -> None:
+            use_dim = dim if isinstance(dim, int) else 0
+            shape = symbolic_split_shape(
+                inp_shape, use_dim, f"_{step.op.name.lower()}_{step.output}")
+            if shape is not None:
+                state.shape_env[step.output] = shape
+
+        if not isinstance(dim, int):
+            _abstain()
+            return
+        norm_dim = dim + inp_shape.ndim if dim < 0 else dim
+        if norm_dim < 0 or norm_dim >= inp_shape.ndim:
+            violations.append(SafetyViolation(
+                kind="shape_incompatible", step_index=-1, step=step,
+                message=(
+                    f"{step.op.name.lower()}: dim {dim} out of range for "
+                    f"{inp_shape.ndim}D tensor"
+                ),
+                tensor_a=step.inputs[0], shape_a=inp_shape,
+            ))
+            _abstain()
+            return
+
+        axis = inp_shape.dims[norm_dim]
+        exact_shapes: Optional[List[TensorShape]] = None
+        error: Optional[str] = None
+
+        if step.op == OpKind.CHUNK:
+            chunks = step.params.get("chunks")
+            if not isinstance(chunks, int):
+                _abstain()
+                return
+            if chunks <= 0:
+                error = f"chunk: chunks must be positive, got {chunks}"
+            elif axis.is_symbolic:
+                _abstain()
+                return
+            else:
+                exact_shapes = compute_chunk_shapes(inp_shape, chunks, dim)
+                if exact_shapes is None:
+                    error = (
+                        f"chunk: invalid chunks={chunks!r} for dim {dim} "
+                        f"of size {axis.value}"
+                    )
+        else:
+            split_spec = step.params.get("split_sizes")
+            if split_spec is None:
+                split_spec = step.params.get("split_size")
+            if isinstance(split_spec, tuple):
+                split_spec = list(split_spec)
+            if split_spec is None or not isinstance(split_spec, (int, list, tuple)):
+                _abstain()
+                return
+            if axis.is_symbolic:
+                _abstain()
+                return
+            exact_shapes = compute_split_shapes(inp_shape, split_spec, dim)
+            if exact_shapes is None:
+                error = (
+                    f"split: invalid split specification {split_spec!r} for "
+                    f"dim {dim} of size {axis.value}"
+                )
+
+        first_unpacked = not isinstance(split_index, int) or split_index == 0
+        if error is not None:
+            if first_unpacked:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible", step_index=-1, step=step,
+                    message=error,
+                    tensor_a=step.inputs[0], shape_a=inp_shape,
+                ))
+            _abstain()
+            return
+
+        if exact_shapes is None:
+            _abstain()
+            return
+
+        if isinstance(n_outputs, int) and len(exact_shapes) != n_outputs:
+            if first_unpacked:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible", step_index=-1, step=step,
+                    message=(
+                        f"{step.op.name.lower()}: unpack expects {n_outputs} "
+                        f"outputs but PyTorch returns {len(exact_shapes)}"
+                    ),
+                    tensor_a=step.inputs[0], shape_a=inp_shape,
+                ))
+            _abstain()
+            return
+
+        if isinstance(split_index, int) and 0 <= split_index < len(exact_shapes):
+            state.shape_env[step.output] = exact_shapes[split_index]
+        else:
+            _abstain()
 
     def _apply_to_device(
         self, state: ModelState, step: ComputationStep
