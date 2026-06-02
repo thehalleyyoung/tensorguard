@@ -220,3 +220,48 @@ import TensorGuard
 #print axioms TensorGuard.ContigFlow.run_after_contig
 #print axioms TensorGuard.ContigFlow.run_transpose_involution
 #print axioms TensorGuard.ContigFlow.run_allKeep
+
+-- Flatten shape rule (Step 147): numel preservation, rank law, full flatten =
+-- [numel], flattened dim = product of spanned sizes.
+#print axioms TensorGuard.Flatten.prod_append
+#print axioms TensorGuard.Flatten.prod_flatten
+#print axioms TensorGuard.Flatten.length_flatten
+#print axioms TensorGuard.Flatten.flatten_full
+#print axioms TensorGuard.Flatten.flatten_singleton
+#print axioms TensorGuard.Flatten.flatten_dim_value
+
+-- Concatenation (torch.cat) shape rule (Step 148): compatibility iff non-axis
+-- dims coincide, axis additivity, numel additivity, commutative/associative axis
+-- sum, zero-length identity.
+#print axioms TensorGuard.CatRule.prod_append
+#print axioms TensorGuard.CatRule.catValid_iff
+#print axioms TensorGuard.CatRule.catValid_pre_mismatch
+#print axioms TensorGuard.CatRule.catAxis_value
+#print axioms TensorGuard.CatRule.prod_cat
+#print axioms TensorGuard.CatRule.cat_axis_comm
+#print axioms TensorGuard.CatRule.cat_assoc
+#print axioms TensorGuard.CatRule.cat_zero_right
+
+-- nn.Embedding shape + index-range rule (Step 149): rank +1, trailing dim =
+-- embedding_dim, numel scaling, index guard passes iff every index in range,
+-- range monotonicity.
+#print axioms TensorGuard.EmbeddingRule.prod_append
+#print axioms TensorGuard.EmbeddingRule.emb_rank
+#print axioms TensorGuard.EmbeddingRule.emb_trailing
+#print axioms TensorGuard.EmbeddingRule.emb_prefix
+#print axioms TensorGuard.EmbeddingRule.emb_numel
+#print axioms TensorGuard.EmbeddingRule.idxValid_iff
+#print axioms TensorGuard.EmbeddingRule.allValid_iff
+#print axioms TensorGuard.EmbeddingRule.outOfRange_flagged
+#print axioms TensorGuard.EmbeddingRule.allValid_mono
+
+-- Reshape/view -1-inference rule (Step 150): inferred dim = numel / prod(known),
+-- numel preserved under validity, admitted iff prod(known) positive and divides
+-- numel, non-divisible flagged.
+#print axioms TensorGuard.ReshapeInfer.prod_append
+#print axioms TensorGuard.ReshapeInfer.reshapeValid_iff
+#print axioms TensorGuard.ReshapeInfer.reshapeValid_imp_dvd
+#print axioms TensorGuard.ReshapeInfer.nondivisible_flagged
+#print axioms TensorGuard.ReshapeInfer.inferDim_spec
+#print axioms TensorGuard.ReshapeInfer.prod_reshape_valid
+#print axioms TensorGuard.ReshapeInfer.reshape_infer_position

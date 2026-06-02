@@ -64,7 +64,13 @@ runtime errors in ML codebases before any code runs.
   promotion, broadcasting and contiguity
   (`DevicePlacement`/`PhaseFlow`/`RankTransfer`/`DtypePromoteChain`/
   `BroadcastChain`/`ContigFlow.lean`), each replayed op-by-op on real
-  `cpu`/`mps` tensors and `nn.Module`s. Every one of the library's 272
+  `cpu`/`mps` tensors and `nn.Module`s. The **per-operator shape rules** are
+  machine-checked the same way — flatten (numel-preserving collapse), `torch.cat`
+  (compatible iff non-axis dims match; numel additive), `nn.Embedding` (rank+1,
+  index-range guard) and reshape/`view` `-1`-inference (valid iff `∏known` divides
+  numel) — each cross-checked against real torch *and* the verifier's own
+  propagators (`Flatten`/`CatRule`/`EmbeddingRule`/`ReshapeInfer.lean`). Every one
+  of the library's 302
   public theorems is machine-audited **sorry-free**, on only the trusted kernel
   axioms.
 - **Per-domain verification** — beyond shape, the device and gradient
@@ -2422,7 +2428,7 @@ just a log grep: `lean/TensorGuard/AxiomAudit.lean` runs
 trusted kernel axioms `propext`, `Classical.choice`, `Quot.sound`
 and never on `sorryAx`.  `tests/test_lean_whole_pipeline_audit.py`
 makes this **total and drift-proof**: it auto-discovers and audits
-*all 272* public theorems in the library, so any new theorem hiding
+*all 302* public theorems in the library, so any new theorem hiding
 a `sorry` or an exotic axiom is caught with no list to maintain.
 
 The same kernel-checked guarantee now reaches the **reduced-product

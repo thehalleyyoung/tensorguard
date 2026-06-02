@@ -21,3 +21,7 @@ import TensorGuard.RankTransfer
 import TensorGuard.DtypePromoteChain
 import TensorGuard.BroadcastChain
 import TensorGuard.ContigFlow
+import TensorGuard.Flatten
+import TensorGuard.CatRule
+import TensorGuard.EmbeddingRule
+import TensorGuard.ReshapeInfer
