@@ -39,8 +39,11 @@ from src import (  # noqa: F401  (re-export)
 )
 from src.torch_integration import (  # noqa: F401  (re-export)
     TensorGuardViolation,
+    guarded_aot_package,
     guarded_compile,
+    guarded_onnx_export,
     make_tensorguard_backend,
+    verify_exported_program,
     verify_module,
 )
 
@@ -67,6 +70,9 @@ __all__ = [
     "verify_module",
     "guarded_compile",
     "make_tensorguard_backend",
+    "guarded_onnx_export",
+    "verify_exported_program",
+    "guarded_aot_package",
     "TensorGuardViolation",
     "api",
     "torch",

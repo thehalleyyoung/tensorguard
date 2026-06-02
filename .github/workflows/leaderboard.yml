@@ -1,0 +1,36 @@
+name: Leaderboard submissions
+
+# Step 174 — accept external tool submissions to the public benchmark
+# leaderboard via CI. On any PR that adds/edits an entry under
+# benchmarks/leaderboard_entries/, validate the raw per-case verdicts against
+# the frozen corpus and re-score the whole leaderboard from those verdicts
+# (a submitter's self-reported metrics are never trusted). The job fails if an
+# entry is malformed or if the regenerated leaderboard is not deterministic.
+on:
+  pull_request:
+    paths:
+      - "benchmarks/leaderboard_entries/**"
+      - "reproducibility/leaderboard.py"
+      - "reproducibility/validate_entry.py"
+      - "real_benchmarks/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-and-rescore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: pip install -e .
+      - name: Validate submitted entries
+        run: PYTHONPATH=. python reproducibility/validate_entry.py
+      - name: Re-score leaderboard from raw verdicts
+        run: PYTHONPATH=. python reproducibility/leaderboard.py
+      - name: Assert determinism
+        run: PYTHONPATH=. python reproducibility/leaderboard.py --check

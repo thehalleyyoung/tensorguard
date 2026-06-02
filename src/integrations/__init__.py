@@ -7,6 +7,7 @@ from .mlflow_hook import MLflowHook
 from .ci_hook import CIHook
 from .pytest_plugin import TensorGuardPlugin
 from .accelerate_hook import prepare_verified, verify_accelerate_model
+from .hf_hook import guarded_from_pretrained, verify_pretrained_model
 
 __all__ = [
     "WandbHook",
@@ -15,4 +16,6 @@ __all__ = [
     "TensorGuardPlugin",
     "prepare_verified",
     "verify_accelerate_model",
+    "guarded_from_pretrained",
+    "verify_pretrained_model",
 ]

@@ -24,6 +24,7 @@ attribute carries the structured findings.
 from __future__ import annotations
 
 import inspect
+import os
 import re
 import warnings
 from typing import Any, Dict, List, Optional, Tuple
@@ -117,6 +118,10 @@ def _check(
     soundness_mode: str,
 ):
     """Run the pre-pass; raise/warn per ``on_violation``. Returns the result."""
+    if on_violation not in ("raise", "warn", "ignore"):
+        raise ValueError(
+            f"on_violation must be raise/warn/ignore, got {on_violation!r}"
+        )
     result = verify_module(
         model, input_shapes=input_shapes, soundness_mode=soundness_mode
     )
@@ -204,18 +209,63 @@ def verify_exported_program(
     example_args: Tuple,
     *,
     input_shapes: Optional[Dict[str, Tuple]] = None,
-    on_violation: str = "warn",
+    on_violation: str = "raise",
     soundness_mode: str = "balanced",
 ):
     """Verify a module as a pre-pass, then ``torch.export.export`` it.
 
-    Returns the ``ExportedProgram``.  Verification mirrors
-    :func:`guarded_compile`; export proceeds with the original module.
+    Parity with :func:`guarded_onnx_export`: verification is the **first** side
+    effect and ``on_violation`` defaults to ``"raise"``, so a real bug becomes
+    one :class:`TensorGuardViolation` *before* the tracer runs (where the same
+    bug would surface as an opaque export error or a silently wrong graph).
+    When ``input_shapes`` is omitted it is inferred from the example tensor
+    ``example_args`` against the ``forward`` signature, so the shape that is
+    verified is the shape that is exported.  Returns the ``ExportedProgram``.
     """
+    if input_shapes is None:
+        input_shapes = _infer_shapes_from_args(model, example_args)
     _check(model, input_shapes, on_violation, soundness_mode)
     import torch
 
-    return torch.export.export(model, example_args)
+    args = example_args if isinstance(example_args, tuple) else (example_args,)
+    return torch.export.export(model, args)
+
+
+def guarded_aot_package(
+    model: Any,
+    example_args: Tuple,
+    *,
+    package_path: Optional[str] = None,
+    input_shapes: Optional[Dict[str, Tuple]] = None,
+    on_violation: str = "raise",
+    soundness_mode: str = "balanced",
+    inductor_configs: Optional[Dict[str, Any]] = None,
+):
+    """Verify *model*, then AOTInductor-compile and package it.
+
+    The packaging analogue of :func:`guarded_onnx_export`: TensorGuard's static
+    verification runs **before** ``torch.export.export`` /
+    ``torch._inductor.aoti_compile_and_package``, so a real shape/device/phase
+    bug is reported as one :class:`TensorGuardViolation` *before* any artifact is
+    written to ``package_path`` — instead of a deep Inductor compile error or a
+    packaged-but-wrong ``.pt2``.  Shapes are inferred from ``example_args`` when
+    ``input_shapes`` is omitted (parity with the ONNX/export gates).
+
+    Returns the path to the compiled ``.pt2`` package (the string
+    ``aoti_compile_and_package`` returns).
+    """
+    ep = verify_exported_program(
+        model,
+        example_args,
+        input_shapes=input_shapes,
+        on_violation=on_violation,
+        soundness_mode=soundness_mode,
+    )
+    import torch
+
+    return torch._inductor.aoti_compile_and_package(
+        ep, package_path=package_path, inductor_configs=inductor_configs
+    )
 
 
 def _infer_shapes_from_args(
@@ -254,6 +304,7 @@ def guarded_onnx_export(
     input_shapes: Optional[Dict[str, Tuple]] = None,
     on_violation: str = "raise",
     soundness_mode: str = "balanced",
+    check_model: bool = True,
     **export_kwargs: Any,
 ):
     """Verify *model* as a pre-pass, then ``torch.onnx.export`` it.
@@ -272,7 +323,14 @@ def guarded_onnx_export(
     The legacy (TorchScript) exporter is selected by default
     (``dynamo=False``) for broad interpreter compatibility — the Dynamo-based
     exporter is unavailable on some interpreters (e.g. Python 3.14).  Pass
-    ``dynamo=True`` explicitly to override.
+    ``dynamo=True`` explicitly to opt into the Dynamo/``onnxscript`` exporter
+    where it is available.
+
+    When ``check_model=True`` (default) the exported proto is parsed back and
+    validated with ``onnx.checker.check_model`` as a post-export assertion, so a
+    structurally invalid graph fails loudly at export time rather than at load
+    time in a downstream runtime.  The check runs for both ``BytesIO``/file-like
+    and path sinks; it is skipped only when ``onnx`` is not importable.
     """
     if input_shapes is None:
         input_shapes = _infer_shapes_from_args(model, args)
@@ -281,4 +339,31 @@ def guarded_onnx_export(
     import torch
 
     export_kwargs.setdefault("dynamo", False)
-    return torch.onnx.export(model, args, f, **export_kwargs)
+    result = torch.onnx.export(model, args, f, **export_kwargs)
+    if check_model:
+        _post_export_check(f)
+    return result
+
+
+def _post_export_check(f: Any) -> None:
+    """Parse the just-written ONNX sink and run ``onnx.checker.check_model``.
+
+    Silently no-ops if ``onnx`` is unavailable.  Raises whatever
+    ``onnx.checker.check_model`` raises (``onnx.checker.ValidationError``) on a
+    structurally invalid graph.
+    """
+    try:
+        import onnx  # type: ignore
+    except Exception:
+        return
+    # File-like sink (e.g. io.BytesIO): parse the written bytes and check.
+    getvalue = getattr(f, "getvalue", None)
+    if callable(getvalue):
+        data = getvalue()
+        if data:
+            onnx.checker.check_model(onnx.load_from_string(bytes(data)))
+        return
+    # Filesystem sink: check by path so large/external-data models validate the
+    # way onnx.checker intends (without loading the whole proto into memory).
+    if isinstance(f, (str, bytes)) or hasattr(f, "__fspath__"):
+        onnx.checker.check_model(os.fspath(f))

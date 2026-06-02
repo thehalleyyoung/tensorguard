@@ -318,15 +318,19 @@ the model is compiled, exported, or wrapped, so a shape/device/phase bug is one
 clear `TensorGuardViolation` instead of an opaque downstream failure:
 
 ```python
-from tensorguard.torch import guarded_compile, guarded_onnx_export
+from tensorguard.torch import guarded_compile, guarded_onnx_export, guarded_aot_package
 from src.framework_hooks import TensorGuardCallback, TensorGuardTrainerCallback
 from src.integrations.accelerate_hook import prepare_verified
+from src.integrations.hf_hook import guarded_from_pretrained
 
 compiled = guarded_compile(model, input_shapes={"x": ("b", 10)})   # torch.compile
-guarded_onnx_export(model, (x,), "model.onnx")                     # torch.onnx.export
+guarded_onnx_export(model, (x,), "model.onnx")                     # torch.onnx.export (+ checker)
+guarded_aot_package(model, (x,), package_path="m.pt2")            # torch.export + AOTInductor
 model = prepare_verified(accelerator, model, opt, loader)          # accelerate.prepare
+model = guarded_from_pretrained(AutoModel, "org/ckpt")            # HF from_pretrained
 trainer = pl.Trainer(callbacks=[TensorGuardCallback()])           # Lightning fit
-# … and TensorGuardTrainerCallback for the HuggingFace Trainer.
+# … TensorGuardTrainerCallback for the HF Trainer; src.upstream_hook.install()
+# grafts the proposed torch.nn.utils.verify_module onto the real namespace.
 ```
 
 ---
@@ -2299,17 +2303,21 @@ same bug surfaces as an opaque guard failure or a deep inductor traceback).
 `TensorGuardViolation` (or warns) on a real bug, then returns
 `torch.compile(model)`; `make_tensorguard_backend(model)` is a `torch.compile`
 backend that gates verification inside the pipeline; `verify_exported_program`
-does the same before `torch.export.export`. See `src/torch_integration.py`.
+and `guarded_aot_package` do the same before `torch.export.export` and
+AOTInductor packaging; `guarded_onnx_export` adds an `onnx.checker` post-export
+assertion. See `src/torch_integration.py`.
 
-### Framework hooks (Lightning, HF Trainer)
+### Framework hooks (Lightning, HF Trainer, `from_pretrained`)
 
 Framework users get a one-line pre-flight check that runs before the first
 training step. `TensorGuardCallback` is a `pytorch_lightning.Callback` that
 verifies the `LightningModule` in `on_fit_start`; `TensorGuardTrainerCallback`
-is a Hugging Face `TrainerCallback` that verifies the model in `on_train_begin`.
-A real shape/device/phase bug raises `TensorGuardViolation` at `fit`/`train`
-time instead of crashing mid-epoch. Both degrade gracefully when the framework
-is not installed. See `src/framework_hooks.py` and `tests/test_framework_hooks.py`.
+is a Hugging Face `TrainerCallback` that verifies the model in `on_train_begin`;
+`guarded_from_pretrained` verifies a returned `PreTrainedModel` before the loader
+hands it back. A real shape/device/phase bug raises `TensorGuardViolation` at
+`fit`/`train`/load time instead of crashing mid-epoch. Both degrade gracefully
+when the framework is not installed. See `src/framework_hooks.py`,
+`src/integrations/hf_hook.py`, and `examples/lightning_guarded_training.py`.
 
 ### License & redistribution
 

@@ -1541,6 +1541,29 @@ the real \texttt{torch.onnx} exporter (a clean model yields a proto that passes
 \texttt{onnx.checker}; a buggy one leaves the sink byte-for-byte empty), and a
 real \texttt{pytorch\_lightning.Trainer.fit}.
 
+\paragraph{Whole-lifecycle parity and a community scoreboard.} The gate set now
+spans every point a model leaves the user's hands. \texttt{guarded\_from\_%
+pretrained} verifies a returned \texttt{PreTrainedModel} before the Hugging~Face
+loader hands it back---a gated clean checkpoint then trains for real under a
+genuine \texttt{transformers.Trainer}, while a misbuilt one raises before it can
+reach a pipeline. \texttt{verify\_exported\_program} and \texttt{guarded\_aot\_%
+package} bring the \texttt{torch.export} and AOTInductor packaging paths to
+parity with the ONNX gate (verification is the first side effect; shapes are
+inferred from the example arguments; no \texttt{.pt2} is written on a bug), and
+\texttt{guarded\_onnx\_export} adds an \texttt{onnx.checker.check\_model}
+post-export assertion so a structurally invalid graph fails at export rather than
+downstream load. To keep the empirical claims honest \emph{after} publication, an
+open leaderboard re-scores external tool submissions in CI: a contributor commits
+only raw per-case verdicts on the frozen, hash-pinned corpus, a validator rejects
+unknown ids, malformed verdicts, and any self-reported metric, and the harness
+recomputes recall/precision/F1 itself---so a tool that claims perfect recall but
+abstains everywhere is scored at its true recall of zero. Finally,
+\texttt{upstream\_hook.install()} grafts the proposed
+\texttt{torch.nn.utils.verify\_module} / \texttt{attach\_verifier} /
+\texttt{torch.nn.verifiable} surface onto the live namespace with no core
+changes---a reversible, idempotent preview of the RFC's Phase-1 API, exercised
+directly against real \texttt{torch}.
+
 \paragraph{One engine, many doors.} Table~\ref{tab:cli} summarizes the
 developer-facing entry points; crucially, all of them route through the same
 verified core, so no surface can drift from the soundness guarantees proved in

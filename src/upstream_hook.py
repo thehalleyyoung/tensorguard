@@ -147,3 +147,77 @@ def verifiable(
         return cls
 
     return _decorate
+
+
+# --------------------------------------------------------------------------- #
+# Phase-1 upstream shim: expose the proposed names on the real torch namespace.
+# --------------------------------------------------------------------------- #
+# Names this shim grafts onto ``torch.nn.utils`` / ``torch.nn`` so user code can
+# call the *exact* proposed upstream API (``torch.nn.utils.verify_module``, …)
+# today, with no core PyTorch changes. ``install`` is idempotent and fully
+# reversible with ``uninstall`` — it never shadows a name PyTorch already
+# defines unless ``force=True``.
+_INSTALLED_MARK = "_tensorguard_installed"
+
+
+def install(*, force: bool = False) -> List[str]:
+    """Graft the proposed upstream helpers onto the real ``torch`` namespace.
+
+    Adds ``torch.nn.utils.verify_module`` and ``torch.nn.utils.attach_verifier``
+    plus the ``torch.nn.verifiable`` decorator and the
+    ``torch.nn.ShapeVerificationError`` exception — exactly the Phase-1 surface
+    in ``docs/upstream/pytorch_proposal.md``. Returns the list of dotted names
+    that were installed. Idempotent; raises if a target already exists in core
+    PyTorch unless *force* is set.
+    """
+    import torch  # local import: this module must import without torch present
+
+    targets = {
+        torch.nn.utils: {
+            "verify_module": verify_nn_module,
+            "attach_verifier": attach_verifier,
+        },
+        torch.nn: {
+            "verifiable": verifiable,
+            "ShapeVerificationError": ShapeVerificationError,
+        },
+    }
+    installed: List[str] = []
+    for ns, names in targets.items():
+        ns_name = getattr(ns, "__name__", str(ns))
+        for attr, value in names.items():
+            existing = getattr(ns, attr, None)
+            if (
+                existing is not None
+                and not getattr(existing, _INSTALLED_MARK, False)
+                and not force
+            ):
+                raise RuntimeError(
+                    f"{ns_name}.{attr} already exists; pass force=True to override"
+                )
+            try:
+                setattr(value, _INSTALLED_MARK, True)
+            except (AttributeError, TypeError):
+                pass
+            setattr(ns, attr, value)
+            installed.append(f"{ns_name}.{attr}")
+    return installed
+
+
+def uninstall() -> List[str]:
+    """Remove names previously grafted by :func:`install`. Idempotent."""
+    import torch
+
+    removed: List[str] = []
+    for ns, attrs in (
+        (torch.nn.utils, ("verify_module", "attach_verifier")),
+        (torch.nn, ("verifiable", "ShapeVerificationError")),
+    ):
+        ns_name = getattr(ns, "__name__", str(ns))
+        for attr in attrs:
+            existing = getattr(ns, attr, None)
+            if existing is not None and getattr(existing, _INSTALLED_MARK, False):
+                delattr(ns, attr)
+                removed.append(f"{ns_name}.{attr}")
+    return removed
+

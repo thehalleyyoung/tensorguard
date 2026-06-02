@@ -30,6 +30,26 @@ enforced by `tests/test_api_stability.py`.
   Code extension scaffold under `editors/vscode/` wires it as a language client.
 - **Verified Dynamo backend.** `make_tensorguard_backend` / `guarded_compile`
   are proven end-to-end against a real `torch.compile` run on torch 2.x.
+- **Hugging Face `from_pretrained` gate.** `guarded_from_pretrained` loads a
+  checkpoint and verifies the returned `PreTrainedModel` before handing it back,
+  so a misbuilt model never escapes the loader; a gated clean model then trains
+  under a real `transformers.Trainer` (`src/integrations/hf_hook.py`).
+- **Lightning adoption walkthrough.** Runnable
+  `examples/lightning_guarded_training.py` guards a real CNN `Trainer.fit`;
+  the buggy variant is blocked at fit-start before any optimizer step.
+- **ONNX export gate hardening.** `guarded_onnx_export` now runs an
+  `onnx.checker.check_model` post-export assertion (default on) and documents the
+  opt-in `dynamo=True` exporter path.
+- **Export / AOTInductor packaging gates.** `verify_exported_program`
+  (verify-before-`torch.export.export`, shapes inferred from example args) and
+  `guarded_aot_package` (verify-before-`aoti_compile_and_package`) bring the
+  export/packaging paths to parity with the ONNX gate.
+- **Public-leaderboard CI.** `reproducibility/validate_entry.py` +
+  `.github/workflows/leaderboard.yml` validate external tool submissions and
+  re-score the board from raw per-case verdicts (self-reported metrics rejected).
+- **Proposed-upstream shim.** `src.upstream_hook.install()` grafts the proposed
+  `torch.nn.utils.verify_module` / `attach_verifier` / `torch.nn.verifiable`
+  surface onto the real namespace with no core changes (idempotent, reversible).
 
 ## [0.1.0]
 

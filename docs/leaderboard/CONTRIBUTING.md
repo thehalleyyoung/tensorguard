@@ -83,3 +83,19 @@ zero-false-alarm guarantee. Regenerate after any change:
 PYTHONPATH=. python3 reproducibility/leaderboard.py          # regenerate
 PYTHONPATH=. python3 reproducibility/leaderboard.py --check   # assert determinism
 ```
+
+### CI validation of submissions
+
+Every PR that touches `benchmarks/leaderboard_entries/**` runs
+[`.github/workflows/leaderboard.yml`](../../.github/workflows/leaderboard.yml),
+which:
+
+1. validates each entry with
+   [`reproducibility/validate_entry.py`](../../reproducibility/validate_entry.py)
+   — rejecting unknown case ids, bad verdict tokens, a missing `tool`/`verdicts`,
+   and any **self-reported metric field** (`recall`, `f1`, `scorecard`, …): only
+   the raw per-case verdicts are accepted, scoring is recomputed;
+2. re-scores the whole leaderboard from those verdicts;
+3. asserts the regenerated artifact is byte-deterministic (`--check`).
+
+So a submission can never inflate its own numbers or silently corrupt the board.
