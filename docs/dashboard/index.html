@@ -227,6 +227,39 @@
       "title": "Held-out blind split + pre-registration"
     },
     {
+      "category": "Ablations",
+      "headline": "300 labeled bugs: every verification domain is necessary (leave-one-out recall drops to zero on its own bugs), domains are orthogonal, phase is diagnostic-only",
+      "id": "domain_ablation",
+      "metrics": [
+        {
+          "label": "labeled bugs",
+          "value": "300"
+        },
+        {
+          "label": "all verification domains at full recall",
+          "value": "True"
+        },
+        {
+          "label": "every domain necessary (LODO)",
+          "value": "True"
+        },
+        {
+          "label": "domains orthogonal",
+          "value": "True"
+        },
+        {
+          "label": "phase diagnostic-only",
+          "value": "True"
+        },
+        {
+          "label": "toggle/report cross-check agrees",
+          "value": "True"
+        }
+      ],
+      "source_artifact": "domain_ablation.json",
+      "title": "Per-domain ablation (leave-one-domain-out recall)"
+    },
+    {
       "category": "Robustness",
       "headline": "verdict stability across torch 2.1 to 2.9: stable (True), static (no torch execution)",
       "id": "cross_version",
@@ -253,12 +286,13 @@
     }
   ],
   "categories": [
+    "Ablations",
     "Methodology",
     "Precision",
     "Robustness",
     "Soundness at scale"
   ],
-  "n_cards": 7,
+  "n_cards": 8,
   "schema": 1,
   "subtitle": "Regenerated from committed, byte-deterministic reproducibility artifacts. No server, no network.",
   "title": "TensorGuard \u2014 evidence dashboard"

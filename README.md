@@ -976,6 +976,29 @@ least one successful operation. See
 [`reproducibility/time_to_detect.md`](reproducibility/time_to_detect.md) and
 `tests/test_time_to_detect.py`.
 
+### Per-domain ablation: how much each abstract domain contributes
+TensorGuard's reduced product is built from five abstract domains — shape, dtype,
+device, phase and gradient — and a natural reviewer question is whether each one
+actually earns its place. `reproducibility/domain_ablation.py` answers this with a
+leave-one-domain-out study over three hundred labeled modules, each carrying
+exactly one injected bug of a known domain. With every domain enabled, recall on
+each of the four verification domains is perfect, sixty out of sixty. Removing a
+single domain — `device` and `gradient` through their genuine runtime toggles,
+`shape` and `dtype` through report-level attribution on the always-on base view —
+drops recall on that domain's own bugs all the way to zero while leaving recall on
+the other domains untouched, so the marginal contribution of every verification
+domain is exactly one and the domains are fully orthogonal. To keep the ablation
+method honest, the harness cross-checks the two device-and-gradient ablation paths
+against each other and finds they agree on all six hundred comparisons. Phase is
+reported truthfully as diagnostic-only: it records phase structure but refutes
+nothing, so its recall is zero by design. The same labeled corpus also surfaced
+and fixed a real soundness gap — a boolean tensor fed into a float-parameter layer
+such as `nn.Linear` or `nn.Conv2d` was previously accepted as SAFE even though
+eager PyTorch rejects it — now caught in sound mode without false-alarming clean
+float inputs. See
+[`reproducibility/domain_ablation.md`](reproducibility/domain_ablation.md),
+`tests/test_domain_ablation.py` and `tests/test_bool_dtype_soundness.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a

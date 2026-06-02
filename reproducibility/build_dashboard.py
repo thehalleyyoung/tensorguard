@@ -187,6 +187,36 @@ def _x_time_to_detect():
     return headline, metrics
 
 
+def _x_domain_ablation():
+    d = _load("domain_ablation.json")
+    headline = (
+        f"{d['n_cases']} labeled bugs: every verification domain is necessary "
+        "(leave-one-out recall drops to zero on its own bugs), domains are "
+        "orthogonal, phase is diagnostic-only"
+    )
+    metrics = [
+        {"label": "labeled bugs", "value": str(d["n_cases"])},
+        {
+            "label": "all verification domains at full recall",
+            "value": str(d["all_verification_domains_full_recall"]),
+        },
+        {
+            "label": "every domain necessary (LODO)",
+            "value": str(d["every_domain_necessary"]),
+        },
+        {"label": "domains orthogonal", "value": str(d["domains_orthogonal"])},
+        {
+            "label": "phase diagnostic-only",
+            "value": str(d["phase_diagnostic"]["is_diagnostic_only"]),
+        },
+        {
+            "label": "toggle/report cross-check agrees",
+            "value": str(d["toggle_report_crosscheck"]["agree"]),
+        },
+    ]
+    return headline, metrics
+
+
 def _x_cross_version():
     d = _load("cross_version_stability.json")
     headline = (
@@ -255,6 +285,13 @@ REGISTRY = [
         "Methodology",
         _x_blind,
         "blind_split_eval.json",
+    ),
+    (
+        "domain_ablation",
+        "Per-domain ablation (leave-one-domain-out recall)",
+        "Ablations",
+        _x_domain_ablation,
+        "domain_ablation.json",
     ),
     (
         "cross_version",

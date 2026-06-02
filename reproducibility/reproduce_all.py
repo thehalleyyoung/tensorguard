@@ -102,6 +102,8 @@ GENERATED_DETERMINISTIC = [
     "docs/dashboard/index.html",
     "reproducibility/time_to_detect.json",
     "reproducibility/time_to_detect.md",
+    "reproducibility/domain_ablation.json",
+    "reproducibility/domain_ablation.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -222,6 +224,8 @@ STEPS = [
      [PY, "reproducibility/hypothesis_module_ast.py"], None),
     ("time-to-detect: static vs first failing forward op across buggy corpus",
      [PY, "reproducibility/time_to_detect.py"], None),
+    ("per-domain ablation: leave-one-domain-out recall + orthogonality matrix",
+     [PY, "reproducibility/domain_ablation.py"], None),
     ("dashboard: rebuild the static evidence site from committed artifacts",
      [PY, "reproducibility/build_dashboard.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",

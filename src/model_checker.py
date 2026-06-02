@@ -7310,6 +7310,15 @@ _FLOAT_DTYPES = frozenset(
 )
 _INT_DTYPES = frozenset({"int8", "int16", "int32", "int64", "uint8"})
 
+# Dtypes that are *not* floating-point and are therefore invalid as the input to
+# a layer that requires a floating input (matmul/conv against float parameters,
+# float statistics, etc.). This is the integer dtypes plus ``bool``: feeding a
+# bool activation into nn.Linear/Conv/RNN/norm raises under eager PyTorch exactly
+# as an integer activation does. Flagging any statically-known non-floating input
+# to such layers is sound and cannot false-alarm on clean code (which never does
+# this).
+_NONFLOAT_INPUT_DTYPES = _INT_DTYPES | frozenset({"bool"})
+
 # Layers whose forward performs a matmul/convolution against a stored parameter
 # and therefore require the *input* dtype to exactly equal the *parameter*
 # dtype (torch raises e.g. "mat1 and mat2 must have the same dtype" /
@@ -7361,6 +7370,14 @@ def _is_float_dtype(dt: Optional[str]) -> bool:
 
 def _is_int_dtype(dt: Optional[str]) -> bool:
     return dt in _INT_DTYPES
+
+
+def _is_nonfloat_input_dtype(dt: Optional[str]) -> bool:
+    """True for a recognised dtype that is not floating-point (int or bool).
+
+    Such a dtype is a guaranteed runtime error as the input to any
+    float-input-required layer, so flagging it is sound."""
+    return dt in _NONFLOAT_INPUT_DTYPES
 
 
 _LAYER_PROPAGATORS = {
@@ -9681,14 +9698,15 @@ class ConstraintVerifier:
                     # the same dtype"). This cannot false-alarm on clean code,
                     # which never feeds an integer activation into such a layer.
                     if (self.check_dtypes and inp_dt is not None
-                            and _is_int_dtype(inp_dt)):
+                            and _is_nonfloat_input_dtype(inp_dt)):
                         violations.append(SafetyViolation(
                             kind="dtype_error",
                             step_index=-1,
                             step=step,
                             message=(
                                 f"{layer.kind.name}: input dtype '{inp_dt}' is "
-                                f"integer but the layer's floating parameters "
+                                f"non-floating (integer or boolean) but the "
+                                f"layer's floating parameters "
                                 f"require a floating input. torch raises at "
                                 f"runtime (e.g. \"mat1 and mat2 must have the "
                                 f"same dtype\")"
@@ -9703,17 +9721,18 @@ class ConstraintVerifier:
                 if layer.kind in _FLOAT_INPUT_REQUIRED_KINDS:
                     # Recurrent / attention / transformer / normalisation layers
                     # also require a floating input (they carry float
-                    # buffers/parameters); a known-integer input is a guaranteed
-                    # runtime dtype error.
+                    # buffers/parameters); a known non-floating input is a
+                    # guaranteed runtime dtype error.
                     if (self.check_dtypes and inp_dt is not None
-                            and _is_int_dtype(inp_dt)):
+                            and _is_nonfloat_input_dtype(inp_dt)):
                         violations.append(SafetyViolation(
                             kind="dtype_error",
                             step_index=-1,
                             step=step,
                             message=(
                                 f"{layer.kind.name}: input dtype '{inp_dt}' is "
-                                f"integer but this layer requires a floating "
+                                f"non-floating (integer or boolean) but this "
+                                f"layer requires a floating "
                                 f"input. torch raises at runtime."
                             ),
                             tensor_a=inp,
@@ -9774,14 +9793,15 @@ class ConstraintVerifier:
                             cur_dt = "float32"  # weight (output) dtype
                         elif sub.kind in _FLOAT_INPUT_REQUIRED_KINDS:
                             if (self.check_dtypes and cur_dt is not None
-                                    and _is_int_dtype(cur_dt)):
+                                    and _is_nonfloat_input_dtype(cur_dt)):
                                 violations.append(SafetyViolation(
                                     kind="dtype_error",
                                     step_index=-1,
                                     step=step,
                                     message=(
                                         f"Sequential/{sub.kind.name}: input dtype "
-                                        f"'{cur_dt}' is integer but the layer "
+                                        f"'{cur_dt}' is non-floating (integer or "
+                                        f"boolean) but the layer "
                                         f"requires a floating input. torch raises "
                                         f"at runtime (e.g. \"mat1 and mat2 must "
                                         f"have the same dtype\")"
