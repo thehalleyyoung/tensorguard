@@ -7601,10 +7601,24 @@ class ConstraintVerifier:
         if step.op == OpKind.TO_DEVICE:
             dev_str = step.params.get("device")
             if dev_str is not None and step.output in post.device_vars:
+                # Explicit device move (.to('cuda') / .cuda() / .cpu()): pin the
+                # output device to the target.
                 target = Device.from_string(str(dev_str))
                 cs.append(self.ctx.encode_device_transfer(
                     post.device_vars[step.output], target
                 ))
+            elif step.output in post.device_vars:
+                # Device-preserving TO_DEVICE (.pin_memory(), or a .to(...) that
+                # only changes dtype): inherit the input device.  Without this
+                # the output device var would be unconstrained and Z3 could pick
+                # an arbitrary device, producing a spurious mismatch.
+                for inp in step.inputs:
+                    if inp in pre.device_vars:
+                        cs.append(
+                            post.device_vars[step.output]
+                            == pre.device_vars[inp]
+                        )
+                        break
         elif step.inputs and step.output in post.device_vars:
             for inp in step.inputs:
                 if inp in pre.device_vars:

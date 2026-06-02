@@ -886,6 +886,27 @@ half precision with matching and mismatching inputs, floating embedding indices,
 mixed-dtype addition, unknown-dtype abstention, and torchvision regression
 showing no new false positives. See `tests/test_dtype_precise.py`.
 
+### Device propagation across `.to()` / `.cuda()` / `.cpu()` / `.pin_memory()`
+
+TensorGuard tracks the device each tensor lives on and flags operations that
+combine tensors on different devices, which is the `Expected all tensors to be
+on the same device` runtime error in PyTorch. Device moves are followed through
+`.to('cuda')`, `.to(device=...)`, `.cuda()` (with an optional index), `.cpu()`,
+`.to('cpu')`, and the combined `.to(device, dtype)` form, while `.pin_memory()`
+is treated as device-preserving because it returns a pinned CPU tensor. A move
+is recorded only when the target device is a statically known spelling such as
+`'cpu'`, `'cuda'`, or `torch.device(...)`; a device taken from another tensor
+(for example `x.to(y.device)`) is left unknown and the result inherits the input
+device, so the analysis never invents a mismatch.
+
+This closes a gap in the `torch.fx` frontend, where device transfers in traced
+models were previously dropped and never reached the device theory. It is proven
+by a regression suite that checks the frontend now captures each device target,
+that genuine cross-device combinations are flagged, and that device-consistent
+programs (including round trips, `.pin_memory()`, dtype-only `.to(...)`, and a
+torchvision regression) produce no false positives. See
+`tests/test_device_propagation_precise.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

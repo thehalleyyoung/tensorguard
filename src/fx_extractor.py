@@ -827,6 +827,38 @@ def _extract_function_params(
     return params
 
 
+def _extract_to_device(node: "torch.fx.Node") -> Optional[str]:
+    """Extract a device target from a ``.to(...)`` call node, if statically known.
+
+    Handles ``x.to('cuda')``, ``x.to(torch.device('cuda:1'))``,
+    ``x.to(device='cpu')`` and the combined ``x.to(device, dtype)`` form.
+    Returns ``None`` when no static device argument is present (pure dtype cast,
+    or a device taken from another traced tensor such as ``x.to(y.device)``)."""
+    import torch as _torch
+
+    def _as_device_str(val: Any) -> Optional[str]:
+        if isinstance(val, _torch.device):
+            return str(val)
+        if isinstance(val, str):
+            s = val.strip().lower()
+            # Only accept recognised device spellings; a bare dtype-like or
+            # arbitrary string must not be misread as a device.
+            if s == "cpu" or s.startswith("cuda"):
+                return s
+        return None
+
+    # Positional device arg (first non-self positional that parses as a device).
+    for arg in node.args[1:]:
+        d = _as_device_str(arg)
+        if d is not None:
+            return d
+    # Keyword device=...
+    dev_kw = node.kwargs.get("device")
+    if dev_kw is not None:
+        return _as_device_str(dev_kw)
+    return None
+
+
 def _extract_to_dtype(node: "torch.fx.Node") -> Optional[str]:
     """Extract a dtype target from a ``.to(...)`` call node, if present.
 
@@ -897,10 +929,26 @@ def _extract_method_params(
         if method_name != "type_as":
             params["cast_dtype"] = method_name
     elif op_kind == OpKind.TO_DEVICE:
-        # x.to(...) may also change dtype: x.to(torch.float16) / x.to(dtype=...).
-        dt = _extract_to_dtype(node)
-        if dt is not None:
-            params["cast_dtype"] = dt
+        # The single op-kind ``TO_DEVICE`` covers ``.to(...)``, ``.cuda()``,
+        # ``.cpu()`` and ``.pin_memory()``.  A ``.to(...)`` call may change the
+        # device, the dtype, or both; ``.cuda()/.cpu()`` change only the device;
+        # ``.pin_memory()`` is device-preserving (returns a pinned CPU tensor).
+        if method_name == "cuda":
+            # x.cuda() / x.cuda(1) → cuda:0 (or cuda:<index> when constant).
+            idx = node.args[1] if len(node.args) > 1 else None
+            params["device"] = f"cuda:{idx}" if isinstance(idx, int) else "cuda:0"
+        elif method_name == "cpu":
+            params["device"] = "cpu"
+        elif method_name == "pin_memory":
+            # Device-preserving (stays on CPU); no device/dtype target.
+            pass
+        else:  # method_name == "to"
+            dev = _extract_to_device(node)
+            if dev is not None:
+                params["device"] = dev
+            dt = _extract_to_dtype(node)
+            if dt is not None:
+                params["cast_dtype"] = dt
     return params
 
 
@@ -1343,6 +1391,10 @@ _METHOD_OP_MAP: Dict[str, OpKind] = {
     "short": OpKind.DTYPE_CAST,
     "bool": OpKind.DTYPE_CAST,
     "type_as": OpKind.DTYPE_CAST,
+    "to": OpKind.TO_DEVICE,
+    "cuda": OpKind.TO_DEVICE,
+    "cpu": OpKind.TO_DEVICE,
+    "pin_memory": OpKind.TO_DEVICE,
 }
 
 # torch.xxx(...) → OpKind
