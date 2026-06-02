@@ -17,7 +17,7 @@ flow-sensitive mode is still available for backward compatibility.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from enum import Enum
 import ast
 import time

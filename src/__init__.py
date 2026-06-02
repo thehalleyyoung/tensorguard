@@ -13,12 +13,18 @@ from .api import (
     analyze_directory,
     analyze_function,
     quick_check,
+    verify_architecture,
     AnalysisResult,
     Bug,
     BugCategory,
     SourceLocation,
 )
 from .runtime_check import checked, TensorGuardCheckError
+from .safe_loader import (
+    verify_file_safely,
+    verify_source_safely,
+    is_static_only_source,
+)
 
 __all__ = [
     "analyze",
@@ -26,6 +32,10 @@ __all__ = [
     "analyze_directory",
     "analyze_function",
     "quick_check",
+    "verify_architecture",
+    "verify_file_safely",
+    "verify_source_safely",
+    "is_static_only_source",
     "AnalysisResult",
     "Bug",
     "BugCategory",

@@ -1633,6 +1633,26 @@ would create a sentinel file if executed and asserts the sentinel is never
 created while the real shape bug is still reported. See `SECURITY.md` for the
 full threat model and trust boundaries.
 
+### Typed public API (PEP 561)
+
+TensorGuard ships a `py.typed` marker, so type-checkers (mypy, pyright) consume
+its inline annotations directly — downstream code gets concrete types such as
+`AnalysisResult`, not `Any`. The documented, stability-guaranteed surface is
+re-exported from the top-level package:
+
+```python
+from tensorguard import (
+    analyze, analyze_file, analyze_directory, quick_check,
+    verify_architecture, verify_file_safely,   # source-level / untrusted-safe
+    AnalysisResult, Bug, BugCategory, SourceLocation,
+    checked,
+)
+```
+
+`tests/test_typing.py` builds a real wheel and asserts `src/py.typed` is
+packaged, and runs mypy over a consumer snippet to confirm the revealed type is
+the concrete `AnalysisResult`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
