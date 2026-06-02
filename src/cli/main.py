@@ -3181,6 +3181,12 @@ class VerifyCommand:
             help="With --fix, apply the suggested edits to the file in place."
         )
         parser.add_argument(
+            "--lsp", action="store_true",
+            help="Emit an editor-ready LSP report (diagnostics/squiggles, hover "
+            "shapes, and quick-fix code actions) as JSON for a VSCode/LSP "
+            "extension to consume."
+        )
+        parser.add_argument(
             "--watch", action="store_true",
             help="Re-verify the file every time it changes (live feedback). "
             "Also watches sibling .py files in the same directory. Ctrl-C to stop."
@@ -3203,9 +3209,28 @@ class VerifyCommand:
         )
 
     def execute(self, args: argparse.Namespace) -> int:
+        if getattr(args, "lsp", False):
+            return self._emit_lsp(args)
         if getattr(args, "watch", False):
             return self._watch(args)
         return self._verify_once(args)
+
+    def _emit_lsp(self, args: argparse.Namespace) -> int:
+        """Print the editor-ready LSP report (diagnostics/hover/code actions)."""
+        filepath = pathlib.Path(args.file)
+        if not filepath.exists():
+            sys.stderr.write(f"File not found: {args.file}\n")
+            return 1
+        try:
+            result = self._verify_value(str(filepath), args)
+        except Exception as e:
+            sys.stderr.write(f"Error: {e}\n")
+            return 1
+        from src.lsp_provider import build_lsp_report
+        uri = filepath.resolve().as_uri()
+        report = build_lsp_report(result, uri)
+        sys.stdout.write(json.dumps(report, indent=2) + "\n")
+        return 1 if result.bugs else 0
 
     def _watch(self, args: argparse.Namespace) -> int:
         """Re-verify ``args.file`` (and sibling .py files) on every change."""

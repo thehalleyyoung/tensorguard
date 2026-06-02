@@ -1386,6 +1386,19 @@ on a buggy model, rewrites the offending layer on disk, and observes the verdict
 flip to verified safe within one polling interval. See
 `tests/test_watch_mode.py`.
 
+### Editor integration (`--lsp`)
+
+`tensorguard verify --lsp FILE` emits an editor-ready JSON report that a VSCode
+or any Language-Server-Protocol extension can consume directly: inline squiggles
+(`diagnostics` with zero-indexed ranges, severities, related layer-definition
+locations, and an embedded fix hint), hover shapes (`hovers`, so hovering a line
+that produces a tensor shows that tensor and its shape), and quick-fixes
+(`codeActions` whose workspace edit reproduces the mechanical autofix). The
+payloads are produced by a pure adapter over the same diagnostics, inference
+chain, and autofixes the CLI already uses, so an extension is a thin transport
+shim over a real verifier rather than a re-implementation. See
+`tests/test_lsp_provider.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
