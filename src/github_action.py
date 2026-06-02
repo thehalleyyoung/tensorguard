@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import os
 import pathlib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 _LEVELS = {"error", "warning", "notice"}
@@ -134,6 +134,7 @@ class ActionResult:
     files_with_issues: int
     total_issues: int
     failed: bool
+    results_by_file: List[Tuple[str, Any]] = field(default_factory=list)
 
     def render_annotations(self) -> str:
         return "\n".join(a.render() for a in self.annotations)
@@ -196,6 +197,7 @@ def run_action(
     all_anns: List[Annotation] = []
     files_with_issues = 0
     checked = 0
+    results_by_file: List[Tuple[str, Any]] = []
     for file in _iter_python_files(paths):
         try:
             source = pathlib.Path(file).read_text(encoding="utf-8")
@@ -212,6 +214,7 @@ def run_action(
             soundness_mode=getattr(cfg, "soundness_mode", None) or soundness_mode,
         )
         result = filter_result(cfg, result)
+        results_by_file.append((file, result))
         anns = annotations_for_result(file, result)
         if anns:
             files_with_issues += 1
@@ -219,7 +222,9 @@ def run_action(
 
     total = len(all_anns)
     failed = bool(total) and fail_on != "never"
-    return ActionResult(all_anns, checked, files_with_issues, total, failed)
+    return ActionResult(
+        all_anns, checked, files_with_issues, total, failed, results_by_file
+    )
 
 
 def _parse_shapes(spec: str) -> Dict[str, Tuple]:
@@ -263,6 +268,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     rendered = result.render_annotations()
     if rendered:
         print(rendered)
+
+    sarif_path = os.environ.get("INPUT_SARIF_OUTPUT") or os.environ.get("INPUT_SARIF")
+    if sarif_path:
+        from src.sarif_codescan import write_sarif
+
+        write_sarif(sarif_path, result.results_by_file)
 
     gh_out = os.environ.get("GITHUB_OUTPUT")
     if gh_out:

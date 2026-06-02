@@ -1480,6 +1480,25 @@ diagnostics-first mapping, de-duplication) and the gate are pure and tested in
 `tests/test_github_action.py`; the repo dogfoods the action in
 `.github/workflows/tensorguard-pr.yml`.
 
+### SARIF 2.1.0 for Code Scanning
+
+`src/sarif_codescan.py` turns verification results into a GitHub Code
+Scanning-ready SARIF 2.1.0 log: a named driver with one synthesized rule per bug
+kind, results with valid levels and 1-based physical locations, and
+`partialFingerprints` so alerts are tracked across commits even when line
+numbers shift. The action writes and uploads it when `sarif-output` is set:
+
+```yaml
+- uses: thehalleyyoung/tensorguard@v1
+  with:
+    paths: src
+    sarif-output: tensorguard.sarif   # written and uploaded to Code Scanning
+```
+
+The output is validated against the bundled SARIF validator and an explicit
+encoding of GitHub's ingestion requirements in
+`tests/test_sarif_codescan.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

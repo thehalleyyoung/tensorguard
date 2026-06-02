@@ -29,6 +29,12 @@ inputs:
     description: 'Gate behavior: "any" (fail if any issue) or "never" (annotate only).'
     required: false
     default: "any"
+  sarif-output:
+    description: >-
+      Optional path to write a GitHub Code Scanning-ready SARIF 2.1.0 file. When
+      set, the action also uploads it to the Code Scanning API.
+    required: false
+    default: ""
   python-version:
     description: "Python version to set up."
     required: false
@@ -62,5 +68,11 @@ runs:
         INPUT_SOUNDNESS_MODE: ${{ inputs.soundness-mode }}
         INPUT_INPUT_SHAPES: ${{ inputs.input-shapes }}
         INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_SARIF_OUTPUT: ${{ inputs.sarif-output }}
         PYTHONPATH: ${{ github.action_path }}
       run: python -m src.github_action
+    - name: Upload SARIF to Code Scanning
+      if: ${{ inputs.sarif-output != '' && always() }}
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ inputs.sarif-output }}
