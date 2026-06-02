@@ -1682,6 +1682,17 @@ matrix is internally consistent — every Python/PyTorch pairing is valid, all
 three OSes and the full Python range are covered, and every referenced test file
 exists — so an impossible combination can never silently merge.
 
+### Contributing & governance
+
+Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup
+and the (deliberately high) bar for analysis changes: prove it against a real
+`nn.Module`, add a regression test, keep the coverage gate green, and never
+weaken the soundness or security boundary. The project follows the
+[Contributor Covenant](CODE_OF_CONDUCT.md); decision-making, releases, and the
+lead-maintainer rotation are documented in [`GOVERNANCE.md`](GOVERNANCE.md) and
+[`MAINTAINERS.md`](MAINTAINERS.md). Issue and pull-request templates (including a
+dedicated high-severity "unsound result" report) live under `.github/`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
