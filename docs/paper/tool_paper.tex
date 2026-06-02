@@ -697,6 +697,49 @@ shape $\times$ phase), no baseline is designed to detect these
 cross-cutting bug classes (all score F1 = 0.000 by design) while
 \tguard{} achieves F1 = 0.625 (Table~\ref{tab:crosscut}).
 
+\subsection{Cross-Family Generalization}\label{sec:crossfamily}
+
+A verifier that over-fits one shape idiom is not trustworthy. To test that
+\tguard{}'s verdicts generalise \emph{across} architecture families rather than a
+single pattern, we maintain a runtime-grounded regression corpus of matched
+clean/buggy \texttt{nn.Module} pairs spanning six structural families: MLP, CNN,
+attention, normalization, residual, and matmul. Every case carries
+\emph{runtime ground truth}, re-established on each run so the suite cannot be a
+rigged demo: a clean case must execute without error in eager PyTorch, and a
+buggy case must raise a real \texttt{RuntimeError} whose message contains a
+declared substring (e.g.\ \texttt{running\_mean should contain},
+\texttt{is invalid for input of size}, \texttt{mat1 and mat2 shapes cannot be
+multiplied}). Each case is content-addressed by SHA-256 so the corpus cannot
+silently drift. Only after the runtime label is confirmed do we score the static
+verdict. Across all families \tguard{} attains recall $1.0$ and precision $1.0$
+with zero false positives (Table~\ref{tab:crossfamily}); each family contributes
+at least one caught bug and no false negatives. Crucially, the frozen headline
+corpus of Section~\ref{sec:eval} is left untouched, so this generalization
+evidence is additive rather than a re-weighting of pinned numbers.
+
+\begin{table}[t]
+\centering
+\caption{Cross-family, runtime-grounded regression corpus. ``RT-GT'' marks that
+every case's clean/buggy label is re-validated against eager PyTorch on each run.
+\tguard{} catches every family's bug with no false positives.}
+\label{tab:crossfamily}
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Family} & \textbf{Clean} & \textbf{Buggy} & \textbf{TP} & \textbf{FP} & \textbf{FN} \\
+\midrule
+MLP            & 1 & 1 & 1 & 0 & 0 \\
+CNN            & 1 & 1 & 1 & 0 & 0 \\
+Attention      & 1 & 1 & 1 & 0 & 0 \\
+Normalization  & 1 & 2 & 2 & 0 & 0 \\
+Residual       & 1 & 1 & 1 & 0 & 0 \\
+Matmul         & 1 & 1 & 1 & 0 & 0 \\
+\midrule
+\textbf{Total} & 6 & 7 & 7 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Baseline Comparison}
 
 Table~\ref{tab:baseline} compares \tguard{} against five existing
@@ -1404,6 +1447,10 @@ diagnostics) \\
 \texttt{operator-confidence} & query the soundness tag of any operator \\
 \texttt{pre-commit} hook & block commits that introduce new bugs \\
 \texttt{pytest} plugin & assert shape safety from within a test suite \\
+\texttt{guarded\_compile} / Dynamo backend & verify inside the \texttt{torch.compile} pipeline \\
+\texttt{guarded\_onnx\_export} & gate \texttt{torch.onnx.export} on a clean verdict \\
+\texttt{prepare\_verified} & gate \texttt{accelerate.Accelerator.prepare} \\
+Lightning / HF \texttt{Trainer} callbacks & verify the model before the first training step \\
 \bottomrule
 \end{tabular}
 \caption{The integration surface: one engine, many developer-facing entry
@@ -1472,6 +1519,27 @@ exception chain. The complementary \texttt{guarded\_compile} pre-pass blocks a
 bug \emph{before} compilation even on interpreters where Dynamo is unavailable,
 so the same shape error that would otherwise appear as an opaque guard failure or
 a deep inductor traceback is reported at the model's own source line.
+
+\paragraph{Gating the training and export lifecycle.} The same pre-pass guards
+the two other points where a model leaves the user's hands. \texttt{prepare\_%
+verified} wraps \texttt{accelerate.Accelerator.prepare}---the choke point every
+model passes through before distributed/mixed-precision training---running
+verification as the \emph{first} side effect on the user's own
+\texttt{nn.Module}, so a real bug raises before the model is wrapped or moved
+(otherwise it surfaces mid-epoch inside an AMP/DDP shim whose traceback no longer
+points at \texttt{forward}); the wrapper preserves \texttt{prepare}'s exact
+bare-object-vs-tuple return contract. \texttt{guarded\_onnx\_export} gates
+\texttt{torch.onnx.export}, verifying \emph{before} anything is written to the
+export sink---inferring the verified input shapes from the example arguments so
+the shape that is checked is the shape that is exported---turning a malformed
+graph or an opaque tracer error into one actionable \texttt{TensorGuardViolation}.
+Lightning and Hugging~Face \texttt{Trainer} callbacks verify the model at
+\texttt{on\_fit\_start} / \texttt{on\_train\_begin}. Each gate is closed-loop
+tested against the real framework: a live CPU \texttt{Accelerator} (clean
+prepares and runs; a spy confirms a buggy model never reaches \texttt{prepare}),
+the real \texttt{torch.onnx} exporter (a clean model yields a proto that passes
+\texttt{onnx.checker}; a buggy one leaves the sink byte-for-byte empty), and a
+real \texttt{pytorch\_lightning.Trainer.fit}.
 
 \paragraph{One engine, many doors.} Table~\ref{tab:cli} summarizes the
 developer-facing entry points; crucially, all of them route through the same

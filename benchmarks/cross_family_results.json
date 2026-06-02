@@ -1,0 +1,235 @@
+{
+  "meta": {
+    "name": "tensorguard-cross-family-corpus",
+    "version": "1.0.0",
+    "description": "Cross-architecture, runtime-grounded regression corpus: matched clean/buggy nn.Module pairs across six structural families. Each case is validated against eager PyTorch (clean runs, buggy raises the declared error) and content-addressed by sha256.",
+    "n_cases": 13,
+    "n_families": 6,
+    "families": [
+      "attention",
+      "cnn",
+      "matmul",
+      "mlp",
+      "normalization",
+      "residual"
+    ],
+    "all_runtime_ground_truth_ok": true
+  },
+  "scorecard": {
+    "tp": 7,
+    "fp": 0,
+    "tn": 6,
+    "fn": 0,
+    "recall": 1.0,
+    "precision": 1.0
+  },
+  "by_family": {
+    "mlp": {
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0
+    },
+    "cnn": {
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0
+    },
+    "attention": {
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0
+    },
+    "normalization": {
+      "tp": 2,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0
+    },
+    "residual": {
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0
+    },
+    "matmul": {
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0
+    }
+  },
+  "cases": [
+    {
+      "id": "mlp_clean",
+      "family": "mlp",
+      "label": "clean",
+      "provenance": "synthetic",
+      "expected_verdict": "SAFE",
+      "tg_verdict": "SAFE",
+      "runtime_ran": true,
+      "runtime_error": null,
+      "runtime_ground_truth_ok": true,
+      "tg_correct": true,
+      "sha256": "b4c08246b72067f076608576b26abcfe44c3ead2832f8ce44bed9d3e8225b329"
+    },
+    {
+      "id": "mlp_buggy",
+      "family": "mlp",
+      "label": "buggy",
+      "provenance": "synthetic",
+      "expected_verdict": "UNSAFE",
+      "tg_verdict": "UNSAFE",
+      "runtime_ran": false,
+      "runtime_error": "RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x256 and 128x10)",
+      "runtime_ground_truth_ok": true,
+      "tg_correct": true,
+      "sha256": "14dd960ff5501118d933f4dfe1a6d6736d77e42f0e5a5aa5481cf28dba464af9"
+    },
+    {
+      "id": "cnn_clean",
+      "family": "cnn",
+      "label": "clean",
+      "provenance": "synthetic",
+      "expected_verdict": "SAFE",
+      "tg_verdict": "SAFE",
+      "runtime_ran": true,
+      "runtime_error": null,
+      "runtime_ground_truth_ok": true,
+      "tg_correct": true,
+      "sha256": "dd3646fe606a8cfadbfaee21f73da76ca641d249c6c9f037f701bdb508b66c71"
+    },
+    {
+      "id": "cnn_buggy",
+      "family": "cnn",
+      "label": "buggy",
+      "provenance": "synthetic",
+      "expected_verdict": "UNSAFE",
+      "tg_verdict": "UNSAFE",
+      "runtime_ran": false,
+      "runtime_error": "RuntimeError: Given groups=1, weight of size [32, 8, 3, 3], expected input[8, 16, 32, 32] to have 8 channels, but got 16 channels instead",
+      "runtime_ground_truth_ok": true,
+      "tg_correct": true,
+      "sha256": "354935ead89e23ded218206f190de97a485fc85d80c8bcde3cd76a7b8dc0f1d0"
+    },
+    {
+      "id": "attention_clean",
+      "family": "attention",
+      "label": "clean",
+      "provenance": "synthetic",
+      "expected_verdict": "SAFE",
+      "tg_verdict": "SAFE",
+      "runtime_ran": true,
+      "runtime_error": null,
+      "runtime_ground_truth_ok": true,
+      "tg_correct": true,
+      "sha256": "bd20cb5888af62ace183818797c5a9cab098f3e92fb2fdaef26bd47ff70e1eba"
+    },
+    {
+      "id": "attention_buggy",
+      "family": "attention",
+      "label": "buggy",
+      "provenance": "synthetic",
+      "expected_verdict": "UNSAFE",
+      "tg_verdict": "UNSAFE",
+      "runtime_ran": false,
+      "runtime_error": "RuntimeError: shape '[4, 16, 48]' is invalid for input of size 4096",
+      "runtime_ground_truth_ok": true,
+      "tg_correct": true,
+      "sha256": "5166e7dbd6d4bf2cf761affc685b72733295f9a4bb7b5fb03fd38ef094fa3d32"
+    },
+    {
+      "id": "norm_clean",
+      "family": "normalization",
+      "label": "clean",
+      "provenance": "synthetic",
+      "expected_verdict": "SAFE",
+      "tg_verdict": "SAFE",
+      "runtime_ran": true,
+      "runtime_error": null,
+      "runtime_ground_truth_ok": true,
+      "tg_correct": true,
+      "sha256": "664cea988f4b8a107566f2dfe4a4ef0338b2b38475977e8e6a16e02389ac9006"
+    },
+    {
+      "id": "norm_batchnorm_buggy",
+      "family": "normalization",
+      "label": "buggy",
+      "provenance": "synthetic",
+      "expected_verdict": "UNSAFE",
+      "tg_verdict": "UNSAFE",
+      "runtime_ran": false,
+      "runtime_error": "RuntimeError: running_mean should contain 16 elements not 8",
+      "runtime_ground_truth_ok": true,
+      "tg_correct": true,
+      "sha256": "82d8e009bb0a6a3a1f41d96b3ab1d954b78216b0cb4a38aec5eb8fae1b9026d7"
+    },
+    {
+      "id": "norm_groupnorm_buggy",
+      "family": "normalization",
+      "label": "buggy",
+      "provenance": "synthetic",
+      "expected_verdict": "UNSAFE",
+      "tg_verdict": "UNSAFE",
+      "runtime_ran": false,
+      "runtime_error": "RuntimeError: Expected weight to be a vector of size equal to the number of channels in input, but got weight of shape [12] and input of shape [8, 16, 32, 32]",
+      "runtime_ground_truth_ok": true,
+      "tg_correct": true,
+      "sha256": "654b33ceec7b96d611bcbd58b394f975845995dfd776c4ad2d96a959fee6532d"
+    },
+    {
+      "id": "residual_clean",
+      "family": "residual",
+      "label": "clean",
+      "provenance": "synthetic",
+      "expected_verdict": "SAFE",
+      "tg_verdict": "SAFE",
+      "runtime_ran": true,
+      "runtime_error": null,
+      "runtime_ground_truth_ok": true,
+      "tg_correct": true,
+      "sha256": "61a95798570c24b1c31e5471c1740bbdb15ecac44742b1a6cea131890ce6e077"
+    },
+    {
+      "id": "residual_buggy",
+      "family": "residual",
+      "label": "buggy",
+      "provenance": "synthetic",
+      "expected_verdict": "UNSAFE",
+      "tg_verdict": "UNSAFE",
+      "runtime_ran": false,
+      "runtime_error": "RuntimeError: The size of tensor a (16) must match the size of tensor b (8) at non-singleton dimension 1",
+      "runtime_ground_truth_ok": true,
+      "tg_correct": true,
+      "sha256": "8f13279002214a0c212a4147ad6640042c4e92be961a868def564d50d2fe07ff"
+    },
+    {
+      "id": "matmul_clean",
+      "family": "matmul",
+      "label": "clean",
+      "provenance": "synthetic",
+      "expected_verdict": "SAFE",
+      "tg_verdict": "SAFE",
+      "runtime_ran": true,
+      "runtime_error": null,
+      "runtime_ground_truth_ok": true,
+      "tg_correct": true,
+      "sha256": "12db3e31e2d6b8800a3d4d5397a72a473938a1623d5c5cbf2d34ed0eca667207"
+    },
+    {
+      "id": "matmul_buggy",
+      "family": "matmul",
+      "label": "buggy",
+      "provenance": "synthetic",
+      "expected_verdict": "UNSAFE",
+      "tg_verdict": "UNSAFE",
+      "runtime_ran": false,
+      "runtime_error": "RuntimeError: mat1 and mat2 shapes cannot be multiplied (16x64 and 32x16)",
+      "runtime_ground_truth_ok": true,
+      "tg_correct": true,
+      "sha256": "8f0562c49c85fe205cddbc050e7217d98528ea0d2fdab2d114e362997f2d90d1"
+    }
+  ]
+}

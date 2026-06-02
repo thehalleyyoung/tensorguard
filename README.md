@@ -313,6 +313,22 @@ for bug in result.bugs:
     print(f"  {bug.location.line}: {bug.message}")
 ```
 
+**One-line gates for the whole PyTorch lifecycle** — verification runs *before*
+the model is compiled, exported, or wrapped, so a shape/device/phase bug is one
+clear `TensorGuardViolation` instead of an opaque downstream failure:
+
+```python
+from tensorguard.torch import guarded_compile, guarded_onnx_export
+from src.framework_hooks import TensorGuardCallback, TensorGuardTrainerCallback
+from src.integrations.accelerate_hook import prepare_verified
+
+compiled = guarded_compile(model, input_shapes={"x": ("b", 10)})   # torch.compile
+guarded_onnx_export(model, (x,), "model.onnx")                     # torch.onnx.export
+model = prepare_verified(accelerator, model, opt, loader)          # accelerate.prepare
+trainer = pl.Trainer(callbacks=[TensorGuardCallback()])           # Lightning fit
+# … and TensorGuardTrainerCallback for the HuggingFace Trainer.
+```
+
 ---
 
 ## CI / CD Integration

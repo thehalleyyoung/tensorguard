@@ -216,3 +216,69 @@ def verify_exported_program(
     import torch
 
     return torch.export.export(model, example_args)
+
+
+def _infer_shapes_from_args(
+    model: Any, args: Any
+) -> Optional[Dict[str, Tuple]]:
+    """Map example positional tensor ``args`` to ``forward`` parameter names.
+
+    Returns ``{param_name: tuple(shape)}`` for the tensor arguments, with the
+    batch (leading) dim symbolised as ``"b"`` so the verifier reasons over a
+    symbolic batch rather than a single concrete value.  Returns ``None`` if the
+    signature cannot be read.
+    """
+    if not isinstance(args, (tuple, list)):
+        args = (args,)
+    try:
+        params = list(inspect.signature(model.forward).parameters)
+    except (TypeError, ValueError):
+        return None
+    shapes: Dict[str, Tuple] = {}
+    for name, value in zip(params, args):
+        shape = getattr(value, "shape", None)
+        if shape is None:
+            continue
+        dims = list(shape)
+        if dims:
+            dims[0] = "b"
+        shapes[name] = tuple(dims)
+    return shapes or None
+
+
+def guarded_onnx_export(
+    model: Any,
+    args: Any,
+    f: Any,
+    *,
+    input_shapes: Optional[Dict[str, Tuple]] = None,
+    on_violation: str = "raise",
+    soundness_mode: str = "balanced",
+    **export_kwargs: Any,
+):
+    """Verify *model* as a pre-pass, then ``torch.onnx.export`` it.
+
+    A bad shape/device/phase bug becomes a single :class:`TensorGuardViolation`
+    *before* anything is written to ``f`` — instead of a confusing tracer error
+    or, worse, a silently malformed ONNX graph.  Verification is the **first**
+    side effect, so on a violation with ``on_violation="raise"`` the export sink
+    ``f`` (path or file-like) is never touched.
+
+    ``args`` is the usual ``torch.onnx.export`` example input (a tensor or a
+    tuple of them).  When ``input_shapes`` is omitted it is inferred from the
+    tensor ``args`` against the ``forward`` signature, so the shape that is
+    *verified* is the shape that is *exported*.
+
+    The legacy (TorchScript) exporter is selected by default
+    (``dynamo=False``) for broad interpreter compatibility — the Dynamo-based
+    exporter is unavailable on some interpreters (e.g. Python 3.14).  Pass
+    ``dynamo=True`` explicitly to override.
+    """
+    if input_shapes is None:
+        input_shapes = _infer_shapes_from_args(model, args)
+    _check(model, input_shapes, on_violation, soundness_mode)
+
+    import torch
+
+    export_kwargs.setdefault("dynamo", False)
+    return torch.onnx.export(model, args, f, **export_kwargs)
