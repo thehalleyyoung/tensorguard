@@ -950,6 +950,18 @@ that the real verifier still flags UNSAFE. See
 [`reproducibility/hypothesis_module_ast.md`](reproducibility/hypothesis_module_ast.md)
 and `tests/test_hypothesis_module_ast.py`.
 
+### Evidence dashboard (static site)
+The campaign produces dozens of committed, byte-deterministic JSON artifacts; a
+reviewer should be able to take them in at a glance. `reproducibility/build_dashboard.py`
+reads a curated set of those artifacts and regenerates a single self-contained
+static site at [`docs/dashboard/index.html`](docs/dashboard/index.html) (plus its
+`docs/dashboard/data.json` data bundle) with no server, no network and no external
+dependencies: open the file and the headline numbers, per-artifact metrics and raw
+values are all there, with client-side category tabs and a live text filter. The
+site is built purely from the committed artifacts, so it is itself
+byte-deterministic and is verified by the reproduction harness. See
+`tests/test_build_dashboard.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a

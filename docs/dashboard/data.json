@@ -1,0 +1,180 @@
+{
+  "cards": [
+    {
+      "category": "Soundness at scale",
+      "headline": "2000 random modules vs the live torch dispatcher: 0 soundness violations, 0 false alarms",
+      "id": "differential",
+      "metrics": [
+        {
+          "label": "random modules",
+          "value": "2000"
+        },
+        {
+          "label": "families",
+          "value": "5"
+        },
+        {
+          "label": "decided verdicts",
+          "value": "2000"
+        },
+        {
+          "label": "soundness violations",
+          "value": "0"
+        },
+        {
+          "label": "false alarms",
+          "value": "0"
+        },
+        {
+          "label": "perfect decided agreement",
+          "value": "True"
+        }
+      ],
+      "source_artifact": "differential_dispatcher.json",
+      "title": "Differential testing vs the live torch dispatcher"
+    },
+    {
+      "category": "Soundness at scale",
+      "headline": "800 structured module ASTs: 0 soundness violations, 0 false alarms; shrinks 7 layers to 1",
+      "id": "hypothesis",
+      "metrics": [
+        {
+          "label": "structured ASTs",
+          "value": "800"
+        },
+        {
+          "label": "decided",
+          "value": "800"
+        },
+        {
+          "label": "soundness violations",
+          "value": "0"
+        },
+        {
+          "label": "false alarms",
+          "value": "0"
+        },
+        {
+          "label": "shrink layers (start to minimal)",
+          "value": "7 to 1"
+        },
+        {
+          "label": "real verifier catches minimal",
+          "value": "True"
+        }
+      ],
+      "source_artifact": "hypothesis_module_ast.json",
+      "title": "Property-based full-module-AST testing with shrinking"
+    },
+    {
+      "category": "Soundness at scale",
+      "headline": "376 genuine-bug mutants from 130 clean parents: sound-mode kill rate 100.0 percent",
+      "id": "mutation",
+      "metrics": [
+        {
+          "label": "clean parents",
+          "value": "130"
+        },
+        {
+          "label": "genuine-bug mutants",
+          "value": "376"
+        },
+        {
+          "label": "mutation operators",
+          "value": "5"
+        },
+        {
+          "label": "sound-mode kill rate",
+          "value": "100.0 percent"
+        },
+        {
+          "label": "zero surviving false-safe",
+          "value": "True"
+        }
+      ],
+      "source_artifact": "mutation_clean_models.json",
+      "title": "Mutation testing of clean models"
+    },
+    {
+      "category": "Precision",
+      "headline": "101 clean models across 10 families: zero sound-mode false alarms (True)",
+      "id": "fp_stress",
+      "metrics": [
+        {
+          "label": "clean models",
+          "value": "101"
+        },
+        {
+          "label": "families",
+          "value": "10"
+        },
+        {
+          "label": "zero false alarms (sound)",
+          "value": "True"
+        },
+        {
+          "label": "zero false alarms (all modes)",
+          "value": "True"
+        }
+      ],
+      "source_artifact": "fp_stress_eval.json",
+      "title": "Clean-model false-positive stress test"
+    },
+    {
+      "category": "Methodology",
+      "headline": "held-out blind split with pre-registered hypotheses: all modes confirm pre-registration (True)",
+      "id": "blind",
+      "metrics": [
+        {
+          "label": "manifest matches registration",
+          "value": "True"
+        },
+        {
+          "label": "all modes confirm pre-registration",
+          "value": "True"
+        },
+        {
+          "label": "registered manifest sha256",
+          "value": "df881add26871538..."
+        }
+      ],
+      "source_artifact": "blind_split_eval.json",
+      "title": "Held-out blind split + pre-registration"
+    },
+    {
+      "category": "Robustness",
+      "headline": "verdict stability across torch 2.1 to 2.9: stable (True), static (no torch execution)",
+      "id": "cross_version",
+      "metrics": [
+        {
+          "label": "cases",
+          "value": "227"
+        },
+        {
+          "label": "stable across torch 2.1 to 2.9",
+          "value": "True"
+        },
+        {
+          "label": "static, no torch execution",
+          "value": "True"
+        },
+        {
+          "label": "baseline verdict sha256",
+          "value": "e35a57fa51015bb1..."
+        }
+      ],
+      "source_artifact": "cross_version_stability.json",
+      "title": "Cross-version verdict stability (torch 2.1 to 2.9)"
+    }
+  ],
+  "categories": [
+    "Methodology",
+    "Precision",
+    "Robustness",
+    "Soundness at scale"
+  ],
+  "n_cards": 6,
+  "schema": 1,
+  "subtitle": "Regenerated from committed, byte-deterministic reproducibility artifacts. No server, no network.",
+  "title": "TensorGuard \u2014 evidence dashboard"
+}

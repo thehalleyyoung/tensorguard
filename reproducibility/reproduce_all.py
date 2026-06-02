@@ -98,6 +98,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/differential_dispatcher.md",
     "reproducibility/hypothesis_module_ast.json",
     "reproducibility/hypothesis_module_ast.md",
+    "docs/dashboard/data.json",
+    "docs/dashboard/index.html",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -216,6 +218,8 @@ STEPS = [
      [PY, "reproducibility/differential_dispatcher.py"], None),
     ("property-based: full-module-AST soundness sweep + shrinking to minimal",
      [PY, "reproducibility/hypothesis_module_ast.py"], None),
+    ("dashboard: rebuild the static evidence site from committed artifacts",
+     [PY, "reproducibility/build_dashboard.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]
