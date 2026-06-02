@@ -131,8 +131,8 @@ annotations, coverage artifacts, dashboards, and certificates.
 The source frontend is deliberately useful on unannotated Python.  It recognizes
 \texttt{nn.Linear}, convolution families, pooling, normalization, attention,
 activation layers, containers, helper methods, subclassing patterns, and
-functional calls such as \texttt{F.linear}, \texttt{F.interpolate}, and
-\texttt{F.scaled\_dot\_product\_attention}.  It records scalar constructor
+functional calls such as \texttt{F.linear}, \texttt{F.pad},
+\texttt{F.interpolate}, and \texttt{F.scaled\_dot\_product\_attention}.  It records scalar constructor
 attributes such as head counts and hidden sizes, so common model code like
 \texttt{x.view(B, T, self.num\_heads, D)} can be checked against the same
 constants used by the layers.
@@ -193,8 +193,9 @@ The repository includes transfer functions and tests for a wide range of
 PyTorch constructs.  The core structural set covers matrix multiplication,
 batched matrix multiplication, linear layers, convolution and transpose
 convolution families, pooling, flatten, reshape/view with product reasoning,
-broadcasting, reductions, cat/stack, transpose/permute, squeeze/unsqueeze,
-fold/unfold image-column transforms, embedding, dtype casts, device moves, and stochastic tensor factories whose
+broadcasting, reductions, cat/stack, PyTorch-faithful padding,
+transpose/permute, squeeze/unsqueeze, fold/unfold image-column transforms,
+embedding, dtype casts, device moves, and stochastic tensor factories whose
 shapes are seed-independent.  Extended coverage includes einsum parsing,
 advanced indexing, gather/scatter, index select, masked select,
 \texttt{take\_along\_dim}, \texttt{argsort}, \texttt{sort}/\texttt{topk}/
@@ -207,7 +208,7 @@ parallel attention variants, and deployment schemas.
 
 \subsection{Exact Index-Value Operators}
 
-The latest completed implementation round strengthens a family that returns
+One recent implementation round strengthens a family that returns
 indices, values, or both: \texttt{torch.take\_along\_dim}, \texttt{argsort},
 \texttt{sort}, \texttt{topk}, \texttt{kthvalue}, \texttt{argmax}, and
 \texttt{argmin}.  These operators are small but security-critical for a static
@@ -228,6 +229,28 @@ source-level tuple unpacking.  Static \texttt{k} errors are refuted before
 runtime.  The tests run real PyTorch tensors and compare both successful shapes
 and runtime exceptions.
 
+\subsection{Padding as a Library-Exact Boundary Rule}
+
+Padding looks simple until the exact PyTorch boundary conditions matter.  The
+repository now models \texttt{F.pad} and \texttt{nn.*Pad*d} modules for
+\texttt{constant}, \texttt{reflect}, \texttt{replicate}, and \texttt{circular}
+modes.  The transfer keeps PyTorch's last-dimension-backward tuple convention,
+preserves tuple lengths exactly as supplied, expands integer module padding
+according to the concrete module class, and handles negative padding as cropping.
+It also enforces the mode-specific runtime constraints: constant mode may pad any
+rank as long as the pad tuple fits the tensor rank; reflect/replicate/circular
+support only the documented 1D/2D/3D spatial cases; reflect padding must be
+smaller than the corresponding concrete input extent; circular padding may not
+wrap a dimension more than once; and replication is allowed to pad farther than
+the input size when eager PyTorch does.
+
+The tests are differential, not merely algebraic.  They execute real PyTorch for
+successful output shapes and for runtime errors, then require source and FX
+TensorGuard paths to agree.  This catches exactly the kind of edge case that a
+paper-only rule would likely miss: for example, \texttt{nn.ReflectionPad2d((1,2))}
+does \emph{not} mean symmetric 2D padding, and a circular pad equal to a
+dimension is legal while one larger than the dimension is not.
+
 \subsection{Examples of Transfer Precision}
 
 Reshape and view rules reason about element products and the \texttt{-1}
@@ -237,7 +260,9 @@ dimension when possible, and preserve copied symbolic dimensions through
 NumPy/PyTorch right-aligned semantics, including singleton expansion and
 symbolic abstention.  Convolution rules compute spatial output sizes from
 kernel, stride, padding, dilation, groups, and transpose output padding when
-these parameters are static.  Fold/unfold rules use the same spatial arithmetic
+these parameters are static.  Padding rules follow eager PyTorch across
+constant, reflect, replicate, and circular modes, including negative cropping and
+mode-specific rank/extent errors.  Fold/unfold rules use the same spatial arithmetic
 to model batched and unbatched image-column transforms, reject empty sliding
 block grids, non-divisible fold channel counts, and output-size/column-count
 reconstruction mismatches.  Normalization rules check channel or normalized shape
@@ -413,7 +438,7 @@ if it matches the runtime library.  The repository therefore includes tests
 that construct real tensors, run the corresponding PyTorch operator, and compare
 the resulting shape or runtime exception to \tg{}'s predicted contract.  This
 pattern appears for cat, einsum, reshape, broadcasting, convolution, attention,
-fold/unfold, grid sampling, sparse layouts, complex FFT views, named tensors,
+fold/unfold, padding, grid sampling, sparse layouts, complex FFT views, named tensors,
 distributions, vmap, chunk/split partitioning, and index-value operators.  When PyTorch's
 edge-case behavior is surprising, as with \texttt{take\_along\_dim(dim=None)}
 flattening before selection or \texttt{topk} rejecting oversized \texttt{k}, the
@@ -583,10 +608,10 @@ leaderboard that makes tensor-verifier progress measurable.
 both principled and practical.  The repository combines a refinement-type view
 of tensors, a multi-domain abstract state, Z3-backed checks, CEGAR refinement,
 soundness modes, precise operator transfer functions, real frontends, formal
-artifacts, and an unusually broad reproducibility harness.  The latest
-index-value work illustrates the project's standard: match PyTorch's exact
-edge-case semantics, propagate precision to downstream model checks, abstain
-on symbolic uncertainty, and pin the behavior with live-library tests.
+artifacts, and an unusually broad reproducibility harness.  The latest padding
+work illustrates the project's standard: match PyTorch's exact edge-case
+semantics, propagate precision to downstream model checks, abstain on symbolic
+uncertainty, and pin the behavior with live-library tests.
 
 The result is a verifier that catches high-value architecture, device, dtype,
 phase, gradient, export, and deployment bugs before expensive training or
@@ -609,8 +634,8 @@ shape aliases, and dataflow without requiring user type annotations. \\
 \hline
 Shape algebra &
 Matmul, reshape/view, flatten, broadcasting, cat, stack, chunk, split,
-transpose, permute, squeeze, unsqueeze, reductions, indexing, convolution,
-pooling, fold/unfold, embedding, and attention rules. \\
+padding, transpose, permute, squeeze, unsqueeze, reductions, indexing,
+convolution, pooling, fold/unfold, embedding, and attention rules. \\
 \hline
 Device reasoning &
 Propagation through tensor creation, module calls, \texttt{to}/\texttt{cuda}/
@@ -723,6 +748,12 @@ Live PyTorch conformance for \texttt{nn.Unfold}, \texttt{nn.Fold},
 dilation/padding/stride block counts, empty grids, non-divisible fold channels,
 and impossible fold column-count/output-size reconstructions. \\
 \hline
+\texttt{tests/test\_pad\_semantics.py} &
+Live PyTorch conformance for \texttt{F.pad} and \texttt{nn.*Pad*d}: exact
+constant/reflect/replicate/circular output shapes, source and FX parity,
+negative cropping, non-reinterpreted tuple lengths, 3D circular modules, and
+runtime-error parity for invalid ranks, reflect extents, and circular over-wraps. \\
+\hline
 \texttt{tests/test\_dtype\_precise.py},
 \texttt{tests/test\_dtype\_promote\_chain.py},
 \texttt{tests/test\_bool\_dtype\_soundness.py} &
@@ -805,6 +836,15 @@ when channel divisibility and the output-size-implied sliding-block product
 match the input columns. &
 Live PyTorch differential tests for module and functional forms, including
 runtime-error parity for empty grids and impossible reconstruction counts. \\
+\hline
+Padding &
+\texttt{F.pad} and \texttt{nn.*Pad*d} apply tuple pairs from the last dimension
+backward; constant mode accepts any compatible rank, while reflect, replicate,
+and circular modes enforce PyTorch's spatial-rank cases and concrete extent
+constraints. Negative padding crops where PyTorch permits it. &
+Live PyTorch differential tests for functional and module forms across source
+and FX, including invalid-rank, reflect-bound, circular-wrap, and large
+replicate-padding cases. \\
 \hline
 Reshape/view &
 Element product is preserved; \texttt{-1} is inferred when uniquely determined;
@@ -960,7 +1000,8 @@ tests generate tensors, run PyTorch, and compare the observed shape or exception
 to \tg{}'s transfer function.  This protocol is especially useful for edge cases
 whose behavior is not obvious from memory: \texttt{torch.chunk} returning fewer
 than requested chunks, zero-size split sections, broadcasting of attention
-masks, compressed sparse block constraints, and named-axis alignment.
+masks, padding tuple/rank corner cases, compressed sparse block constraints, and
+named-axis alignment.
 
 \subsection{Mutation protocol}
 
@@ -1107,9 +1148,9 @@ still valuable, but they should support the explanation rather than replace it.
 
 \textbf{Operator rules must match the live library.}  PyTorch changes, and some
 operator behavior is subtle.  Transfer functions should be cross-checked against
-the installed PyTorch version wherever possible.  The chunk/split rule is a
-model example: intuitive equal partitioning would be wrong, so the rule follows
-observed torch behavior.
+the installed PyTorch version wherever possible.  Padding and chunk/split are
+model examples: intuitive symmetric padding or equal partitioning would be wrong,
+so the rules follow observed torch behavior.
 
 \textbf{Integration surfaces are part of correctness.}  A verifier that catches
 bugs only through an internal Python function is not enough.  CI, SARIF,
@@ -1190,10 +1231,10 @@ to the artifact that must be rebuilt. \\
 
 A reviewer can inspect the trust boundary by reading
 \texttt{SOUNDNESS\_CONTRACT.md}, \texttt{VERIFIABLE\_FRAGMENT.md}, and
-\texttt{operator\_confidence\_table.json}.  They can run the new index-value
+\texttt{operator\_confidence\_table.json}.  They can run the latest padding
 tests with:
 \[
-\texttt{python -m pytest -q tests/test\_index\_value\_ops\_precise.py}.
+\texttt{python -m pytest -q tests/test\_pad\_semantics.py}.
 \]
 They can inspect the empirical story through \texttt{make reproduce}, the
 dashboard tests, real benchmark loaders, baseline comparisons, and the

@@ -2754,6 +2754,197 @@ def _make_functional_layer(
     return layer
 
 
+_PAD_LAYER_SPECS: Dict[LayerKind, Tuple[str, int]] = {
+    LayerKind.CONSTANTPAD1D: ("constant", 1),
+    LayerKind.CONSTANTPAD2D: ("constant", 2),
+    LayerKind.CONSTANTPAD3D: ("constant", 3),
+    LayerKind.ZEROPAD1D: ("constant", 1),
+    LayerKind.ZEROPAD2D: ("constant", 2),
+    LayerKind.ZEROPAD3D: ("constant", 3),
+    LayerKind.REFLECTIONPAD1D: ("reflect", 1),
+    LayerKind.REFLECTIONPAD2D: ("reflect", 2),
+    LayerKind.REFLECTIONPAD3D: ("reflect", 3),
+    LayerKind.REPLICATIONPAD1D: ("replicate", 1),
+    LayerKind.REPLICATIONPAD2D: ("replicate", 2),
+    LayerKind.REPLICATIONPAD3D: ("replicate", 3),
+    LayerKind.CIRCULARPAD1D: ("circular", 1),
+    LayerKind.CIRCULARPAD2D: ("circular", 2),
+    LayerKind.CIRCULARPAD3D: ("circular", 3),
+}
+
+
+def _pad_mode(raw: Any) -> str:
+    if raw is None:
+        return "constant"
+    if isinstance(raw, str):
+        return raw.lower()
+    return "unknown"
+
+
+def _normalise_pad_tuple(
+    raw_pad: Any,
+    *,
+    default_pairs: Optional[int],
+    op_name: str,
+) -> Tuple[Optional[Tuple[int, ...]], Optional[str]]:
+    """Return PyTorch's concrete pad tuple, or a runtime-equivalent error."""
+    if raw_pad is None:
+        return None, f"{op_name} requires a padding tuple"
+    if isinstance(raw_pad, bool):
+        return None, f"{op_name} padding must contain integers, got bool"
+    if isinstance(raw_pad, int):
+        if default_pairs is None:
+            return None, f"{op_name} padding must be an even tuple/list, got int"
+        return tuple(int(raw_pad) for _ in range(2 * default_pairs)), None
+    if not isinstance(raw_pad, (tuple, list)):
+        return None, f"{op_name} padding must be an even tuple/list of integers"
+    pad: List[int] = []
+    for value in raw_pad:
+        if isinstance(value, bool) or not isinstance(value, int):
+            return None, f"{op_name} padding must contain only integers"
+        pad.append(int(value))
+    if len(pad) % 2 != 0:
+        return None, f"{op_name} padding length must be even, got {len(pad)}"
+    return tuple(pad), None
+
+
+def _validate_and_apply_pad(
+    input_shape: TensorShape,
+    raw_pad: Any,
+    *,
+    mode: Any = "constant",
+    default_pairs: Optional[int] = None,
+    op_name: str = "F.pad",
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    """PyTorch-faithful shape transfer for F.pad and nn.*Pad*d modules."""
+    pad, err = _normalise_pad_tuple(
+        raw_pad,
+        default_pairs=default_pairs,
+        op_name=op_name,
+    )
+    if err is not None:
+        return None, err
+    assert pad is not None
+
+    mode_s = _pad_mode(mode)
+    if mode_s not in {"constant", "reflect", "replicate", "circular"}:
+        return None, f"{op_name} mode must be constant/reflect/replicate/circular, got {mode!r}"
+
+    rank = input_shape.ndim
+    n_padded = len(pad) // 2
+    if n_padded > rank:
+        return None, (
+            f"{op_name} padding length {len(pad)} exceeds 2 * input rank "
+            f"{rank}"
+        )
+    if mode_s != "constant":
+        if n_padded == 0:
+            return None, f"{op_name} {mode_s} mode does not support empty padding"
+        if n_padded > 3:
+            return None, f"{op_name} {mode_s} mode supports at most 3 padded dimensions"
+        if rank not in (n_padded + 1, n_padded + 2):
+            return None, (
+                f"{op_name} {mode_s} mode with padding length {len(pad)} "
+                f"expects {n_padded + 1}D or {n_padded + 2}D input, got {rank}D"
+            )
+
+    new_dims = list(input_shape.dims)
+    for pair_index in range(n_padded):
+        dim_idx = rank - 1 - pair_index
+        left = pad[2 * pair_index]
+        right = pad[2 * pair_index + 1]
+        dim = input_shape.dims[dim_idx]
+        if dim.is_symbolic:
+            new_dims[dim_idx] = ShapeDim(f"_pad_{dim_idx}")
+            continue
+
+        size = dim.value
+        out_size = size + left + right
+        if mode_s == "constant" and (left < -size or right < -size):
+            return None, (
+                f"{op_name} constant padding cannot crop dimension {dim_idx} "
+                f"past its size {size}: ({left}, {right})"
+            )
+
+        if mode_s in {"reflect", "replicate"}:
+            if out_size <= 0:
+                return None, (
+                    f"{op_name} {mode_s} padding makes dimension {dim_idx} "
+                    f"non-positive: {size} + {left} + {right} = {out_size}"
+                )
+        elif out_size < 0:
+            return None, (
+                f"{op_name} padding makes dimension {dim_idx} negative: "
+                f"{size} + {left} + {right} = {out_size}"
+            )
+
+        if mode_s == "reflect":
+            if left >= size or right >= size:
+                return None, (
+                    f"{op_name} reflect padding ({left}, {right}) must be "
+                    f"less than input dimension {dim_idx} size {size}"
+                )
+        elif mode_s == "circular":
+            if left > size or right > size:
+                return None, (
+                    f"{op_name} circular padding ({left}, {right}) cannot "
+                    f"wrap dimension {dim_idx} size {size} more than once"
+                )
+
+        new_dims[dim_idx] = ShapeDim(out_size)
+
+    return TensorShape(tuple(new_dims)), None
+
+
+def _pad_transition_constraints(
+    pre_d: Sequence[Any],
+    post_d: Sequence[Any],
+    raw_pad: Any,
+    *,
+    default_pairs: Optional[int],
+    op_name: str,
+) -> List[Any]:
+    pad, err = _normalise_pad_tuple(
+        raw_pad,
+        default_pairs=default_pairs,
+        op_name=op_name,
+    )
+    if err is not None or pad is None:
+        return []
+    rank = len(pre_d)
+    if len(post_d) != rank:
+        return []
+    n_padded = len(pad) // 2
+    if n_padded > rank:
+        return []
+    cs: List[Any] = []
+    first_padded = rank - n_padded
+    for idx, (before, after) in enumerate(zip(pre_d, post_d)):
+        if idx < first_padded:
+            cs.append(after == before)
+        else:
+            pair_index = rank - 1 - idx
+            delta = pad[2 * pair_index] + pad[2 * pair_index + 1]
+            cs.append(after == before + z3.IntVal(delta))
+    return cs
+
+
+def _propagate_padding_layer(
+    input_shape: TensorShape, layer: LayerDef
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    spec = _PAD_LAYER_SPECS.get(layer.kind)
+    if spec is None:
+        return input_shape, None
+    mode, default_pairs = spec
+    return _validate_and_apply_pad(
+        input_shape,
+        layer.params.get("padding"),
+        mode=mode,
+        default_pairs=default_pairs,
+        op_name=layer.kind.name,
+    )
+
+
 _METHOD_OPS: Dict[str, OpKind] = {
     "view": OpKind.RESHAPE,
     "reshape": OpKind.RESHAPE,
@@ -4703,6 +4894,8 @@ class _ForwardExtractor(ast.NodeVisitor):
                     inputs = [self._resolve_arg(node.args[0])] if node.args else []
                 elif op == OpKind.TAKE_ALONG_DIM:
                     inputs = [self._resolve_arg(a) for a in node.args[:2]]
+                elif op == OpKind.PAD:
+                    inputs = [self._resolve_arg(node.args[0])] if node.args else []
                 elif op in (
                     OpKind.ARGSORT, OpKind.SORT, OpKind.TOPK,
                     OpKind.KTHVALUE, OpKind.ARG_REDUCE,
@@ -4769,6 +4962,19 @@ class _ForwardExtractor(ast.NodeVisitor):
                     for kw in node.keywords:
                         if kw.arg == "dim":
                             params_dict["dim"] = _const_value(
+                                kw.value, self._scalar_attrs)
+
+                if op == OpKind.PAD:
+                    if len(node.args) >= 2:
+                        params_dict["pad"] = _const_value(
+                            node.args[1], self._scalar_attrs)
+                    if len(node.args) >= 3:
+                        params_dict["mode"] = _const_value(node.args[2])
+                    if len(node.args) >= 4:
+                        params_dict["value"] = _const_value(node.args[3])
+                    for kw in node.keywords:
+                        if kw.arg in ("pad", "mode", "value"):
+                            params_dict[kw.arg] = _const_value(
                                 kw.value, self._scalar_attrs)
 
                 if op in (OpKind.ARGSORT, OpKind.ARG_REDUCE, OpKind.SORT):
@@ -7333,31 +7539,8 @@ def _propagate_rnn(
 def _propagate_pad2d(
     input_shape: TensorShape, layer: LayerDef
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """ReflectionPad2d / ReplicationPad2d / ZeroPad2d / ConstantPad2d.
-
-    Padding tuple is (left, right, top, bottom).
-    """
-    if input_shape.ndim < 3:
-        return None, f"Pad2d expects at least 3D, got {input_shape.ndim}D"
-    pad = layer.params.get("padding")
-    if pad is None:
-        return input_shape, None
-    if isinstance(pad, int):
-        pad = (pad, pad, pad, pad)
-    elif isinstance(pad, (tuple, list)):
-        if len(pad) == 2:
-            pad = (pad[0], pad[0], pad[1], pad[1])
-        elif len(pad) != 4:
-            return input_shape, None
-    h_in = input_shape.dims[-2]
-    w_in = input_shape.dims[-1]
-    if not h_in.is_symbolic and not w_in.is_symbolic:
-        h_out = h_in.value + pad[2] + pad[3]
-        w_out = w_in.value + pad[0] + pad[1]
-        new_dims = input_shape.dims[:-2] + (ShapeDim(h_out), ShapeDim(w_out))
-    else:
-        new_dims = input_shape.dims[:-2] + (ShapeDim("_pad_h"), ShapeDim("_pad_w"))
-    return TensorShape(new_dims), None
+    """PyTorch-faithful 2D pad module semantics."""
+    return _propagate_padding_layer(input_shape, layer)
 
 
 def _propagate_pixel_unshuffle(
@@ -7556,58 +7739,15 @@ def _propagate_glu(
 def _propagate_pad1d(
     input_shape: TensorShape, layer: LayerDef
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """1D padding: (N, C, W) → (N, C, W + pad_left + pad_right)."""
-    if input_shape.ndim < 2:
-        return None, f"Pad1d expects at least 2D, got {input_shape.ndim}D"
-    pad = layer.params.get("padding")
-    if pad is None:
-        return input_shape, None
-    if isinstance(pad, int):
-        pad = (pad, pad)
-    elif isinstance(pad, (tuple, list)):
-        if len(pad) == 1:
-            pad = (pad[0], pad[0])
-        elif len(pad) != 2:
-            return input_shape, None
-    w_in = input_shape.dims[-1]
-    if not w_in.is_symbolic:
-        w_out = w_in.value + pad[0] + pad[1]
-        new_dims = input_shape.dims[:-1] + (ShapeDim(w_out),)
-    else:
-        new_dims = input_shape.dims[:-1] + (ShapeDim("_pad_w"),)
-    return TensorShape(new_dims), None
+    """PyTorch-faithful 1D pad module semantics."""
+    return _propagate_padding_layer(input_shape, layer)
 
 
 def _propagate_pad3d(
     input_shape: TensorShape, layer: LayerDef
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """3D padding: pads last 3 spatial dims (D, H, W).
-
-    Padding tuple is (left, right, top, bottom, front, back).
-    """
-    if input_shape.ndim < 4:
-        return None, f"Pad3d expects at least 4D, got {input_shape.ndim}D"
-    pad = layer.params.get("padding")
-    if pad is None:
-        return input_shape, None
-    if isinstance(pad, int):
-        pad = (pad, pad, pad, pad, pad, pad)
-    elif isinstance(pad, (tuple, list)):
-        if len(pad) == 3:
-            pad = (pad[0], pad[0], pad[1], pad[1], pad[2], pad[2])
-        elif len(pad) != 6:
-            return input_shape, None
-    w_in = input_shape.dims[-1]
-    h_in = input_shape.dims[-2]
-    d_in = input_shape.dims[-3]
-    new_spatial = []
-    for dim_in, pl, pr in [(d_in, pad[4], pad[5]), (h_in, pad[2], pad[3]), (w_in, pad[0], pad[1])]:
-        if not dim_in.is_symbolic:
-            new_spatial.append(ShapeDim(dim_in.value + pl + pr))
-        else:
-            new_spatial.append(ShapeDim("_pad_s"))
-    new_dims = input_shape.dims[:-3] + (new_spatial[0], new_spatial[1], new_spatial[2])
-    return TensorShape(new_dims), None
+    """PyTorch-faithful 3D pad module semantics."""
+    return _propagate_padding_layer(input_shape, layer)
 
 
 def _propagate_adaptive_pool3d(
@@ -8789,9 +8929,28 @@ class ConstraintVerifier:
                             output_size[1], ks[1], dilation[1], padding[1], stride[1]
                         )
                         cs.append(pre_d[-1] == z3.IntVal(h_blocks * w_blocks))
+                elif layer.kind in _PAD_LAYER_SPECS:
+                    _, default_pairs = _PAD_LAYER_SPECS[layer.kind]
+                    cs.extend(_pad_transition_constraints(
+                        pre_d,
+                        post_d,
+                        layer.params.get("padding"),
+                        default_pairs=default_pairs,
+                        op_name=layer.kind.name,
+                    ))
                 else:
                     for dp, dq in zip(pre_d, post_d):
                         cs.append(dq == dp)
+
+        elif step.op == OpKind.PAD and inp_name:
+            if inp_name in pre.shape_vars and step.output in post.shape_vars:
+                cs.extend(_pad_transition_constraints(
+                    pre.shape_vars[inp_name],
+                    post.shape_vars[step.output],
+                    step.params.get("pad"),
+                    default_pairs=None,
+                    op_name="F.pad",
+                ))
 
         elif step.op == OpKind.MATMUL and len(step.inputs) >= 2:
             a, b = step.inputs[0], step.inputs[1]
@@ -10083,20 +10242,24 @@ class ConstraintVerifier:
         elif step.op == OpKind.PAD:
             if step.inputs and step.inputs[0] in state.shape_env:
                 inp_shape = state.shape_env[step.inputs[0]]
-                pad_arg = step.params.get("pad")
-                if pad_arg and isinstance(pad_arg, (tuple, list)):
-                    new_dims = list(inp_shape.dims)
-                    # F.pad padding is applied from last dim backwards, in pairs
-                    n_padded = len(pad_arg) // 2
-                    for i in range(n_padded):
-                        dim_idx = inp_shape.ndim - 1 - i
-                        if 0 <= dim_idx < len(new_dims) and not new_dims[dim_idx].is_symbolic:
-                            new_dims[dim_idx] = ShapeDim(
-                                new_dims[dim_idx].value + pad_arg[2*i] + pad_arg[2*i+1]
-                            )
-                    new_state.shape_env[step.output] = TensorShape(tuple(new_dims))
-                else:
-                    new_state.shape_env[step.output] = inp_shape
+                out_shape, err = _validate_and_apply_pad(
+                    inp_shape,
+                    step.params.get("pad"),
+                    mode=step.params.get("mode", "constant"),
+                    default_pairs=None,
+                    op_name="F.pad",
+                )
+                if err is not None:
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible",
+                        step_index=-1,
+                        step=step,
+                        message=err,
+                        tensor_a=step.inputs[0],
+                        shape_a=inp_shape,
+                    ))
+                if out_shape is not None:
+                    new_state.shape_env[step.output] = out_shape
         elif step.op == OpKind.EINSUM:
             # Precise einsum: parse the equation (explicit/implicit output,
             # diagonals, ellipsis broadcasting) rather than a heuristic. We only
@@ -13087,19 +13250,15 @@ class SymbolicShapePropagator:
             inp = step.inputs[0] if step.inputs else None
             inp_shape = env.get(inp) if inp else None
             if inp_shape:
-                pad_arg = step.params.get("pad")
-                if pad_arg and isinstance(pad_arg, (tuple, list)):
-                    new_dims = list(inp_shape.dims)
-                    n_padded = len(pad_arg) // 2
-                    for i in range(n_padded):
-                        dim_idx = inp_shape.ndim - 1 - i
-                        if 0 <= dim_idx < len(new_dims) and not new_dims[dim_idx].is_symbolic:
-                            new_dims[dim_idx] = ShapeDim(
-                                new_dims[dim_idx].value + pad_arg[2*i] + pad_arg[2*i+1]
-                            )
-                    env[step.output] = TensorShape(tuple(new_dims))
-                else:
-                    env[step.output] = inp_shape
+                out_shape, _ = _validate_and_apply_pad(
+                    inp_shape,
+                    step.params.get("pad"),
+                    mode=step.params.get("mode", "constant"),
+                    default_pairs=None,
+                    op_name="F.pad",
+                )
+                if out_shape is not None:
+                    env[step.output] = out_shape
 
         elif step.op == OpKind.EINSUM:
             equation = step.params.get("equation", "")

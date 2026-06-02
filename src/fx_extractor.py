@@ -138,6 +138,22 @@ def _init_module_kind_map():
         nn.Hardsigmoid: LayerKind.RELU,
         nn.ReLU6: LayerKind.RELU,
     }
+    for name, kind in (
+        ("ConstantPad1d", LayerKind.CONSTANTPAD1D),
+        ("ConstantPad3d", LayerKind.CONSTANTPAD3D),
+        ("ZeroPad1d", LayerKind.ZEROPAD1D),
+        ("ZeroPad3d", LayerKind.ZEROPAD3D),
+        ("ReflectionPad1d", LayerKind.REFLECTIONPAD1D),
+        ("ReflectionPad3d", LayerKind.REFLECTIONPAD3D),
+        ("ReplicationPad1d", LayerKind.REPLICATIONPAD1D),
+        ("ReplicationPad3d", LayerKind.REPLICATIONPAD3D),
+        ("CircularPad1d", LayerKind.CIRCULARPAD1D),
+        ("CircularPad2d", LayerKind.CIRCULARPAD2D),
+        ("CircularPad3d", LayerKind.CIRCULARPAD3D),
+    ):
+        cls = getattr(nn, name, None)
+        if cls is not None:
+            _MODULE_KIND_MAP[cls] = kind
 
 
 def _module_to_layer_kind(module: "nn.Module") -> LayerKind:
@@ -282,10 +298,15 @@ def _extract_layer_params(module: "nn.Module", kind: LayerKind) -> Dict[str, Any
         params["num_layers"] = module.num_layers
         params["bidirectional"] = module.bidirectional
         params["batch_first"] = module.batch_first
-    elif kind in (LayerKind.REFLECTIONPAD2D, LayerKind.REPLICATIONPAD2D,
-                  LayerKind.ZEROPAD2D):
+    elif kind in (LayerKind.REFLECTIONPAD1D, LayerKind.REFLECTIONPAD2D,
+                  LayerKind.REFLECTIONPAD3D, LayerKind.REPLICATIONPAD1D,
+                  LayerKind.REPLICATIONPAD2D, LayerKind.REPLICATIONPAD3D,
+                  LayerKind.ZEROPAD1D, LayerKind.ZEROPAD2D,
+                  LayerKind.ZEROPAD3D, LayerKind.CIRCULARPAD1D,
+                  LayerKind.CIRCULARPAD2D, LayerKind.CIRCULARPAD3D):
         params["padding"] = module.padding
-    elif kind == LayerKind.CONSTANTPAD2D:
+    elif kind in (LayerKind.CONSTANTPAD1D, LayerKind.CONSTANTPAD2D,
+                  LayerKind.CONSTANTPAD3D):
         params["padding"] = module.padding
         params["value"] = module.value
     elif kind == LayerKind.PIXEL_UNSHUFFLE:
@@ -1192,6 +1213,19 @@ def _extract_function_params(
             params["equation"] = node.args[0]
         elif "equation" in node.kwargs and isinstance(node.kwargs["equation"], str):
             params["equation"] = node.kwargs["equation"]
+    elif op_kind == OpKind.PAD:
+        if len(node.args) > 1:
+            params["pad"] = node.args[1]
+        elif "pad" in node.kwargs:
+            params["pad"] = node.kwargs["pad"]
+        if len(node.args) > 2:
+            params["mode"] = node.args[2]
+        elif "mode" in node.kwargs:
+            params["mode"] = node.kwargs["mode"]
+        if len(node.args) > 3:
+            params["value"] = node.args[3]
+        elif "value" in node.kwargs:
+            params["value"] = node.kwargs["value"]
     elif op_kind in (
         OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
         OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
