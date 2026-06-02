@@ -931,6 +931,25 @@ and correct. See
 [`reproducibility/differential_dispatcher.md`](reproducibility/differential_dispatcher.md)
 and `tests/test_differential_dispatcher.py`.
 
+### Property-based testing of full module ASTs, with shrinking
+Differential testing generates source strings; property-based testing generates a
+structured, compositional algebra of modules and, crucially, *shrinks* any failure
+to a minimal counterexample. `corpus_extended/module_ast.py` defines a typed
+module-AST DSL (Linear, Conv2d, ReLU and Flatten nodes across a two-dimensional
+vector regime and a four-dimensional image regime) together with a Hypothesis
+strategy that builds whole module ASTs rather than individual operators. The
+property under test is the same soundness contract as everywhere else: against the
+live eager-PyTorch oracle, the sound verifier must never prove a module SAFE that
+torch rejects, and never reject a module torch accepts. A seeded sweep of eight
+hundred structured ASTs reproduces this exactly, with perfect agreement on every
+decided verdict and zero abstentions. The DSL also ships a deterministic
+delta-debugging shrinker: starting from a deliberately large buggy module it
+drops layers and shrinks dimensions until no single reduction preserves the
+failure, collapsing a seven-layer module to a one-layer minimal counterexample
+that the real verifier still flags UNSAFE. See
+[`reproducibility/hypothesis_module_ast.md`](reproducibility/hypothesis_module_ast.md)
+and `tests/test_hypothesis_module_ast.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a

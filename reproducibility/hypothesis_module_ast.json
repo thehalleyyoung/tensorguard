@@ -1,0 +1,45 @@
+{
+  "agreement_wilson": {
+    "high": 1.0,
+    "k": 800,
+    "low": 0.9952,
+    "n": 800,
+    "point": 1.0
+  },
+  "n_generated": 800,
+  "oracle": {
+    "n_clean": 374,
+    "n_raise": 426
+  },
+  "regime_counts": {
+    "img": 382,
+    "vec": 418
+  },
+  "seed": 20240602,
+  "shrinking_demo": {
+    "layer_reduction_factor": 7.0,
+    "minimal_counterexample_source": "import torch\nimport torch.nn as nn\n\nclass Net(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.l0 = nn.Linear(1, 1)\n    def forward(self, x):\n        x = self.l0(x)\n        return x\n",
+    "minimal_dim_sum": 5,
+    "minimal_is_locally_minimal": true,
+    "minimal_n_layers": 1,
+    "real_verifier_catches_minimal": true,
+    "real_verifier_verdict_on_minimal": "UNSAFE",
+    "start_dim_sum": 96,
+    "start_n_layers": 7
+  },
+  "soundness": {
+    "false_alarm_sources": [],
+    "n_agree_decided": 800,
+    "n_decided": 800,
+    "n_false_alarms": 0,
+    "n_soundness_violations": 0,
+    "n_unknown": 0,
+    "perfect_decided_agreement": true,
+    "soundness_violation_sources": []
+  },
+  "step": 114,
+  "verdict_counts": {
+    "SAFE": 374,
+    "UNSAFE": 426
+  }
+}

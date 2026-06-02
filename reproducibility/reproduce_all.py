@@ -96,6 +96,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/mutation_clean_models.md",
     "reproducibility/differential_dispatcher.json",
     "reproducibility/differential_dispatcher.md",
+    "reproducibility/hypothesis_module_ast.json",
+    "reproducibility/hypothesis_module_ast.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -212,6 +214,8 @@ STEPS = [
      [PY, "reproducibility/mutation_clean_models.py"], None),
     ("differential testing: 2000 random modules vs the live torch dispatcher",
      [PY, "reproducibility/differential_dispatcher.py"], None),
+    ("property-based: full-module-AST soundness sweep + shrinking to minimal",
+     [PY, "reproducibility/hypothesis_module_ast.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]
