@@ -108,3 +108,15 @@ import TensorGuard
 #print axioms TensorGuard.SmtEncoding.device_smt_matches_devBug
 #print axioms TensorGuard.SmtEncoding.phase_smt_unsat_iff_ne
 #print axioms TensorGuard.SmtEncoding.grad_smt_unsat_iff_ne
+
+-- Cross-domain (shape × device) encoding faithfulness (Step 136): a transfer op
+-- preserves shape exactly (device free); a non-transfer op preserves device
+-- exactly (shape free), so the solver flags a cross-domain violation iff the
+-- preserved component changed.
+#print axioms TensorGuard.CrossDomain.transfer_sat_iff_shape_eq
+#print axioms TensorGuard.CrossDomain.transfer_unsat_iff_shape_ne
+#print axioms TensorGuard.CrossDomain.transfer_device_free
+#print axioms TensorGuard.CrossDomain.nontransfer_sat_iff_dev_eq
+#print axioms TensorGuard.CrossDomain.nontransfer_unsat_iff_dev_ne
+#print axioms TensorGuard.CrossDomain.nontransfer_shape_free
+#print axioms TensorGuard.CrossDomain.branch_selects_preserved
