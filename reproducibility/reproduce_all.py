@@ -71,6 +71,8 @@ GENERATED_DETERMINISTIC = [
     "corpus_extended/manifest.json",
     "reproducibility/corpus_extended_score.json",
     "reproducibility/corpus_extended_score.md",
+    "reproducibility/corpus_provenance_audit.json",
+    "reproducibility/corpus_provenance_audit.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -155,6 +157,8 @@ STEPS = [
      [PY, "-m", "corpus_extended.build"], None),
     ("corpus+: TensorGuard score over extended corpus (Wilson CIs)",
      [PY, "reproducibility/corpus_extended_score.py"], None),
+    ("corpus+: provenance + license-compatibility audit (redistributable)",
+     [PY, "reproducibility/corpus_provenance_audit.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]

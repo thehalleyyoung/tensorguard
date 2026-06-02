@@ -734,6 +734,21 @@ modules in both modes. See
 [`reproducibility/corpus_extended_score.md`](reproducibility/corpus_extended_score.md)
 and `tests/test_corpus_extended.py`.
 
+### Redistributable by construction (provenance & license)
+
+Because every extended-corpus case is **synthetically generated** rather than
+copied from any repository, the dataset is redistributable with no licensing
+encumbrance. `corpus_extended/provenance.py` attaches a structured provenance
+record to each case (origin, generator family, inspiration reference, authors,
+license, SPDX), and `reproducibility/corpus_provenance_audit.py` proves the whole
+corpus is clean to redistribute: every case has a complete provenance record, is
+marked synthetic and redistributable, and contains no copyright, SPDX or license
+markers in its source; public PyTorch issue URLs are recorded only as
+*inspiration references* (no code is copied from them); and the dataset is
+released under the repository's MIT license. See
+[`reproducibility/corpus_provenance_audit.md`](reproducibility/corpus_provenance_audit.md)
+and `tests/test_corpus_provenance.py`.
+
 ### Sound-mode false-positive hunt
 
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
