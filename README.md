@@ -1285,6 +1285,26 @@ regression-bench-check` validates the baseline (cases, step counts, markdown
 sync) with no live timing. The comparison is a pure, unit-tested function. See
 `tests/test_regression_bench.py`.
 
+### Reshape constraints without the nonlinear blow-up
+
+The reshape compatibility check asks whether `prod(inputs)` can equal
+`prod(targets)` with every dimension at least one. As products of symbolic
+dimensions this is nonlinear integer arithmetic, which is exactly what makes Z3
+blow up on high-rank reshapes. TensorGuard factors the equation before solving:
+concrete dimensions fold into one integer per side, shared symbolic names cancel
+exactly (each is the same variable and at least one, hence nonzero), and opaque
+dynamic dimensions stay independent so no spurious incompatibility is reported.
+When nothing symbolic remains the verdict is read off directly -- equal literals
+are compatible, and a single inferred dimension is compatible exactly when it
+divides the input count. Only a genuinely under-determined symbolic remainder
+reaches the solver, and on a strictly smaller formula. In practice the common
+cases cost zero solver calls: two hundred concrete high-rank checks resolve
+analytically, single inferred-dimension divisibility resolves analytically, and
+a fully cancelling symbolic reshape such as the identity over named axes
+resolves analytically. The reduction never changes a verdict -- a reported
+incompatibility still means no assignment of dimensions of at least one preserves
+the element count. See `tests/test_reshape_divisibility_opt.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

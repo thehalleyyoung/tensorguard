@@ -45,6 +45,27 @@ except ImportError:  # pragma: no cover - z3 always available in CI
 
 from src.tensor_shapes import ShapeDim, TensorShape
 
+# Step 55: instrumentation for the solver-avoidance optimization. Counts how
+# many reshape compatibility checks fell through to an actual Z3 `solver.check()`
+# (as opposed to being decided analytically by constant folding / shared-factor
+# cancellation). Tests assert that the concrete and single-infer hot paths cost
+# zero solver calls.
+_SOLVER_CALLS = [0]
+_ANALYTIC_DECISIONS = [0]
+
+
+def reshape_solver_call_count() -> int:
+    return _SOLVER_CALLS[0]
+
+
+def reshape_analytic_decision_count() -> int:
+    return _ANALYTIC_DECISIONS[0]
+
+
+def reset_reshape_counters() -> None:
+    _SOLVER_CALLS[0] = 0
+    _ANALYTIC_DECISIONS[0] = 0
+
 # A resolved target entry is one of:
 #   ("lit", int)   — a concrete, specified size
 #   ("sym", name)  — a symbolic dim (shares a Z3 var with equal-named dims)
@@ -135,6 +156,84 @@ def check_reshape_compatible(
         return f"Reshape invalid: {err}"
     assert resolved is not None
 
+    incompatible_msg = (
+        f"Reshape incompatible: cannot reshape {input_shape} to "
+        f"{_format_dims(new_dims)} (element count cannot be preserved "
+        f"for any valid dimension sizes)"
+    )
+
+    # ---- Step 55: algebraic reduction before any nonlinear solving --------
+    # The element-count equation is prod(inputs) == prod(targets) with every
+    # dimension >= 1. Products of integer variables are *nonlinear* integer
+    # arithmetic, which is what makes Z3 blow up on high-rank reshapes. But the
+    # equation factors cleanly: fold concrete dims into a single integer, and
+    # since every shared symbolic dim (same name) appears as the *same* variable
+    # on both sides and is >= 1 (hence nonzero), it can be cancelled from both
+    # products without changing satisfiability. After folding + cancellation
+    # many real reshapes collapse to a pure integer (divisibility) test that
+    # needs no solver at all; only a genuinely under-determined symbolic
+    # remainder falls through to Z3 — on a much smaller constraint.
+    #
+    # Underscore-prefixed names (``_dyn0`` etc.) are engine-internal opaque
+    # values that are NOT guaranteed equal across occurrences (see ``var_for``),
+    # so they must NOT be cancelled by name; each is an independent free factor.
+    from collections import Counter
+
+    in_lit = 1
+    in_named: "Counter[str]" = Counter()
+    in_free = 0
+    for d in input_shape.dims:
+        if d.is_symbolic:
+            name = str(d.value)
+            if name.startswith("_"):
+                in_free += 1
+            else:
+                in_named[name] += 1
+        else:
+            in_lit *= int(d.value)
+
+    out_lit = 1
+    out_named: "Counter[str]" = Counter()
+    out_free = 0
+    infer_count = 0
+    for kind, val in resolved:
+        if kind == "lit":
+            out_lit *= int(val)
+        elif kind == "sym":
+            name = str(val)
+            if name.startswith("_"):
+                out_free += 1
+            else:
+                out_named[name] += 1
+        else:  # infer
+            infer_count += 1
+
+    # Cancel shared named symbolic factors (all >= 1, so cancellation is exact).
+    for name in list((in_named & out_named).keys()):
+        shared = min(in_named[name], out_named[name])
+        in_named[name] -= shared
+        out_named[name] -= shared
+        if in_named[name] == 0:
+            del in_named[name]
+        if out_named[name] == 0:
+            del out_named[name]
+
+    no_remaining_vars = (not in_named and not out_named
+                         and in_free == 0 and out_free == 0)
+
+    if no_remaining_vars:
+        # Pure integer decision — no solver needed.
+        _ANALYTIC_DECISIONS[0] += 1
+        if infer_count == 0:
+            return None if in_lit == out_lit else incompatible_msg
+        # Exactly one inferred (-1) dimension: in_lit == out_lit * infer with
+        # infer >= 1. Satisfiable iff out_lit divides in_lit and the quotient
+        # is >= 1 (both literals are >= 1, so quotient >= 1 iff in_lit >= out_lit).
+        if out_lit != 0 and in_lit % out_lit == 0 and in_lit >= out_lit:
+            return None
+        return incompatible_msg
+
+    # ---- Reduced symbolic remainder: solve the *cancelled* equation --------
     vars_by_name = {}
     constraints = []
     fresh_counter = [0]
@@ -146,45 +245,29 @@ def check_reshape_compatible(
         return v
 
     def var_for(name: str):
-        # Opaque / engine-internal symbolic names (``_dyn0``, ``_flat``,
-        # ``_inferred``, ``_unk_...``) represent *untracked* unknown runtime
-        # values.  Two such occurrences are NOT guaranteed to be the same
-        # value — and placeholder names are only locally unique per extracted
-        # op, so they collide across different reshapes (e.g. ShuffleNet's
-        # channel-shuffle produces input ``(_dyn0, 2, _dyn1, ...)`` and a
-        # later target ``(_dyn0, _dyn1, ...)`` whose ``_dynN`` are unrelated).
-        # Coupling them would yield spurious UNSAT (false positives), so each
-        # underscore-prefixed occurrence gets its own fresh, independent var.
-        # Genuinely shared, semantically-meaningful dims (``B``, ``C``, ...)
-        # are coupled by name so true incompatibilities like (B,5)->(B,3) are
-        # still provable.
-        if name.startswith("_"):
-            return fresh_var(name)
         if name not in vars_by_name:
             v = z3.Int(f"rs_{len(vars_by_name)}_{_sanitize(name)}")
             vars_by_name[name] = v
             constraints.append(v >= 1)
         return vars_by_name[name]
 
-    in_prod = z3.IntVal(1)
-    for d in input_shape.dims:
-        if d.is_symbolic:
-            in_prod = in_prod * var_for(str(d.value))
-        else:
-            in_prod = in_prod * z3.IntVal(int(d.value))
+    in_prod = z3.IntVal(in_lit)
+    for name, cnt in in_named.items():
+        for _ in range(cnt):
+            in_prod = in_prod * var_for(name)
+    for _ in range(in_free):
+        in_prod = in_prod * fresh_var("in_free")
 
-    out_prod = z3.IntVal(1)
-    infer_idx = 0
-    for kind, val in resolved:
-        if kind == "lit":
-            out_prod = out_prod * z3.IntVal(int(val))
-        elif kind == "sym":
-            out_prod = out_prod * var_for(str(val))
-        else:  # infer
-            inf = z3.Int(f"rs_infer_{infer_idx}")
-            infer_idx += 1
-            constraints.append(inf >= 1)
-            out_prod = out_prod * inf
+    out_prod = z3.IntVal(out_lit)
+    for name, cnt in out_named.items():
+        for _ in range(cnt):
+            out_prod = out_prod * var_for(name)
+    for _ in range(out_free):
+        out_prod = out_prod * fresh_var("out_free")
+    for i in range(infer_count):
+        inf = z3.Int(f"rs_infer_{i}")
+        constraints.append(inf >= 1)
+        out_prod = out_prod * inf
 
     solver = z3.Solver()
     solver.set("timeout", 3000)
@@ -192,13 +275,10 @@ def check_reshape_compatible(
         solver.add(c)
     solver.add(in_prod == out_prod)
 
+    _SOLVER_CALLS[0] += 1
     result = solver.check()
     if result == z3.unsat:
-        return (
-            f"Reshape incompatible: cannot reshape {input_shape} to "
-            f"{_format_dims(new_dims)} (element count cannot be preserved "
-            f"for any valid dimension sizes)"
-        )
+        return incompatible_msg
     return None
 
 
