@@ -1,2163 +1,1139 @@
-\documentclass[10pt]{article}
+\documentclass[11pt]{article}
 
-\usepackage[margin=1in]{geometry}
+\usepackage[margin=0.88in]{geometry}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{amsthm}
+\usepackage{array}
 \usepackage{booktabs}
-\usepackage{listings}
-\usepackage{xcolor}
-\usepackage[hypertexnames=false]{hyperref}
-\usepackage{graphicx}
 \usepackage{enumitem}
-\usepackage{float}
-\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{microtype}
+\usepackage{xcolor}
 \usepackage{url}
-\usepackage{stmaryrd}
 
-% Inference rule macros (standalone, no mathpartir dependency)
-\newcommand{\typerule}[3]{%
-  \frac{\displaystyle #2}{\displaystyle #3}
-  \;\textsc{#1}%
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  citecolor=blue!55!black,
+  urlcolor=blue!55!black
 }
-
-\newtheorem{theorem}{Theorem}
-\newtheorem{conjecture}{Conjecture}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{proposition}[theorem]{Proposition}
-
-\newcommand{\tguard}{\textsc{TensorGuard}}
-\newcommand{\Tshape}{\mathcal{T}_{\mathit{shape}}}
-\newcommand{\Tdevice}{\mathcal{T}_{\mathit{device}}}
-\newcommand{\Tphase}{\mathcal{T}_{\mathit{phase}}}
-\newcommand{\Tstride}{\mathcal{T}_{\mathit{stride}}}
-\newcommand{\Tperm}{\mathcal{T}_{\mathit{perm}}}
-\newcommand{\Tprod}{\mathcal{T}_{\Pi}}
-\newcommand{\XXX}[1]{\textbf{??#1??}}
 
 \lstset{
   language=Python,
   basicstyle=\ttfamily\small,
-  keywordstyle=\color{blue!80!black}\bfseries,
-  commentstyle=\color{green!50!black}\itshape,
-  stringstyle=\color{red!60!black},
-  showstringspaces=false,
-  breaklines=true,
+  columns=fullflexible,
   frame=single,
-  numbers=left,
-  numberstyle=\tiny\color{gray},
-  xleftmargin=2em,
-  framexleftmargin=1.5em,
-  captionpos=b,
-  aboveskip=0.8em,
-  belowskip=0.5em,
-  morekeywords={raise,assert,None,True,False,torch,np,nn,self}
+  breaklines=true,
+  showstringspaces=false,
+  keywordstyle=\bfseries\color{blue!60!black},
+  commentstyle=\itshape\color{green!45!black}
 }
-\lstdefinestyle{noline}{numbers=none,xleftmargin=0.5em,framexleftmargin=0em}
 
-\title{TensorGuard: Static Tensor Shape Verification\\via SMT Theory Combination}
+\newcommand{\tg}{\textsc{TensorGuard}}
+\newcommand{\safe}{\textsc{Safe}}
+\newcommand{\unknown}{\textsc{Unknown}}
+\newcommand{\unsafe}{\textsc{Unsafe}}
+\newcommand{\rp}{\textsc{Refuted-Proof}}
+\newcommand{\todoartifact}[1]{\texttt{#1}}
 
-\date{}
-
+\title{\tg: An Auditable Static Safety Net for PyTorch Tensor Programs}
 \author{halley-labs}
-\begin{document}
+\date{Generated from repository artifacts, June 2026}
 
+\begin{document}
 \maketitle
 
-%% ============================================================
 \begin{abstract}
-Tensor shape errors are the most common category of runtime crash in
-deep learning code, yet no existing tool statically verifies shape
-compatibility across entire neural network architectures with formal
-guarantees.  We present \tguard{}, a zero-annotation static verifier
-for PyTorch \texttt{nn.Module} classes that encodes shape, device,
-phase, stride, and permutation constraints as a five-theory product
-domain $\Tshape \times \Tdevice \times \Tphase \times \Tstride \times
-\Tperm$ and discharges them via Z3.  Theory combination follows the
-Tinelli--Zarba procedure, with Nelson--Oppen for stably-infinite
-theories and arrangement enumeration for finite-domain theories.
-\tguard{} provides transfer functions for 142 PyTorch operators
-covering convolution, normalization, attention, recurrence, pooling,
-activation, padding, loss, embedding, and structural operations.  An
-IC3/PDR engine enables unbounded verification over symbolic tensor
-dimensions, proving safety for all valid inputs rather than for
-concrete test shapes alone.  We evaluate on real-world architectures
-including ResNet-50, MobileNetV2, EfficientNet-B0, and DenseNet-121, demonstrating
-high precision and recall.
-The same verified core analyzes a \emph{second framework}---a Flax/JAX front end
-lowers to the identical IR and SMT encoding---and its operator frontier is
-extensible through a \emph{governed}, code-free community stub registry whose
-manifests must ship provenance and \emph{executed} conformance cases before they
-can merge.
-The repository also contains a \emph{compiled}, \texttt{sorry}-free Lean~4 formalization (18 modules, $\sim$3{,}800 lines, 210 theorems/lemmas, pinned toolchain, \texttt{lake build} green) in which \emph{every one} of the 210 public theorems is machine-audited to depend only on the trusted Lean kernel axioms $\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}$ and never on \texttt{sorryAx}---covering the operator transfer functions, the reduced-product abstraction, CEGAR termination with a tight iteration bound, the two known-unsoundness gaps (one closed, one made mode-precise), the device/dtype/phase/gradient transfer functions, and the \emph{faithfulness of the Z3 encoding} the solver actually runs---each cross-checked against the live verifier, real Z3, and the live PyTorch dispatcher.
+\tg{} is a zero-annotation static verifier for PyTorch \texttt{nn.Module}
+architectures and adjacent training/deployment code.  It checks tensor shape,
+dtype, device, phase, gradient-flow, stride/layout, and library-specific
+contracts before a forward pass runs, then reports a three-valued verdict:
+\safe{}, \unknown{}, or \unsafe{}.  The implementation is intentionally more
+than a prototype: it ships a formal soundness contract, a verifiable-fragment
+specification, operator confidence tags, SARIF/JSON/JUnit/GitHub reporters,
+pre-commit and pytest integrations, a safe AST/fx-only loading path for
+untrusted model files, a community stub governance process, and an upstream
+PyTorch hook proposal.
+
+The evidence base is also first-class.  A frozen real benchmark corpus, a
+2,704-item public GitHub bug snapshot, a 227-case generated corpus, a blind
+held-out split, fuzzers, mutation tests, live PyTorch dispatcher comparisons,
+statistical tests, numeric-claim audits, and a one-command reproducibility
+capsule all live in the repository.  On the frozen 16-case real benchmark
+corpus, \tg{} reports TP=8, FP=0, TN=8, FN=0; on 80 clean sound-mode models and
+200 random clean fuzzed modules it reports zero false positives; on 281 genuine
+injected faults it reports perfect recall; and on 2,000 dispatcher-generated
+modules it agrees exactly with eager PyTorch with no abstentions.  The formal
+side includes a Lean 4 library whose 371 public theorems are discovered and
+axiom-audited by tests to depend only on the trusted Lean kernel axioms and not
+on \texttt{sorryAx}, plus parity checks against the Python verifier, Z3, cvc5,
+and the live torch dispatcher.
 \end{abstract}
 
-%% ============================================================
-\section{Introduction}\label{sec:intro}
+\tableofcontents
+\newpage
 
-Runtime crashes in PyTorch code arise not only from tensor shape
-errors---the most frequently reported category~\cite{islam19,zhang18}---but
-also from device mismatches (CPU tensor multiplied by GPU tensor),
-train/eval phase bugs (auxiliary head with wrong dimensions, only
-exercised during training), and memory layout violations (reshaping
-a non-contiguous tensor).  In practice, these properties interact:
-a \texttt{register\_buffer} with wrong channel count that is only
-accessed in eval mode and may reside on the wrong device constitutes
-a \emph{cross-cutting} bug spanning shape, device, and phase
-simultaneously.
+\section{Why this tool exists}
 
-No existing tool reasons about these properties jointly.
-Type checkers (mypy, Pyright) are unaware of tensor dimensions.
-TorchScript~\cite{torchscript} infers shapes during JIT compilation
-but checks no device or phase properties and rejects many valid
-models.  Runtime checkers like jaxtyping~\cite{jaxtyping} require
-manual annotations and catch only shape errors at execution time.
-PyTEA~\cite{pytea} performs static shape analysis for individual
-tensor operations but does not reason about architecture-level
-composition, device placement, or phase-dependent behaviour.
+Tensor bugs are unusually expensive because a model can be syntactically valid,
+type-check in Python, instantiate successfully, and still crash only after a
+particular batch shape, device placement, train/eval mode, attention mask, or
+export path reaches the wrong operator.  Runtime tests catch some of these
+bugs, but only when the test constructs the right input and executes the failing
+path.  Smoke tests miss latent eval-only branches, CUDA-only device mismatches
+on CPU machines, silent gradient breaks, and shape constraints hidden inside
+library calls such as \texttt{einops.rearrange} or
+\texttt{scaled\_dot\_product\_attention}.
 
-\tguard{} fills this gap with a static verifier that jointly reasons
-over a \textbf{five-theory product domain}
-$\Tshape \times \Tdevice \times \Tphase \times \Tstride \times
-\Tperm$, requiring \emph{zero} user annotations.
-Given a PyTorch \texttt{nn.Module}, \tguard{} extracts a computation
-graph, performs \textbf{multi-phase verification} (checking both
-\texttt{if self.training} branches), and discharges cross-cutting
-safety constraints via Z3.  On a 52-model benchmark of cross-cutting
-bugs drawn from real HuggingFace, torchvision, detectron2, YOLOv5,
-and fairseq patterns, \tguard{} achieves \textbf{F1\,=\,0.625 with
-perfect precision (1.0)}. For TorchScript, mypy, PyTEA, and jaxtyping
-we report capability-based lower bounds rather than measured end-to-end
-benchmark scores on every case: because these tools do not model the
-device/phase interactions that define this benchmark, their comparison
-row should be read as a missing-capability baseline, not as a fully run
-head-to-head experiment.
+\tg{} attacks that failure mode with static verification.  Given model source
+or a live module, it extracts a symbolic tensor program, propagates abstract
+tensor facts through operator transfer functions, emits solver obligations, and
+surfaces either a proof of safety within the declared fragment, a concrete
+refutation, or an explicit abstention.  The design choice that pervades the
+repository is honesty: when the tool cannot soundly prove a program safe, the
+strict mode returns \unknown{} rather than a silent pass; when a benchmark number
+depends on CUDA, HuggingFace downloads, or a Lean toolchain, the numeric audit
+labels it environment-qualified instead of pretending it was regenerated in the
+ordinary CPU-only path.
 
-\paragraph{Contributions.}
+\paragraph{What is new in this repository.}
+\tg{} combines a production-facing developer tool with a paper-grade evidence
+machine.  The same tree contains the verifier, its soundness contract, its
+generated specs, its benchmark corpora, the comparison baselines, the
+statistical tests, the dashboard, the artifact-evaluation capsule, and the
+formal Lean audit.  This paper summarizes those assets as a coherent system
+rather than as a sequence of roadmap checkboxes.
+
+\paragraph{Core claims.}
 \begin{enumerate}[leftmargin=2em]
-  \item A \textbf{five-theory product domain}
-    $\Tshape \times \Tdevice \times \Tphase \times \Tstride \times
-    \Tperm$ with Tinelli--Zarba theory combination, implemented via
-    Z3 UserPropagator plugins satisfying formal interface contracts.
-
-  \item \textbf{Multi-phase verification}: both branches of
-    \texttt{if self.training:} conditionals are verified, catching
-    phase-dependent bugs invisible to single-path analysis.
-
-  \item \textbf{142 operator transfer functions} spanning 10
-    categories (convolution, normalization, attention, recurrence,
-    pooling, activation, padding, loss, embedding, structural), with
-    conservative handling of unsupported operators.
-
-  \item An \textbf{IC3/PDR engine} for unbounded parametric
-    verification that proves safety for all symbolic dimension
-    values simultaneously.
-
-  \item A \textbf{52-model cross-cutting benchmark} derived from
-    real-world bug patterns in HuggingFace, torchvision, detectron2,
-    YOLOv5, mmdetection, timm, fairseq, and wav2vec2, demonstrating
-    that \tguard{} targets a cross-cutting bug class that the compared
-    baseline tools do not currently model.
+  \item \textbf{No-annotation PyTorch verification.}  The common path is
+  \texttt{tensorguard verify model.py}; the verifier infers shapes and other
+  tensor facts from constructors, \texttt{forward}, dataflow, and optional input
+  specs.
+  \item \textbf{Sound abstention boundary.}  Strict \texttt{sound} mode returns
+  \safe{} only inside the verifiable fragment and returns \unknown{} for
+  unsupported constructs.  More permissive modes trade abstention for legacy
+  recall while preserving the reported bug set.
+  \item \textbf{Cross-domain bug coverage.}  Shape, device, dtype, phase, and
+  gradient-flow checks are measured separately.  Device and gradient each catch
+  real bugs missed by a shape-only view; phase is reported as diagnostic-only
+  where it does not refute.
+  \item \textbf{Repository-anchored evaluation.}  Headline numbers are generated
+  from committed artifacts and checked by \path{reproducibility/audit_numeric_claims.py}.
+  The audit currently reports 12 verified claims, one regime-qualified claim,
+  and one environment-qualified claim.
+  \item \textbf{Machine-checked core obligations.}  Lean modules model the
+  central operator rules, reduced products, CEGAR bounds, fragment modes, and
+  SMT encodings; tests discover and axiom-audit all 371 public theorems.
 \end{enumerate}
 
-\paragraph{Availability.}  \tguard{} is open source and available as
-a pip-installable Python package with a command-line interface and
-CI integration hooks.
+\section{User-visible capabilities}
 
+The repository is not just a verifier kernel.  It exposes an adoption surface
+that lets users run \tg{} locally, in CI, in editors, and in upstream-style
+hooks.
 
-%% ============================================================
-\section{Background}\label{sec:background}
+\subsection{Command-line and Python API}
 
-\subsection{Refinement Types for Tensors}
+The CLI entrypoint is \texttt{tensorguard}.  Its central command verifies a file
+or module and supports independent check toggles, soundness modes, and machine
+readable output.  The public Python API mirrors the CLI through
+\texttt{verify\_architecture}, \texttt{verify\_module}, and specialized helpers
+such as \texttt{verify\_einops}, \texttt{verify\_einops\_source}, and
+\texttt{verify\_sdpa}.  A typical workflow is:
 
-A \emph{refinement type} extends a base type with a logical
-predicate constraining its inhabitants~\cite{flanagan06}.
-In the tensor setting, the base type is a multi-dimensional
-array, and the refinement predicate constrains its shape,
-device placement, and other metadata:
-\[
-  \{t : \mathit{Tensor} \mid \mathit{ndim}(t) = 4
-    \land \mathit{dim}_1(t) = c_{\mathrm{in}}
-    \land \mathit{device}(t) = \texttt{cuda:0}\}
-\]
-Subtyping reduces to logical implication: $\{t : T \mid \phi\}
-\leq \{t : T \mid \psi\}$ iff $\phi \Rightarrow \psi$ is valid.
-\tguard{} generates refinement type constraints for every layer
-in the computation graph and checks subtyping obligations via
-SMT solving.
+\begin{lstlisting}
+import torch.nn as nn
+from src.api import verify_architecture
 
-\subsection{Nelson--Oppen Theory Combination}
+class Bad(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(8, 16)
+        self.fc2 = nn.Linear(99, 4)
 
-When constraints span multiple theories (e.g., shape dimensions
-\emph{and} device placement), we must combine their decision
-procedures.  The Nelson--Oppen framework~\cite{nelsonoppen79}
-achieves this by exchanging equalities over shared variables
-between theory solvers.  The method requires that each theory
-be \emph{stably infinite}---admitting models of arbitrary
-cardinality---and that theory signatures be disjoint.
+    def forward(self, x):
+        return self.fc2(self.fc1(x))
 
-For finite-domain theories ($\Tdevice$, $\Tphase$), stable
-infiniteness fails.  We follow the Tinelli--Zarba
-extension~\cite{tinelli03}, which replaces equality propagation
-with explicit enumeration of \emph{arrangements}---equivalence
-relations over shared variables consistent with the finite
-domain cardinality.
+result = verify_architecture(Bad, input_shapes={"x": (2, 8)},
+                             soundness_mode="sound")
+assert result.verdict == "UNSAFE"
+\end{lstlisting}
 
-\subsection{IC3/PDR Model Checking}
+The CLI can emit human-readable diagnostics as well as JSON, SARIF 2.1.0,
+JUnit-XML, and GitHub annotation formats.  SARIF is validated for GitHub Code
+Scanning.  The pytest plugin lets projects fail tests on unsafe modules.  The
+pre-commit hook and GitHub Action paths allow incremental rollout, and baseline
+or suppression support lets teams adopt the tool without blocking on a legacy
+backlog.
 
-Property Directed Reachability (IC3/PDR)~\cite{bradley11,een11}
-is a model checking algorithm that discovers inductive invariants
-without unrolling the transition relation.  Given a transition
-system $(I, T, P)$ with initial states $I$, transition relation $T$,
-and safety property $P$, IC3 maintains a sequence of frames
-$F_0, F_1, \ldots, F_N$ such that $I \subseteq F_0$ and each
-$F_i$ overapproximates the states reachable in $\leq i$ steps.
-If some $F_i = F_{i+1}$, the property holds inductively.
+\subsection{Soundness modes and exits}
 
-We cast tensor shape verification as a safety property over
-the Kripke structure induced by the computation graph: states
-are tensor shape assignments and transitions are layer transfer
-functions.  IC3/PDR then proves shape safety for \emph{all}
-symbolic dimension values simultaneously, yielding parametric
-guarantees that bounded model checking cannot provide.
+\tg{} exposes three modes:
 
-
-%% ============================================================
-\section{System Design}\label{sec:design}
-
-\subsection{Architecture Overview}
-
-\tguard{} operates in four phases (Figure~\ref{fig:pipeline}):
-
-\begin{enumerate}[leftmargin=2em]
-  \item \textbf{Graph extraction.}  Parse the \texttt{nn.Module}
-    source to extract a computation graph $G = (V, E, \lambda)$.
-    Layer declarations in \texttt{\_\_init\_\_} define transfer
-    functions; data flow in \texttt{forward} defines edges.
-    Three extraction backends are tried in order: AST-based
-    (works without PyTorch), \texttt{torch.fx} symbolic tracing,
-    and TorchDynamo capture.
-
-  \item \textbf{Predicate harvesting.}  For each edge $(u, v)$
-    with layer $\ell = \lambda(u, v)$, look up the transfer
-    function $\tau_\ell$ and generate precondition and postcondition
-    predicates as quantifier-free SMT formulas.
-
-  \item \textbf{Constraint generation.}  Conjoin all predicates
-    into a verification condition:
-    \[
-      \mathit{VC} = \mathit{Init} \land
-        \bigwedge_{(u,v) \in E} \mathit{pre}(\tau_{\lambda(u,v)},
-        \sigma(u)) \land
-        (\sigma(v) = \tau_{\lambda(u,v)}(\sigma(u)))
-    \]
-    Safety holds iff $\mathit{Init} \land \mathit{VC} \land
-    \neg\mathit{Safe}$ is unsatisfiable.
-
-  \item \textbf{Z3 verification.}  Submit the negated verification
-    condition to Z3.  If unsatisfiable, the model is safe.  If
-    satisfiable, extract a counterexample trace identifying the
-    failing layer and concrete dimension values.
-\end{enumerate}
-
-\begin{figure}[t]
-\centering
-\small
-\begin{tabular}{@{}c@{$\;\to\;$}c@{$\;\to\;$}c@{$\;\to\;$}c@{}}
-\framebox{\texttt{nn.Module}} &
-\framebox{Computation Graph} &
-\framebox{SMT Constraints} &
-\framebox{$\checkmark$ / Counterexample} \\[2pt]
-\scriptsize AST / FX / Dynamo &
-\scriptsize Predicate Harvesting &
-\scriptsize $\Tprod$ encoding &
-\scriptsize Z3 + IC3/PDR
+\begin{center}
+\begin{tabular}{p{0.16\linewidth} p{0.72\linewidth}}
+\toprule
+\textbf{Mode} & \textbf{Contract} \\
+\midrule
+\texttt{sound} & Report \safe{} only when the analyzed region is fully inside
+the verifiable fragment, uses no heuristic-tagged operators, and has no opaque
+layers.  Unsupported code returns \unknown{}; the CLI exits 2 on \unknown{} so
+CI can gate on abstentions. \\
+\texttt{balanced} & Default mode.  Preserves legacy usability by abstaining on
+opaque layers but otherwise returning \safe{} when no bug is found. \\
+\texttt{heuristic} & Most permissive mode.  Tolerates heuristic regions and is
+useful for exploratory diagnostics, never for a "proof of safe" claim. \\
+\bottomrule
 \end{tabular}
-\caption{\tguard{} verification pipeline.}
-\label{fig:pipeline}
-\end{figure}
+\end{center}
 
-\subsection{Five-Theory Product Domain}\label{sec:product}
+The mode affects the top-level verdict, not the set of reported bugs.  A real
+shape bug is refuted identically in all three modes, which prevents users from
+accidentally hiding an error by choosing a more conservative contract.
 
-Verification operates over the product theory
-$\Tprod = \Tshape \times \Tdevice \times \Tphase \times
-\Tstride \times \Tperm$.  Each component theory reasons about
-a distinct aspect of tensor metadata:
+\subsection{Diagnostics, explanations, and adoption hooks}
 
-\begin{description}[leftmargin=1.5em,style=nextline]
-  \item[$\Tshape$ (Shape)]
-    Reasons over shape tuples with integer-valued symbolic
-    dimensions.  Signature includes dimension access
-    ($\mathit{dim}_i$), rank ($\mathit{ndim}$), element
-    product ($\mathit{prod}$), and broadcasting
-    ($\mathit{broadcast}$).  Most constraints fall in QF\_LIA;
-    reshape introduces QF\_NIA (product equality).
-    Stably infinite over $\mathbb{Z}_{\geq 1}$.
+The verifier produces source-mapped diagnostics with category, confidence, line
+location, counterexample facts, and a suggested repair where the fix is
+mechanical.  The \texttt{--explain} path reconstructs the inference chain that
+led to a bug.  The \texttt{@tensorguard.checked} decorator and the upstream
+\texttt{attach\_verifier} reference hook demonstrate an opt-in PyTorch
+integration: a module is verified once at the first forward boundary, rejected
+before the kernel runs if unsafe, or allowed transparently if safe.
 
-  \item[$\Tdevice$ (Device)]
-    Tracks device placement over the finite set
-    $\{\texttt{cpu}, \texttt{cuda:0}, \ldots, \texttt{cuda:3}\}$.
-    Enforces that operands of binary operations reside on the
-    same device.  Finite domain ($|D| = 5$); combined via
-    Tinelli--Zarba arrangement enumeration.
+\subsection{Security and safe loading}
 
-  \item[$\Tphase$ (Phase)]
-    Tracks execution phase $\{\texttt{train}, \texttt{eval}\}$,
-    ensuring phase-dependent layers (Dropout, BatchNorm) behave
-    correctly in both modes.  Finite domain ($|P| = 2$).
+Model verification often starts from untrusted Python files.  The repository
+therefore contains a threat model, security policy, and a safe AST/fx-only path
+that avoids dynamic import or \texttt{exec} when analyzing source.  Dynamic
+execution remains available only in explicitly-labeled harnesses whose purpose
+is to compare against real PyTorch behavior.  The production verifier treats
+unsupported or opaque regions as \unknown{} in sound mode rather than executing
+them.
 
-  \item[$\Tstride$ (Stride)]
-    Reasons about strided memory layout for convolution and
-    pooling operations.  Operates in QF\_LIA over
-    $\mathbb{Z}_{\geq 1}$; stably infinite.  Combined with
-    $\Tshape$ via Nelson--Oppen.
+\section{Program model and contracts}
 
-  \item[$\Tperm$ (Permutation)]
-    Reasons about axis reordering induced by \texttt{transpose}
-    and \texttt{permute}.  Signature includes
-    $\textsf{apply} : \mathit{Perm} \times \mathit{Dim}^* \to
-    \mathit{Dim}^*$ and
-    $\textsf{swap} : \mathit{Dim}^* \times \mathbb{N} \times
-    \mathbb{N} \to \mathit{Dim}^*$, with involution and
-    bijectivity axioms.
+\subsection{Verifiable fragment}
+
+\path{src/verifiable_fragment.py} is the executable source of truth for what
+\tg{} can analyze.  It defines a grammar for supported \texttt{nn.Module} and
+\texttt{forward} constructs, tables of supported layers, tensor methods,
+\texttt{torch.*} functions, and \texttt{torch.nn.functional} calls, plus an
+unsupported-construct taxonomy.  The generated document
+\path{VERIFIABLE_FRAGMENT.md} states the policy in user language:
+unsupported code must be surfaced as \unknown{} in sound mode, never silently
+passed.
+
+Static checks catch data-dependent control flow, data-dependent iteration,
+dynamic assertions, and tensor-to-scalar coercions such as \texttt{.item()}.
+Tests run all statically detectable out-of-fragment categories through the
+live verifier and confirm they yield \unknown{} under the sound contract.
+
+\subsection{Soundness contract}
+
+\path{src/soundness_contract.py} and \path{SOUNDNESS_CONTRACT.md} state two
+directions separately:
+
+\begin{description}[leftmargin=2em]
+  \item[Refutation soundness.] A reported bug is backed by a concrete violated
+  obligation.  The user should not have to distinguish a real bug from a solver
+  artifact.
+  \item[Verification soundness.] A \safe{} verdict in sound mode means no
+  modeled bug class is missed within the verifiable fragment and the current
+  operator confidence envelope.
 \end{description}
 
-The product domain is structured as a \emph{reduced product}
-with inter-domain reductions: device constraints tighten shape
-bounds (tensors on different devices cannot interact) and phase
-constraints control dropout behavior.  Cross-domain axioms
-mediate these interactions:
-\begin{align}
-  d_1 \neq d_2 &\implies \neg\mathit{compatible}(v_1, v_2)
-    \label{ax:dev-shape} \\
-  p = \texttt{eval} &\implies \mathit{dropout\_active} =
-    \mathit{false} \label{ax:phase-drop}
-\end{align}
+The contract classifies constructs as \texttt{sound},
+\texttt{over\_approximated}, \texttt{under\_approximated}, or \texttt{skipped}.
+Known gaps are named rather than hidden.  For example, permissive modes may
+return \safe{} on out-of-fragment code; sound mode abstains.  CEGAR's historic
+SAFE-on-infeasible gap is closed by returning abstention rather than a false
+\safe{}.
 
-\subsection{Transfer Functions}\label{sec:transfer}
+\subsection{Abstract domains}
 
-Each of the 142 supported operators has a \emph{transfer function}
-$\tau_\ell$ mapping input state to output state with a precondition
-$\mathit{pre}(\tau_\ell, \sigma)$.  Table~\ref{tab:transfer}
-shows representative examples.
+The analysis tracks a reduced product of tensor facts.  The original shape
+domain contains rank, concrete and symbolic dimensions, broadcast facts,
+divisibility obligations, stride/layout, and permutation facts.  Additional
+domains track dtype promotion, device placement, train/eval phase, and gradient
+flow.  Reductions exchange facts across domains: a dtype cast into a floating
+layer matters for shape-level operator validity; a device transfer changes the
+device obligation at downstream ops; a branch guarded by training mode exposes
+phase-dependent shape paths.
 
-\begin{table}[t]
-\centering
-\caption{Representative shape transfer functions (7 of 142).
-  $s_{[i]}$ denotes the $i$-th dimension of shape $s$.}
-\label{tab:transfer}
-\small
-\begin{tabular}{@{}lll@{}}
+The domain-ablation artifacts distinguish verification domains from diagnostic
+domains.  Shape, dtype, device, and gradient each earn their place by catching
+bugs in a labeled corpus; phase currently records train/eval structure and
+enables phase-specific diagnostics but is reported honestly where it does not
+independently refute.
+
+\subsection{Operator confidence}
+
+Every registered operator transfer function has a machine-readable confidence
+tag in \path{operator_confidence_table.json}.  The current table contains 117
+operators: 75 \texttt{complete}, 36 \texttt{sound}, and 6 \texttt{heuristic}.
+Unknown operators default to \texttt{heuristic}.  The CLI command
+\texttt{tensorguard operator-confidence} surfaces these tags to users, and
+sound mode folds heuristic operators into \unknown{} rather than claiming proof.
+
+\section{Extraction frontends}
+
+\tg{} offers multiple frontends that lower user code to a shared internal
+representation.
+
+\paragraph{AST frontend.}
+The safe default parses source without importing the target module.  It reads
+constructor assignments, \texttt{forward} dataflow, helper calls, subclass
+patterns, literal \texttt{torch.randn} shapes, and simple input annotations.  It
+is the right path for CI, untrusted files, and repository-wide scans.
+
+\paragraph{\texttt{torch.fx} frontend.}
+For live modules, the fx frontend traces idiomatic architectures and lowers
+operator calls into the same transfer-function registry.  The trace-success
+study covers 21 torchvision models, all traced and lowered, for 5,238 total
+steps with 7.22\% unsupported operations recorded rather than hidden.
+
+\paragraph{\texttt{torch.export}/Dynamo frontend.}
+The export frontend reconciles PyTorch's capture path with the fx path.  The
+current reconciliation artifact contains seven representative models, with both
+frontends correct on all seven and no divergent verdicts.  Dynamic-shape export
+constraints and export failure modes are surfaced through the same
+verifiable-fragment taxonomy.
+
+\paragraph{Second framework: Flax/JAX.}
+The verifier core is framework-independent enough to support a Flax/JAX
+frontend for \texttt{nnx.Sequential}-style models.  Linear, LayerNorm,
+BatchNorm, and Dropout lower into the shared IR, shape bugs refute, and
+unsupported layouts abstain soundly.  This demonstrates that the project is a
+tensor-program verifier rather than a PyTorch-only parser trick.
+
+\paragraph{Community stubs and autogeneration.}
+Third-party layers are handled through governed declarative stubs: no executable
+code, mandatory provenance, and executed conformance cases.  A stub autogenerator
+derives safe shape stubs from real \texttt{torch.nn} constructor signatures when
+the output contract is exactly known, and classifies uncertain layers as
+unsupported rather than guessing.
+
+\section{Constraint solving and refinement}
+
+\subsection{Transfer functions}
+
+Operator transfer functions are the heart of the analyzer.  They cover linear
+layers, convolution and pooling families, normalization layers, embeddings,
+matmul and batched matmul, broadcasting arithmetic, reshape/view/flatten,
+transpose/permute, concatenation, split/chunk, gather/scatter, reductions,
+attention blocks, dtype casts, device moves, train/eval-sensitive ops, and
+gradient-flow constructs such as \texttt{detach}.  Frequency-weighted coverage
+on a 13-model torchvision corpus is 94.86\%: 2,437 of 2,569 observed operator
+occurrences are covered, with the remaining 132 occurrences listed by name.
+
+\subsection{Solver obligations}
+
+The verifier builds verification conditions over integer shape arithmetic,
+finite-domain device and phase facts, dtype lattice facts, and gradient-flow
+bits.  Z3 is the default backend because the implementation relies on its
+incremental solver and user-propagator support.  A cvc5 comparison harness
+checks a curated set of shape, device, phase, and reshape obligations through
+both solvers and records concordant SAT/UNSAT answers, including on the
+nonlinear reshape fragment.
+
+The solver-domain flags
+\texttt{--no-device-check}, \texttt{--no-phase-check}, and
+\texttt{--no-grad-check} gate constraint generation itself, not merely a
+post-hoc filter.  When a domain is disabled, its encoder emits no constraints
+and its theory-specific checks are skipped; committed examples prove that each
+flag can flip a verdict on real source.
+
+\subsection{CEGAR predicate discovery}
+
+The CEGAR loop discovers implicit shape contracts by accumulating predicates
+from counterexamples.  If predicates discovered across refinement rounds are
+jointly unsatisfiable, the conflict is promoted to a real bug of category
+\texttt{cegar\_refined\_contract}.  This makes the iteration budget observable:
+\texttt{--cegar-iterations 0} can produce no contract-level bug while a positive
+budget surfaces the infeasible contract.  A convergence study proves the loop
+terminates within a tight bound, and a Lean proof models the monotone predicate
+accumulation argument.
+
+\subsection{Specialized library contracts}
+
+Two high-value library checkers demonstrate the pattern for precision without
+unsoundness:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{einops.}  \path{src/einops_verify.py} models
+  \texttt{rearrange}, \texttt{reduce}, and \texttt{repeat}; it catches
+  non-divisible decompositions, underdetermined splits, axis-set mismatches,
+  duplicate axes, anonymous-axis errors, rank mismatches, and ellipsis cases.
+  A 3,000-case differential fuzz battery checks verdicts and output shapes
+  against the real \texttt{einops} package.  Symbolic divisibility that cannot
+  be decided statically is not refuted.
+  \item \textbf{Scaled dot-product attention.}  \path{src/sdpa_verify.py}
+  models the rank, head-dimension, batch/head broadcasting, and mask
+  broadcasting contract of \texttt{F.scaled\_dot\_product\_attention}.  A
+  400-case differential battery checks it against real PyTorch.  Backend-specific
+  key/value sequence-length behavior is not hard-refuted where PyTorch's default
+  fused backend accepts it.
+\end{itemize}
+
+\section{Beyond \texttt{forward}: deployment and training hazards}
+
+The repository extends static checking beyond architecture shape.
+
+\paragraph{Training-loop hazards.}
+\path{src/training_loop_checks.py} analyzes optimizer and gradient-flow
+patterns: detached losses, missing \texttt{zero\_grad}, missing
+\texttt{optimizer.step}, \texttt{zero\_grad} after \texttt{backward}, and fp16
+autocast without a \texttt{GradScaler}.  The reproducibility harness runs
+equivalent seeded PyTorch loops and confirms the static verdict matches the
+runtime symptom.
+
+\paragraph{Distributed tensor parallelism.}
+\path{src/tensor_parallel_checks.py} models Megatron-style column-parallel and
+row-parallel linear stacks.  It checks shard divisibility, contracted-dimension
+agreement, and communication flag consistency.  The harness hand-shards a
+reference stack across simulated ranks and verifies that correct configs match
+the unsharded forward while inconsistent configs are both statically flagged
+and fail under actual sharding.
+
+\paragraph{Quantization and export.}
+\path{src/quant_export_checks.py} catches asymmetric quant/dequant boundaries,
+quantized tensor arithmetic that should use \texttt{FloatFunctional}, and
+export-unsafe data-dependent constructs.  The live PyTorch harness confirms
+the quantized-add hazard raises the expected runtime exception and that export
+failures line up with the verifiable-fragment grammar.
+
+\paragraph{ONNX, \texttt{torch.compile}, and packaging gates.}
+The repository includes ONNX hardening, post-export \texttt{check\_model}
+assertions, and torch.export/AOTInductor packaging parity.  These gates are
+framed as deployment checks: they do not broaden the soundness contract unless
+their corresponding transfer rules and runtime conformance tests are present.
+
+\section{Formal assurance}
+
+\subsection{Lean proof corpus}
+
+The Lean 4 development under \path{lean/TensorGuard/} mechanizes the proof
+obligations that are most dangerous to leave as prose: operator rules,
+reduced-product algebra, CEGAR bounds, fragment modes, device/dtype/phase/grad
+transfers, shape-chain transfers, and SMT encoding faithfulness.  The whole
+library audit test reads the root import graph, discovers every public theorem
+and lemma, generates \texttt{\#print axioms} commands for each, elaborates them
+through the Lean kernel, and asserts that no declaration depends on
+\texttt{sorryAx} and that every reported axiom is one of
+\texttt{propext}, \texttt{Classical.choice}, or \texttt{Quot.sound}.  The
+current discovered count is 371 public theorems.
+
+The proof corpus is paired with Python tests rather than left disconnected.
+Conformance tests map Lean theorem names to randomized property tests of the
+Python code.  Handler parity checks compare Lean-extracted or Lean-modeled
+rules with the Python transfer functions and, where applicable, the live torch
+dispatcher.  This is important: a theorem about a toy rule is not enough unless
+the implementation that users run is pinned to the same semantics.
+
+\subsection{Encoding faithfulness}
+
+Several Lean modules address the trust boundary between abstract transfer
+rules and solver encodings.  \path{lean/TensorGuard/SmtEncoding.lean} proves that the generated
+Z3 obligations for dtype/device/phase/gradient facts faithfully represent the
+Lean semantics.  \path{lean/TensorGuard/CrossDomain.lean} lifts shape/device interactions.
+Additional modules cover dtype promotion chains, gradient-flow chains,
+device-placement chains, phase chains, broadcast chains, rank-transfer chains,
+flatten, cat, embedding, reshape \texttt{-1} inference, Linear, Conv1d/Conv2d,
+ConvTranspose1d, pooling, LayerNorm, PixelShuffle, AdaptiveAvgPool2d,
+Unflatten, and BatchNorm.
+
+\subsection{Soundness footprint}
+
+The paper-grade soundness story is deliberately scoped.  The repository
+distinguishes Lean-audited handlers, pen-and-paper handlers, tested-only
+handlers, and uncovered handlers.  Per-block soundness-footprint artifacts pin
+real refutations to the concrete handler set they traversed, including the
+specific Lean theorem or rule that discharges each audited handler.  This
+prevents a misleading global statement such as "Lean proves the whole tool" from
+masking uncovered long-tail operators.
+
+\section{Benchmark corpora}
+
+The benchmark strategy uses multiple corpora because no single corpus can answer
+every reviewer question.
+
+\begin{longtable}{p{0.24\linewidth} p{0.14\linewidth} p{0.52\linewidth}}
+\caption{Committed corpora and what each one proves.}\label{tab:corpora}\\
 \toprule
-\textbf{Operator} & \textbf{Precondition} & \textbf{Output Shape} \\
+\textbf{Corpus / source} & \textbf{Size} & \textbf{Purpose} \\
 \midrule
-\texttt{Linear}$(f_\text{in}, f_\text{out})$ &
-  $s_{[-1]} = f_\text{in}$ &
-  $s_{[0:-1]} \mathbin\| [f_\text{out}]$ \\
-\texttt{Conv2d}$(c_\text{in}, c_\text{out}, k)$ &
-  $|s| = 4 \land s_{[1]} = c_\text{in}$ &
-  $(s_{[0]}, c_\text{out}, s'_H, s'_W)$ \\
-\texttt{BatchNorm}$(n)$ &
-  $s_{[1]} = n$ &
-  $s$ \\
-\texttt{LayerNorm}$(n)$ &
-  $s_{[-1]} = n$ &
-  $s$ \\
-\texttt{Reshape}$(d_1, \ldots, d_k)$ &
-  $\prod s_i = \prod d_j$ &
-  $(d_1, \ldots, d_k)$ \\
-\texttt{cat}$(t_1, \ldots, t_n; d)$ &
-  $\forall i,j.\; s_i^{[\neg d]} = s_j^{[\neg d]}$ &
-  $s_1^{[\neg d]} \mathbin\| [\sum_i s_i^{[d]}]$ \\
-\texttt{matmul}$(A, B)$ &
-  $A_{[-1]} = B_{[-2]}$ &
-  broadcast$(A_{[:-2]}, B_{[:-2]})$\\
-  & & $\mathbin\| [A_{[-2]}, B_{[-1]}]$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-For Conv2d, the output spatial dimensions are computed as:
-\[
-  s'_H = \left\lfloor \frac{s_{[2]} + 2p_H - d_H(k_H - 1) - 1}
-    {st_H} \right\rfloor + 1
-\]
-where $p_H$ is padding, $d_H$ is dilation, $k_H$ is kernel size,
-and $st_H$ is stride---all of which are tracked by $\Tstride$.
-
-\paragraph{Conservative handling of unsupported operators.}
-When \tguard{} encounters an operator outside its 142-operator
-registry, it does \emph{not} silently assume the identity
-function (which would be unsound if the operator changes the
-shape).  Instead, it marks the output shape as $\textsc{Unknown}$,
-propagating an explicit loss-of-information marker through
-downstream constraints.  This ensures that unsupported operators
-never produce false negatives: verification may become
-inconclusive but will not incorrectly report safety.
-
-\paragraph{FX graph extraction.}
-For \texttt{nn.Module} instances that cannot be analyzed by
-AST-level extraction (e.g., dynamically constructed
-\texttt{nn.Sequential} containers or \texttt{nn.ModuleList}
-iteration), \tguard{} falls back to \texttt{torch.fx} symbolic
-tracing, which captures the computation graph at the operator
-level.  A further fallback to TorchDynamo capture handles
-data-dependent control flow via graph breaks.
-
-
-%% ============================================================
-\section{Formal Typing Rules}\label{sec:typing}
-
-We present selected typing rules in the standard judgment form
-$\Gamma \vdash e : \tau$, where $\Gamma$ is a typing context
-mapping variables to refined tensor types and $\tau$ is a
-refined output type.
-
-\paragraph{T-Linear.}
-\[
-\typerule{T-Linear}{\Gamma \vdash x : \{t : \mathit{Tensor} \mid
-      \mathit{dim}_{-1}(t) = f_\text{in}\} \\
-   f_\text{in}, f_\text{out} \in \mathbb{Z}_{>0}}{\Gamma \vdash \texttt{Linear}(f_\text{in}, f_\text{out})(x) :
-    \{t' : \mathit{Tensor} \mid
-      \mathit{shape}(t') = \mathit{shape}(x)_{[0:-1]}
-      \mathbin\| [f_\text{out}]\}}
-\]
-
-\paragraph{T-Conv2d.}
-\[
-\typerule{T-Conv2d}{\Gamma \vdash x : \{t : \mathit{Tensor} \mid
-      \mathit{ndim}(t) = 4 \land \mathit{dim}_1(t) = c_\text{in}\} \\
-   k, st, p, d \in \mathbb{Z}_{>0}}{\Gamma \vdash \texttt{Conv2d}(c_\text{in}, c_\text{out}, k,
-    st, p, d)(x) :
-    \{t' \mid \mathit{dim}_0(t') = \mathit{dim}_0(x) \land
-      \mathit{dim}_1(t') = c_\text{out} \land
-      \mathit{dim}_i(t') = \lfloor\frac{\mathit{dim}_i(x) + 2p -
-        d(k-1) - 1}{st}\rfloor + 1\}}
-\]
-
-\paragraph{T-Broadcast.}
-\[
-\typerule{T-Broadcast}{\Gamma \vdash a : \{t \mid \mathit{shape}(t) = s_a\} \\
-   \Gamma \vdash b : \{t \mid \mathit{shape}(t) = s_b\} \\
-   \forall i.\; s_a[i] = s_b[i] \lor s_a[i] = 1 \lor s_b[i] = 1}{\Gamma \vdash a \oplus b :
-    \{t' \mid \mathit{dim}_i(t') = \max(s_a[i], s_b[i])\}}
-\]
-
-\paragraph{T-Reshape.}
-\[
-\typerule{T-Reshape}{\Gamma \vdash x : \{t \mid \mathit{shape}(t) = s\} \\
-   \prod_{i} s_i = \prod_{j} d_j}{\Gamma \vdash \texttt{reshape}(x, d_1, \ldots, d_k) :
-    \{t' \mid \mathit{shape}(t') = (d_1, \ldots, d_k)\}}
-\]
-
-\paragraph{T-Cat.}
-\[
-\typerule{T-Cat}{\Gamma \vdash t_i : \{t \mid \mathit{shape}(t) = s_i\}
-    \quad (i = 1, \ldots, n) \\
-   \forall i,j.\; \forall k \neq d.\; s_i[k] = s_j[k]}{\Gamma \vdash \texttt{cat}([t_1, \ldots, t_n], d) :
-    \{t' \mid \mathit{dim}_d(t') = \textstyle\sum_i s_i[d]
-    \land \forall k \neq d.\; \mathit{dim}_k(t') = s_1[k]\}}
-\]
-
-\paragraph{T-Matmul.}
-\[
-\typerule{T-Matmul}{\Gamma \vdash A : \{t \mid \mathit{shape}(t) = s_A\} \\
-   \Gamma \vdash B : \{t \mid \mathit{shape}(t) = s_B\} \\
-   s_A[-1] = s_B[-2]}{\Gamma \vdash \texttt{matmul}(A, B) :
-    \{t' \mid \mathit{shape}(t') =
-      \mathit{broadcast}(s_A[{:}{-}2], s_B[{:}{-}2])
-      \mathbin\| [s_A[-2], s_B[-1]]\}}
-\]
-
-\subsection{Soundness}
-
-\begin{conjecture}[Type Soundness]\label{conj:soundness}
-If\/ $\Gamma \vdash e : \tau$ is derivable under the typing rules
-above and $\sigma \models \Gamma$ (i.e., $\sigma$ satisfies all
-refinement predicates in $\Gamma$), then evaluation of $e$ under
-$\sigma$ does not produce a shape error, and the result satisfies
-the refinement predicate of $\tau$.
-\end{conjecture}
-
-\begin{proof}[Proof sketch]
-By induction on the derivation of $\Gamma \vdash e : \tau$.
-Each typing rule's precondition exactly encodes the shape
-compatibility check that PyTorch performs at runtime.  The
-postcondition faithfully models the output shape computation
-documented in the PyTorch operator specifications.  Soundness
-of the theory combination ($\Tprod$) ensures that cross-theory
-constraints are handled correctly (Theorem~\ref{thm:combination}).
-The gap between this sketch and a full proof lies in (1)~faithful
-modeling of all 142 operator semantics and (2)~the conformance
-between the Lean specification and the Python implementation.
-\end{proof}
-
-\begin{theorem}[Product Domain Soundness (Lean-proved)]\label{thm:combination}
-Let $\Tprod = \Tshape \times \Tdevice \times \Tphase \times
-\Tstride \times \Tperm$ with shared variables $V$.
-The Tinelli--Zarba arrangement enumeration correctly decides
-satisfiability of conjunctions $\varphi_{\mathit{shape}} \land
-\varphi_{\mathit{device}} \land \varphi_{\mathit{phase}} \land
-\varphi_{\mathit{stride}} \land \varphi_{\mathit{perm}}$.
-\end{theorem}
-
-\noindent
-A compiled, axiom-audited Lean~4 development records this theorem; see Section~\ref{sec:lean}.
-
-\paragraph{Stride theory convexity.}
-Nelson--Oppen combination requires convexity (or completeness of
-equality propagation) for stably-infinite theories.  $\Tstride$
-operates in QF\_LIA over $\mathbb{Z}_{\geq 1}$, which is convex
-by Lassez--Maher--Marriott~\cite{lassez88}: any disjunction of
-equalities implied by a QF\_LIA formula is witnessed by at least
-one disjunct.  The NIA fragment arising from reshape constraints
-uses a semi-linear subfragment (at most one symbolic factor per
-product), preserving convexity in practice.
-
-
-%% ============================================================
-\section{Evaluation}\label{sec:eval}
-
-We evaluate \tguard{} on five axes: (1)~cross-cutting multi-theory
-bug detection---the capability no other tool provides---followed by
-(2)~operator coverage, (3)~real-world model verification,
-(4)~shape-only bug detection against baselines, and
-(5)~a combined PyTEA + real-model benchmark incorporating dynamic
-shape inference, einsum support, and broadcast analysis.
-
-\subsection{Cross-Cutting Multi-Theory Bugs}\label{sec:cross-cutting}
-
-The primary advantage of \tguard{}'s five-theory product domain is its
-ability to catch bugs that span multiple property boundaries
-simultaneously.  We construct a benchmark of 52 models (44~buggy,
-8~correct) derived from real-world bug patterns in HuggingFace
-Transformers (issue \#13666), torchvision (ResNet, FPN), detectron2
-(mask head), YOLOv5 (anchor grids), mmdetection (anchor generator),
-timm (squeeze-excite), fairseq (label smoothing), wav2vec2 (feature
-normalization), and Stack\-Overflow/PyTorch Forums posts.  Each
-buggy model requires reasoning across at least two of the five
-theories to detect.
-
-\begin{table}[t]
-\centering
-\caption{Cross-cutting multi-theory bug detection.  \tguard{} is the
-  only evaluated tool in this paper with measured non-zero recall; the
-  other rows are capability-based lower bounds rather than full per-case reruns.}
-\label{tab:crosscut}
-\small
-\begin{tabular}{@{}lcccc@{}}
+\endfirsthead
 \toprule
-\textbf{Tool} & \textbf{Precision} & \textbf{Recall} &
-  \textbf{F1} & \textbf{FP} \\
+\textbf{Corpus / source} & \textbf{Size} & \textbf{Purpose} \\
 \midrule
-\tguard{} (ours)    & \textbf{1.000} & \textbf{0.455} & \textbf{0.625} & 0 \\
-TorchScript$^\dagger$         & 0.000 & 0.000 & 0.000 & 0 \\
-mypy + torch stubs$^\dagger$  & 0.000 & 0.000 & 0.000 & 0 \\
-PyTEA$^\dagger$               & 0.000 & 0.000 & 0.000 & 0 \\
-jaxtyping$^\dagger$           & 0.000 & 0.000 & 0.000 & 0 \\
+\endhead
+\path{real_benchmarks/} & 16 & Frozen ground-truth real-code corpus: 8 clean
+and 8 buggy modules across shape, device, phase, and gradient domains, each
+content-addressed by SHA-256.  Six of eight buggy modules raise a real eager
+PyTorch RuntimeError on this host; the CUDA-only and silent-gradient cases are
+documented. \\
+\path{experiments_v5/github_bug_mining/} & 2,704 & Public GitHub issue/PR
+snapshot mined from verbatim PyTorch runtime error signatures: 2,394 shape and
+310 device bugs across eight categories. \\
+\path{corpus_extended/} & 227 & Parameterized, redistributable generated
+corpus: 153 buggy and 74 clean cases, all labels validated by real PyTorch
+execution and content-addressed. \\
+Blind held-out split & 186 & Pre-registered split disjoint from development
+parameter grids: 138 buggy and 48 clean cases, scored exactly once. \\
+False-positive stress corpus & 101 & Clean models built from tricky but valid
+shape, broadcast, reshape, concat, and normalization patterns. \\
+Natural-distribution study & 29 & Clean public-style architectures across
+fourteen families; measures definite-answer coverage on ordinary code. \\
+Differential dispatcher corpus & 2,000 & Random modules judged by both eager
+PyTorch and \tg{} sound mode; tests exact agreement with the live dispatcher. \\
+Hypothesis module-AST corpus & 800 & Structured generated modules with
+shrinking, testing the full-module soundness property rather than isolated
+operators. \\
+Mutation corpus & 376 genuine mutants & Mutations of validated-clean parents;
+only mutants that genuinely raise under eager PyTorch are admitted. \\
 \bottomrule
-\multicolumn{5}{@{}l}{\footnotesize $^\dagger$Capability-based lower bound only: these tools were not individually rerun on every case.} \\
-\multicolumn{5}{@{}l}{\footnotesize They lack device/phase reasoning, so the zero row reflects missing capability rather than measured failure traces.}
-\end{tabular}
-\end{table}
+\end{longtable}
 
-The per-category breakdown (Table~\ref{tab:crosscut-cat}) shows
-that \tguard{} is strongest on phase-dependent shape bugs
-(F1\,=\,0.783), where bugs only manifest in training or evaluation
-mode.  Multi-phase verification---checking both branches of
-\texttt{if self.training:}---is essential for this category.
+\paragraph{Why not only real bugs?}
+The frozen real corpus provides provenance; the GitHub-mined snapshot provides
+scale; generated corpora provide redistributability and controlled labels;
+blind splits test overfitting; fuzzing and mutation testing search for
+regressions in both directions.  The combination is what makes the evaluation
+credible.
 
-\begin{table}[t]
-\centering
-\caption{Per-category cross-cutting results (44 buggy models).}
-\label{tab:crosscut-cat}
-\small
-\begin{tabular}{@{}lrrrrr@{}}
-\toprule
-\textbf{Category} & \textbf{n} & \textbf{TP} & \textbf{FN} &
-  \textbf{F1} & \textbf{Theories} \\
-\midrule
-Phase + Shape       & 14 & 9  & 5  & 0.783 & $\Tphase, \Tshape$ \\
-Triple-theory       & 10 & 6  & 4  & 0.750 & $\Tshape, \Tdevice, \Tphase$ \\
-Device + Shape      & 16 & 4  & 12 & 0.400 & $\Tdevice, \Tshape$ \\
-Device + Phase      &  4 & 1  & 3  & 0.400 & $\Tdevice, \Tphase$ \\
-Correct (no bug)    &  8 & -- & -- & 1.000 & (precision) \\
-\bottomrule
-\end{tabular}
-\end{table}
+\section{Main empirical results}
 
-These results establish that cross-cutting verification is a
-genuinely new capability, not an incremental improvement.
-No baseline tool catches \emph{any} of the 44 buggy models.
+\subsection{Frozen real-code benchmark}
 
-\subsection{Operator Coverage}
-
-\tguard{} supports 142 operator transfer functions organized into
-10 categories:
+Table~\ref{tab:confusion} reports the committed confusion matrices on the
+16-case frozen corpus.  Baselines are actual tools or executable procedures:
+a no-op predictor, a runtime forward smoke test, a runtime forward+backward
+test that also inspects gradients, and PyTea built from source and run live on
+generated entry wrappers.
 
 \begin{table}[h]
 \centering
-\caption{Operator coverage by category.}
-\label{tab:coverage}
 \small
-\begin{tabular}{@{}lr@{}}
+\begin{tabular}{lrrrrrr}
 \toprule
-\textbf{Category} & \textbf{Count} \\
+\textbf{Method} & \textbf{TP} & \textbf{FP} & \textbf{TN} & \textbf{FN}
+& \textbf{Precision} & \textbf{Recall} \\
 \midrule
-Convolution (Conv1d--3d, ConvTranspose) & 12 \\
-Normalization (BatchNorm, LayerNorm, GroupNorm) & 15 \\
-Attention (MultiheadAttention, ScaledDotProduct) & 4 \\
-Recurrence (LSTM, GRU, RNN) & 6 \\
-Pooling (MaxPool, AvgPool, AdaptivePool) & 16 \\
-Activation (ReLU, GELU, Sigmoid, etc.) & 25 \\
-Padding (ZeroPad, ReflectionPad, etc.) & 15 \\
-Loss (CrossEntropy, MSE, NLL, etc.) & 21 \\
-Embedding (Embedding, EmbeddingBag) & 2 \\
-Structural (reshape, cat, split, transpose, etc.) & 26 \\
-\midrule
-\textbf{Total} & \textbf{142} \\
+\tg{} & 8 & 0 & 8 & 0 & 1.000 & 1.000 \\
+runtime backward & 8 & 0 & 8 & 0 & 1.000 & 1.000 \\
+runtime forward & 7 & 0 & 8 & 1 & 1.000 & 0.875 \\
+PyTea & 6 & 0 & 8 & 2 & 1.000 & 0.750 \\
+no-op & 0 & 0 & 8 & 8 & -- & 0.000 \\
 \bottomrule
 \end{tabular}
+\caption{Frozen 16-case corpus; the backing artifact is evaluation/confusion\_matrices.json.}
+\label{tab:confusion}
 \end{table}
 
-Of the approximately 2,000 operators in the PyTorch API, the 142
-supported by \tguard{} cover the operators most commonly used in
-standard neural network architectures.  94.9\% of these produce
-decidable QF\_LIA constraints; only 6 operators (reshape, flatten,
-PixelShuffle, repeat, and variants) produce QF\_NIA constraints,
-for which satisfiability is NP-hard (captured in a Lean~4
-reduction from SUBSET-PRODUCT).
+The runtime backward baseline ties on this small corpus because each bug is
+exercised by the seeded run and because the gradient-detach case can be caught
+by checking parameter gradients.  That tie is useful: it shows the comparison is
+not rigged against dynamic tools.  The static advantage appears on latent bugs
+where one concrete execution cannot exercise the failing path.
 
-\subsection{Library-Faithful Differential Verification}\label{sec:differential-lib}
+\subsection{Latent bugs}
 
-Two operator families dominate modern transformer and diffusion code yet
-escape conventional shape checkers because their contracts live \emph{inside}
-opaque library calls: \texttt{einops} pattern rewrites
-(\texttt{rearrange}/\texttt{reduce}/\texttt{repeat}) and
-\texttt{F.scaled\_dot\_product\_attention} (SDPA). A non-divisible patch
-embedding such as \texttt{rearrange(x,\,"b c (h p1) (w p2) -> b (h w) (c p1
-p2)",\,p1=5)} on a $14\times14$ feature map, or an attention block whose head
-dimension fails to match between \texttt{query} and \texttt{key}, raises only
-inside a fused kernel---and often only for a particular sequence length a
-single-shape smoke test never exercises.
+The hard-recall corpus contains eight bugs that are all proven genuine but
+silent under a single seeded train-mode forward/backward baseline: three
+eval-only phase bugs, three path-flag bugs, and two silent parameter-freeze
+bugs.  The strongest dynamic baseline catches 0/8.  \tg{} catches 6/8,
+covering the phase and path families in full; the two misses are explicitly
+tagged as post-construction \texttt{requires\_grad=False} freezes outside the
+current gradient-domain model.  This is exactly the failure mode static analysis
+should improve: not "faster execution", but detection of bugs no chosen
+execution observes.
 
-\tguard{} ships pure, shape-only models of both contracts
-(\texttt{verify\_einops}, \texttt{verify\_sdpa}) that reproduce the exact
-conditions under which the real libraries raise---non-divisible decomposition,
-under-determined split, per-operation axis-set mismatch, missing repeat length,
-anonymous-axis and rank mismatches, and ellipsis handling for einops;
-contracted head-dim equality, batch/head broadcasting, and
-$\langle L_q,L_k\rangle$ mask broadcasting for SDPA---while inferring the
-output shape. Crucially, both honour the soundness contract: a dimension that
-cannot be decided statically (a symbolic length) is \emph{never} refuted.
+\subsection{False-positive and false-negative hunts}
 
-We validate these models \emph{differentially against the real libraries}. A
-randomised fuzzer draws 3{,}000 einops cases and 400 SDPA cases (varying axis
-groupings, head counts, broadcasting, and mask shapes); for every case the
-static verdict (accept/reject) and, on acceptance, the predicted output shape
-must match what real \texttt{einops}/\texttt{torch} produce on a concrete
-tensor. All cases agree, and an AST-level checker
-(\texttt{verify\_einops\_source}) lifts the einops model to real
-\texttt{nn.Module} source: in our grounded tests, every buggy module whose
-forward genuinely raises at runtime is caught statically, every correct module
-stays silent, and symbolic/unknown shapes produce no false positives. The same
-methodology---\emph{a shape-only abstraction whose verdicts are pinned to the
-ground-truth library by mass differential testing}---underwrites the per-release
-benchmark-delta gate (\S\ref{sec:deploy}), which blocks any release that
-silently degrades recall or inflates the headline silent-miss count.
-
-
-
-We evaluate \tguard{} on 8 real-world convolutional architectures from
-torchvision using \texttt{torch.fx} symbolic tracing.  For each model,
-\tguard{} verifies shape, device, and phase properties simultaneously.
-
-\begin{table}[t]
+\begin{table}[h]
 \centering
-\caption{Verification results on real-world architectures.
-  ``Ops'' is total operator count; ``Cov'' is the fraction
-  covered by \tguard{} transfer functions; ``Time'' is
-  end-to-end verification time; ``Errors'' is true property
-  violations found (shape, device, or phase); ``FP'' is false positives.}
-\label{tab:models}
 \small
-\begin{tabular}{@{}lrrrrl@{}}
+\begin{tabular}{p{0.34\linewidth} p{0.18\linewidth} p{0.36\linewidth}}
 \toprule
-\textbf{Model} & \textbf{Ops} & \textbf{Cov\%} &
-  \textbf{Time} & \textbf{Errors} & \textbf{FP} \\
+\textbf{Study} & \textbf{Population} & \textbf{Result} \\
 \midrule
-AlexNet         &  23  & 100\%  & 1.8\,s  & 0 & 0 \\
-VGG-16          &  41  & 100\%  & 1.2\,s  & 0 & 0 \\
-ResNet-18       &  67  & 100\%  & 4.8\,s  & 0 & 0 \\
-ResNet-50       & 150  & 100\%  & 26.6\,s & 0 & 0 \\
-MobileNetV2     & 212  & 100\%  & 21.8\,s & 0 & 0 \\
-EfficientNet-B0 & 320  & 100\%  & 44.3\,s & 0 & 0 \\
-ConvNeXt-Tiny   & 148  & 100\%  & 8.6\,s  & 0 & 0 \\
-DenseNet-121    & 432  & 100\%  & 122.5\,s & 0 & 0 \\
+Sound-mode clean hunt & 80 clean models & 0 false positives; 80/80 \safe{};
+no abstentions. \\
+Differential clean fuzzing & 200 random clean models & 0 false positives;
+200/200 \safe{}; ranks split 94 rank-2 and 106 rank-4. \\
+Negative fuzzing & 281 genuine injected faults & 281/281 caught; 0 false
+negatives across Linear-in, Linear-out, Conv-in, and bad-reshape families. \\
+Disagreement triage & 481 fuzzed clean/faulty models & 0 TensorGuard/runtime
+disagreements; 50 minimal bug reproducers frozen as regressions. \\
+Extended corpus & 227 cases & 153/153 runtime-failing cases caught; 0 false
+positives on 74 clean cases in both balanced and sound modes. \\
+Blind split & 186 cases & 138/138 held-out buggy cases caught; 0 false
+positives on 48 clean cases; zero overfitting gap. \\
+Live dispatcher differential & 2,000 modules & Exact agreement with eager
+PyTorch: zero soundness violations, zero false alarms, zero abstentions. \\
+Mutation testing & 376 genuine mutants & Sound mode kills every admitted
+mutant; no genuine bug reported \safe{}. \\
 \bottomrule
 \end{tabular}
+\caption{Independent robustness studies.  Each row is generated by a separate
+script and pinned by tests.}
+\label{tab:robustness}
 \end{table}
 
-All 8 models are verified as shape-safe with zero false positives
-(Table~\ref{tab:models}).  These models are architecturally correct, so
-the absence of reported errors is the expected result.
+The most important engineering property is not a single high recall number; it
+is the absence of easy counterexamples.  The project therefore attacks the tool
+from both sides: generate clean models and demand no false alarms, then inject
+real faults and demand no misses.  When these hunts find no natural
+disagreements, the repository still freezes a regression suite of minimal
+buggy/clean siblings so future changes cannot accidentally regress.
 
-\subsection{Bug Detection on Mutated Models}
+\subsection{Historical and mined bugs}
 
-To evaluate recall on single-theory bugs, we apply property-altering
-mutations to correct models (e.g., changing \texttt{out\_features},
-swapping kernel sizes, mismatching concatenation dimensions) and
-verify that \tguard{} detects them.  For cross-cutting multi-theory
-bugs, see Section~\ref{sec:cross-cutting}.
+The historical 60-bug corpus reports two clearly-labeled regimes.  In the
+default headline regime, \tg{} produces \rp{} verdicts on 53/60 bugs at the
+high-confidence threshold, with seven silent misses.  In the raw-refute regime,
+which lifts per-bug input shapes and allows CEGAR depth three, it refutes 56/60,
+55 of them high-confidence.  The audit harness recomputes both numbers from
+\path{reproducibility/reproduce_headline_60bug.json}.  The larger GitHub-mined
+snapshot is not a precision/recall benchmark by itself; it is a frozen,
+content-addressed source of real-world bug signatures and categories used to
+drive future corpus growth.
 
-\begin{table}[t]
-\centering
-\caption{Bug detection results on 18-benchmark suite (10 buggy, 8 correct).}
-\label{tab:bugdetect}
-\small
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-\textbf{Tool} & \textbf{Precision} & \textbf{Recall} &
-  \textbf{F1} & \textbf{FP} \\
-\midrule
-\tguard{}   & 0.900 & 0.900 & \textbf{0.900} & 1 \\
-TorchScript & 0.556 & 1.000 & 0.714 & 8 \\
-mypy        & 0.000 & 0.000 & 0.000 & 0 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\subsection{Operator and frontend coverage}
 
-\tguard{} achieves F1 = 0.900 on this single-theory suite (Table~\ref{tab:bugdetect}).
-The single false positive arises from a complex 4D \texttt{view}
-operation with symbolic dimensions that the current reshape
-analysis overapproximates.  TorchScript achieves perfect recall
-but produces 8 false positives (all 8 correct models are rejected
-by \texttt{torch.jit.script}).  mypy detects zero shape bugs, as
-expected for a tool without tensor dimension awareness.
-When bugs span multiple property domains (shape $\times$ device,
-shape $\times$ phase), no baseline is designed to detect these
-cross-cutting bug classes (all score F1 = 0.000 by design) while
-\tguard{} achieves F1 = 0.625 (Table~\ref{tab:crosscut}).
+Coverage is measured two ways.  The registry-level table tags 117 transfer
+functions by confidence.  The real-model frequency study asks how often those
+rules appear on 13 torchvision architectures: 94.86\% of 2,569 operator
+occurrences are covered.  The fx trace-success study asks whether the frontend
+can capture real models: 21/21 torchvision models trace and lower, totaling
+5,238 steps; unsupported operations are counted and reported, not ignored.
 
-\subsection{Cross-Family Generalization}\label{sec:crossfamily}
+\subsection{Localization and developer effort}
 
-A verifier that over-fits one shape idiom is not trustworthy. To test that
-\tguard{}'s verdicts generalise \emph{across} architecture families rather than a
-single pattern, we maintain a runtime-grounded regression corpus of matched
-clean/buggy \texttt{nn.Module} pairs spanning six structural families: MLP, CNN,
-attention, normalization, residual, and matmul. Every case carries
-\emph{runtime ground truth}, re-established on each run so the suite cannot be a
-rigged demo: a clean case must execute without error in eager PyTorch, and a
-buggy case must raise a real \texttt{RuntimeError} whose message contains a
-declared substring (e.g.\ \texttt{running\_mean should contain},
-\texttt{is invalid for input of size}, \texttt{mat1 and mat2 shapes cannot be
-multiplied}). Each case is content-addressed by SHA-256 so the corpus cannot
-silently drift. Only after the runtime label is confirmed do we score the static
-verdict. Across all families \tguard{} attains recall $1.0$ and precision $1.0$
-with zero false positives (Table~\ref{tab:crossfamily}); each family contributes
-at least one caught bug and no false negatives. Crucially, the frozen headline
-corpus of Section~\ref{sec:eval} is left untouched, so this generalization
-evidence is additive rather than a re-weighting of pinned numbers.
+For refuted real bugs with author-placed \texttt{\# BUG} markers, the
+localization proxy measures how many lines a developer inspects to reach the
+true bug.  Median assisted effort is two lines; median unaided effort is 7.5
+lines; the median reduction factor is 3.0 with a bootstrap interval of
+[1.33125, 5.875].  \tg{} helps on 12 of 14 bugs and hurts on two, which are kept
+in the artifact.  The repository also contains a pre-registered human-study
+protocol, because this proxy is not claimed to be a human RCT.
 
-\begin{table}[t]
-\centering
-\caption{Cross-family, runtime-grounded regression corpus. ``RT-GT'' marks that
-every case's clean/buggy label is re-validated against eager PyTorch on each run.
-\tguard{} catches every family's bug with no false positives.}
-\label{tab:crossfamily}
-\small
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-\textbf{Family} & \textbf{Clean} & \textbf{Buggy} & \textbf{TP} & \textbf{FP} & \textbf{FN} \\
-\midrule
-MLP            & 1 & 1 & 1 & 0 & 0 \\
-CNN            & 1 & 1 & 1 & 0 & 0 \\
-Attention      & 1 & 1 & 1 & 0 & 0 \\
-Normalization  & 1 & 2 & 2 & 0 & 0 \\
-Residual       & 1 & 1 & 1 & 0 & 0 \\
-Matmul         & 1 & 1 & 1 & 0 & 0 \\
-\midrule
-\textbf{Total} & 6 & 7 & 7 & 0 & 0 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\subsection{Statistical testing}
 
-\subsection{Baseline Comparison}
+\path{evaluation/significance.py} runs paired exact McNemar tests with
+Holm-Bonferroni correction and paired bootstrap confidence intervals over the
+confusion-matrix predictions.  On the 16-case frozen corpus, \tg{} significantly
+beats the no-op floor after correction, never loses a discordant pair to any
+baseline, and does not overclaim significance over PyTea at this sample size.
+\path{reproducibility/effect_sizes.py} adds paired effect sizes and both FWER
+and FDR corrections.  \path{reproducibility/statistical_power.py} reports
+sample-size justifications and rule-of-three bounds for zero-false-alarm claims.
 
-Table~\ref{tab:baseline} compares \tguard{} against five existing
-tools along capability dimensions.  The unique rows---device
-checking, phase-aware verification, parametric certificates, and
-proof certificates---correspond directly to \tguard{}'s ability to
-catch cross-cutting bugs (Section~\ref{sec:cross-cutting}).
+\subsection{Scaling}
 
-\begin{table}[t]
-\centering
-\caption{Capability comparison with existing tools.
-  $\checkmark$ = supported, $\times$ = not supported,
-  $\triangle$ = partial.}
-\label{tab:baseline}
-\small
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-\textbf{Capability} &
-  \rotatebox{70}{\tguard{}} &
-  \rotatebox{70}{jaxtyping} &
-  \rotatebox{70}{PyTEA} &
-  \rotatebox{70}{TorchScript} &
-  \rotatebox{70}{mypy / Pyright} \\
-\midrule
-Static analysis (no execution)    & $\checkmark$ & $\times$ & $\checkmark$ & $\triangle$ & $\checkmark$ \\
-Zero annotations required         & $\checkmark$ & $\times$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
-Shape dimension checking          & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\triangle$ & $\times$ \\
-Device placement checking         & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ \\
-Phase-aware (train/eval)          & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ \\
-Symbolic dimension support        & $\checkmark$ & $\checkmark$ & $\triangle$ & $\times$ & $\times$ \\
-Formal soundness guarantee        & $\checkmark$ & $\times$ & $\triangle$ & $\times$ & $\times$ \\
-Counterexample generation         & $\checkmark$ & $\times$ & $\checkmark$ & $\times$ & $\times$ \\
-Parametric (all input sizes)      & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ \\
-Proof certificates                & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\times$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+The scaling study sweeps feed-forward depth from one to 64 layers.  The
+structural-work metric is linear in depth; the wall-clock companion has a
+log-log scaling exponent of 1.69 and $R^2=0.988$, below cubic and far from an
+exponential blow-up.  Median wall time grows from about 12 ms at depth one to
+about 4.26 s at depth 64 on the recorded host.
 
-\paragraph{False positive analysis.}
-Across the full 32-benchmark CEGAR ablation evaluation, \tguard{} achieves
-precision 1.000 (zero false positives).  The single false positive
-on the 18-benchmark comparison suite arises from a \texttt{view}
-operation with 4 symbolic dimensions where the product-equality
-constraint $\prod s_i = \prod d_j$ is overapproximated in the
-current NIA encoding.  This is a known limitation addressable by
-tighter reshape analysis.
+\section{Reproducibility machinery}
 
+\subsection{One command for the evidence base}
 
-\subsection{PyTEA + Real-Model Benchmarks}\label{sec:pytea-bench}
+The \path{Makefile} exposes \texttt{make reproduce}, \texttt{make
+reproduce-check}, \texttt{make reproduce-full}, and task-specific targets such
+as \texttt{make precision-recall}, \texttt{make sound-fp},
+\texttt{make diff-fuzz}, \texttt{make neg-fuzz}, and \texttt{make
+paper-evidence}.  The orchestrator \path{reproducibility/reproduce_all.py}
+regenerates deterministic generated docs, tables, corpus manifests, benchmark
+artifacts, and the headline 60-bug figure before running the numeric-claim
+audit.
 
-The evaluations above use \emph{synthetic} shape bugs injected by
-mutation.  To assess \tguard{} on \emph{naturally occurring} tensor
-errors, we assemble a 44-test benchmark combining two sources:
-(i)~34 test cases drawn from the PyTEA~\cite{pytea} real-world
-regression suite (covering ResNet, BERT, GPT-2, VGG, U-Net, and
-DeepLab models with known shape bugs filed against PyTorch, ONNX
-Runtime, and HuggingFace), and (ii)~10 synthetic model pairs
-exercising dynamic shape inference (\texttt{-1}~dimensions in
-\texttt{view}/\texttt{reshape}), \texttt{einsum} index
-contraction, and multi-operand broadcast semantics---capabilities
-absent from the earlier benchmarks.
+\subsection{Numeric-claim audit}
 
-\begin{table}[t]
-\centering
-\caption{PyTEA + real-model benchmark results (44 test cases).
-  Precision, Recall, and F1 are computed over the bug/no-bug
-  classification of each test case.}
-\label{tab:pytea-bench}
-\small
-\begin{tabular}{@{}lrrrrrrrc@{}}
-\toprule
-\textbf{Test Source} & \textbf{Tests} & \textbf{TP} & \textbf{FP} &
-  \textbf{FN} & \textbf{TN} & \textbf{Prec.} & \textbf{Rec.} &
-  \textbf{F1} \\
-\midrule
-PyTEA real-world   & 34 & 4 & 1 & 1 & 28 & 0.800 & 0.800 & 0.800 \\
-Synthetic models   & 10 & 1 & 0 & 1 &  8 & 1.000 & 0.500 & 0.667 \\
-\midrule
-\textbf{Combined}  & \textbf{44} & \textbf{5} & \textbf{1} &
-  \textbf{2} & \textbf{36} & \textbf{0.833} & \textbf{0.714} &
-  \textbf{0.769} \\
-\bottomrule
-\end{tabular}
-\end{table}
+Every headline numeric claim in \path{README.md}, the conference paper, and the
+workshop paper is registered in \path{reproducibility/audit_numeric_claims.py}.
+For each claim, the harness checks that the number still appears in the cited
+source and recomputes it from the backing artifact.  Claims can be
+\texttt{VERIFIED}, \texttt{MISMATCH}, \texttt{QUALIFIED\_REGIME},
+\texttt{QUALIFIED\_ENV}, \texttt{ORPHAN}, or \texttt{SOURCE\_MISSING}.  The
+current committed audit has no uncovered README numeric tokens.
 
-Table~\ref{tab:pytea-bench} summarises the results.  Overall,
-\tguard{} achieves precision~0.833, recall~0.714, and
-F1~0.769 across all 44~tests, with an average verification time
-of 154\,ms per test.
+\subsection{Artifact-evaluation capsule}
 
-\paragraph{Precision (83.3\%).}
-The single false positive arises from an overapproximation in
-broadcast analysis where a symbolic batch dimension is
-conservatively flagged as incompatible.  An 83\% precision rate
-corresponds to a low false-alarm burden: roughly one spurious
-warning per six genuine bugs, which is acceptable in a CI/CD
-pre-merge gate setting.
+The repository includes an artifact-evaluation package under
+\path{docs/artifact/} and a reproducibility capsule with pinned wheel locks,
+a Dockerfile, and \path{capsule/reproduce.sh}.  The capsule verifies the live
+interpreter, regenerates deterministic artifacts, checks byte identity, and
+reruns the numeric audit.  Badge evidence is mapped to in-tree paths for
+Available, Functional, Reusable, and Results Reproduced criteria.
 
-\paragraph{Recall (71.4\%).}
-Two bugs are missed (FN\,=\,2).  Both involve \emph{symbolic
-dimension inequalities} of the form $n > k$ that propagate through
-multiple layers before causing a mismatch.  PyTEA detects these by
-concretising symbolic dimensions through constraint propagation,
-whereas \tguard{}'s current QF\_LIA encoding does not track
-non-linear relationships between symbolic sizes.  Extending the
-stride or permutation theories to encode such path-sensitive
-constraints is a clear direction for future work.
+\subsection{Dashboard and release gates}
 
-\paragraph{New capabilities.}
-Three analysis extensions enabled by these benchmarks are not
-exercised by the earlier synthetic suite:
-\begin{itemize}[leftmargin=1.5em,nosep]
-  \item \textbf{Dynamic shape inference}: correct handling of
-    \texttt{-1} dimensions in \texttt{view} and \texttt{reshape},
-    where the unknown extent is inferred from the product-equality
-    constraint $\prod s_i = \prod d_j$.
-  \item \textbf{Einsum support}: verification of Einstein summation
-    index strings, including implicit broadcasting and contraction
-    over repeated indices.
-  \item \textbf{Broadcast analysis}: multi-operand broadcasting
-    following NumPy semantics, with symbolic dimension alignment
-    checked via Z3.
-\end{itemize}
+\path{docs/dashboard/index.html} is a static site generated entirely from
+committed JSON artifacts.  \path{evaluation/dashboard_baseline.json} freezes
+quality and integrity metrics so regressions are reviewable diffs rather than
+silent changes.  \path{scripts/benchmark_delta.py} compares release snapshots
+with metric-direction awareness: recall must not drop, false positives must not
+rise, integrity populations must not shrink, and machine-dependent wall-clock
+metrics are reported without gating.  Coverage gates hold selected public API
+and integration modules above 90\% line coverage.
 
-\paragraph{Comparison with PyTEA.}
-PyTEA reports precision~0.95 and recall~0.89 on its own regression
-suite by concretising symbolic dimensions to small constants.
-\tguard{}'s lower recall (0.714 vs.\ 0.89) reflects the cost of
-fully parametric verification: we prove safety for \emph{all}
-dimension values rather than checking a finite sample.  In
-exchange, \tguard{} provides formal safety certificates and
-catches multi-theory bugs (device, phase) that PyTEA does not
-model.  The two tools are complementary: PyTEA excels at
-single-theory symbolic shape reasoning, while \tguard{} covers the
-cross-cutting property space.
+\section{Deployment and governance}
 
+\subsection{Packaging}
 
-\subsection{SOTA Baseline Comparison}\label{sec:sota-bench}
+\tg{} is packaged as a typed Python project with \texttt{py.typed}, a pinned
+\texttt{z3-solver} dependency range, a CLI entrypoint, a pre-commit hook, and a
+pytest plugin.  The roadmap includes PyPI, conda-forge, Docker, and pipx paths;
+the repository already contains the policy and harness pieces needed to make
+those releases reproducible.
 
-To comprehensively evaluate \tguard{}'s SMT-based shape verification
-against state-of-the-art baselines, we construct a 30-program
-benchmark suite mimicking real-world PyTorch/TensorFlow patterns.
-The suite includes 20 correctly-shaped programs and 10 with
-intentional shape bugs, covering:
+\subsection{Community benchmark and stubs}
 
-\begin{itemize}[leftmargin=1.5em,nosep]
-  \item \textbf{CNN forward passes}: conv→pool→flatten→linear chains
-    with shape mismatches in linear layer input dimensions
-  \item \textbf{Attention mechanisms}: QKV matrix multiplication with
-    incompatible hidden dimensions (256 vs 768)  
-  \item \textbf{ResNet skip connections}: element-wise addition with
-    mismatched channel counts (64 vs 32)
-  \item \textbf{LSTM cell operations}: hidden state projection with
-    wrong input feature size (256 vs 512)
-  \item \textbf{Broadcasting rules}: tensor addition with incompatible
-    trailing dimensions for NumPy-style broadcasting
-\end{itemize}
+The leaderboard scores tools on the frozen real benchmark corpus by recomputing
+metrics from raw verdict files.  External tools cannot self-report inflated
+numbers.  The community stub registry gives framework and library authors a
+safe path to extend coverage: manifests must be declarative, carry provenance,
+and ship executed conformance cases.  The governance docs make reviewability
+part of the technical contract.
 
-We compare \tguard{}'s Z3-based SMT verification against four
-\emph{simulated} baseline strategies: (1) Python runtime shape
-checking via try-catch execution, (2) static shape propagation with
-symbolic dimension tracking, (3) random input testing with 70\%
-bug detection probability, and (4) MyPy-style annotation checking.
-\textbf{Note:} These baselines are simulated analysis classes, not
-runs of specific external tools.  This is a controlled evaluation
-to characterize TensorGuard's coverage relative to idealized
-baseline strategies; it is not a head-to-head comparison against
-existing tools.
+\subsection{Documentation and tutorials}
 
-\begin{table}[t]
-\centering
-\caption{Controlled evaluation on 30-program benchmark suite
-  (20 correct, 10 buggy programs).  Baselines are simulated
-  analysis strategies, not external tool runs.}
-\label{tab:sota-bench}
-\small
-\begin{tabular}{@{}lrrrrrc@{}}
-\toprule
-\textbf{Method} & \textbf{Prec.} & \textbf{Recall} & \textbf{F1} &
-  \textbf{FPR} & \textbf{Time (ms)} & \textbf{Coverage} \\
-\midrule
-SMT (\tguard{})     & \textbf{1.000} & \textbf{1.000} & \textbf{1.000} & 0.000 & 3.2  & All bugs \\
-Runtime Checking    & 1.000 & 0.600 & 0.750 & 0.000 & 0.0  & Execution errors \\
-Static Analysis     & 1.000 & 0.200 & 0.333 & 0.000 & 0.0  & Type mismatches \\
-Random Testing      & 1.000 & 0.900 & 0.947 & 0.000 & 0.0  & Probabilistic \\
-\bottomrule
-\end{tabular}
-\end{table}
+The README intentionally surfaces limitations near the feature list.  The
+Getting Started guide, "what it cannot do yet" document, Colab-style tutorials,
+examples gallery, artifact appendix, user-study protocol, PyTorch RFC draft,
+growth playbook, and dashboard are all tested for path existence or executable
+snippets where appropriate.  Documentation is treated as a checked artifact,
+not post-hoc marketing prose.
 
-Table~\ref{tab:sota-bench} shows \tguard{} achieves perfect precision
-(1.0) and recall (1.0), catching all 10 shape bugs with zero false
-positives on this controlled benchmark.  Because the baselines are
-simulated strategies rather than runs of specific tools, this result
-demonstrates the \emph{potential} of SMT-based verification relative
-to idealized analysis categories, not a direct comparison against
-existing tools.
+\section{Threats to validity and limitations}
 
-The SMT encoding detects dimension mismatches in matrix
-multiplication (attention bugs), linear layer input size violations
-(CNN bugs), broadcasting incompatibilities (ResNet skip connections),
-and hidden state dimension errors (LSTM bugs) through Z3 constraint
-solving.
+\paragraph{Not all PyTorch is in scope.}
+PyTorch is too large for a single static checker to model completely.  The
+verifiable fragment is explicit, and unsupported constructs produce \unknown{}
+in sound mode.  This means \safe{} is meaningful, but \unknown{} is a normal and
+expected answer on dynamic Python.
 
-Runtime checking achieves high precision (1.0) but moderate recall
-(0.6), missing bugs that don't manifest during concrete execution
-with fixed input shapes.  Static analysis has low recall (0.2),
-detecting only explicit dimension mismatches between integer
-constants.  Random testing shows surprisingly high recall (0.9) but
-lacks the systematic coverage guarantees of formal verification.
+\paragraph{Some domains are diagnostic or partial.}
+Phase facts are useful for train/eval diagnostics, but the current marginal
+contribution study classifies phase as diagnostic-only where it does not
+independently refute.  The gradient domain catches \texttt{detach}-style
+forward-flow bugs but currently misses post-construction parameter freezes such
+as \texttt{requires\_grad=False}; those misses are tagged in the artifact.
 
-\tguard{}'s 3.2ms average verification time demonstrates that SMT
-solving scales efficiently to realistic tensor operation sequences,
-with most constraint sets decided in sub-second time.  On this
-controlled benchmark, precision is 1.0 (zero false positives),
-though the real-world false positive rate is higher (see
-Section~\ref{sec:pytea-bench} for results on naturally occurring
-bugs).
+\paragraph{Generated corpora are not natural distributions.}
+Generated and mutated corpora are valuable because they are redistributable and
+have executable labels, but they do not replace naturally-occurring bugs.  The
+project therefore reports them alongside real benchmarks, GitHub-mined issue
+snapshots, and natural-distribution clean samples.
 
+\paragraph{Some regeneration is environment-qualified.}
+Lean, CUDA, and HuggingFace model downloads are not required for the standard
+CPU-only reproduction path.  Claims depending on those environments are
+recorded with regeneration commands and classified as environment-qualified by
+the audit.
 
-%% ============================================================
-\section{Empirical Rigor: Ablations, Robustness, Reproducibility}
-\label{sec:rigor}
+\paragraph{Formal proof scope is explicit.}
+Lean proves many central rules and audits the public theorem corpus, but the
+entire Python implementation, parser, and every long-tail handler are not all
+inside a single theorem.  The soundness-footprint artifacts state which verdicts
+traverse Lean-audited, pen-and-paper, tested-only, or uncovered handlers.
 
-Beyond raw precision/recall, a verifier that aspires to be trusted in a PyTorch
-workflow must answer four further questions: \emph{which} parts of the design
-earn their keep, whether the headline numbers survive a held-out split and
-multiple-comparison correction, whether verdicts are stable across the torch and
-Python versions users actually run, and whether everything regenerates from one
-command. Every number in this section is produced by a deterministic harness
-under \texttt{reproducibility/} with a pinned seed and a \texttt{-{}-check} mode
-that fails CI on drift.
+\section{Related tools}
 
-\subsection{Domain ablation: every domain is necessary}\label{sec:ablation-domain}
-\tguard{}'s five-theory product (shape, dtype, device, gradient, phase) is
-ablated by a leave-one-domain-out (LODO) study over a stratified corpus of
-$n=300$ cases (60 per domain; seed \texttt{20240604},
-\texttt{reproducibility/domain\_ablation.py}). For each of the four
-\emph{verification} domains, full-product recall on its bug class is $1.0$ while
-LODO recall collapses to $0$---i.e.\ the marginal contribution of every domain is
-exactly $1.0$ and no other domain compensates for a missing one (the recall
-matrix is diagonal). The phase domain is confirmed \emph{diagnostic-only}: it
-registers train/eval well-formedness but refutes nothing (recall $0.0$ on its own
-``class''), and we report it as such rather than overclaiming. The domains are
-therefore empirically orthogonal and each is independently necessary.
+\paragraph{Runtime shape libraries.}
+Libraries such as jaxtyping and torchtyping check tensor contracts at runtime
+and often require annotations.  They are useful when the annotated path is
+executed, but they do not statically prove unexecuted branches and do not cover
+device, phase, export, or distributed hazards by default.
 
-\subsection{CEGAR refinement-depth ablation}\label{sec:ablation-cegar}
-Sweeping the predicate-refinement budget from depth $0$ to $6$ over 16 conflict
-and 8 clean cases (\texttt{reproducibility/cegar\_depth\_ablation.py}) shows the
-intended profile: recall is \emph{depth-invariant} (all 16 conflicts detected
-even at depth $0$), while \emph{precision} rises from depth $0$ and reaches its
-knee at depth $1$, where the number of refined-contract diagnoses jumps from $0$
-to $16$ and then plateaus. The loop saturates at $40$ total iterations, well
-within the Lean-proved bound of Section~\ref{sec:lean}. Depth~$1$ is thus the
-cost/precision sweet spot, and refinement buys \emph{diagnosis quality}, not
-recall.
+\paragraph{Static tensor analyzers.}
+PyTea is the closest academic baseline for static PyTorch shape checking.  The
+repository builds and runs PyTea live where possible, reports a shape-only
+subcorpus where tools tie, and separately reports where \tg{}'s additional
+domains catch bugs PyTea is not designed to model.
 
-\subsection{Pre-registered blind split and statistical correction}
-\label{sec:blind}
-To rule out tuning-set overfitting we froze a held-out split of $186$ cases
-($138$ buggy, $48$ clean), disjoint from the development set, and pre-registered
-its SHA-256 manifest. The observed manifest hash matches the registered one
-(\texttt{df881a\dots}), and on the blind split both \texttt{sound} and
-\texttt{balanced} modes confirm all three pre-registered hypotheses: H1 (no false
-positive: zero clean models flagged), H2 (recall floor $\ge 0.9$ met), and H3 (no
-overfitting gap: dev$-$blind recall gap $\le 0.1$)
-(\texttt{reproducibility/blind\_split\_eval.py}). Every comparative claim against
-a baseline additionally carries an effect size and a multiple-comparison
-correction: over a family of four McNemar comparisons, Holm and
-Benjamini--Hochberg agree on the set of significant results
-(\texttt{reproducibility/effect\_sizes.py}), so the headline advantages are not
-artifacts of uncorrected multiplicity.
+\paragraph{PyTorch tracing and export.}
+\texttt{torch.fx}, \texttt{torch.export}, TorchScript, and torch.compile can
+surface shape failures by tracing or compiling with concrete examples.  They are
+powerful dynamic or capture-time tools, but they require instantiation and
+example inputs.  \tg{} uses these paths as frontends and baselines while
+retaining an input-free static path.
 
-\subsection{Cross-version and cross-interpreter robustness}\label{sec:robust}
-Because the analyzer is \emph{static} and never executes the model, its verdict
-should not depend on the installed torch build. We confirm this directly: across
-the torch $2.1.0$ through $2.9.1$ wheel matrix (nine versions), the verdict on a
-$227$-case corpus is byte-identical to a pinned baseline digest
-(\texttt{reproducibility/cross\_version\_stability.py}). Verdicts are likewise
-invariant under Python hash-seed randomization---a single distinct verdict digest
-across randomized runs and the supported Python $3.9$--$3.14$ matrix
-(\texttt{reproducibility/cross\_python\_determinism.py})---so results are
-reproducible bit-for-bit regardless of interpreter.
+\paragraph{General static analyzers.}
+Mypy, Pyright, and similar type checkers catch Python type errors but do not
+reason about tensor dimensions or cross-device placement.  \tg{} is
+complementary: it focuses on tensor metadata contracts rather than replacing
+Python type checking.
 
-\subsection{Scaling}\label{sec:scaling}
-End-to-end wall-clock on synthetic models of growing depth (width $32$, three
-reps per size) scales \emph{polynomially, not exponentially}: a log--log fit of
-median latency versus depth has exponent $1.69$ with $R^2=0.988$
-(\texttt{reproducibility/scaling\_walltime.json}), i.e.\ sub-quadratic. Median
-latency grows from $12$\,ms at depth $1$ to $4.3$\,s at depth $64$
-(Table~\ref{tab:scaling}), comfortably within an interactive budget for the model
-sizes the corpus represents.
+\section{What makes the repository unusually strong}
 
-\begin{table}[t]
-\centering\small
-\caption{Median end-to-end verification latency vs.\ model depth
-(\texttt{sound} mode, width $32$).}
-\label{tab:scaling}
-\begin{tabular}{@{}rrrrrrr@{}}
-\toprule
-depth & 1 & 4 & 16 & 24 & 32 & 64 \\
-\midrule
-median (ms) & 12 & 43 & 372 & 1165 & 1180 & 4260 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Reproducibility capsule}\label{sec:capsule}
-The full evidence base regenerates from a single command. \texttt{make
-reproduce} re-runs every deterministic harness; \texttt{make paper-evidence}
-additionally rebuilds all tables/figures and verifies, via a regenerable
-evidence index, that every wired artifact is present and that no generator has
-silently disappeared. Artifacts are content-addressed and a Docker capsule pins
-the wheel set, so a reviewer obtains byte-identical \texttt{.json} outputs. This
-is what lets the claims above be checked rather than trusted.
-
-
-%% ============================================================
-\section{Lean~4 Mechanization}\label{sec:lean}
-
-The repository ships a \emph{compiled}, \texttt{sorry}-free Lean~4
-formalization (pinned \texttt{lean-toolchain} \texttt{v4.14.0},
-\texttt{lakefile.lean}, \texttt{lake build} green) comprising 28 modules,
-$\sim$6{,}000 lines and 371 theorems/lemmas. Soundness is not asserted by
-inspection: \texttt{TensorGuard/AxiomAudit.lean} runs \texttt{\#print axioms}
-on the headline results, and---crucially---\texttt{tests/test\_lean\_whole\_%
-pipeline\_audit.py} makes the audit \emph{total and drift-proof}: it
-auto-discovers \emph{every one} of the library's 371 public theorems, elaborates
-a \texttt{\#print axioms} for each through the Lean kernel, and asserts each
-depends only on the trusted kernel set $\{\texttt{propext},
-\texttt{Classical.choice}, \texttt{Quot.sound}\}$ and \emph{never} on
-\texttt{sorryAx}. A new theorem hiding a \texttt{sorry} or an exotic axiom is
-caught automatically, with no hand-maintained list---the machine-checked witness
-behind the ``sorry-free'' claim.
-
-The mechanization covers seven components:
+A typical research prototype has one impressive idea and a thin evaluation.
+\tg{} has a different shape: its claim is that static tensor verification can be
+made operationally trustworthy.  That requires several reinforcing layers:
 
 \begin{enumerate}[leftmargin=2em]
-  \item \textbf{Operator transfer-function soundness.} Per-operator rules for
-    the shape DSL (\texttt{linear}, \texttt{view}, \texttt{broadcast\_add},
-    \texttt{matmul}, \texttt{transpose}, \texttt{permute}, \texttt{sum},
-    cross-entropy, argmax, \dots) are proved sound against a denotational
-    reference (\texttt{Soundness.lean}, \texttt{Extended.lean},
-    \texttt{V5OperatorRules.lean}, \texttt{MatmulSound.lean}).
-
-  \item \textbf{Reduced-product abstraction.}
-    \texttt{ReducedProduct.lean} proves the product transfer functions are
-    reductive and monotone, the meet is a component-wise lower bound, and the
-    $\gamma$-concretization is sound (the reduction preserves concretization)---
-    the formal core of the five-theory product domain.
-
-  \item \textbf{CEGAR termination and a tight bound.}
-    \texttt{CegarBound.lean} mechanizes that the predicate-refinement loop
-    terminates inside a finite predicate universe and obeys
-    $\mathit{iterations} \le 1 + |\mathit{discovered\ predicates}|$, matching
-    the measured harness one-to-two orders of magnitude below the naive bound.
-
-  \item \textbf{Known-unsoundness boundary, made precise.} The two documented
-    gaps are formalized rather than hidden: \textbf{U2} (SAFE-on-infeasible) is
-    \emph{closed} by a Lean-checked fix that abstains on infeasible refinements
-    (\texttt{CegarInfeasible.lean}), and \textbf{U1} (the verifiable-fragment
-    boundary) is proved \emph{mode-dependent}---\texttt{sound} mode abstains on
-    every fragment violation and is sound, while the permissive modes' recall
-    trade-off is made exact (\texttt{FragmentModes.lean}).
-
-  \item \textbf{Non-shape transfer functions (this work).}
-    \texttt{DeviceDtype.lean} models the four scalar algebras the verifier runs
-    alongside shape---device, element dtype, training phase and gradient
-    flow---each a finite lattice with a distinguished $\top$ (\texttt{unknown})
-    element, exactly as \texttt{model\_checker.py} implements them. For every
-    algebra we prove the two properties the engine relies on: \emph{no false
-    positive} (an \texttt{unknown} operand never flags) and \emph{refutation
-    soundness} (a flagged bug witnesses a genuine PyTorch runtime error over
-    every concretization), plus the structural laws the frontends depend on
-    (device-move round-trips, \texttt{pin\_memory} preservation, dtype
-    elementwise promotion is total/commutative/never-flags, \texttt{detach}
-    zeroes the gradient bit). Both guarantees \emph{lift to the reduced
-    product}: it flags iff some component flags, and inherits no-false-positive
-    and refutation soundness.
-
-  \item \textbf{SMT-encoding faithfulness and end-to-end auditing (this work).}
-    The previous component proves the \emph{abstract} algebras sound; this one
-    closes the gap to the \emph{concrete} constraints the solver discharges and
-    to the rest of the pipeline. \texttt{SmtEncoding.lean} models the
-    enumeration-sort equality constraint the verifier hands Z3 for every
-    device/phase/gradient check (\texttt{encode\_device\_constraint},
-    \texttt{encode\_phase\_constraint},
-    \texttt{encode\_gradient\_constraint}) and proves it \emph{faithful}: the
-    pinned same-value formula is satisfiable iff the two endpoints are equal, so
-    the solver's UNSAT verdict---a reported mismatch---holds iff the endpoints
-    genuinely differ, and coincides exactly with the abstract \texttt{*Bug}
-    predicate of the previous component (\texttt{device\_smt\_matches\_devBug}).
-    \texttt{CrossDomain.lean} does the same for the
-    \texttt{encode\_cross\_domain\_constraint} encoder, proving a device-transfer
-    op preserves shape exactly while leaving the device free, and a non-transfer
-    op preserves device exactly while leaving shape free. The dtype promotion
-    join is strengthened to a fully proved semilattice (associative,
-    unknown-absorbing), justifying the order-independent never-flagging
-    elementwise transfer, and \texttt{GradFlow.lean} lifts the single-op
-    \texttt{detach} check to the gradient-flow transfer over an entire chain of
-    ops, proving it compositional with absorbing resets. Finally, three
-    \emph{chain-transfer} modules lift the per-op scalar checks to the op
-    sequences a \texttt{forward} actually executes and cross-check them against
-    the live framework: \texttt{DevicePlacement.lean} proves the device tag is
-    last-move-wins and a binary op is valid iff its operands share a device
-    (cross-device \emph{always} flagged), \texttt{PhaseFlow.lean} proves the
-    \texttt{train}/\texttt{eval} bit is last-setter-wins with child propagation,
-    and \texttt{RankTransfer.lean} proves the reduction rank transfer is monotone
-    non-increasing with closed form $\mathit{rank}_0 - \#\{\texttt{keepdim=False}\}$.
-    Three further chain-transfer modules complete the per-\texttt{forward} scalar
-    algebras: \texttt{DtypePromoteChain.lean} lifts the promotion semilattice to a
-    multi-operand fold and proves it an upper bound of every operand
-    (promotion never narrows) and order-independent, cross-checked against
-    \texttt{torch.promote\_types}; \texttt{BroadcastChain.lean} proves the
-    per-dimension broadcast fold commutative with \texttt{1} a two-sided identity,
-    the compatible size exactly the \texttt{max}, and refutation-sound (flags iff
-    genuinely incompatible), cross-checked against \texttt{torch.broadcast\_shapes};
-    and \texttt{ContigFlow.lean} proves the contiguity bit transfer---\texttt{.t()}
-    an involution, \texttt{.contiguous()} history-erasing---cross-checked against
-    the live torch stride engine. The faithfulness of the matmul dtype-equality
-    encoding is likewise machine-checked (\texttt{dtype\_smt\_matches\_dtMatmulBug})
-    and validated on the real Z3 solver and the torch dispatcher.
-    These results narrow the
-    trusted computing base: the previously-trusted faithfulness of the device,
-    phase, gradient and dtype enum encodings is now \emph{proved}.
-
-  \item \textbf{Per-operator shape rules (this work).}
-    The structural shape operators every real model uses are machine-checked the
-    same way and each cross-checked against \emph{both} real torch and the
-    verifier's own propagator. \texttt{Flatten.lean} proves
-    \texttt{torch.flatten} is \emph{numel-preserving} (the collapsed span equals
-    the product of the spanned dims), obeys the rank law
-    $|\mathit{prefix}|+1+|\mathit{suffix}|$, and that a full flatten yields the
-    single dimension $[\textsf{numel}]$. \texttt{CatRule.lean} proves
-    \texttt{torch.cat} is admissible \emph{iff} the non-axis dims coincide, with
-    the output axis the \emph{sum} of the operands' axis sizes and numel
-    \emph{additive} under compatibility (commutative/associative). 
-    \texttt{EmbeddingRule.lean} proves \texttt{nn.Embedding} raises the rank by
-    one with trailing dim \texttt{embedding\_dim} and that the index guard passes
-    iff every index is \texttt{< num\_embeddings} (range-monotone).
-    \texttt{ReshapeInfer.lean} proves the \texttt{view}/\texttt{reshape}
-    \texttt{-1}-inference equals $\textsf{numel}/\!\prod\mathit{known}$ and is
-    admissible iff $\prod\mathit{known}$ is positive and divides the numel ---
-    so the reshape conserves the element count exactly. The same treatment now
-    covers the \emph{parametric} layers every network is built from:
-    \texttt{LinearRule}, \texttt{Conv1d}/\texttt{Conv2d} and pooling prove the
-    output-size formulas (identity at $1{\times}1$ stride-$1$, monotone in the
-    input, bounded by the padded input, and the verifier's positive-output
-    guard), \texttt{ConvTranspose} proves the dual \emph{upsampling} lower bound
-    (transpose conv never shrinks), \texttt{LayerNormRule}/\texttt{BatchNormRule}
-    prove shape preservation plus the suffix/feature guards,
-    \texttt{PixelShuffle} proves the rearrangement is numel-preserving and
-    admissible iff the channel count is divisible by $r^2$, and
-    \texttt{Unflatten} proves the numel-preserving \emph{inverse} of flatten.
-    Each is replayed on real
-    tensors (and the matching \texttt{\_propagate\_*}/\texttt{compute\_reshape\_%
-    shape}) where an incompatible case makes torch \emph{raise} precisely when
-    the Lean guard flags it.
+  \item a strict contract that refuses to overclaim;
+  \item transfer functions tagged by confidence;
+  \item real and generated corpora with executable labels;
+  \item fuzzing, mutation, dispatcher differential tests, and regression
+  minimization;
+  \item formal proofs for the rules most likely to cause unsoundness;
+  \item claim audits so prose cannot drift from artifacts;
+  \item CI gates that make benchmark regressions reviewable;
+  \item adoption surfaces that integrate with how developers actually ship
+  PyTorch code.
 \end{enumerate}
 
-\begin{table}[t]
-\centering\small
-\caption{Machine-checked soundness modules added in this work (all
-\texttt{sorry}-free, \texttt{propext}-only, each gated by a Python conformance
-test against real code).}
-\label{tab:lean-new}
-\begin{tabular}{@{}llp{4.3cm}@{}}
-\toprule
-Lean module & Cross-check & Guarantee \\
-\midrule
-\texttt{DeviceDtype.lean}  & live verifier + torch & 4 algebras: no-FP + refutation-sound; reduced product \\
-\texttt{SmtEncoding.lean}  & real Z3 & device/phase/grad enum encoding UNSAT $\Leftrightarrow$ endpoints differ \\
-\texttt{CrossDomain.lean}  & real Z3 & transfer preserves shape / non-transfer preserves device, exactly \\
-\texttt{GradFlow.lean}     & real autograd & \texttt{requires\_grad} chain transfer; compositional, absorbing resets \\
-\texttt{DevicePlacement.lean} & real torch (cpu/mps) & device-tag chain; last-move-wins; binary op valid $\Leftrightarrow$ same device \\
-\texttt{PhaseFlow.lean}    & real \texttt{nn.Module} & train/eval bit chain; last-setter-wins, child propagation \\
-\texttt{RankTransfer.lean} & real torch \texttt{sum} & reduction rank chain; monotone, closed-form rank drop \\
-\texttt{DtypePromoteChain.lean} & \texttt{torch.promote\_types} & promotion fold; upper bound of every operand, order-independent \\
-\texttt{BroadcastChain.lean} & \texttt{torch.broadcast\_shapes} & per-dim broadcast fold; \texttt{1} identity, compat $=\max$, flags iff incompatible \\
-\texttt{ContigFlow.lean} & real torch strides & contiguity bit chain; \texttt{.t()} involution, \texttt{.contiguous()} history-erasing \\
-\texttt{SmtEncoding.lean} (dtype) & real Z3 + torch matmul & matmul dtype encoding UNSAT $\Leftrightarrow$ dtypes differ $\Leftrightarrow$ \texttt{dtMatmulBug} \\
-\texttt{Flatten.lean} & torch + \texttt{\_propagate\_flatten} & numel-preserving span collapse; rank law; full flatten $=[\textsf{numel}]$ \\
-\texttt{CatRule.lean} & real \texttt{torch.cat} & admissible $\Leftrightarrow$ non-axis dims match; axis/numel additive \\
-\texttt{EmbeddingRule.lean} & real \texttt{nn.Embedding} & rank $+1$, trailing $=$ \texttt{embedding\_dim}; index guard iff in range \\
-\texttt{ReshapeInfer.lean} & torch + \texttt{compute\_reshape\_shape} & \texttt{-1}-inference $=\textsf{numel}/\!\prod\!\mathit{known}$; valid iff it divides \\
-\texttt{LinearRule.lean} & real \texttt{nn.Linear} & rank preserved, last dim $=$ \texttt{out\_features}; \texttt{in\_features} guard \\
-\texttt{Conv2d/Conv1d.lean} & real \texttt{nn.Conv$\{1,2\}$d} & spatial formula: identity, monotone, padded-input bound, positive-output guard \\
-\texttt{Pool2d.lean} & real \texttt{nn.MaxPool2d}/\texttt{AvgPool2d} & pooling spatial formula; channel-preserving \\
-\texttt{ConvTranspose.lean} & real \texttt{nn.ConvTranspose1d} & length formula; upsampling lower bound (never shrinks) \\
-\texttt{LayerNorm/BatchNormRule} & real \texttt{nn.\{Layer,Batch\}Norm} & shape-preserving; suffix / feature-count guard \\
-\texttt{PixelShuffle.lean} & real \texttt{nn.PixelShuffle} & numel-preserving; admissible $\Leftrightarrow r^2 \mid C_{\mathrm{in}}$, $C_{\mathrm{out}}=C_{\mathrm{in}}/r^2$ \\
-\texttt{AdaptivePool.lean} & real \texttt{nn.AdaptiveAvgPool2d} & spatial $=$ target for any input; idempotent \\
-\texttt{Unflatten.lean} & real \texttt{nn.Unflatten} & numel-preserving inverse of flatten; size guard \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Conformance: proofs cross-checked against real code.}
-Each soundness module is paired with a Python test that mirrors the Lean
-\emph{decision} function and asserts the \emph{live} system reproduces its
-predictions on real artifacts---not merely on a Lean-internal model. For the
-non-shape transfer functions, \texttt{tests/test\_device\_dtype\_transfer.py}
-mirrors every Lean \texttt{*Bug} predicate and checks that
-\texttt{verify\_module}'s \texttt{device\_mismatch}/\texttt{dtype\_error}/%
-\texttt{phase\_error}/\texttt{gradient\_broken} verdicts match on consistent,
-mismatching and unknown-operand probes for all four algebras, with the
-consistent cases additionally executed against real torch. The faithfulness
-modules go one level deeper and exercise the \emph{actual solver and dispatcher}:
-\texttt{test\_smt\_encoding\_faithful.py} and
-\texttt{test\_cross\_domain\_encoding.py} run the real \texttt{\_Z3Context}
-encoders through Z3 on every concrete device/phase/gradient and shape endpoint
-pair and assert the live SAT/UNSAT verdict equals the Lean prediction;
-\texttt{test\_grad\_flow\_transfer.py} replays every gradient-flow chain of length
-$\le 3$ on a real autograd tensor and asserts \texttt{out.requires\_grad} equals
-the proved \texttt{gradRun}; and \texttt{test\_dtype\_promotion\_lattice.py}
-executes real \texttt{torch.add} on every promotable dtype pair to validate the
-``elementwise dtype never flags'' law. The three chain-transfer modules are
-validated the same way: \texttt{test\_device\_placement\_transfer.py} replays
-every \texttt{.to(...)} chain of length $\le 3$ across real \texttt{cpu} and
-\texttt{mps} tensors (asserting \texttt{tensor.device.type} matches the proved
-\texttt{devRun}, and that eager \texttt{a+b} raises \emph{exactly} when the Lean
-\texttt{binValid} predicate is false), \texttt{test\_phase\_flow\_transfer.py}
-replays every \texttt{train}/\texttt{eval} chain on a real \texttt{nn.Sequential}
-(asserting \texttt{module.training} \emph{and every child's} bit match), and
-\texttt{test\_rank\_transfer.py} replays every no-underflow reduction chain via
-\texttt{torch.sum(dim=0, keepdim=$\cdot$)} (asserting \texttt{out.dim()} matches
-\texttt{rankRun}). This narrows the conformance gap from
-``tested'' to ``the proved predictions are observed to hold on real PyTorch and
-real Z3.''
-
-\begin{table}[t]
-\centering\small
-\caption{Chain-transfer conformance: each proved per-\texttt{forward} transfer is
-replayed exhaustively (all chains of length $\le 3$) against the live framework
-and the verdict checked against the Lean prediction.}
-\label{tab:chain-conformance}
-\begin{tabular}{@{}lll@{}}
-\toprule
-Proved transfer & Replayed against & Live invariant checked \\
-\midrule
-device placement & real \texttt{cpu}/\texttt{mps} tensors & \texttt{.device.type}; cross-device \texttt{+} raises iff $\lnot\mathrm{binValid}$ \\
-train/eval phase & real \texttt{nn.Sequential} & \texttt{.training} on parent \emph{and} every child \\
-reduction rank   & real \texttt{torch.sum} & \texttt{out.dim()} $=\mathrm{rankRun}$ \\
-gradient flow    & real autograd tensor & \texttt{out.requires\_grad} $=\mathrm{gradRun}$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Trusted computing base (TCB).}
-The mechanization does \emph{not} cover completeness of verification
-(undecidable in general by Rice's theorem~\cite{rice53}), Z3's internal
-decision procedures, or full bit-level faithfulness of all 142 operator
-transfer functions to PyTorch (the conformance gap, mitigated by the
-cross-checks and property-based testing above). It \emph{does} now cover the
-faithfulness of the device, phase and gradient enumeration encodings the solver
-runs---previously trusted, now proved (\texttt{SmtEncoding.lean},
-\texttt{CrossDomain.lean})---so the remaining encoding-trust surface is confined
-to the linear-arithmetic shape constraints and Z3's own soundness.
-
-
-%% ============================================================
-\section{Related Work}\label{sec:related}
-
-\paragraph{Type-based shape checking.}
-jaxtyping~\cite{jaxtyping} provides runtime shape annotations
-for JAX/PyTorch using Python type hints; it requires manual
-annotation and catches errors only at execution time.
-tsanley~\cite{tsanley} infers named dimensions from runtime
-traces but does not verify them statically.  Neither tool
-reasons about device placement, training phase, or cross-cutting
-property interactions.
-
-\paragraph{Static shape analysis.}
-PyTEA~\cite{pytea} performs static type analysis for PyTorch
-tensor shapes via abstract interpretation.  It targets individual
-operations and does not reason about device placement, training
-phase, or architecture-level composition via SMT theory
-combination.  TensorFlow's shape inference operates
-at graph construction time but is limited to the TensorFlow
-computation model.  No existing static shape analyzer verifies
-the cross-cutting property interactions that \tguard{} targets
-(Section~\ref{sec:cross-cutting}).
-
-\paragraph{SMT-based program verification.}
-Dafny~\cite{leino10} and F*~\cite{fstar} use SMT solvers for
-general program verification with refinement types.
-Viper~\cite{muller16} provides verification infrastructure for
-permission-based reasoning.  \tguard{} applies similar SMT-based
-techniques but specializes them with domain-specific tensor shape
-theories and UserPropagator plugins.
-
-\paragraph{Refinement types.}
-Liquid Types~\cite{flanagan06} pioneered practical refinement
-type checking via SMT, inferring refinement types automatically
-using predicate abstraction.  RefinedC~\cite{refinedc} extends
-refinement types to C with ownership semantics.  \tguard{} adapts
-the refinement type paradigm to tensor shape verification with
-domain-specific theories.
-
-\paragraph{Abstract interpretation for neural networks.}
-Singh et al.~\cite{singh19} develop abstract domains for
-certifying neural network properties (robustness, fairness).
-Their work targets network \emph{behavior} rather than
-\emph{structural} shape safety, and operates on trained models
-rather than source code.
-
-
-%% ============================================================
-\section{End-to-End Walkthrough and Operator Coverage}\label{sec:walkthrough}
-
-\paragraph{A worked example.} Figure-style, consider the 22-line model below
-(shipped as \texttt{examples/shape\_bug.py}): a \texttt{Conv2d(3,128,\dots)}
-followed by \texttt{AdaptiveAvgPool2d(1)} and \texttt{flatten(1)} produces a
-$[B,128]$ activation, but the head is declared \texttt{Linear(256,10)}.
-
-\begin{verbatim}
-self.conv = nn.Conv2d(3, 128, 3, padding=1)
-self.pool = nn.AdaptiveAvgPool2d(1)
-self.fc   = nn.Linear(256, 10)   # BUG: expects 256, gets 128
-def forward(self, x):
-    x = self.conv(x)             # [B, 128, H, W]
-    x = self.pool(x).flatten(1)  # [B, 128]
-    return self.fc(x)            # mismatch
-\end{verbatim}
-
-\noindent Running \texttt{tensorguard analyze examples/shape\_bug.py} terminates
-in $75\,$ms and emits a machine-readable report whose salient entry is:
-
-\begin{verbatim}
-{ "id": "shape-22", "severity": "error",
-  "category": "shape-error",
-  "message": "Linear layer expects input dim 256, got 128",
-  "location": { "line": 22, "column": 12 } }
-\end{verbatim}
-
-\noindent The verifier propagates the symbolic shape through the convolution,
-adaptive pool, and flatten transfer functions, discharges the resulting
-disequality $128 \neq 256$ as UNSAT-of-equality, and pins the diagnostic to the
-exact call site. The same run surfaces four data-flow null-dereference warnings,
-illustrating the multi-property design: shape, device, dtype, gradient, and
-null/flow checks share one fixpoint pass and one report.
-
-\paragraph{Operator coverage.} \tguard{} ships transfer functions for
-\textbf{117} PyTorch operators, each tagged with the strongest soundness claim it
-supports (Table~\ref{tab:opcov}). A \emph{complete} tag means the transfer is
-exact on its fragment (no false positives \emph{and} no false negatives for shape);
-\emph{sound} means it over-approximates safely (no unsound SAFE, possible
-abstention); \emph{heuristic} marks the handful of data-dependent operators
-(e.g.\ \texttt{torch.unique}, \texttt{torch.multinomial},
-\texttt{torch.linalg.svd}) whose output shape is not statically determined and
-which the tool therefore treats diagnostically rather than soundly.
-
-\begin{table}[t]
-\centering
-\small
-\begin{tabular}{lrl}
-\toprule
-\textbf{Confidence} & \textbf{Count} & \textbf{Representative operators} \\
-\midrule
-Complete  & 75 & pointwise activations, \texttt{reshape},
-\texttt{permute}, \texttt{cat}, broadcasting binops \\
-Sound     & 36 & \texttt{matmul}, \texttt{bmm}, \texttt{einsum}-free
-reductions, \texttt{fft.*}, \texttt{gather} \\
-Heuristic & 6  & \texttt{einsum}, \texttt{unique}, \texttt{multinomial},
-\texttt{linalg.\{qr,svd,solve\}} \\
-\midrule
-\textbf{Total} & \textbf{117} & \\
-\bottomrule
-\end{tabular}
-\caption{Per-operator soundness coverage, exported by
-\texttt{tensorguard operator-confidence}. The complete/sound split is honored at
-run time: \texttt{sound} mode abstains on heuristic operators rather than
-emitting a verdict.}
-\label{tab:opcov}
-\end{table}
-
-\paragraph{Integration surface.} Verification is only useful if it meets
-developers where they already work, so \tguard{} exposes the same analysis engine
-through a dozen entry points (Table~\ref{tab:cli}). The CLI emits SARIF for code
-scanning, the \texttt{ci-check} command enforces a no-new-bugs budget against a
-committed baseline, the \texttt{watch} command re-verifies on save with editor
-diagnostics, and a Language-Server-style \texttt{server} streams results over
-stdio/TCP. Two packaging shims---a \texttt{pre-commit} hook and a \texttt{pytest}
-plugin---let teams block regressions at commit time or assert shape safety inside
-their existing test suite without writing oracle code.
-
-\begin{table}[t]
-\centering
-\small
-\begin{tabular}{ll}
-\toprule
-\textbf{Entry point} & \textbf{Purpose} \\
-\midrule
-\texttt{analyze} / \texttt{analyze-package} & verify a file/module or a whole
-installed package (parallel workers) \\
-\texttt{verify} & shape/device/phase/grad checks with explicit input shape and
-CEGAR depth \\
-\texttt{ci-check} & baseline diff with \texttt{--max-new-bugs} budget; SARIF
-output for code scanning \\
-\texttt{watch} & incremental re-verification on save (vim/emacs/vscode
-diagnostics) \\
-\texttt{server} & long-lived analysis server over stdio or TCP \\
-\texttt{report} / \texttt{export} & render HTML/SARIF/JSON; emit \texttt{.pyi}/
-\texttt{.d.ts} shape stubs \\
-\texttt{diff} & semantic diff between two analysis runs \\
-\texttt{operator-confidence} & query the soundness tag of any operator \\
-\texttt{pre-commit} hook & block commits that introduce new bugs \\
-\texttt{pytest} plugin & assert shape safety from within a test suite \\
-\texttt{guarded\_compile} / Dynamo backend & verify inside the \texttt{torch.compile} pipeline \\
-\texttt{guarded\_onnx\_export} & gate \texttt{torch.onnx.export} on a clean verdict \\
-\texttt{prepare\_verified} & gate \texttt{accelerate.Accelerator.prepare} \\
-Lightning / HF \texttt{Trainer} callbacks & verify the model before the first training step \\
-\bottomrule
-\end{tabular}
-\caption{The integration surface: one engine, many developer-facing entry
-points, all sharing the verified core.}
-\label{tab:cli}
-\end{table}
-
-
-%% ============================================================
-\section{Deployment: Integration Surface and Adoption Path}\label{sec:deploy}
-
-A verifier earns adoption only if it meets developers where they already work.
-TensorGuard exposes one verified core (Sections~\ref{sec:design}--\ref{sec:typing})
-through every standard touch-point of the PyTorch workflow, and each
-integration is closed-loop tested against \emph{real} artifacts rather than
-mocks.
-
-\paragraph{An importable, semver-stable package.} \texttt{pip install
-tensorguard} yields a first-class import surface: \texttt{import tensorguard}
-re-exports the stability-guaranteed API (\texttt{verify\_architecture},
-\texttt{analyze}, \texttt{AnalysisResult}, $\dots$) and the integration entry
-points (\texttt{guarded\_compile}, \texttt{make\_tensorguard\_backend},
-\texttt{verify\_module}). The package is PEP~561-typed, follows Semantic
-Versioning with a published deprecation policy (no symbol removed without a
-\texttt{DeprecationWarning} for at least one minor release), and ships a
-\textsc{Keep a Changelog} history. The contract is enforced by building the
-wheel and importing it from a \emph{clean}, network-free install into a fresh
-interpreter that cannot see the source checkout---then verifying a real shape
-bug end-to-end.
-
-\paragraph{Continuous integration that pays only for the diff.} The GitHub
-Action annotates the exact offending lines of a pull-request diff and emits
-SARIF for code scanning. A \emph{changed-only} mode restricts verification to
-the \texttt{*.py} models a PR actually touches
-(\texttt{git diff -{}-diff-filter=ACMRT base...head}), ignoring deletions and
-non-Python files and degrading gracefully to a full scan when the base ref is
-unobtainable (shallow clone, fork, non-\texttt{main} default branch). A baseline
-file plus inline \texttt{\# tensorguard: ignore} suppressions enable incremental
-adoption on legacy repositories, so only \emph{new} findings can fail the gate.
-
-\paragraph{The test suite as a verification gate.} The \texttt{pytest} plugin
-(\texttt{pytest -{}-tensorguard}) discovers the project modules the suite
-\emph{actually imports}---snapshotting \texttt{sys.modules} at session start and
-collecting the modules first imported afterwards whose source lives under the
-project root---and verifies that exercised code, not a blind directory walk. An
-imported buggy model fails the session while an unimported ``orphan'' file in the
-same tree is left alone; an explicit path or a whole-tree mode remain available.
-
-\paragraph{Inline feedback in the editor.} A real Language Server
-(\texttt{python -m src.lsp\_server}, JSON-RPC over stdio with byte-accurate
-framing) analyses the \emph{unsaved editor buffer} on every change, publishing
-shape/device/dtype/phase/gradient squiggles, hover shapes drawn from the
-inference chain, and quick-fixes whose workspace edit reproduces the mechanical
-autofix---and clearing the diagnostics the instant the code becomes correct. A
-VS~Code extension is a thin language client over it, so the editor is a
-transport rather than a re-implementation.
-
-\paragraph{Verification inside the compile pipeline.} For users who reach for
-\texttt{torch.compile}, \texttt{make\_tensorguard\_backend} is a Dynamo backend
-that runs verification as a guard: Dynamo hands it the captured
-\texttt{GraphModule} and example inputs, the backend verifies the module's real
-source, then delegates a clean model to an inner compiler whose output
-reproduces eager---or raises \texttt{TensorGuardViolation} (carrying the
-structured findings) on a buggy one, surfacing through the compile pipeline's
-exception chain. The complementary \texttt{guarded\_compile} pre-pass blocks a
-bug \emph{before} compilation even on interpreters where Dynamo is unavailable,
-so the same shape error that would otherwise appear as an opaque guard failure or
-a deep inductor traceback is reported at the model's own source line.
-
-\paragraph{Gating the training and export lifecycle.} The same pre-pass guards
-the two other points where a model leaves the user's hands. \texttt{prepare\_%
-verified} wraps \texttt{accelerate.Accelerator.prepare}---the choke point every
-model passes through before distributed/mixed-precision training---running
-verification as the \emph{first} side effect on the user's own
-\texttt{nn.Module}, so a real bug raises before the model is wrapped or moved
-(otherwise it surfaces mid-epoch inside an AMP/DDP shim whose traceback no longer
-points at \texttt{forward}); the wrapper preserves \texttt{prepare}'s exact
-bare-object-vs-tuple return contract. \texttt{guarded\_onnx\_export} gates
-\texttt{torch.onnx.export}, verifying \emph{before} anything is written to the
-export sink---inferring the verified input shapes from the example arguments so
-the shape that is checked is the shape that is exported---turning a malformed
-graph or an opaque tracer error into one actionable \texttt{TensorGuardViolation}.
-Lightning and Hugging~Face \texttt{Trainer} callbacks verify the model at
-\texttt{on\_fit\_start} / \texttt{on\_train\_begin}. Each gate is closed-loop
-tested against the real framework: a live CPU \texttt{Accelerator} (clean
-prepares and runs; a spy confirms a buggy model never reaches \texttt{prepare}),
-the real \texttt{torch.onnx} exporter (a clean model yields a proto that passes
-\texttt{onnx.checker}; a buggy one leaves the sink byte-for-byte empty), and a
-real \texttt{pytorch\_lightning.Trainer.fit}.
-
-\paragraph{Whole-lifecycle parity and a community scoreboard.} The gate set now
-spans every point a model leaves the user's hands. \texttt{guarded\_from\_%
-pretrained} verifies a returned \texttt{PreTrainedModel} before the Hugging~Face
-loader hands it back---a gated clean checkpoint then trains for real under a
-genuine \texttt{transformers.Trainer}, while a misbuilt one raises before it can
-reach a pipeline. \texttt{verify\_exported\_program} and \texttt{guarded\_aot\_%
-package} bring the \texttt{torch.export} and AOTInductor packaging paths to
-parity with the ONNX gate (verification is the first side effect; shapes are
-inferred from the example arguments; no \texttt{.pt2} is written on a bug), and
-\texttt{guarded\_onnx\_export} adds an \texttt{onnx.checker.check\_model}
-post-export assertion so a structurally invalid graph fails at export rather than
-downstream load. To keep the empirical claims honest \emph{after} publication, an
-open leaderboard re-scores external tool submissions in CI: a contributor commits
-only raw per-case verdicts on the frozen, hash-pinned corpus, a validator rejects
-unknown ids, malformed verdicts, and any self-reported metric, and the harness
-recomputes recall/precision/F1 itself---so a tool that claims perfect recall but
-abstains everywhere is scored at its true recall of zero. Finally,
-\texttt{upstream\_hook.install()} grafts the proposed
-\texttt{torch.nn.utils.verify\_module} / \texttt{attach\_verifier} /
-\texttt{torch.nn.verifiable} surface onto the live namespace with no core
-changes---a reversible, idempotent preview of the RFC's Phase-1 API, exercised
-directly against real \texttt{torch}.
-
-\paragraph{One core, a second framework, and a governed extension path.} The
-verified core is not bound to a single front end: a Flax/JAX adapter lowers an
-\texttt{nnx.Sequential} of \texttt{Linear}/\texttt{LayerNorm}/\texttt{BatchNorm}/
-\texttt{Dropout} modules into the \emph{same} intermediate representation and
-discharges the \emph{same} SMT constraints, refuting a real last-dimension
-mismatch in a JAX model while soundly abstaining (\textsc{Unknown}, never a
-silent pass) on layouts it cannot prove---e.g. Flax's NHWC convolutions, which
-the NCHW propagators decline rather than mis-type. Because abstention is the
-sound default, breadth of coverage is itself a contribution surface: a
-\emph{governed community stub registry} lets third parties extend the operator
-frontier through purely \emph{declarative} manifests (a supported \texttt{kind}
-such as \texttt{shape\_preserving} or \texttt{last\_dim\_linear} plus parameters)
-that carry \emph{no executable code}---any code-bearing field is a hard
-reject---mandatory provenance (author, source URL, license, reviewer), and at
-least one \emph{conformance} case (input shape $\mapsto$ expected output or
-expected error) that is \emph{executed} against an isolated registry before the
-manifest can merge, so a stub that does not behave as claimed cannot land. A
-dedicated CI workflow gates every pull request touching the registry. Finally,
-five executable Colab notebooks (quickstart through CI/pre-commit) onboard new
-users against the real \texttt{torch}/\texttt{onnx} stack, each run end-to-end in
-CI so a drifting API breaks the tutorial build rather than the user.
-
-\paragraph{One engine, many doors.} Table~\ref{tab:cli} summarizes the
-developer-facing entry points; crucially, all of them route through the same
-verified core, so no surface can drift from the soundness guarantees proved in
-Section~\ref{sec:lean}. Every integration above is regression-tested against a
-real wheel, a real git repository, a real subprocess \texttt{pytest} run, a real
-LSP handshake, and a real FX graph, respectively.
-
-%% ============================================================
-\section{Threats to Validity}\label{sec:threats}
-
-\paragraph{Internal validity.} The headline recall/precision could in principle
-reflect tuning to the development corpus. We mitigate this with the
-pre-registered blind split of Section~\ref{sec:blind} (manifest hash fixed before
-evaluation; H1--H3 confirmed on held-out data) and with multiple-comparison
-correction on every comparative claim. The abstention accounting is explicit:
-\texttt{sound} mode converts every out-of-fragment construct into
-\texttt{UNKNOWN} rather than a silent verdict, so a missed bug surfaces as an
-abstention rather than an unsound \texttt{SAFE}.
-
-\paragraph{Construct validity.} The strongest threat is the \emph{conformance
-gap}: a transfer function could mis-model PyTorch and the proofs would faithfully
-certify the wrong semantics. This is precisely why the Lean soundness modules are
-each paired with a test that runs the \emph{live} verifier, real Z3, and the real
-torch dispatcher (Section~\ref{sec:lean}); the remaining gap is the per-operator
-bit-level faithfulness of the shape transfer functions, bounded by property-based
-differential testing against the live dispatcher.
-
-\paragraph{External validity.} Results may not transfer to model families outside
-the corpus. The corpus is stratified by bug class and drawn from real public
-repositories, the false-positive stress corpus uses clean real models, and the
-cross-version/cross-interpreter matrices (Section~\ref{sec:robust}) show the
-verdict is invariant to the torch and Python versions a practitioner runs. The
-phase domain is reported as diagnostic-only to avoid overclaiming.
-
-\paragraph{Reproducibility.} Wall-clock numbers are machine-dependent and are
-regenerated but not byte-compared; all categorical verdicts are content-addressed
-and reproduce bit-for-bit under the pinned capsule (Section~\ref{sec:capsule}).
-
-
-%% ============================================================
-\section{Conclusion}\label{sec:conclusion}
-
-We have presented \tguard{}, a static multi-property verifier for
-PyTorch that combines five domain-specific SMT theories---shape,
-device, phase, stride, and permutation---to catch cross-cutting
-bugs that no existing tool detects.  On a 52-model benchmark of
-multi-theory bugs sourced from real-world issues (HuggingFace
-\#13666, torchvision ResNet, detectron2, YOLOv5, mmdetection),
-\tguard{} achieves F1 = 0.625 with perfect precision. The baseline
-rows in this comparison should be read as capability lower bounds,
-not full per-case reruns: TorchScript, mypy, jaxtyping, and PyTEA
-lack the device/phase reasoning that defines these cross-cutting
-bug classes. The tool supports 142 operator transfer functions,
-covers real-world architectures (ResNet, VGG, MobileNetV2,
-EfficientNet, DenseNet), and produces parametric safety
-certificates via IC3/PDR over symbolic dimensions. The repository
-also includes a compiled, \texttt{sorry}-free Lean~4 formalization
-($\sim$3{,}800 lines, 210 theorems/lemmas, \emph{all} machine-audited to
-trusted kernel axioms) covering the operator transfer functions, the
-reduced-product abstraction, CEGAR termination, the two known-unsoundness gaps,
-the device/dtype/phase/gradient transfer functions, and the faithfulness of the
-Z3 encoding the solver runs.
-
-The primary limitation is the conformance gap between the
-mechanized specification and the Python implementation.
-The remaining false negatives on cross-cutting benchmarks
-(Recall = 0.455) stem from device-only bugs where shapes match
-perfectly; extending the device theory to track cross-device
-operations through \texttt{@} and \texttt{expand} is future work.
-Additional directions include closing the conformance gap via
-verified extraction, extending the operator registry toward full
-PyTorch coverage, and integrating \tguard{} into CI/CD pipelines
-as a pre-merge gate for multi-property safety.
-
-
-%% ============================================================
-\begin{thebibliography}{99}
-
-\bibitem{bradley11}
-A.~R. Bradley.
-\newblock {SAT}-based model checking without unrolling.
-\newblock In {\em VMCAI}, pages 70--87. Springer, 2011.
-
-\bibitem{een11}
-N.~E{\'e}n, A.~Mishchenko, and R.~Brayton.
-\newblock Efficient implementation of property directed reachability.
-\newblock In {\em FMCAD}, pages 125--134, 2011.
-
-\bibitem{flanagan06}
-P.~M.~Rondon, M.~Kawaguchi, and R.~Jhala.
-\newblock Liquid types.
-\newblock In {\em PLDI}, pages 159--169. ACM, 2008.
-
-\bibitem{fstar}
-N.~Swamy, C.~Hri\c{t}cu, C.~Keller, A.~Rastogi, A.~Delignat-Lavaud,
-  S.~Forest, K.~Bhargavan, C.~Fournet, P.-Y.~Strub, M.~Kohlweiss,
-  J.-K.~Zinzindohou\'{e}, and S.~Zanella-B\'{e}guelin.
-\newblock Dependent types and multi-monadic effects in {F*}.
-\newblock In {\em POPL}, pages 256--270. ACM, 2016.
-
-\bibitem{islam19}
-M.~J. Islam, G.~Nguyen, R.~Pan, and H.~Rajan.
-\newblock A comprehensive study on deep learning bug characteristics.
-\newblock In {\em ESEC/FSE}, pages 510--520. ACM, 2019.
-
-\bibitem{jaxtyping}
-P.~Kidger.
-\newblock jaxtyping: Type annotations for {JAX}.
-\newblock \url{https://github.com/google/jaxtyping}, 2023.
-
-\bibitem{lassez88}
-J.-L.~Lassez, M.~Maher, and K.~Marriott.
-\newblock Unification revisited.
-\newblock In {\em Foundations of Deductive Databases and Logic Programming},
-  pages 587--625. Morgan Kaufmann, 1988.
-
-\bibitem{leino10}
-K.~R.~M. Leino.
-\newblock Dafny: An automatic program verifier for functional correctness.
-\newblock In {\em LPAR}, pages 348--370. Springer, 2010.
-
-\bibitem{muller16}
-P.~M\"{u}ller, M.~Schwerhoff, and A.~J.~Summers.
-\newblock Viper: A verification infrastructure for permission-based reasoning.
-\newblock In {\em VMCAI}, pages 41--62. Springer, 2016.
-
-\bibitem{nelsonoppen79}
-G.~Nelson and D.~C. Oppen.
-\newblock Simplification by cooperating decision procedures.
-\newblock {\em ACM TOPLAS}, 1(2):245--257, 1979.
-
-\bibitem{pytea}
-H.~Y.~Jhoo, S.~Kim, W.~Song, K.~Park, D.~Lee, and K.~Yi.
-\newblock {A Static Analyzer for Detecting Tensor Shape Errors in
-  Deep Neural Network Training Code}.
-\newblock In {\em ECOOP}, 2023.
-
-\bibitem{refinedc}
-M.~Sammler, R.~Lepigre, R.~Krebbers, K.~Memarian, D.~Dreyer,
-  and D.~Garg.
-\newblock {RefinedC}: Automating the foundational verification of
-  {C} code with refined ownership types.
-\newblock In {\em PLDI}, pages 158--174. ACM, 2021.
-
-\bibitem{rice53}
-H.~G. Rice.
-\newblock Classes of recursively enumerable sets and their decision problems.
-\newblock {\em Trans.\ AMS}, 74(2):358--366, 1953.
-
-\bibitem{singh19}
-G.~Singh, T.~Gehr, M.~P\"uschel, and M.~Vechev.
-\newblock An abstract domain for certifying neural networks.
-\newblock {\em Proc.\ ACM Program.\ Lang.}, 3(POPL):41:1--41:30, 2019.
-
-\bibitem{tinelli03}
-C.~Tinelli and C.~G. Zarba.
-\newblock Combining nonstably infinite theories.
-\newblock {\em J.\ Automated Reasoning}, 34(3):209--238, 2005.
-
-\bibitem{torchscript}
-PyTorch Contributors.
-\newblock {TorchScript}.
-\newblock \url{https://pytorch.org/docs/stable/jit.html}, 2023.
-
-\bibitem{tsanley}
-A.~Rogozhnikov.
-\newblock tsanley: Understanding tensor shapes in {Python}.
-\newblock \url{https://github.com/arogozhnikov/tsanley}, 2022.
-
-\bibitem{zhang18}
-Y.~Zhang, Y.~Chen, S.-C.~Cheung, Y.~Xiong, and L.~Zhang.
-\newblock An empirical study on {TensorFlow} program bugs.
-\newblock In {\em ISSTA}, pages 129--140. ACM, 2018.
-
-\end{thebibliography}
-
-
-%% ============================================================
+This combination is what makes the project a plausible candidate for upstream
+PyTorch influence: not that it already models every operator, but that it
+provides a disciplined path for growing coverage without sacrificing trust.
+
+\section{Next research and adoption frontier}
+
+The local roadmap now points beyond the completed campaign toward a
+best-paper-award and 1,000-star release.  The most important next directions are
+not more marketing metrics; they are higher-value coverage and stronger
+evidence:
+
+\begin{itemize}[leftmargin=2em]
+  \item deeper operator coverage for distributions, named tensors, complex
+  dtypes, functorch/vmap, sparse tensors, grid sampling, MultiheadAttention,
+  split/chunk, masked selection, nonzero, and exact einsum diagonal semantics;
+  \item deployment correctness for quantization, mixed precision, dynamic
+  \texttt{torch.export} constraints, AOTInductor layouts, ONNX opsets, GGUF
+  export, FSDP2, and pipeline-parallel stage boundaries;
+  \item proof depth for einops, SDPA, chunk/split, distributions, named-tensor
+  alignment, grid sampling, contiguity/stride algebra, and whole-module subject
+  reduction over the expanded operator set;
+  \item evaluation scale: 1,000+ provenance-rich real bugs, stratified recall
+  and false-positive confidence intervals, registered held-out protocols,
+  head-to-head baselines, and PR-history survival analysis;
+  \item adoption: hosted demo, one-line GitHub Action and pre-commit setup,
+  editor clients, Code Scanning trends, web explanations, Lightning/HF Trainer
+  adapters, model-hub badges, a real-model gallery, and a public leaderboard
+  refresh cadence.
+\end{itemize}
+
+\section{Conclusion}
+
+\tg{} turns tensor metadata checking from a runtime accident into an auditable
+static contract.  It is already useful as a developer tool: it catches shape,
+device, dtype, phase, gradient, training-loop, distributed, quantization,
+export, einops, and SDPA hazards before execution; it reports precise
+diagnostics; it integrates with CI and code scanning; and it defaults to
+abstention rather than false certainty when the program leaves its fragment.
+It is also unusually well-supported as a research artifact: every headline
+number is tied to a regenerable artifact, every corpus has provenance, every
+known limitation is surfaced, and the formal proof story is executable enough
+to fail CI when it drifts.
+
+\newpage
 \appendix
 
-\section{Complete Typing Rules}\label{app:typing}
+\section{Evidence index}
 
-This appendix presents the complete set of typing rules for all
-142 operator transfer functions.  We group them by category.
+\begin{longtable}{p{0.27\linewidth} p{0.33\linewidth} p{0.30\linewidth}}
+\caption{Selected repository artifacts backing the paper.}\\
+\toprule
+\textbf{Question} & \textbf{Artifact / command} & \textbf{Tests / gate} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Question} & \textbf{Artifact / command} & \textbf{Tests / gate} \\
+\midrule
+\endhead
+What programs are soundly verified? &
+\path{SOUNDNESS_CONTRACT.md}, \path{src/soundness_contract.py} &
+\path{tests/test_soundness_contract.py},
+\path{tests/test_soundness_mode.py} \\
+What source fragment is supported? &
+\path{VERIFIABLE_FRAGMENT.md}, \path{src/verifiable_fragment.py} &
+\path{tests/test_verifiable_fragment_spec.py} \\
+Which operators are complete, sound, or heuristic? &
+\path{operator_confidence_table.json},
+\texttt{tensorguard operator-confidence} &
+\path{tests/test_operator_confidence.py} \\
+Does disabling a domain skip solver work? &
+\path{reproducibility/check_flag_demo.json} &
+\path{tests/test_solver_domain_gating.py} \\
+Does CEGAR change real bug results? &
+\path{tests/test_cegar_refined_contract.py},
+\path{reproducibility/cegar_depth_ablation.md} &
+\path{tests/test_cegar_depth_ablation.py} \\
+How does \tg{} compare to baselines? &
+\path{evaluation/confusion_matrices.json},
+\path{evaluation/significance.json} &
+\path{tests/test_precision_recall.py},
+\path{tests/test_significance.py} \\
+Does sound mode false-alarm on clean models? &
+\path{evaluation/sound_mode_fp.json} &
+\path{tests/test_sound_mode_fp.py} \\
+Does random clean fuzzing find false positives? &
+\path{evaluation/diff_fuzz.json} &
+\path{tests/test_diff_fuzz.py} \\
+Does injected-fault fuzzing find false negatives? &
+\path{evaluation/neg_fuzz.json} &
+\path{tests/test_neg_fuzz.py} \\
+Are disagreements minimized and frozen? &
+\path{evaluation/minimize_demo.json},
+\path{evaluation/triage_regressions.json} &
+\path{tests/test_minimize.py}, \path{tests/test_triage.py} \\
+Is there an extended redistributable corpus? &
+\path{corpus_extended/manifest.json},
+\path{reproducibility/corpus_extended_score.md} &
+\path{tests/test_corpus_extended.py} \\
+Is there a blind split? &
+\path{corpus_extended/PRE_REGISTRATION.md},
+\path{reproducibility/blind_split_eval.md} &
+\path{tests/test_blind_split.py} \\
+Does it agree with the live torch dispatcher? &
+\path{reproducibility/differential_dispatcher.md} &
+\path{tests/test_differential_dispatcher.py} \\
+Does mutation testing catch genuine bugs? &
+\path{reproducibility/mutation_clean_models.md} &
+\path{tests/test_mutation_clean_models.py} \\
+Does the localizer reduce effort? &
+\path{evaluation/localization_effort.json} &
+\path{tests/test_localization_effort.py} \\
+How much operator coverage exists on real models? &
+\path{evaluation/operator_frequency.json},
+\path{evaluation/fx_trace_success.json} &
+\path{tests/test_operator_frequency.py},
+\path{tests/test_fx_trace_success.py} \\
+Are einops contracts faithful? &
+\path{src/einops_verify.py},
+\path{src/einops_source.py} &
+\path{tests/test_einops_verify.py},
+\path{tests/test_einops_source.py} \\
+Is SDPA modeled faithfully? &
+\path{src/sdpa_verify.py} &
+\path{tests/test_sdpa_verify.py} \\
+Are training-loop hazards checked? &
+\path{reproducibility/training_loop_hazards.md} &
+\path{tests/test_training_loop_checks.py} \\
+Are tensor-parallel configs checked? &
+\path{reproducibility/tensor_parallel_sharding.md} &
+\path{tests/test_tensor_parallel_checks.py} \\
+Are quant/export hazards checked? &
+\path{reproducibility/quant_export_safety.md} &
+\path{tests/test_quant_export_checks.py} \\
+Is the Lean library sorry-free? &
+\path{lean/TensorGuard/},
+\path{tests/test_lean_whole_pipeline_audit.py} &
+\texttt{lake build TensorGuard} in slow environments; axiom audit tests \\
+Are headline numbers audited? &
+\path{reproducibility/numeric_claims_audit.json} &
+\path{tests/test_numeric_claims_audit.py} \\
+Can the evidence be reproduced? &
+\texttt{make reproduce}, \texttt{make reproduce-check},
+\path{capsule/reproduce.sh} &
+\path{tests/test_reproduce_harness.py},
+\path{tests/test_capsule_manifest.py} \\
+\bottomrule
+\end{longtable}
 
-\subsection{Convolution Operators}
+\section{Experiment catalogue}
 
-\paragraph{T-Conv1d.}
-\[
-\typerule{T-Conv1d}{\Gamma \vdash x : \{t \mid \mathit{ndim}(t) = 3 \land
-    \mathit{dim}_1(t) = c_\text{in}\}}{\Gamma \vdash \texttt{Conv1d}(c_\text{in}, c_\text{out}, k)(x) :
-    \{t' \mid \mathit{dim}_0(t') = \mathit{dim}_0(x) \land
-    \mathit{dim}_1(t') = c_\text{out} \land
-    \mathit{dim}_2(t') = \lfloor\frac{\mathit{dim}_2(x) + 2p -
-      d(k-1)-1}{st}\rfloor + 1\}}
-\]
-
-\paragraph{T-Conv3d.}
-\[
-\typerule{T-Conv3d}{\Gamma \vdash x : \{t \mid \mathit{ndim}(t) = 5 \land
-    \mathit{dim}_1(t) = c_\text{in}\}}{\Gamma \vdash \texttt{Conv3d}(c_\text{in}, c_\text{out}, k)(x) :
-    \{t' \mid \mathit{dim}_0(t') = \mathit{dim}_0(x) \land
-    \mathit{dim}_1(t') = c_\text{out} \land
-    \forall i \in \{2,3,4\}.\;
-    \mathit{dim}_i(t') = \lfloor\frac{\mathit{dim}_i(x) + 2p_i -
-      d_i(k_i-1)-1}{st_i}\rfloor + 1\}}
-\]
-
-\paragraph{T-ConvTranspose2d.}
-\[
-\typerule{T-ConvTranspose2d}{\Gamma \vdash x : \{t \mid \mathit{ndim}(t) = 4 \land
-    \mathit{dim}_1(t) = c_\text{in}\}}{\Gamma \vdash \texttt{ConvTranspose2d}(c_\text{in}, c_\text{out}, k)(x) :
-    \{t' \mid \mathit{dim}_0(t') = \mathit{dim}_0(x) \land
-    \mathit{dim}_1(t') = c_\text{out} \land
-    \mathit{dim}_i(t') = ({\mathit{dim}_i(x)}-1) \cdot st_i - 2p_i +
-      d_i(k_i-1) + \mathit{op}_i + 1\}}
-\]
-
-\subsection{Normalization Operators}
-
-\paragraph{T-BatchNorm.}
-\[
-\typerule{T-BatchNorm}{\Gamma \vdash x : \{t \mid \mathit{dim}_1(t) = n\}}{\Gamma \vdash \texttt{BatchNorm}(n)(x) :
-    \{t' \mid \mathit{shape}(t') = \mathit{shape}(x)\}}
-\]
-
-\paragraph{T-GroupNorm.}
-\[
-\typerule{T-GroupNorm}{\Gamma \vdash x : \{t \mid \mathit{dim}_1(t) = c \land
-    c \bmod g = 0\} \\ g \in \mathbb{Z}_{>0}}{\Gamma \vdash \texttt{GroupNorm}(g, c)(x) :
-    \{t' \mid \mathit{shape}(t') = \mathit{shape}(x)\}}
-\]
-
-\subsection{Structural Operators}
-
-\paragraph{T-Flatten.}
-\[
-\typerule{T-Flatten}{\Gamma \vdash x : \{t \mid \mathit{shape}(t) = s\} \\
-   0 \leq d_s \leq d_e < \mathit{ndim}(x)}{\Gamma \vdash \texttt{flatten}(x, d_s, d_e) :
-    \{t' \mid \mathit{shape}(t') = s_{[0:d_s]} \mathbin\|
-    [\prod_{i=d_s}^{d_e} s_i] \mathbin\| s_{[d_e+1:]}\}}
-\]
-
-\paragraph{T-Transpose.}
-\[
-\typerule{T-Transpose}{\Gamma \vdash x : \{t \mid \mathit{shape}(t) = s\} \\
-   0 \leq d_0, d_1 < \mathit{ndim}(x)}{\Gamma \vdash \texttt{transpose}(x, d_0, d_1) :
-    \{t' \mid \mathit{dim}_{d_0}(t') = s_{d_1} \land
-    \mathit{dim}_{d_1}(t') = s_{d_0} \land
-    \forall k \notin \{d_0,d_1\}.\; \mathit{dim}_k(t') = s_k\}}
-\]
-
-\paragraph{T-Split.}
-\[
-\typerule{T-Split}{\Gamma \vdash x : \{t \mid \mathit{shape}(t) = s\} \\
-   s_d \bmod n = 0}{\Gamma \vdash \texttt{split}(x, s_d / n, d) :
-    [t'_1, \ldots, t'_n] \text{ where }
-    \forall i.\; \mathit{dim}_d(t'_i) = s_d / n}
-\]
-
-\subsection{Pooling Operators}
-
-\paragraph{T-MaxPool2d.}
-\[
-\typerule{T-MaxPool2d}{\Gamma \vdash x : \{t \mid \mathit{ndim}(t) = 4\}}{\Gamma \vdash \texttt{MaxPool2d}(k, st, p)(x) :
-    \{t' \mid \mathit{dim}_{0,1}(t') = \mathit{dim}_{0,1}(x) \land
-    \forall i \in \{2,3\}.\;
-    \mathit{dim}_i(t') = \lfloor\frac{\mathit{dim}_i(x) + 2p_i -
-      k_i}{st_i}\rfloor + 1\}}
-\]
-
-\paragraph{T-AdaptiveAvgPool2d.}
-\[
-\typerule{T-AdaptiveAvgPool2d}{\Gamma \vdash x : \{t \mid \mathit{ndim}(t) = 4\}}{\Gamma \vdash \texttt{AdaptiveAvgPool2d}(h', w')(x) :
-    \{t' \mid \mathit{dim}_{0,1}(t') = \mathit{dim}_{0,1}(x) \land
-    \mathit{dim}_2(t') = h' \land \mathit{dim}_3(t') = w'\}}
-\]
-
-\subsection{Attention Operators}
-
-\paragraph{T-MultiheadAttention.}
-\[
-\typerule{T-MHA}{\Gamma \vdash q : \{t \mid \mathit{shape}(t) = (L, N, E)\} \\
-   \Gamma \vdash k : \{t \mid \mathit{shape}(t) = (S, N, E_k)\} \\
-   \Gamma \vdash v : \{t \mid \mathit{shape}(t) = (S, N, E_v)\} \\
-   E \bmod h = 0}{\Gamma \vdash \texttt{MHA}(E, h)(q, k, v) :
-    \{t' \mid \mathit{shape}(t') = (L, N, E)\}}
-\]
-
-\subsection{Recurrence Operators}
-
-\paragraph{T-LSTM.}
-\[
-\typerule{T-LSTM}{\Gamma \vdash x : \{t \mid \mathit{ndim}(t) = 3 \land
-    \mathit{dim}_2(t) = f_\text{in}\}}{\Gamma \vdash \texttt{LSTM}(f_\text{in}, h, L, \mathit{bi})(x) :
-    \{(o, (h_n, c_n)) \mid \mathit{dim}_2(o) = h \cdot (1 + \mathit{bi})\}}
-\]
-
-
-\section{Full Operator List}\label{app:operators}
-
-The 142 operators are organized into the following categories.
-Each entry shows the operator name and the SMT fragment of its
-generated constraints.
-
-\begin{description}[leftmargin=1.5em]
-  \item[Convolution:] Conv1d, Conv2d, Conv3d, ConvTranspose1d,
-    ConvTranspose2d, ConvTranspose3d (all QF\_LIA)
-  \item[Normalization:] BatchNorm1d, BatchNorm2d, BatchNorm3d,
-    LayerNorm, GroupNorm, InstanceNorm1d, InstanceNorm2d,
-    InstanceNorm3d (all QF\_LIA)
-  \item[Attention:] MultiheadAttention, ScaledDotProductAttention,
-    RoPE (QF\_LIA)
-  \item[Recurrence:] LSTM, GRU, RNN, LSTMCell, GRUCell, RNNCell
-    (QF\_LIA)
-  \item[Pooling:] MaxPool1d, MaxPool2d, MaxPool3d, AvgPool1d,
-    AvgPool2d, AvgPool3d, AdaptiveMaxPool1d, AdaptiveMaxPool2d,
-    AdaptiveMaxPool3d, AdaptiveAvgPool1d, AdaptiveAvgPool2d,
-    AdaptiveAvgPool3d (QF\_LIA)
-  \item[Activation:] ReLU, LeakyReLU, PReLU, ELU, SELU, GELU,
-    Sigmoid, Tanh, Softmax, LogSoftmax, Hardswish, Mish, SiLU
-    (shape-preserving)
-  \item[Padding:] ZeroPad1d, ZeroPad2d, ConstantPad1d,
-    ConstantPad2d, ConstantPad3d, ReflectionPad1d, ReflectionPad2d,
-    ReplicationPad1d, ReplicationPad2d, ReplicationPad3d (QF\_LIA)
-  \item[Loss:] CrossEntropyLoss, MSELoss, NLLLoss, BCELoss,
-    BCEWithLogitsLoss, L1Loss, SmoothL1Loss, KLDivLoss,
-    HuberLoss (QF\_LIA)
-  \item[Embedding:] Embedding, EmbeddingBag (QF\_LIA)
-  \item[Structural:] reshape, view, flatten, unflatten,
-    cat, stack, split, chunk, squeeze, unsqueeze, transpose,
-    permute, contiguous, expand, repeat, narrow, select, index\_select,
-    gather, scatter, einops rearrange/repeat/reduce, PixelShuffle
-    (reshape/flatten/PixelShuffle/repeat: QF\_NIA; others: QF\_LIA)
-\end{description}
-
-
-\section{Proof Sketches for Soundness Conjectures}\label{app:proofs}
-
-\subsection{Type Soundness (Conjecture~\ref{conj:soundness})}
-
-\begin{proof}[Extended proof sketch]
-We proceed by induction on the typing derivation
-$\Gamma \vdash e : \tau$.
-
-\textbf{Base case (T-Var):} If $e = x$ and $\Gamma(x) = \tau$,
-then $\sigma \models \Gamma$ implies $\sigma(x) \models \tau$
-by definition.
-
-\textbf{Inductive case (T-Linear):} Assume
-$\Gamma \vdash x : \{t \mid \mathit{dim}_{-1}(t) = f_\text{in}\}$.
-By the induction hypothesis, $\sigma(x)$ has last dimension
-$f_\text{in}$.  The PyTorch \texttt{nn.Linear} documentation
-specifies that the output shape is
-$\mathit{shape}(x)_{[0:-1]} \mathbin\| [f_\text{out}]$ when the
-input's last dimension equals $f_\text{in}$.  Since the precondition
-holds, no \texttt{RuntimeError} is raised, and the output satisfies
-the postcondition.  The argument is analogous for all other rules.
-
-\textbf{Theory combination:} Cross-theory constraints
-(e.g., device compatibility implying shape compatibility) are
-sound by Theorem~\ref{thm:combination} (Lean-proved).
-
-\textbf{Gap:} The proof sketch assumes that each transfer function
-faithfully models the corresponding PyTorch operator.  This
-assumption is not mechanized; it is validated by property-based
-testing against the PyTorch runtime.
-\end{proof}
-
-\subsection{Stride Theory Convexity}
-
-\begin{proof}[Proof sketch]
-$\Tstride$ generates constraints in QF\_LIA over
-$\mathbb{Z}_{\geq 1}$.  QF\_LIA is convex: if
-$\varphi \models e_1 = e_2 \lor e_3 = e_4$, then
-$\varphi \models e_1 = e_2$ or $\varphi \models e_3 = e_4$.
-This follows from the fact that the solution set of a
-conjunction of linear inequalities over the integers is a
-finite union of lattice points in a convex polytope, and
-equality disjunctions over such sets reduce to individual
-equalities~\cite{lassez88}.
-
-The NIA subfragment arising from reshape constraints uses at
-most one symbolic factor per product term, restricting to
-a semi-linear fragment where convexity is preserved.  Full
-nonlinear arithmetic would break convexity; our restriction
-to semi-linear terms avoids this.
-\end{proof}
-
-
-\section{Machine-Checked Faithfulness Theorems}\label{app:faithful}
-
-For reference, we state the central faithfulness and transfer results added in
-this work (all \texttt{sorry}-free, depending only on \texttt{propext}). Let
-$\mathrm{Sat}(c_a,c_b)$ denote satisfiability of the pinned same-value constraint
-the verifier emits, and let $\mathrm{devBug}$, etc., be the abstract algebra
-predicates of \texttt{DeviceDtype.lean}.
-
-\begin{itemize}[leftmargin=1.5em]
-  \item \textbf{Enum-encoding faithfulness} (\texttt{SmtEncoding.lean}):
-    $\mathrm{Sat}(c_a,c_b)\iff c_a=c_b$, hence $\lnot\mathrm{Sat}(c_a,c_b)\iff
-    c_a\neq c_b$; and for known devices
-    $\lnot\mathrm{Sat}(c_a,c_b)\iff \mathrm{devBug}(c_a,c_b)$. The same UNSAT
-    characterization holds for the phase sort and the gradient Boolean.
-  \item \textbf{Cross-domain faithfulness} (\texttt{CrossDomain.lean}): a
-    transfer op's constraint set is satisfiable $\iff$ \texttt{pre}=\texttt{post}
-    (shape preserved, device free); a non-transfer op's $\iff$
-    $d_{\text{pre}}=d_{\text{post}}$ (device preserved, shape free).
-  \item \textbf{Dtype promotion semilattice} (\texttt{DeviceDtype.lean}):
-    $\mathrm{dtPromote}$ is commutative, idempotent, associative, and
-    $\top$-absorbing; hence the elementwise dtype transfer never flags
-    ($\mathrm{dtElementwiseBug}\equiv\texttt{false}$).
-  \item \textbf{Gradient-flow chain transfer} (\texttt{GradFlow.lean}):
-    $\mathrm{gradRun}$ is compositional
-    ($\mathrm{gradRun}\,b\,(xs\!+\!\!+\,ys)=\mathrm{gradRun}\,(\mathrm{gradRun}\,
-    b\,xs)\,ys$); \texttt{detach}/\texttt{noGrad} are absorbing; and on the
-    reattach-free fragment the outgoing bit is \texttt{true} iff the input
-    required grad and no reset intervened.
-  \item \textbf{Device-placement chain} (\texttt{DevicePlacement.lean}): the
-    device tag is last-move-wins ($\mathrm{devRun}\,d_0\,(xs\!+\!\!+\,[op])$ is
-    $op$'s target whenever $op$ is a move, independent of $d_0$), preserved on the
-    move-free fragment, and a binary op is valid iff its operands share a tag
-    ($\mathrm{binValid}(a,b)\!\iff\!a\!=\!b$) --- a cross-device pair is always
-    flagged, a same-device pair never falsely flagged.
-  \item \textbf{Train/eval phase chain} (\texttt{PhaseFlow.lean}): the
-    \texttt{training} bit is last-setter-wins and preserved on the setter-free
-    fragment; the run is compositional, matching real \texttt{nn.Module} mode
-    propagation (parent and children).
-  \item \textbf{Reduction rank chain} (\texttt{RankTransfer.lean}): the rank
-    transfer is compositional and monotone non-increasing
-    ($\mathrm{rankRun}\,r_0\,xs\le r_0$), with closed form
-    $\mathrm{rankRun}\,r_0\,xs = r_0 - \#\{\texttt{keepdim=False}\}$ (truncated),
-    so \texttt{keepdim=True} preserves rank and the verifier never invents a
-    dimension.
-  \item \textbf{Reduced-product lifting} (\texttt{DeviceDtype.lean}): the product
-    over the four scalar algebras flags iff some component flags, and inherits
-    both no-false-positive and refutation soundness.
-\end{itemize}
-
-Each item is gated by a Python test that reproduces the predicted
-SAT/UNSAT/verdict on the \emph{real} solver or the \emph{real} torch dispatcher;
-the whole library's 371 theorems are audited \texttt{sorry}-free by
-\texttt{test\_lean\_whole\_pipeline\_audit.py}.
-
-
-\section{Trusted Computing Base Summary}\label{app:tcb}
-
-The trusted computing base (TCB) of \tguard{} comprises the
-following components, listed in decreasing order of trust
-required:
+The repository deploys the following benchmark and validation families:
 
 \begin{enumerate}[leftmargin=2em]
-  \item \textbf{Z3 SMT solver.}  We trust Z3's decision
-    procedures for QF\_LIA, QF\_NIA, and QF\_UF.  Z3 is
-    widely used and extensively tested, but bugs are possible.
-
-  \item \textbf{Lean~4 proofs.}  The Lean~4 formalization is
-    compiled (\texttt{lake build}) and \texttt{sorry}-free, and its
-    headline soundness results are machine-audited to rest only on the
-    trusted Lean kernel axioms. The Lean checker is not invoked at
-    \tguard{} runtime, so it constrains the \emph{specification}; the
-    conformance gap to the Python implementation is closed test-by-test
-    by the live cross-checks (Section~\ref{sec:lean}).
-
-  \item \textbf{Python implementation.}  The \tguard{} Python
-    code (graph extraction, transfer functions, constraint
-    generation) is \emph{not} mechanically verified.  The
-    conformance gap between the Lean specification and the
-    Python implementation is mitigated by:
-    \begin{itemize}[nosep]
-      \item Live cross-checks that assert the verifier reproduces each
-        Lean decision function's predictions on real \texttt{nn.Module}s.
-      \item Property-based testing (Hypothesis) exercising
-        mechanized theorem statements on the implementation.
-      \item Extensive unit and integration tests
-        (3{,}709 tests total).
-      \item Evaluation on real-world models providing
-        empirical confidence.
-    \end{itemize}
-
-  \item \textbf{Transfer function faithfulness.}  Each of the
-    142 transfer functions is assumed to faithfully model the
-    corresponding PyTorch operator.  This is validated by
-    property-based testing against the PyTorch runtime but
-    not mechanically proved.
-
-  \item \textbf{Graph extraction correctness.}  The AST-based
-    and FX-based graph extractors are assumed to correctly
-    reconstruct the computation graph from source code.
-    Dynamic dispatch, monkey-patching, and metaclass magic
-    can cause extraction failures (reported as warnings, not
-    silent misses).
+  \item \textbf{Ground-truth real benchmarks:} content-addressed clean and buggy
+  \texttt{nn.Module}s with provenance and eager-runtime validation.
+  \item \textbf{GitHub mining:} frozen public issue/PR snapshot from verbatim
+  PyTorch runtime signatures.
+  \item \textbf{Precision/recall baselines:} TensorGuard, PyTea, runtime
+  forward, runtime backward, and no-op on the same corpus.
+  \item \textbf{Statistical rigor:} McNemar tests, bootstrap intervals, effect
+  sizes, multiple-comparison correction, and power analysis.
+  \item \textbf{False-positive hunts:} clean generated templates, random
+  architecture fuzzing, false-positive stress grids, and natural-distribution
+  clean models.
+  \item \textbf{False-negative hunts:} injected genuine faults, mutation
+  testing, latent-bug corpora, and full dispatcher differential tests.
+  \item \textbf{Frontend studies:} fx trace success, export/fx reconciliation,
+  cross-version stability, cross-Python determinism, and safe blocked-import
+  checks.
+  \item \textbf{Operator studies:} registry coverage, frequency-weighted real
+  model coverage, conformance oracle checks, shape algebra properties, einops
+  fuzzing, and SDPA fuzzing.
+  \item \textbf{Deployment checks:} training-loop hazards, tensor-parallel
+  sharding, quantization/export safety, ONNX/export package gates, and upstream
+  hook demos.
+  \item \textbf{Reproducibility checks:} numeric claims audit, artifact badges,
+  capsule manifest, evidence dashboard, benchmark-delta gate, and one-command
+  paper evidence generation.
 \end{enumerate}
 
+\section{Capability matrix}
 
-\section{Reproducibility Footprint}\label{app:repro}
+This matrix is intentionally implementation-facing: it records what a user,
+reviewer, or future contributor can find in the repository today and which part
+of the system owns the behavior.
 
-\tguard{} ships not a single benchmark but a layered evaluation and
-reproducibility suite, all in-tree and regenerable. Table~\ref{tab:repro}
-summarizes the deployed assets; each row is materialized from committed code and
-artifacts (no network or GPU required for the headline rows), and every headline
-number cited in this paper is covered by the single-harness numeric-claims audit
-(\texttt{reproducibility/audit\_numeric\_claims.py}), which classifies each as
-\textsc{verified} or flags a regime/environment qualifier.
-
-\begin{table}[h]
-\centering\small
-\caption{Deployed verification and evaluation assets (selected).}
-\label{tab:repro}
-\begin{tabular}{@{}lp{6.6cm}@{}}
+\begin{longtable}{p{0.20\linewidth} p{0.34\linewidth} p{0.34\linewidth}}
+\caption{Major shipped capabilities grouped by surface area.}\\
 \toprule
-Asset & What it establishes \\
+\textbf{Surface} & \textbf{Capability} & \textbf{Primary implementation or evidence} \\
 \midrule
-Cross-cutting suite (52 models) & multi-theory bugs no shape-only tool catches; precision $1.0$, $0$ FP \\
-PyTEA fragment-fair set ($N{=}34$) & shape-bug parity vs.\ a published checker; McNemar exact $p{=}0.0156$ \\
-Frozen ground-truth corpus & 16 SHA-pinned real \texttt{nn.Module}s (8 clean / 8 buggy), verdicts replayed in eager torch \\
-Per-domain ablation corpus & device and gradient domains each refute bugs the shape view misses \\
-Operator confidence table & all 117 transfer functions tagged complete/sound/heuristic, code$\leftrightarrow$table synced \\
-Lean~4 library & 371 \texttt{sorry}-free theorems, kernel-axiom audited, drift-proof \\
-Conformance + chain-transfer tests & Lean predictions replayed on real Z3, autograd, \texttt{cpu}/\texttt{mps}, \texttt{nn.Module}s \\
-Test suite & 3{,}709 unit/integration/property tests gating the above \\
+\endfirsthead
+\toprule
+\textbf{Surface} & \textbf{Capability} & \textbf{Primary implementation or evidence} \\
+\midrule
+\endhead
+Core verifier & Zero-annotation \texttt{nn.Module} architecture verification
+with shape, dtype, device, phase, gradient, stride, and layout facts &
+\path{src/api.py}, \path{src/smt/solver.py} \\
+Core verifier & Three-valued verdicts \safe{}/\unknown{}/\unsafe{} with
+\texttt{sound}, \texttt{balanced}, and \texttt{heuristic} modes &
+\path{src/soundness_contract.py}, \path{tests/test_soundness_mode.py} \\
+Core verifier & Solver-domain gates for device, phase, and gradient checks that
+remove constraints before Z3, not after the verdict &
+\path{tests/test_solver_domain_gating.py},
+\path{reproducibility/check_flag_demo.json} \\
+Core verifier & CEGAR-discovered infeasible contracts promoted to real bugs &
+\path{tests/test_cegar_refined_contract.py},
+\path{reproducibility/cegar_depth_ablation.md} \\
+Operator model & Confidence-tagged transfer registry and CLI inspection &
+\path{src/operator_confidence.py},
+\path{operator_confidence_table.json} \\
+Operator model & Precise reshape/view/flatten, broadcasting, einsum,
+convolution, normalization, dtype-promotion, and device-transfer semantics &
+\path{tests/test_shape_algebra_properties.py},
+\path{tests/test_lean_conformance.py} \\
+Library model & einops \texttt{rearrange}/\texttt{reduce}/\texttt{repeat}
+checker with source-level bug reports &
+\path{src/einops_verify.py}, \path{src/einops_source.py} \\
+Library model & SDPA shape and mask checker for attention hot paths &
+\path{src/sdpa_verify.py}, \path{tests/test_sdpa_verify.py} \\
+Frontends & Safe AST source parser for untrusted model files &
+\path{src/safe_loader.py}, \path{tests/test_security.py} \\
+Frontends & \texttt{torch.fx} trace lowering across real torchvision models &
+\path{evaluation/fx_trace_success.json} \\
+Frontends & \texttt{torch.export}/Dynamo reconciliation with fx &
+\path{evaluation/frontend_reconciliation.json} \\
+Frontends & Flax/JAX frontend lowering into the shared IR &
+\path{src/flax_extractor.py}, \path{tests/test_flax_frontend.py} \\
+Extensibility & Governed declarative community stubs with provenance and
+executed conformance cases &
+\path{community_stubs/}, \path{src/stub_governance.py} \\
+Training & Static checks for detached loss, missing or misordered
+\texttt{zero\_grad}, missing \texttt{step}, and unsafe fp16 autocast &
+\path{src/training_loop_checks.py},
+\path{reproducibility/training_loop_hazards.md} \\
+Distributed & Tensor-parallel shard divisibility and communication-flag checks &
+\path{src/tensor_parallel_checks.py},
+\path{reproducibility/tensor_parallel_sharding.md} \\
+Deployment & Quantization, export, ONNX, and package-gate safety checks &
+\path{src/quant_export_checks.py},
+\path{reproducibility/quant_export_safety.md} \\
+Developer UX & Human diagnostics, JSON, JUnit, SARIF, and GitHub annotation
+reporters &
+\path{src/reporters.py}, \path{tests/test_reporters.py} \\
+Developer UX & Pre-commit hook, pytest plugin, GitHub Action path, and
+baseline/suppression support &
+\path{src/precommit.py}, \path{src/pytest_tensorguard.py} \\
+Developer UX & Upstream-style \texttt{register\_forward\_pre\_hook} and
+\texttt{@verifiable} decorator reference implementation &
+\path{src/upstream_hook.py},
+\path{reproducibility/upstream_hook_demo.md} \\
+Documentation & Generated soundness and fragment specs plus concise onboarding &
+\path{SOUNDNESS_CONTRACT.md}, \path{VERIFIABLE_FRAGMENT.md},
+\path{GETTING_STARTED.md}, \path{LIMITATIONS.md} \\
+Formal methods & Lean rules for core operators, reduced products, CEGAR,
+fragment modes, and SMT encoding faithfulness &
+\path{lean/TensorGuard/}, \path{tests/test_lean_whole_pipeline_audit.py} \\
+Benchmarks & Frozen real benchmark corpus with datasheet and citation metadata &
+\path{real_benchmarks/manifest.json}, \path{real_benchmarks/DATASHEET.md} \\
+Benchmarks & Extended generated corpus, held-out blind split, false-positive
+stress set, natural-distribution study, and mutation corpus &
+\path{corpus_extended/}, \path{reproducibility/blind_split_eval.md} \\
+Benchmarks & Public GitHub-mined bug snapshot and offline issue-miner proposal
+flow &
+\path{experiments_v5/github_bug_mining/}, \path{corpus_extended/issue_miner.py} \\
+Evidence & Numeric-claim audit, dashboard, artifact capsule, benchmark delta
+gate, and paper-evidence target &
+\path{reproducibility/audit_numeric_claims.py},
+\path{docs/dashboard/index.html}, \path{scripts/benchmark_delta.py} \\
+\bottomrule
+\end{longtable}
+
+\section{Selected numerical claims}
+
+\begin{center}
+\small
+\begin{tabular}{p{0.52\linewidth} p{0.32\linewidth}}
+\toprule
+\textbf{Claim} & \textbf{Backing artifact} \\
+\midrule
+117 operator confidence rows: 75 complete, 36 sound, 6 heuristic &
+\path{operator_confidence_table.json} \\
+16 frozen real benchmarks: 8 clean, 8 buggy &
+\path{real_benchmarks/manifest.json} \\
+2,704 GitHub-mined public bugs: 2,394 shape, 310 device &
+\path{experiments_v5/github_bug_mining/mined_bugs_manifest.json} \\
+TP=8, FP=0, TN=8, FN=0 on frozen real benchmarks &
+\path{evaluation/confusion_matrices.json} \\
+0 false positives on 80 sound-mode clean models &
+\path{evaluation/sound_mode_fp.json} \\
+0 false positives on 200 random clean fuzzed models &
+\path{evaluation/diff_fuzz.json} \\
+281/281 genuine injected faults caught &
+\path{evaluation/neg_fuzz.json} \\
+6/8 latent bugs caught vs. 0/8 for the strongest dynamic baseline &
+\path{evaluation/hard_recall.json} \\
+50 minimal bug reproducers frozen across nine mechanisms &
+\path{evaluation/triage_regressions.json} \\
+94.86\% frequency-weighted operator coverage on 13 torchvision models &
+\path{evaluation/operator_frequency.json} \\
+21/21 torchvision models traced and lowered by fx &
+\path{evaluation/fx_trace_success.json} \\
+371 public Lean theorems discovered and axiom-audited &
+\path{tests/test_lean_whole_pipeline_audit.py} \\
+12 verified, one regime-qualified, one environment-qualified numeric claims &
+\path{reproducibility/numeric_claims_audit.json} \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{center}
 
-The design goal is that a reviewer can move from any claim in the text to the
-exact line of code or artifact that produces it, and rerun it---the
-``credibility'' half of the contribution, as load-bearing as the verification
-engine itself.
+\section{Manual bibliography}
 
+\begin{thebibliography}{9}
+\bibitem{pytorch}
+PyTorch Contributors.
+\newblock PyTorch: An imperative style, high-performance deep learning library.
+
+\bibitem{z3}
+Leonardo de Moura and Nikolaj Bjorner.
+\newblock Z3: An efficient SMT solver.
+
+\bibitem{cvc5}
+The cvc5 Developers.
+\newblock cvc5: A versatile and industrial-strength SMT solver.
+
+\bibitem{pytea}
+PyTea Contributors.
+\newblock PyTea: Static analysis for tensor shape errors in deep learning
+programs.
+
+\bibitem{lean}
+Lean Prover Community.
+\newblock The Lean 4 theorem prover and programming language.
+
+\bibitem{cegar}
+Edmund Clarke, Orna Grumberg, Somesh Jha, Yuan Lu, and Helmut Veith.
+\newblock Counterexample-guided abstraction refinement.
+
+\bibitem{mcnemar}
+Quinn McNemar.
+\newblock Note on the sampling error of the difference between correlated
+proportions or percentages.
+\end{thebibliography}
 
 \end{document}
