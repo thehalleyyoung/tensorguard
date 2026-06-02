@@ -48,7 +48,8 @@
 \begin{abstract}
 \tg{} is a zero-annotation static verifier for PyTorch \texttt{nn.Module}
 architectures and adjacent training/deployment code.  It checks tensor shape,
-dtype, device, phase, gradient-flow, stride/layout, and library-specific
+dtype, device, phase, gradient-flow, stride/layout, probabilistic batch/event
+contracts, and library-specific
 contracts before a forward pass runs, then reports a three-valued verdict:
 \safe{}, \unknown{}, or \unsafe{}.  The implementation is intentionally more
 than a prototype: it ships a formal soundness contract, a verifiable-fragment
@@ -360,7 +361,7 @@ accumulation argument.
 
 \subsection{Specialized library contracts}
 
-Two high-value library checkers demonstrate the pattern for precision without
+Three high-value library checkers demonstrate the pattern for precision without
 unsoundness:
 
 \begin{itemize}[leftmargin=2em]
@@ -377,6 +378,15 @@ unsoundness:
   400-case differential battery checks it against real PyTorch.  Backend-specific
   key/value sequence-length behavior is not hard-refuted where PyTorch's default
   fused backend accepts it.
+  \item \textbf{\texttt{torch.distributions}.}
+  \path{src/distributions_verify.py} resolves batch shapes, event shapes, and
+  \texttt{log\_prob} output shapes for scalar-event distributions,
+  \texttt{Categorical}, \texttt{MultivariateNormal}, and
+  \texttt{Independent}.  The contract is intentionally over usable
+  \texttt{sample}/\texttt{log\_prob} behavior, not just constructors, because
+  PyTorch can build a malformed multivariate distribution that only fails when
+  used.  Differential tests compare against real PyTorch distributions with
+  support validation disabled so the oracle isolates shape failures.
 \end{itemize}
 
 \section{Beyond \texttt{forward}: deployment and training hazards}
@@ -803,8 +813,8 @@ not more marketing metrics; they are higher-value coverage and stronger
 evidence:
 
 \begin{itemize}[leftmargin=2em]
-  \item deeper operator coverage for distributions, named tensors, complex
-  dtypes, functorch/vmap, sparse tensors, grid sampling, MultiheadAttention,
+  \item deeper operator coverage for named tensors, complex dtypes,
+  functorch/vmap, sparse tensors, grid sampling, MultiheadAttention,
   split/chunk, masked selection, nonzero, and exact einsum diagonal semantics;
   \item deployment correctness for quantization, mixed precision, dynamic
   \texttt{torch.export} constraints, AOTInductor layouts, ONNX opsets, GGUF
@@ -915,6 +925,9 @@ Are einops contracts faithful? &
 Is SDPA modeled faithfully? &
 \path{src/sdpa_verify.py} &
 \path{tests/test_sdpa_verify.py} \\
+Are probabilistic batch/event shapes modeled faithfully? &
+\path{src/distributions_verify.py} &
+\path{tests/test_distributions_verify.py} \\
 Are training-loop hazards checked? &
 \path{reproducibility/training_loop_hazards.md} &
 \path{tests/test_training_loop_checks.py} \\
@@ -962,7 +975,7 @@ The repository deploys the following benchmark and validation families:
   checks.
   \item \textbf{Operator studies:} registry coverage, frequency-weighted real
   model coverage, conformance oracle checks, shape algebra properties, einops
-  fuzzing, and SDPA fuzzing.
+  fuzzing, SDPA fuzzing, and probabilistic distribution-shape fuzzing.
   \item \textbf{Deployment checks:} training-loop hazards, tensor-parallel
   sharding, quantization/export safety, ONNX/export package gates, and upstream
   hook demos.
@@ -1012,6 +1025,9 @@ checker with source-level bug reports &
 \path{src/einops_verify.py}, \path{src/einops_source.py} \\
 Library model & SDPA shape and mask checker for attention hot paths &
 \path{src/sdpa_verify.py}, \path{tests/test_sdpa_verify.py} \\
+Library model & \texttt{torch.distributions} batch/event/log-prob shape checker &
+\path{src/distributions_verify.py},
+\path{tests/test_distributions_verify.py} \\
 Frontends & Safe AST source parser for untrusted model files &
 \path{src/safe_loader.py}, \path{tests/test_security.py} \\
 Frontends & \texttt{torch.fx} trace lowering across real torchvision models &

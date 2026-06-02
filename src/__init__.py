@@ -25,6 +25,7 @@ from .safe_loader import (
     verify_source_safely,
     is_static_only_source,
 )
+from .distributions_verify import verify_distribution, verify_log_prob
 
 __all__ = [
     "analyze",
@@ -42,5 +43,7 @@ __all__ = [
     "SourceLocation",
     "checked",
     "TensorGuardCheckError",
+    "verify_distribution",
+    "verify_log_prob",
     "__version__",
 ]

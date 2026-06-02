@@ -19,13 +19,15 @@ runtime errors in ML codebases before any code runs.
 - **142 operator transfer functions** — covers `matmul`, `conv2d`, `cat`,
   `view`, `reshape`, `transpose`, `permute`, `einsum`, `bmm`, attention
   patterns, and more
-- **einops & SDPA verified against the real libraries** — `rearrange` /
-  `reduce` / `repeat` and `scaled_dot_product_attention` are statically
-  checked by shape-only models that are **differentially fuzzed** (3000 +
-  400 random cases) to match real `einops` / `torch` verdicts *and* output
-  shapes exactly; a non-divisible patch-embed or a head-dim-mismatched
-  attention is caught before the kernel raises, symbolic dims are never
-  refuted (`tensorguard.verify_einops` / `verify_einops_source`)
+- **High-value library contracts checked against the real libraries** —
+  `einops` (`rearrange` / `reduce` / `repeat`), SDPA, and
+  `torch.distributions` batch/event/log-prob shapes are verified by
+  shape-only models that are **differentially fuzzed** against real
+  `einops` / `torch`; non-divisible patch embeds, head-dim-mismatched
+  attention, and unusable probabilistic batch/event contracts are caught
+  before kernels raise, while symbolic dims are never refuted
+  (`verify_einops`, `verify_einops_source`, `verify_distribution`,
+  `verify_log_prob`)
 - **5-theory product domain** — jointly reasons over
   **Shape × Device × Phase × Stride × Permutation** for each tensor
 - **Zero annotations required** — shapes are inferred from constructors,
