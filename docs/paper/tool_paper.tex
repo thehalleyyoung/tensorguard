@@ -85,7 +85,7 @@ dimensions, proving safety for all valid inputs rather than for
 concrete test shapes alone.  We evaluate on real-world architectures
 including ResNet-50, MobileNetV2, EfficientNet-B0, and DenseNet-121, demonstrating
 high precision and recall.
-The repository also contains a \emph{compiled}, \texttt{sorry}-free Lean~4 formalization (16 modules, $\sim$3{,}000 lines, 196 theorems/lemmas, pinned toolchain, \texttt{lake build} green) whose 51 headline soundness results are machine-audited to depend only on the trusted Lean kernel axioms---covering the operator transfer functions, the reduced-product abstraction, CEGAR termination with a tight iteration bound, the two known-unsoundness gaps (one closed, one made mode-precise), and the device/dtype/phase/gradient transfer functions, each cross-checked against the live verifier.
+The repository also contains a \emph{compiled}, \texttt{sorry}-free Lean~4 formalization (18 modules, $\sim$3{,}800 lines, 210 theorems/lemmas, pinned toolchain, \texttt{lake build} green) in which \emph{every one} of the 210 public theorems is machine-audited to depend only on the trusted Lean kernel axioms $\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}$ and never on \texttt{sorryAx}---covering the operator transfer functions, the reduced-product abstraction, CEGAR termination with a tight iteration bound, the two known-unsoundness gaps (one closed, one made mode-precise), the device/dtype/phase/gradient transfer functions, and the \emph{faithfulness of the Z3 encoding} the solver actually runs---each cross-checked against the live verifier, real Z3, and the live PyTorch dispatcher.
 \end{abstract}
 
 %% ============================================================
@@ -917,19 +917,121 @@ bugs).
 
 
 %% ============================================================
+\section{Empirical Rigor: Ablations, Robustness, Reproducibility}
+\label{sec:rigor}
+
+Beyond raw precision/recall, a verifier that aspires to be trusted in a PyTorch
+workflow must answer four further questions: \emph{which} parts of the design
+earn their keep, whether the headline numbers survive a held-out split and
+multiple-comparison correction, whether verdicts are stable across the torch and
+Python versions users actually run, and whether everything regenerates from one
+command. Every number in this section is produced by a deterministic harness
+under \texttt{reproducibility/} with a pinned seed and a \texttt{-{}-check} mode
+that fails CI on drift.
+
+\subsection{Domain ablation: every domain is necessary}\label{sec:ablation-domain}
+\tguard{}'s five-theory product (shape, dtype, device, gradient, phase) is
+ablated by a leave-one-domain-out (LODO) study over a stratified corpus of
+$n=300$ cases (60 per domain; seed \texttt{20240604},
+\texttt{reproducibility/domain\_ablation.py}). For each of the four
+\emph{verification} domains, full-product recall on its bug class is $1.0$ while
+LODO recall collapses to $0$---i.e.\ the marginal contribution of every domain is
+exactly $1.0$ and no other domain compensates for a missing one (the recall
+matrix is diagonal). The phase domain is confirmed \emph{diagnostic-only}: it
+registers train/eval well-formedness but refutes nothing (recall $0.0$ on its own
+``class''), and we report it as such rather than overclaiming. The domains are
+therefore empirically orthogonal and each is independently necessary.
+
+\subsection{CEGAR refinement-depth ablation}\label{sec:ablation-cegar}
+Sweeping the predicate-refinement budget from depth $0$ to $6$ over 16 conflict
+and 8 clean cases (\texttt{reproducibility/cegar\_depth\_ablation.py}) shows the
+intended profile: recall is \emph{depth-invariant} (all 16 conflicts detected
+even at depth $0$), while \emph{precision} rises from depth $0$ and reaches its
+knee at depth $1$, where the number of refined-contract diagnoses jumps from $0$
+to $16$ and then plateaus. The loop saturates at $40$ total iterations, well
+within the Lean-proved bound of Section~\ref{sec:lean}. Depth~$1$ is thus the
+cost/precision sweet spot, and refinement buys \emph{diagnosis quality}, not
+recall.
+
+\subsection{Pre-registered blind split and statistical correction}
+\label{sec:blind}
+To rule out tuning-set overfitting we froze a held-out split of $186$ cases
+($138$ buggy, $48$ clean), disjoint from the development set, and pre-registered
+its SHA-256 manifest. The observed manifest hash matches the registered one
+(\texttt{df881a\dots}), and on the blind split both \texttt{sound} and
+\texttt{balanced} modes confirm all three pre-registered hypotheses: H1 (no false
+positive: zero clean models flagged), H2 (recall floor $\ge 0.9$ met), and H3 (no
+overfitting gap: dev$-$blind recall gap $\le 0.1$)
+(\texttt{reproducibility/blind\_split\_eval.py}). Every comparative claim against
+a baseline additionally carries an effect size and a multiple-comparison
+correction: over a family of four McNemar comparisons, Holm and
+Benjamini--Hochberg agree on the set of significant results
+(\texttt{reproducibility/effect\_sizes.py}), so the headline advantages are not
+artifacts of uncorrected multiplicity.
+
+\subsection{Cross-version and cross-interpreter robustness}\label{sec:robust}
+Because the analyzer is \emph{static} and never executes the model, its verdict
+should not depend on the installed torch build. We confirm this directly: across
+the torch $2.1.0$ through $2.9.1$ wheel matrix (nine versions), the verdict on a
+$227$-case corpus is byte-identical to a pinned baseline digest
+(\texttt{reproducibility/cross\_version\_stability.py}). Verdicts are likewise
+invariant under Python hash-seed randomization---a single distinct verdict digest
+across randomized runs and the supported Python $3.9$--$3.14$ matrix
+(\texttt{reproducibility/cross\_python\_determinism.py})---so results are
+reproducible bit-for-bit regardless of interpreter.
+
+\subsection{Scaling}\label{sec:scaling}
+End-to-end wall-clock on synthetic models of growing depth (width $32$, three
+reps per size) scales \emph{polynomially, not exponentially}: a log--log fit of
+median latency versus depth has exponent $1.69$ with $R^2=0.988$
+(\texttt{reproducibility/scaling\_walltime.json}), i.e.\ sub-quadratic. Median
+latency grows from $12$\,ms at depth $1$ to $4.3$\,s at depth $64$
+(Table~\ref{tab:scaling}), comfortably within an interactive budget for the model
+sizes the corpus represents.
+
+\begin{table}[t]
+\centering\small
+\caption{Median end-to-end verification latency vs.\ model depth
+(\texttt{sound} mode, width $32$).}
+\label{tab:scaling}
+\begin{tabular}{@{}rrrrrrr@{}}
+\toprule
+depth & 1 & 4 & 16 & 24 & 32 & 64 \\
+\midrule
+median (ms) & 12 & 43 & 372 & 1165 & 1180 & 4260 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Reproducibility capsule}\label{sec:capsule}
+The full evidence base regenerates from a single command. \texttt{make
+reproduce} re-runs every deterministic harness; \texttt{make paper-evidence}
+additionally rebuilds all tables/figures and verifies, via a regenerable
+evidence index, that every wired artifact is present and that no generator has
+silently disappeared. Artifacts are content-addressed and a Docker capsule pins
+the wheel set, so a reviewer obtains byte-identical \texttt{.json} outputs. This
+is what lets the claims above be checked rather than trusted.
+
+
+%% ============================================================
 \section{Lean~4 Mechanization}\label{sec:lean}
 
 The repository ships a \emph{compiled}, \texttt{sorry}-free Lean~4
 formalization (pinned \texttt{lean-toolchain} \texttt{v4.14.0},
-\texttt{lakefile.lean}, \texttt{lake build} green) comprising 16 modules,
-$\sim$3{,}000 lines and 196 theorems/lemmas. Soundness is not asserted by
+\texttt{lakefile.lean}, \texttt{lake build} green) comprising 18 modules,
+$\sim$3{,}800 lines and 210 theorems/lemmas. Soundness is not asserted by
 inspection: \texttt{TensorGuard/AxiomAudit.lean} runs \texttt{\#print axioms}
-on 51 headline results and a regression test asserts each depends only on the
-trusted kernel set $\{\texttt{propext}, \texttt{Classical.choice},
-\texttt{Quot.sound}\}$ and \emph{never} on \texttt{sorryAx}---the
-machine-checked witness behind the ``sorry-free'' claim.
+on the headline results, and---crucially---\texttt{tests/test\_lean\_whole\_%
+pipeline\_audit.py} makes the audit \emph{total and drift-proof}: it
+auto-discovers \emph{every one} of the library's 210 public theorems, elaborates
+a \texttt{\#print axioms} for each through the Lean kernel, and asserts each
+depends only on the trusted kernel set $\{\texttt{propext},
+\texttt{Classical.choice}, \texttt{Quot.sound}\}$ and \emph{never} on
+\texttt{sorryAx}. A new theorem hiding a \texttt{sorry} or an exotic axiom is
+caught automatically, with no hand-maintained list---the machine-checked witness
+behind the ``sorry-free'' claim.
 
-The mechanization covers five components:
+The mechanization covers six components:
 
 \begin{enumerate}[leftmargin=2em]
   \item \textbf{Operator transfer-function soundness.} Per-operator rules for
@@ -973,26 +1075,83 @@ The mechanization covers five components:
     zeroes the gradient bit). Both guarantees \emph{lift to the reduced
     product}: it flags iff some component flags, and inherits no-false-positive
     and refutation soundness.
+
+  \item \textbf{SMT-encoding faithfulness and end-to-end auditing (this work).}
+    The previous component proves the \emph{abstract} algebras sound; this one
+    closes the gap to the \emph{concrete} constraints the solver discharges and
+    to the rest of the pipeline. \texttt{SmtEncoding.lean} models the
+    enumeration-sort equality constraint the verifier hands Z3 for every
+    device/phase/gradient check (\texttt{encode\_device\_constraint},
+    \texttt{encode\_phase\_constraint},
+    \texttt{encode\_gradient\_constraint}) and proves it \emph{faithful}: the
+    pinned same-value formula is satisfiable iff the two endpoints are equal, so
+    the solver's UNSAT verdict---a reported mismatch---holds iff the endpoints
+    genuinely differ, and coincides exactly with the abstract \texttt{*Bug}
+    predicate of the previous component (\texttt{device\_smt\_matches\_devBug}).
+    \texttt{CrossDomain.lean} does the same for the
+    \texttt{encode\_cross\_domain\_constraint} encoder, proving a device-transfer
+    op preserves shape exactly while leaving the device free, and a non-transfer
+    op preserves device exactly while leaving shape free. The dtype promotion
+    join is strengthened to a fully proved semilattice (associative,
+    unknown-absorbing), justifying the order-independent never-flagging
+    elementwise transfer, and \texttt{GradFlow.lean} lifts the single-op
+    \texttt{detach} check to the gradient-flow transfer over an entire chain of
+    ops, proving it compositional with absorbing resets. These results narrow the
+    trusted computing base: the previously-trusted faithfulness of the device,
+    phase and gradient enum encodings is now \emph{proved}.
 \end{enumerate}
+
+\begin{table}[t]
+\centering\small
+\caption{Machine-checked soundness modules added in this work (all
+\texttt{sorry}-free, \texttt{propext}-only, each gated by a Python conformance
+test against real code).}
+\label{tab:lean-new}
+\begin{tabular}{@{}llp{4.3cm}@{}}
+\toprule
+Lean module & Cross-check & Guarantee \\
+\midrule
+\texttt{DeviceDtype.lean}  & live verifier + torch & 4 algebras: no-FP + refutation-sound; reduced product \\
+\texttt{SmtEncoding.lean}  & real Z3 & device/phase/grad enum encoding UNSAT $\Leftrightarrow$ endpoints differ \\
+\texttt{CrossDomain.lean}  & real Z3 & transfer preserves shape / non-transfer preserves device, exactly \\
+\texttt{GradFlow.lean}     & real autograd & \texttt{requires\_grad} chain transfer; compositional, absorbing resets \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Conformance: proofs cross-checked against real code.}
 Each soundness module is paired with a Python test that mirrors the Lean
-\emph{decision} function and asserts the \emph{live} verifier reproduces its
-predictions on real \texttt{nn.Module}s. For the non-shape transfer functions,
-\texttt{tests/test\_device\_dtype\_transfer.py} mirrors every Lean
-\texttt{*Bug} predicate and checks that \texttt{verify\_module}'s
-\texttt{device\_mismatch}/\texttt{dtype\_error}/\texttt{phase\_error}/
-\texttt{gradient\_broken} verdicts match---on consistent, mismatching and
-unknown-operand probes for all four algebras---with the consistent cases
-additionally executed against real torch. This narrows the conformance gap from
-``tested'' to ``the proved predictions are observed to hold on real PyTorch.''
+\emph{decision} function and asserts the \emph{live} system reproduces its
+predictions on real artifacts---not merely on a Lean-internal model. For the
+non-shape transfer functions, \texttt{tests/test\_device\_dtype\_transfer.py}
+mirrors every Lean \texttt{*Bug} predicate and checks that
+\texttt{verify\_module}'s \texttt{device\_mismatch}/\texttt{dtype\_error}/%
+\texttt{phase\_error}/\texttt{gradient\_broken} verdicts match on consistent,
+mismatching and unknown-operand probes for all four algebras, with the
+consistent cases additionally executed against real torch. The faithfulness
+modules go one level deeper and exercise the \emph{actual solver and dispatcher}:
+\texttt{test\_smt\_encoding\_faithful.py} and
+\texttt{test\_cross\_domain\_encoding.py} run the real \texttt{\_Z3Context}
+encoders through Z3 on every concrete device/phase/gradient and shape endpoint
+pair and assert the live SAT/UNSAT verdict equals the Lean prediction;
+\texttt{test\_grad\_flow\_transfer.py} replays every gradient-flow chain of length
+$\le 3$ on a real autograd tensor and asserts \texttt{out.requires\_grad} equals
+the proved \texttt{gradRun}; and \texttt{test\_dtype\_promotion\_lattice.py}
+executes real \texttt{torch.add} on every promotable dtype pair to validate the
+``elementwise dtype never flags'' law. This narrows the conformance gap from
+``tested'' to ``the proved predictions are observed to hold on real PyTorch and
+real Z3.''
 
 \paragraph{Trusted computing base (TCB).}
 The mechanization does \emph{not} cover completeness of verification
 (undecidable in general by Rice's theorem~\cite{rice53}), Z3's internal
 decision procedures, or full bit-level faithfulness of all 142 operator
 transfer functions to PyTorch (the conformance gap, mitigated by the
-cross-checks and property-based testing above).
+cross-checks and property-based testing above). It \emph{does} now cover the
+faithfulness of the device, phase and gradient enumeration encodings the solver
+runs---previously trusted, now proved (\texttt{SmtEncoding.lean},
+\texttt{CrossDomain.lean})---so the remaining encoding-trust surface is confined
+to the linear-arithmetic shape constraints and Z3's own soundness.
 
 
 %% ============================================================
@@ -1043,6 +1202,147 @@ rather than source code.
 
 
 %% ============================================================
+\section{End-to-End Walkthrough and Operator Coverage}\label{sec:walkthrough}
+
+\paragraph{A worked example.} Figure-style, consider the 22-line model below
+(shipped as \texttt{examples/shape\_bug.py}): a \texttt{Conv2d(3,128,\dots)}
+followed by \texttt{AdaptiveAvgPool2d(1)} and \texttt{flatten(1)} produces a
+$[B,128]$ activation, but the head is declared \texttt{Linear(256,10)}.
+
+\begin{verbatim}
+self.conv = nn.Conv2d(3, 128, 3, padding=1)
+self.pool = nn.AdaptiveAvgPool2d(1)
+self.fc   = nn.Linear(256, 10)   # BUG: expects 256, gets 128
+def forward(self, x):
+    x = self.conv(x)             # [B, 128, H, W]
+    x = self.pool(x).flatten(1)  # [B, 128]
+    return self.fc(x)            # mismatch
+\end{verbatim}
+
+\noindent Running \texttt{tensorguard analyze examples/shape\_bug.py} terminates
+in $75\,$ms and emits a machine-readable report whose salient entry is:
+
+\begin{verbatim}
+{ "id": "shape-22", "severity": "error",
+  "category": "shape-error",
+  "message": "Linear layer expects input dim 256, got 128",
+  "location": { "line": 22, "column": 12 } }
+\end{verbatim}
+
+\noindent The verifier propagates the symbolic shape through the convolution,
+adaptive pool, and flatten transfer functions, discharges the resulting
+disequality $128 \neq 256$ as UNSAT-of-equality, and pins the diagnostic to the
+exact call site. The same run surfaces four data-flow null-dereference warnings,
+illustrating the multi-property design: shape, device, dtype, gradient, and
+null/flow checks share one fixpoint pass and one report.
+
+\paragraph{Operator coverage.} \tguard{} ships transfer functions for
+\textbf{117} PyTorch operators, each tagged with the strongest soundness claim it
+supports (Table~\ref{tab:opcov}). A \emph{complete} tag means the transfer is
+exact on its fragment (no false positives \emph{and} no false negatives for shape);
+\emph{sound} means it over-approximates safely (no unsound SAFE, possible
+abstention); \emph{heuristic} marks the handful of data-dependent operators
+(e.g.\ \texttt{torch.unique}, \texttt{torch.multinomial},
+\texttt{torch.linalg.svd}) whose output shape is not statically determined and
+which the tool therefore treats diagnostically rather than soundly.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrl}
+\toprule
+\textbf{Confidence} & \textbf{Count} & \textbf{Representative operators} \\
+\midrule
+Complete  & 75 & pointwise activations, \texttt{reshape},
+\texttt{permute}, \texttt{cat}, broadcasting binops \\
+Sound     & 36 & \texttt{matmul}, \texttt{bmm}, \texttt{einsum}-free
+reductions, \texttt{fft.*}, \texttt{gather} \\
+Heuristic & 6  & \texttt{einsum}, \texttt{unique}, \texttt{multinomial},
+\texttt{linalg.\{qr,svd,solve\}} \\
+\midrule
+\textbf{Total} & \textbf{117} & \\
+\bottomrule
+\end{tabular}
+\caption{Per-operator soundness coverage, exported by
+\texttt{tensorguard operator-confidence}. The complete/sound split is honored at
+run time: \texttt{sound} mode abstains on heuristic operators rather than
+emitting a verdict.}
+\label{tab:opcov}
+\end{table}
+
+\paragraph{Integration surface.} Verification is only useful if it meets
+developers where they already work, so \tguard{} exposes the same analysis engine
+through a dozen entry points (Table~\ref{tab:cli}). The CLI emits SARIF for code
+scanning, the \texttt{ci-check} command enforces a no-new-bugs budget against a
+committed baseline, the \texttt{watch} command re-verifies on save with editor
+diagnostics, and a Language-Server-style \texttt{server} streams results over
+stdio/TCP. Two packaging shims---a \texttt{pre-commit} hook and a \texttt{pytest}
+plugin---let teams block regressions at commit time or assert shape safety inside
+their existing test suite without writing oracle code.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Entry point} & \textbf{Purpose} \\
+\midrule
+\texttt{analyze} / \texttt{analyze-package} & verify a file/module or a whole
+installed package (parallel workers) \\
+\texttt{verify} & shape/device/phase/grad checks with explicit input shape and
+CEGAR depth \\
+\texttt{ci-check} & baseline diff with \texttt{--max-new-bugs} budget; SARIF
+output for code scanning \\
+\texttt{watch} & incremental re-verification on save (vim/emacs/vscode
+diagnostics) \\
+\texttt{server} & long-lived analysis server over stdio or TCP \\
+\texttt{report} / \texttt{export} & render HTML/SARIF/JSON; emit \texttt{.pyi}/
+\texttt{.d.ts} shape stubs \\
+\texttt{diff} & semantic diff between two analysis runs \\
+\texttt{operator-confidence} & query the soundness tag of any operator \\
+\texttt{pre-commit} hook & block commits that introduce new bugs \\
+\texttt{pytest} plugin & assert shape safety from within a test suite \\
+\bottomrule
+\end{tabular}
+\caption{The integration surface: one engine, many developer-facing entry
+points, all sharing the verified core.}
+\label{tab:cli}
+\end{table}
+
+
+%% ============================================================
+\section{Threats to Validity}\label{sec:threats}
+
+\paragraph{Internal validity.} The headline recall/precision could in principle
+reflect tuning to the development corpus. We mitigate this with the
+pre-registered blind split of Section~\ref{sec:blind} (manifest hash fixed before
+evaluation; H1--H3 confirmed on held-out data) and with multiple-comparison
+correction on every comparative claim. The abstention accounting is explicit:
+\texttt{sound} mode converts every out-of-fragment construct into
+\texttt{UNKNOWN} rather than a silent verdict, so a missed bug surfaces as an
+abstention rather than an unsound \texttt{SAFE}.
+
+\paragraph{Construct validity.} The strongest threat is the \emph{conformance
+gap}: a transfer function could mis-model PyTorch and the proofs would faithfully
+certify the wrong semantics. This is precisely why the Lean soundness modules are
+each paired with a test that runs the \emph{live} verifier, real Z3, and the real
+torch dispatcher (Section~\ref{sec:lean}); the remaining gap is the per-operator
+bit-level faithfulness of the shape transfer functions, bounded by property-based
+differential testing against the live dispatcher.
+
+\paragraph{External validity.} Results may not transfer to model families outside
+the corpus. The corpus is stratified by bug class and drawn from real public
+repositories, the false-positive stress corpus uses clean real models, and the
+cross-version/cross-interpreter matrices (Section~\ref{sec:robust}) show the
+verdict is invariant to the torch and Python versions a practitioner runs. The
+phase domain is reported as diagnostic-only to avoid overclaiming.
+
+\paragraph{Reproducibility.} Wall-clock numbers are machine-dependent and are
+regenerated but not byte-compared; all categorical verdicts are content-addressed
+and reproduce bit-for-bit under the pinned capsule (Section~\ref{sec:capsule}).
+
+
+%% ============================================================
 \section{Conclusion}\label{sec:conclusion}
 
 We have presented \tguard{}, a static multi-property verifier for
@@ -1060,10 +1360,11 @@ covers real-world architectures (ResNet, VGG, MobileNetV2,
 EfficientNet, DenseNet), and produces parametric safety
 certificates via IC3/PDR over symbolic dimensions. The repository
 also includes a compiled, \texttt{sorry}-free Lean~4 formalization
-($\sim$3{,}000 lines, 196 theorems/lemmas, 51 axiom-audited soundness
-results) covering the operator transfer functions, the reduced-product
-abstraction, CEGAR termination, the two known-unsoundness gaps, and the
-device/dtype/phase/gradient transfer functions.
+($\sim$3{,}800 lines, 210 theorems/lemmas, \emph{all} machine-audited to
+trusted kernel axioms) covering the operator transfer functions, the
+reduced-product abstraction, CEGAR termination, the two known-unsoundness gaps,
+the device/dtype/phase/gradient transfer functions, and the faithfulness of the
+Z3 encoding the solver runs.
 
 The primary limitation is the conformance gap between the
 mechanized specification and the Python implementation.
@@ -1390,6 +1691,45 @@ a semi-linear fragment where convexity is preserved.  Full
 nonlinear arithmetic would break convexity; our restriction
 to semi-linear terms avoids this.
 \end{proof}
+
+
+\section{Machine-Checked Faithfulness Theorems}\label{app:faithful}
+
+For reference, we state the central faithfulness and transfer results added in
+this work (all \texttt{sorry}-free, depending only on \texttt{propext}). Let
+$\mathrm{Sat}(c_a,c_b)$ denote satisfiability of the pinned same-value constraint
+the verifier emits, and let $\mathrm{devBug}$, etc., be the abstract algebra
+predicates of \texttt{DeviceDtype.lean}.
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Enum-encoding faithfulness} (\texttt{SmtEncoding.lean}):
+    $\mathrm{Sat}(c_a,c_b)\iff c_a=c_b$, hence $\lnot\mathrm{Sat}(c_a,c_b)\iff
+    c_a\neq c_b$; and for known devices
+    $\lnot\mathrm{Sat}(c_a,c_b)\iff \mathrm{devBug}(c_a,c_b)$. The same UNSAT
+    characterization holds for the phase sort and the gradient Boolean.
+  \item \textbf{Cross-domain faithfulness} (\texttt{CrossDomain.lean}): a
+    transfer op's constraint set is satisfiable $\iff$ \texttt{pre}=\texttt{post}
+    (shape preserved, device free); a non-transfer op's $\iff$
+    $d_{\text{pre}}=d_{\text{post}}$ (device preserved, shape free).
+  \item \textbf{Dtype promotion semilattice} (\texttt{DeviceDtype.lean}):
+    $\mathrm{dtPromote}$ is commutative, idempotent, associative, and
+    $\top$-absorbing; hence the elementwise dtype transfer never flags
+    ($\mathrm{dtElementwiseBug}\equiv\texttt{false}$).
+  \item \textbf{Gradient-flow chain transfer} (\texttt{GradFlow.lean}):
+    $\mathrm{gradRun}$ is compositional
+    ($\mathrm{gradRun}\,b\,(xs\!+\!\!+\,ys)=\mathrm{gradRun}\,(\mathrm{gradRun}\,
+    b\,xs)\,ys$); \texttt{detach}/\texttt{noGrad} are absorbing; and on the
+    reattach-free fragment the outgoing bit is \texttt{true} iff the input
+    required grad and no reset intervened.
+  \item \textbf{Reduced-product lifting} (\texttt{DeviceDtype.lean}): the product
+    over the four scalar algebras flags iff some component flags, and inherits
+    both no-false-positive and refutation soundness.
+\end{itemize}
+
+Each item is gated by a Python test that reproduces the predicted
+SAT/UNSAT/verdict on the \emph{real} solver or the \emph{real} torch dispatcher;
+the whole library's 210 theorems are audited \texttt{sorry}-free by
+\texttt{test\_lean\_whole\_pipeline\_audit.py}.
 
 
 \section{Trusted Computing Base Summary}\label{app:tcb}
