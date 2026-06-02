@@ -1559,6 +1559,18 @@ slim, non-root runtime whose entrypoint is the `tensorguard` console script, so
 install; `tests/test_docker_image.py` checks that contract and runs the real
 entrypoint command.
 
+### Incremental adoption (baseline & suppression)
+
+Legacy repositories can adopt TensorGuard without a wall of failures. A
+`.tensorguard-baseline.json` snapshot records the findings that exist today, so
+later runs suppress anything already baselined and only *new* findings fail the
+gate. The fingerprint is line-independent, so a known finding that merely moves
+within a file stays baselined. For one-off cases, a `# tensorguard: ignore`
+comment on a finding's line silences it (`# tensorguard: ignore[shape,broadcast]`
+silences only the listed rule tags). Both work everywhere the shared verify core
+runs — the GitHub Action (`baseline:` input), the pre-commit hook, and the pytest
+plugin. See `src/baseline.py` and `tests/test_baseline.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

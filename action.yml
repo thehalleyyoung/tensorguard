@@ -35,6 +35,14 @@ inputs:
       set, the action also uploads it to the Code Scanning API.
     required: false
     default: ""
+  baseline:
+    description: >-
+      Optional path to a .tensorguard-baseline.json file. Findings recorded in
+      the baseline are suppressed so only NEW findings can fail the gate
+      (incremental adoption on legacy repos). If empty, the action also searches
+      the analyzed path's ancestors for a .tensorguard-baseline.json.
+    required: false
+    default: ""
   python-version:
     description: "Python version to set up."
     required: false
@@ -69,6 +77,7 @@ runs:
         INPUT_INPUT_SHAPES: ${{ inputs.input-shapes }}
         INPUT_FAIL_ON: ${{ inputs.fail-on }}
         INPUT_SARIF_OUTPUT: ${{ inputs.sarif-output }}
+        INPUT_BASELINE: ${{ inputs.baseline }}
         PYTHONPATH: ${{ github.action_path }}
       run: python -m src.github_action
     - name: Upload SARIF to Code Scanning

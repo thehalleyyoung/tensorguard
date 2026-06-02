@@ -178,12 +178,19 @@ def run_action(
     fail_on: str = "any",
     verify_fn=None,
     config_fn=None,
+    baseline: Optional[set] = None,
+    inline_suppression: bool = True,
+    fingerprint_root: Optional[str] = None,
 ) -> ActionResult:
     """Verify every ``*.py`` under *paths* and collect PR annotations.
 
     ``fail_on`` is ``"any"`` (fail if any issue) or ``"never"`` (annotate only).
     ``verify_fn``/``config_fn`` are injectable for testing; by default they are
     the real :func:`src.api.verify_architecture` and the Step-64 config loader.
+
+    ``inline_suppression`` honours ``# tensorguard: ignore`` comments (Step 72);
+    ``baseline`` (a set of fingerprints, or a path to a ``.tensorguard-baseline``
+    file) suppresses findings already recorded so only *new* findings can fail.
     """
     if verify_fn is None:
         from src.api import verify_architecture as verify_fn  # noqa: N806
@@ -216,15 +223,30 @@ def run_action(
         result = filter_result(cfg, result)
         results_by_file.append((file, result))
         anns = annotations_for_result(file, result)
+        if inline_suppression and anns:
+            from src.baseline import filter_inline
+
+            anns, _suppressed = filter_inline(anns, source)
         if anns:
             files_with_issues += 1
             all_anns.extend(anns)
 
     total = len(all_anns)
     failed = bool(total) and fail_on != "never"
-    return ActionResult(
+    action = ActionResult(
         all_anns, checked, files_with_issues, total, failed, results_by_file
     )
+
+    if baseline is not None:
+        from src.baseline import apply_baseline, load_baseline_fingerprints
+
+        fps = (
+            load_baseline_fingerprints(baseline)
+            if isinstance(baseline, str)
+            else set(baseline)
+        )
+        action = apply_baseline(action, fps, root=fingerprint_root)
+    return action
 
 
 def _parse_shapes(spec: str) -> Dict[str, Tuple]:
@@ -258,11 +280,22 @@ def main(argv: Optional[List[str]] = None) -> int:
     shapes = _parse_shapes(os.environ.get("INPUT_INPUT_SHAPES", ""))
     fail_on = os.environ.get("INPUT_FAIL_ON") or "any"
 
+    # Step 72: discover a baseline file (explicit input or nearest ancestor) so
+    # only new findings can fail the gate on a legacy repo.
+    baseline_path = os.environ.get("INPUT_BASELINE")
+    if not baseline_path:
+        from src.baseline import find_baseline_file
+
+        baseline_path = find_baseline_file(paths[0] if paths else ".")
+    root = os.getcwd()
+
     result = run_action(
         paths,
         soundness_mode=soundness,
         input_shapes=shapes or None,
         fail_on=fail_on,
+        baseline=baseline_path,
+        fingerprint_root=root,
     )
 
     rendered = result.render_annotations()
