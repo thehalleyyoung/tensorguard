@@ -56,8 +56,12 @@ runtime errors in ML codebases before any code runs.
   (`lean/TensorGuard/FragmentModes.lean`). The four non-shape transfer functions
   — device, dtype, phase and gradient — are **machine-checked too**
   (`lean/TensorGuard/DeviceDtype.lean`): each abstains on unknown operands and is
-  refutation-sound, the property lifts to their reduced product, and a Python
-  mirror cross-checks every predicate against the live verifier on real modules.
+  refutation-sound, the property lifts to their reduced product, and the very Z3
+  encoding the solver runs for them is **proved faithful**
+  (`SmtEncoding.lean`/`CrossDomain.lean`), all cross-checked against real Z3 and
+  the live torch dispatcher on real modules. Every one of the library's 210
+  public theorems is machine-audited **sorry-free**, on only the trusted kernel
+  axioms.
 - **Per-domain verification** — beyond shape, the device and gradient
   domains each refute real bugs that the base shape view misses (a cuda
   buffer added to a cpu input; a `.detach()` that severs gradient flow).
@@ -2411,7 +2415,10 @@ just a log grep: `lean/TensorGuard/AxiomAudit.lean` runs
 `applyOp_sound_argmax`, the composition witnesses, …) and
 `tests/test_lean_soundness.py` asserts each depends only on the
 trusted kernel axioms `propext`, `Classical.choice`, `Quot.sound`
-and never on `sorryAx`.
+and never on `sorryAx`.  `tests/test_lean_whole_pipeline_audit.py`
+makes this **total and drift-proof**: it auto-discovers and audits
+*all 210* public theorems in the library, so any new theorem hiding
+a `sorry` or an exotic axiom is caught with no list to maintain.
 
 The same kernel-checked guarantee now reaches the **reduced-product
 abstract domain** itself: `lean/TensorGuard/ReducedProduct.lean`
