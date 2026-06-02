@@ -129,3 +129,16 @@ import TensorGuard
 #print axioms TensorGuard.DevDtype.dtPromote_assoc
 #print axioms TensorGuard.DevDtype.dtPromote_unknown_absorbs_left
 #print axioms TensorGuard.DevDtype.dtPromote_unknown_absorbs_right
+
+-- Gradient-flow chain transfer (Step 138): the requires_grad bit propagated
+-- through a forward — keep is identity, detach/no_grad reset to false
+-- (absorbing), reattach sets true; the run is compositional and, on the
+-- reattach-free fragment, true iff the input required grad and no reset
+-- intervened.
+#print axioms TensorGuard.GradFlow.keep_id
+#print axioms TensorGuard.GradFlow.detach_false
+#print axioms TensorGuard.GradFlow.reattach_true
+#print axioms TensorGuard.GradFlow.reset_absorbing
+#print axioms TensorGuard.GradFlow.gradRun_append
+#print axioms TensorGuard.GradFlow.run_after_reset
+#print axioms TensorGuard.GradFlow.run_noReattach_true_iff
