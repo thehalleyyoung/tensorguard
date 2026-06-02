@@ -3133,7 +3133,14 @@ class VerifyCommand:
         parser.add_argument("file", help="Python file containing nn.Module class")
         parser.add_argument(
             "--input-shape", "-s", action="append", default=[],
-            help="Input shape as name=dim1,dim2,... (e.g., x=batch,3,224,224)"
+            help="Input shape as name=dim1,dim2,... (e.g., x=batch,3,224,224). "
+            "When omitted, shapes are auto-inferred from forward annotations, "
+            "docstrings, example inputs, or the first rank-determining layer."
+        )
+        parser.add_argument(
+            "--no-infer", action="store_true",
+            help="Disable automatic input-shape inference (treat unspecified "
+            "inputs as fully symbolic, as in pre-Step-56 behavior)."
         )
         parser.add_argument(
             "--no-device-check", action="store_true",
@@ -3208,6 +3215,7 @@ class VerifyCommand:
                 filename=str(filepath),
                 high_confidence_only=args.high_confidence,
                 soundness_mode=getattr(args, "soundness_mode", "balanced"),
+                infer_inputs=not getattr(args, "no_infer", False),
             )
         except RuntimeError as e:
             sys.stderr.write(f"Error: {e}\n")
@@ -3216,6 +3224,8 @@ class VerifyCommand:
         fmt = getattr(args, "format", "text")
         verdict = getattr(result, "verdict", "SAFE" if not result.bugs else "UNSAFE")
         unknown_reasons = list(getattr(result, "unknown_reasons", []))
+        inferred_shapes = dict(getattr(result, "inferred_input_shapes", {}) or {})
+        inferred_sources = dict(getattr(result, "inferred_input_sources", {}) or {})
         if fmt == "json":
             out = {
                 "file": str(filepath),
@@ -3230,9 +3240,21 @@ class VerifyCommand:
                 "abstained": bool(getattr(result, "abstained", False)),
                 "opaque_layer_count": int(getattr(result, "opaque_layer_count", 0)),
                 "unknown_reasons": unknown_reasons,
+                "inferred_input_shapes": {
+                    name: list(shape) for name, shape in inferred_shapes.items()
+                },
+                "inferred_input_sources": inferred_sources,
             }
             sys.stdout.write(json.dumps(out, indent=2) + "\n")
         elif fmt == "text":
+            if inferred_shapes and not args.input_shape:
+                sys.stdout.write("Auto-inferred input shapes (no -s given):\n")
+                for name in sorted(inferred_shapes):
+                    dims = ", ".join(str(d) for d in inferred_shapes[name])
+                    src_label = inferred_sources.get(name, "inferred")
+                    sys.stdout.write(
+                        f"  {name} = ({dims})  [from {src_label}]\n"
+                    )
             if not result.bugs:
                 if verdict == "UNKNOWN":
                     sys.stdout.write(

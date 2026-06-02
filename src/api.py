@@ -86,6 +86,10 @@ class AnalysisResult:
     opaque_layer_count: int = 0  # number of LayerKind.UNKNOWN entries
     soundness_mode: str = "balanced"  # sound | balanced | heuristic (Step 7)
     unknown_reasons: List[str] = field(default_factory=list)  # why verdict is UNKNOWN
+    # Step 56 — input shapes TensorGuard auto-inferred (empty when the caller
+    # passed shapes explicitly), with a per-input provenance string.
+    inferred_input_shapes: Dict[str, tuple] = field(default_factory=dict)
+    inferred_input_sources: Dict[str, str] = field(default_factory=dict)
 
     @property
     def status(self) -> str:
@@ -808,6 +812,7 @@ def verify_architecture(
     high_confidence_only: bool = False,
     hooks: Optional[List] = None,
     soundness_mode: str = "balanced",
+    infer_inputs: bool = True,
 ) -> AnalysisResult:
     """Verify an nn.Module architecture via constraint-based verification.
 
@@ -879,7 +884,10 @@ def verify_architecture(
         check_devices=check_devices,
         check_phases=check_phases,
         check_gradients=check_gradients,
+        infer_inputs=infer_inputs,
     )
+    result.inferred_input_shapes = dict(getattr(vr, "inferred_input_shapes", {}) or {})
+    result.inferred_input_sources = dict(getattr(vr, "inferred_input_sources", {}) or {})
 
     # Convert verification errors to Bug objects
     for error in vr.errors:

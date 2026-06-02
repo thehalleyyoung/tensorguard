@@ -1305,6 +1305,28 @@ resolves analytically. The reduction never changes a verdict -- a reported
 incompatibility still means no assignment of dimensions of at least one preserves
 the element count. See `tests/test_reshape_divisibility_opt.py`.
 
+### Zero-flag verification (`tensorguard verify model.py`)
+
+The common case needs no shape annotation at all. When you do not pass `-s`,
+TensorGuard recovers the forward inputs from the source: shape-typed
+annotations, docstring `Args` blocks, example-input attributes, and config
+dicts. When the source documents nothing, a structural fallback pins the input
+rank and channel count from the first rank-determining layer that consumes each
+input -- a `Conv2d` can only accept a four-dimensional batch of images, a
+`Conv1d` a three-dimensional batch of sequences, and so on -- with the layer's
+channel count as the channel axis and fresh symbolic names elsewhere. This is
+sound: that rank is the only one the layer would accept at runtime, so the
+inference never introduces a false alarm, it only sharpens an otherwise
+fully-symbolic input so that downstream shape bugs become decidable. Layers
+whose input rank is genuinely ambiguous (`Linear`, `Embedding`, `LayerNorm`,
+one-dimensional batch norm) are left unconstrained, preserving the abstain-on-
+ambiguity contract. The shapes that were assumed, and where each came from, are
+printed in both the text and JSON output; `--no-infer` restores the explicit
+fully-symbolic behavior. In practice this turns a missed bug into a caught one:
+a convolutional classifier whose final `Linear` has the wrong in-features
+verifies as safe when the input is rank-unknown, and is correctly refuted once
+the rank is inferred. See `tests/test_input_inference_structural.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

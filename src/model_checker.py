@@ -781,6 +781,14 @@ class VerificationResult:
     timed_out: bool = False
     steps_checked: int = 0
     steps_total: int = 0
+    # Step 56 — when the caller supplied no ``input_shapes`` and TensorGuard
+    # auto-inferred them (from forward annotations / docstrings / example inputs
+    # / config dicts, or structurally from the first rank-determining layer),
+    # this records the shapes that were used and a per-input provenance string so
+    # the CLI can show the user exactly what was assumed.  Empty when the caller
+    # supplied shapes explicitly or nothing could be inferred.
+    inferred_input_shapes: Dict[str, tuple] = field(default_factory=dict)
+    inferred_input_sources: Dict[str, str] = field(default_factory=dict)
 
     def filter_by_confidence(self, min_level: Confidence = Confidence.MEDIUM) -> "VerificationResult":
         """Return a copy with violations below the confidence threshold removed."""
@@ -12188,17 +12196,37 @@ def verify_model(
     # example_inputs / config when the caller supplied none (Step 42).  This is
     # conservative: inference abstains on ambiguity, so it can only *fill in*
     # otherwise-unconstrained inputs, never override an explicit spec.
+    _inferred_shapes: Dict[str, tuple] = {}
+    _inferred_sources: Dict[str, str] = {}
     if infer_inputs and not input_shapes:
         try:
-            from src.input_spec_inference import infer_input_specs
+            from src.input_spec_inference import (
+                infer_input_specs,
+                infer_input_specs_from_graph,
+            )
             inferred = infer_input_specs(source, class_name=graph.class_name)
-            if inferred.shapes:
-                input_shapes = {
-                    name: shape for name, shape in inferred.shapes.items()
-                    if name in graph.input_names
-                }
+            merged = {
+                name: shape for name, shape in inferred.shapes.items()
+                if name in graph.input_names
+            }
+            for name in merged:
+                _inferred_sources[name] = inferred.sources.get(name, "source")
+            # Structural fallback (Step 56): for any forward input the source did
+            # not document, pin the rank/channels from the first rank-determining
+            # layer (Conv/BatchNorm/InstanceNorm) that consumes it.  Sound: those
+            # layers accept exactly one input rank, so this never introduces a
+            # false alarm — it only sharpens an otherwise unconstrained input.
+            structural = infer_input_specs_from_graph(graph)
+            for name, shape in structural.shapes.items():
+                if name in graph.input_names and name not in merged:
+                    merged[name] = shape
+                    _inferred_sources[name] = structural.sources.get(name, "layer")
+            if merged:
+                input_shapes = merged
+                _inferred_shapes = dict(merged)
         except Exception:  # inference must never break verification
-            pass
+            _inferred_shapes = {}
+            _inferred_sources = {}
 
     checker = ConstraintVerifier(
         graph,
@@ -12218,6 +12246,8 @@ def verify_model(
     )
 
     result = checker.verify()
+    result.inferred_input_shapes = _inferred_shapes
+    result.inferred_input_sources = _inferred_sources
 
     # Under a budget timeout the run returned a sound *partial* result; skip all
     # further whole-graph passes (they would overrun the budget) and return it

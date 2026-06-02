@@ -37,6 +37,7 @@ Shape = Tuple[Dim, ...]
 __all__ = [
     "InferredSpec",
     "infer_input_specs",
+    "infer_input_specs_from_graph",
 ]
 
 # Tensor factory calls whose positional int args describe a shape.
@@ -500,3 +501,109 @@ def _call_func_name(func: ast.expr) -> str:
 
 def _is_str_const(node: ast.expr) -> bool:
     return isinstance(node, ast.Constant) and isinstance(node.value, str)
+
+
+# --------------------------------------------------------------------------- #
+# Step 56 — structural fallback from the extracted computation graph.
+#
+# The source-level inference above recovers shapes that are *documented* in the
+# code (annotations, docstrings, example inputs, config dicts).  Many real
+# models document nothing, yet their first layer already pins the input rank
+# exactly: a ``Conv2d`` can only consume a 4-D ``(N, C_in, H, W)`` tensor, a
+# ``Conv1d`` a 3-D ``(N, C_in, L)`` tensor, and so on.  Feeding any other rank is
+# itself a runtime error, so pinning that rank (with the known ``in_channels`` as
+# the channel dim and fresh symbolic names elsewhere) can never *introduce* a
+# false alarm — it only sharpens an otherwise fully-unconstrained input.  Layers
+# whose input rank is genuinely ambiguous (``Linear``, ``Embedding``,
+# ``LayerNorm``, ``BatchNorm1d`` which accepts both 2-D and 3-D, …) are skipped,
+# preserving the module's conservative "abstain rather than guess" contract.
+# --------------------------------------------------------------------------- #
+
+# kind.name -> (rank, names...).  The channel slot (index 1) is replaced by the
+# layer's concrete ``in_channels`` when known.  Only rank-determining layers
+# appear here.
+_RANK_DETERMINING_LAYERS: Dict[str, Tuple[str, ...]] = {
+    "CONV1D": ("batch", "channels", "length"),
+    "CONVTRANSPOSE1D": ("batch", "channels", "length"),
+    "INSTANCENORM1D": ("batch", "channels", "length"),
+    "CONV2D": ("batch", "channels", "height", "width"),
+    "CONVTRANSPOSE2D": ("batch", "channels", "height", "width"),
+    "BATCHNORM2D": ("batch", "channels", "height", "width"),
+    "INSTANCENORM2D": ("batch", "channels", "height", "width"),
+    "CONV3D": ("batch", "channels", "depth", "height", "width"),
+    "CONVTRANSPOSE3D": ("batch", "channels", "depth", "height", "width"),
+    "BATCHNORM3D": ("batch", "channels", "depth", "height", "width"),
+    "INSTANCENORM3D": ("batch", "channels", "depth", "height", "width"),
+}
+
+
+def infer_input_specs_from_graph(graph: object) -> InferredSpec:
+    """Infer input shapes from the first rank-determining layer applied to each
+    forward input.
+
+    *graph* is a ``ComputationGraph`` (duck-typed to avoid importing the heavy
+    model-checker module): it must expose ``input_names`` (list of str),
+    ``steps`` (ordered list with ``.op.name``, ``.inputs``, ``.layer_ref``) and
+    ``layers`` (mapping attr-name -> object with ``.kind.name`` and optional
+    ``.in_channels``).
+
+    Returns an :class:`InferredSpec` whose ``.shapes`` covers only those inputs
+    whose *first* use is a layer whose input rank is uniquely determined.  Sound:
+    a pinned rank matches the only rank the layer can legally accept.
+    """
+    spec = InferredSpec()
+    input_names = list(getattr(graph, "input_names", []) or [])
+    if not input_names:
+        return spec
+    steps = list(getattr(graph, "steps", []) or [])
+    layers = dict(getattr(graph, "layers", {}) or {})
+
+    for name in input_names:
+        first_step = None
+        for step in steps:
+            try:
+                consumes = name in (step.inputs or [])
+            except Exception:
+                consumes = False
+            if consumes:
+                first_step = step
+                break
+        if first_step is None:
+            continue
+        if getattr(getattr(first_step, "op", None), "name", "") != "LAYER_CALL":
+            # The input is first transformed by a non-layer op (transpose,
+            # reshape, arithmetic, …) so the channel position is no longer the
+            # layer's; abstain to stay sound.
+            continue
+        layer_ref = getattr(first_step, "layer_ref", None)
+        layer = layers.get(layer_ref) if layer_ref is not None else None
+        if layer is None:
+            continue
+        # The input must be the *tensor* operand (first positional input), not a
+        # secondary operand of a multi-input layer.
+        try:
+            if (first_step.inputs or [])[0] != name:
+                continue
+        except Exception:
+            continue
+        kind_name = getattr(getattr(layer, "kind", None), "name", "")
+        template = _RANK_DETERMINING_LAYERS.get(kind_name)
+        if template is None:
+            continue
+        in_channels = getattr(layer, "in_channels", None)
+        if not isinstance(in_channels, int):
+            # Norm layers store their channel count as ``num_features`` in
+            # ``params`` rather than ``in_channels``.
+            params = getattr(layer, "params", {}) or {}
+            nf = params.get("num_features")
+            if isinstance(nf, int):
+                in_channels = nf
+        dims: List[Dim] = []
+        for i, axis in enumerate(template):
+            if i == 1 and isinstance(in_channels, int) and in_channels > 0:
+                dims.append(in_channels)
+            else:
+                dims.append(axis)
+        spec.shapes[name] = tuple(dims)
+        spec.sources[name] = f"layer:{kind_name.lower()}"
+    return spec
