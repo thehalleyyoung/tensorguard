@@ -1201,6 +1201,18 @@ a re-verification. The cache is plain JSON and persists across processes, and
 `changed_models(old, new)` answers whether a source diff requires
 re-verification at all. See `tests/test_incremental.py`.
 
+### Pre-solve constraint simplification
+
+Transition constraints are run through a constant-folding pre-pass before they
+reach Z3: each conjunct is rewritten by the simplifier, and conjuncts that fold
+to literal True are vacuous and dropped (a literal False is kept verbatim so an
+infeasible model stays unsat). This is a meaning-preserving rewrite that shrinks
+the accumulated assertion set the solver must re-process on every subsequent
+check. On a deep forty-block stack tens of thousands of vacuous dimension
+equalities (concrete dims equal to themselves) are folded away, reported through
+a `folded_constraints` statistic, with every verdict provably unchanged. See
+`tests/test_constraint_simplification.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

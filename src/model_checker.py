@@ -5282,6 +5282,9 @@ class _Z3Context:
         # Number of safety checks discharged by the fast syntactic short-circuit
         # (constraints valid on their own) without invoking the SMT solver.
         self._syntactic_skips: int = 0
+        # Number of constraints removed by the pre-solve simplification pass
+        # (constant-folded to literal True before reaching the solver).
+        self._folded_constraints: int = 0
 
         # --- Theory solver constraint counters ---
         self._device_constraints_registered: int = 0
@@ -5546,6 +5549,7 @@ class _Z3Context:
             "z3_sat_count": self._sat_count,
             "z3_unsat_count": self._unsat_count,
             "syntactic_skips": self._syntactic_skips,
+            "folded_constraints": self._folded_constraints,
         }
         if self.broadcast_theory is not None:
             prop = self.broadcast_theory.propagator
@@ -8935,6 +8939,28 @@ class ConstraintVerifier:
     # Z3 safety-check helper
     # ------------------------------------------------------------------
 
+    def _add_simplified(self, solver: "z3.Solver", constraints: list) -> None:
+        """Constant-fold *constraints* before adding them to *solver*.
+
+        Each constraint is rewritten by Z3's cheap simplifier; constraints that
+        fold to literal ``True`` carry no information and are dropped, shrinking
+        the accumulated assertion set the solver must re-process on every later
+        check.  This is sound -- ``simplify`` is a meaning-preserving rewrite and
+        a literal-``True`` conjunct is vacuous -- and behaviour-preserving (the
+        satisfiable set is unchanged).  A constraint that folds to literal
+        ``False`` is added verbatim so the model stays (correctly) unsat.
+        """
+        for c in constraints:
+            try:
+                s = z3.simplify(c)
+            except Exception:
+                solver.add(c)
+                continue
+            if z3.is_true(s):
+                self.ctx._folded_constraints += 1
+                continue
+            solver.add(s)
+
     def _z3_check_safety(
         self,
         solver: z3.Solver,
@@ -10702,18 +10728,19 @@ class ConstraintVerifier:
                 if v is not None:
                     all_viols.append(v)
 
-            # 5. Accumulate transition constraints
+            # 5. Accumulate transition constraints (constant-folded pre-pass)
             trans = self._encode_transition(
                 cur_k, step, post_k, cur_model, idx
             )
-            for c in trans:
-                solver.add(c)
+            self._add_simplified(solver, trans)
 
             # 5b. Assert positivity for post-state shape variables
+            pos_post: list = []
             for dims in post_k.shape_vars.values():
                 for d in dims:
                     if not z3.is_int_value(d):
-                        solver.add(d > 0)
+                        pos_post.append(d > 0)
+            self._add_simplified(solver, pos_post)
 
             # 6. Transition consistency
             self.ctx.timed_check(solver)
