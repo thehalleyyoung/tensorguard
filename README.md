@@ -371,7 +371,21 @@ with the regeneration command recorded) rather than regenerated in place.
 `make reproduce-full` regenerates those too in an environment that has the
 required toolchains.
 
-### One-command reproduction of the headline RP figure
+### Artifact-Evaluation package
+
+For artifact evaluators we ship a self-contained submission package under
+[`docs/artifact/`](docs/artifact/): an artifact appendix
+([`README.md`](docs/artifact/README.md)) with a claim-by-claim map from each
+paper number to the exact command that regenerates it and the committed file it
+checks, plus the standard [`STATUS.md`](docs/artifact/STATUS.md) (we apply for
+**Available**, **Functional** and **Reusable**),
+[`INSTALL.md`](docs/artifact/INSTALL.md) (container and source paths) and
+[`REQUIREMENTS.md`](docs/artifact/REQUIREMENTS.md). The functional path needs no
+GPU and never executes the analysed code; the paired significance tests are part
+of the deterministic `reproduce_all.py` pipeline, and the whole package is
+pinned by `tests/test_artifact_evaluation.py`.
+
+
 
 The paper headline "**Refuted-Proof on 53/60** historical bugs" and
 the related "raw refute count = 56/60" reported by the per-feature

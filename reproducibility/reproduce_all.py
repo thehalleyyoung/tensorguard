@@ -45,6 +45,8 @@ GENERATED_DETERMINISTIC = [
     "real_benchmarks/manifest.json",
     "reproducibility/real_benchmarks_audit.json",
     "reproducibility/numeric_claims_audit.json",
+    "evaluation/significance.json",
+    "evaluation/significance.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -91,6 +93,8 @@ STEPS = [
      [PY, "-m", "real_benchmarks.build_audit_artifact"], None),
     ("headline: 60-bug Refuted-Proof figure",
      [PY, "reproducibility/reproduce_headline_60bug.py"], None),
+    ("significance: McNemar + Holm + paired bootstrap",
+     [PY, "evaluation/significance.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]
