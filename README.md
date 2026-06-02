@@ -1691,7 +1691,10 @@ weaken the soundness or security boundary. The project follows the
 [Contributor Covenant](CODE_OF_CONDUCT.md); decision-making, releases, and the
 lead-maintainer rotation are documented in [`GOVERNANCE.md`](GOVERNANCE.md) and
 [`MAINTAINERS.md`](MAINTAINERS.md). Issue and pull-request templates (including a
-dedicated high-severity "unsound result" report) live under `.github/`.
+dedicated high-severity "unsound result" report) live under `.github/`. A draft
+proposal to incubate TensorGuard as a PyTorch companion tool — with its
+governance and maintenance plan — is in
+[`docs/RFC_pytorch_companion.md`](docs/RFC_pytorch_companion.md).
 
 ### Lean build (sorry-free)
 
