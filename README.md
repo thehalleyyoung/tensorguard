@@ -999,6 +999,27 @@ float inputs. See
 [`reproducibility/domain_ablation.md`](reproducibility/domain_ablation.md),
 `tests/test_domain_ablation.py` and `tests/test_bool_dtype_soundness.py`.
 
+### Reduced product vs independent domains: the precision the reduction buys
+TensorGuard's Python-level analysis is a *reduced* product of three abstract
+domains — interval, type-tag and nullity — that exchange information through
+inter-domain reductions. `reproducibility/reduced_product_ablation.py` measures
+exactly what that exchange is worth by running the real `ProductInterpreter`
+twice over the same labeled programs — once with the production reduction engine
+and once with the reductions switched off (the independent direct product) — and
+cross-checking every verdict against a CPython execution oracle. On a battery of
+guarded programs where an `isinstance` check makes the value provably non-null,
+the independent product raises seven spurious null-dereference warnings because
+its nullity domain never hears about the type guard; the reduced product, whose
+type-tag-to-nullity reduction propagates that fact, raises none, and executing
+the corresponding functions under CPython confirms all seven warnings were
+unreachable false alarms. Crucially the reduction never hides a real bug: on
+every program where CPython genuinely dereferences `None`, the reduced product
+still reports it, and on every program the reduced abstract value is `leq` the
+independent one, so `γ(reduced) ⊆ γ(independent)` — the reduction is a sound,
+monotone refinement, more precise but never unsound. See
+[`reproducibility/reduced_product_ablation.md`](reproducibility/reduced_product_ablation.md)
+and `tests/test_reduced_product_ablation.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a
