@@ -847,6 +847,20 @@ sample. See
 [`reproducibility/natural_distribution_study.md`](reproducibility/natural_distribution_study.md)
 and `tests/test_natural_distribution_study.py`.
 
+### Scaling with model size
+A static verifier is only useful if it scales gracefully on large models. The
+study `reproducibility/scaling_study.py` sweeps feed-forward depth from one to
+sixty-four stacked layers and records the verifier's deterministic
+structural-work metric, fitting an ordinary least-squares line of analysis work
+against depth. The fit is exact: analysis work is linear in model size with a
+coefficient of determination above zero point nine nine nine, every size is
+decided with no abstention or blow-up, and CEGAR refinement stays bounded as the
+model grows. A separate machine-dependent companion records wall-clock per size
+with a log-log regression exponent below three, confirming polynomial rather
+than exponential scaling; the regression test re-asserts this live. See
+[`reproducibility/scaling_study.md`](reproducibility/scaling_study.md) and
+`tests/test_scaling_study.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a

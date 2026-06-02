@@ -86,6 +86,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/cross_python_determinism.md",
     "reproducibility/natural_distribution_study.json",
     "reproducibility/natural_distribution_study.md",
+    "reproducibility/scaling_study.json",
+    "reproducibility/scaling_study.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -93,6 +95,7 @@ GENERATED_DETERMINISTIC = [
 # scientific content is validated by the numeric audit instead.
 VOLATILE_REGENERATED = [
     "reproducibility/reproduce_headline_60bug.json",
+    "reproducibility/scaling_walltime.json",
 ]
 
 # Artifacts that need CUDA / HuggingFace / Lean and cannot be rebuilt in a
@@ -191,6 +194,8 @@ STEPS = [
      [PY, "reproducibility/cross_python_determinism.py"], None),
     ("coverage: natural-distribution study (abstention + false-alarm rate)",
      [PY, "reproducibility/natural_distribution_study.py"], None),
+    ("scaling: analysis-work vs model-size regression (+ volatile wall-clock)",
+     [PY, "reproducibility/scaling_study.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]
