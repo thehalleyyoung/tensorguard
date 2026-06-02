@@ -1138,6 +1138,22 @@ and (mutual) recursion is guarded with a sound fallback to abstention. The
 result is precise: a mismatch *inside* a helper or *downstream* of one is now
 caught, including under symbolic dims. See `tests/test_interprocedural.py`.
 
+### Frontend parse-success SLA (real-world corpus)
+
+A static verifier is only useful if its frontend can ingest the architectures
+people actually write. Complementing the `torch.fx` trace-success harness
+(Step 36), `evaluation/frontend_parse_sla.py` stress-tests the **source/AST
+frontend** (`extract_computation_graph`) — the path `verify_model` uses directly
+from Python source — across a curated corpus of 35 self-contained, real-world
+model idioms (CNN/ResNet/bottleneck blocks, transformer encoders, q/k/v
+attention, MLP-mixers, U-Net encoders, RNNs, multi-branch concat, depthwise-
+separable convs, ViT patch embeds, helper-method and inheritance models,
+dynamic control flow, annotated forwards, and more). The frontend never imports
+torch, so the published artifact is byte-reproducible across machines and torch
+versions. The release gate (`make frontend-parse-sla-gate`) fails on any
+parse-success regression below the floor (currently total success: 35 of 35
+sources lower to a non-empty graph). See `tests/test_frontend_parse_sla.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
