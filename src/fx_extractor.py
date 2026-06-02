@@ -48,6 +48,8 @@ from src.model_checker import (
     ConstraintVerifier,
     VerificationResult,
     Confidence,
+    TensorShape,
+    ShapeDim,
 )
 
 
@@ -552,8 +554,31 @@ def fx_trace_to_graph(
             graph.input_names.append(tensor_name)
 
         elif node.op == "get_attr":
-            # Attribute access (weights, buffers) — skip for shape analysis
-            node_to_tensor[node.name] = f"_attr_{node.name}"
+            # Attribute access (weights, buffers, fx-folded constants).
+            tname = f"_attr_{node.name}"
+            node_to_tensor[node.name] = tname
+            # If the attribute is a constant tensor (e.g. torch.fx folded a
+            # ``torch.rand(2, 4)`` written in forward into a constant), record
+            # its shape so downstream ops are not forced to abstain.  The
+            # value is random but the SHAPE is seed-independent.
+            try:
+                obj = traced
+                for part in str(node.target).split("."):
+                    obj = getattr(obj, part)
+                if torch.is_tensor(obj) and obj.dim() > 0:
+                    graph.const_shapes[tname] = TensorShape(
+                        tuple(ShapeDim(int(d)) for d in obj.shape)
+                    )
+                    dev_type = obj.device.type
+                    if dev_type == "cuda":
+                        idx = obj.device.index or 0
+                        graph.const_devices[tname] = Device.from_string(
+                            f"cuda:{idx}"
+                        )
+                    else:
+                        graph.const_devices[tname] = Device.CPU
+            except Exception:
+                pass
 
         elif node.op == "call_module":
             # nn.Module submodule call

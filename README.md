@@ -907,6 +907,23 @@ programs (including round trips, `.pin_memory()`, dtype-only `.to(...)`, and a
 torchvision regression) produce no false positives. See
 `tests/test_device_propagation_precise.py`.
 
+### Seed-independent shape reasoning for stochastic and factory ops
+
+A stochastic operation draws random values but produces a shape that is fully
+determined by its arguments and independent of the RNG seed: `torch.rand(2, 4)`
+always yields a tensor of shape `(2, 4)`. TensorGuard therefore tracks these
+shapes rather than abstaining, so a wrong downstream consumer (for example a
+`Linear` whose `in_features` does not match) is still caught instead of being
+silently missed. This covers `rand`, `randn`, `zeros`, `ones`, `empty`, `full`,
+`randint`, and `randperm` written directly inside `forward`, in both the source
+and `torch.fx` frontends; in the latter the constant tensor that tracing folds
+such a call into now carries its shape. Shape-preserving stochastics such as
+`*_like`, `bernoulli`, and `dropout` continue to flow the input shape. A fresh
+factory tensor defaults to the CPU device and the factory's natural dtype, which
+lets genuine cross-device bugs surface while leaving normal models untouched.
+Soundness is preserved by abstaining whenever a factory size is data dependent,
+such as `torch.randn(x.shape[0], 4)`. See `tests/test_rng_shape_precise.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

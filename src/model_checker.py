@@ -309,6 +309,10 @@ class OpKind(Enum):
     TAKE = auto()             # take(input, index) → index.shape
     SDPA = auto()             # F.scaled_dot_product_attention(q, k, v)
     DTYPE_CAST = auto()       # x.half() / x.float() / x.to(dtype=...) → dtype change
+    NEW_TENSOR = auto()       # torch.rand/randn/zeros/ones/empty/full/randint/randperm
+                              # — a fresh tensor whose shape is RNG-independent
+                              # (seed-independent reasoning: value is random,
+                              #  shape/device/dtype are statically determined)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -406,6 +410,12 @@ class ComputationGraph:
     output_names: List[str] = field(default_factory=list)
     buffer_shapes: Dict[str, "TensorShape"] = field(default_factory=dict)
     param_shapes: Dict[str, "TensorShape"] = field(default_factory=dict)
+    # Shapes/devices of constant tensors produced by tensor-factory ops that
+    # torch.fx folds into ``get_attr`` constants (e.g. ``torch.rand(2, 4)`` in
+    # forward).  Keyed by the *tensor name* used as a step input (``_attr_*``).
+    # Seed-independent: the constant's value is random but its shape is fixed.
+    const_shapes: Dict[str, "TensorShape"] = field(default_factory=dict)
+    const_devices: Dict[str, "Device"] = field(default_factory=dict)
     dynamic_features: Dict[str, Any] = field(default_factory=dict)
 
     # Convenience ----------------------------------------------------------
@@ -2476,6 +2486,21 @@ _FUNCTIONAL_OPS: Dict[str, OpKind] = {
     "upsample": OpKind.INTERPOLATE,
 }
 
+# Tensor-factory functions whose output SHAPE is fully determined by the call
+# arguments and is independent of the RNG seed.  ``torch.rand(2, 4)`` always
+# produces a (2, 4) tensor regardless of the random values it contains, so the
+# verifier can — and must — track its shape rather than abstaining.  These are
+# leaf ops (they create a tensor; they do not consume one).
+_TENSOR_FACTORY_FNS: Dict[str, str] = {
+    # name → default dtype family ("float", "int", or "" = inherit/unknown)
+    "rand": "float", "randn": "float", "zeros": "float", "ones": "float",
+    "empty": "float", "full": "float", "randint": "int",
+    "normal": "float", "poisson": "float",
+}
+# Factory args that are NOT shape dimensions and must be skipped when reading
+# the size: ``torch.full(size, fill_value)`` and ``torch.randint(low, high,
+# size)`` take the size as a single tuple, handled specially below.
+
 # Mapping from functional call names to LayerKind, used to create synthetic
 # LayerDef objects so that shape propagation works for F.max_pool2d etc.
 _FUNC_LAYER_KIND: Dict[str, "LayerKind"] = {
@@ -3547,6 +3572,92 @@ class _ForwardExtractor(ast.NodeVisitor):
             return tmp
         return self._resolve_name(arg)
 
+    def _factory_step(
+        self, short: str, node: ast.Call, target: str, line: int, col: int
+    ) -> Optional["ComputationStep"]:
+        """Build a ``NEW_TENSOR`` step for a tensor-factory call.
+
+        Returns ``None`` (→ caller falls back to CUSTOM, a sound abstention) if
+        the output shape cannot be statically determined from the call.
+
+        Handles the heterogeneous torch factory signatures:
+          * ``rand/randn/zeros/ones/empty(*size)`` — size = positional dims or a
+            single tuple/list arg.
+          * ``full(size, fill_value)`` — size is the first arg (tuple/list).
+          * ``randint(high, size)`` / ``randint(low, high, size)`` — size is the
+            last positional arg (a tuple/list).
+          * ``randperm(n)`` — produces shape ``(n,)``.
+        Only statically-known integer dimensions are accepted; any dynamic /
+        data-dependent dim (e.g. ``x.shape[0]``) causes abstention.
+        """
+        dim_env = self._dim_env()
+
+        def _as_dim(a: ast.expr) -> Optional[ShapeDim]:
+            v = _const_value(a, dim_env)
+            if isinstance(v, bool):  # guard: bools are ints in Python
+                return None
+            if isinstance(v, int):
+                return ShapeDim(v)
+            # A bare Name that resolves (via dim_env) to a known int dimension.
+            if isinstance(a, ast.Name) and a.id in dim_env:
+                dv = dim_env[a.id]
+                if isinstance(dv, int):
+                    return ShapeDim(dv)
+            return None
+
+        size_args: List[ast.expr]
+        if short == "randperm":
+            if not node.args:
+                return None
+            d = _as_dim(node.args[0])
+            if d is None:
+                return None
+            shape = TensorShape((d,))
+            dtype_family = "int"
+            size_args = []
+        else:
+            # Locate the size argument list per signature.
+            if short == "full":
+                size_args = [node.args[0]] if node.args else []
+            elif short == "randint":
+                size_args = [node.args[-1]] if node.args else []
+            else:
+                size_args = list(node.args)
+            # Size may be a single tuple/list, or several positional ints.
+            dims: List[ShapeDim] = []
+            if (len(size_args) == 1
+                    and isinstance(size_args[0], (ast.Tuple, ast.List))):
+                elts = size_args[0].elts
+            else:
+                elts = size_args
+            if not elts:
+                return None
+            for e in elts:
+                d = _as_dim(e)
+                if d is None:
+                    return None
+                dims.append(d)
+            shape = TensorShape(tuple(dims))
+            dtype_family = _TENSOR_FACTORY_FNS.get(short, "")
+
+        params: Dict[str, Any] = {"shape": shape}
+        # Capture an explicit device= kwarg when it is a static string/literal.
+        for kw in node.keywords:
+            if kw.arg == "device":
+                dval = _const_value(kw.value)
+                if isinstance(dval, str):
+                    params["device"] = dval
+            elif kw.arg == "dtype":
+                params["cast_dtype"] = _name_or_attr(kw.value) or ""
+        params["dtype_family"] = dtype_family
+        return ComputationStep(
+            op=OpKind.NEW_TENSOR,
+            inputs=[],
+            output=target,
+            params=params,
+            line=line, col=col,
+        )
+
     def _process_call(
         self, node: ast.Call, target: str, line: int, col: int
     ) -> None:
@@ -3903,6 +4014,16 @@ class _ForwardExtractor(ast.NodeVisitor):
                     line=line, col=col,
                 ))
                 return
+
+            # --- tensor factory: torch.rand/randn/zeros/ones/empty/full/
+            #     randint/randperm — RNG-independent shape (Step 32) ----------
+            if short in _TENSOR_FACTORY_FNS or short == "randperm":
+                fstep = self._factory_step(short, node, target, line, col)
+                if fstep is not None:
+                    self.steps.append(fstep)
+                    return
+                # Could not determine a static shape → fall through to CUSTOM
+                # (sound abstention rather than a guessed shape).
 
         # --- inline nn.Layer(args)(input) ------------------------------------
         # Detect patterns like nn.Linear(999, 13)(x) where func is itself a Call
@@ -7073,6 +7194,13 @@ class ConstraintVerifier:
         # so no device mismatch — only seed shape, not device).
         for param_name, param_shape in self.graph.param_shapes.items():
             state.shape_env[f"self.{param_name}"] = param_shape
+        # Pre-populate constant tensors folded by torch.fx (e.g. torch.rand(2,4)
+        # written directly in forward).  Their shape is RNG-independent.
+        for cname, cshape in self.graph.const_shapes.items():
+            state.shape_env[cname] = cshape
+            state.device_map[cname] = self.graph.const_devices.get(
+                cname, Device.CPU
+            )
         return state
 
     # ------------------------------------------------------------------
@@ -7619,6 +7747,18 @@ class ConstraintVerifier:
                             == pre.device_vars[inp]
                         )
                         break
+        elif step.op == OpKind.NEW_TENSOR:
+            # Leaf tensor factory (torch.rand/zeros/...): pin its device to the
+            # explicit device= (if static) or CPU (torch factory default).
+            # Without this the output device var is unconstrained and Z3 would
+            # fabricate a spurious device mismatch downstream.
+            if step.output in post.device_vars:
+                dev_str = step.params.get("device")
+                target = (Device.from_string(str(dev_str))
+                          if isinstance(dev_str, str) else Device.CPU)
+                cs.append(self.ctx.encode_device_transfer(
+                    post.device_vars[step.output], target
+                ))
         elif step.inputs and step.output in post.device_vars:
             for inp in step.inputs:
                 if inp in pre.device_vars:
@@ -8418,6 +8558,8 @@ class ConstraintVerifier:
             # Conservative: assume custom ops preserve shape of first input
             if step.inputs and step.inputs[0] in state.shape_env:
                 new_state.shape_env[step.output] = state.shape_env[step.inputs[0]]
+        elif step.op == OpKind.NEW_TENSOR:
+            self._apply_new_tensor(new_state, step)
         elif step.op == OpKind.INTERPOLATE:
             # F.interpolate preserves batch + channel dims
             if step.inputs and step.inputs[0] in state.shape_env:
@@ -9664,6 +9806,37 @@ class ConstraintVerifier:
         elif inp and inp in state.device_map:
             state.device_map[step.output] = state.device_map[inp]
 
+    def _apply_new_tensor(
+        self, state: ModelState, step: ComputationStep
+    ) -> None:
+        """Seed shape/device/dtype for a tensor-factory op (Step 32).
+
+        The op is a *leaf* (no tensor inputs): its shape is fully determined by
+        the call arguments and is independent of the RNG seed.  Device defaults
+        to CPU (torch factory default) unless an explicit ``device=`` was given;
+        dtype defaults to the factory's natural dtype family unless overridden.
+        """
+        shape = step.params.get("shape")
+        if isinstance(shape, TensorShape):
+            state.shape_env[step.output] = shape
+        dev_str = step.params.get("device")
+        if isinstance(dev_str, str):
+            state.device_map[step.output] = Device.from_string(dev_str)
+        else:
+            state.device_map[step.output] = Device.CPU
+        # Gradients: factory tensors do not require grad by default.
+        state.gradient_status[step.output] = False
+        # dtype: explicit dtype= wins; else the factory's natural default.
+        dt = _canon_dtype(step.params.get("cast_dtype"))
+        if dt is None:
+            fam = step.params.get("dtype_family", "")
+            if fam == "float":
+                dt = _canon_dtype("float32")
+            elif fam == "int":
+                dt = _canon_dtype("int64")
+        if dt is not None:
+            state.dtype_env[step.output] = dt
+
     def _apply_conditional(
         self,
         state: ModelState,
@@ -10421,6 +10594,10 @@ class SymbolicShapePropagator:
             )
             env[name] = TensorShape(dims)
 
+        # Seed fx-folded constant tensor shapes (e.g. torch.rand(2,4) in forward).
+        for cname, cshape in self.graph.const_shapes.items():
+            env[cname] = cshape
+
         for step in self.graph.steps:
             self._propagate_step(env, step)
 
@@ -10464,6 +10641,11 @@ class SymbolicShapePropagator:
                           for i in range(inp_shape.ndim))
                 )
 
+        elif step.op == OpKind.NEW_TENSOR:
+            shape = step.params.get("shape")
+            if isinstance(shape, TensorShape):
+                env[step.output] = shape
+
         elif step.op == OpKind.MATMUL:
             if len(step.inputs) >= 2:
                 a = env.get(step.inputs[0])
@@ -10472,8 +10654,6 @@ class SymbolicShapePropagator:
                     result = compute_matmul_shape(a, b)
                     if result:
                         env[step.output] = result
-
-        elif step.op == OpKind.ADD:
             if len(step.inputs) >= 2:
                 a = env.get(step.inputs[0])
                 b = env.get(step.inputs[1])
