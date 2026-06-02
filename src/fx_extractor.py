@@ -178,6 +178,8 @@ def _extract_layer_params(module: "nn.Module", kind: LayerKind) -> Dict[str, Any
     elif kind in (LayerKind.BATCHNORM1D, LayerKind.BATCHNORM2D,
                   LayerKind.INSTANCENORM2D):
         params["num_features"] = module.num_features
+        if hasattr(module, 'track_running_stats'):
+            params["track_running_stats"] = module.track_running_stats
     elif kind == LayerKind.LAYERNORM:
         params["normalized_shape"] = module.normalized_shape
     elif kind == LayerKind.GROUPNORM:
@@ -244,6 +246,8 @@ def _extract_layer_params(module: "nn.Module", kind: LayerKind) -> Dict[str, Any
     elif kind in (LayerKind.INSTANCENORM1D, LayerKind.INSTANCENORM3D,
                   LayerKind.SYNCBATCHNORM, LayerKind.BATCHNORM3D):
         params["num_features"] = module.num_features
+        if hasattr(module, 'track_running_stats'):
+            params["track_running_stats"] = module.track_running_stats
     elif kind in (LayerKind.MAXPOOL1D, LayerKind.AVGPOOL1D):
         params["kernel_size"] = module.kernel_size
         params["stride"] = module.stride

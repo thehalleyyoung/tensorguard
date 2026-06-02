@@ -827,6 +827,36 @@ convolutions. Source-level analysis catches invalid `groups` configurations that
 cannot even be constructed because torch asserts at module init. See
 `tests/test_conv_family_precise.py`.
 
+### Normalization phase / statistics semantics
+
+PyTorch normalization layers raise *runtime* errors that depend on the phase
+(train/eval) and on `track_running_stats`. `BatchNorm{1,2,3}d` raises
+`Expected more than 1 value per channel when training` when the per-channel
+element count (batch times spatial) is one and the layer is using batch
+statistics; `InstanceNorm{1,2,3}d` raises `Expected more than 1 spatial element
+when training` when the spatial element count is one and it is using input
+statistics. A layer uses batch or input statistics when `training or not
+track_running_stats`, so `BatchNorm` (default `track_running_stats=True`) errors
+in train by default while `InstanceNorm` (default `track_running_stats=False`)
+errors in eval as well. `GroupNorm` and `LayerNorm` have no such restriction and
+are exempt.
+
+TensorGuard emits a phase violation only when the relevant element count is
+*provably* one (every contributing dimension is concrete) and the layer is known
+to use batch or input statistics; it abstains on any symbolic dimension, on
+non-canonical ranks, and on `SyncBatchNorm` (whose global per-channel count
+under distributed training can exceed one). The verifier checks the model under
+the requested phase (train by default, selectable with `default_phase`), so an
+eval-only model is checked by passing `default_phase=Phase.EVAL`.
+
+This is proven by a differential sweep in which the verifier's verdict must
+agree exactly with whether real `torch` modules raise, across thousands of
+randomized normalization configurations spanning layer family, rank,
+`track_running_stats`, and phase, with zero disagreements, plus targeted
+end-to-end cases for both phases and both statistics settings and torchvision
+regression showing no new false positives. See
+`tests/test_norm_phase_precise.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

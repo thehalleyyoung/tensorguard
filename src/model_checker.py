@@ -6509,6 +6509,42 @@ def _propagate_unflatten(
     return TensorShape(new_dims), None
 
 
+# --- Phase/stats-dependent normalization runtime-error checks (Step 29) ---
+#
+# BatchNorm raises ``ValueError: Expected more than 1 value per channel when
+# training`` when the number of elements per channel (N * spatial) == 1 and the
+# layer is using *batch* statistics.  InstanceNorm raises ``Expected more than 1
+# spatial element when training`` when the *spatial* element count == 1 and it is
+# using *input* statistics.  Both modes use batch/input stats when
+# ``self.training or not track_running_stats`` is true.
+#
+# SyncBatchNorm is deliberately excluded: under distributed training the global
+# per-channel count can exceed 1 even when the local count is 1, so flagging it
+# would be unsound.
+_BN_COUNT_NORM_KINDS = frozenset({
+    LayerKind.BATCHNORM1D, LayerKind.BATCHNORM2D, LayerKind.BATCHNORM3D,
+    LayerKind.LAZYBATCHNORM1D, LayerKind.LAZYBATCHNORM2D,
+    LayerKind.LAZYBATCHNORM3D,
+})
+_IN_SPATIAL_NORM_KINDS = frozenset({
+    LayerKind.INSTANCENORM1D, LayerKind.INSTANCENORM2D,
+    LayerKind.INSTANCENORM3D, LayerKind.LAZYINSTANCENORM1D,
+    LayerKind.LAZYINSTANCENORM2D, LayerKind.LAZYINSTANCENORM3D,
+})
+# Canonical *batched* rank for each normalization kind.  The batch-size-one /
+# spatial-one check only runs at these ranks; at any other rank we abstain
+# (a rank mismatch is a separate diagnostic and we do not want to guess which
+# dims are spatial).
+_NORM_CANONICAL_RANK = {
+    LayerKind.BATCHNORM1D: (2, 3), LayerKind.LAZYBATCHNORM1D: (2, 3),
+    LayerKind.BATCHNORM2D: (4,), LayerKind.LAZYBATCHNORM2D: (4,),
+    LayerKind.BATCHNORM3D: (5,), LayerKind.LAZYBATCHNORM3D: (5,),
+    LayerKind.INSTANCENORM1D: (3,), LayerKind.LAZYINSTANCENORM1D: (3,),
+    LayerKind.INSTANCENORM2D: (4,), LayerKind.LAZYINSTANCENORM2D: (4,),
+    LayerKind.INSTANCENORM3D: (5,), LayerKind.LAZYINSTANCENORM3D: (5,),
+}
+
+
 _LAYER_PROPAGATORS = {
     LayerKind.LINEAR: _propagate_linear,
     LayerKind.CONV2D: _propagate_conv2d,
@@ -8554,6 +8590,92 @@ class ConstraintVerifier:
 
     # --- per-operation helpers (concrete) ---------------------------------
 
+    def _check_norm_stats_mode(
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        layer: LayerDef,
+        inp_shape: TensorShape,
+        violations: List[SafetyViolation],
+    ) -> None:
+        """Flag BatchNorm/InstanceNorm runtime errors that depend on phase /
+        ``track_running_stats``.
+
+        * BatchNorm{1,2,3}d (and lazy variants) raise ``ValueError: Expected
+          more than 1 value per channel when training`` when the per-channel
+          element count ``N * prod(spatial)`` is exactly 1 and the layer is
+          using *batch* statistics.
+        * InstanceNorm{1,2,3}d (and lazy variants) raise ``ValueError: Expected
+          more than 1 spatial element when training`` when ``prod(spatial)`` is
+          exactly 1 and the layer is using *input* statistics.
+
+        A layer uses batch/input statistics when ``training or not
+        track_running_stats``.  BatchNorm defaults ``track_running_stats=True``
+        (so the error is TRAIN-only by default); InstanceNorm defaults
+        ``track_running_stats=False`` (so the error fires in eval too).
+
+        Soundness: we only emit when the relevant element count is *provably*
+        exactly 1 (every contributing dim is a concrete int) and the layer is
+        known to use batch/input statistics; we abstain on any symbolic dim,
+        on non-canonical ranks, and on ``SyncBatchNorm`` (distributed).
+        """
+        if not self.check_phases:
+            return
+        kind = layer.kind
+        is_bn = kind in _BN_COUNT_NORM_KINDS
+        is_in = kind in _IN_SPATIAL_NORM_KINDS
+        if not (is_bn or is_in):
+            return
+        expected_ranks = _NORM_CANONICAL_RANK.get(kind)
+        if expected_ranks is None or inp_shape.ndim not in expected_ranks:
+            return
+
+        # Determine whether batch/input statistics are in use.
+        trs = layer.params.get("track_running_stats")
+        if trs is None:
+            trs = False if is_in else True  # family default
+        uses_batch_stats = (state.phase == Phase.TRAIN) or (trs is False)
+        if not uses_batch_stats:
+            return
+
+        # Dims that contribute to the count.  BatchNorm: everything except the
+        # channel dim (dim 1).  InstanceNorm: spatial dims only (dim 2+).
+        if is_bn:
+            count_dims = (inp_shape.dims[0],) + tuple(inp_shape.dims[2:])
+            what = "value per channel"
+        else:
+            count_dims = tuple(inp_shape.dims[2:])
+            what = "spatial element"
+        if not count_dims or any(d.is_symbolic for d in count_dims):
+            return
+        count = 1
+        for d in count_dims:
+            count *= int(d.value)
+        if count != 1:
+            return
+
+        layer_name = kind.name.replace("LAZY", "Lazy").title().replace("d", "d")
+        phase_hint = ""
+        if is_bn and state.phase == Phase.TRAIN and trs is not False:
+            phase_hint = (
+                " (checked under TRAIN phase; pass default_phase=Phase.EVAL to "
+                "check eval behaviour)"
+            )
+        violations.append(SafetyViolation(
+            kind="phase_error",
+            step_index=-1,
+            step=step,
+            message=(
+                f"{kind.name}: input {inp_shape.pretty()} has only 1 "
+                f"{what}, which raises at runtime "
+                f"(\"Expected more than 1 {what} when training\")"
+                f"{phase_hint}"
+            ),
+            tensor_a=step.inputs[0] if step.inputs else None,
+            shape_a=inp_shape,
+            confidence=Confidence.HIGH,
+        ))
+
     def _apply_layer_call(
         self,
         state: ModelState,
@@ -8574,8 +8696,7 @@ class ConstraintVerifier:
             state.shape_env[step.output] = inp_shape
             return
 
-        if layer.kind in (LayerKind.BATCHNORM1D, LayerKind.BATCHNORM2D):
-            pass
+        self._check_norm_stats_mode(state, step, layer, inp_shape, violations)
 
         propagator = _LAYER_PROPAGATORS.get(layer.kind)
         if propagator is not None:
