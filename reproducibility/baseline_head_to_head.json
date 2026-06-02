@@ -1,0 +1,58 @@
+{
+  "families_covered": [
+    "add_broadcast_mismatch",
+    "cat_dim_mismatch",
+    "clean_conv",
+    "clean_mlp",
+    "clean_norm_mlp",
+    "conv_channel_mismatch",
+    "flatten_fc_mismatch",
+    "linear_inout_mismatch",
+    "matmul_inner_mismatch"
+  ],
+  "mode": "sound",
+  "mypy_catches_zero_shape_bugs": true,
+  "static_input_free_complete_tools": [
+    "tensorguard"
+  ],
+  "subset_buggy": 12,
+  "subset_clean": 6,
+  "subset_size": 18,
+  "tensorguard_full_corpus": {
+    "buggy_caught": 153,
+    "buggy_total": 153,
+    "clean_false_alarms": 0,
+    "clean_total": 74
+  },
+  "tensorguard_is_unique_static_input_free_complete": true,
+  "tools": {
+    "mypy": {
+      "buggy_caught": 0,
+      "buggy_total": 12,
+      "clean_false_alarms": 0,
+      "clean_total": 6,
+      "needs_concrete_inputs": false,
+      "static_no_execution": true
+    },
+    "tensorguard": {
+      "buggy_caught": 12,
+      "buggy_total": 12,
+      "clean_false_alarms": 0,
+      "clean_total": 6,
+      "needs_concrete_inputs": false,
+      "static_no_execution": true
+    },
+    "torch_export_trace": {
+      "buggy_caught": 12,
+      "buggy_total": 12,
+      "clean_false_alarms": 0,
+      "clean_total": 6,
+      "needs_concrete_inputs": true,
+      "static_no_execution": false
+    }
+  },
+  "tools_catching_all_subset_bugs": [
+    "tensorguard",
+    "torch_export_trace"
+  ]
+}

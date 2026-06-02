@@ -88,6 +88,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/natural_distribution_study.md",
     "reproducibility/scaling_study.json",
     "reproducibility/scaling_study.md",
+    "reproducibility/baseline_head_to_head.json",
+    "reproducibility/baseline_head_to_head.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -196,6 +198,8 @@ STEPS = [
      [PY, "reproducibility/natural_distribution_study.py"], None),
     ("scaling: analysis-work vs model-size regression (+ volatile wall-clock)",
      [PY, "reproducibility/scaling_study.py"], None),
+    ("baselines: head-to-head vs torch.export + mypy on the same corpus",
+     [PY, "reproducibility/baseline_head_to_head.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]

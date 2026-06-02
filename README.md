@@ -861,6 +861,22 @@ than exponential scaling; the regression test re-asserts this live. See
 [`reproducibility/scaling_study.md`](reproducibility/scaling_study.md) and
 `tests/test_scaling_study.py`.
 
+### Head-to-head against baselines
+The sharpest reviewer question is "why not just use an existing tool?". The
+study `reproducibility/baseline_head_to_head.py` answers it on the same corpus,
+comparing TensorGuard against the realistic off-the-shelf options on a
+deterministic stratified subset covering every bug family. The standard static
+type checker mypy catches none of the shape bugs, because it does not model
+tensor shapes. PyTorch's own torch.export tracing does catch every bug in the
+subset, but only by instantiating the model, building concrete example inputs,
+and executing a trace; it is a dynamic baseline. TensorGuard reaches the same
+verdicts on every subset bug with zero false alarms, and on the full extended
+corpus it catches all one hundred fifty-three runtime-failing models with zero
+false alarms on the seventy-four clean ones. Crucially it is the only tool here
+that is simultaneously static, input-free, and complete on the corpus. See
+[`reproducibility/baseline_head_to_head.md`](reproducibility/baseline_head_to_head.md)
+and `tests/test_baseline_head_to_head.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a
