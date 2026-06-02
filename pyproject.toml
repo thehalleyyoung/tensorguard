@@ -7,7 +7,7 @@ name = "tensorguard"
 version = "0.1.0"
 description = "Guard-harvesting constraint verification for PyTorch nn.Module — catches shape mismatches, broadcast bugs, device inconsistencies, and phase-dependent errors before training starts"
 readme = "README.md"
-license = "MIT"
+license = { text = "MIT" }
 requires-python = ">=3.9"
 authors = [
     { name = "TensorGuard Authors" },
@@ -27,15 +27,17 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "z3-solver>=4.12",
+    "z3-solver>=4.12,<5",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest", "mypy"]
 
 [project.urls]
-Homepage = "https://github.com/tensorguard/tensorguard"
-Repository = "https://github.com/tensorguard/tensorguard"
+Homepage = "https://github.com/thehalleyyoung/tensorguard"
+Repository = "https://github.com/thehalleyyoung/tensorguard"
+Issues = "https://github.com/thehalleyyoung/tensorguard/issues"
+Changelog = "https://github.com/thehalleyyoung/tensorguard/blob/main/README.md"
 
 [project.scripts]
 tensorguard = "src.cli.main:main"
@@ -43,6 +45,9 @@ tensorguard-precommit = "src.precommit:main"
 
 [project.entry-points.pytest11]
 tensorguard = "src.pytest_tensorguard"
+
+[tool.setuptools]
+license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 include = ["src*"]

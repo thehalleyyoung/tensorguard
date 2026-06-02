@@ -1523,6 +1523,31 @@ pytest --tensorguard --tensorguard-path=src
 and `noxfile.py` / `tox.ini` expose `tensorguard` sessions that self-verify the
 examples. See `tests/test_precommit.py` and `tests/test_pytest_plugin.py`.
 
+### Install (reproducible wheels)
+
+TensorGuard ships as a standard build: `python -m build` produces both an sdist
+and a pure-Python wheel, and `twine check` passes on both. The `z3-solver`
+dependency is pinned to a range with an upper bound (`>=4.12,<5`) so a future
+major release of the solver cannot silently change a release's behaviour.
+
+The wheels are bit-for-bit reproducible: building twice under a fixed
+`SOURCE_DATE_EPOCH` yields byte-identical artifacts (verified by comparing the
+wheel sha256). The gitignored development roadmap never leaks into a release —
+the `MANIFEST.in` excludes it while still shipping the README, the getting
+started tutorial, the limitations map, and the MIT `LICENSE`.
+
+```bash
+# zero-install run, or a normal install
+pipx run tensorguard verify model.py
+pip install tensorguard
+
+# reproducible local build
+SOURCE_DATE_EPOCH=1700000000 python -m build
+twine check dist/*
+```
+
+See `tests/test_packaging.py` for the metadata contract that guards this.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
