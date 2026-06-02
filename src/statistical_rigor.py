@@ -373,6 +373,114 @@ def familywise_error_probability(n_tests: int, alpha: float = 0.05) -> float:
     return 1.0 - (1.0 - alpha) ** n_tests
 
 
+# ─── Paired classifier comparison (McNemar + bootstrap) ──────────────────────
+
+@dataclass
+class McNemarResult:
+    """Result of an exact (binomial) McNemar test for two paired classifiers.
+
+    ``b`` is the number of items on which classifier A is correct and B is
+    wrong; ``c`` the number on which A is wrong and B is correct.  Concordant
+    pairs (both right / both wrong) carry no information about the *difference*
+    and are excluded, which is exactly what McNemar's test conditions on.
+    """
+    n_discordant: int          # b + c
+    b: int                     # A correct, B wrong
+    c: int                     # A wrong, B correct
+    statistic: int             # min(b, c) (the exact-test statistic)
+    p_value: float             # two-sided exact binomial p-value
+    odds_ratio: Optional[float]  # b / c (None if c == 0)
+
+
+def mcnemar_exact_test(b: int, c: int) -> McNemarResult:
+    """Exact two-sided McNemar test on the discordant counts ``b`` and ``c``.
+
+    Under H0 (the two classifiers are equally likely to be the one that is
+    right on a discordant pair) ``b ~ Binomial(b + c, 1/2)``.  The two-sided
+    exact p-value is ``min(1, 2 · P[X ≤ min(b, c)])`` with ``X ~ Bin(n, 1/2)``,
+    ``n = b + c``.  When there are no discordant pairs the p-value is 1.0.
+
+    No SciPy dependency: the binomial tail is summed exactly with
+    :func:`math.comb`.
+    """
+    if b < 0 or c < 0:
+        raise ValueError("discordant counts must be non-negative")
+    n = b + c
+    if n == 0:
+        return McNemarResult(0, b, c, 0, 1.0, None)
+    k = min(b, c)
+    tail = sum(math.comb(n, i) for i in range(0, k + 1)) * (0.5 ** n)
+    p = min(1.0, 2.0 * tail)
+    odds = (b / c) if c > 0 else None
+    return McNemarResult(n, b, c, k, p, odds)
+
+
+def mcnemar_from_correctness(
+    correct_a: Sequence[bool], correct_b: Sequence[bool]
+) -> McNemarResult:
+    """McNemar test from two aligned per-item correctness vectors."""
+    if len(correct_a) != len(correct_b):
+        raise ValueError("correctness vectors must be the same length")
+    b = sum(1 for a, bb in zip(correct_a, correct_b) if a and not bb)
+    c = sum(1 for a, bb in zip(correct_a, correct_b) if (not a) and bb)
+    return mcnemar_exact_test(b, c)
+
+
+@dataclass
+class PairedBootstrapResult:
+    """Percentile bootstrap CI for a paired difference of a metric."""
+    point_estimate: float      # metric(A) - metric(B) on the observed sample
+    ci_low: float
+    ci_high: float
+    confidence: float
+    n_resamples: int
+    fraction_above_zero: float  # share of resamples with diff > 0
+
+
+def _accuracy(correct: Sequence[bool], idx: Sequence[int]) -> float:
+    if not idx:
+        return 0.0
+    return sum(1 for i in idx if correct[i]) / len(idx)
+
+
+def paired_bootstrap_accuracy_diff(
+    correct_a: Sequence[bool],
+    correct_b: Sequence[bool],
+    n_resamples: int = 10000,
+    confidence: float = 0.95,
+    seed: int = 0,
+) -> PairedBootstrapResult:
+    """Percentile bootstrap CI for ``accuracy(A) − accuracy(B)`` on paired data.
+
+    Items are resampled *jointly* (the same bootstrap index set is used for
+    both classifiers) so the pairing — and hence the correlation between the
+    two methods' errors — is preserved.
+    """
+    import random
+
+    if len(correct_a) != len(correct_b):
+        raise ValueError("correctness vectors must be the same length")
+    n = len(correct_a)
+    if n == 0:
+        return PairedBootstrapResult(0.0, 0.0, 0.0, confidence, 0, 0.0)
+
+    all_idx = list(range(n))
+    point = _accuracy(correct_a, all_idx) - _accuracy(correct_b, all_idx)
+
+    rng = random.Random(seed)
+    diffs: List[float] = []
+    for _ in range(n_resamples):
+        sample = [rng.randrange(n) for _ in range(n)]
+        diffs.append(_accuracy(correct_a, sample) - _accuracy(correct_b, sample))
+    diffs.sort()
+    lo_q = (1.0 - confidence) / 2.0
+    hi_q = 1.0 - lo_q
+    lo = diffs[max(0, int(lo_q * (n_resamples - 1)))]
+    hi = diffs[min(n_resamples - 1, int(hi_q * (n_resamples - 1)))]
+    frac_above = sum(1 for d in diffs if d > 0.0) / n_resamples
+    return PairedBootstrapResult(point, lo, hi, confidence, n_resamples, frac_above)
+
+
 # ─── Integrated Statistical Report ───────────────────────────────────────────
 
 @dataclass

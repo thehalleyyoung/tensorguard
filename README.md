@@ -447,6 +447,30 @@ execution, concrete inputs, or GPU required. The committed matrices live in
 `evaluation/confusion_matrices.json` and `evaluation/confusion_matrices.md`
 and are pinned by `tests/test_precision_recall.py`.
 
+### Statistical significance of the comparison
+
+Point estimates are not enough for a paper: `evaluation/significance.py`
+consumes the per-item predictions in `confusion_matrices.json` and tests
+whether TensorGuard's advantage over each baseline is distinguishable from
+noise on this corpus, using the right machinery for paired classifiers:
+
+```bash
+PYTHONPATH=. python3 evaluation/significance.py     # writes significance.{json,md}
+```
+
+Each `tensorguard` vs. baseline pair is scored with an exact two-sided
+**McNemar** test (it conditions on the discordant items — one method right, the
+other wrong), the family of comparisons is **Holm–Bonferroni** corrected, and
+the accuracy gap gets a paired percentile **bootstrap** confidence interval
+(items resampled jointly to preserve the pairing). The implementation lives in
+`src/statistical_rigor.py` (`mcnemar_exact_test`, `paired_bootstrap_accuracy_diff`)
+and is checked against closed-form binomial tails in `tests/test_significance.py`.
+The report is deliberately honest about the small corpus: TensorGuard never
+loses a discordant pair to any baseline, beats the trivial no-op floor
+significantly after correction, yet the gap over PyTea is not yet significant at
+this sample size — exactly the kind of result a reviewer should be able to
+trust.
+
 ### Sound-mode false-positive hunt
 
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
@@ -1746,6 +1770,7 @@ and never on `sorryAx`.
 |----------------------------------------------------------------|---------------------------------------------------------|
 | 488-block + 60-bug headline triple                             | `experiments_v5/run_v5_benchmark.py`                    |
 | Precision/recall confusion matrices vs PyTea/runtime/no-op     | `evaluation/precision_recall.py`                        |
+| Paired significance tests (McNemar + Holm + bootstrap)         | `evaluation/significance.py`                            |
 | Sound-mode false-positive hunt (clean executing models)        | `evaluation/sound_mode_fp.py`                           |
 | Latent-bug recall vs the strongest dynamic baseline            | `evaluation/hard_recall.py`                             |
 | Differential fuzz false-positive hunt (random valid models)    | `evaluation/diff_fuzz.py`                               |

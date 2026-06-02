@@ -1,0 +1,123 @@
+{
+  "comparisons": [
+    {
+      "accuracy_diff_bootstrap": {
+        "ci_high": 0.1875,
+        "ci_low": 0.0,
+        "confidence": 0.95,
+        "fraction_above_zero": 0.6427,
+        "n_resamples": 20000,
+        "point_estimate": 0.0625
+      },
+      "baseline": "runtime_forward",
+      "baseline_accuracy": 0.9375,
+      "mcnemar": {
+        "b_ref_right_base_wrong": 1,
+        "c_ref_wrong_base_right": 0,
+        "holm_adjusted_p": 1.0,
+        "n_discordant": 1,
+        "odds_ratio": null,
+        "p_value": 1.0,
+        "significant_at_alpha": false,
+        "statistic": 0
+      },
+      "na_items": 0,
+      "ref_accuracy": 1.0,
+      "usable": true
+    },
+    {
+      "accuracy_diff_bootstrap": {
+        "ci_high": 0.0,
+        "ci_low": 0.0,
+        "confidence": 0.95,
+        "fraction_above_zero": 0.0,
+        "n_resamples": 20000,
+        "point_estimate": 0.0
+      },
+      "baseline": "runtime_backward",
+      "baseline_accuracy": 1.0,
+      "mcnemar": {
+        "b_ref_right_base_wrong": 0,
+        "c_ref_wrong_base_right": 0,
+        "holm_adjusted_p": 1.0,
+        "n_discordant": 0,
+        "odds_ratio": null,
+        "p_value": 1.0,
+        "significant_at_alpha": false,
+        "statistic": 0
+      },
+      "na_items": 0,
+      "ref_accuracy": 1.0,
+      "usable": true
+    },
+    {
+      "accuracy_diff_bootstrap": {
+        "ci_high": 0.3125,
+        "ci_low": 0.0,
+        "confidence": 0.95,
+        "fraction_above_zero": 0.88215,
+        "n_resamples": 20000,
+        "point_estimate": 0.125
+      },
+      "baseline": "pytea",
+      "baseline_accuracy": 0.875,
+      "mcnemar": {
+        "b_ref_right_base_wrong": 2,
+        "c_ref_wrong_base_right": 0,
+        "holm_adjusted_p": 1.0,
+        "n_discordant": 2,
+        "odds_ratio": null,
+        "p_value": 0.5,
+        "significant_at_alpha": false,
+        "statistic": 0
+      },
+      "na_items": 0,
+      "ref_accuracy": 1.0,
+      "usable": true
+    },
+    {
+      "accuracy_diff_bootstrap": {
+        "ci_high": 0.75,
+        "ci_low": 0.25,
+        "confidence": 0.95,
+        "fraction_above_zero": 0.99995,
+        "n_resamples": 20000,
+        "point_estimate": 0.5
+      },
+      "baseline": "noop",
+      "baseline_accuracy": 0.5,
+      "mcnemar": {
+        "b_ref_right_base_wrong": 8,
+        "c_ref_wrong_base_right": 0,
+        "holm_adjusted_p": 0.03125,
+        "n_discordant": 8,
+        "odds_ratio": null,
+        "p_value": 0.007812,
+        "significant_at_alpha": true,
+        "statistic": 0
+      },
+      "na_items": 0,
+      "ref_accuracy": 1.0,
+      "usable": true
+    }
+  ],
+  "meta": {
+    "alpha": 0.05,
+    "bootstrap_resamples": 20000,
+    "bootstrap_seed": 0,
+    "command": "python3 evaluation/significance.py",
+    "corpus": "real_benchmarks",
+    "corpus_version": "1.0.0",
+    "generated_by": "evaluation/significance.py",
+    "interpretation": "A small Holm-adjusted p-value means TensorGuard and the baseline disagree on the discordant items more lopsidedly than a coin flip would explain on this corpus; a bootstrap CI that excludes zero means the accuracy gap is unlikely to be noise. Both are honest about the small (n=16) corpus.",
+    "n_items": 16,
+    "na_policy": "NA counts as wrong (mirrors confusion_matrices.json); a baseline that is NA on every item is excluded from the FWER-corrected family but still reported.",
+    "reads": "evaluation/confusion_matrices.json",
+    "reference_method": "tensorguard",
+    "tests": {
+      "fwer_correction": "Holm-Bonferroni over usable baselines",
+      "interval": "paired percentile bootstrap of accuracy difference",
+      "paired_significance": "McNemar exact (binomial), two-sided"
+    }
+  }
+}
