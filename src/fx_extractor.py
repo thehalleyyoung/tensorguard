@@ -171,6 +171,10 @@ def _extract_layer_params(module: "nn.Module", kind: LayerKind) -> Dict[str, Any
         params["stride"] = module.stride
         params["padding"] = module.padding
         params["output_padding"] = module.output_padding
+        if hasattr(module, 'dilation'):
+            params["dilation"] = module.dilation
+        if hasattr(module, 'groups'):
+            params["groups"] = module.groups
     elif kind in (LayerKind.BATCHNORM1D, LayerKind.BATCHNORM2D,
                   LayerKind.INSTANCENORM2D):
         params["num_features"] = module.num_features
@@ -218,6 +222,10 @@ def _extract_layer_params(module: "nn.Module", kind: LayerKind) -> Dict[str, Any
         params["stride"] = module.stride
         params["padding"] = module.padding
         params["output_padding"] = module.output_padding
+        if hasattr(module, 'dilation'):
+            params["dilation"] = module.dilation
+        if hasattr(module, 'groups'):
+            params["groups"] = module.groups
     elif kind == LayerKind.ADAPTIVE_MAXPOOL2D:
         params["output_size"] = module.output_size
     elif kind == LayerKind.PIXEL_SHUFFLE:
@@ -278,6 +286,10 @@ def _extract_layer_params(module: "nn.Module", kind: LayerKind) -> Dict[str, Any
         params["kernel_size"] = module.kernel_size
         params["stride"] = module.stride
         params["padding"] = module.padding
+        if hasattr(module, 'dilation'):
+            params["dilation"] = module.dilation
+        if hasattr(module, 'groups'):
+            params["groups"] = module.groups
     elif kind == LayerKind.CONVTRANSPOSE3D:
         params["in_channels"] = module.in_channels
         params["out_channels"] = module.out_channels
@@ -285,6 +297,10 @@ def _extract_layer_params(module: "nn.Module", kind: LayerKind) -> Dict[str, Any
         params["stride"] = module.stride
         params["padding"] = module.padding
         params["output_padding"] = module.output_padding
+        if hasattr(module, 'dilation'):
+            params["dilation"] = module.dilation
+        if hasattr(module, 'groups'):
+            params["groups"] = module.groups
     return params
 
 

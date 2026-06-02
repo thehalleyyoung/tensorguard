@@ -802,6 +802,31 @@ projections, head reshape/transpose, SDPA, output projection) and on a real timm
 Vision Transformer whose traced graph contains a dozen SDPA nodes. See
 `tests/test_attention_sdpa_precise.py`.
 
+### Convolution family precision
+
+The full convolution family — `Conv1d/2d/3d`, `ConvTranspose1d/2d/3d`,
+including `stride`, `padding`, `dilation`, `groups`, and `output_padding` — is
+modelled with exact output-shape arithmetic. The transposed-conv output size
+follows the torch definition
+`(in - 1) * stride - 2 * padding + dilation * (kernel_size - 1) + output_padding + 1`,
+which previously omitted the dilation term and was therefore wrong for any
+dilated transposed convolution. `dilation` and `groups` are now captured for the
+whole family in both the live-module (FX) path and the source (AST) path,
+including positional arguments. `groups` divisibility against the in and out
+channel counts is validated for the transposed convolutions and for `Conv3d`,
+matching the existing `Conv1d/2d` behaviour.
+
+Output-shape arithmetic is differential-tested against real `torch` modules
+across thousands of randomized configurations of dimensionality (1d/2d/3d),
+forward versus transposed, and random stride/padding/dilation/groups/
+output_padding, with zero mismatches. It is proven end-to-end on the originally
+mis-computed dilated transposed convolution (a downstream `Linear` sized to the
+correct output width verifies safe while the previously-computed width is
+flagged) and on a DCGAN-style generator built entirely from stacked transposed
+convolutions. Source-level analysis catches invalid `groups` configurations that
+cannot even be constructed because torch asserts at module init. See
+`tests/test_conv_family_precise.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

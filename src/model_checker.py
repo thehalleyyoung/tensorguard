@@ -1479,15 +1479,21 @@ def _extract_layer_params(kind: LayerKind, call: ast.Call,
         padding = pos[4] if len(pos) > 4 else kw.get("padding", 0)
         if isinstance(padding, int):
             padding = (padding, padding)
-        output_padding = kw.get("output_padding", 0)
+        output_padding = pos[5] if len(pos) > 5 else kw.get("output_padding", 0)
         if isinstance(output_padding, int):
             output_padding = (output_padding, output_padding)
+        groups = pos[6] if len(pos) > 6 else kw.get("groups", 1)
+        dilation = pos[8] if len(pos) > 8 else kw.get("dilation", 1)
+        if isinstance(dilation, int):
+            dilation = (dilation, dilation)
         layer.params = {"in_channels": layer.in_channels,
                         "out_channels": layer.out_channels,
                         "kernel_size": ks,
                         "stride": stride,
                         "padding": padding,
-                        "output_padding": output_padding}
+                        "output_padding": output_padding,
+                        "groups": groups,
+                        "dilation": dilation}
 
     elif kind == LayerKind.UPSAMPLE:
         scale = kw.get("scale_factor")
@@ -1536,15 +1542,21 @@ def _extract_layer_params(kind: LayerKind, call: ast.Call,
         padding = pos[4] if len(pos) > 4 else kw.get("padding", 0)
         if isinstance(padding, int):
             padding = (padding,)
-        output_padding = kw.get("output_padding", 0)
+        output_padding = pos[5] if len(pos) > 5 else kw.get("output_padding", 0)
         if isinstance(output_padding, int):
             output_padding = (output_padding,)
+        groups = pos[6] if len(pos) > 6 else kw.get("groups", 1)
+        dilation = pos[8] if len(pos) > 8 else kw.get("dilation", 1)
+        if isinstance(dilation, int):
+            dilation = (dilation,)
         layer.params = {"in_channels": layer.in_channels,
                         "out_channels": layer.out_channels,
                         "kernel_size": ks,
                         "stride": stride,
                         "padding": padding,
-                        "output_padding": output_padding}
+                        "output_padding": output_padding,
+                        "groups": groups,
+                        "dilation": dilation}
 
     elif kind == LayerKind.ADAPTIVE_MAXPOOL2D:
         out = pos[0] if len(pos) > 0 else kw.get("output_size")
@@ -1724,17 +1736,23 @@ def _extract_layer_params(kind: LayerKind, call: ast.Call,
         if isinstance(ks_val, int):
             ks_val = (ks_val, ks_val, ks_val)
         layer.kernel_size = ks_val
-        stride_val = kw.get("stride", 1)
+        stride_val = pos[3] if len(pos) > 3 else kw.get("stride", 1)
         if isinstance(stride_val, int):
             stride_val = (stride_val, stride_val, stride_val)
-        padding_val = kw.get("padding", 0)
+        padding_val = pos[4] if len(pos) > 4 else kw.get("padding", 0)
         if isinstance(padding_val, int):
             padding_val = (padding_val, padding_val, padding_val)
+        dilation_val = pos[5] if len(pos) > 5 else kw.get("dilation", 1)
+        if isinstance(dilation_val, int):
+            dilation_val = (dilation_val, dilation_val, dilation_val)
+        groups_val = pos[6] if len(pos) > 6 else kw.get("groups", 1)
         layer.params = {"in_channels": layer.in_channels,
                         "out_channels": layer.out_channels,
                         "kernel_size": ks_val,
                         "stride": stride_val,
-                        "padding": padding_val}
+                        "padding": padding_val,
+                        "dilation": dilation_val,
+                        "groups": groups_val}
 
     elif kind == LayerKind.CONVTRANSPOSE3D:
         layer.in_channels = pos[0] if len(pos) > 0 else kw.get("in_channels")
@@ -1743,21 +1761,27 @@ def _extract_layer_params(kind: LayerKind, call: ast.Call,
         if isinstance(ks_val, int):
             ks_val = (ks_val, ks_val, ks_val)
         layer.kernel_size = ks_val
-        stride_val = kw.get("stride", 1)
+        stride_val = pos[3] if len(pos) > 3 else kw.get("stride", 1)
         if isinstance(stride_val, int):
             stride_val = (stride_val, stride_val, stride_val)
-        padding_val = kw.get("padding", 0)
+        padding_val = pos[4] if len(pos) > 4 else kw.get("padding", 0)
         if isinstance(padding_val, int):
             padding_val = (padding_val, padding_val, padding_val)
-        output_padding_val = kw.get("output_padding", 0)
+        output_padding_val = pos[5] if len(pos) > 5 else kw.get("output_padding", 0)
         if isinstance(output_padding_val, int):
             output_padding_val = (output_padding_val, output_padding_val, output_padding_val)
+        groups_val = pos[6] if len(pos) > 6 else kw.get("groups", 1)
+        dilation_val = pos[8] if len(pos) > 8 else kw.get("dilation", 1)
+        if isinstance(dilation_val, int):
+            dilation_val = (dilation_val, dilation_val, dilation_val)
         layer.params = {"in_channels": layer.in_channels,
                         "out_channels": layer.out_channels,
                         "kernel_size": ks_val,
                         "stride": stride_val,
                         "padding": padding_val,
-                        "output_padding": output_padding_val}
+                        "output_padding": output_padding_val,
+                        "groups": groups_val,
+                        "dilation": dilation_val}
 
     # --- New operators: param extraction ---
 
@@ -5388,19 +5412,37 @@ def _propagate_convtranspose2d(
     stride = layer.params.get("stride", (1, 1))
     padding = layer.params.get("padding", (0, 0))
     output_padding = layer.params.get("output_padding", (0, 0))
+    dilation = layer.params.get("dilation", (1, 1))
     if isinstance(stride, int):
         stride = (stride, stride)
     if isinstance(padding, int):
         padding = (padding, padding)
     if isinstance(output_padding, int):
         output_padding = (output_padding, output_padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation)
     if isinstance(ks, int):
         ks = (ks, ks)
+    # groups must divide in_channels and out_channels.
+    groups = layer.params.get("groups", 1)
+    if isinstance(groups, int) and groups > 1:
+        if isinstance(in_c, int) and in_c % groups != 0:
+            return None, (
+                f"ConvTranspose2d groups={groups} does not divide "
+                f"in_channels={in_c}"
+            )
+        if isinstance(out_c, int) and out_c % groups != 0:
+            return None, (
+                f"ConvTranspose2d groups={groups} does not divide "
+                f"out_channels={out_c}"
+            )
     h_in = input_shape.dims[2]
     w_in = input_shape.dims[3]
     if not h_in.is_symbolic and ks and stride:
-        h_out = (h_in.value - 1) * stride[0] - 2 * padding[0] + ks[0] + output_padding[0]
-        w_out = (w_in.value - 1) * stride[1] - 2 * padding[1] + ks[1] + output_padding[1]
+        h_out = ((h_in.value - 1) * stride[0] - 2 * padding[0]
+                 + dilation[0] * (ks[0] - 1) + output_padding[0] + 1)
+        w_out = ((w_in.value - 1) * stride[1] - 2 * padding[1]
+                 + dilation[1] * (ks[1] - 1) + output_padding[1] + 1)
     else:
         h_out = "_h_up"
         w_out = "_w_up"
@@ -5662,17 +5704,33 @@ def _propagate_convtranspose1d(
     stride = layer.params.get("stride", (1,))
     padding = layer.params.get("padding", (0,))
     output_padding = layer.params.get("output_padding", (0,))
+    dilation = layer.params.get("dilation", (1,))
     if isinstance(stride, int):
         stride = (stride,)
     if isinstance(padding, int):
         padding = (padding,)
     if isinstance(output_padding, int):
         output_padding = (output_padding,)
+    if isinstance(dilation, int):
+        dilation = (dilation,)
     if isinstance(ks, int):
         ks = (ks,)
+    groups = layer.params.get("groups", 1)
+    if isinstance(groups, int) and groups > 1:
+        if isinstance(in_c, int) and in_c % groups != 0:
+            return None, (
+                f"ConvTranspose1d groups={groups} does not divide "
+                f"in_channels={in_c}"
+            )
+        if isinstance(out_c, int) and out_c % groups != 0:
+            return None, (
+                f"ConvTranspose1d groups={groups} does not divide "
+                f"out_channels={out_c}"
+            )
     l_in = input_shape.dims[2]
     if not l_in.is_symbolic and ks and stride:
-        l_out = (l_in.value - 1) * stride[0] - 2 * padding[0] + ks[0] + output_padding[0]
+        l_out = ((l_in.value - 1) * stride[0] - 2 * padding[0]
+                 + dilation[0] * (ks[0] - 1) + output_padding[0] + 1)
     else:
         l_out = "_l_up"
     out_channels = out_c if out_c is not None else "_c_out"
@@ -6046,11 +6104,30 @@ def _propagate_conv3d(
     ks = layer.kernel_size or (3, 3, 3)
     stride = layer.params.get("stride", (1, 1, 1))
     padding = layer.params.get("padding", (0, 0, 0))
+    dilation = layer.params.get("dilation", (1, 1, 1))
+    if isinstance(stride, int):
+        stride = (stride, stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding, padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation, dilation)
+    if isinstance(ks, int):
+        ks = (ks, ks, ks)
+    groups = layer.params.get("groups", 1)
+    if isinstance(groups, int) and groups > 1:
+        if not c_in.is_symbolic and isinstance(c_in.value, int) and c_in.value % groups != 0:
+            return None, (
+                f"Conv3d groups={groups} does not divide in_channels={c_in.value}"
+            )
+        if isinstance(out_c, int) and out_c % groups != 0:
+            return None, (
+                f"Conv3d groups={groups} does not divide out_channels={out_c}"
+            )
     spatial = []
     for i in range(3):
         d_in = input_shape.dims[2 + i]
         if not d_in.is_symbolic:
-            d_out = (d_in.value + 2 * padding[i] - ks[i]) // stride[i] + 1
+            d_out = (d_in.value + 2 * padding[i] - dilation[i] * (ks[i] - 1) - 1) // stride[i] + 1
             spatial.append(ShapeDim(d_out))
         else:
             spatial.append(ShapeDim(f"_d{i}_out"))
@@ -6077,11 +6154,35 @@ def _propagate_convtranspose3d(
     stride = layer.params.get("stride", (1, 1, 1))
     padding = layer.params.get("padding", (0, 0, 0))
     output_padding = layer.params.get("output_padding", (0, 0, 0))
+    dilation = layer.params.get("dilation", (1, 1, 1))
+    if isinstance(stride, int):
+        stride = (stride, stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding, padding)
+    if isinstance(output_padding, int):
+        output_padding = (output_padding, output_padding, output_padding)
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation, dilation)
+    if isinstance(ks, int):
+        ks = (ks, ks, ks)
+    groups = layer.params.get("groups", 1)
+    if isinstance(groups, int) and groups > 1:
+        if isinstance(c_in, int) and c_in % groups != 0:
+            return None, (
+                f"ConvTranspose3d groups={groups} does not divide "
+                f"in_channels={c_in}"
+            )
+        if isinstance(out_c, int) and out_c % groups != 0:
+            return None, (
+                f"ConvTranspose3d groups={groups} does not divide "
+                f"out_channels={out_c}"
+            )
     spatial = []
     for i in range(3):
         d_in = input_shape.dims[2 + i]
         if not d_in.is_symbolic:
-            d_out = (d_in.value - 1) * stride[i] - 2 * padding[i] + ks[i] + output_padding[i]
+            d_out = ((d_in.value - 1) * stride[i] - 2 * padding[i]
+                     + dilation[i] * (ks[i] - 1) + output_padding[i] + 1)
             spatial.append(ShapeDim(d_out))
         else:
             spatial.append(ShapeDim(f"_d{i}_tconv_out"))
