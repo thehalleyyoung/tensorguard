@@ -1,0 +1,38 @@
+# TensorGuard reproducibility capsule (Step 122).
+#
+# Unlike the top-level Dockerfile (which ships the *tool* as a console script),
+# this image reproduces the entire *evidence base* from source: it installs the
+# pinned evidence-generation wheels, copies the repository, and its default
+# command regenerates every deterministic artifact and verifies it is
+# byte-identical to what is committed, then re-audits every numeric claim in the
+# README. One command, from scratch:
+#
+#   docker build -f capsule/Dockerfile.reproduce -t tensorguard-capsule .
+#   docker run --rm tensorguard-capsule
+#
+# A green run is a from-scratch proof that every headline number in the README
+# is regenerable on a clean machine.
+
+FROM python:3.12-slim
+
+# git is needed for the determinism check (reproduce_all.py --check diffs the
+# regenerated artifacts against the committed tree).
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /repo
+
+# Install the pinned evidence-generation environment first for layer caching.
+COPY capsule/requirements.lock.txt ./capsule/requirements.lock.txt
+RUN pip install --no-cache-dir \
+        -r capsule/requirements.lock.txt \
+        --extra-index-url https://download.pytorch.org/whl/cpu
+
+# Copy the repository (see .dockerignore for exclusions).
+COPY . .
+
+ENV PYTHONPATH=/repo
+ENV PYTHONHASHSEED=0
+
+ENTRYPOINT ["bash", "capsule/reproduce.sh"]

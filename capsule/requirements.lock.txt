@@ -1,0 +1,21 @@
+# TensorGuard reproducibility capsule — pinned evidence-generation lock (Step 122).
+#
+# These are the EXACT versions the from-scratch reproduction pipeline
+# (`reproducibility/reproduce_all.py`) is validated against. The runtime tool
+# itself only needs z3-solver (see pyproject.toml); this lock additionally pins
+# the packages required to *regenerate every figure and number* — torch (the
+# real eager oracle the differential/runtime studies execute against), the
+# property-based and test machinery, and numpy.
+#
+# CPU wheels only, so the capsule builds without a GPU. torch CPU wheels come
+# from the official CPU index:
+#   pip install -r capsule/requirements.lock.txt \
+#       --extra-index-url https://download.pytorch.org/whl/cpu
+#
+# Pins are exact (==) by design: the capsule is meant to be byte-for-byte
+# reproducible, not "latest compatible".
+torch==2.9.1
+z3-solver==4.15.4
+numpy==2.4.3
+hypothesis==6.148.7
+pytest==8.4.2

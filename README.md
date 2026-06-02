@@ -1074,6 +1074,26 @@ corrections, and the two corrections agree on the count. See
 [`reproducibility/effect_sizes.md`](reproducibility/effect_sizes.md)
 and `tests/test_effect_sizes.py`.
 
+### One-command reproducibility capsule
+Everything above is only as credible as it is reproducible, so the whole
+evidence base ships as a capsule: a pinned wheel lock
+(`capsule/requirements.lock.txt`, exact versions of torch, z3, numpy, hypothesis
+and pytest), a `capsule/Dockerfile.reproduce`, and a single entrypoint
+`capsule/reproduce.sh`. One command —
+
+```bash
+docker run --rm tensorguard-capsule        # or: bash capsule/reproduce.sh
+```
+
+— first checks that the live interpreter satisfies every pin, then regenerates
+every deterministic artifact from source and fails the build unless each is
+byte-identical to the committed tree, then re-audits every numeric claim in this
+README. `reproducibility/capsule_manifest.py` is the capsule's checkable
+self-description (pins, file hashes, and the artifact count it regenerates) and
+its environment gate, validated against the real installed packages. See
+[`reproducibility/capsule_manifest.md`](reproducibility/capsule_manifest.md)
+and `tests/test_capsule_manifest.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a

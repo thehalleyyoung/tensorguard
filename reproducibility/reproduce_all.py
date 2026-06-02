@@ -112,6 +112,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/statistical_power.md",
     "reproducibility/effect_sizes.json",
     "reproducibility/effect_sizes.md",
+    "reproducibility/capsule_manifest.json",
+    "reproducibility/capsule_manifest.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -243,6 +245,8 @@ STEPS = [
      [PY, "reproducibility/statistical_power.py"], None),
     ("effect sizes: paired effect sizes + Holm/BH correction per comparison",
      [PY, "reproducibility/effect_sizes.py"], None),
+    ("capsule manifest: pinned-wheel reproducibility-capsule self-description",
+     [PY, "reproducibility/capsule_manifest.py"], None),
     ("dashboard: rebuild the static evidence site from committed artifacts",
      [PY, "reproducibility/build_dashboard.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",

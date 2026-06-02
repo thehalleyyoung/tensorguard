@@ -1,0 +1,38 @@
+{
+  "base_image": "python:3.12-slim",
+  "capsule_file_sha256": {
+    "Dockerfile.reproduce": "3729d1530761b8c6ac1d06cba4e2a1604ba271fdc006fe9b3a0c6ad72a3949a5",
+    "reproduce.sh": "5fb9d06bd7c0269230f02b15ae707cfe43006c6baad38d726279f2312c4aefbf",
+    "requirements.lock.txt": "7d5d51b4a51e1134d7387b1437130bdbf46d71488a4cb1c76e80b5acc756b9cc"
+  },
+  "determinism_verified_by": "reproducibility/reproduce_all.py --check",
+  "entrypoint": "bash capsule/reproduce.sh",
+  "n_deterministic_artifacts_regenerated": 76,
+  "n_pinned_wheels": 5,
+  "numeric_audit": "reproducibility/audit_numeric_claims.py",
+  "one_command": "docker run --rm tensorguard-capsule",
+  "pinned_wheels": [
+    {
+      "name": "hypothesis",
+      "version": "6.148.7"
+    },
+    {
+      "name": "numpy",
+      "version": "2.4.3"
+    },
+    {
+      "name": "pytest",
+      "version": "8.4.2"
+    },
+    {
+      "name": "torch",
+      "version": "2.9.1"
+    },
+    {
+      "name": "z3-solver",
+      "version": "4.15.4"
+    }
+  ],
+  "step": 122,
+  "torch_cpu_index": "https://download.pytorch.org/whl/cpu"
+}

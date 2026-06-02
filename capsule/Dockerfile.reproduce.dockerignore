@@ -1,0 +1,17 @@
+# BuildKit honours `<dockerfile>.dockerignore` in preference to the root
+# `.dockerignore`. The root ignore is tuned for the *lean tool image* and drops
+# tests/ and reproducibility/ — but the reproducibility capsule needs exactly
+# those to regenerate the evidence base, so this ignore keeps them and excludes
+# only genuinely irrelevant or non-deterministic content.
+.git
+.venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+.DS_Store
+dist
+build
+*.egg-info
+.tmp_*
+# The gitignored development roadmap must never enter an image layer.
+100_STEPS.md
