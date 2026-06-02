@@ -1553,6 +1553,12 @@ mirrors the same metadata (version, the pinned z3 range, the Python floor, the
 entry points, and the MIT license); `tests/test_conda_recipe.py` renders the
 template and asserts it never drifts from `pyproject.toml`.
 
+A multi-stage `Dockerfile` builds a wheel and installs only that wheel into a
+slim, non-root runtime whose entrypoint is the `tensorguard` console script, so
+`docker run --rm -v "$PWD:/work" tensorguard verify model.py` matches a local
+install; `tests/test_docker_image.py` checks that contract and runs the real
+entrypoint command.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

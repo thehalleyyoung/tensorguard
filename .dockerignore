@@ -1,0 +1,22 @@
+# Keep the build context (and therefore the image) lean and deterministic.
+.git
+.venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+.DS_Store
+
+# Never ship the gitignored development roadmap into an image layer.
+100_STEPS.md
+
+# Heavy research artifacts and throwaway state are not needed to build the wheel.
+tests
+docs
+experiments
+reproducibility
+conda-recipe
+.github
+.tmp_*
+dist
+build
+*.egg-info
