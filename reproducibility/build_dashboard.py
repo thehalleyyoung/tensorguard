@@ -158,6 +158,35 @@ def _x_blind():
     return headline, metrics
 
 
+def _x_time_to_detect():
+    d = _load("time_to_detect.json")
+    s = d["static"]
+    dy = d["dynamic"]
+    headline = (
+        f"{d['n_buggy_modules']} bugs: static catches all at depth 0 "
+        f"(input-free); dynamic needs a median of {dy['detect_depth_median']} "
+        f"ops, up to {dy['detect_depth_max']}"
+    )
+    metrics = [
+        {"label": "buggy modules", "value": str(d["n_buggy_modules"])},
+        {"label": "static detect depth", "value": str(s["detect_depth"])},
+        {
+            "label": "static caught (UNSAFE)",
+            "value": str(s["n_caught_unsafe"]),
+        },
+        {
+            "label": "dynamic median detect depth",
+            "value": str(dy["detect_depth_median"]),
+        },
+        {"label": "dynamic max detect depth", "value": str(dy["detect_depth_max"])},
+        {
+            "label": "bugs needing a successful prefix",
+            "value": str(dy["n_requires_successful_prefix"]),
+        },
+    ]
+    return headline, metrics
+
+
 def _x_cross_version():
     d = _load("cross_version_stability.json")
     headline = (
@@ -212,6 +241,13 @@ REGISTRY = [
         "Precision",
         _x_fp_stress,
         "fp_stress_eval.json",
+    ),
+    (
+        "time_to_detect",
+        "Time-to-detect: static vs first failing forward",
+        "Methodology",
+        _x_time_to_detect,
+        "time_to_detect.json",
     ),
     (
         "blind",

@@ -962,6 +962,20 @@ site is built purely from the committed artifacts, so it is itself
 byte-deterministic and is verified by the reproduction harness. See
 `tests/test_build_dashboard.py`.
 
+### Time-to-detect: static verification vs the first failing forward
+A dynamic test only surfaces a shape or channel bug once execution actually
+reaches the offending operation, which requires constructing a concrete input and
+successfully running every preceding op; a static verifier reports the same bug
+before any execution, with no input at all. `reproducibility/time_to_detect.py`
+quantifies that gap on four hundred buggy modules with a hardware-independent
+proxy measured in operations rather than wall-clock: the static detect depth is
+zero for every bug (and TensorGuard reports all four hundred UNSAFE), whereas the
+dynamic baseline must execute a median of one operation, and as many as seven,
+before the bug manifests, with well over half of the bugs surfacing only after at
+least one successful operation. See
+[`reproducibility/time_to_detect.md`](reproducibility/time_to_detect.md) and
+`tests/test_time_to_detect.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a
