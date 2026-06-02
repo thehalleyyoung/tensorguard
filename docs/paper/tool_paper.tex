@@ -1413,6 +1413,74 @@ points, all sharing the verified core.}
 
 
 %% ============================================================
+\section{Deployment: Integration Surface and Adoption Path}\label{sec:deploy}
+
+A verifier earns adoption only if it meets developers where they already work.
+TensorGuard exposes one verified core (Sections~\ref{sec:design}--\ref{sec:typing})
+through every standard touch-point of the PyTorch workflow, and each
+integration is closed-loop tested against \emph{real} artifacts rather than
+mocks.
+
+\paragraph{An importable, semver-stable package.} \texttt{pip install
+tensorguard} yields a first-class import surface: \texttt{import tensorguard}
+re-exports the stability-guaranteed API (\texttt{verify\_architecture},
+\texttt{analyze}, \texttt{AnalysisResult}, $\dots$) and the integration entry
+points (\texttt{guarded\_compile}, \texttt{make\_tensorguard\_backend},
+\texttt{verify\_module}). The package is PEP~561-typed, follows Semantic
+Versioning with a published deprecation policy (no symbol removed without a
+\texttt{DeprecationWarning} for at least one minor release), and ships a
+\textsc{Keep a Changelog} history. The contract is enforced by building the
+wheel and importing it from a \emph{clean}, network-free install into a fresh
+interpreter that cannot see the source checkout---then verifying a real shape
+bug end-to-end.
+
+\paragraph{Continuous integration that pays only for the diff.} The GitHub
+Action annotates the exact offending lines of a pull-request diff and emits
+SARIF for code scanning. A \emph{changed-only} mode restricts verification to
+the \texttt{*.py} models a PR actually touches
+(\texttt{git diff -{}-diff-filter=ACMRT base...head}), ignoring deletions and
+non-Python files and degrading gracefully to a full scan when the base ref is
+unobtainable (shallow clone, fork, non-\texttt{main} default branch). A baseline
+file plus inline \texttt{\# tensorguard: ignore} suppressions enable incremental
+adoption on legacy repositories, so only \emph{new} findings can fail the gate.
+
+\paragraph{The test suite as a verification gate.} The \texttt{pytest} plugin
+(\texttt{pytest -{}-tensorguard}) discovers the project modules the suite
+\emph{actually imports}---snapshotting \texttt{sys.modules} at session start and
+collecting the modules first imported afterwards whose source lives under the
+project root---and verifies that exercised code, not a blind directory walk. An
+imported buggy model fails the session while an unimported ``orphan'' file in the
+same tree is left alone; an explicit path or a whole-tree mode remain available.
+
+\paragraph{Inline feedback in the editor.} A real Language Server
+(\texttt{python -m src.lsp\_server}, JSON-RPC over stdio with byte-accurate
+framing) analyses the \emph{unsaved editor buffer} on every change, publishing
+shape/device/dtype/phase/gradient squiggles, hover shapes drawn from the
+inference chain, and quick-fixes whose workspace edit reproduces the mechanical
+autofix---and clearing the diagnostics the instant the code becomes correct. A
+VS~Code extension is a thin language client over it, so the editor is a
+transport rather than a re-implementation.
+
+\paragraph{Verification inside the compile pipeline.} For users who reach for
+\texttt{torch.compile}, \texttt{make\_tensorguard\_backend} is a Dynamo backend
+that runs verification as a guard: Dynamo hands it the captured
+\texttt{GraphModule} and example inputs, the backend verifies the module's real
+source, then delegates a clean model to an inner compiler whose output
+reproduces eager---or raises \texttt{TensorGuardViolation} (carrying the
+structured findings) on a buggy one, surfacing through the compile pipeline's
+exception chain. The complementary \texttt{guarded\_compile} pre-pass blocks a
+bug \emph{before} compilation even on interpreters where Dynamo is unavailable,
+so the same shape error that would otherwise appear as an opaque guard failure or
+a deep inductor traceback is reported at the model's own source line.
+
+\paragraph{One engine, many doors.} Table~\ref{tab:cli} summarizes the
+developer-facing entry points; crucially, all of them route through the same
+verified core, so no surface can drift from the soundness guarantees proved in
+Section~\ref{sec:lean}. Every integration above is regression-tested against a
+real wheel, a real git repository, a real subprocess \texttt{pytest} run, a real
+LSP handshake, and a real FX graph, respectively.
+
+%% ============================================================
 \section{Threats to Validity}\label{sec:threats}
 
 \paragraph{Internal validity.} The headline recall/precision could in principle

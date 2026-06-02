@@ -2081,18 +2081,18 @@ on a buggy model, rewrites the offending layer on disk, and observes the verdict
 flip to verified safe within one polling interval. See
 `tests/test_watch_mode.py`.
 
-### Editor integration (`--lsp`)
+### Editor integration: a language server + VS Code extension
 
-`tensorguard verify --lsp FILE` emits an editor-ready JSON report that a VSCode
-or any Language-Server-Protocol extension can consume directly: inline squiggles
-(`diagnostics` with zero-indexed ranges, severities, related layer-definition
-locations, and an embedded fix hint), hover shapes (`hovers`, so hovering a line
-that produces a tensor shows that tensor and its shape), and quick-fixes
-(`codeActions` whose workspace edit reproduces the mechanical autofix). The
-payloads are produced by a pure adapter over the same diagnostics, inference
-chain, and autofixes the CLI already uses, so an extension is a thin transport
-shim over a real verifier rather than a re-implementation. See
-`tests/test_lsp_provider.py`.
+`python -m src.lsp_server` is a real Language Server (JSON-RPC over stdio) that
+analyses the **unsaved editor buffer** on every keystroke: inline squiggles for
+shape/device/dtype/phase/gradient bugs, hover shapes (the inferred tensor and
+its shape), and quick-fixes whose workspace edit reproduces the mechanical
+autofix — clearing the moment the code becomes correct. The bundled VS Code
+extension in `editors/vscode/` is a thin language client over it, so the editor
+is a transport, not a re-implementation. `tensorguard verify --lsp FILE` also
+emits the same payloads as one-shot JSON. See `src/lsp_server.py`,
+`src/lsp_provider.py`, and `tests/test_lsp_server.py` (a byte-framed handshake
+proving buffer-based diagnostics that clear on fix).
 
 ### Jupyter / notebook integration
 
@@ -2203,15 +2203,19 @@ repos:
 ```
 
 The hook verifies the staged modules and blocks the commit on a real bug. The
-package also ships a `pytest` plugin so a test session can double as a
-verification gate:
+`pytest` plugin turns a test session into a verification gate that checks the
+**modules the suite actually imports** (the code under test), not a blind tree
+walk:
 
 ```bash
-pytest --tensorguard --tensorguard-path=src
+pytest --tensorguard            # verifies the modules your tests exercise
 ```
 
 and `noxfile.py` / `tox.ini` expose `tensorguard` sessions that self-verify the
-examples. See `tests/test_precommit.py` and `tests/test_pytest_plugin.py`.
+examples. The GitHub Action adds a `changed-only: true` mode that verifies just
+the models touched by a pull request (`git diff base...head`). See
+`tests/test_precommit.py`, `tests/test_pytest_modules_under_test.py`, and
+`tests/test_action_changed_files.py`.
 
 ### Install (reproducible wheels)
 

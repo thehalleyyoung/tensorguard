@@ -83,6 +83,9 @@ def test_run_session_check_defaults_to_rootpath(tmp_path):
 def _run_pytest(workdir, extra_args):
     env = dict(os.environ)
     env["PYTHONPATH"] = _REPO + os.pathsep + env.get("PYTHONPATH", "")
+    # Disable entry-point autoload so an editable install of TensorGuard does not
+    # register the pytest11 plugin a second time (we load it explicitly via -p).
+    env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
     # A trivial passing test so pytest has something to collect.
     (workdir / "test_trivial.py").write_text(
         "def test_ok():\n    assert True\n", encoding="utf-8"

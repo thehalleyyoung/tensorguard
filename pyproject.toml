@@ -37,7 +37,7 @@ dev = ["pytest", "mypy", "pytest-cov", "coverage"]
 Homepage = "https://github.com/thehalleyyoung/tensorguard"
 Repository = "https://github.com/thehalleyyoung/tensorguard"
 Issues = "https://github.com/thehalleyyoung/tensorguard/issues"
-Changelog = "https://github.com/thehalleyyoung/tensorguard/blob/main/README.md"
+Changelog = "https://github.com/thehalleyyoung/tensorguard/blob/main/CHANGELOG.md"
 
 [project.scripts]
 tensorguard = "src.cli.main:main"
@@ -51,9 +51,10 @@ license-files = ["LICENSE"]
 
 [tool.setuptools.package-data]
 src = ["py.typed", "*.pyi"]
+tensorguard = ["py.typed"]
 
 [tool.setuptools.packages.find]
-include = ["src*"]
+include = ["src*", "tensorguard*"]
 
 # Step 82 — enforceable coverage gate. The gate is scoped to the public API and
 # the Phase 7/8 integration modules (the supported surface), which are held to a

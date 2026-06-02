@@ -43,6 +43,24 @@ inputs:
       the analyzed path's ancestors for a .tensorguard-baseline.json.
     required: false
     default: ""
+  changed-only:
+    description: >-
+      When "true", verify only the *.py files changed in this pull request
+      (git diff base...head). Deleted and non-Python files are ignored; if the
+      diff is unobtainable (shallow clone, missing base ref) the action falls
+      back to a full scan of `paths`.
+    required: false
+    default: "false"
+  base-ref:
+    description: >-
+      Base git ref for changed-only mode (e.g. "origin/main" or a SHA). Defaults
+      to the PR base ref / the repository's default branch when empty.
+    required: false
+    default: ""
+  head-ref:
+    description: "Head git ref for changed-only mode. Defaults to HEAD."
+    required: false
+    default: ""
   python-version:
     description: "Python version to set up."
     required: false
@@ -78,6 +96,9 @@ runs:
         INPUT_FAIL_ON: ${{ inputs.fail-on }}
         INPUT_SARIF_OUTPUT: ${{ inputs.sarif-output }}
         INPUT_BASELINE: ${{ inputs.baseline }}
+        INPUT_CHANGED_ONLY: ${{ inputs.changed-only }}
+        INPUT_BASE_REF: ${{ inputs.base-ref }}
+        INPUT_HEAD_REF: ${{ inputs.head-ref }}
         PYTHONPATH: ${{ github.action_path }}
       run: python -m src.github_action
     - name: Upload SARIF to Code Scanning

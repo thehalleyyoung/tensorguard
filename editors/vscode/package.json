@@ -1,0 +1,44 @@
+{
+  "name": "tensorguard",
+  "displayName": "TensorGuard",
+  "description": "Inline shape/device/dtype/phase/gradient verification for PyTorch nn.Modules, powered by the TensorGuard language server.",
+  "version": "0.1.0",
+  "publisher": "tensorguard",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thehalleyyoung/tensorguard"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:python"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "TensorGuard",
+      "properties": {
+        "tensorguard.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Python interpreter used to launch the TensorGuard language server (must have `tensorguard` / `src` importable)."
+        },
+        "tensorguard.serverModule": {
+          "type": "string",
+          "default": "src.lsp_server",
+          "description": "Module run with `python -m <module>` to start the language server."
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  }
+}

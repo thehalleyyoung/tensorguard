@@ -170,6 +170,125 @@ def _iter_python_files(paths: List[str]) -> List[str]:
     return out
 
 
+def _git_changed_python_files(
+    base_ref: str = "",
+    head_ref: str = "",
+    *,
+    repo_root: Optional[str] = None,
+    runner=None,
+) -> Optional[List[str]]:
+    """Return existing changed ``*.py`` files between *base_ref* and *head_ref*.
+
+    Uses ``git diff --name-only --diff-filter=ACMRT base...head`` (added / copied /
+    modified / renamed / type-changed — deletions are intentionally excluded, a
+    deleted file has nothing left to verify). Paths are resolved against the repo
+    root and filtered to files that still exist and end in ``.py``.
+
+    Returns ``None`` (signalling "fall back to a full scan") when git is
+    unavailable, the base ref cannot be resolved (shallow clone, fork, default
+    branch is not ``main``), or the diff command fails — so the Action degrades
+    gracefully rather than verifying the wrong set on common PR configurations.
+    ``runner`` is injectable for testing (defaults to ``subprocess.run``).
+    """
+    import subprocess
+
+    if runner is None:
+        runner = subprocess.run
+    root = repo_root or os.getcwd()
+
+    def _git(args: List[str]):
+        try:
+            return runner(
+                ["git", "-C", root, *args],
+                capture_output=True, text=True, timeout=60,
+            )
+        except Exception:
+            return None
+
+    base = base_ref or os.environ.get("INPUT_BASE_REF") or ""
+    head = head_ref or os.environ.get("INPUT_HEAD_REF") or "HEAD"
+    if not base:
+        # Try the usual GitHub PR / push event refs, then origin's default branch.
+        for cand in (
+            os.environ.get("GITHUB_BASE_REF"),
+            "origin/main",
+            "origin/master",
+            "main",
+            "master",
+        ):
+            if not cand:
+                continue
+            probe = _git(["rev-parse", "--verify", "--quiet", cand])
+            if probe is not None and probe.returncode == 0:
+                base = cand.strip()
+                break
+    if not base:
+        return None
+    # Verify both endpoints resolve before diffing (avoids a misleading error).
+    for ref in (base, head):
+        probe = _git(["rev-parse", "--verify", "--quiet", ref])
+        if probe is None or probe.returncode != 0:
+            return None
+
+    proc = _git(
+        ["diff", "--name-only", "--diff-filter=ACMRT", f"{base}...{head}"]
+    )
+    if proc is None or proc.returncode != 0:
+        return None
+    out: List[str] = []
+    seen: set = set()
+    for rel in proc.stdout.splitlines():
+        rel = rel.strip()
+        if not rel.endswith(".py"):
+            continue
+        abs_path = rel if os.path.isabs(rel) else os.path.join(root, rel)
+        if abs_path in seen or not os.path.isfile(abs_path):
+            continue
+        seen.add(abs_path)
+        out.append(abs_path)
+    return out
+
+
+def resolve_changed_paths(
+    paths: List[str],
+    *,
+    changed_only: bool,
+    base_ref: str = "",
+    head_ref: str = "",
+    repo_root: Optional[str] = None,
+    runner=None,
+) -> Tuple[List[str], bool]:
+    """Resolve the file set to verify, honouring *changed_only*.
+
+    Returns ``(resolved_paths, used_changed)``. When ``changed_only`` is set and a
+    git diff is obtainable, ``resolved_paths`` is the changed ``*.py`` files that
+    also lie under the requested *paths*; otherwise it falls back to *paths*
+    unchanged (``used_changed`` is ``False``).
+    """
+    if not changed_only:
+        return paths, False
+    changed = _git_changed_python_files(
+        base_ref, head_ref, repo_root=repo_root, runner=runner
+    )
+    if changed is None:
+        return paths, False
+    # Keep only changed files inside the requested scope (so `paths: src` does not
+    # suddenly verify changed files elsewhere in the repo).
+    roots = [os.path.abspath(p) for p in paths]
+
+    def _in_scope(f: str) -> bool:
+        af = os.path.abspath(f)
+        for r in roots:
+            if af == r or af.startswith(os.path.join(r, "")):
+                return True
+            if os.path.isfile(r) and af == r:
+                return True
+        return False
+
+    scoped = [f for f in changed if _in_scope(f)] if paths not in ([], ["."]) else changed
+    return scoped, True
+
+
 def run_action(
     paths: List[str],
     *,
@@ -181,6 +300,11 @@ def run_action(
     baseline: Optional[set] = None,
     inline_suppression: bool = True,
     fingerprint_root: Optional[str] = None,
+    changed_only: bool = False,
+    base_ref: str = "",
+    head_ref: str = "",
+    repo_root: Optional[str] = None,
+    git_runner=None,
 ) -> ActionResult:
     """Verify every ``*.py`` under *paths* and collect PR annotations.
 
@@ -191,6 +315,11 @@ def run_action(
     ``inline_suppression`` honours ``# tensorguard: ignore`` comments (Step 72);
     ``baseline`` (a set of fingerprints, or a path to a ``.tensorguard-baseline``
     file) suppresses findings already recorded so only *new* findings can fail.
+
+    ``changed_only`` (Step 162) restricts verification to the ``*.py`` files
+    changed between ``base_ref`` and ``head_ref`` (``git diff``), so a PR only
+    pays for the models it touched; it degrades to a full scan when the diff is
+    unobtainable (shallow clone, missing base ref, no git).
     """
     if verify_fn is None:
         from src.api import verify_architecture as verify_fn  # noqa: N806
@@ -205,7 +334,15 @@ def run_action(
     files_with_issues = 0
     checked = 0
     results_by_file: List[Tuple[str, Any]] = []
-    for file in _iter_python_files(paths):
+    scan_paths, _used_changed = resolve_changed_paths(
+        paths,
+        changed_only=changed_only,
+        base_ref=base_ref,
+        head_ref=head_ref,
+        repo_root=repo_root,
+        runner=git_runner,
+    )
+    for file in _iter_python_files(scan_paths):
         try:
             source = pathlib.Path(file).read_text(encoding="utf-8")
         except Exception:
@@ -289,6 +426,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         baseline_path = find_baseline_file(paths[0] if paths else ".")
     root = os.getcwd()
 
+    changed_only = (os.environ.get("INPUT_CHANGED_ONLY") or "").strip().lower() in (
+        "1", "true", "yes", "on",
+    )
+    base_ref = os.environ.get("INPUT_BASE_REF") or ""
+    head_ref = os.environ.get("INPUT_HEAD_REF") or ""
+
     result = run_action(
         paths,
         soundness_mode=soundness,
@@ -296,6 +439,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         fail_on=fail_on,
         baseline=baseline_path,
         fingerprint_root=root,
+        changed_only=changed_only,
+        base_ref=base_ref,
+        head_ref=head_ref,
+        repo_root=root,
     )
 
     rendered = result.render_annotations()
