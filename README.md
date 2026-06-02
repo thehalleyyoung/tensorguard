@@ -1063,6 +1063,28 @@ incompatible layer on either reachable path is rejected. Every model in the
 regression suite is differentially anchored to eager torch (safe ones run, buggy
 ones raise). See `tests/test_dynamic_control_flow.py`.
 
+### Pluggable shape stubs for third-party layers
+
+Real models lean on third-party building blocks — HuggingFace `Conv1D`, timm
+`Mlp`/`DropPath`, and bespoke imported modules — whose source TensorGuard never
+sees. Without help these become opaque (sound but fully symbolic), so the
+surrounding model cannot be proven safe. The shape-stub registry
+(`src/shape_stub_registry.py`) closes the gap: a third-party class is matched **by
+name** (no import required) to a transfer function that returns a precise output
+shape, an explicit violation on an incompatible input, or a sound abstention.
+
+Built-in stubs ship for the common cases and are differentially validated against
+the real forward semantics: GPT-2 `Conv1D(nf, nx)` maps the last dim `nx` to `nf`
+(so `Conv1D(32, 8)` on `(2, 5, 8)` yields `(2, 5, 32)`, confirmed against an eager
+reimplementation), timm `Mlp` preserves the feature dim when `out_features` is
+unset, and `DropPath`/`StochasticDepth`/`LayerScale` are shape-preserving. Users
+register their own in one line — `register_last_dim_linear("FancyBlock",
+in_arg="in_features", out_arg="out_features", arg_names=(...))` or
+`register_shape_preserving("MyNorm")`. Stubs own their soundness contract, so a
+mismatch downstream of a stub is still flagged with a counterexample, even under
+symbolic batch and sequence dims, and locally-defined classes always take
+precedence over a same-named stub. See `tests/test_shape_stub_registry.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

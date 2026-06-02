@@ -261,6 +261,7 @@ class LayerKind(Enum):
     CHANNEL_SHUFFLE = auto()
     UNFLATTEN = auto()
     SUBMODULE = auto()         # user-defined nn.Module subclass
+    STUB = auto()              # third-party layer matched by the shape-stub registry
     UNKNOWN = auto()
 
 
@@ -2396,6 +2397,24 @@ class _InitExtractor(ast.NodeVisitor):
                     prefixed_layer.attr_name = prefixed
                     self.layers[prefixed] = prefixed_layer
             return
+
+        # Third-party layer matched by the pluggable shape-stub registry
+        # (Step 41).  Consulted AFTER local submodule resolution so a
+        # locally-defined class of the same name always wins.
+        if func_name:
+            from src.shape_stub_registry import get_shape_stub
+            stub = get_shape_stub(func_name)
+            if stub is not None:
+                pos = tuple(_const_value(a, self._param_map) for a in value.args)
+                kw = {kw_.arg: _const_value(kw_.value, self._param_map)
+                      for kw_ in value.keywords if kw_.arg is not None}
+                params = stub.bind_params(pos, kw)
+                params["__stub_name__"] = stub.name
+                self.layers[attr] = LayerDef(
+                    attr_name=attr, kind=LayerKind.STUB, params=params,
+                    line=value.lineno if hasattr(value, "lineno") else 0,
+                )
+                return
 
         # Helper-function expansion: ``self.X = helper(args)`` where
         # ``helper`` is a top-level function in the same source whose body
@@ -7706,6 +7725,13 @@ class ConstraintVerifier:
                     # at Z3 level, batch dim is preserved.
                     if pre_d and post_d:
                         cs.append(post_d[0] == pre_d[0])
+                elif layer.kind == LayerKind.STUB:
+                    # Third-party stub: concrete propagation enforces the
+                    # precise last-dim transfer; at the Z3 level we keep the
+                    # sound, non-over-constraining fact that the batch dim is
+                    # preserved (true for every registered stub contract).
+                    if pre_d and post_d:
+                        cs.append(post_d[0] == pre_d[0])
                 elif layer.kind in (LayerKind.LSTM, LayerKind.GRU):
                     # LSTM/GRU: leading dims preserved, last dim = hidden_size * D
                     for i in range(min(len(pre_d) - 1, len(post_d) - 1)):
@@ -9416,6 +9442,9 @@ class ConstraintVerifier:
         elif layer.kind == LayerKind.SUBMODULE:
             self._apply_submodule_call(state, step, layer, inp_name,
                                        inp_shape, violations)
+        elif layer.kind == LayerKind.STUB:
+            self._apply_stub_call(state, step, layer, inp_name,
+                                  inp_shape, violations)
         elif layer.kind in (LayerKind.RELU, LayerKind.IDENTITY):
             state.shape_env[step.output] = inp_shape
         elif layer.kind == LayerKind.FLATTEN:
@@ -9434,6 +9463,50 @@ class ConstraintVerifier:
                 tuple(ShapeDim(f"_unk_{layer.attr_name}_{i}")
                       for i in range(inp_shape.ndim))
             )
+            state.shape_env[step.output] = unknown_shape
+
+    def _apply_stub_call(
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        layer: LayerDef,
+        inp_name: Optional[str],
+        inp_shape: TensorShape,
+        violations: List[SafetyViolation],
+    ) -> None:
+        """Apply a third-party layer's registered shape stub (Step 41).
+
+        The stub's transfer function has the same contract as the built-in nn
+        propagators.  A returned error is a genuine shape violation; a returned
+        shape (possibly symbolic) is adopted; ``(None, None)`` falls back to a
+        sound fully-symbolic abstention so an under-specified stub can never
+        cause a false negative.
+        """
+        from src.shape_stub_registry import get_shape_stub
+        stub_name = (layer.params or {}).get("__stub_name__")
+        stub = get_shape_stub(stub_name)
+        if stub is None:
+            unknown_shape = TensorShape(
+                tuple(ShapeDim(f"_stub_{layer.attr_name}_{i}")
+                      for i in range(inp_shape.ndim)))
+            state.shape_env[step.output] = unknown_shape
+            return
+        out_shape, err = stub.transfer(inp_shape, layer.params or {})
+        if err:
+            violations.append(SafetyViolation(
+                kind="shape_incompatible",
+                step_index=-1,
+                step=step,
+                message=err,
+                tensor_a=inp_name,
+                shape_a=inp_shape,
+            ))
+        elif out_shape is not None:
+            state.shape_env[step.output] = out_shape
+        else:
+            unknown_shape = TensorShape(
+                tuple(ShapeDim(f"_stub_{layer.attr_name}_{i}")
+                      for i in range(inp_shape.ndim)))
             state.shape_env[step.output] = unknown_shape
 
     def _apply_submodule_call(
@@ -10971,6 +11044,18 @@ class SymbolicShapePropagator:
                     out, _ = _propagate_flatten(inp_shape, 1)
                     if out:
                         env[step.output] = out
+                    return
+                if layer.kind == LayerKind.STUB:
+                    from src.shape_stub_registry import get_shape_stub
+                    stub = get_shape_stub((layer.params or {}).get("__stub_name__"))
+                    if stub is not None:
+                        out, _ = stub.transfer(inp_shape, layer.params or {})
+                        if out is not None:
+                            env[step.output] = out
+                            return
+                    env[step.output] = TensorShape(
+                        tuple(ShapeDim(f"_stub_{getattr(layer, 'attr_name', 'op')}_{i}")
+                              for i in range(inp_shape.ndim)))
                     return
                 # Unsupported layer: output shape UNKNOWN (fully symbolic)
                 logger.warning(
