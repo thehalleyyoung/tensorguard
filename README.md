@@ -1040,6 +1040,24 @@ useless. A deterministic wall-clock companion records the same curve in seconds.
 See [`reproducibility/cegar_depth_ablation.md`](reproducibility/cegar_depth_ablation.md)
 and `tests/test_cegar_depth_ablation.py`.
 
+### Statistical power: every headline number is sample-size-justified
+A confidence interval says how precise an estimate is; a power analysis says
+whether the sample was ever large enough to *earn* the claim.
+`reproducibility/statistical_power.py` runs an exact, SciPy-free binomial power
+analysis over every headline claim, reading the observed counts straight out of
+the committed artifacts so the arithmetic tracks the real evidence. For each
+zero-false-alarm claim it reports the exact one-sided rule-of-three upper bound,
+the power the achieved sample had to expose a one-, two- or five-percent true
+rate, and the sample size that would be required to certify each — then flags
+honestly which corpora clear that bar and which lean on the pooled evidence,
+where over fourteen hundred clean models with zero observed false alarms pin the
+aggregate false-alarm rate under a quarter of one percent. Perfect-recall claims
+get the symmetric lower-bound and recall-floor treatment, and each paired
+McNemar comparison is printed next to the minimum discordant count significance
+demands, making the sample-size justification explicit rather than implied. See
+[`reproducibility/statistical_power.md`](reproducibility/statistical_power.md)
+and `tests/test_statistical_power.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a

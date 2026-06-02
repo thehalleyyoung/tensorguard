@@ -1,0 +1,232 @@
+{
+  "all_recall_claims_powered_95pct": true,
+  "all_zero_failure_claims_powered_5pct": false,
+  "alpha": 0.05,
+  "claims": [
+    {
+      "adequately_powered_1pct": false,
+      "adequately_powered_5pct": true,
+      "description": "Sound-mode false alarms on the clean false-positive stress corpus",
+      "id": "fp_stress_sound_zero_fa",
+      "k_failures": 0,
+      "kind": "zero_failure",
+      "min_n_to_certify": {
+        "<= 0.01": 299,
+        "<= 0.02": 149,
+        "<= 0.05": 59
+      },
+      "n": 101,
+      "one_sided_upper_bound_95": 0.0292,
+      "power_to_detect_failure_rate": {
+        "p=0.01": 0.6376,
+        "p=0.02": 0.87,
+        "p=0.05": 0.9944
+      }
+    },
+    {
+      "adequately_powered_1pct": false,
+      "adequately_powered_5pct": false,
+      "description": "Sound-mode false alarms on the natural-distribution model sample",
+      "id": "natural_sound_zero_fa",
+      "k_failures": 0,
+      "kind": "zero_failure",
+      "min_n_to_certify": {
+        "<= 0.01": 299,
+        "<= 0.02": 149,
+        "<= 0.05": 59
+      },
+      "n": 29,
+      "one_sided_upper_bound_95": 0.0981,
+      "power_to_detect_failure_rate": {
+        "p=0.01": 0.2528,
+        "p=0.02": 0.4434,
+        "p=0.05": 0.7741
+      }
+    },
+    {
+      "adequately_powered_1pct": false,
+      "adequately_powered_5pct": true,
+      "description": "False positives on the extended-corpus clean cases (balanced)",
+      "id": "corpus_ext_zero_fp",
+      "k_failures": 0,
+      "kind": "zero_failure",
+      "min_n_to_certify": {
+        "<= 0.01": 299,
+        "<= 0.02": 149,
+        "<= 0.05": 59
+      },
+      "n": 74,
+      "one_sided_upper_bound_95": 0.0397,
+      "power_to_detect_failure_rate": {
+        "p=0.01": 0.5247,
+        "p=0.02": 0.7758,
+        "p=0.05": 0.9775
+      }
+    },
+    {
+      "adequately_powered_1pct": true,
+      "adequately_powered_5pct": true,
+      "description": "False alarms vs the live torch dispatcher on clean modules",
+      "id": "differential_zero_fa",
+      "k_failures": 0,
+      "kind": "zero_failure",
+      "min_n_to_certify": {
+        "<= 0.01": 299,
+        "<= 0.02": 149,
+        "<= 0.05": 59
+      },
+      "n": 1235,
+      "one_sided_upper_bound_95": 0.0024,
+      "power_to_detect_failure_rate": {
+        "p=0.01": 1.0,
+        "p=0.02": 1.0,
+        "p=0.05": 1.0
+      }
+    },
+    {
+      "adequately_powered_95pct": true,
+      "adequately_powered_99pct": false,
+      "description": "Recall on the extended buggy corpus (balanced)",
+      "id": "corpus_ext_recall",
+      "k_caught": 153,
+      "kind": "perfect_recall",
+      "min_n_to_certify_floor": {
+        ">= 0.95": 59,
+        ">= 0.98": 149,
+        ">= 0.99": 299
+      },
+      "n": 153,
+      "one_sided_lower_bound_95": 0.9806,
+      "power_to_detect_recall_below": {
+        "r=0.95": 0.9996,
+        "r=0.98": 0.9545,
+        "r=0.99": 0.7851
+      }
+    },
+    {
+      "adequately_powered_95pct": true,
+      "adequately_powered_99pct": false,
+      "description": "Recall on the pre-registered held-out blind split (balanced)",
+      "id": "blind_recall",
+      "k_caught": 138,
+      "kind": "perfect_recall",
+      "min_n_to_certify_floor": {
+        ">= 0.95": 59,
+        ">= 0.98": 149,
+        ">= 0.99": 299
+      },
+      "n": 138,
+      "one_sided_lower_bound_95": 0.9785,
+      "power_to_detect_recall_below": {
+        "r=0.95": 0.9992,
+        "r=0.98": 0.9385,
+        "r=0.99": 0.7502
+      }
+    },
+    {
+      "adequately_powered_95pct": true,
+      "adequately_powered_99pct": true,
+      "description": "UNSAFE agreement on modules the live torch dispatcher rejects",
+      "id": "differential_unsafe_recall",
+      "k_caught": 765,
+      "kind": "perfect_recall",
+      "min_n_to_certify_floor": {
+        ">= 0.95": 59,
+        ">= 0.98": 149,
+        ">= 0.99": 299
+      },
+      "n": 765,
+      "one_sided_lower_bound_95": 0.9961,
+      "power_to_detect_recall_below": {
+        "r=0.95": 1.0,
+        "r=0.98": 1.0,
+        "r=0.99": 0.9995
+      }
+    },
+    {
+      "adequately_powered_95pct": true,
+      "adequately_powered_99pct": true,
+      "description": "Kill rate over genuine-bug mutants (sound mode)",
+      "id": "mutation_kill_rate",
+      "k_caught": 376,
+      "kind": "perfect_recall",
+      "min_n_to_certify_floor": {
+        ">= 0.95": 59,
+        ">= 0.98": 149,
+        ">= 0.99": 299
+      },
+      "n": 376,
+      "one_sided_lower_bound_95": 0.9921,
+      "power_to_detect_recall_below": {
+        "r=0.95": 1.0,
+        "r=0.98": 0.9995,
+        "r=0.99": 0.9772
+      }
+    },
+    {
+      "adequately_powered": false,
+      "all_discordant_favour_tg": true,
+      "b_tg_right_base_wrong": 1,
+      "c_tg_wrong_base_right": 0,
+      "description": "Paired McNemar: TensorGuard vs runtime_forward",
+      "exact_two_sided_p": 1.0,
+      "id": "mcnemar_vs_runtime_forward",
+      "kind": "mcnemar",
+      "min_discordant_for_significance_05": 6,
+      "n_discordant": 1
+    },
+    {
+      "adequately_powered": false,
+      "all_discordant_favour_tg": true,
+      "b_tg_right_base_wrong": 0,
+      "c_tg_wrong_base_right": 0,
+      "description": "Paired McNemar: TensorGuard vs runtime_backward",
+      "exact_two_sided_p": 1.0,
+      "id": "mcnemar_vs_runtime_backward",
+      "kind": "mcnemar",
+      "min_discordant_for_significance_05": 6,
+      "n_discordant": 0
+    },
+    {
+      "adequately_powered": false,
+      "all_discordant_favour_tg": true,
+      "b_tg_right_base_wrong": 2,
+      "c_tg_wrong_base_right": 0,
+      "description": "Paired McNemar: TensorGuard vs pytea",
+      "exact_two_sided_p": 0.5,
+      "id": "mcnemar_vs_pytea",
+      "kind": "mcnemar",
+      "min_discordant_for_significance_05": 6,
+      "n_discordant": 2
+    },
+    {
+      "adequately_powered": true,
+      "all_discordant_favour_tg": true,
+      "b_tg_right_base_wrong": 8,
+      "c_tg_wrong_base_right": 0,
+      "description": "Paired McNemar: TensorGuard vs noop",
+      "exact_two_sided_p": 0.0078,
+      "id": "mcnemar_vs_noop",
+      "kind": "mcnemar",
+      "min_discordant_for_significance_05": 6,
+      "n_discordant": 8
+    }
+  ],
+  "confidence": 0.95,
+  "failure_rate_targets": [
+    0.01,
+    0.02,
+    0.05
+  ],
+  "min_discordant_for_significance_05": 6,
+  "n_claims": 12,
+  "n_mcnemar_significant_and_powered": 1,
+  "pooled_clean_trials": 1439,
+  "pooled_clean_zero_fail_upper_bound_95": 0.0021,
+  "recall_floors": [
+    0.99,
+    0.98,
+    0.95
+  ],
+  "step": 120
+}

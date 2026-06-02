@@ -108,6 +108,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/reduced_product_ablation.md",
     "reproducibility/cegar_depth_ablation.json",
     "reproducibility/cegar_depth_ablation.md",
+    "reproducibility/statistical_power.json",
+    "reproducibility/statistical_power.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -235,6 +237,8 @@ STEPS = [
      [PY, "reproducibility/reduced_product_ablation.py"], None),
     ("CEGAR-depth ablation: refinement depth vs diagnostic precision + work",
      [PY, "reproducibility/cegar_depth_ablation.py"], None),
+    ("statistical power: exact-binomial sample-size justification per headline claim",
+     [PY, "reproducibility/statistical_power.py"], None),
     ("dashboard: rebuild the static evidence site from committed artifacts",
      [PY, "reproducibility/build_dashboard.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
