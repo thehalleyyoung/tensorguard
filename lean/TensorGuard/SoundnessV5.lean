@@ -270,13 +270,13 @@ def argmaxOp (input : Sh) (axis : Nat) : Option Sh :=
 theorem applyOp_sound_argmax (input : Sh) (axis : Nat) (out : Sh)
     (h : argmaxOp input axis = some out) :
     out.length = input.length - 1 := by
-  simp only [argmaxOp] at h
-  by_cases hlt : axis ≥ input.length
-  · simp [hlt] at h
-  · simp only [hlt, ite_false, Option.some.injEq] at h
-    push_neg at hlt
-    rw [← h]
-    simp only [List.length_append, List.length_take, List.length_drop]
+  unfold argmaxOp at h
+  split at h
+  · exact Option.noConfusion h
+  · rename_i hlt
+    have hlt' : axis < input.length := by omega
+    injection h with h'
+    rw [← h', List.length_append, List.length_take, List.length_drop]
     omega
 
 /-- Shape rule for `cross_entropy(input, target)`: [N,C] × [N] → scalar []. -/
@@ -290,13 +290,12 @@ def crossEntropyOp (input target : Sh) : Option Sh :=
 theorem applyOp_sound_cross_entropy (input target out : Sh)
     (h : crossEntropyOp input target = some out) :
     out = [] := by
-  simp only [crossEntropyOp] at h
-  match input, target with
-  | n :: _c :: [], n' :: [] =>
-      by_cases heq : n = n'
-      · simp [heq] at h; exact h.symm
-      · simp [heq] at h
-  | _, _ => simp at h
+  unfold crossEntropyOp at h
+  split at h
+  · split at h
+    · injection h with h'; exact h'.symm
+    · exact Option.noConfusion h
+  · exact Option.noConfusion h
 
 end V5
 end TensorGuard

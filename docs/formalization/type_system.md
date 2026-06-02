@@ -166,8 +166,18 @@ and no reachable error state is excluded. Where any step cannot be justified
 (out-of-fragment construct, `unknown` from the solver, unrecoverable source) the
 analyser abstains instead of returning `SAFE`. ∎
 
-The mechanised counterpart of the core lemmas lives under `lean/` (Step 87);
-the precise unsound/incomplete boundary is catalogued in Step 94.
+The mechanised counterpart of the core lemmas lives under `lean/` (Step 87).
+The single-shape transfer functions and the extended operator set are proved
+**sound in Lean 4** and the proofs are accepted by the kernel with no `sorry`:
+`lean/TensorGuard/Soundness.lean` (`applyOp_sound_linear`, `applyOp_sound_view`,
+`applyOp_sound_broadcast_add`), `lean/TensorGuard/AssumeGuaranteeExtended.lean`
+(`applyOpExt_sound_matmul`, `…_transpose`, `…_permute`, `…_sum_reduce`),
+`lean/TensorGuard/SoundnessV5.lean` (`applyOp_sound_cross_entropy`,
+`applyOp_sound_argmax`), and the operator-agnostic composition witnesses in
+`MatmulSound.lean` / `BroadcastAddSound.lean`. `lean/TensorGuard/AxiomAudit.lean`
+runs `#print axioms` on each of these theorems; every one depends only on the
+trusted kernel axioms `{propext, Classical.choice, Quot.sound}` and never on
+`sorryAx`. The precise unsound/incomplete boundary is catalogued in Step 94.
 
 ## 7. Reconciliation index
 
@@ -175,6 +185,7 @@ the precise unsound/incomplete boundary is catalogued in Step 94.
 | --- | --- | --- |
 | Symbolic dim terms `δ` | `tensor_shapes.SymbolicDimension`, `ShapeDim` | `test_formalization.py::test_symbolic_dim_algebra` |
 | Interval lattice `I` | `domains/abstract_domains.IntervalDomain` | `test_*_lattice_laws`, `test_widening_terminates` |
-| Reduced product `P` | `domains/product.ReducedProductDomain` | `test_product_is_componentwise_lattice` |
+| Reduced product `P` | `domains/product.ReducedProductDomain` | `test_product_is_componentwise_lattice`, `test_reduced_join_is_sound_over_concretization` |
 | Reductions `ρ` | `domains/product.ReductionEngine` | `test_reduction_is_reductive` |
 | Shape VC `⊨ k = in` | `refinement/`, `shape_cegar.py` | `test_linear_vc_soundness` |
+| Transfer-function soundness (Lean) | `lean/TensorGuard/*.lean` | `test_lean_soundness.py` (builds + `#print axioms`, no `sorryAx`) |

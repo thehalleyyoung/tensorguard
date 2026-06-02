@@ -261,10 +261,11 @@ theorem applyOpExt_sound_matmul
           | nil => simp at h
           | cons c r3 =>
               -- length is 1 + (1 + (1 + r3.length)) ≥ 3
-              refine ⟨?_, ?_⟩
-              · simp [Shape.length]; omega
-              · simp [Shape.length] at h
-                exact h.symm
+              refine ⟨by simp [Shape.length]; omega, ?_⟩
+              simp only [applyOpExt] at h
+              split at h
+              · injection h with h'; exact h'.symm
+              · exact Option.noConfusion h
 
 /-- **Soundness of sum_reduce.** Reduction removes the specified axis. -/
 theorem applyOpExt_sound_sum_reduce

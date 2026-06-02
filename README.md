@@ -1730,6 +1730,16 @@ identical `lean_build_v9.log`).  The log contains zero
 `declaration uses 'sorry'` warnings; the only `sorry` substrings
 in `lean/TensorGuard/` live inside docstring comments.
 
+The "sorry-free" claim is enforced by an axiom audit rather than
+just a log grep: `lean/TensorGuard/AxiomAudit.lean` runs
+`#print axioms` on every core transfer-function soundness theorem
+(`applyOp_sound_linear`, `applyOp_sound_view`,
+`applyOpExt_sound_matmul`, `applyOp_sound_cross_entropy`,
+`applyOp_sound_argmax`, the composition witnesses, …) and
+`tests/test_lean_soundness.py` asserts each depends only on the
+trusted kernel axioms `propext`, `Classical.choice`, `Quot.sound`
+and never on `sorryAx`.
+
 ### Other artefacts
 
 | Artefact                                                       | Script                                                  |
