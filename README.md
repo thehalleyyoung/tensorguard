@@ -1020,6 +1020,26 @@ monotone refinement, more precise but never unsound. See
 [`reproducibility/reduced_product_ablation.md`](reproducibility/reduced_product_ablation.md)
 and `tests/test_reduced_product_ablation.py`.
 
+### CEGAR refinement depth: what extra refinement buys, and what it costs
+The shape-CEGAR loop discovers a module's implicit input contracts by
+accumulating shape predicates from counterexamples, and its iteration budget is a
+knob a reviewer will want characterised. `reproducibility/cegar_depth_ablation.py`
+sweeps that budget from zero upward over a corpus of infeasible-contract bugs and
+clean controls — every case validated against real PyTorch, every buggy module
+one that no input width can make run — and separates three effects. Detection is
+depth-invariant: the direct shape check already refutes every infeasible contract
+at depth zero, so recall stays full and, just as importantly, clean controls
+never false-alarm at any depth — CEGAR depth is a diagnosis knob, not a soundness
+knob. What the refinement actually buys is *contract-level* diagnostic precision:
+the precise "x cannot be both width A and width B" root cause is absent at depth
+zero and reaches every bug at the refinement knee of depth one, then plateaus.
+And the cost is bounded by the convergence theorem — total refinement work climbs
+only until the monotone predicate accumulation converges (depth two on this
+corpus) and is exactly flat thereafter, so any budget past the knee is free but
+useless. A deterministic wall-clock companion records the same curve in seconds.
+See [`reproducibility/cegar_depth_ablation.md`](reproducibility/cegar_depth_ablation.md)
+and `tests/test_cegar_depth_ablation.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a

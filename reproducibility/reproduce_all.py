@@ -106,6 +106,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/domain_ablation.md",
     "reproducibility/reduced_product_ablation.json",
     "reproducibility/reduced_product_ablation.md",
+    "reproducibility/cegar_depth_ablation.json",
+    "reproducibility/cegar_depth_ablation.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -114,6 +116,7 @@ GENERATED_DETERMINISTIC = [
 VOLATILE_REGENERATED = [
     "reproducibility/reproduce_headline_60bug.json",
     "reproducibility/scaling_walltime.json",
+    "reproducibility/cegar_depth_walltime.json",
 ]
 
 # Artifacts that need CUDA / HuggingFace / Lean and cannot be rebuilt in a
@@ -230,6 +233,8 @@ STEPS = [
      [PY, "reproducibility/domain_ablation.py"], None),
     ("reduced-product ablation: reductions-on vs -off precision gain (CPython oracle)",
      [PY, "reproducibility/reduced_product_ablation.py"], None),
+    ("CEGAR-depth ablation: refinement depth vs diagnostic precision + work",
+     [PY, "reproducibility/cegar_depth_ablation.py"], None),
     ("dashboard: rebuild the static evidence site from committed artifacts",
      [PY, "reproducibility/build_dashboard.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
