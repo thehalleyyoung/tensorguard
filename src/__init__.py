@@ -26,6 +26,7 @@ from .safe_loader import (
     is_static_only_source,
 )
 from .distributions_verify import verify_distribution, verify_log_prob
+from .complex_verify import verify_fft, verify_view_as_complex, verify_view_as_real
 from .named_tensor_verify import verify_align_to, verify_named_tensor_source, verify_refine_names
 
 __all__ = [
@@ -46,6 +47,9 @@ __all__ = [
     "TensorGuardCheckError",
     "verify_distribution",
     "verify_log_prob",
+    "verify_fft",
+    "verify_view_as_real",
+    "verify_view_as_complex",
     "verify_refine_names",
     "verify_align_to",
     "verify_named_tensor_source",

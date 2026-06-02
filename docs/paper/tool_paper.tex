@@ -49,8 +49,9 @@
 \tg{} is a zero-annotation static verifier for PyTorch \texttt{nn.Module}
 architectures and adjacent training/deployment code.  It checks tensor shape,
 dtype, device, phase, gradient-flow, stride/layout, probabilistic batch/event
-contracts, named-axis alignment, and library-specific contracts before a
-forward pass runs, then reports a three-valued verdict:
+contracts, complex view/FFT shape-dtype rules, named-axis alignment, and
+library-specific contracts before a forward pass runs, then reports a
+three-valued verdict:
 \safe{}, \unknown{}, or \unsafe{}.  The implementation is intentionally more
 than a prototype: it ships a formal soundness contract, a verifiable-fragment
 specification, operator confidence tags, SARIF/JSON/JUnit/GitHub reporters,
@@ -144,7 +145,9 @@ or module and supports independent check toggles, soundness modes, and machine
 readable output.  The public Python API mirrors the CLI through
 \texttt{verify\_architecture}, \texttt{verify\_module}, and specialized helpers
 such as \texttt{verify\_einops}, \texttt{verify\_einops\_source},
-\texttt{verify\_sdpa}, and \texttt{verify\_align\_to}.  A typical workflow is:
+\texttt{verify\_sdpa}, \texttt{verify\_fft},
+\texttt{verify\_view\_as\_real}, and \texttt{verify\_align\_to}.  A typical
+workflow is:
 
 \begin{lstlisting}
 import torch.nn as nn
@@ -362,7 +365,7 @@ accumulation argument.
 
 \subsection{Specialized library contracts}
 
-Four high-value library checkers demonstrate the pattern for precision without
+Five high-value library checkers demonstrate the pattern for precision without
 unsoundness:
 
 \begin{itemize}[leftmargin=2em]
@@ -388,6 +391,18 @@ unsoundness:
   PyTorch can build a malformed multivariate distribution that only fails when
   used.  Differential tests compare against real PyTorch distributions with
   support validation disabled so the oracle isolates shape failures.
+  \item \textbf{Complex views and FFT.}
+  \path{src/complex_verify.py} models \texttt{torch.view\_as\_real},
+  \texttt{torch.view\_as\_complex}, and the core \texttt{torch.fft} family.
+  It captures PyTorch's concrete shape rules for \texttt{n}, \texttt{s}, and
+  \texttt{dim}, including no-op \texttt{fftn(..., dim=())}, Hermitian
+  half-spectrum lengths, inverse real-FFT length recovery, out-of-range and
+  duplicate dimensions, and the exact dtype edge cases: \texttt{rfft} rejects
+  complex inputs, \texttt{view\_as\_complex} accepts only half/float/double
+  real views, and FFT kernels reject half, bfloat16, and complex-half where the
+  live dispatcher does.  Unknown dtypes and symbolic lengths abstain instead of
+  refuting.  \path{tests/test_complex_verify.py} differentially checks the rules
+  against real PyTorch across view, single-axis FFT, and multi-axis FFT cases.
   \item \textbf{PyTorch named tensors.}
   \path{src/named_tensor_verify.py} models \texttt{refine\_names} and
   \texttt{align\_to}: an existing concrete axis name cannot be renamed or
@@ -824,8 +839,8 @@ not more marketing metrics; they are higher-value coverage and stronger
 evidence:
 
 \begin{itemize}[leftmargin=2em]
-  \item deeper operator coverage for named tensors, complex dtypes,
-  functorch/vmap, sparse tensors, grid sampling, MultiheadAttention,
+  \item deeper operator coverage for functorch/vmap, sparse tensors, grid
+  sampling, MultiheadAttention,
   split/chunk, masked selection, nonzero, and exact einsum diagonal semantics;
   \item deployment correctness for quantization, mixed precision, dynamic
   \texttt{torch.export} constraints, AOTInductor layouts, ONNX opsets, GGUF
@@ -847,7 +862,8 @@ evidence:
 \tg{} turns tensor metadata checking from a runtime accident into an auditable
 static contract.  It is already useful as a developer tool: it catches shape,
 device, dtype, phase, gradient, training-loop, distributed, quantization,
-export, einops, SDPA, distribution, and named-axis hazards before execution; it reports precise
+export, einops, SDPA, distribution, complex FFT/view, and named-axis hazards
+before execution; it reports precise
 diagnostics; it integrates with CI and code scanning; and it defaults to
 abstention rather than false certainty when the program leaves its fragment.
 It is also unusually well-supported as a research artifact: every headline

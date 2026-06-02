@@ -53,6 +53,11 @@ from src.distributions_verify import (  # noqa: F401  (re-export)
     verify_distribution,
     verify_log_prob,
 )
+from src.complex_verify import (  # noqa: F401  (re-export)
+    verify_fft,
+    verify_view_as_complex,
+    verify_view_as_real,
+)
 from src.named_tensor_verify import (  # noqa: F401  (re-export)
     verify_align_to,
     verify_named_tensor_source,
@@ -89,6 +94,9 @@ __all__ = [
     "verify_einops_source",
     "verify_distribution",
     "verify_log_prob",
+    "verify_fft",
+    "verify_view_as_real",
+    "verify_view_as_complex",
     "verify_refine_names",
     "verify_align_to",
     "verify_named_tensor_source",
