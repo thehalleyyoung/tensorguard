@@ -660,6 +660,30 @@ quantized-add hazard matches the live runtime exception. See
 [`reproducibility/quant_export_safety.md`](reproducibility/quant_export_safety.md)
 and `tests/test_quant_export_checks.py`.
 
+### Auto-generated operator coverage
+
+Coverage is the perennial bottleneck for any static tool: PyTorch ships
+hundreds of layers and the ecosystem adds thousands more, and hand-writing a
+shape transfer for each does not scale. `src/stub_autogen.py` derives shape
+stubs **directly from the real `torch.nn` constructor signatures** and known
+shape contracts, so coverage grows from one curated list instead of one
+hand-written transfer per layer:
+
+```bash
+PYTHONPATH=. python3 reproducibility/stub_autogen_coverage.py   # writes stub_autogen_coverage.{json,md}
+```
+
+Autogeneration is **sound by abstention**: a stub is emitted only when the
+layer's shape contract is exactly known (last-dim-linear or shape-preserving),
+and layers whose output depends on stride/padding/attention internals
+(`Conv2d`, `MaxPool2d`, `MultiheadAttention`) are classified `UNSUPPORTED` and
+left opaque rather than guessed. Across the curated targets every generated stub
+is validated against the layer's live forward output shape, and a previously
+unseen third-party `MyProjection(in_features, out_features)` is auto-covered
+from its signature alone — its predicted shape matches the real forward. See
+[`reproducibility/stub_autogen_coverage.md`](reproducibility/stub_autogen_coverage.md)
+and `tests/test_stub_autogen.py`.
+
 ### Sound-mode false-positive hunt
 
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,

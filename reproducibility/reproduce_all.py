@@ -64,6 +64,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/tensor_parallel_sharding.md",
     "reproducibility/quant_export_safety.json",
     "reproducibility/quant_export_safety.md",
+    "reproducibility/stub_autogen_coverage.json",
+    "reproducibility/stub_autogen_coverage.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -130,6 +132,8 @@ STEPS = [
      [PY, "reproducibility/tensor_parallel_sharding.py"], None),
     ("deploy: quantization & export safety checks vs real torch",
      [PY, "reproducibility/quant_export_safety.py"], None),
+    ("coverage: auto-generated shape stubs vs live torch forwards",
+     [PY, "reproducibility/stub_autogen_coverage.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]
