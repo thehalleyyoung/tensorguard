@@ -1399,6 +1399,19 @@ chain, and autofixes the CLI already uses, so an extension is a thin transport
 shim over a real verifier rather than a re-implementation. See
 `tests/test_lsp_provider.py`.
 
+### Jupyter / notebook integration
+
+Run `%load_ext src.jupyter_integration` in a notebook and TensorGuard checks
+every cell that defines an `nn.Module` the moment it runs, printing a green or
+red verdict inline. For models whose input rank cannot be inferred, the
+`%%tensorguard x=batch,10` cell magic supplies shapes explicitly, verifies, and
+then still executes the cell so the class is defined as usual. The detection,
+verification and rendering are pure functions, so the behavior is unit tested
+without a kernel, while an end-to-end test drives a real IPython shell: a buggy
+model cell prints its diagnostic and the class is still defined in the user
+namespace. Non-model and safe cells stay silent. See
+`tests/test_jupyter_integration.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
