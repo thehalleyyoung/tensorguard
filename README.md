@@ -1412,6 +1412,19 @@ model cell prints its diagnostic and the class is still defined in the user
 namespace. Non-model and safe cells stay silent. See
 `tests/test_jupyter_integration.py`.
 
+### Definition-time enforcement (`@tensorguard.checked`)
+
+Decorate an `nn.Module` subclass with `@tensorguard.checked` to verify it the
+moment the class is defined, catching a shape bug at import before the model is
+ever instantiated or trained. The decorator returns the class unchanged, so
+decorated modules behave normally; on a detected bug it raises
+`TensorGuardCheckError` with the full source-mapped diagnostic, or, for gradual
+adoption, `@tensorguard.checked(on_fail="warn")` downgrades that to a warning.
+Convolutional models are checked even with no annotations; for ambiguous-rank
+models pass `input_shapes`. If a class's source cannot be recovered the
+decorator abstains silently rather than blocking the import. See
+`tests/test_runtime_check.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

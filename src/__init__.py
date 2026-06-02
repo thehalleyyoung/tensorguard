@@ -18,6 +18,7 @@ from .api import (
     BugCategory,
     SourceLocation,
 )
+from .runtime_check import checked, TensorGuardCheckError
 
 __all__ = [
     "analyze",
@@ -29,5 +30,7 @@ __all__ = [
     "Bug",
     "BugCategory",
     "SourceLocation",
+    "checked",
+    "TensorGuardCheckError",
     "__version__",
 ]
