@@ -3181,6 +3181,15 @@ class VerifyCommand:
             help="With --fix, apply the suggested edits to the file in place."
         )
         parser.add_argument(
+            "--watch", action="store_true",
+            help="Re-verify the file every time it changes (live feedback). "
+            "Also watches sibling .py files in the same directory. Ctrl-C to stop."
+        )
+        parser.add_argument(
+            "--debounce", type=float, default=0.4,
+            help="Polling interval in seconds for --watch (default: 0.4)."
+        )
+        parser.add_argument(
             "--high-confidence", action="store_true",
             help="Only report high-confidence (Z3-proven) bugs. Reduces FP rate to 0%% for CI/CD gating."
         )
@@ -3194,6 +3203,98 @@ class VerifyCommand:
         )
 
     def execute(self, args: argparse.Namespace) -> int:
+        if getattr(args, "watch", False):
+            return self._watch(args)
+        return self._verify_once(args)
+
+    def _watch(self, args: argparse.Namespace) -> int:
+        """Re-verify ``args.file`` (and sibling .py files) on every change."""
+        from src.watch_mode import (
+            format_watch_result, poll_once, run_verification, snapshot_mtimes,
+        )
+
+        filepath = pathlib.Path(args.file)
+        if not filepath.exists():
+            sys.stderr.write(f"File not found: {args.file}\n")
+            return 1
+
+        # Watch the target plus its sibling .py files (common multi-file models).
+        watched = [str(filepath)]
+        try:
+            for sib in sorted(filepath.parent.glob("*.py")):
+                if str(sib) != str(filepath):
+                    watched.append(str(sib))
+        except Exception:
+            pass
+
+        debounce = float(getattr(args, "debounce", 0.4) or 0.4)
+        use_color = not getattr(args, "no_color", False) and sys.stdout.isatty()
+
+        sys.stderr.write(
+            f"Watching {filepath.name} (and {len(watched) - 1} sibling file(s)); "
+            f"Ctrl-C to stop.\n"
+        )
+
+        # Initial pass so the developer sees the current state immediately.
+        wr = run_verification(str(filepath), lambda p: self._verify_value(p, args))
+        sys.stdout.write(format_watch_result(wr, use_color) + "\n")
+        sys.stdout.flush()
+
+        mtimes = snapshot_mtimes(watched)
+        try:
+            while True:
+                changed, mtimes = poll_once(watched, mtimes)
+                if changed:
+                    stamp = time.strftime("%H:%M:%S")
+                    sys.stdout.write(
+                        f"\n[{stamp}] change detected; re-verifying...\n"
+                    )
+                    wr = run_verification(
+                        str(filepath), lambda p: self._verify_value(p, args)
+                    )
+                    sys.stdout.write(format_watch_result(wr, use_color) + "\n")
+                    sys.stdout.flush()
+                time.sleep(debounce)
+        except KeyboardInterrupt:
+            sys.stderr.write("\nWatch stopped.\n")
+        return 0
+
+    def _verify_value(self, path: str, args: argparse.Namespace):
+        """Verify *path* and return the AnalysisResult (used by watch mode)."""
+        from src.api import verify_architecture
+        source = pathlib.Path(path).read_text(encoding="utf-8")
+        input_shapes = self._parse_input_shapes(args.input_shape)
+        return verify_architecture(
+            source,
+            input_shapes=input_shapes,
+            check_devices=not args.no_device_check,
+            check_phases=not args.no_phase_check,
+            check_gradients=not args.no_grad_check,
+            max_cegar_iterations=args.cegar_iterations,
+            filename=path,
+            high_confidence_only=args.high_confidence,
+            soundness_mode=getattr(args, "soundness_mode", "balanced"),
+            infer_inputs=not getattr(args, "no_infer", False),
+        )
+
+    @staticmethod
+    def _parse_input_shapes(specs) -> Dict[str, tuple]:
+        input_shapes: Dict[str, tuple] = {}
+        for spec in specs:
+            if "=" not in spec:
+                continue
+            name, dims_str = spec.split("=", 1)
+            dims = []
+            for d in dims_str.split(","):
+                d = d.strip()
+                try:
+                    dims.append(int(d))
+                except ValueError:
+                    dims.append(d)
+            input_shapes[name] = tuple(dims)
+        return input_shapes
+
+    def _verify_once(self, args: argparse.Namespace) -> int:
         filepath = pathlib.Path(args.file)
         if not filepath.exists():
             sys.stderr.write(f"File not found: {args.file}\n")

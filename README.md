@@ -1373,6 +1373,19 @@ file untouched. In practice a layer that wrongly expects thirty input features
 while receiving twenty is rewritten to expect twenty, after which the model
 verifies clean and runs under eager torch. See `tests/test_autofix.py`.
 
+### Watch mode (`--watch`)
+
+`tensorguard verify --watch FILE` re-verifies a model every time it (or a
+sibling `.py` file in the same directory) changes, giving instant feedback while
+you edit. It prints a one-line green or red headline per pass whose issue count
+matches a normal run, and it survives mistakes typed mid-edit: a transient
+syntax error is reported as a failed pass rather than crashing the watcher. The
+change-detection and single-pass logic are pure functions, so they are unit
+tested without a real filesystem watcher; an end-to-end check starts the watcher
+on a buggy model, rewrites the offending layer on disk, and observes the verdict
+flip to verified safe within one polling interval. See
+`tests/test_watch_mode.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
