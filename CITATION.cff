@@ -1,0 +1,42 @@
+cff-version: 1.2.0
+message: >-
+  If you use TensorGuard or its frozen real-world bug benchmark corpus, please
+  cite this repository.
+title: "TensorGuard: sound static shape/device/dtype/phase/gradient verification for PyTorch"
+abstract: >-
+  TensorGuard is a sound, static verifier for PyTorch nn.Module architectures.
+  It proves the absence of (or finds) shape, device, dtype, training-phase, and
+  gradient bugs using refinement types discharged by an SMT solver together with
+  a reduced-product abstract domain, with no model execution, no concrete
+  inputs, and no GPU. The repository also ships a frozen, content-addressed,
+  labeled real-world bug benchmark corpus (real_benchmarks/) as a standalone,
+  citable contribution.
+type: software
+authors:
+  - name: "The TensorGuard maintainers"
+    website: "https://github.com/thehalleyyoung/tensorguard"
+repository-code: "https://github.com/thehalleyyoung/tensorguard"
+url: "https://github.com/thehalleyyoung/tensorguard"
+license: MIT
+version: "0.1.0"
+keywords:
+  - PyTorch
+  - static analysis
+  - refinement types
+  - abstract interpretation
+  - SMT
+  - shape checking
+  - machine learning reliability
+references:
+  - type: dataset
+    title: "TensorGuard real-world PyTorch bug benchmark corpus"
+    abstract: >-
+      A frozen, versioned, content-addressed (SHA-256) corpus of real PyTorch
+      nn.Module architectures, each labeled clean (should verify SAFE) or buggy
+      (should verify UNSAFE), spanning the shape, device, training-phase, and
+      gradient domains. See real_benchmarks/DATASHEET.md.
+    authors:
+      - name: "The TensorGuard maintainers"
+    version: "1.0.0"
+    license: MIT
+    repository-code: "https://github.com/thehalleyyoung/tensorguard"

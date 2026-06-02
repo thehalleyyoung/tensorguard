@@ -85,7 +85,10 @@ runtime errors in ML codebases before any code runs.
   CUDA-only, one is a *silent* gradient-detach bug TG catches statically).
   Run `python -m real_benchmarks.load` to re-verify integrity and that 16/16
   TensorGuard verdicts match the frozen labels; pinned by
-  `tests/test_real_benchmarks.py`.
+  `tests/test_real_benchmarks.py`. The corpus is published as a standalone,
+  citable contribution: a generated [*Datasheets for Datasets*](real_benchmarks/DATASHEET.md)
+  datasheet (built from the manifest so its counts can never drift) and a
+  repository-root [`CITATION.cff`](CITATION.cff) make it directly citable.
 - **GitHub-mined bug dataset** — [`experiments_v5/github_bug_mining/`](experiments_v5/github_bug_mining/)
   is a frozen, labeled dataset of thousands of real PyTorch shape/device bugs
   mined from public GitHub issues/PRs by matching verbatim PyTorch runtime error
