@@ -1,0 +1,216 @@
+{
+  "cases": [
+    {
+      "agree": true,
+      "gamma_lean": [],
+      "gamma_python": [],
+      "input": "00:bot",
+      "input_consistent": false,
+      "lean_reduced": "00:bot",
+      "python_overapproximates": true,
+      "python_reduced": "00:bot"
+    },
+    {
+      "agree": true,
+      "gamma_lean": [],
+      "gamma_python": [],
+      "input": "00:null",
+      "input_consistent": false,
+      "lean_reduced": "00:bot",
+      "python_overapproximates": true,
+      "python_reduced": "00:bot"
+    },
+    {
+      "agree": true,
+      "gamma_lean": [],
+      "gamma_python": [],
+      "input": "00:notnull",
+      "input_consistent": false,
+      "lean_reduced": "00:bot",
+      "python_overapproximates": true,
+      "python_reduced": "00:bot"
+    },
+    {
+      "agree": true,
+      "gamma_lean": [],
+      "gamma_python": [],
+      "input": "00:top",
+      "input_consistent": false,
+      "lean_reduced": "00:bot",
+      "python_overapproximates": true,
+      "python_reduced": "00:bot"
+    },
+    {
+      "agree": true,
+      "gamma_lean": [],
+      "gamma_python": [],
+      "input": "01:bot",
+      "input_consistent": false,
+      "lean_reduced": "00:bot",
+      "python_overapproximates": true,
+      "python_reduced": "00:bot"
+    },
+    {
+      "agree": false,
+      "gamma_lean": [],
+      "gamma_python": [
+        "cobj"
+      ],
+      "input": "01:null",
+      "input_consistent": false,
+      "lean_reduced": "00:bot",
+      "python_overapproximates": true,
+      "python_reduced": "01:notnull"
+    },
+    {
+      "agree": true,
+      "gamma_lean": [
+        "cobj"
+      ],
+      "gamma_python": [
+        "cobj"
+      ],
+      "input": "01:notnull",
+      "input_consistent": true,
+      "lean_reduced": "01:notnull",
+      "python_overapproximates": true,
+      "python_reduced": "01:notnull"
+    },
+    {
+      "agree": true,
+      "gamma_lean": [
+        "cobj"
+      ],
+      "gamma_python": [
+        "cobj"
+      ],
+      "input": "01:top",
+      "input_consistent": true,
+      "lean_reduced": "01:notnull",
+      "python_overapproximates": true,
+      "python_reduced": "01:notnull"
+    },
+    {
+      "agree": true,
+      "gamma_lean": [],
+      "gamma_python": [],
+      "input": "10:bot",
+      "input_consistent": false,
+      "lean_reduced": "00:bot",
+      "python_overapproximates": true,
+      "python_reduced": "00:bot"
+    },
+    {
+      "agree": true,
+      "gamma_lean": [
+        "cnone"
+      ],
+      "gamma_python": [
+        "cnone"
+      ],
+      "input": "10:null",
+      "input_consistent": true,
+      "lean_reduced": "10:null",
+      "python_overapproximates": true,
+      "python_reduced": "10:null"
+    },
+    {
+      "agree": false,
+      "gamma_lean": [],
+      "gamma_python": [
+        "cnone"
+      ],
+      "input": "10:notnull",
+      "input_consistent": false,
+      "lean_reduced": "00:bot",
+      "python_overapproximates": true,
+      "python_reduced": "10:null"
+    },
+    {
+      "agree": true,
+      "gamma_lean": [
+        "cnone"
+      ],
+      "gamma_python": [
+        "cnone"
+      ],
+      "input": "10:top",
+      "input_consistent": true,
+      "lean_reduced": "10:null",
+      "python_overapproximates": true,
+      "python_reduced": "10:null"
+    },
+    {
+      "agree": true,
+      "gamma_lean": [],
+      "gamma_python": [],
+      "input": "11:bot",
+      "input_consistent": false,
+      "lean_reduced": "00:bot",
+      "python_overapproximates": true,
+      "python_reduced": "00:bot"
+    },
+    {
+      "agree": true,
+      "gamma_lean": [
+        "cnone"
+      ],
+      "gamma_python": [
+        "cnone"
+      ],
+      "input": "11:null",
+      "input_consistent": true,
+      "lean_reduced": "10:null",
+      "python_overapproximates": true,
+      "python_reduced": "10:null"
+    },
+    {
+      "agree": true,
+      "gamma_lean": [
+        "cobj"
+      ],
+      "gamma_python": [
+        "cobj"
+      ],
+      "input": "11:notnull",
+      "input_consistent": true,
+      "lean_reduced": "01:notnull",
+      "python_overapproximates": true,
+      "python_reduced": "01:notnull"
+    },
+    {
+      "agree": true,
+      "gamma_lean": [
+        "cnone",
+        "cobj"
+      ],
+      "gamma_python": [
+        "cnone",
+        "cobj"
+      ],
+      "input": "11:top",
+      "input_consistent": true,
+      "lean_reduced": "11:top",
+      "python_overapproximates": true,
+      "python_reduced": "11:top"
+    }
+  ],
+  "divergent_inputs": [
+    "01:null",
+    "10:notnull"
+  ],
+  "findings": {
+    "divergences_only_on_contradictory_unreachable_inputs": true,
+    "python_is_sound_overapproximation_on_all_inputs": true,
+    "python_matches_verified_on_all_consistent_inputs": true
+  },
+  "interpretation": "On every reachable (consistent) abstract value the Python reduction is byte-identical to the verified Lean reduction. On all sixteen values it is a sound over-approximation (gamma_python contains gamma_lean). The only divergences are on contradictory, unreachable inputs (empty concretization), where the verified model collapses to bottom but the Python rule overwrites the conflicting nullity rather than proving unreachability -- a precision gap, never an unsoundness.",
+  "n_abstract_values": 16,
+  "n_agree": 14,
+  "n_consistent_agree": 7,
+  "n_consistent_inputs": 7,
+  "n_python_sound_overapproximation": 16,
+  "reference_source": "lean/TensorGuard/ReducedProduct.lean (extracted to reproducibility/lean_reduction_extracted.txt)",
+  "step": 131,
+  "title": "Differential test of Python reduced-product reduction vs Lean-extracted verified checker"
+}

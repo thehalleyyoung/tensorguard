@@ -1,6 +1,6 @@
 # Reproducibility capsule manifest (Step 122)
 
-One command — `docker run --rm tensorguard-capsule` — regenerates **82** deterministic artifacts from source and verifies each is byte-identical to the committed tree, then re-audits every README numeric claim.
+One command — `docker run --rm tensorguard-capsule` — regenerates **84** deterministic artifacts from source and verifies each is byte-identical to the committed tree, then re-audits every README numeric claim.
 
 - base image: `python:3.12-slim`
 - entrypoint: `bash capsule/reproduce.sh`

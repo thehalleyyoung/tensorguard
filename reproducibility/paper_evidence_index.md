@@ -1,6 +1,6 @@
 # Paper-evidence index (Step 125)
 
-`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **44** evidence items (30 render a table); every generator script is present: **False**.
+`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **45** evidence items (30 render a table); every generator script is present: **False**.
 
 | stem | generator | table? | json | md |
 | --- | --- | --- | --- | --- |
@@ -48,3 +48,4 @@
 | time_to_detect | `reproducibility/time_to_detect.py` | False | y | y |
 | training_loop_hazards | `reproducibility/training_loop_hazards.py` | False | y | y |
 | upstream_hook_demo | `reproducibility/upstream_hook_demo.py` | True | y | y |
+| verified_reduction_diff | `reproducibility/verified_reduction_diff.py` | False | y | y |

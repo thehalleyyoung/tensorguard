@@ -2414,7 +2414,14 @@ The reductions are also proved *monotone* (the meet unconditionally,
 and `reduce` on the canonical sublattice — the property that makes the
 reduced-product fixpoint iteration sound). A concretization γ into the
 concrete domain `{none, obj}` is defined and proved monotone, exact on
-meets, and **preserved by every reduction** (γ(reduce p)=γ(p)).
+meets, and **preserved by every reduction** (γ(reduce p)=γ(p)). Those
+executable definitions are *extracted* into a reference checker and
+differentially run against the real `src/domains/product.py` reduction
+(`reproducibility/verified_reduction_diff.py`): the Python rule matches
+the verified model on every reachable abstract value and is a sound
+over-approximation on all of them — the audit honestly flags that it
+diverges only on contradictory, unreachable states (forgoing a proof of
+unreachability there, never soundness).
 
 ### Other artefacts
 
