@@ -15,3 +15,6 @@ import TensorGuard.DeviceDtype
 import TensorGuard.SmtEncoding
 import TensorGuard.CrossDomain
 import TensorGuard.GradFlow
+import TensorGuard.DevicePlacement
+import TensorGuard.PhaseFlow
+import TensorGuard.RankTransfer

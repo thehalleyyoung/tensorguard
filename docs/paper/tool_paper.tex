@@ -1018,12 +1018,12 @@ is what lets the claims above be checked rather than trusted.
 
 The repository ships a \emph{compiled}, \texttt{sorry}-free Lean~4
 formalization (pinned \texttt{lean-toolchain} \texttt{v4.14.0},
-\texttt{lakefile.lean}, \texttt{lake build} green) comprising 18 modules,
-$\sim$3{,}800 lines and 210 theorems/lemmas. Soundness is not asserted by
+\texttt{lakefile.lean}, \texttt{lake build} green) comprising 21 modules,
+$\sim$4{,}300 lines and 240 theorems/lemmas. Soundness is not asserted by
 inspection: \texttt{TensorGuard/AxiomAudit.lean} runs \texttt{\#print axioms}
 on the headline results, and---crucially---\texttt{tests/test\_lean\_whole\_%
 pipeline\_audit.py} makes the audit \emph{total and drift-proof}: it
-auto-discovers \emph{every one} of the library's 210 public theorems, elaborates
+auto-discovers \emph{every one} of the library's 240 public theorems, elaborates
 a \texttt{\#print axioms} for each through the Lean kernel, and asserts each
 depends only on the trusted kernel set $\{\texttt{propext},
 \texttt{Classical.choice}, \texttt{Quot.sound}\}$ and \emph{never} on
@@ -1096,7 +1096,16 @@ The mechanization covers six components:
     unknown-absorbing), justifying the order-independent never-flagging
     elementwise transfer, and \texttt{GradFlow.lean} lifts the single-op
     \texttt{detach} check to the gradient-flow transfer over an entire chain of
-    ops, proving it compositional with absorbing resets. These results narrow the
+    ops, proving it compositional with absorbing resets. Finally, three
+    \emph{chain-transfer} modules lift the per-op scalar checks to the op
+    sequences a \texttt{forward} actually executes and cross-check them against
+    the live framework: \texttt{DevicePlacement.lean} proves the device tag is
+    last-move-wins and a binary op is valid iff its operands share a device
+    (cross-device \emph{always} flagged), \texttt{PhaseFlow.lean} proves the
+    \texttt{train}/\texttt{eval} bit is last-setter-wins with child propagation,
+    and \texttt{RankTransfer.lean} proves the reduction rank transfer is monotone
+    non-increasing with closed form $\mathit{rank}_0 - \#\{\texttt{keepdim=False}\}$.
+    These results narrow the
     trusted computing base: the previously-trusted faithfulness of the device,
     phase and gradient enum encodings is now \emph{proved}.
 \end{enumerate}
@@ -1115,6 +1124,9 @@ Lean module & Cross-check & Guarantee \\
 \texttt{SmtEncoding.lean}  & real Z3 & device/phase/grad enum encoding UNSAT $\Leftrightarrow$ endpoints differ \\
 \texttt{CrossDomain.lean}  & real Z3 & transfer preserves shape / non-transfer preserves device, exactly \\
 \texttt{GradFlow.lean}     & real autograd & \texttt{requires\_grad} chain transfer; compositional, absorbing resets \\
+\texttt{DevicePlacement.lean} & real torch (cpu/mps) & device-tag chain; last-move-wins; binary op valid $\Leftrightarrow$ same device \\
+\texttt{PhaseFlow.lean}    & real \texttt{nn.Module} & train/eval bit chain; last-setter-wins, child propagation \\
+\texttt{RankTransfer.lean} & real torch \texttt{sum} & reduction rank chain; monotone, closed-form rank drop \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1138,9 +1150,37 @@ pair and assert the live SAT/UNSAT verdict equals the Lean prediction;
 $\le 3$ on a real autograd tensor and asserts \texttt{out.requires\_grad} equals
 the proved \texttt{gradRun}; and \texttt{test\_dtype\_promotion\_lattice.py}
 executes real \texttt{torch.add} on every promotable dtype pair to validate the
-``elementwise dtype never flags'' law. This narrows the conformance gap from
+``elementwise dtype never flags'' law. The three chain-transfer modules are
+validated the same way: \texttt{test\_device\_placement\_transfer.py} replays
+every \texttt{.to(...)} chain of length $\le 3$ across real \texttt{cpu} and
+\texttt{mps} tensors (asserting \texttt{tensor.device.type} matches the proved
+\texttt{devRun}, and that eager \texttt{a+b} raises \emph{exactly} when the Lean
+\texttt{binValid} predicate is false), \texttt{test\_phase\_flow\_transfer.py}
+replays every \texttt{train}/\texttt{eval} chain on a real \texttt{nn.Sequential}
+(asserting \texttt{module.training} \emph{and every child's} bit match), and
+\texttt{test\_rank\_transfer.py} replays every no-underflow reduction chain via
+\texttt{torch.sum(dim=0, keepdim=$\cdot$)} (asserting \texttt{out.dim()} matches
+\texttt{rankRun}). This narrows the conformance gap from
 ``tested'' to ``the proved predictions are observed to hold on real PyTorch and
 real Z3.''
+
+\begin{table}[t]
+\centering\small
+\caption{Chain-transfer conformance: each proved per-\texttt{forward} transfer is
+replayed exhaustively (all chains of length $\le 3$) against the live framework
+and the verdict checked against the Lean prediction.}
+\label{tab:chain-conformance}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Proved transfer & Replayed against & Live invariant checked \\
+\midrule
+device placement & real \texttt{cpu}/\texttt{mps} tensors & \texttt{.device.type}; cross-device \texttt{+} raises iff $\lnot\mathrm{binValid}$ \\
+train/eval phase & real \texttt{nn.Sequential} & \texttt{.training} on parent \emph{and} every child \\
+reduction rank   & real \texttt{torch.sum} & \texttt{out.dim()} $=\mathrm{rankRun}$ \\
+gradient flow    & real autograd tensor & \texttt{out.requires\_grad} $=\mathrm{gradRun}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Trusted computing base (TCB).}
 The mechanization does \emph{not} cover completeness of verification
@@ -1721,6 +1761,22 @@ predicates of \texttt{DeviceDtype.lean}.
     b\,xs)\,ys$); \texttt{detach}/\texttt{noGrad} are absorbing; and on the
     reattach-free fragment the outgoing bit is \texttt{true} iff the input
     required grad and no reset intervened.
+  \item \textbf{Device-placement chain} (\texttt{DevicePlacement.lean}): the
+    device tag is last-move-wins ($\mathrm{devRun}\,d_0\,(xs\!+\!\!+\,[op])$ is
+    $op$'s target whenever $op$ is a move, independent of $d_0$), preserved on the
+    move-free fragment, and a binary op is valid iff its operands share a tag
+    ($\mathrm{binValid}(a,b)\!\iff\!a\!=\!b$) --- a cross-device pair is always
+    flagged, a same-device pair never falsely flagged.
+  \item \textbf{Train/eval phase chain} (\texttt{PhaseFlow.lean}): the
+    \texttt{training} bit is last-setter-wins and preserved on the setter-free
+    fragment; the run is compositional, matching real \texttt{nn.Module} mode
+    propagation (parent and children).
+  \item \textbf{Reduction rank chain} (\texttt{RankTransfer.lean}): the rank
+    transfer is compositional and monotone non-increasing
+    ($\mathrm{rankRun}\,r_0\,xs\le r_0$), with closed form
+    $\mathrm{rankRun}\,r_0\,xs = r_0 - \#\{\texttt{keepdim=False}\}$ (truncated),
+    so \texttt{keepdim=True} preserves rank and the verifier never invents a
+    dimension.
   \item \textbf{Reduced-product lifting} (\texttt{DeviceDtype.lean}): the product
     over the four scalar algebras flags iff some component flags, and inherits
     both no-false-positive and refutation soundness.
@@ -1728,7 +1784,7 @@ predicates of \texttt{DeviceDtype.lean}.
 
 Each item is gated by a Python test that reproduces the predicted
 SAT/UNSAT/verdict on the \emph{real} solver or the \emph{real} torch dispatcher;
-the whole library's 210 theorems are audited \texttt{sorry}-free by
+the whole library's 240 theorems are audited \texttt{sorry}-free by
 \texttt{test\_lean\_whole\_pipeline\_audit.py}.
 
 
@@ -1780,6 +1836,42 @@ required:
     can cause extraction failures (reported as warnings, not
     silent misses).
 \end{enumerate}
+
+
+\section{Reproducibility Footprint}\label{app:repro}
+
+\tguard{} ships not a single benchmark but a layered evaluation and
+reproducibility suite, all in-tree and regenerable. Table~\ref{tab:repro}
+summarizes the deployed assets; each row is materialized from committed code and
+artifacts (no network or GPU required for the headline rows), and every headline
+number cited in this paper is covered by the single-harness numeric-claims audit
+(\texttt{reproducibility/audit\_numeric\_claims.py}), which classifies each as
+\textsc{verified} or flags a regime/environment qualifier.
+
+\begin{table}[h]
+\centering\small
+\caption{Deployed verification and evaluation assets (selected).}
+\label{tab:repro}
+\begin{tabular}{@{}lp{6.6cm}@{}}
+\toprule
+Asset & What it establishes \\
+\midrule
+Cross-cutting suite (52 models) & multi-theory bugs no shape-only tool catches; precision $1.0$, $0$ FP \\
+PyTEA fragment-fair set ($N{=}34$) & shape-bug parity vs.\ a published checker; McNemar exact $p{=}0.0156$ \\
+Frozen ground-truth corpus & 16 SHA-pinned real \texttt{nn.Module}s (8 clean / 8 buggy), verdicts replayed in eager torch \\
+Per-domain ablation corpus & device and gradient domains each refute bugs the shape view misses \\
+Operator confidence table & all 117 transfer functions tagged complete/sound/heuristic, code$\leftrightarrow$table synced \\
+Lean~4 library & 240 \texttt{sorry}-free theorems, kernel-axiom audited, drift-proof \\
+Conformance + chain-transfer tests & Lean predictions replayed on real Z3, autograd, \texttt{cpu}/\texttt{mps}, \texttt{nn.Module}s \\
+Test suite & 3{,}709 unit/integration/property tests gating the above \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The design goal is that a reviewer can move from any claim in the text to the
+exact line of code or artifact that produces it, and rerun it---the
+``credibility'' half of the contribution, as load-bearing as the verification
+engine itself.
 
 
 \end{document}

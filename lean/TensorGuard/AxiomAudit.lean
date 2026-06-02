@@ -142,3 +142,44 @@ import TensorGuard
 #print axioms TensorGuard.GradFlow.gradRun_append
 #print axioms TensorGuard.GradFlow.run_after_reset
 #print axioms TensorGuard.GradFlow.run_noReattach_true_iff
+
+-- Device-placement chain transfer (Step 140): the device tag propagated through
+-- a forward — keep is identity, .to(cpu)/.to(accel) move (absorbing, last wins);
+-- the run is compositional, ends at the last move's target, and a binary op is
+-- valid iff both operands share a device tag (cross-device always flagged).
+#print axioms TensorGuard.DevicePlacement.keep_id
+#print axioms TensorGuard.DevicePlacement.move_absorbing
+#print axioms TensorGuard.DevicePlacement.devRun_append
+#print axioms TensorGuard.DevicePlacement.run_after_move
+#print axioms TensorGuard.DevicePlacement.run_ends_at_target
+#print axioms TensorGuard.DevicePlacement.run_noMove_id
+#print axioms TensorGuard.DevicePlacement.binValid_refl
+#print axioms TensorGuard.DevicePlacement.binValid_iff_eq
+#print axioms TensorGuard.DevicePlacement.cpu_accel_invalid
+#print axioms TensorGuard.DevicePlacement.chain_binValid_iff
+
+-- Train/eval phase chain transfer (Step 141): the training bit propagated
+-- through a sequence of mode setters — keep is identity, .train()/.eval() set
+-- (absorbing, last wins); the run is compositional, ends at the last setter's
+-- value, and is preserved on the setter-free fragment.
+#print axioms TensorGuard.PhaseFlow.keep_id
+#print axioms TensorGuard.PhaseFlow.setTrain_true
+#print axioms TensorGuard.PhaseFlow.setEval_false
+#print axioms TensorGuard.PhaseFlow.setter_absorbing
+#print axioms TensorGuard.PhaseFlow.phaseRun_append
+#print axioms TensorGuard.PhaseFlow.run_after_setter
+#print axioms TensorGuard.PhaseFlow.run_ends_at_value
+#print axioms TensorGuard.PhaseFlow.run_noSetter_id
+
+-- Reduction rank-transfer chain (Step 142): keepdim=True preserves rank,
+-- keepdim=False lowers it by one (truncated); the run is compositional, monotone
+-- non-increasing, equals input rank minus the number of keepdim=False reductions
+-- (closed form), and is exact on no-underflow chains.
+#print axioms TensorGuard.RankTransfer.keep_id
+#print axioms TensorGuard.RankTransfer.drop_pred
+#print axioms TensorGuard.RankTransfer.step_le
+#print axioms TensorGuard.RankTransfer.rankRun_append
+#print axioms TensorGuard.RankTransfer.rankRun_eq_sub_countDrop
+#print axioms TensorGuard.RankTransfer.rankRun_le
+#print axioms TensorGuard.RankTransfer.rankRun_allKeep
+#print axioms TensorGuard.RankTransfer.rankRun_exact

@@ -59,7 +59,10 @@ runtime errors in ML codebases before any code runs.
   refutation-sound, the property lifts to their reduced product, and the very Z3
   encoding the solver runs for them is **proved faithful**
   (`SmtEncoding.lean`/`CrossDomain.lean`), all cross-checked against real Z3 and
-  the live torch dispatcher on real modules. Every one of the library's 210
+  the live torch dispatcher on real modules — including the per-`forward` **chain
+  transfers** for device placement, train/eval phase and reduction rank
+  (`DevicePlacement`/`PhaseFlow`/`RankTransfer.lean`), each replayed op-by-op on
+  real `cpu`/`mps` tensors and `nn.Module`s. Every one of the library's 240
   public theorems is machine-audited **sorry-free**, on only the trusted kernel
   axioms.
 - **Per-domain verification** — beyond shape, the device and gradient
@@ -2417,7 +2420,7 @@ just a log grep: `lean/TensorGuard/AxiomAudit.lean` runs
 trusted kernel axioms `propext`, `Classical.choice`, `Quot.sound`
 and never on `sorryAx`.  `tests/test_lean_whole_pipeline_audit.py`
 makes this **total and drift-proof**: it auto-discovers and audits
-*all 210* public theorems in the library, so any new theorem hiding
+*all 240* public theorems in the library, so any new theorem hiding
 a `sorry` or an exotic axiom is caught with no list to maintain.
 
 The same kernel-checked guarantee now reaches the **reduced-product
