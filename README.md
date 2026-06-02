@@ -2402,6 +2402,13 @@ just a log grep: `lean/TensorGuard/AxiomAudit.lean` runs
 trusted kernel axioms `propext`, `Classical.choice`, `Quot.sound`
 and never on `sorryAx`.
 
+The same kernel-checked guarantee now reaches the **reduced-product
+abstract domain** itself: `lean/TensorGuard/ReducedProduct.lean`
+models the Tag×Nullity product that `src/domains/product.py`
+implements and proves each reduction *reductive* and the product meet
+a component-wise lower bound, sorry-free; `AxiomAudit.lean` audits
+those theorems too and `tests/test_lean_reduced_product.py` gates them.
+
 ### Other artefacts
 
 | Artefact                                                       | Script                                                  |

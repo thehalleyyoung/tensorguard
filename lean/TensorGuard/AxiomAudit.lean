@@ -30,3 +30,11 @@ import TensorGuard
 -- Operator-agnostic composition witnesses (matmul / broadcast_add)
 #print axioms TensorGuard.MatmulSound.matmul_contraction_sound
 #print axioms TensorGuard.BroadcastAddSound.broadcast_add_total
+
+-- Reduced-product transfer functions (Step 126): reductions are reductive and
+-- the product meet is a component-wise lower bound.
+#print axioms TensorGuard.RP.reduceTagNul_reductive
+#print axioms TensorGuard.RP.reduceNulTag_reductive
+#print axioms TensorGuard.RP.reduce_reductive
+#print axioms TensorGuard.RP.pmeet_le_left
+#print axioms TensorGuard.RP.pmeet_le_right
