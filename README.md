@@ -1618,6 +1618,21 @@ nothing is removed without a `DeprecationWarning` shipped for at least one minor
 release. See `DEPRECATION_POLICY.md`, the `src.deprecation` helpers, and the
 pinning tests `tests/test_api_stability.py` / `tests/test_deprecation.py`.
 
+### Analyzing untrusted model files is safe by construction
+
+TensorGuard is designed to analyze model files that may be untrusted — from a
+pull request, a third-party repo, or a model zoo. Its central security property
+is that **analyzing a file never executes that file's code**: source-level entry
+points (`verify_architecture`, `analyze`, `analyze_file`, `quick_check`, and the
+explicit `src.safe_loader.verify_file_safely`) read the file as text and reason
+over the Python AST plus refinement types and Z3. The file is never imported,
+`exec`-uted, or `eval`-uated, so module-level side effects (file writes,
+`os.system`, network calls) do not run during analysis. This is enforced by
+`tests/test_security.py`, which feeds the verifier a source whose top-level code
+would create a sentinel file if executed and asserts the sentinel is never
+created while the real shape bug is still reported. See `SECURITY.md` for the
+full threat model and trust boundaries.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
