@@ -2671,9 +2671,25 @@ class _ForwardExtractor(ast.NodeVisitor):
     def __init__(self, layers: Dict[str, LayerDef],
                  scalar_attrs: Optional[Dict[str, Any]] = None,
                  super_forward_fn: Optional["ast.FunctionDef"] = None,
-                 super_forward_chain: Optional[List["ast.FunctionDef"]] = None
+                 super_forward_chain: Optional[List["ast.FunctionDef"]] = None,
+                 method_map: Optional[Dict[str, "ast.FunctionDef"]] = None,
+                 _inlining_methods: Optional[set] = None,
+                 _method_summaries: Optional[Dict[str, Any]] = None,
                  ) -> None:
         self.layers = layers
+        # Step 44 — interprocedural analysis: sibling tensor-transform methods
+        # (``self._helper(x)``) the forward may call, so they can be inlined
+        # precisely instead of abstaining as opaque UNKNOWN layers.
+        self._method_map: Dict[str, "ast.FunctionDef"] = method_map or {}
+        # Recursion guard: names currently being inlined (prevents infinite
+        # recursion on (mutually) recursive helpers — falls back to abstention).
+        self._inlining_methods: set = (
+            _inlining_methods if _inlining_methods is not None else set())
+        # Sound call-summary cache: method name -> extracted template
+        # (steps + input_names + output) reused across call sites, shared down
+        # the inlining chain so each helper is analyzed at most once.
+        self._method_summaries: Dict[str, Any] = (
+            _method_summaries if _method_summaries is not None else {})
         # Chain of base-class ``forward`` methods (nearest first) to inline when
         # ``super().forward(x)`` is called — supports multi-level inheritance.
         if super_forward_chain is not None:
@@ -3932,6 +3948,103 @@ class _ForwardExtractor(ast.NodeVisitor):
                 continue
             self.steps.append(remap_step(s))
 
+    def _inline_method_call(
+        self, method_fn: "ast.FunctionDef", node: ast.Call,
+        target: str, line: int, col: int
+    ) -> bool:
+        """Inline a sibling-method call ``self._helper(a, b)`` (Step 44).
+
+        The helper's body is extracted once (cached as a sound call summary) and
+        spliced into the current graph at every call site: its parameters are
+        bound to the actual argument tensors, its returned value to ``target``,
+        and all internal names are freshened so distinct call sites never alias.
+
+        Returns ``True`` if the call was inlined, ``False`` if it should fall
+        through to the opaque-UNKNOWN abstention path (e.g. arity mismatch or an
+        empty/unanalyzable helper), preserving soundness either way.
+        """
+        actual_args = [self._resolve_arg(a) for a in node.args]
+
+        summary = self._method_summaries.get(method_fn.name)
+        if summary is None:
+            sub = _ForwardExtractor(
+                self.layers,
+                method_map=self._method_map,
+                _inlining_methods=self._inlining_methods | {method_fn.name},
+                _method_summaries=self._method_summaries,
+            )
+            # Share already-prefixed scalar attrs (``self.X``) directly to avoid
+            # the constructor's re-prefixing.
+            sub._scalar_attrs = dict(self._scalar_attrs)
+            # Bind the helper's tensor parameters (skip ``self``).
+            param_names = [a.arg for a in method_fn.args.args if a.arg != "self"]
+            sub.input_names = list(param_names)
+            try:
+                sub._visit_body_resilient(method_fn.body)
+            except Exception:
+                return False
+            final_out = None
+            if sub.output_names:
+                final_out = sub.output_names[-1]
+            elif sub.steps:
+                final_out = sub.steps[-1].output
+            summary = {
+                "steps": sub.steps,
+                "params": param_names,
+                "output": final_out,
+                "isolated": sub.isolated_regions,
+            }
+            self._method_summaries[method_fn.name] = summary
+
+        params = summary["params"]
+        if not summary["steps"] or summary["output"] is None:
+            return False
+        # Arity must line up for a sound binding; otherwise abstain.
+        if len(params) != len(actual_args):
+            return False
+
+        # Propagate any regions the helper itself had to isolate.
+        for region in summary["isolated"]:
+            self.isolated_regions.append({
+                **region,
+                "reason": f"(in {method_fn.name}) " + region.get("reason", ""),
+            })
+
+        tag = self._fresh(f"ipa_{method_fn.name}")
+        bindings = dict(zip(params, actual_args))
+        final_out = summary["output"]
+        name_map: Dict[str, str] = {}
+
+        def rn(nm: str) -> str:
+            if nm in bindings:
+                return bindings[nm]
+            if nm == final_out:
+                return target
+            if nm not in name_map:
+                name_map[nm] = f"{tag}__{nm}"
+            return name_map[nm]
+
+        def remap_step(s: ComputationStep) -> ComputationStep:
+            return ComputationStep(
+                op=s.op,
+                inputs=[rn(i) for i in s.inputs],
+                output=rn(s.output),
+                layer_ref=s.layer_ref,
+                params=dict(s.params) if s.params else {},
+                line=s.line, col=s.col,
+                condition=s.condition,
+                true_branch=([remap_step(b) for b in s.true_branch]
+                             if s.true_branch else None),
+                false_branch=([remap_step(b) for b in s.false_branch]
+                              if s.false_branch else None),
+            )
+
+        for s in summary["steps"]:
+            if s.op == OpKind.RETURN:
+                continue
+            self.steps.append(remap_step(s))
+        return True
+
     def _process_call(
         self, node: ast.Call, target: str, line: int, col: int
     ) -> None:
@@ -3963,6 +4076,20 @@ class _ForwardExtractor(ast.NodeVisitor):
                 line=line, col=col,
             ))
             return
+
+        # --- self.<helper_method>(x) — interprocedural inlining (Step 44) -----
+        # A sibling method that transforms tensors (not a registered layer): if
+        # we have its source, inline its body so the call is analyzed precisely
+        # rather than abstaining as an opaque UNKNOWN layer.  Cached as a sound
+        # call summary and guarded against recursion.
+        if (isinstance(func, ast.Attribute) and
+                isinstance(func.value, ast.Name) and
+                func.value.id == "self" and
+                func.attr in self._method_map and
+                func.attr not in self._inlining_methods):
+            if self._inline_method_call(self._method_map[func.attr], node,
+                                        target, line, col):
+                return
 
         # --- self.<unknown_attr>(x) ------------------------------------------
         # E.g. self._process_input(x) where _process_input is a sibling
@@ -4419,6 +4546,28 @@ def _super_forward_chain(
     return out
 
 
+def _collect_tensor_methods(
+    cls_node: ast.ClassDef
+) -> Dict[str, "ast.FunctionDef"]:
+    """Return the module's own tensor-transform methods (Step 44).
+
+    These are candidate targets for interprocedural inlining when ``forward``
+    calls ``self._helper(x)``.  We exclude ``forward``/``__init__`` and dunder
+    methods; everything else that is a plain method is offered to the
+    interprocedural analyzer (which still abstains soundly if a body turns out
+    to be unanalyzable).
+    """
+    out: Dict[str, "ast.FunctionDef"] = {}
+    for item in cls_node.body:
+        if isinstance(item, ast.FunctionDef):
+            if item.name in ("forward", "__init__"):
+                continue
+            if item.name.startswith("__") and item.name.endswith("__"):
+                continue
+            out[item.name] = item
+    return out
+
+
 def _collect_helper_functions(tree: ast.AST) -> Dict[str, ast.FunctionDef]:
     """Return top-level ``def helper(...): return nn.<Layer>(...)`` functions.
 
@@ -4613,7 +4762,9 @@ def _extract_submodule_graph(
     # Extract forward steps
     fwd_fn = _find_method(cls_node, "forward")
     if fwd_fn:
-        fwd_ext = _ForwardExtractor(graph.layers, scalar_attrs=extractor.scalar_attrs)
+        fwd_ext = _ForwardExtractor(
+            graph.layers, scalar_attrs=extractor.scalar_attrs,
+            method_map=_collect_tensor_methods(cls_node))
         fwd_ext.extract(fwd_fn)
         graph.steps = fwd_ext.steps
         graph.input_names = fwd_ext.input_names
@@ -4735,7 +4886,8 @@ def extract_computation_graph(source: str) -> ComputationGraph:
         if own_fwd is None and super_chain:
             super_chain = super_chain[1:]
         fwd_ext = _ForwardExtractor(graph.layers, scalar_attrs=scalar_attrs,
-                                    super_forward_chain=super_chain)
+                                    super_forward_chain=super_chain,
+                                    method_map=_collect_tensor_methods(root_cls))
         fwd_ext.extract(fwd_fn)
         graph.steps = fwd_ext.steps
         graph.input_names = fwd_ext.input_names

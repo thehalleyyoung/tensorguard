@@ -1124,6 +1124,20 @@ caught. A fully-analyzable model reports an empty `isolated_regions`, so the
 field doubles as a precise coverage signal. See
 `tests/test_graceful_degradation.py`.
 
+### Interprocedural analysis (helper methods)
+
+Models routinely factor `forward` into sibling helper methods —
+`def _block(self, t): return self.up(t)` called as `self._block(x)`. Previously
+such a call abstained as an opaque `UNKNOWN` layer, blocking precise downstream
+reasoning. TensorGuard now inlines sibling tensor-transform methods: the
+helper's body is extracted once, cached as a sound call summary, and spliced in
+at every call site with parameters bound to the actual arguments and all
+internal names freshened so distinct call sites never alias. Nested helper
+chains (`_outer` → `_inner`) are followed, the cache makes repeated calls free,
+and (mutual) recursion is guarded with a sound fallback to abstention. The
+result is precise: a mismatch *inside* a helper or *downstream* of one is now
+caught, including under symbolic dims. See `tests/test_interprocedural.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
