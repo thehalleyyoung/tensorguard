@@ -90,6 +90,12 @@ class AnalysisResult:
     # passed shapes explicitly), with a per-input provenance string.
     inferred_input_shapes: Dict[str, tuple] = field(default_factory=dict)
     inferred_input_sources: Dict[str, str] = field(default_factory=dict)
+    # Step 57 — rich, source-mapped diagnostics (one per reported error bug)
+    # carrying the offending op/layer, inferred-vs-expected shapes, a source
+    # snippet with a caret, related locations and a suggested fix.  Used by the
+    # CLI for world-class terminal output; never serialized into SARIF/JSON
+    # exports (those use the structured `bugs` list).
+    diagnostics: List[Any] = field(default_factory=list)
 
     @property
     def status(self) -> str:
@@ -1217,6 +1223,66 @@ def verify_architecture(
                 )
         except Exception:
             pass
+
+    # Step 57 — build rich source-mapped diagnostics for the surviving error
+    # bugs, reusing the verifier's raw SafetyViolation objects (which carry the
+    # offending step/op, the shapes, and confidence) and the computation graph.
+    # Aligned to the *final* bug set (after CEGAR + feature-flag filtering) by
+    # matching on (line, kind), so the CLI shows exactly what is reported.
+    try:
+        ce = getattr(vr, "counterexample", None)
+        raw_violations = list(getattr(ce, "violations", []) or []) if ce else []
+        if raw_violations and result.bugs:
+            from src.source_mapped_errors import map_violations_to_diagnostics
+            # (line, kind) keys of the bugs that survived as errors.
+            wanted = set()
+            for b in result.bugs:
+                if b.severity != "error":
+                    continue
+                m = b.message or ""
+                k = ""
+                if m.startswith("[") and "]" in m:
+                    k = m[1:m.index("]")].lower().replace("-", "_")
+                wanted.add((b.location.line, k))
+            selected = [
+                v for v in raw_violations
+                if (
+                    (getattr(v.step, "line", 0) if getattr(v, "step", None) else 0),
+                    str(getattr(v, "kind", "")).lower(),
+                ) in wanted
+            ]
+            if selected:
+                diags = map_violations_to_diagnostics(
+                    source, selected, getattr(vr, "graph", None)
+                )
+                # Dedupe: when several violations map to the same source
+                # location, keep the richest rendering (one with a fix
+                # suggestion / related locations / longest message) and drop the
+                # weaker generic duplicates.
+                def _richness(d):
+                    return (
+                        1 if getattr(d, "fix_suggestion", None) else 0,
+                        len(getattr(d, "related_locations", []) or []),
+                        len(getattr(d, "message", "") or ""),
+                    )
+                best_at = {}
+                for d in diags:
+                    key = (d.source_line, d.source_col)
+                    cur = best_at.get(key)
+                    if cur is None or _richness(d) > _richness(cur):
+                        best_at[key] = d
+                # Preserve first-seen order of the kept diagnostics.
+                seen = set()
+                ordered = []
+                for d in diags:
+                    key = (d.source_line, d.source_col)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    ordered.append(best_at[key])
+                result.diagnostics = ordered
+    except Exception:  # diagnostics are presentation-only; never fail the run
+        result.diagnostics = []
 
     # Notify hooks: verification finished
     for hook in hooks:

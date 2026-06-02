@@ -1327,6 +1327,22 @@ a convolutional classifier whose final `Linear` has the wrong in-features
 verifies as safe when the input is rank-unknown, and is correctly refuted once
 the rank is inferred. See `tests/test_input_inference_structural.py`.
 
+### World-class diagnostics
+
+A reported shape bug renders as a compiler-quality diagnostic rather than a raw
+constraint dump. Each issue names the offending layer or op, states the inferred
+input shape next to the expected one, shows the source line with a caret under
+the offending column, adds a related note pointing at where the layer was
+defined, and proposes a concrete fix. On a terminal the output is colored; pass
+`--no-color` for plain text, or `--format json` for machine-readable
+diagnostics. When several internal violations land on the same source location
+they collapse to the single richest diagnostic, so the issue count reflects what
+a developer would actually fix. For example, a model whose final `Linear`
+expects a different number of features than the upstream layer produces "Layer
+fc2 expects input dimension 30, but receives (batch, 20)" with a snippet, a
+caret, a note at the layer definition, and a suggested fix. See
+`tests/test_diagnostics_cli.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

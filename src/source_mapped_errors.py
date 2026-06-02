@@ -396,6 +396,24 @@ def map_violations_to_diagnostics(
 # Formatters
 # ═══════════════════════════════════════════════════════════════════════════════
 
+def _caret_line(snippet: str, col: int, width: int = 1) -> str:
+    """Build a caret underline that points at *col* (0-indexed) in *snippet*.
+
+    The snippet keeps its original leading indentation, so aligning ``col``
+    spaces under it lands the caret on the offending token.  ``width`` carets are
+    drawn (at least one).  Tabs in the indentation are preserved so the caret
+    stays aligned in terminals that render tabs identically.
+    """
+    if col < 0:
+        col = 0
+    # Preserve tabs from the snippet's leading whitespace for alignment.
+    prefix_chars = []
+    for i in range(min(col, len(snippet))):
+        prefix_chars.append("\t" if snippet[i] == "\t" else " ")
+    prefix = "".join(prefix_chars) + " " * max(0, col - len(prefix_chars))
+    return prefix + "^" * max(1, width)
+
+
 def format_plain(diagnostics: List[SourceMappedDiagnostic]) -> str:
     """Format diagnostics as plain text."""
     parts: List[str] = []
@@ -405,6 +423,8 @@ def format_plain(diagnostics: List[SourceMappedDiagnostic]) -> str:
         lines = [header, loc]
         if d.source_snippet:
             lines.append(f"  | {d.source_snippet}")
+            if d.source_col and d.source_col > 0:
+                lines.append(f"  | {_caret_line(d.source_snippet, d.source_col)}")
         for rel in d.related_locations:
             lines.append(f"  note: {rel.message} (line {rel.line})")
             if rel.snippet:
@@ -450,6 +470,9 @@ def format_ansi(diagnostics: List[SourceMappedDiagnostic]) -> str:
         lines = [header, loc]
         if d.source_snippet:
             lines.append(f"  {dim}|{r} {d.source_snippet}")
+            if d.source_col and d.source_col > 0:
+                caret = _caret_line(d.source_snippet, d.source_col)
+                lines.append(f"  {dim}|{r} {colour}{b}{caret}{r}")
         for rel in d.related_locations:
             lines.append(f"  {green}note{r}: {rel.message} (line {rel.line})")
             if rel.snippet:

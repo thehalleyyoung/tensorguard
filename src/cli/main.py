@@ -3163,6 +3163,10 @@ class VerifyCommand:
             help="Output format"
         )
         parser.add_argument(
+            "--no-color", action="store_true",
+            help="Disable ANSI color in text diagnostics."
+        )
+        parser.add_argument(
             "--high-confidence", action="store_true",
             help="Only report high-confidence (Z3-proven) bugs. Reduces FP rate to 0%% for CI/CD gating."
         )
@@ -3275,14 +3279,30 @@ class VerifyCommand:
                         for c in contracts[:5]:
                             sys.stdout.write(f"    {c}\n")
             else:
+                diagnostics = list(getattr(result, "diagnostics", []) or [])
+                count = len(diagnostics) if diagnostics else len(result.bugs)
+                noun = "issue" if count == 1 else "issues"
                 sys.stdout.write(
-                    f"✗ {filepath.name}: {len(result.bugs)} verification errors "
+                    f"✗ {filepath.name}: {count} verification {noun} "
                     f"({result.duration_ms:.1f}ms)\n"
                 )
-                for b in result.bugs:
-                    sys.stdout.write(
-                        f"  L{b.location.line}: {b.message}\n"
+                if diagnostics:
+                    from src.source_mapped_errors import format_ansi, format_plain
+                    use_color = (
+                        not getattr(args, "no_color", False)
+                        and sys.stdout.isatty()
                     )
+                    rendered = (
+                        format_ansi(diagnostics) if use_color
+                        else format_plain(diagnostics)
+                    )
+                    for ln in rendered.split("\n"):
+                        sys.stdout.write(f"  {ln}\n")
+                else:
+                    for b in result.bugs:
+                        sys.stdout.write(
+                            f"  L{b.location.line}: {b.message}\n"
+                        )
         else:
             sarif = result.to_sarif()
             sys.stdout.write(json.dumps(sarif, indent=2) + "\n")
