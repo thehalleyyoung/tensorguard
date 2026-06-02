@@ -96,6 +96,11 @@ class AnalysisResult:
     # CLI for world-class terminal output; never serialized into SARIF/JSON
     # exports (those use the structured `bugs` list).
     diagnostics: List[Any] = field(default_factory=list)
+    # Step 58 — the "why" explainer: the shape-inference chain (input -> op ->
+    # shape -> ... -> failing step) reconstructed from the counterexample trace.
+    # Populated only when a bug is reported; printed by `tensorguard verify
+    # --explain`.
+    inference_chain: Optional[Any] = None
 
     @property
     def status(self) -> str:
@@ -1283,6 +1288,18 @@ def verify_architecture(
                 result.diagnostics = ordered
     except Exception:  # diagnostics are presentation-only; never fail the run
         result.diagnostics = []
+
+    # Step 58 — build the "why" inference chain from the counterexample trace
+    # (input -> op -> shape -> ... -> failing step). Presentation-only.
+    try:
+        ce = getattr(vr, "counterexample", None)
+        if ce is not None and result.bugs:
+            from src.inference_chain import build_inference_chain
+            chain = build_inference_chain(getattr(vr, "graph", None), ce)
+            if chain:
+                result.inference_chain = chain
+    except Exception:
+        result.inference_chain = None
 
     # Notify hooks: verification finished
     for hook in hooks:

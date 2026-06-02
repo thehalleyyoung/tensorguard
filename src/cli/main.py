@@ -3167,6 +3167,11 @@ class VerifyCommand:
             help="Disable ANSI color in text diagnostics."
         )
         parser.add_argument(
+            "--explain", action="store_true",
+            help="Print the inference chain (input -> op -> shape -> ... -> "
+            "failing step) that led to each reported bug."
+        )
+        parser.add_argument(
             "--high-confidence", action="store_true",
             help="Only report high-confidence (Z3-proven) bugs. Reduces FP rate to 0%% for CI/CD gating."
         )
@@ -3249,6 +3254,31 @@ class VerifyCommand:
                 },
                 "inferred_input_sources": inferred_sources,
             }
+            if getattr(args, "explain", False):
+                chain = getattr(result, "inference_chain", None)
+                if chain is not None:
+                    out["inference_chain"] = {
+                        "model_name": chain.model_name,
+                        "failing_step": chain.failing_step,
+                        "summary": chain.summary,
+                        "concrete_dims": chain.concrete_dims,
+                        "links": [
+                            {
+                                "step_index": l.step_index,
+                                "op": l.op,
+                                "layer": l.layer,
+                                "line": l.line,
+                                "inputs": l.inputs,
+                                "input_shapes": l.input_shapes,
+                                "output": l.output,
+                                "output_shape": l.output_shape,
+                                "is_failing": l.is_failing,
+                                "expected_shape": l.expected_shape,
+                                "actual_shape": l.actual_shape,
+                            }
+                            for l in chain.links
+                        ],
+                    }
             sys.stdout.write(json.dumps(out, indent=2) + "\n")
         elif fmt == "text":
             if inferred_shapes and not args.input_shape:
@@ -3303,6 +3333,23 @@ class VerifyCommand:
                         sys.stdout.write(
                             f"  L{b.location.line}: {b.message}\n"
                         )
+                if getattr(args, "explain", False):
+                    chain = getattr(result, "inference_chain", None)
+                    if chain is not None:
+                        from src.inference_chain import (
+                            format_chain_ansi, format_chain_plain,
+                        )
+                        use_color = (
+                            not getattr(args, "no_color", False)
+                            and sys.stdout.isatty()
+                        )
+                        rendered = (
+                            format_chain_ansi(chain) if use_color
+                            else format_chain_plain(chain)
+                        )
+                        sys.stdout.write("\n")
+                        for ln in rendered.split("\n"):
+                            sys.stdout.write(f"  {ln}\n")
         else:
             sarif = result.to_sarif()
             sys.stdout.write(json.dumps(sarif, indent=2) + "\n")

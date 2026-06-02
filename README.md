@@ -1343,6 +1343,19 @@ fc2 expects input dimension 30, but receives (batch, 20)" with a snippet, a
 caret, a note at the layer definition, and a suggested fix. See
 `tests/test_diagnostics_cli.py`.
 
+### The "why" explainer (`--explain`)
+
+Pass `--explain` to see the inference chain behind a reported bug: the
+step-by-step shape propagation from the forward inputs down to the failing
+operation. The chain is reconstructed from the verifier's own counterexample
+trace, so each link shows the op or layer, its input shapes, and the shape it
+produced, with the failing step highlighted. This pinpoints exactly where a
+tensor first acquired the shape that made the final op illegal. For a model
+whose first layer maps ten features to twenty and whose second layer mistakenly
+expects thirty, the chain shows the twenty-wide tensor being produced and then
+rejected one line later. The explainer is also available as structured JSON via
+`--format json --explain`. See `tests/test_inference_chain_explain.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
