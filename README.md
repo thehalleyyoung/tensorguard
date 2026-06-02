@@ -1058,6 +1058,22 @@ demands, making the sample-size justification explicit rather than implied. See
 [`reproducibility/statistical_power.md`](reproducibility/statistical_power.md)
 and `tests/test_statistical_power.py`.
 
+### Effect sizes and dual correction: not just significant, but how much
+Significance answers *whether* TensorGuard beats a baseline; a reviewer also
+wants *by how much*, and they want the comparisons corrected under whichever
+multiple-comparison notion they favour. `reproducibility/effect_sizes.py`
+consumes the same per-item correctness vectors and attaches to **every**
+comparison a battery of paired effect sizes — Cohen's g with its conventional
+magnitude band, a Haldane-Anscombe continuity-corrected odds ratio that stays
+finite even when a baseline never wins a discordant pair, and the risk
+difference with its number-needed-to-evaluate — then corrects the whole family
+*twice*, once for the family-wise error rate (Holm-Bonferroni) and once for the
+false-discovery rate (Benjamini-Hochberg), reporting both adjusted verdicts side
+by side. The strongest contrast lands as a large effect that survives both
+corrections, and the two corrections agree on the count. See
+[`reproducibility/effect_sizes.md`](reproducibility/effect_sizes.md)
+and `tests/test_effect_sizes.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a
