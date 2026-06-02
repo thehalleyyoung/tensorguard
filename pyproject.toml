@@ -31,7 +31,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "mypy"]
+dev = ["pytest", "mypy", "pytest-cov", "coverage"]
 
 [project.urls]
 Homepage = "https://github.com/thehalleyyoung/tensorguard"
@@ -54,3 +54,33 @@ src = ["py.typed", "*.pyi"]
 
 [tool.setuptools.packages.find]
 include = ["src*"]
+
+# Step 82 — enforceable coverage gate. The gate is scoped to the public API and
+# the Phase 7/8 integration modules (the supported surface), which are held to a
+# >90% line-coverage threshold. See reproducibility/coverage_gate.py and
+# .github/workflows/coverage.yml.
+[tool.coverage.run]
+branch = true
+source = [
+    "src/safe_loader.py",
+    "src/reporters.py",
+    "src/baseline.py",
+    "src/deprecation.py",
+    "src/torch_integration.py",
+    "src/framework_hooks.py",
+]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: end-to-end checks that spawn a subprocess (e.g. the coverage gate)",
+]

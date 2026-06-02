@@ -1653,6 +1653,24 @@ from tensorguard import (
 packaged, and runs mypy over a consumer snippet to confirm the revealed type is
 the concrete `AnalysisResult`.
 
+### Coverage gate (supported surface)
+
+`src/` includes research and experimental code paths, so a single whole-tree
+coverage number would be misleading. Instead, TensorGuard enforces a coverage
+gate of **at least ninety percent line-and-branch coverage on the supported
+surface** — the public API and
+the Phase 7 and Phase 8 integration modules (`safe_loader`, `reporters`, `baseline`,
+`deprecation`, `torch_integration`, `framework_hooks`). Run it locally with:
+
+```bash
+python reproducibility/coverage_gate.py   # exits non-zero below the threshold
+```
+
+The gated set currently sits at about ninety-four percent. The gate is wired
+into CI (`.github/workflows/coverage.yml`), its configuration is pinned in
+`pyproject.toml` `[tool.coverage]`, and `tests/test_coverage_gate.py` asserts the
+module list cannot drift from that config and runs the gate end to end.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

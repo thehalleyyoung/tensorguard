@@ -141,3 +141,72 @@ def test_verify_module_abstains_without_source():
         {"forward": lambda self, x: x},
     )
     assert verify_module(Dynamic()) is None
+
+
+# Step 82 — coverage of the export pre-pass and the lenient bug-extraction
+# branches that the py3.14 torch.compile fallback leaves untested.
+
+from src.torch_integration import _real_bugs, verify_exported_program
+
+
+def test_verify_exported_program_good_model_exports():
+    ep = verify_exported_program(GoodNet(), (torch.randn(3, 10),))
+    # torch.export returns an ExportedProgram we can run.
+    out = ep.module()(torch.randn(3, 10))
+    assert out.shape == (3, 5)
+
+
+def test_verify_exported_program_raises_on_bug():
+    with pytest.raises(TensorGuardViolation):
+        verify_exported_program(
+            BadNet(),
+            (torch.randn(3, 10),),
+            input_shapes={"x": ("batch", 10)},
+            on_violation="raise",
+        )
+
+
+def test_real_bugs_lenient_verdict_tokens():
+    class R:
+        verdict = "BUG"
+        bugs = [object(), object()]
+
+    assert len(_real_bugs(R())) == 2
+
+    class Fail:
+        verdict = "FAIL"
+        bugs = [object()]
+
+    assert len(_real_bugs(Fail())) == 1
+
+
+def test_real_bugs_none_and_safe():
+    assert _real_bugs(None) == []
+
+    class Safe:
+        verdict = "SAFE"
+        bugs = [object()]
+
+    assert _real_bugs(Safe()) == []
+
+
+def test_backend_delegates_to_inner_for_good_model():
+    sentinel = object()
+
+    def inner(gm, example_inputs):
+        return sentinel
+
+    backend = make_tensorguard_backend(
+        GoodNet(), input_shapes={"x": ("batch", 10)}, inner=inner
+    )
+
+    class _GM:
+        def forward(self, x):
+            return x
+
+    assert backend(_GM(), [torch.randn(2, 10)]) is sentinel
+
+
+def test_module_source_abstains_for_typed_class():
+    Dynamic = type("Dyn", (nn.Module,), {"forward": lambda self, x: x})
+    assert module_source(Dynamic()) is None

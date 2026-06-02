@@ -1,0 +1,15 @@
+name: Coverage gate
+on: [push, pull_request]
+jobs:
+  coverage:
+    # Step 82 — enforce >=90% line/branch coverage on the public API and the
+    # Phase 7/8 integration modules (the supported, shipped surface).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]" z3-solver torch
+      - name: Run the coverage gate (>=90% on the supported surface)
+        run: python reproducibility/coverage_gate.py
