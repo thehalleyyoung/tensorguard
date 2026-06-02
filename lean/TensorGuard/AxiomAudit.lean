@@ -76,3 +76,23 @@ import TensorGuard
 #print axioms TensorGuard.FragmentU1.heuristic_unsound
 #print axioms TensorGuard.FragmentU1.modes_agree_in_fragment
 #print axioms TensorGuard.FragmentU1.modes_differ_iff_violation
+
+-- Non-shape transfer functions (Step 134): device / dtype / phase / gradient
+-- algebras each abstain on unknown operands (no false positive) and are
+-- refutation-sound (a flagged bug witnesses a genuine runtime error); the
+-- reduced product over the four inherits both properties.
+#print axioms TensorGuard.DevDtype.devBug_no_false_positive
+#print axioms TensorGuard.DevDtype.devBug_refutation_sound
+#print axioms TensorGuard.DevDtype.cuda_then_cpu_roundtrip
+#print axioms TensorGuard.DevDtype.pinMemory_preserves
+#print axioms TensorGuard.DevDtype.dtMatmulBug_no_false_positive
+#print axioms TensorGuard.DevDtype.dtMatmulBug_refutation_sound
+#print axioms TensorGuard.DevDtype.dtFloatParamBug_refutation_sound
+#print axioms TensorGuard.DevDtype.dtElementwise_never_bug
+#print axioms TensorGuard.DevDtype.dtPromote_comm
+#print axioms TensorGuard.DevDtype.phaseBug_count_gt_one
+#print axioms TensorGuard.DevDtype.phaseBug_eval_tracking_safe
+#print axioms TensorGuard.DevDtype.phaseBug_refutation_sound
+#print axioms TensorGuard.DevDtype.gradBrokenBug_refutation_sound
+#print axioms TensorGuard.DevDtype.productBug_false_iff
+#print axioms TensorGuard.DevDtype.productBug_refutation_sound

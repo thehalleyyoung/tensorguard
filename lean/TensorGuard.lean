@@ -11,3 +11,4 @@ import TensorGuard.ReducedProduct
 import TensorGuard.CegarBound
 import TensorGuard.CegarInfeasible
 import TensorGuard.FragmentModes
+import TensorGuard.DeviceDtype

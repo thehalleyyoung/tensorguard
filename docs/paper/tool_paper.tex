@@ -85,7 +85,7 @@ dimensions, proving safety for all valid inputs rather than for
 concrete test shapes alone.  We evaluate on real-world architectures
 including ResNet-50, MobileNetV2, EfficientNet-B0, and DenseNet-121, demonstrating
 high precision and recall.
-The repository also contains a 1,587-line Lean~4 formalization draft (59 theorem statements/proofs, zero \texttt{sorry}) for the theory-combination development, but it is not yet packaged as a compilable Lean project, so we do not treat it as a completed machine-checked result.
+The repository also contains a \emph{compiled}, \texttt{sorry}-free Lean~4 formalization (16 modules, $\sim$3{,}000 lines, 196 theorems/lemmas, pinned toolchain, \texttt{lake build} green) whose 51 headline soundness results are machine-audited to depend only on the trusted Lean kernel axioms---covering the operator transfer functions, the reduced-product abstraction, CEGAR termination with a tight iteration bound, the two known-unsoundness gaps (one closed, one made mode-precise), and the device/dtype/phase/gradient transfer functions, each cross-checked against the live verifier.
 \end{abstract}
 
 %% ============================================================
@@ -498,7 +498,7 @@ satisfiability of conjunctions $\varphi_{\mathit{shape}} \land
 \end{theorem}
 
 \noindent
-A draft Lean~4 development records this theorem; see Section~\ref{sec:lean} for the current proof-status caveat.
+A compiled, axiom-audited Lean~4 development records this theorem; see Section~\ref{sec:lean}.
 
 \paragraph{Stride theory convexity.}
 Nelson--Oppen combination requires convexity (or completeness of
@@ -621,9 +621,8 @@ supported by \tguard{} cover the operators most commonly used in
 standard neural network architectures.  94.9\% of these produce
 decidable QF\_LIA constraints; only 6 operators (reshape, flatten,
 PixelShuffle, repeat, and variants) produce QF\_NIA constraints,
-for which satisfiability is NP-hard (captured in a draft Lean~4
-reduction from SUBSET-PRODUCT, pending compilation of that proof
-artifact).
+for which satisfiability is NP-hard (captured in a Lean~4
+reduction from SUBSET-PRODUCT).
 
 \subsection{Real-World Model Verification}
 
@@ -920,47 +919,80 @@ bugs).
 %% ============================================================
 \section{Lean~4 Mechanization}\label{sec:lean}
 
-The repository contains a 1,587-line Lean~4 formalization draft with
-zero \texttt{sorry} obligations. \textbf{However,} no
-\texttt{lakefile.lean} or \texttt{lean-toolchain} file is present, so
-this artifact has not been compiled with \texttt{lake build} and should
-not be described as a completed machine-checked proof. The theorem
-statements and proof structure have been written and reviewed, and the
-current draft covers 59 stated theorems
-covering three components:
+The repository ships a \emph{compiled}, \texttt{sorry}-free Lean~4
+formalization (pinned \texttt{lean-toolchain} \texttt{v4.14.0},
+\texttt{lakefile.lean}, \texttt{lake build} green) comprising 16 modules,
+$\sim$3{,}000 lines and 196 theorems/lemmas. Soundness is not asserted by
+inspection: \texttt{TensorGuard/AxiomAudit.lean} runs \texttt{\#print axioms}
+on 51 headline results and a regression test asserts each depends only on the
+trusted kernel set $\{\texttt{propext}, \texttt{Classical.choice},
+\texttt{Quot.sound}\}$ and \emph{never} on \texttt{sorryAx}---the
+machine-checked witness behind the ``sorry-free'' claim.
+
+The mechanization covers five components:
 
 \begin{enumerate}[leftmargin=2em]
-  \item \textbf{Theory combination soundness}
-    (Theorem~\ref{thm:combination}): formalization of theory
-    signatures, arrangements, and the Tinelli--Zarba procedure.
-    Both directions of the soundness biconditional are proved.
+  \item \textbf{Operator transfer-function soundness.} Per-operator rules for
+    the shape DSL (\texttt{linear}, \texttt{view}, \texttt{broadcast\_add},
+    \texttt{matmul}, \texttt{transpose}, \texttt{permute}, \texttt{sum},
+    cross-entropy, argmax, \dots) are proved sound against a denotational
+    reference (\texttt{Soundness.lean}, \texttt{Extended.lean},
+    \texttt{V5OperatorRules.lean}, \texttt{MatmulSound.lean}).
 
-  \item \textbf{CEGAR convergence}: the Houdini-style predicate
-    refinement loop terminates via strict monotonic decrease in
-    the predicate set, with convergence in at most $|\mathit{Preds}|$
-    iterations.
+  \item \textbf{Reduced-product abstraction.}
+    \texttt{ReducedProduct.lean} proves the product transfer functions are
+    reductive and monotone, the meet is a component-wise lower bound, and the
+    $\gamma$-concretization is sound (the reduction preserves concretization)---
+    the formal core of the five-theory product domain.
 
-  \item \textbf{NP-hardness of reshape satisfiability}: a
-    mechanized SUBSET-PRODUCT reduction showing that the
-    reshape feasibility problem is NP-hard.
+  \item \textbf{CEGAR termination and a tight bound.}
+    \texttt{CegarBound.lean} mechanizes that the predicate-refinement loop
+    terminates inside a finite predicate universe and obeys
+    $\mathit{iterations} \le 1 + |\mathit{discovered\ predicates}|$, matching
+    the measured harness one-to-two orders of magnitude below the naive bound.
+
+  \item \textbf{Known-unsoundness boundary, made precise.} The two documented
+    gaps are formalized rather than hidden: \textbf{U2} (SAFE-on-infeasible) is
+    \emph{closed} by a Lean-checked fix that abstains on infeasible refinements
+    (\texttt{CegarInfeasible.lean}), and \textbf{U1} (the verifiable-fragment
+    boundary) is proved \emph{mode-dependent}---\texttt{sound} mode abstains on
+    every fragment violation and is sound, while the permissive modes' recall
+    trade-off is made exact (\texttt{FragmentModes.lean}).
+
+  \item \textbf{Non-shape transfer functions (this work).}
+    \texttt{DeviceDtype.lean} models the four scalar algebras the verifier runs
+    alongside shape---device, element dtype, training phase and gradient
+    flow---each a finite lattice with a distinguished $\top$ (\texttt{unknown})
+    element, exactly as \texttt{model\_checker.py} implements them. For every
+    algebra we prove the two properties the engine relies on: \emph{no false
+    positive} (an \texttt{unknown} operand never flags) and \emph{refutation
+    soundness} (a flagged bug witnesses a genuine PyTorch runtime error over
+    every concretization), plus the structural laws the frontends depend on
+    (device-move round-trips, \texttt{pin\_memory} preservation, dtype
+    elementwise promotion is total/commutative/never-flags, \texttt{detach}
+    zeroes the gradient bit). Both guarantees \emph{lift to the reduced
+    product}: it flags iff some component flags, and inherits no-false-positive
+    and refutation soundness.
 \end{enumerate}
 
-\paragraph{Trusted computing base (TCB).}
-The mechanization does \emph{not} cover:
-\begin{itemize}[leftmargin=2em]
-  \item Completeness of the verification procedure (undecidable
-    in general by Rice's theorem~\cite{rice53}).
-  \item Correctness of the Python implementation relative to
-    the Lean specification (the \emph{conformance gap}).
-  \item Faithfulness of the 142 operator transfer functions to
-    PyTorch runtime semantics.
-  \item Z3's internal decision procedures.
-\end{itemize}
+\paragraph{Conformance: proofs cross-checked against real code.}
+Each soundness module is paired with a Python test that mirrors the Lean
+\emph{decision} function and asserts the \emph{live} verifier reproduces its
+predictions on real \texttt{nn.Module}s. For the non-shape transfer functions,
+\texttt{tests/test\_device\_dtype\_transfer.py} mirrors every Lean
+\texttt{*Bug} predicate and checks that \texttt{verify\_module}'s
+\texttt{device\_mismatch}/\texttt{dtype\_error}/\texttt{phase\_error}/
+\texttt{gradient\_broken} verdicts match---on consistent, mismatching and
+unknown-operand probes for all four algebras---with the consistent cases
+additionally executed against real torch. This narrows the conformance gap from
+``tested'' to ``the proved predictions are observed to hold on real PyTorch.''
 
-\noindent
-The conformance gap is mitigated by property-based testing
-(Hypothesis) that exercises mechanized theorem statements
-against the Python implementation.
+\paragraph{Trusted computing base (TCB).}
+The mechanization does \emph{not} cover completeness of verification
+(undecidable in general by Rice's theorem~\cite{rice53}), Z3's internal
+decision procedures, or full bit-level faithfulness of all 142 operator
+transfer functions to PyTorch (the conformance gap, mitigated by the
+cross-checks and property-based testing above).
 
 
 %% ============================================================
@@ -1027,9 +1059,11 @@ bug classes. The tool supports 142 operator transfer functions,
 covers real-world architectures (ResNet, VGG, MobileNetV2,
 EfficientNet, DenseNet), and produces parametric safety
 certificates via IC3/PDR over symbolic dimensions. The repository
-also includes a draft Lean~4 formalization (1,587 lines, 59 stated
-theorems) of the theory-combination argument, but that artifact is
-not yet compiled as a checked project.
+also includes a compiled, \texttt{sorry}-free Lean~4 formalization
+($\sim$3{,}000 lines, 196 theorems/lemmas, 51 axiom-audited soundness
+results) covering the operator transfer functions, the reduced-product
+abstraction, CEGAR termination, the two known-unsoundness gaps, and the
+device/dtype/phase/gradient transfer functions.
 
 The primary limitation is the conformance gap between the
 mechanized specification and the Python implementation.
@@ -1369,11 +1403,13 @@ required:
     procedures for QF\_LIA, QF\_NIA, and QF\_UF.  Z3 is
     widely used and extensively tested, but bugs are possible.
 
-  \item \textbf{Lean~4 draft proofs.}  A Lean proof checker would
-    enter the TCB only after the current draft formalization is
-    packaged and compiled. At present, the draft artifact is
-    informative evidence, not an active machine-checked dependency
-    of the implementation.
+  \item \textbf{Lean~4 proofs.}  The Lean~4 formalization is
+    compiled (\texttt{lake build}) and \texttt{sorry}-free, and its
+    headline soundness results are machine-audited to rest only on the
+    trusted Lean kernel axioms. The Lean checker is not invoked at
+    \tguard{} runtime, so it constrains the \emph{specification}; the
+    conformance gap to the Python implementation is closed test-by-test
+    by the live cross-checks (Section~\ref{sec:lean}).
 
   \item \textbf{Python implementation.}  The \tguard{} Python
     code (graph extraction, transfer functions, constraint
@@ -1381,8 +1417,10 @@ required:
     conformance gap between the Lean specification and the
     Python implementation is mitigated by:
     \begin{itemize}[nosep]
+      \item Live cross-checks that assert the verifier reproduces each
+        Lean decision function's predictions on real \texttt{nn.Module}s.
       \item Property-based testing (Hypothesis) exercising
-        drafted theorem statements on the implementation.
+        mechanized theorem statements on the implementation.
       \item Extensive unit and integration tests
         (3{,}709 tests total).
       \item Evaluation on real-world models providing

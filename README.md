@@ -53,7 +53,11 @@ runtime errors in ML codebases before any code runs.
   reporting safe (`lean/TensorGuard/CegarInfeasible.lean`). The mode-dependent
   fragment boundary itself (gap U1) is likewise Lean-backed: `sound` mode is
   proved sound while the permissive modes' recall trade-off is made precise
-  (`lean/TensorGuard/FragmentModes.lean`).
+  (`lean/TensorGuard/FragmentModes.lean`). The four non-shape transfer functions
+  — device, dtype, phase and gradient — are **machine-checked too**
+  (`lean/TensorGuard/DeviceDtype.lean`): each abstains on unknown operands and is
+  refutation-sound, the property lifts to their reduced product, and a Python
+  mirror cross-checks every predicate against the live verifier on real modules.
 - **Per-domain verification** — beyond shape, the device and gradient
   domains each refute real bugs that the base shape view misses (a cuda
   buffer added to a cpu input; a `.detach()` that severs gradient flow).
@@ -2453,6 +2457,7 @@ unreachability there, never soundness).
 | Backward verifier on 10 real importable models                 | `experiments_v5/v8/backward_real/run_backward_real.py`  |
 | Lean operator-rule audit (28 rules)                            | `lean/TensorGuard/V5OperatorRules.lean`                 |
 | Lean assume/guarantee composition (Theorem 3, weak form)       | `lean/TensorGuard/AssumeGuarantee.lean`                 |
+| Lean non-shape transfer functions (device/dtype/phase/grad)    | `lean/TensorGuard/DeviceDtype.lean`                     |
 | CEGAR / phase-encoder dead-code TCB confirmation               | `reproducibility/cegar_phase_deletion_tcb.py`           |
 | Grad-lattice runtime holdout (round-5 rewrite, 10 self-contained subjects) | `reproducibility/grad_lattice_runtime_holdout.py` |
 | 60-bug ablation: rule-driven only (parser-marker excluded)     | `reproducibility/bug_corpus_no_parser_marker.py`        |
