@@ -1017,6 +1017,22 @@ declines to capture a shape-buggy model, that is recorded as a capture gap rathe
 than a disagreement: both frontends still conclude the model is unsafe, merely at
 different stages. See `tests/test_export_frontend.py`.
 
+### Path-sensitive dynamic control flow (loops over `ModuleList`, data-dependent branches)
+
+Real `forward` methods are not straight-line code. TensorGuard's AST frontend now
+unrolls `for layer in self.blocks:` and the `for i, layer in enumerate(self.blocks):`
+form over an `nn.ModuleList`/`nn.Sequential`, binding the loop variable to each
+concrete sublayer so that the shape engine checks every consecutive element. This
+closes a real soundness gap: a stack such as `nn.ModuleList([nn.Linear(8, 16),
+nn.Linear(99, 4)])` iterated in a loop previously passed silently, but is now
+flagged with a precise counterexample pointing at the offending sublayer
+(`Linear expects last dim=99, got 16`) — matching the `RuntimeError` eager PyTorch
+raises. Data-dependent branches (`if x.sum() > 0: ... else: ...`) remain handled
+path-sensitively: both arms are verified and their states merged, so an
+incompatible layer on either reachable path is rejected. Every model in the
+regression suite is differentially anchored to eager torch (safe ones run, buggy
+ones raise). See `tests/test_dynamic_control_flow.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

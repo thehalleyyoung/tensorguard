@@ -45,7 +45,7 @@ import hashlib
 import logging
 import re
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace as _dc_replace
 from enum import Enum, auto
 from typing import (
     Any,
@@ -2674,6 +2674,11 @@ class _ForwardExtractor(ast.NodeVisitor):
         # x.size()[:-1] + (H, D)`` followed by ``y.view(*new_shape)``
         # resolves to a fully-determined view target rather than -1.
         self._shape_tuples: Dict[str, List[Any]] = {}
+        # Loop variables bound to a specific (unrolled) sublayer of a
+        # ModuleList/Sequential, so that ``for layer in self.blocks: x =
+        # layer(x)`` resolves ``layer(x)`` to the concrete sublayer being
+        # unrolled. Maps loop-var name → synthetic registered layer name.
+        self._loopvar_layers: Dict[str, str] = {}
 
     def _fresh(self, hint: str = "t") -> str:
         self._tmp_counter += 1
@@ -3420,6 +3425,72 @@ class _ForwardExtractor(ast.NodeVisitor):
             false_branch=false_steps if false_steps else None,
         ))
 
+    def visit_For(self, node: ast.For) -> None:
+        """Unroll ``for <var> in self.<modulelist>:`` (and the ``enumerate``
+        form) over a ModuleList/Sequential, binding the loop variable to each
+        concrete sublayer so the body is path-sensitively checked per element.
+
+        This closes a soundness gap: previously such loops were not unrolled,
+        so an incompatible stack of layers (e.g. Linear(8,16) followed by
+        Linear(99,4)) silently passed. Unrolling lets the shape engine catch
+        the mismatch between consecutive sublayers.
+        """
+        # Resolve the iterable to a ``self.<attr>`` ModuleList/Sequential.
+        iter_node = node.iter
+        attr_name: Optional[str] = None
+        if (isinstance(iter_node, ast.Attribute)
+                and isinstance(iter_node.value, ast.Name)
+                and iter_node.value.id == "self"):
+            attr_name = iter_node.attr
+        elif (isinstance(iter_node, ast.Call)
+              and isinstance(iter_node.func, ast.Name)
+              and iter_node.func.id == "enumerate"
+              and iter_node.args
+              and isinstance(iter_node.args[0], ast.Attribute)
+              and isinstance(iter_node.args[0].value, ast.Name)
+              and iter_node.args[0].value.id == "self"):
+            attr_name = iter_node.args[0].attr
+
+        ldef = self.layers.get(attr_name) if attr_name else None
+        sub_layers = getattr(ldef, "sub_layers", None) if ldef else None
+        if (ldef is None or sub_layers is None
+                or ldef.kind not in (LayerKind.MODULELIST,
+                                     LayerKind.SEQUENTIAL)):
+            # Unrecognised iterable: best-effort single visit (legacy behaviour).
+            self.generic_visit(node)
+            return
+
+        # Determine the loop variable bound to each sublayer.
+        loopvar: Optional[str] = None
+        tgt = node.target
+        if isinstance(tgt, ast.Name):
+            loopvar = tgt.id
+        elif isinstance(tgt, ast.Tuple) and len(tgt.elts) == 2:
+            # ``for i, layer in enumerate(self.layers):`` -> second elt.
+            second = tgt.elts[1]
+            if isinstance(second, ast.Name):
+                loopvar = second.id
+        if loopvar is None:
+            self.generic_visit(node)
+            return
+
+        # Unroll: register each sublayer under a synthetic name and visit body.
+        prev_binding = self._loopvar_layers.get(loopvar)
+        for idx, sub in enumerate(sub_layers):
+            syn_name = f"__{attr_name}_unroll_{idx}"
+            registered = _dc_replace(
+                sub, attr_name=syn_name,
+                params=dict(sub.params) if sub.params else {})
+            self.layers[syn_name] = registered
+            self._loopvar_layers[loopvar] = syn_name
+            for child in node.body:
+                self.visit(child)
+        # Restore prior binding (supports nested loops over the same var name).
+        if prev_binding is None:
+            self._loopvar_layers.pop(loopvar, None)
+        else:
+            self._loopvar_layers[loopvar] = prev_binding
+
     @staticmethod
     def _classify_condition(test: ast.expr) -> str:
         """Classify a conditional test node into a descriptive string."""
@@ -3697,6 +3768,21 @@ class _ForwardExtractor(ast.NodeVisitor):
             self.layers[layer_name] = LayerDef(
                 attr_name=layer_name, kind=LayerKind.UNKNOWN, line=line,
             )
+            inputs = [self._resolve_arg(a) for a in node.args]
+            self.steps.append(ComputationStep(
+                op=OpKind.LAYER_CALL,
+                inputs=inputs,
+                output=target,
+                layer_ref=layer_name,
+                line=line, col=col,
+            ))
+            return
+
+        # --- <loopvar>(x) where loopvar iterates a ModuleList/Sequential ----
+        # Bound by visit_For during unrolling: resolve to the concrete sublayer.
+        if (isinstance(func, ast.Name) and
+                func.id in self._loopvar_layers):
+            layer_name = self._loopvar_layers[func.id]
             inputs = [self._resolve_arg(a) for a in node.args]
             self.steps.append(ComputationStep(
                 op=OpKind.LAYER_CALL,
