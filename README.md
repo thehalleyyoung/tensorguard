@@ -1017,6 +1017,22 @@ declines to capture a shape-buggy model, that is recorded as a capture gap rathe
 than a disagreement: both frontends still conclude the model is unsafe, merely at
 different stages. See `tests/test_export_frontend.py`.
 
+### First-class symbolic batch & sequence dimensions
+
+Shape names supplied as strings — `input_shapes={"x": ("B", "S", 8)}` — are
+verified parametrically as genuine symbols rather than concretized to a guessed
+integer. The emitted `SafetyCertificate` records the symbols it proved over in
+`symbolic_bindings` (e.g. `{"B": "B", "S": "S"}`), so a green certificate means
+the model is safe for *every* batch and sequence length, not merely one sampled
+size. Symbol identity is enforced across inputs: two tensors annotated with the
+same name `B` are reasoned about as equal (an element-wise combination is
+proven safe), whereas distinct symbols `B` and `C` cannot be assumed equal, so
+an operation requiring them to match is soundly rejected. Symbol-independent
+bugs (a wrong `Linear` in-features, a residual reshape that breaks the sequence
+axis) are still caught under symbolic dimensions, and every case is anchored to
+eager torch across several concrete instantiations. See
+`tests/test_symbolic_dims.py`.
+
 ### Path-sensitive dynamic control flow (loops over `ModuleList`, data-dependent branches)
 
 Real `forward` methods are not straight-line code. TensorGuard's AST frontend now
