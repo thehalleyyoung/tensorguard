@@ -11678,6 +11678,7 @@ def verify_model(
     check_gradients: bool = True,
     check_dtypes: bool = True,
     input_dtypes: Optional[Dict[str, str]] = None,
+    infer_inputs: bool = True,
 ) -> VerificationResult:
     """One-shot verification of an nn.Module defined in *source*.
 
@@ -11768,6 +11769,22 @@ def verify_model(
             errors=[str(exc)],
             verification_time_ms=(time.monotonic() - t0) * 1000,
         )
+
+    # Auto-infer input shapes from forward type hints / docstrings /
+    # example_inputs / config when the caller supplied none (Step 42).  This is
+    # conservative: inference abstains on ambiguity, so it can only *fill in*
+    # otherwise-unconstrained inputs, never override an explicit spec.
+    if infer_inputs and not input_shapes:
+        try:
+            from src.input_spec_inference import infer_input_specs
+            inferred = infer_input_specs(source, class_name=graph.class_name)
+            if inferred.shapes:
+                input_shapes = {
+                    name: shape for name, shape in inferred.shapes.items()
+                    if name in graph.input_names
+                }
+        except Exception:  # inference must never break verification
+            pass
 
     checker = ConstraintVerifier(
         graph,

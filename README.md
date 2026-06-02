@@ -1085,6 +1085,31 @@ mismatch downstream of a stub is still flagged with a counterexample, even under
 symbolic batch and sequence dims, and locally-defined classes always take
 precedence over a same-named stub. See `tests/test_shape_stub_registry.py`.
 
+### Automatic input-spec inference (zero annotations)
+
+TensorGuard usually needs an explicit `input_shapes` map (the `-s` burden). But
+the shapes a model expects are almost always already documented in the source,
+so `verify_model` now recovers them statically — no code execution, no
+third-party imports — from four conventional places:
+
+- **Shape-typed annotations** on `forward` parameters: `jaxtyping`
+  (`Float[Tensor, "batch 3 224 224"]`), `torchtyping`
+  (`TensorType["batch", 3, 8]`), including jaxtyping modifiers like `*batch`.
+- **Docstrings**: Google / NumPy `Args:` blocks such as `x: shape (batch, 8)`
+  or `x (Tensor): of size [B, 3, 224, 224]`.
+- **Example inputs**: a class attribute or method (`example_inputs`,
+  `example_input_array` — the PyTorch-Lightning convention) or a module-level
+  assignment built from `torch.randn`/`zeros`/`ones`/`rand`/`full`.
+- **Config dicts**: a literal with an `input_shape`/`input_size` key.
+
+Inference is deliberately conservative: when a source is ambiguous it abstains
+for that parameter rather than guess, so it can only fill in otherwise
+unconstrained inputs — never override an explicit spec or introduce an unsound
+shape. Annotations take priority over example tensors, scalar parameters
+(`flag: bool`) are skipped, and the whole pass is wrapped so it can never break
+verification. Pass `infer_inputs=False` to opt out. See
+`tests/test_input_spec_inference.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
