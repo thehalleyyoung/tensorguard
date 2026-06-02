@@ -1,0 +1,10 @@
+{
+  "issue_id": "fixture-0004",
+  "source": "offline-fixture",
+  "title": "Clean repro that does NOT actually crash (miner must reject as unreproducible)",
+  "labels": ["module: nn"],
+  "url_reference": null,
+  "reported_error_substring": "mat1 and mat2 shapes cannot be multiplied",
+  "input_shapes": {"x": [4, 20]},
+  "body": "I think this crashes but I am not sure:\n\n```python\nimport torch.nn as nn\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc1 = nn.Linear(20, 30)\n        self.fc2 = nn.Linear(30, 10)\n\n    def forward(self, x):\n        return self.fc2(self.fc1(x))\n```\n\n(This network is actually fine, so the miner should not accept it as a buggy case.)"
+}

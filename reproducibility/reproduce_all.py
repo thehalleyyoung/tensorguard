@@ -73,6 +73,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/corpus_extended_score.md",
     "reproducibility/corpus_provenance_audit.json",
     "reproducibility/corpus_provenance_audit.md",
+    "reproducibility/issue_miner_demo.json",
+    "reproducibility/issue_miner_demo.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -159,6 +161,8 @@ STEPS = [
      [PY, "reproducibility/corpus_extended_score.py"], None),
     ("corpus+: provenance + license-compatibility audit (redistributable)",
      [PY, "reproducibility/corpus_provenance_audit.py"], None),
+    ("corpus+: offline issue miner (human-in-the-loop candidate proposals)",
+     [PY, "reproducibility/issue_miner_demo.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]

@@ -1,0 +1,10 @@
+{
+  "issue_id": "fixture-0001",
+  "source": "offline-fixture",
+  "title": "RuntimeError: mat1 and mat2 shapes cannot be multiplied in two-layer MLP",
+  "labels": ["module: nn", "shape-error"],
+  "url_reference": "https://github.com/pytorch/pytorch/issues/179789",
+  "reported_error_substring": "mat1 and mat2 shapes cannot be multiplied",
+  "input_shapes": {"x": [4, 20]},
+  "body": "I have a simple two-layer network and it crashes on the forward pass.\n\n```python\nimport torch.nn as nn\n\nclass M(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc1 = nn.Linear(20, 30)\n        self.fc2 = nn.Linear(40, 10)\n\n    def forward(self, x):\n        return self.fc2(self.fc1(x))\n```\n\nThe second layer expects 40 features but the first produces 30."
+}

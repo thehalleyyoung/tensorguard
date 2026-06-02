@@ -749,6 +749,22 @@ released under the repository's MIT license. See
 [`reproducibility/corpus_provenance_audit.md`](reproducibility/corpus_provenance_audit.md)
 and `tests/test_corpus_provenance.py`.
 
+### Offline issue miner (human-in-the-loop corpus growth)
+
+`corpus_extended/issue_miner.py` shows an auditable, **fully offline** path for
+growing the corpus from issue reports. It runs over frozen local fixtures
+(`corpus_extended/issue_fixtures/*.json`) so it is replayable in CI with no
+network access, and it never trusts an issue's claim: it extracts the fenced
+`python` block, requires an `nn.Module` named `M`, **replays the forward against
+real PyTorch**, and only proposes a buggy candidate when the module actually
+raises with the reported error substring. Feature requests, code-free reports and
+unreproducible claims are rejected with a reason. A corroborated candidate stays
+`proposed` until a human adds its id to an allowlist
+(`issue_fixtures/accepted.json`), so nothing enters the corpus without both a
+reproduced failure and explicit human acceptance. See
+[`reproducibility/issue_miner_demo.md`](reproducibility/issue_miner_demo.md) and
+`tests/test_issue_miner.py`.
+
 ### Sound-mode false-positive hunt
 
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
