@@ -1187,6 +1187,20 @@ safety encoders (shape, gradient) are additionally memoized per step so the
 combined checks reuse them instead of rebuilding the constraints. See
 `tests/test_solver_short_circuit.py`.
 
+### Incremental re-verification
+
+`src/incremental.py` productionises diff-driven verification: it caches verdicts
+keyed by a **dependency-aware structural fingerprint** of the root model. The
+fingerprint hashes the root `nn.Module` class together with every user-defined
+class reachable from it (base classes and instantiated submodules, transitively,
+matching how the engine inlines them), plus a hash of the verification options
+(input shapes, the `check_*` flags). Editing an unrelated sibling class leaves
+the fingerprint unchanged, so the cached verdict is soundly reused; editing the
+root or any class it transitively depends on changes the fingerprint and forces
+a re-verification. The cache is plain JSON and persists across processes, and
+`changed_models(old, new)` answers whether a source diff requires
+re-verification at all. See `tests/test_incremental.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
