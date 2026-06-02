@@ -980,6 +980,24 @@ QUALIFIED when the local PyTorch version differs from the floor's. The floor is
 only ever raised, via `make operator-coverage-floor`, so coverage can grow but
 never silently shrink. See `tests/test_operator_coverage_gate.py`.
 
+### Frontend trace-success over real model zoos
+
+A verifier is only useful if its frontend ingests the models people actually
+write. The harness in `evaluation/fx_trace_success.py` runs the `torch.fx`
+frontend end to end — symbolic trace plus lowering into TensorGuard's
+computation graph — over a fixed corpus of real `torchvision` architectures
+spanning classic CNNs, mobile nets, modern conv nets, vision transformers, and
+multi-branch / auxiliary-head networks (GoogLeNet, Inception). Every one of the
+21 models traces and lowers without crashing, a result published as a
+reproducible artifact and defended by `make fx-trace-success-gate`, which fails
+the build if the success rate regresses below the floor (and QUALIFIED-skips on
+a torch/torchvision version mismatch). The same artifact reports, per model, how
+many graph steps are reasoned about precisely versus soundly abstracted as
+unsupported, turning frontend coverage into an honest, tracked number. Hardening
+this path also restored precision for the functional forms `torch.permute`,
+`torch.transpose` and `torch.swapaxes`, which had been needlessly abstracted.
+See `tests/test_fx_trace_success.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

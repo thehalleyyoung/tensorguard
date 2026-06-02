@@ -401,6 +401,10 @@ def _function_to_op(fn) -> Optional[OpKind]:
         torch.flatten: OpKind.FLATTEN,
         torch.reshape: OpKind.RESHAPE,
         torch.broadcast_to: OpKind.EXPAND,
+        torch.permute: OpKind.PERMUTE,
+        torch.transpose: OpKind.TRANSPOSE,
+        torch.swapaxes: OpKind.TRANSPOSE,
+        torch.swapdims: OpKind.TRANSPOSE,
         torch.relu: OpKind.ACTIVATION,
         torch.sigmoid: OpKind.ACTIVATION,
         torch.tanh: OpKind.ACTIVATION,
@@ -1002,6 +1006,20 @@ def _extract_function_params(
             params["start_dim"] = node.args[1]
         if len(node.args) > 2 and isinstance(node.args[2], int):
             params["end_dim"] = node.args[2]
+    elif op_kind == OpKind.PERMUTE:
+        # torch.permute(x, dims): ``dims`` is a single tuple/list, but tolerate
+        # the varargs spelling torch.permute(x, 0, 2, 1) as well.
+        rest = node.args[1:]
+        if len(rest) == 1 and isinstance(rest[0], (tuple, list)):
+            rest = tuple(rest[0])
+        dims = tuple(d for d in rest if isinstance(d, int))
+        if dims:
+            params["dims"] = dims
+    elif op_kind == OpKind.TRANSPOSE:
+        # torch.transpose / swapaxes / swapdims (x, dim0, dim1).
+        if len(node.args) >= 3:
+            params["dim0"] = node.args[1] if isinstance(node.args[1], int) else 0
+            params["dim1"] = node.args[2] if isinstance(node.args[2], int) else 1
     elif op_kind == OpKind.EINSUM:
         # torch.einsum(equation, *tensors): the equation is the first arg.
         if node.args and isinstance(node.args[0], str):
