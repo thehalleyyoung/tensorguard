@@ -28,6 +28,13 @@ from .safe_loader import (
 from .distributions_verify import verify_distribution, verify_log_prob
 from .complex_verify import verify_fft, verify_view_as_complex, verify_view_as_real
 from .named_tensor_verify import verify_align_to, verify_named_tensor_source, verify_refine_names
+from .sparse_verify import (
+    verify_sparse_bsc,
+    verify_sparse_bsr,
+    verify_sparse_coo,
+    verify_sparse_csc,
+    verify_sparse_csr,
+)
 from .vmap_verify import verify_vmap
 
 __all__ = [
@@ -54,6 +61,11 @@ __all__ = [
     "verify_refine_names",
     "verify_align_to",
     "verify_named_tensor_source",
+    "verify_sparse_coo",
+    "verify_sparse_csr",
+    "verify_sparse_csc",
+    "verify_sparse_bsr",
+    "verify_sparse_bsc",
     "verify_vmap",
     "__version__",
 ]

@@ -24,17 +24,20 @@ runtime errors in ML codebases before any code runs.
   `torch.distributions` batch/event/log-prob shapes, plus PyTorch
   named-tensor `refine_names` / `align_to` alignment, complex
   `view_as_real` / `view_as_complex` / `torch.fft` shape-dtype contracts, and
-  `torch.vmap` / functorch batched-dimension transfers are
-  verified by shape-only models that are **differentially fuzzed** against real
+  `torch.vmap` / functorch batched-dimension transfers and
+  `torch.sparse` COO/CSR/CSC/BSR/BSC layout + blocksize invariants are
+  verified by shape-only models that are **differentially checked** against real
   `einops` / `torch`; non-divisible patch embeds, head-dim-mismatched
   attention, unusable probabilistic batch/event contracts, invalid
   named-axis refinements/reorderings, unsupported complex FFT dtypes, and
-  impossible vmap batch/out-dim contracts are caught before kernels raise, while
+  impossible vmap batch/out-dim contracts, and unusable sparse compressed
+  layouts are caught before kernels raise, while
   symbolic dims are never refuted
   (`verify_einops`, `verify_einops_source`, `verify_distribution`,
   `verify_log_prob`, `verify_refine_names`, `verify_align_to`,
   `verify_view_as_real`, `verify_view_as_complex`, `verify_fft`,
-  `verify_vmap`)
+  `verify_vmap`, `verify_sparse_coo`, `verify_sparse_csr`,
+  `verify_sparse_csc`, `verify_sparse_bsr`, `verify_sparse_bsc`)
 - **5-theory product domain** — jointly reasons over
   **Shape × Device × Phase × Stride × Permutation** for each tensor
 - **Zero annotations required** — shapes are inferred from constructors,

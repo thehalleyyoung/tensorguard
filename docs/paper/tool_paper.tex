@@ -50,7 +50,8 @@
 architectures and adjacent training/deployment code.  It checks tensor shape,
 dtype, device, phase, gradient-flow, stride/layout, probabilistic batch/event
 contracts, complex view/FFT shape-dtype rules, named-axis alignment,
-\texttt{vmap} batched-dimension transfers, and library-specific contracts before
+\texttt{vmap} batched-dimension transfers, sparse layout/blocksize invariants,
+and library-specific contracts before
 a forward pass runs, then reports a
 three-valued verdict:
 \safe{}, \unknown{}, or \unsafe{}.  The implementation is intentionally more
@@ -146,7 +147,8 @@ or module and supports independent check toggles, soundness modes, and machine
 readable output.  The public Python API mirrors the CLI through
 \texttt{verify\_architecture} and \texttt{verify\_module}.  Specialized helpers
 cover einops, SDPA, distributions, named tensors, complex FFT/view contracts,
-and \texttt{vmap} batched-dimension transfer.  A typical workflow is:
+\texttt{vmap} batched-dimension transfer, and sparse tensor layouts.  A typical
+workflow is:
 
 \begin{lstlisting}
 import torch.nn as nn
@@ -364,7 +366,7 @@ accumulation argument.
 
 \subsection{Specialized library contracts}
 
-Six high-value library checkers demonstrate the pattern for precision without
+Seven high-value library checkers demonstrate the pattern for precision without
 unsoundness:
 
 \begin{itemize}[leftmargin=2em]
@@ -422,6 +424,16 @@ unsoundness:
   records an unknown shape rather than refuting.  A 500-case randomized
   differential test checks mapped-axis removal and out-dim insertion against
   real \texttt{vmap}.
+  \item \textbf{\texttt{torch.sparse}.}
+  \path{src/sparse_verify.py} models COO sparse/dense rank agreement and the
+  validated CSR/CSC/BSR/BSC compressed-layout contract: batch metadata, nnz
+  agreement, compressed-axis lengths, positive block sizes, and block
+  divisibility.  It also flags compressed tensors whose values' dense tail
+  disagrees with the requested tensor shape: PyTorch may construct these
+  metadata-inconsistent tensors, but \texttt{to\_dense()} fails, so \tg{}
+  reports them as unusable layouts.  The tests compare valid and invalid cases
+  against real PyTorch constructors with \texttt{check\_invariants=True}, plus
+  the live dense-materialization failure and symbolic no-false-positive probes.
 \end{itemize}
 
 \section{Beyond \texttt{forward}: deployment and training hazards}
@@ -848,7 +860,7 @@ not more marketing metrics; they are higher-value coverage and stronger
 evidence:
 
 \begin{itemize}[leftmargin=2em]
-  \item deeper operator coverage for sparse tensors, grid sampling, MultiheadAttention,
+  \item deeper operator coverage for grid sampling, MultiheadAttention,
   split/chunk, masked selection, nonzero, and exact einsum diagonal semantics;
   \item deployment correctness for quantization, mixed precision, dynamic
   \texttt{torch.export} constraints, AOTInductor layouts, ONNX opsets, GGUF
@@ -870,7 +882,8 @@ evidence:
 \tg{} turns tensor metadata checking from a runtime accident into an auditable
 static contract.  It is already useful as a developer tool: it catches shape,
 device, dtype, phase, gradient, training-loop, distributed, quantization,
-export, einops, SDPA, distribution, complex FFT/view, and named-axis hazards
+export, einops, SDPA, distribution, complex FFT/view, named-axis, vmap, and
+sparse-layout hazards
 before execution; it reports precise
 diagnostics; it integrates with CI and code scanning; and it defaults to
 abstention rather than false certainty when the program leaves its fragment.
@@ -969,6 +982,9 @@ Are named-tensor refinements and alignments modeled faithfully? &
 Is \texttt{vmap} batched-shape transfer modeled faithfully? &
 \path{src/vmap_verify.py} &
 \path{tests/test_vmap_verify.py} \\
+Are sparse layout and blocksize contracts modeled faithfully? &
+\path{src/sparse_verify.py} &
+\path{tests/test_sparse_verify.py} \\
 Are training-loop hazards checked? &
 \path{reproducibility/training_loop_hazards.md} &
 \path{tests/test_training_loop_checks.py} \\
@@ -1075,6 +1091,9 @@ checker with source-level bug reports &
 Library model & \texttt{torch.vmap}/functorch mapped-axis removal and
 \texttt{out\_dims} insertion &
 \path{src/vmap_verify.py}, \path{tests/test_vmap_verify.py} \\
+Library model & \texttt{torch.sparse} COO/CSR/CSC/BSR/BSC layout and blocksize
+checks &
+\path{src/sparse_verify.py}, \path{tests/test_sparse_verify.py} \\
 Frontends & Safe AST source parser for untrusted model files &
 \path{src/safe_loader.py}, \path{tests/test_security.py} \\
 Frontends & \texttt{torch.fx} trace lowering across real torchvision models &
