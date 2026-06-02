@@ -1655,13 +1655,13 @@ def _extract_layer_params(kind: LayerKind, call: ast.Call,
         if isinstance(ks, int):
             ks = (ks, ks)
         layer.kernel_size = ks
-        dilation = kw.get("dilation", 1)
+        dilation = pos[1] if len(pos) > 1 else kw.get("dilation", 1)
         if isinstance(dilation, int):
             dilation = (dilation, dilation)
-        padding = kw.get("padding", 0)
+        padding = pos[2] if len(pos) > 2 else kw.get("padding", 0)
         if isinstance(padding, int):
             padding = (padding, padding)
-        stride = kw.get("stride", 1)
+        stride = pos[3] if len(pos) > 3 else kw.get("stride", 1)
         if isinstance(stride, int):
             stride = (stride, stride)
         layer.params = {"kernel_size": ks, "dilation": dilation,
@@ -1676,13 +1676,13 @@ def _extract_layer_params(kind: LayerKind, call: ast.Call,
             ks = (ks, ks)
         layer.kernel_size = ks
         layer.output_size = output_size
-        dilation = kw.get("dilation", 1)
+        dilation = pos[2] if len(pos) > 2 else kw.get("dilation", 1)
         if isinstance(dilation, int):
             dilation = (dilation, dilation)
-        padding = kw.get("padding", 0)
+        padding = pos[3] if len(pos) > 3 else kw.get("padding", 0)
         if isinstance(padding, int):
             padding = (padding, padding)
-        stride = kw.get("stride", 1)
+        stride = pos[4] if len(pos) > 4 else kw.get("stride", 1)
         if isinstance(stride, int):
             stride = (stride, stride)
         layer.params = {"output_size": output_size, "kernel_size": ks,
@@ -2621,6 +2621,8 @@ _FUNC_LAYER_KIND: Dict[str, "LayerKind"] = {
     "embedding": LayerKind.EMBEDDING,
     "pixel_shuffle": OpKind.LAYER_CALL,
     "pixel_unshuffle": OpKind.LAYER_CALL,
+    "fold": LayerKind.FOLD,
+    "unfold": LayerKind.UNFOLD,
 }
 
 
@@ -2686,6 +2688,63 @@ def _make_functional_layer(
         # F.conv2d(input, weight, bias, stride, padding, dilation, groups)
         # Without concrete weight shape, we can't infer out_channels.
         pass
+
+    elif kind == LayerKind.UNFOLD:
+        # F.unfold(input, kernel_size, dilation=1, padding=0, stride=1)
+        ks = _const_value(pos_args[0]) if pos_args else kw.get("kernel_size")
+        if isinstance(ks, int):
+            ks = (ks, ks)
+        dilation = (_const_value(pos_args[1]) if len(pos_args) > 1
+                    else kw.get("dilation", 1))
+        if isinstance(dilation, int):
+            dilation = (dilation, dilation)
+        padding = (_const_value(pos_args[2]) if len(pos_args) > 2
+                   else kw.get("padding", 0))
+        if isinstance(padding, int):
+            padding = (padding, padding)
+        stride = (_const_value(pos_args[3]) if len(pos_args) > 3
+                  else kw.get("stride", 1))
+        if isinstance(stride, int):
+            stride = (stride, stride)
+        layer.kernel_size = ks
+        layer.params.update({
+            "kernel_size": ks,
+            "dilation": dilation,
+            "padding": padding,
+            "stride": stride,
+        })
+
+    elif kind == LayerKind.FOLD:
+        # F.fold(input, output_size, kernel_size, dilation=1, padding=0, stride=1)
+        output_size = (_const_value(pos_args[0]) if pos_args
+                       else kw.get("output_size"))
+        if isinstance(output_size, int):
+            output_size = (output_size, output_size)
+        ks = (_const_value(pos_args[1]) if len(pos_args) > 1
+              else kw.get("kernel_size"))
+        if isinstance(ks, int):
+            ks = (ks, ks)
+        dilation = (_const_value(pos_args[2]) if len(pos_args) > 2
+                    else kw.get("dilation", 1))
+        if isinstance(dilation, int):
+            dilation = (dilation, dilation)
+        padding = (_const_value(pos_args[3]) if len(pos_args) > 3
+                   else kw.get("padding", 0))
+        if isinstance(padding, int):
+            padding = (padding, padding)
+        stride = (_const_value(pos_args[4]) if len(pos_args) > 4
+                  else kw.get("stride", 1))
+        if isinstance(stride, int):
+            stride = (stride, stride)
+        layer.output_size = output_size
+        layer.kernel_size = ks
+        layer.params.update({
+            "output_size": output_size,
+            "kernel_size": ks,
+            "dilation": dilation,
+            "padding": padding,
+            "stride": stride,
+        })
 
     elif kind in (LayerKind.BATCHNORM1D, LayerKind.LAYERNORM,
                   LayerKind.GROUPNORM, LayerKind.INSTANCENORM2D):
@@ -6919,46 +6978,128 @@ def _propagate_pixel_shuffle(
     )), None
 
 
+def _as_spatial_pair(raw: Any, name: str) -> Tuple[Optional[Tuple[int, int]], Optional[str]]:
+    if isinstance(raw, bool):
+        return None, f"{name} must be an int or length-2 tuple/list of ints, got {raw!r}"
+    if isinstance(raw, int):
+        return (raw, raw), None
+    if isinstance(raw, (tuple, list)) and len(raw) == 2:
+        vals: List[int] = []
+        for v in raw:
+            if isinstance(v, bool) or not isinstance(v, int):
+                return None, (
+                    f"{name} must contain only ints, got {tuple(raw)!r}"
+                )
+            vals.append(int(v))
+        return (vals[0], vals[1]), None
+    return None, f"{name} must be an int or length-2 tuple/list of ints, got {raw!r}"
+
+
+def _fold_unfold_params(
+    layer: LayerDef,
+    op_name: str,
+) -> Tuple[
+    Optional[Tuple[int, int]],
+    Optional[Tuple[int, int]],
+    Optional[Tuple[int, int]],
+    Optional[Tuple[int, int]],
+    Optional[str],
+]:
+    raw_ks = layer.params.get("kernel_size", layer.kernel_size)
+    if raw_ks is None:
+        return None, None, None, None, None
+    ks, err = _as_spatial_pair(raw_ks, f"{op_name} kernel_size")
+    if err:
+        return None, None, None, None, err
+    dilation, err = _as_spatial_pair(layer.params.get("dilation", (1, 1)), f"{op_name} dilation")
+    if err:
+        return None, None, None, None, err
+    padding, err = _as_spatial_pair(layer.params.get("padding", (0, 0)), f"{op_name} padding")
+    if err:
+        return None, None, None, None, err
+    stride, err = _as_spatial_pair(layer.params.get("stride", (1, 1)), f"{op_name} stride")
+    if err:
+        return None, None, None, None, err
+    assert ks is not None and dilation is not None and padding is not None and stride is not None
+    for pname, vals in (
+        ("kernel_size", ks),
+        ("dilation", dilation),
+        ("stride", stride),
+    ):
+        if vals[0] <= 0 or vals[1] <= 0:
+            return None, None, None, None, (
+                f"{op_name} {pname} entries must be greater than zero, got {vals}"
+            )
+    if padding[0] < 0 or padding[1] < 0:
+        return None, None, None, None, (
+            f"{op_name} padding entries must be non-negative, got {padding}"
+        )
+    return ks, dilation, padding, stride, None
+
+
+def _sliding_block_count(
+    dim: int,
+    kernel: int,
+    dilation: int,
+    padding: int,
+    stride: int,
+) -> int:
+    return (dim + 2 * padding - dilation * (kernel - 1) - 1) // stride + 1
+
+
+def _unknown_dim(prefix: str, layer: LayerDef, suffix: str) -> ShapeDim:
+    stem = layer.attr_name or "op"
+    return ShapeDim(f"_{prefix}_{stem}_{suffix}")
+
+
 def _propagate_unfold(
     input_shape: TensorShape, layer: LayerDef
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """nn.Unfold maps (N, C, H, W) → (N, C*∏(kernel_size), L).
+    """nn/F.unfold maps (C,H,W)/(N,C,H,W) to (..., C*kH*kW, L)."""
+    if input_shape.ndim not in (3, 4):
+        return None, f"Unfold expects 3D or 4D input, got {input_shape.ndim}D"
 
-    L = ∏((spatial + 2*padding - dilation*(kernel-1) - 1) / stride + 1)
-    """
-    if input_shape.ndim != 4:
-        return None, f"Unfold expects 4D, got {input_shape.ndim}D"
-    ks = layer.params.get("kernel_size", (3, 3))
-    if isinstance(ks, int):
-        ks = (ks, ks)
-    dilation = layer.params.get("dilation", (1, 1))
-    if isinstance(dilation, int):
-        dilation = (dilation, dilation)
-    padding = layer.params.get("padding", (0, 0))
-    if isinstance(padding, int):
-        padding = (padding, padding)
-    stride = layer.params.get("stride", (1, 1))
-    if isinstance(stride, int):
-        stride = (stride, stride)
+    params = _fold_unfold_params(layer, "Unfold")
+    ks, dilation, padding, stride, err = params
+    leading = input_shape.dims[:-3]
+    c_in = input_shape.dims[-3]
+    h_in = input_shape.dims[-2]
+    w_in = input_shape.dims[-1]
+    if err:
+        return None, err
+    if ks is None or dilation is None or padding is None or stride is None:
+        return TensorShape((
+            *leading,
+            _unknown_dim("unfold", layer, "channels"),
+            _unknown_dim("unfold", layer, "blocks"),
+        )), None
 
-    c_in = input_shape.dims[1]
-    h_in = input_shape.dims[2]
-    w_in = input_shape.dims[3]
-
+    k_prod = ks[0] * ks[1]
     if not c_in.is_symbolic:
-        c_out = c_in.value * ks[0] * ks[1]
+        c_out: Union[int, str] = c_in.value * k_prod
     else:
-        c_out = "_c_unfold"
+        c_out = f"({c_in.value}*{k_prod})"
 
     if not h_in.is_symbolic and not w_in.is_symbolic:
-        h_blocks = (h_in.value + 2 * padding[0] - dilation[0] * (ks[0] - 1) - 1) // stride[0] + 1
-        w_blocks = (w_in.value + 2 * padding[1] - dilation[1] * (ks[1] - 1) - 1) // stride[1] + 1
-        L = h_blocks * w_blocks
+        h_blocks = _sliding_block_count(
+            h_in.value, ks[0], dilation[0], padding[0], stride[0]
+        )
+        w_blocks = _sliding_block_count(
+            w_in.value, ks[1], dilation[1], padding[1], stride[1]
+        )
+        if h_blocks <= 0 or w_blocks <= 0:
+            return None, (
+                "Unfold calculated non-positive sliding block grid "
+                f"({h_blocks}, {w_blocks}) from input spatial "
+                f"({h_in.value}, {w_in.value}), kernel_size={ks}, "
+                f"dilation={dilation}, padding={padding}, stride={stride}"
+            )
+        L: Union[int, str] = h_blocks * w_blocks
     else:
-        L = "_L_unfold"
+        L = f"_unfold_blocks_{layer.attr_name or 'op'}"
 
     return TensorShape((
-        input_shape.dims[0],
+        *leading,
         ShapeDim(c_out),
         ShapeDim(L),
     )), None
@@ -6967,26 +7108,74 @@ def _propagate_unfold(
 def _propagate_fold(
     input_shape: TensorShape, layer: LayerDef
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """nn.Fold maps (N, C*∏(kernel_size), L) → (N, C, output_size[0], output_size[1])."""
-    if input_shape.ndim != 3:
-        return None, f"Fold expects 3D, got {input_shape.ndim}D"
-    output_size = layer.output_size
-    ks = layer.params.get("kernel_size", (3, 3))
-    if isinstance(ks, int):
-        ks = (ks, ks)
-    if output_size is None:
-        return None, "Fold output_size unknown"
-    c_ks = input_shape.dims[1]
+    """nn/F.fold maps (C*kH*kW,L)/(N,C*kH*kW,L) to (..., C,H,W)."""
+    if input_shape.ndim not in (2, 3):
+        return None, f"Fold expects 2D or 3D input, got {input_shape.ndim}D"
+
+    params = _fold_unfold_params(layer, "Fold")
+    ks, dilation, padding, stride, err = params
+    leading = input_shape.dims[:-2]
+    c_ks = input_shape.dims[-2]
+    l_in = input_shape.dims[-1]
+    if err:
+        return None, err
+    if ks is None or dilation is None or padding is None or stride is None:
+        return TensorShape((
+            *leading,
+            _unknown_dim("fold", layer, "channels"),
+            _unknown_dim("fold", layer, "height"),
+            _unknown_dim("fold", layer, "width"),
+        )), None
+
+    raw_output_size = layer.output_size
+    if raw_output_size is None:
+        raw_output_size = layer.params.get("output_size")
+    if raw_output_size is None:
+        return TensorShape((
+            *leading,
+            _unknown_dim("fold", layer, "channels"),
+            _unknown_dim("fold", layer, "height"),
+            _unknown_dim("fold", layer, "width"),
+        )), None
+    output_size, out_err = _as_spatial_pair(raw_output_size, "Fold output_size")
+    if out_err:
+        return None, out_err
+    if output_size[0] <= 0 or output_size[1] <= 0:
+        return None, f"Fold output_size entries must be positive, got {output_size}"
+
+    k_prod = ks[0] * ks[1]
     if not c_ks.is_symbolic:
-        k_prod = ks[0] * ks[1]
-        if k_prod > 0 and c_ks.value % k_prod == 0:
-            c_out = c_ks.value // k_prod
-        else:
-            c_out = "_c_fold"
+        if c_ks.value % k_prod != 0:
+            return None, (
+                "Fold expects input.size(-2) to be divisible by "
+                f"kernel_size product {k_prod}, got {c_ks.value}"
+            )
+        c_out: Union[int, str] = c_ks.value // k_prod
     else:
-        c_out = "_c_fold"
+        c_out = f"_fold_channels_{layer.attr_name or 'op'}"
+
+    h_blocks = _sliding_block_count(
+        output_size[0], ks[0], dilation[0], padding[0], stride[0]
+    )
+    w_blocks = _sliding_block_count(
+        output_size[1], ks[1], dilation[1], padding[1], stride[1]
+    )
+    if h_blocks <= 0 or w_blocks <= 0:
+        return None, (
+            "Fold calculated non-positive sliding block grid "
+            f"({h_blocks}, {w_blocks}) from output_size={output_size}, "
+            f"kernel_size={ks}, dilation={dilation}, padding={padding}, "
+            f"stride={stride}"
+        )
+    expected_l = h_blocks * w_blocks
+    if not l_in.is_symbolic and l_in.value != expected_l:
+        return None, (
+            "Fold expected input.size(-1) to match the sliding-block product "
+            f"{h_blocks} * {w_blocks} = {expected_l}, got {l_in.value}"
+        )
+
     return TensorShape((
-        input_shape.dims[0],
+        *leading,
         ShapeDim(c_out),
         ShapeDim(output_size[0]),
         ShapeDim(output_size[1]),
@@ -8554,13 +8743,52 @@ class ConstraintVerifier:
                     if pre_d and post_d:
                         cs.append(post_d[0] == pre_d[0])
                 elif layer.kind == LayerKind.UNFOLD:
-                    # Unfold: batch preserved
-                    if pre_d and post_d:
+                    params = _fold_unfold_params(layer, "Unfold")
+                    ks, dilation, padding, stride, err = params
+                    if len(pre_d) == 4 and len(post_d) == 3:
                         cs.append(post_d[0] == pre_d[0])
+                    if (err is None and ks is not None and dilation is not None
+                            and padding is not None and stride is not None):
+                        k_prod = ks[0] * ks[1]
+                        if len(pre_d) in (3, 4) and len(post_d) in (2, 3):
+                            cs.append(post_d[-2] == pre_d[-3] * z3.IntVal(k_prod))
+                            h_blocks = (
+                                pre_d[-2]
+                                + z3.IntVal(2 * padding[0] - dilation[0] * (ks[0] - 1) - 1)
+                            ) / z3.IntVal(stride[0]) + z3.IntVal(1)
+                            w_blocks = (
+                                pre_d[-1]
+                                + z3.IntVal(2 * padding[1] - dilation[1] * (ks[1] - 1) - 1)
+                            ) / z3.IntVal(stride[1]) + z3.IntVal(1)
+                            cs.append(post_d[-1] == h_blocks * w_blocks)
                 elif layer.kind == LayerKind.FOLD:
-                    # Fold: batch preserved
-                    if pre_d and post_d:
+                    params = _fold_unfold_params(layer, "Fold")
+                    ks, dilation, padding, stride, err = params
+                    raw_output_size = layer.output_size
+                    if raw_output_size is None:
+                        raw_output_size = layer.params.get("output_size")
+                    output_size, out_err = (
+                        _as_spatial_pair(raw_output_size, "Fold output_size")
+                        if raw_output_size is not None else (None, None)
+                    )
+                    if len(pre_d) == 3 and len(post_d) == 4:
                         cs.append(post_d[0] == pre_d[0])
+                    if (err is None and out_err is None
+                            and ks is not None and dilation is not None
+                            and padding is not None and stride is not None
+                            and output_size is not None
+                            and len(pre_d) in (2, 3) and len(post_d) in (3, 4)):
+                        k_prod = ks[0] * ks[1]
+                        cs.append(post_d[-3] * z3.IntVal(k_prod) == pre_d[-2])
+                        cs.append(post_d[-2] == z3.IntVal(output_size[0]))
+                        cs.append(post_d[-1] == z3.IntVal(output_size[1]))
+                        h_blocks = _sliding_block_count(
+                            output_size[0], ks[0], dilation[0], padding[0], stride[0]
+                        )
+                        w_blocks = _sliding_block_count(
+                            output_size[1], ks[1], dilation[1], padding[1], stride[1]
+                        )
+                        cs.append(pre_d[-1] == z3.IntVal(h_blocks * w_blocks))
                 else:
                     for dp, dq in zip(pre_d, post_d):
                         cs.append(dq == dp)

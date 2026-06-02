@@ -459,6 +459,8 @@ def _function_to_op(fn) -> Optional[OpKind]:
         F.max_pool2d: OpKind.LAYER_CALL,
         F.avg_pool2d: OpKind.LAYER_CALL,
         F.adaptive_avg_pool2d: OpKind.LAYER_CALL,
+        F.unfold: OpKind.LAYER_CALL,
+        F.fold: OpKind.LAYER_CALL,
         F.interpolate: OpKind.INTERPOLATE,
         F.pad: OpKind.PAD,
     })
@@ -813,6 +815,15 @@ def fx_trace_to_graph(
             if emb_step is not None:
                 graph.steps.append(emb_step)
                 node_to_tensor[node.name] = emb_step.output
+                step_idx += 1
+                continue
+
+            fold_step = _maybe_functional_fold_unfold(
+                node, node_to_tensor, graph, step_idx
+            )
+            if fold_step is not None:
+                graph.steps.append(fold_step)
+                node_to_tensor[node.name] = fold_step.output
                 step_idx += 1
                 continue
 
@@ -1387,6 +1398,85 @@ def _maybe_functional_embedding(
         output=f"_t{step_idx}",
         layer_ref=layer_name,
         params={"embedding_dim": emb_dim.value},
+    )
+
+
+def _fx_pair(raw: Any) -> Any:
+    if isinstance(raw, int) and not isinstance(raw, bool):
+        return (raw, raw)
+    if (isinstance(raw, (tuple, list)) and len(raw) == 2
+            and all(isinstance(v, int) and not isinstance(v, bool) for v in raw)):
+        return tuple(int(v) for v in raw)
+    return raw
+
+
+def _maybe_functional_fold_unfold(
+    node: "torch.fx.Node",
+    node_to_tensor: Dict[str, str],
+    graph: ComputationGraph,
+    step_idx: int,
+) -> Optional[ComputationStep]:
+    """Build synthetic nn.Fold/nn.Unfold layer calls for F.fold/F.unfold."""
+    if not HAS_TORCH:
+        return None
+    target = node.target
+    name = getattr(target, "__name__", "")
+    module = getattr(target, "__module__", "")
+    if name not in ("fold", "unfold") or "functional" not in module:
+        return None
+    if not node.args or not isinstance(node.args[0], torch.fx.Node):
+        return None
+
+    def arg(pos: int, key: str, default: Any = None) -> Any:
+        if len(node.args) > pos:
+            return node.args[pos]
+        return node.kwargs.get(key, default)
+
+    layer_name = f"_func_{name}_{step_idx}"
+    if name == "unfold":
+        kernel_size = _fx_pair(arg(1, "kernel_size"))
+        dilation = _fx_pair(arg(2, "dilation", 1))
+        padding = _fx_pair(arg(3, "padding", 0))
+        stride = _fx_pair(arg(4, "stride", 1))
+        ldef = LayerDef(
+            attr_name=layer_name,
+            kind=LayerKind.UNFOLD,
+            params={
+                "kernel_size": kernel_size,
+                "dilation": dilation,
+                "padding": padding,
+                "stride": stride,
+            },
+        )
+        ldef.kernel_size = kernel_size
+    else:
+        output_size = _fx_pair(arg(1, "output_size"))
+        kernel_size = _fx_pair(arg(2, "kernel_size"))
+        dilation = _fx_pair(arg(3, "dilation", 1))
+        padding = _fx_pair(arg(4, "padding", 0))
+        stride = _fx_pair(arg(5, "stride", 1))
+        ldef = LayerDef(
+            attr_name=layer_name,
+            kind=LayerKind.FOLD,
+            params={
+                "output_size": output_size,
+                "kernel_size": kernel_size,
+                "dilation": dilation,
+                "padding": padding,
+                "stride": stride,
+            },
+        )
+        ldef.output_size = output_size
+        ldef.kernel_size = kernel_size
+
+    graph.layers[layer_name] = ldef
+    input_node = node.args[0]
+    return ComputationStep(
+        op=OpKind.LAYER_CALL,
+        inputs=[node_to_tensor.get(input_node.name, input_node.name)],
+        output=f"_t{step_idx}",
+        layer_ref=layer_name,
+        params=dict(ldef.params),
     )
 
 

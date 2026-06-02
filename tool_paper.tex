@@ -194,7 +194,7 @@ PyTorch constructs.  The core structural set covers matrix multiplication,
 batched matrix multiplication, linear layers, convolution and transpose
 convolution families, pooling, flatten, reshape/view with product reasoning,
 broadcasting, reductions, cat/stack, transpose/permute, squeeze/unsqueeze,
-embedding, dtype casts, device moves, and stochastic tensor factories whose
+fold/unfold image-column transforms, embedding, dtype casts, device moves, and stochastic tensor factories whose
 shapes are seed-independent.  Extended coverage includes einsum parsing,
 advanced indexing, gather/scatter, index select, masked select,
 \texttt{take\_along\_dim}, \texttt{argsort}, \texttt{sort}/\texttt{topk}/
@@ -237,9 +237,12 @@ dimension when possible, and preserve copied symbolic dimensions through
 NumPy/PyTorch right-aligned semantics, including singleton expansion and
 symbolic abstention.  Convolution rules compute spatial output sizes from
 kernel, stride, padding, dilation, groups, and transpose output padding when
-these parameters are static.  Normalization rules check channel or normalized
-shape contracts, while phase annotations make train/eval-sensitive modules
-diagnostic instead of invisible.
+these parameters are static.  Fold/unfold rules use the same spatial arithmetic
+to model batched and unbatched image-column transforms, reject empty sliding
+block grids, non-divisible fold channel counts, and output-size/column-count
+reconstruction mismatches.  Normalization rules check channel or normalized shape
+contracts, while phase annotations make train/eval-sensitive modules diagnostic
+instead of invisible.
 
 Attention rules are handled at multiple layers.  SDPA verifies query/key
 embedding compatibility and key/value source-length compatibility while
@@ -410,8 +413,8 @@ if it matches the runtime library.  The repository therefore includes tests
 that construct real tensors, run the corresponding PyTorch operator, and compare
 the resulting shape or runtime exception to \tg{}'s predicted contract.  This
 pattern appears for cat, einsum, reshape, broadcasting, convolution, attention,
-grid sampling, sparse layouts, complex FFT views, named tensors, distributions,
-vmap, chunk/split partitioning, and index-value operators.  When PyTorch's
+fold/unfold, grid sampling, sparse layouts, complex FFT views, named tensors,
+distributions, vmap, chunk/split partitioning, and index-value operators.  When PyTorch's
 edge-case behavior is surprising, as with \texttt{take\_along\_dim(dim=None)}
 flattening before selection or \texttt{topk} rejecting oversized \texttt{k}, the
 static rule follows PyTorch rather than a simplified textbook semantics.
@@ -607,7 +610,7 @@ shape aliases, and dataflow without requiring user type annotations. \\
 Shape algebra &
 Matmul, reshape/view, flatten, broadcasting, cat, stack, chunk, split,
 transpose, permute, squeeze, unsqueeze, reductions, indexing, convolution,
-pooling, embedding, and attention rules. \\
+pooling, fold/unfold, embedding, and attention rules. \\
 \hline
 Device reasoning &
 Propagation through tensor creation, module calls, \texttt{to}/\texttt{cuda}/
@@ -714,6 +717,12 @@ correspondence. \\
 \texttt{tests/test\_convtranspose\_rule.py} &
 Convolution and pooling transfer functions over spatial arithmetic. \\
 \hline
+\texttt{tests/test\_unfold\_fold\_spatial.py} &
+Live PyTorch conformance for \texttt{nn.Unfold}, \texttt{nn.Fold},
+\texttt{F.unfold}, and \texttt{F.fold}, including batched/unbatched ranks,
+dilation/padding/stride block counts, empty grids, non-divisible fold channels,
+and impossible fold column-count/output-size reconstructions. \\
+\hline
 \texttt{tests/test\_dtype\_precise.py},
 \texttt{tests/test\_dtype\_promote\_chain.py},
 \texttt{tests/test\_bool\_dtype\_soundness.py} &
@@ -788,6 +797,14 @@ Input rank, channels, groups, kernel, stride, padding, dilation, and output
 padding determine channel and spatial output shapes. &
 Conv1d/2d/3d, transpose convolution, pooling, and pixel-shuffle regression
 tests. \\
+\hline
+Fold/unfold &
+\texttt{unfold} maps image tensors to image-column tensors with exact
+kernel/dilation/padding/stride block counts; \texttt{fold} inverts the shape only
+when channel divisibility and the output-size-implied sliding-block product
+match the input columns. &
+Live PyTorch differential tests for module and functional forms, including
+runtime-error parity for empty grids and impossible reconstruction counts. \\
 \hline
 Reshape/view &
 Element product is preserved; \texttt{-1} is inferred when uniquely determined;
