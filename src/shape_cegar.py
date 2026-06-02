@@ -274,6 +274,8 @@ class CEGARStatus(Enum):
     MAX_ITER = auto()        # iteration budget exhausted
     NO_Z3 = auto()           # Z3 not available; fell back to single pass
     PARSE_ERROR = auto()     # could not parse the source
+    INFEASIBLE_REFINEMENT = auto()  # accumulated predicates jointly infeasible →
+                                    # spurious elimination, must abstain (not SAFE)
 
 
 class CEGARVerdict(Enum):
@@ -371,6 +373,7 @@ class ShapeCEGARResult:
         - REAL_BUG_FOUND → CEGARVerdict.UNSAFE (confirmed bug)
         - MAX_ITER → CEGARVerdict.TIMEOUT (iteration budget exhausted)
         - NO_Z3 / PARSE_ERROR → CEGARVerdict.UNKNOWN (inconclusive)
+        - INFEASIBLE_REFINEMENT → CEGARVerdict.UNKNOWN (spurious elimination)
         """
         _STATUS_TO_VERDICT = {
             CEGARStatus.SAFE: CEGARVerdict.SAFE,
@@ -378,6 +381,7 @@ class ShapeCEGARResult:
             CEGARStatus.MAX_ITER: CEGARVerdict.TIMEOUT,
             CEGARStatus.NO_Z3: CEGARVerdict.UNKNOWN,
             CEGARStatus.PARSE_ERROR: CEGARVerdict.UNKNOWN,
+            CEGARStatus.INFEASIBLE_REFINEMENT: CEGARVerdict.UNKNOWN,
         }
         return _STATUS_TO_VERDICT.get(self.final_status, CEGARVerdict.UNKNOWN)
 
@@ -2951,14 +2955,23 @@ class ShapeCEGARLoop:
                     CEGARStatus.SAFE, graph, last_vresult, t0,
                 )
 
-            # Check feasibility of accumulated predicates
+            # Check feasibility of accumulated predicates.
+            # If the accumulated refined predicates are jointly INFEASIBLE, the
+            # loop eliminated its counterexamples using mutually contradictory
+            # assumptions — a spurious elimination that carries no information
+            # about whether the program is actually safe. Returning SAFE here is
+            # UNSOUND (known-unsoundness gap U2). We must abstain instead.
+            # The fix is machine-checked in lean/TensorGuard/CegarInfeasible.lean
+            # (Step 132): `decideNew` abstains on the infeasible branch and is
+            # sound under the feasible-branch guarantee, whereas the old SAFE
+            # behaviour (`decideOld`) is provably unsound.
             if not ShapeRefinement.check_feasibility(self.pred_set.predicates):
                 logger.warning(
                     "CEGAR: accumulated predicates are infeasible — "
-                    "stopping with current result"
+                    "elimination is spurious; abstaining (UNKNOWN, not SAFE)"
                 )
                 return self._build_result(
-                    CEGARStatus.SAFE, graph, last_vresult, t0,
+                    CEGARStatus.INFEASIBLE_REFINEMENT, graph, last_vresult, t0,
                 )
 
             # Apply refinement

@@ -286,6 +286,8 @@ class KnownGap:
     affected_direction: str
     location: str
     remediation: str
+    status: str = "open"
+    closed_by: str = ""
 
 
 KNOWN_UNSOUNDNESS: List[KnownGap] = [
@@ -308,17 +310,25 @@ KNOWN_UNSOUNDNESS: List[KnownGap] = [
     ),
     KnownGap(
         id="U2",
-        description="shape_cegar may return CEGARStatus.SAFE when the "
-                    "accumulated refined predicates are jointly infeasible "
-                    "(SAFE-on-infeasible), which is unsound for the refined "
-                    "contract. Step 1 works around it by emitting a "
-                    "cegar_refined_contract bug from the iteration-log union, "
-                    "but the SAFE-on-infeasible return remains.",
+        description="shape_cegar previously returned CEGARStatus.SAFE when the "
+                    "accumulated refined predicates were jointly infeasible "
+                    "(SAFE-on-infeasible): the loop eliminated its "
+                    "counterexamples using mutually contradictory assumptions, a "
+                    "spurious elimination carrying no information about real "
+                    "safety. This is now CLOSED — the terminal decision returns "
+                    "CEGARStatus.INFEASIBLE_REFINEMENT (verdict UNKNOWN, is_safe "
+                    "False), abstaining instead of reporting SAFE. The fix is "
+                    "machine-checked in Lean.",
         affected_direction=VERIFICATION,
-        location="src/shape_cegar.py (SAFE return on infeasible accumulated "
-                 "predicates, ~lines 2954-2962)",
-        remediation="Return REFUTED/UNKNOWN when accumulated predicates are "
-                    "infeasible (later phase).",
+        location="src/shape_cegar.py (infeasible accumulated predicates now "
+                 "return CEGARStatus.INFEASIBLE_REFINEMENT → UNKNOWN, not SAFE)",
+        remediation="Closed: the analyzer abstains (UNKNOWN) on infeasible "
+                    "accumulated predicates. Soundness of the abstaining "
+                    "decision and unsoundness of the old SAFE behaviour are "
+                    "proved in lean/TensorGuard/CegarInfeasible.lean "
+                    "(decideNew_safeSound, decideOld_unsound).",
+        status="closed",
+        closed_by="Step 132 (Lean: lean/TensorGuard/CegarInfeasible.lean)",
     ),
 ]
 
@@ -375,13 +385,14 @@ def render_markdown() -> str:
     lines.append("")
     lines.append("## Known unsoundness gaps (surfaced, not hidden)")
     lines.append("")
-    lines.append("| ID | Affected direction | Description | Location | "
+    lines.append("| ID | Status | Affected direction | Description | Location | "
                  "Remediation |")
-    lines.append("|----|--------------------|-------------|----------|"
+    lines.append("|----|--------|--------------------|-------------|----------|"
                  "-------------|")
     for g in KNOWN_UNSOUNDNESS:
-        lines.append(f"| {g.id} | {g.affected_direction} | {g.description} | "
-                     f"`{g.location}` | {g.remediation} |")
+        status_cell = g.status + (f" ({g.closed_by})" if g.closed_by else "")
+        lines.append(f"| {g.id} | {status_cell} | {g.affected_direction} | "
+                     f"{g.description} | `{g.location}` | {g.remediation} |")
     lines.append("")
     return "\n".join(lines)
 

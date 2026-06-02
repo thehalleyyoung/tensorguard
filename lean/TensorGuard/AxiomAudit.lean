@@ -55,3 +55,12 @@ import TensorGuard
 #print axioms TensorGuard.Cegar.cegar_iter_bound
 #print axioms TensorGuard.Cegar.cegar_terminates
 #print axioms TensorGuard.Cegar.tight_below_naive
+
+-- Known-unsoundness U2 closed (Step 132): the SAFE-on-infeasible terminal
+-- decision is fixed. The new decision abstains on infeasible refinements and is
+-- sound under the feasible-branch guarantee; the old decision is unsound.
+#print axioms TensorGuard.CegarU2.decideNew_safeSound
+#print axioms TensorGuard.CegarU2.decideOld_unsound
+#print axioms TensorGuard.CegarU2.fix_abstains_on_infeasible
+#print axioms TensorGuard.CegarU2.fix_keeps_safe_when_feasible
+#print axioms TensorGuard.CegarU2.old_always_safe

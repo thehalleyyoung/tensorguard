@@ -23,6 +23,6 @@ Probes: **4** · modes: `sound`, `balanced`, `heuristic` · all observed verdict
 - Domain clauses: **5**
 - Under-approximated bug classes (may miss bugs, out of the never-miss-pass guarantee): **3**
 - Out-of-fragment construct classes (detected by `check_traceability`): **11**
-- Known unsoundness gaps surfaced (not hidden): **2** (U1, U2)
+- Known unsoundness gaps surfaced (not hidden): **2** (U1, U2) — closed: U2
 
 The full clause-by-clause contract is `SOUNDNESS_CONTRACT.md` (generated from the same module). This harness shows the *empirical* half: the documented behaviour reproduces on the live verifier.

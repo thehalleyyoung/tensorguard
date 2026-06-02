@@ -169,7 +169,8 @@ def measure() -> Dict:
         "out_of_fragment_clauses": len(sc.OUT_OF_FRAGMENT_CLAUSES),
         "known_unsoundness_gaps": [
             {"id": g.id, "affected_direction": g.affected_direction,
-             "location": g.location}
+             "location": g.location, "status": g.status,
+             "closed_by": g.closed_by}
             for g in sc.KNOWN_UNSOUNDNESS
         ],
     }
@@ -222,9 +223,13 @@ def render_markdown(data: Dict) -> str:
              f"never-miss-pass guarantee): **{c['under_approximated_bug_classes']}**")
     L.append(f"- Out-of-fragment construct classes (detected by "
              f"`check_traceability`): **{c['out_of_fragment_clauses']}**")
+    closed = [g for g in c['known_unsoundness_gaps']
+              if g.get('status') == 'closed']
     L.append(f"- Known unsoundness gaps surfaced (not hidden): "
              f"**{len(c['known_unsoundness_gaps'])}** "
-             f"({', '.join(g['id'] for g in c['known_unsoundness_gaps'])})")
+             f"({', '.join(g['id'] for g in c['known_unsoundness_gaps'])})"
+             + (f" — closed: {', '.join(g['id'] for g in closed)}"
+                if closed else ""))
     L.append("")
     L.append("The full clause-by-clause contract is `SOUNDNESS_CONTRACT.md` "
              "(generated from the same module). This harness shows the "

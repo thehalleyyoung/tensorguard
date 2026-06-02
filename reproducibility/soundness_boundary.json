@@ -5,13 +5,17 @@
     "known_unsoundness_gaps": [
       {
         "affected_direction": "verification (never miss-pass)",
+        "closed_by": "",
         "id": "U1",
-        "location": "src/api.py verify_architecture (balanced/heuristic do not gate on check_traceability static violations; sound mode does)"
+        "location": "src/api.py verify_architecture (balanced/heuristic do not gate on check_traceability static violations; sound mode does)",
+        "status": "open"
       },
       {
         "affected_direction": "verification (never miss-pass)",
+        "closed_by": "Step 132 (Lean: lean/TensorGuard/CegarInfeasible.lean)",
         "id": "U2",
-        "location": "src/shape_cegar.py (SAFE return on infeasible accumulated predicates, ~lines 2954-2962)"
+        "location": "src/shape_cegar.py (infeasible accumulated predicates now return CEGARStatus.INFEASIBLE_REFINEMENT \u2192 UNKNOWN, not SAFE)",
+        "status": "closed"
       }
     ],
     "out_of_fragment_clauses": 11,
