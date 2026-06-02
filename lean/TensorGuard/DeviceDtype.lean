@@ -211,6 +211,26 @@ theorem dtPromote_comm (a b : Dt) : dtPromote a b = dtPromote b a := by
 theorem dtPromote_idem (a : Dt) : dtPromote a a = a := by
   cases a <;> rfl
 
+/-- The elementwise promotion join is **associative** — together with
+    commutativity and idempotence it makes `dtPromote` a well-defined semilattice
+    join, which is exactly what justifies treating the elementwise dtype transfer
+    as order-independent (`x + y + z` promotes the same regardless of grouping).
+    Proved by exhaustive `decide` over the finite 8³ domain. -/
+theorem dtPromote_assoc (a b c : Dt) :
+    dtPromote (dtPromote a b) c = dtPromote a (dtPromote b c) := by
+  cases a <;> cases b <;> cases c <;> rfl
+
+/-- `unknown` is **absorbing** for the promotion join from the left: promoting an
+    unknown dtype with anything yields unknown (the result dtype is unknown, but
+    — crucially — the elementwise op still never *flags*). -/
+theorem dtPromote_unknown_absorbs_left (a : Dt) :
+    dtPromote Dt.unknown a = Dt.unknown := by
+  cases a <;> rfl
+
+theorem dtPromote_unknown_absorbs_right (a : Dt) :
+    dtPromote a Dt.unknown = Dt.unknown := by
+  cases a <;> rfl
+
 /- ===================================================================== -/
 /- 3. Phase algebra (BatchNorm batch-statistics count-1 check)           -/
 /- ===================================================================== -/

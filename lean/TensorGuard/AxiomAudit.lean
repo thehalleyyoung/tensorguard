@@ -90,6 +90,7 @@ import TensorGuard
 #print axioms TensorGuard.DevDtype.dtFloatParamBug_refutation_sound
 #print axioms TensorGuard.DevDtype.dtElementwise_never_bug
 #print axioms TensorGuard.DevDtype.dtPromote_comm
+#print axioms TensorGuard.DevDtype.dtPromote_idem
 #print axioms TensorGuard.DevDtype.phaseBug_count_gt_one
 #print axioms TensorGuard.DevDtype.phaseBug_eval_tracking_safe
 #print axioms TensorGuard.DevDtype.phaseBug_refutation_sound
@@ -120,3 +121,11 @@ import TensorGuard
 #print axioms TensorGuard.CrossDomain.nontransfer_unsat_iff_dev_ne
 #print axioms TensorGuard.CrossDomain.nontransfer_shape_free
 #print axioms TensorGuard.CrossDomain.branch_selects_preserved
+
+-- Dtype promotion lattice laws (Step 137): the elementwise promotion join is
+-- associative and unknown-absorbing (with comm/idem already audited), making it
+-- a well-defined semilattice join — justifying the order-independent,
+-- never-flagging elementwise dtype transfer.
+#print axioms TensorGuard.DevDtype.dtPromote_assoc
+#print axioms TensorGuard.DevDtype.dtPromote_unknown_absorbs_left
+#print axioms TensorGuard.DevDtype.dtPromote_unknown_absorbs_right
