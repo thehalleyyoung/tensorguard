@@ -481,6 +481,142 @@ def paired_bootstrap_accuracy_diff(
     return PairedBootstrapResult(point, lo, hi, confidence, n_resamples, frac_above)
 
 
+# ─── Effect sizes (for the localization-effort / user study, Step 91) ─────────
+
+@dataclass
+class EffectSize:
+    """A standardized effect size with a qualitative magnitude label."""
+    name: str          # "cliffs_delta" | "cohens_d" | "hedges_g"
+    value: float
+    magnitude: str     # "negligible" | "small" | "medium" | "large"
+
+
+def cliffs_delta(a: Sequence[float], b: Sequence[float]) -> EffectSize:
+    """Cliff's delta, a non-parametric effect size for ordinal / skewed data.
+
+    ``delta = (#{a>b} - #{a<b}) / (|a|*|b|)`` over all cross pairs, so it lies in
+    ``[-1, 1]``: positive when values in ``a`` tend to *exceed* those in ``b``.
+    It is distribution-free and robust for the small, non-normal samples typical
+    of debugging-effort measurements (it is the effect size paired with the
+    Mann–Whitney U test). Magnitude bands follow Romano et al. (2006).
+    """
+    if not a or not b:
+        return EffectSize("cliffs_delta", 0.0, "negligible")
+    gt = lt = 0
+    for x in a:
+        for y in b:
+            if x > y:
+                gt += 1
+            elif x < y:
+                lt += 1
+    delta = (gt - lt) / (len(a) * len(b))
+    m = abs(delta)
+    if m < 0.147:
+        mag = "negligible"
+    elif m < 0.33:
+        mag = "small"
+    elif m < 0.474:
+        mag = "medium"
+    else:
+        mag = "large"
+    return EffectSize("cliffs_delta", delta, mag)
+
+
+def _mean(xs: Sequence[float]) -> float:
+    return sum(xs) / len(xs)
+
+
+def _var(xs: Sequence[float], ddof: int = 1) -> float:
+    if len(xs) - ddof <= 0:
+        return 0.0
+    mu = _mean(xs)
+    return sum((x - mu) ** 2 for x in xs) / (len(xs) - ddof)
+
+
+def _cohen_magnitude(d: float) -> str:
+    m = abs(d)
+    if m < 0.2:
+        return "negligible"
+    if m < 0.5:
+        return "small"
+    if m < 0.8:
+        return "medium"
+    return "large"
+
+
+def cohens_d(a: Sequence[float], b: Sequence[float]) -> EffectSize:
+    """Cohen's d for two independent groups using the pooled standard deviation.
+
+    Positive when ``mean(a) > mean(b)``. Returns 0 if the pooled variance is
+    degenerate (e.g. both groups constant).
+    """
+    if not a or not b:
+        return EffectSize("cohens_d", 0.0, "negligible")
+    na, nb = len(a), len(b)
+    sp2 = (((na - 1) * _var(a) + (nb - 1) * _var(b)) / (na + nb - 2)
+           if na + nb - 2 > 0 else 0.0)
+    if sp2 <= 0.0:
+        return EffectSize("cohens_d", 0.0, "negligible")
+    d = (_mean(a) - _mean(b)) / math.sqrt(sp2)
+    return EffectSize("cohens_d", d, _cohen_magnitude(d))
+
+
+def hedges_g(a: Sequence[float], b: Sequence[float]) -> EffectSize:
+    """Hedges' g: Cohen's d with the small-sample bias correction factor J.
+
+    ``J = 1 - 3 / (4*(na+nb) - 9)``. Recommended over raw d for the small
+    samples typical of human-subjects / localization studies.
+    """
+    d = cohens_d(a, b).value
+    na, nb = len(a), len(b)
+    denom = 4 * (na + nb) - 9
+    j = 1.0 - 3.0 / denom if denom > 0 else 1.0
+    g = j * d
+    return EffectSize("hedges_g", g, _cohen_magnitude(g))
+
+
+@dataclass
+class BootstrapCI:
+    """A percentile bootstrap CI for an arbitrary scalar statistic."""
+    point_estimate: float
+    ci_low: float
+    ci_high: float
+    confidence: float
+    n_resamples: int
+
+
+def bootstrap_ci(
+    values: Sequence[float],
+    stat_fn,
+    n_resamples: int = 10000,
+    confidence: float = 0.95,
+    seed: int = 0,
+) -> BootstrapCI:
+    """Percentile bootstrap CI for ``stat_fn(values)`` (e.g. median, mean ratio).
+
+    Resampling is seeded for byte-deterministic artifacts. ``stat_fn`` receives a
+    resampled list (with replacement) of the same length as ``values``.
+    """
+    import random
+
+    vals = list(values)
+    if not vals:
+        return BootstrapCI(0.0, 0.0, 0.0, confidence, 0)
+    point = float(stat_fn(vals))
+    n = len(vals)
+    rng = random.Random(seed)
+    stats: List[float] = []
+    for _ in range(n_resamples):
+        sample = [vals[rng.randrange(n)] for _ in range(n)]
+        stats.append(float(stat_fn(sample)))
+    stats.sort()
+    lo_q = (1.0 - confidence) / 2.0
+    hi_q = 1.0 - lo_q
+    lo = stats[max(0, int(lo_q * (n_resamples - 1)))]
+    hi = stats[min(n_resamples - 1, int(hi_q * (n_resamples - 1)))]
+    return BootstrapCI(point, lo, hi, confidence, n_resamples)
+
+
 # ─── Integrated Statistical Report ───────────────────────────────────────────
 
 @dataclass

@@ -48,6 +48,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/numeric_claims_audit.json",
     "evaluation/significance.json",
     "evaluation/significance.md",
+    "evaluation/localization_effort.json",
+    "evaluation/localization_effort.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -98,6 +100,8 @@ STEPS = [
      [PY, "reproducibility/reproduce_headline_60bug.py"], None),
     ("significance: McNemar + Holm + paired bootstrap",
      [PY, "evaluation/significance.py"], None),
+    ("user study: localization-effort proxy (effect sizes)",
+     [PY, "evaluation/localization_effort.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]

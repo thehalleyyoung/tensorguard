@@ -488,6 +488,31 @@ significantly after correction, yet the gap over PyTea is not yet significant at
 this sample size — exactly the kind of result a reviewer should be able to
 trust.
 
+### Does the localizer help developers? (effort proxy + pre-registered study)
+
+A core product claim is that TensorGuard does not only say *which* module is
+unsafe but points at the offending line, so developers fix bugs faster. We treat
+that claim with the same rigor. `evaluation/localization_effort.py` computes the
+**lines-inspected** proxy used in the fault-localization literature on every
+refuted real bug that carries an author-placed `# BUG` marker: assisted effort is
+`dist + 1` lines (scan outward from TensorGuard's reported line), unaided effort
+is the expected linear scan over the module's executable lines.
+
+```bash
+PYTHONPATH=. python3 evaluation/localization_effort.py   # writes localization_effort.{json,md}
+```
+
+On the frozen corpus the median developer inspects two lines with TensorGuard
+versus seven and a half unaided, a roughly three times median reduction whose
+bootstrap interval excludes parity, and a large Cliff's delta whose interval
+excludes zero. The report stays honest: it keeps and shows the two bugs where
+TensorGuard's line misleads. The effect-size estimators (Cliff's delta, Cohen's
+d, Hedges' g, bootstrap CI) live in `src/statistical_rigor.py` and are unit
+tested against textbook values in `tests/test_localization_effort.py`. Because
+this is a proxy and not a human trial, the full randomized controlled trial is
+pre-registered and powered from this effect in
+[`docs/user_study/protocol.md`](docs/user_study/protocol.md).
+
 ### Sound-mode false-positive hunt
 
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
