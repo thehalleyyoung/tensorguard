@@ -1242,6 +1242,21 @@ prior run can never alias. `transfer_cache_stats()` exposes hits, misses, and
 live entries; the memo is proven sound (cached value bit-for-bit equal to a
 fresh propagator call across nine layer kinds) in `tests/test_transfer_memoization.py`.
 
+### Anytime (budgeted) verification
+
+`verify_model(..., time_budget_ms=...)` runs the bounded model checker under a
+wall-clock budget and returns a **sound partial result** rather than hanging on
+a pathological model. The base-case loop stops at the first step boundary past
+the deadline; the inductive and backward whole-graph passes are skipped. Both
+soundness directions hold: any violation found before the deadline is genuine
+and is still reported as a real counterexample, and if the budget expires with
+no violation found the result is flagged `completed=False` / `timed_out=True`
+with LOW confidence and **no certificate** — the absence of a violation is never
+read as a proof. The new `completed`, `timed_out`, `steps_checked`, and
+`steps_total` fields let a CI gate distinguish "proven within budget" from
+"inconclusive": gate on `completed`, never on `safe` alone. See
+`tests/test_anytime_budget.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

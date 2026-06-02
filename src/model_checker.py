@@ -771,6 +771,16 @@ class VerificationResult:
     # rest of the model was still verified.  Each entry is
     # {"line", "reason", "source"}.
     isolated_regions: List[Dict[str, Any]] = field(default_factory=list)
+    # Step 52 — anytime/budgeted verification. ``completed`` is False when a
+    # time budget expired before every step was checked. A result with
+    # ``completed=False`` is a *sound partial* result: any reported violation is
+    # genuine, but the ABSENCE of a violation must NOT be read as a safety
+    # proof (no certificate is attached). ``timed_out`` records that the budget
+    # was the reason; ``steps_checked`` / ``steps_total`` report progress.
+    completed: bool = True
+    timed_out: bool = False
+    steps_checked: int = 0
+    steps_total: int = 0
 
     def filter_by_confidence(self, min_level: Confidence = Confidence.MEDIUM) -> "VerificationResult":
         """Return a copy with violations below the confidence threshold removed."""
@@ -7607,6 +7617,7 @@ class ConstraintVerifier:
         check_gradients: bool = True,
         check_dtypes: bool = True,
         input_dtypes: Optional[Dict[str, str]] = None,
+        time_budget_ms: Optional[float] = None,
     ) -> None:
         self.graph = graph
         self.input_shapes = input_shapes or {}
@@ -7657,6 +7668,14 @@ class ConstraintVerifier:
                                          Optional[str]]] = {}
         self._transfer_cache_hits: int = 0
         self._transfer_cache_misses: int = 0
+
+        # Step 52: anytime/budgeted verification. When set, base-case checking
+        # stops at the first step boundary at or past the deadline and returns a
+        # sound partial result instead of running to completion.
+        self.time_budget_ms = time_budget_ms
+        self._verify_deadline: Optional[float] = None
+        self._timed_out: bool = False
+        self._steps_checked: int = 0
 
         self._init_state = self._build_initial_state()
 
@@ -10668,6 +10687,11 @@ class ConstraintVerifier:
 
         if not HAS_Z3:
             for idx, step in enumerate(self.graph.steps[: self.max_k]):
+                if (self._verify_deadline is not None
+                        and time.monotonic() >= self._verify_deadline):
+                    self._timed_out = True
+                    break
+                self._steps_checked = idx + 1
                 cur = model_states[-1]
                 ns, vs = self._step_transition(cur, step)
                 for v in vs:
@@ -10688,6 +10712,11 @@ class ConstraintVerifier:
         self.ctx.timed_check(solver)
 
         for idx, step in enumerate(self.graph.steps[: self.max_k]):
+            if (self._verify_deadline is not None
+                    and time.monotonic() >= self._verify_deadline):
+                self._timed_out = True
+                break
+            self._steps_checked = idx + 1
             cur_model = model_states[-1]
             cur_k = kripke_states[-1]
 
@@ -10852,11 +10881,14 @@ class ConstraintVerifier:
                     solver, combined, step, idx, "combined_violation"
                 )
 
-        # 13. Backward constraint propagation pass
-        bw_viols = self._backward_constraint_pass(
-            solver, kripke_states, model_states,
-        )
-        all_viols.extend(bw_viols)
+        # 13. Backward constraint propagation pass (skipped on budget timeout —
+        # it is a whole-graph pass and would overrun the budget; omitting it is
+        # sound, it can only surface additional violations, never suppress any).
+        if not self._timed_out:
+            bw_viols = self._backward_constraint_pass(
+                solver, kripke_states, model_states,
+            )
+            all_viols.extend(bw_viols)
 
         return all_viols, model_states, kripke_states
 
@@ -11145,6 +11177,10 @@ class ConstraintVerifier:
         (assertion witnesses), not proof certificates with inference chains.
         """
         t0 = time.monotonic()
+        if self.time_budget_ms is not None:
+            self._verify_deadline = t0 + (self.time_budget_ms / 1000.0)
+            self._timed_out = False
+            self._steps_checked = 0
 
         if self.graph.num_steps == 0:
             return VerificationResult(
@@ -11175,10 +11211,14 @@ class ConstraintVerifier:
         # Phase 2: inductive step (Z3 with free variables)
         # Inductive violations indicate proof incompleteness, not unsafety.
         # They are recorded for statistics but do not make the model unsafe.
-        ind_viols = self._bmc_inductive_step(kripke_states, model_states)
+        # Skipped under a budget timeout: it is an extra whole-graph pass and
+        # would overrun the budget; omitting it never suppresses a violation.
+        if not self._timed_out:
+            ind_viols = self._bmc_inductive_step(kripke_states, model_states)
 
         elapsed = (time.monotonic() - t0) * 1000
         stats = self.ctx.get_stats() if HAS_Z3 else {}
+        steps_total = min(self.max_k, self.graph.num_steps)
 
         if all_viols:
             first_fail = min(v.step_index for v in all_viols)
@@ -11199,6 +11239,38 @@ class ConstraintVerifier:
                     getattr(self.graph, 'dynamic_features', {})),
                 unsupported_op_tracker=self._build_unsupported_tracker(),
                 isolated_regions=list(self.graph.isolated_regions),
+                completed=not self._timed_out,
+                timed_out=self._timed_out,
+                steps_checked=self._steps_checked,
+                steps_total=steps_total,
+            )
+
+        # Budget expired with no violation found so far: return a SOUND PARTIAL
+        # result. We deliberately attach NO certificate and set completed=False
+        # / confidence=LOW so the absence of a violation is never mistaken for a
+        # safety proof — only the steps actually checked were discharged.
+        if self._timed_out:
+            return VerificationResult(
+                safe=True,
+                certificate=None,
+                graph=self.graph,
+                verification_time_ms=elapsed,
+                confidence=Confidence.LOW,
+                dynamic_features=getattr(self.graph, 'dynamic_features', {}),
+                dynamic_feature_warnings=_generate_dynamic_warnings(
+                    getattr(self.graph, 'dynamic_features', {})),
+                errors=[
+                    "verification incomplete: time budget of "
+                    f"{self.time_budget_ms:.0f} ms expired after checking "
+                    f"{self._steps_checked} of {steps_total} steps; no "
+                    "violation found within budget (NOT a safety proof)"
+                ],
+                unsupported_op_tracker=self._build_unsupported_tracker(),
+                isolated_regions=list(self.graph.isolated_regions),
+                completed=False,
+                timed_out=True,
+                steps_checked=self._steps_checked,
+                steps_total=steps_total,
             )
 
         cert = SafetyCertificate(
@@ -11277,6 +11349,10 @@ class ConstraintVerifier:
             proof_certificate=proof_cert,
             unsupported_op_tracker=self._build_unsupported_tracker(),
             isolated_regions=list(self.graph.isolated_regions),
+            completed=True,
+            timed_out=False,
+            steps_checked=steps_total,
+            steps_total=steps_total,
         )
 
     # ------------------------------------------------------------------
@@ -12016,6 +12092,7 @@ def verify_model(
     check_dtypes: bool = True,
     input_dtypes: Optional[Dict[str, str]] = None,
     infer_inputs: bool = True,
+    time_budget_ms: Optional[float] = None,
 ) -> VerificationResult:
     """One-shot verification of an nn.Module defined in *source*.
 
@@ -12137,9 +12214,16 @@ def verify_model(
         check_gradients=check_gradients,
         check_dtypes=check_dtypes,
         input_dtypes=input_dtypes,
+        time_budget_ms=time_budget_ms,
     )
 
     result = checker.verify()
+
+    # Under a budget timeout the run returned a sound *partial* result; skip all
+    # further whole-graph passes (they would overrun the budget) and return it
+    # as-is so its completed=False / timed_out flags are preserved.
+    if getattr(result, "timed_out", False):
+        return result
 
     # ----------------------------------------------------------------
     # Buffer-device pass: if any buffers were registered, re-verify
