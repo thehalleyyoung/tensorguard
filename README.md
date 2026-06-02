@@ -2410,7 +2410,9 @@ a component-wise lower bound, sorry-free; `AxiomAudit.lean` audits
 those theorems too and `tests/test_lean_reduced_product.py` gates them.
 The reductions are also proved *monotone* (the meet unconditionally,
 and `reduce` on the canonical sublattice — the property that makes the
-reduced-product fixpoint iteration sound).
+reduced-product fixpoint iteration sound). A concretization γ into the
+concrete domain `{none, obj}` is defined and proved monotone, exact on
+meets, and **preserved by every reduction** (γ(reduce p)=γ(p)).
 
 ### Other artefacts
 

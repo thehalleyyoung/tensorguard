@@ -42,3 +42,8 @@ import TensorGuard
 -- reduction is monotone on the canonical (consistent) sublattice.
 #print axioms TensorGuard.RP.pmeet_mono
 #print axioms TensorGuard.RP.reduce_mono_consistent
+-- Reduced-product γ-concretization soundness (Step 128): γ is monotone, the
+-- meet is exact, and the reduction preserves concretization.
+#print axioms TensorGuard.RP.gamma_mono
+#print axioms TensorGuard.RP.pmeet_gamma
+#print axioms TensorGuard.RP.reduce_gamma

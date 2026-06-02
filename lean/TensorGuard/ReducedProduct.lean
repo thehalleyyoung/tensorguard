@@ -295,5 +295,68 @@ theorem reduce_mono_consistent {a b : PVal}
   cases an <;> cases ao <;> cases na <;> cases bn <;> cases bo <;> cases nb <;>
     revert hca hcb h <;> decide
 
+/-! ## Step 128 obligations: γ-concretization soundness.
+
+We make the abstraction's *meaning* explicit by a concretization γ into the
+concrete value domain `CVal = {none, obj}` (is the runtime value `None`, or some
+non-`None` object?) and prove the soundness facts that justify calling this a
+sound abstract domain:
+
+* **γ is monotone**: a more precise abstract value denotes fewer concrete values
+  (`gamma_mono`);
+* **the meet is exact**: γ(a ⊓ b) = γ(a) ∩ γ(b) (`pmeet_gamma`);
+* **the reduction is concretization-preserving**: γ(reduce p) = γ(p)
+  (`reduce_gamma`). This is the crucial soundness property — a reduction only
+  removes abstract *imprecision*, never a concrete runtime behaviour. -/
+
+inductive CVal
+  | cnone  -- the runtime value is None
+  | cobj   -- the runtime value is some non-None object
+  deriving DecidableEq, Repr
+
+/-- Does the type-tag admit this concrete value? -/
+def tagAllows (t : Tag) : CVal → Bool
+  | .cnone => t.mayNone
+  | .cobj  => t.mayOther
+
+/-- Does the nullity admit this concrete value? -/
+def nulAllows : Nullity → CVal → Bool
+  | .bot,     _      => false
+  | .null,    .cnone => true
+  | .null,    .cobj  => false
+  | .notnull, .cnone => false
+  | .notnull, .cobj  => true
+  | .top,     _      => true
+
+/-- γ as a membership test: `c ∈ γ(p)` iff both components admit `c`. -/
+def mem (c : CVal) (p : PVal) : Bool :=
+  tagAllows p.tag c && nulAllows p.nul c
+
+/-- **γ is monotone**: a value below `b` denotes a subset of `b`'s concretization. -/
+theorem gamma_mono {a b : PVal} {c : CVal}
+    (h : a.ple b = true) (hc : mem c a = true) : mem c b = true := by
+  cases c <;>
+    (cases a with | mk ta na => cases ta with | mk an ao =>
+     cases b with | mk tb nb => cases tb with | mk bn bo =>
+     cases an <;> cases ao <;> cases na <;> cases bn <;> cases bo <;> cases nb <;>
+       revert h hc <;> decide)
+
+/-- **The meet is exact**: γ(a ⊓ b) = γ(a) ∩ γ(b). -/
+theorem pmeet_gamma (a b : PVal) (c : CVal) :
+    mem c (PVal.pmeet a b) = (mem c a && mem c b) := by
+  cases c <;>
+    (cases a with | mk ta na => cases ta with | mk an ao =>
+     cases b with | mk tb nb => cases tb with | mk bn bo =>
+     cases an <;> cases ao <;> cases na <;> cases bn <;> cases bo <;> cases nb <;>
+       decide)
+
+/-- **The reduction preserves concretization**: γ(reduce p) = γ(p). A reduction
+    pass removes only abstract imprecision; every concrete runtime value
+    admitted before is still admitted after (and none is added). -/
+theorem reduce_gamma (p : PVal) (c : CVal) : mem c (reduce p) = mem c p := by
+  cases c <;>
+    (cases p with | mk t n => cases t with | mk mn mo =>
+     cases mn <;> cases mo <;> cases n <;> decide)
+
 end RP
 end TensorGuard
