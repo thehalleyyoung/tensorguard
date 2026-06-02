@@ -152,6 +152,11 @@ The only required dependency is `z3-solver>=4.12` (installed automatically).
 
 ## Quickstart
 
+> New here? The [**5-minute Getting Started guide**](GETTING_STARTED.md) walks
+> from install to your first caught bug to a clean verdict, and every code block
+> in it is executed by the test suite. For an honest map of what falls outside
+> the verifiable fragment, see [**What TensorGuard can't do yet**](LIMITATIONS.md).
+
 Write a model with a shape bug:
 
 ```python
