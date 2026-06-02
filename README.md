@@ -1696,6 +1696,20 @@ proposal to incubate TensorGuard as a PyTorch companion tool — with its
 governance and maintenance plan — is in
 [`docs/RFC_pytorch_companion.md`](docs/RFC_pytorch_companion.md).
 
+### Formalization (reconciled with the code)
+
+The refinement type system and the abstract-domain core are written up formally
+in [`docs/formalization/type_system.md`](docs/formalization/type_system.md): the
+tensor refinement type `Tensor⟨shape; device; dtype; phase; grad⟩` and its five
+orthogonal theories, the symbolic-dimension term grammar, the SMT-discharged
+typing judgements (with the abstain rule that keeps `SAFE` sound), the
+interval-by-type-tag-by-nullity reduced product, threshold widening, and the
+`SAFE`-soundness theorem. Crucially the spec is *reconciled with the
+implementation*: `tests/test_formalization.py` proves the bounded-lattice laws,
+widening termination, and the reduced-product soundness law hold for the real
+`src/domains/` code, and discharges a representative shape verification condition
+end to end on a real `nn.Module`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness
