@@ -1019,11 +1019,11 @@ is what lets the claims above be checked rather than trusted.
 The repository ships a \emph{compiled}, \texttt{sorry}-free Lean~4
 formalization (pinned \texttt{lean-toolchain} \texttt{v4.14.0},
 \texttt{lakefile.lean}, \texttt{lake build} green) comprising 28 modules,
-$\sim$5{,}200 lines and 302 theorems/lemmas. Soundness is not asserted by
+$\sim$6{,}000 lines and 371 theorems/lemmas. Soundness is not asserted by
 inspection: \texttt{TensorGuard/AxiomAudit.lean} runs \texttt{\#print axioms}
 on the headline results, and---crucially---\texttt{tests/test\_lean\_whole\_%
 pipeline\_audit.py} makes the audit \emph{total and drift-proof}: it
-auto-discovers \emph{every one} of the library's 302 public theorems, elaborates
+auto-discovers \emph{every one} of the library's 371 public theorems, elaborates
 a \texttt{\#print axioms} for each through the Lean kernel, and asserts each
 depends only on the trusted kernel set $\{\texttt{propext},
 \texttt{Classical.choice}, \texttt{Quot.sound}\}$ and \emph{never} on
@@ -1139,7 +1139,18 @@ The mechanization covers seven components:
     \texttt{ReshapeInfer.lean} proves the \texttt{view}/\texttt{reshape}
     \texttt{-1}-inference equals $\textsf{numel}/\!\prod\mathit{known}$ and is
     admissible iff $\prod\mathit{known}$ is positive and divides the numel ---
-    so the reshape conserves the element count exactly. Each is replayed on real
+    so the reshape conserves the element count exactly. The same treatment now
+    covers the \emph{parametric} layers every network is built from:
+    \texttt{LinearRule}, \texttt{Conv1d}/\texttt{Conv2d} and pooling prove the
+    output-size formulas (identity at $1{\times}1$ stride-$1$, monotone in the
+    input, bounded by the padded input, and the verifier's positive-output
+    guard), \texttt{ConvTranspose} proves the dual \emph{upsampling} lower bound
+    (transpose conv never shrinks), \texttt{LayerNormRule}/\texttt{BatchNormRule}
+    prove shape preservation plus the suffix/feature guards,
+    \texttt{PixelShuffle} proves the rearrangement is numel-preserving and
+    admissible iff the channel count is divisible by $r^2$, and
+    \texttt{Unflatten} proves the numel-preserving \emph{inverse} of flatten.
+    Each is replayed on real
     tensors (and the matching \texttt{\_propagate\_*}/\texttt{compute\_reshape\_%
     shape}) where an incompatible case makes torch \emph{raise} precisely when
     the Lean guard flags it.
@@ -1170,6 +1181,14 @@ Lean module & Cross-check & Guarantee \\
 \texttt{CatRule.lean} & real \texttt{torch.cat} & admissible $\Leftrightarrow$ non-axis dims match; axis/numel additive \\
 \texttt{EmbeddingRule.lean} & real \texttt{nn.Embedding} & rank $+1$, trailing $=$ \texttt{embedding\_dim}; index guard iff in range \\
 \texttt{ReshapeInfer.lean} & torch + \texttt{compute\_reshape\_shape} & \texttt{-1}-inference $=\textsf{numel}/\!\prod\!\mathit{known}$; valid iff it divides \\
+\texttt{LinearRule.lean} & real \texttt{nn.Linear} & rank preserved, last dim $=$ \texttt{out\_features}; \texttt{in\_features} guard \\
+\texttt{Conv2d/Conv1d.lean} & real \texttt{nn.Conv$\{1,2\}$d} & spatial formula: identity, monotone, padded-input bound, positive-output guard \\
+\texttt{Pool2d.lean} & real \texttt{nn.MaxPool2d}/\texttt{AvgPool2d} & pooling spatial formula; channel-preserving \\
+\texttt{ConvTranspose.lean} & real \texttt{nn.ConvTranspose1d} & length formula; upsampling lower bound (never shrinks) \\
+\texttt{LayerNorm/BatchNormRule} & real \texttt{nn.\{Layer,Batch\}Norm} & shape-preserving; suffix / feature-count guard \\
+\texttt{PixelShuffle.lean} & real \texttt{nn.PixelShuffle} & numel-preserving; admissible $\Leftrightarrow r^2 \mid C_{\mathrm{in}}$, $C_{\mathrm{out}}=C_{\mathrm{in}}/r^2$ \\
+\texttt{AdaptivePool.lean} & real \texttt{nn.AdaptiveAvgPool2d} & spatial $=$ target for any input; idempotent \\
+\texttt{Unflatten.lean} & real \texttt{nn.Unflatten} & numel-preserving inverse of flatten; size guard \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1827,7 +1846,7 @@ predicates of \texttt{DeviceDtype.lean}.
 
 Each item is gated by a Python test that reproduces the predicted
 SAT/UNSAT/verdict on the \emph{real} solver or the \emph{real} torch dispatcher;
-the whole library's 302 theorems are audited \texttt{sorry}-free by
+the whole library's 371 theorems are audited \texttt{sorry}-free by
 \texttt{test\_lean\_whole\_pipeline\_audit.py}.
 
 
@@ -1904,7 +1923,7 @@ PyTEA fragment-fair set ($N{=}34$) & shape-bug parity vs.\ a published checker; 
 Frozen ground-truth corpus & 16 SHA-pinned real \texttt{nn.Module}s (8 clean / 8 buggy), verdicts replayed in eager torch \\
 Per-domain ablation corpus & device and gradient domains each refute bugs the shape view misses \\
 Operator confidence table & all 117 transfer functions tagged complete/sound/heuristic, code$\leftrightarrow$table synced \\
-Lean~4 library & 302 \texttt{sorry}-free theorems, kernel-axiom audited, drift-proof \\
+Lean~4 library & 371 \texttt{sorry}-free theorems, kernel-axiom audited, drift-proof \\
 Conformance + chain-transfer tests & Lean predictions replayed on real Z3, autograd, \texttt{cpu}/\texttt{mps}, \texttt{nn.Module}s \\
 Test suite & 3{,}709 unit/integration/property tests gating the above \\
 \bottomrule

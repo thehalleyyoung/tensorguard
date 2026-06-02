@@ -25,3 +25,13 @@ import TensorGuard.Flatten
 import TensorGuard.CatRule
 import TensorGuard.EmbeddingRule
 import TensorGuard.ReshapeInfer
+import TensorGuard.LinearRule
+import TensorGuard.Conv2d
+import TensorGuard.Conv1d
+import TensorGuard.Pool2d
+import TensorGuard.ConvTranspose
+import TensorGuard.LayerNormRule
+import TensorGuard.PixelShuffle
+import TensorGuard.AdaptivePool
+import TensorGuard.Unflatten
+import TensorGuard.BatchNormRule

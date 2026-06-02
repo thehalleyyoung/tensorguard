@@ -265,3 +265,87 @@ import TensorGuard
 #print axioms TensorGuard.ReshapeInfer.inferDim_spec
 #print axioms TensorGuard.ReshapeInfer.prod_reshape_valid
 #print axioms TensorGuard.ReshapeInfer.reshape_infer_position
+
+-- nn.Linear shape rule (Step 151): rank preserved, last dim = out_features,
+-- prefix preserved, numel scaling, in_features guard.
+#print axioms TensorGuard.LinearRule.lin_rank
+#print axioms TensorGuard.LinearRule.lin_last
+#print axioms TensorGuard.LinearRule.lin_prefix
+#print axioms TensorGuard.LinearRule.lin_numel
+#print axioms TensorGuard.LinearRule.linValid_iff
+#print axioms TensorGuard.LinearRule.mismatch_flagged
+
+-- nn.Conv2d spatial rule (Step 152): identity, stride-1 form, monotonicity,
+-- padded-input upper bound, positive-output guard, 4-D shape assembly.
+#print axioms TensorGuard.Conv2d.convOut_identity
+#print axioms TensorGuard.Conv2d.convOut_stride_one
+#print axioms TensorGuard.Conv2d.convOut_mono
+#print axioms TensorGuard.Conv2d.convOut_le
+#print axioms TensorGuard.Conv2d.convOut_pos
+#print axioms TensorGuard.Conv2d.conv2d_rank
+#print axioms TensorGuard.Conv2d.conv2d_channels
+
+-- nn.MaxPool2d/AvgPool2d spatial rule (Step 153): identity, stride-1 form,
+-- monotonicity, upper bound, positive-output guard, channel preservation.
+#print axioms TensorGuard.Pool2d.poolOut_identity
+#print axioms TensorGuard.Pool2d.poolOut_stride_one
+#print axioms TensorGuard.Pool2d.poolOut_mono
+#print axioms TensorGuard.Pool2d.poolOut_le
+#print axioms TensorGuard.Pool2d.poolOut_pos
+#print axioms TensorGuard.Pool2d.pool2d_channels_preserved
+
+-- nn.ConvTranspose1d length rule (Step 154): identity, no-pad form,
+-- monotonicity, upsampling lower bound, shape laws.
+#print axioms TensorGuard.ConvTranspose.ctOut_identity
+#print axioms TensorGuard.ConvTranspose.ctOut_no_pad
+#print axioms TensorGuard.ConvTranspose.ctOut_mono
+#print axioms TensorGuard.ConvTranspose.ctOut_ge
+#print axioms TensorGuard.ConvTranspose.ct_channels
+
+-- nn.LayerNorm rule (Step 155): shape & numel preservation, suffix length,
+-- suffix match, trailing-mismatch refutation.
+#print axioms TensorGuard.LayerNormRule.ln_preserves
+#print axioms TensorGuard.LayerNormRule.ln_numel
+#print axioms TensorGuard.LayerNormRule.ln_length
+#print axioms TensorGuard.LayerNormRule.ln_suffix_match
+#print axioms TensorGuard.LayerNormRule.ln_mismatch_flagged
+
+-- nn.PixelShuffle rule (Step 156): numel preservation, channel divisibility,
+-- recovered channels, divisibility refutation.
+#print axioms TensorGuard.PixelShuffle.ps_numel
+#print axioms TensorGuard.PixelShuffle.ps_divisible
+#print axioms TensorGuard.PixelShuffle.ps_cout
+#print axioms TensorGuard.PixelShuffle.psValid_iff
+#print axioms TensorGuard.PixelShuffle.ps_construct_valid
+
+-- nn.AdaptiveAvgPool2d rule (Step 157): target-size exactness, batch/channel
+-- preservation, rank, idempotence.
+#print axioms TensorGuard.AdaptivePool.ap_spatial_h
+#print axioms TensorGuard.AdaptivePool.ap_spatial_w
+#print axioms TensorGuard.AdaptivePool.ap_channels
+#print axioms TensorGuard.AdaptivePool.ap_idempotent
+
+-- nn.Unflatten rule (Step 158): numel preservation under validity, rank law,
+-- flatten/unflatten inverse, size guard.
+#print axioms TensorGuard.Unflatten.unflatten_numel
+#print axioms TensorGuard.Unflatten.unflatten_rank
+#print axioms TensorGuard.Unflatten.unflatten_then_flatten
+#print axioms TensorGuard.Unflatten.unflattenValid_iff
+#print axioms TensorGuard.Unflatten.size_mismatch_flagged
+
+-- nn.BatchNorm rule (Step 159): shape & numel preservation, feature guard,
+-- channel index.
+#print axioms TensorGuard.BatchNormRule.bn_preserves
+#print axioms TensorGuard.BatchNormRule.bn_numel
+#print axioms TensorGuard.BatchNormRule.featValid_iff
+#print axioms TensorGuard.BatchNormRule.feat_mismatch_flagged
+#print axioms TensorGuard.BatchNormRule.bn_channel_index
+
+-- nn.Conv1d spatial rule (Step 160): identity, stride-1 form, monotonicity,
+-- upper bound, positive-output guard, shape laws.
+#print axioms TensorGuard.Conv1d.convOut_identity
+#print axioms TensorGuard.Conv1d.convOut_stride_one
+#print axioms TensorGuard.Conv1d.convOut_mono
+#print axioms TensorGuard.Conv1d.convOut_le
+#print axioms TensorGuard.Conv1d.convOut_pos
+#print axioms TensorGuard.Conv1d.conv1d_channels
