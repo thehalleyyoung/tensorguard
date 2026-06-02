@@ -114,6 +114,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/effect_sizes.md",
     "reproducibility/capsule_manifest.json",
     "reproducibility/capsule_manifest.md",
+    "reproducibility/artifact_badges.json",
+    "reproducibility/artifact_badges.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -247,6 +249,8 @@ STEPS = [
      [PY, "reproducibility/effect_sizes.py"], None),
     ("capsule manifest: pinned-wheel reproducibility-capsule self-description",
      [PY, "reproducibility/capsule_manifest.py"], None),
+    ("artifact badges: ACM/USENIX badge-to-evidence map (existence-checked)",
+     [PY, "reproducibility/artifact_badges.py"], None),
     ("dashboard: rebuild the static evidence site from committed artifacts",
      [PY, "reproducibility/build_dashboard.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",

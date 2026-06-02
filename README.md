@@ -1092,7 +1092,12 @@ README. `reproducibility/capsule_manifest.py` is the capsule's checkable
 self-description (pins, file hashes, and the artifact count it regenerates) and
 its environment gate, validated against the real installed packages. See
 [`reproducibility/capsule_manifest.md`](reproducibility/capsule_manifest.md)
-and `tests/test_capsule_manifest.py`.
+and `tests/test_capsule_manifest.py`. The same capsule underwrites the
+artifact-evaluation badges (ACM Available / Functional / Reusable / Results
+Reproduced): `reproducibility/artifact_badges.py` maps every badge criterion to
+in-tree evidence and fails if any cited path is missing — all four badges have
+complete, existence-checked evidence
+([`reproducibility/artifact_badges.md`](reproducibility/artifact_badges.md)).
 
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,

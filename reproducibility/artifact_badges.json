@@ -1,0 +1,163 @@
+{
+  "all_badges_evidence_complete": true,
+  "badge_systems": [
+    "ACM SIGPLAN/SIGSOFT",
+    "USENIX"
+  ],
+  "badges": [
+    {
+      "acm_badge": "Artifacts Available",
+      "criteria": "Publicly and permanently retrievable with a license and citation metadata.",
+      "evidence": [
+        {
+          "description": "OSI-approved license",
+          "path": "LICENSE",
+          "present": true
+        },
+        {
+          "description": "machine-readable citation metadata",
+          "path": "CITATION.cff",
+          "present": true
+        },
+        {
+          "description": "packaging metadata (public, versioned)",
+          "path": "pyproject.toml",
+          "present": true
+        },
+        {
+          "description": "project overview",
+          "path": "README.md",
+          "present": true
+        }
+      ],
+      "evidence_complete": true,
+      "id": "available",
+      "n_evidence": 4,
+      "n_present": 4,
+      "usenix_equivalent": "Available"
+    },
+    {
+      "acm_badge": "Artifacts Evaluated -- Functional",
+      "criteria": "Documented, consistent, complete and exercisable: installs, runs, and is covered by an automated test suite.",
+      "evidence": [
+        {
+          "description": "installable package + console entry-points",
+          "path": "pyproject.toml",
+          "present": true
+        },
+        {
+          "description": "command-line interface",
+          "path": "src/cli/main.py",
+          "present": true
+        },
+        {
+          "description": "container image for the tool",
+          "path": "Dockerfile",
+          "present": true
+        },
+        {
+          "description": "automated test suite",
+          "path": "tests",
+          "present": true
+        },
+        {
+          "description": "worked examples",
+          "path": "examples",
+          "present": true
+        },
+        {
+          "description": "artifact-evaluation install guide",
+          "path": "docs/artifact/INSTALL.md",
+          "present": true
+        }
+      ],
+      "evidence_complete": true,
+      "id": "functional",
+      "n_evidence": 6,
+      "n_present": 6,
+      "usenix_equivalent": "Functional"
+    },
+    {
+      "acm_badge": "Artifacts Evaluated -- Reusable",
+      "criteria": "Exceeds Functional: carefully documented, with pinned dependencies and structure that facilitate reuse and repurposing.",
+      "evidence": [
+        {
+          "description": "documentation tree",
+          "path": "docs",
+          "present": true
+        },
+        {
+          "description": "pinned reproducibility lock",
+          "path": "capsule/requirements.lock.txt",
+          "present": true
+        },
+        {
+          "description": "reproducibility capsule image",
+          "path": "capsule/Dockerfile.reproduce",
+          "present": true
+        },
+        {
+          "description": "public, typed API surface",
+          "path": "src/api.py",
+          "present": true
+        },
+        {
+          "description": "pre-commit / pytest integrations",
+          "path": "src/precommit.py",
+          "present": true
+        },
+        {
+          "description": "artifact-evaluation requirements doc",
+          "path": "docs/artifact/REQUIREMENTS.md",
+          "present": true
+        }
+      ],
+      "evidence_complete": true,
+      "id": "reusable",
+      "n_evidence": 6,
+      "n_present": 6,
+      "usenix_equivalent": "(no direct USENIX equivalent)"
+    },
+    {
+      "acm_badge": "Results Reproduced",
+      "criteria": "The paper's quantitative results are regenerated from source by a third party with one command.",
+      "evidence": [
+        {
+          "description": "one-command capsule entrypoint",
+          "path": "capsule/reproduce.sh",
+          "present": true
+        },
+        {
+          "description": "from-scratch reproduction + determinism check",
+          "path": "reproducibility/reproduce_all.py",
+          "present": true
+        },
+        {
+          "description": "capsule manifest + env gate",
+          "path": "reproducibility/capsule_manifest.py",
+          "present": true
+        },
+        {
+          "description": "numeric-claim audit (validates README numbers)",
+          "path": "reproducibility/audit_numeric_claims.py",
+          "present": true
+        },
+        {
+          "description": "artifact-evaluation status report",
+          "path": "docs/artifact/STATUS.md",
+          "present": true
+        }
+      ],
+      "evidence_complete": true,
+      "id": "reproduced",
+      "n_evidence": 5,
+      "n_present": 5,
+      "usenix_equivalent": "Reproduced"
+    }
+  ],
+  "n_badges": 4,
+  "n_badges_evidence_complete": 4,
+  "note": "An archival DOI (e.g. Zenodo) must be minted at camera-ready time to upgrade Available from 'public repository' to 'permanently archived'; every other badge's evidence is in-tree and verified here.",
+  "repository": "https://github.com/thehalleyyoung/tensorguard",
+  "step": 123
+}
