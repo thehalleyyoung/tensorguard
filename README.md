@@ -893,6 +893,26 @@ upper bound below four percent. See
 [`reproducibility/fp_stress_eval.md`](reproducibility/fp_stress_eval.md) and
 `tests/test_fp_stress.py`.
 
+### Mutation testing: do injected bugs get caught?
+Zero false alarms is only half the story; the dual question is *sensitivity*.
+`reproducibility/mutation_clean_models.py` runs a classical mutation-testing
+protocol over the clean stress and natural corpora: it applies five local
+mutation operators (`corpus_extended/model_mutators.py` — bump a Linear or Conv
+in/out width by one, or cast the forward input to an integer dtype), keeps only
+the mutants that *genuinely* raise under eager PyTorch, and measures how many the
+verifier kills with an UNSAFE verdict. Across three hundred seventy six
+genuine-bug mutants drawn from one hundred thirty validated-clean parents,
+sound mode kills every one — a kill rate of one with a Wilson lower bound above
+ninety eight percent — and never once reports a genuine bug SAFE. Building this
+harness surfaced and fixed three real soundness gaps: a shape mismatch hidden
+inside an `nn.Sequential` had been silently abstained to SAFE; source-level
+dtype casts such as `x.long()` were not parsed; and an integer tensor fed into a
+floating layer (Linear, Conv, recurrent, attention/transformer or
+normalisation), including inside a Sequential, went unflagged. See
+[`reproducibility/mutation_clean_models.md`](reproducibility/mutation_clean_models.md),
+`tests/test_mutation_clean_models.py` and
+`tests/test_sequential_soundness_fixes.py`.
+
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,
 so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a

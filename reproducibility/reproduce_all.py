@@ -92,6 +92,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/baseline_head_to_head.md",
     "reproducibility/fp_stress_eval.json",
     "reproducibility/fp_stress_eval.md",
+    "reproducibility/mutation_clean_models.json",
+    "reproducibility/mutation_clean_models.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -204,6 +206,8 @@ STEPS = [
      [PY, "reproducibility/baseline_head_to_head.py"], None),
     ("soundness: 100+ clean-model false-positive stress test",
      [PY, "reproducibility/fp_stress_eval.py"], None),
+    ("mutation testing: inject bugs into clean models, measure kill rate",
+     [PY, "reproducibility/mutation_clean_models.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
      [PY, "reproducibility/audit_numeric_claims.py"], None),
 ]

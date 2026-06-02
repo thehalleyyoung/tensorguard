@@ -2680,6 +2680,29 @@ _METHOD_OPS: Dict[str, OpKind] = {
     "var": OpKind.MEAN_REDUCE,
     "softmax": OpKind.SOFTMAX,
     "log_softmax": OpKind.SOFTMAX,
+    # Element-dtype casts (shape/device preserving). These populate the dtype
+    # environment so the dtype domain can reason about source-level casts such
+    # as ``x.long()`` exactly as it does for the live-module (fx) path.
+    "long": OpKind.DTYPE_CAST,
+    "int": OpKind.DTYPE_CAST,
+    "short": OpKind.DTYPE_CAST,
+    "float": OpKind.DTYPE_CAST,
+    "double": OpKind.DTYPE_CAST,
+    "half": OpKind.DTYPE_CAST,
+    "bfloat16": OpKind.DTYPE_CAST,
+    "bool": OpKind.DTYPE_CAST,
+}
+
+# Tensor cast-method name → canonical torch dtype spelling.
+_CAST_METHOD_DTYPE: Dict[str, str] = {
+    "long": "long",
+    "int": "int",
+    "short": "short",
+    "float": "float",
+    "double": "double",
+    "half": "half",
+    "bfloat16": "bfloat16",
+    "bool": "bool",
 }
 
 
@@ -4349,6 +4372,8 @@ class _ForwardExtractor(ast.NodeVisitor):
                         for kw_node in node.keywords:
                             if kw_node.arg == "dim":
                                 params["dim"] = _const_value(kw_node.value)
+                    elif method in _CAST_METHOD_DTYPE:
+                        params["cast_dtype"] = _CAST_METHOD_DTYPE[method]
 
                     self.steps.append(ComputationStep(
                         op=_METHOD_OPS[method],
@@ -6022,8 +6047,21 @@ def _propagate_sequential(
         propagator = _LAYER_PROPAGATORS.get(sub.kind)
         if propagator is not None:
             new_current, err = propagator(current, sub)
-            if err or new_current is None:
-                # Sound abstention on opaque/unresolvable sub-layer.
+            if err is not None:
+                # A propagator only returns an error when the relevant input
+                # dim and the sub-layer's parameter are both *concrete* and
+                # mismatched (unresolvable params yield a symbolic shape with no
+                # error). At this point ``current`` carries no ``_unk_`` dims
+                # (guarded above and re-established by abstention on opaque
+                # sub-layers), so a concrete mismatch here is a genuine,
+                # definite shape bug inside the Sequential — report it rather
+                # than silently abstaining (which was unsound: it let broken
+                # Sequentials such as ``Linear(50, 33) -> Linear(32, 10)`` pass
+                # as SAFE).
+                return None, err
+            if new_current is None:
+                # Unresolvable/opaque sub-layer with no definite error: sound
+                # abstention.
                 return _abstain(current), None
             current = new_current
         elif sub.kind in (LayerKind.RELU, LayerKind.DROPOUT,
@@ -7281,6 +7319,27 @@ _DTYPE_PARAM_MATCH_KINDS = frozenset({
     LayerKind.CONV1D, LayerKind.CONV2D, LayerKind.CONV3D,
     LayerKind.CONVTRANSPOSE1D, LayerKind.CONVTRANSPOSE2D,
     LayerKind.CONVTRANSPOSE3D,
+})
+
+# Layers whose forward unconditionally requires a *floating-point* input: they
+# either matmul/convolve against floating parameters or compute floating
+# statistics. Feeding a statically-known *integer* tensor into any of them is a
+# guaranteed runtime dtype error under eager PyTorch, so flagging it is sound and
+# cannot false-alarm on clean code (which never does this). This is a superset of
+# the param-match kinds, adding recurrent, attention/transformer and
+# normalisation layers (all of which carry float buffers/parameters).
+_FLOAT_INPUT_REQUIRED_KINDS = _DTYPE_PARAM_MATCH_KINDS | frozenset({
+    LayerKind.LSTM, LayerKind.GRU, LayerKind.RNN,
+    LayerKind.MULTIHEAD_ATTENTION,
+    LayerKind.TRANSFORMER_ENCODER, LayerKind.TRANSFORMER_DECODER,
+    LayerKind.TRANSFORMER_ENCODER_LAYER, LayerKind.TRANSFORMER_DECODER_LAYER,
+    LayerKind.BATCHNORM1D, LayerKind.BATCHNORM2D, LayerKind.BATCHNORM3D,
+    LayerKind.SYNCBATCHNORM,
+    LayerKind.LAYERNORM, LayerKind.GROUPNORM,
+    LayerKind.INSTANCENORM1D, LayerKind.INSTANCENORM2D,
+    LayerKind.INSTANCENORM3D,
+    LayerKind.LAZYLINEAR,
+    LayerKind.LAZYCONV1D, LayerKind.LAZYCONV2D, LayerKind.LAZYCONV3D,
 })
 
 
@@ -9614,6 +9673,55 @@ class ConstraintVerifier:
                     new_state.dtype_env[out] = param_dt
                     return
 
+                if layer.kind in _DTYPE_PARAM_MATCH_KINDS and param_dt is None:
+                    # Source-only path: the live parameter dtype is unavailable,
+                    # but nn.Linear/Conv parameters are *floating-point by
+                    # construction*. A statically-known *integer* input therefore
+                    # guarantees a runtime dtype error ("mat1 and mat2 must have
+                    # the same dtype"). This cannot false-alarm on clean code,
+                    # which never feeds an integer activation into such a layer.
+                    if (self.check_dtypes and inp_dt is not None
+                            and _is_int_dtype(inp_dt)):
+                        violations.append(SafetyViolation(
+                            kind="dtype_error",
+                            step_index=-1,
+                            step=step,
+                            message=(
+                                f"{layer.kind.name}: input dtype '{inp_dt}' is "
+                                f"integer but the layer's floating parameters "
+                                f"require a floating input. torch raises at "
+                                f"runtime (e.g. \"mat1 and mat2 must have the "
+                                f"same dtype\")"
+                            ),
+                            tensor_a=inp,
+                            confidence=Confidence.HIGH,
+                        ))
+                    # Output of a float-param layer is floating-point.
+                    new_state.dtype_env[out] = "float32"
+                    return
+
+                if layer.kind in _FLOAT_INPUT_REQUIRED_KINDS:
+                    # Recurrent / attention / transformer / normalisation layers
+                    # also require a floating input (they carry float
+                    # buffers/parameters); a known-integer input is a guaranteed
+                    # runtime dtype error.
+                    if (self.check_dtypes and inp_dt is not None
+                            and _is_int_dtype(inp_dt)):
+                        violations.append(SafetyViolation(
+                            kind="dtype_error",
+                            step_index=-1,
+                            step=step,
+                            message=(
+                                f"{layer.kind.name}: input dtype '{inp_dt}' is "
+                                f"integer but this layer requires a floating "
+                                f"input. torch raises at runtime."
+                            ),
+                            tensor_a=inp,
+                            confidence=Confidence.HIGH,
+                        ))
+                    new_state.dtype_env[out] = "float32"
+                    return
+
                 if layer.kind == LayerKind.EMBEDDING:
                     # Index tensor must be int32/int64; output is the weight dtype.
                     if (self.check_dtypes and inp_dt is not None
@@ -9635,7 +9743,57 @@ class ConstraintVerifier:
                         new_state.dtype_env[out] = param_dt
                     return
 
-        # --- Matmul: both operands must share dtype -----------------------
+                if layer.kind == LayerKind.SEQUENTIAL and layer.sub_layers:
+                    # Walk the Sequential's sub-layers tracking the element
+                    # dtype, so a dtype mismatch hidden *inside* a Sequential is
+                    # caught just like a top-level one. An nn.Linear/Conv stores
+                    # floating-point parameters by construction, so feeding a
+                    # *known-integer* tensor into the first such sub-layer is a
+                    # guaranteed runtime error ("mat1 and mat2 must have the same
+                    # dtype" / "Input type ... should be the same"). This cannot
+                    # false-alarm on clean code: a clean model never reaches a
+                    # float Linear/Conv with an integer activation (it would
+                    # crash under eager PyTorch).
+                    cur_dt = inp_dt
+                    for sub in layer.sub_layers:
+                        if sub.kind == LayerKind.EMBEDDING:
+                            if (self.check_dtypes and cur_dt is not None
+                                    and _is_float_dtype(cur_dt)):
+                                violations.append(SafetyViolation(
+                                    kind="dtype_error",
+                                    step_index=-1,
+                                    step=step,
+                                    message=(
+                                        f"Sequential/Embedding: index dtype "
+                                        f"'{cur_dt}' is floating; torch requires "
+                                        f"int32/int64 indices"
+                                    ),
+                                    tensor_a=inp,
+                                    confidence=Confidence.HIGH,
+                                ))
+                            cur_dt = "float32"  # weight (output) dtype
+                        elif sub.kind in _FLOAT_INPUT_REQUIRED_KINDS:
+                            if (self.check_dtypes and cur_dt is not None
+                                    and _is_int_dtype(cur_dt)):
+                                violations.append(SafetyViolation(
+                                    kind="dtype_error",
+                                    step_index=-1,
+                                    step=step,
+                                    message=(
+                                        f"Sequential/{sub.kind.name}: input dtype "
+                                        f"'{cur_dt}' is integer but the layer "
+                                        f"requires a floating input. torch raises "
+                                        f"at runtime (e.g. \"mat1 and mat2 must "
+                                        f"have the same dtype\")"
+                                    ),
+                                    tensor_a=inp,
+                                    confidence=Confidence.HIGH,
+                                ))
+                            cur_dt = "float32"  # parameter (output) dtype
+                        # Other sub-layers are dtype-preserving for this check.
+                    if cur_dt is not None:
+                        new_state.dtype_env[out] = cur_dt
+                    return
         if step.op == OpKind.MATMUL and len(step.inputs) >= 2:
             a, b = step.inputs[0], step.inputs[1]
             da, db = known(a), known(b)
