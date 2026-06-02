@@ -184,8 +184,86 @@ def build_matrix() -> Dict[str, object]:
             "total_covered": tot_covered,
             "overall_coverage_ratio": round(tot_covered / tot_total, 4)
             if tot_total else 0.0,
+            "overall_coverage_percent": round(100.0 * tot_covered / tot_total, 2)
+            if tot_total else 0.0,
         },
     }
+
+
+FLOOR_PATH = os.path.join(HERE, "operator_coverage_floor.json")
+
+# Released floors may slip by at most this ratio between torch patch releases
+# (the public surface shifts slightly version-to-version); a drop beyond it is
+# treated as a coverage regression and fails the gate.
+GATE_TOLERANCE = 0.005
+
+
+def build_floor(matrix: Dict[str, object]) -> Dict[str, object]:
+    """Derive a committed coverage floor (ratchet) from a coverage matrix."""
+    summ = matrix["summary"]
+    return {
+        "_comment": ("Published operator-coverage floor enforced by "
+                     "`operator_coverage.py --gate`. Ratchet: regenerate with "
+                     "`make operator-coverage-floor` only to RAISE the floor."),
+        "torch_version": matrix["meta"]["torch_version"],
+        "overall_coverage_ratio": summ["overall_coverage_ratio"],
+        "namespaces": {
+            ns: matrix["namespaces"][ns]["coverage_ratio"] for ns in NAMESPACES
+        },
+    }
+
+
+def gate(write_floor: bool = False) -> int:
+    """Enforce (or, with write_floor, publish) the operator-coverage floor.
+
+    Returns 0 when live coverage meets every committed floor (or the check is
+    QUALIFIED because the local torch version differs from the floor's), 1 on a
+    genuine coverage regression or a missing floor artifact.
+    """
+    matrix = build_matrix()
+    summ = matrix["summary"]
+    if write_floor:
+        with open(FLOOR_PATH, "w") as fh:
+            fh.write(_dumps(build_floor(matrix)))
+        print("published operator coverage floor: %.4f overall (%.2f percent), "
+              "torch %s" % (summ["overall_coverage_ratio"],
+                            summ["overall_coverage_percent"],
+                            matrix["meta"]["torch_version"]))
+        return 0
+
+    if not os.path.exists(FLOOR_PATH):
+        print("operator_coverage_floor.json missing; run "
+              "`make operator-coverage-floor`")
+        return 1
+    floor = json.load(open(FLOOR_PATH))
+    local_ver = matrix["meta"]["torch_version"]
+    if floor.get("torch_version") != local_ver:
+        print("QUALIFIED: torch version mismatch (floor %s, local %s); "
+              "skipping coverage gate" % (floor.get("torch_version"), local_ver))
+        return 0
+
+    regressions: List[str] = []
+    overall = summ["overall_coverage_ratio"]
+    if overall + GATE_TOLERANCE < floor["overall_coverage_ratio"]:
+        regressions.append("overall %.4f < floor %.4f"
+                           % (overall, floor["overall_coverage_ratio"]))
+    for ns in NAMESPACES:
+        live = matrix["namespaces"][ns]["coverage_ratio"]
+        base = floor.get("namespaces", {}).get(ns)
+        if base is not None and live + GATE_TOLERANCE < base:
+            regressions.append("%s %.4f < floor %.4f" % (ns, live, base))
+
+    if regressions:
+        print("COVERAGE GATE FAILED:")
+        for r in regressions:
+            print("  - " + r)
+        return 1
+    print("operator coverage gate PASS: %d of %d public operators covered "
+          "(%.2f percent overall, floor %.2f percent)" % (
+              summ["total_covered"], summ["total_public_operators"],
+              summ["overall_coverage_percent"],
+              round(100.0 * floor["overall_coverage_ratio"], 2)))
+    return 0
 
 
 def _dumps(obj: object) -> str:
@@ -266,7 +344,17 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--check", action="store_true",
                     help="Verify the committed matrix is up to date (version-gated).")
+    ap.add_argument("--gate", action="store_true",
+                    help="Fail if live operator coverage regresses below the "
+                         "published floor (version-gated).")
+    ap.add_argument("--write-floor", action="store_true",
+                    help="Publish/raise the operator-coverage floor from the "
+                         "current live coverage.")
     args = ap.parse_args()
+    if args.write_floor:
+        return gate(write_floor=True)
+    if args.gate:
+        return gate()
     return run(check=args.check)
 
 

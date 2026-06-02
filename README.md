@@ -965,6 +965,21 @@ Each abstention is surfaced precisely. Every `VerificationResult` now carries an
 actionable diagnostics instead of being papered over. See
 `tests/test_unsupported_op_diagnostics.py`.
 
+### Published operator coverage with a release gate
+
+Coverage is reported honestly and defended automatically. The matrix in
+`evaluation/operator_coverage.json` enumerates the live public surface of
+`torch`, `torch.nn` and `torch.nn.functional` and cross-references it against
+every operator TensorGuard reasons about, currently covering 199 of 1031 public
+operators (overall ratio 0.193). That figure is published rather than buried,
+and a committed floor in `evaluation/operator_coverage_floor.json` turns it into
+a one-way ratchet: `make operator-coverage-gate` recomputes live coverage and
+fails the build if any namespace — or the overall figure — regresses below the
+released floor (beyond a small version-jitter tolerance), while skipping as
+QUALIFIED when the local PyTorch version differs from the floor's. The floor is
+only ever raised, via `make operator-coverage-floor`, so coverage can grow but
+never silently shrink. See `tests/test_operator_coverage_gate.py`.
+
 ### Lean build (sorry-free)
 
 The Lean proof corpus is built per-module to keep the harness

@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-frequency test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor operator-frequency test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -103,6 +103,12 @@ dashboard-gate:
 
 operator-coverage:
 	$(PYTHON) evaluation/operator_coverage.py
+
+operator-coverage-gate:
+	$(PYTHON) evaluation/operator_coverage.py --gate
+
+operator-coverage-floor:
+	$(PYTHON) evaluation/operator_coverage.py --write-floor
 
 operator-frequency:
 	$(PYTHON) evaluation/operator_frequency.py
