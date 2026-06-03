@@ -3594,6 +3594,39 @@ class VerifyCommand:
         return 0
 
 
+# ── PlaygroundCommand ──────────────────────────────────────────────────────
+
+
+class PlaygroundCommand:
+    """Generate the no-upload local TensorGuard playground."""
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "-o",
+            "--output",
+            default="tensorguard_playground",
+            help="Output directory for index.html and manifest.json",
+        )
+        parser.add_argument(
+            "--open",
+            action="store_true",
+            help="Open the generated index.html in the default browser",
+        )
+
+    def execute(self, args: argparse.Namespace) -> int:
+        from src.playground import write_playground
+
+        paths = write_playground(getattr(args, "output", "tensorguard_playground"))
+        html_path = paths["html"]
+        sys.stdout.write(f"TensorGuard local playground written to {html_path}\n")
+        sys.stdout.write("Privacy mode: local-static, no upload, no import, no execution.\n")
+        if getattr(args, "open", False):
+            import webbrowser
+
+            webbrowser.open(html_path.resolve().as_uri())
+        return 0
+
+
 # ---------------------------------------------------------------------------
 # ReftypeCliApp — main application
 # ---------------------------------------------------------------------------
@@ -3616,6 +3649,7 @@ class ReftypeCliApp:
         "version": lambda: VersionCommand(),
         "config": lambda: ConfigCommand(),
         "operator-confidence": lambda: OperatorConfidenceCommand(),
+        "playground": lambda: PlaygroundCommand(),
     }
 
     def __init__(self) -> None:
@@ -3672,6 +3706,7 @@ class ReftypeCliApp:
             "version": "Show version information",
             "config": "Show or edit configuration",
             "operator-confidence": "Show per-operator confidence tags (sound/complete/heuristic)",
+            "playground": "Generate a no-upload local static TensorGuard playground",
         }
         return helps.get(name, "")
 

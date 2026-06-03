@@ -56,6 +56,7 @@ _STABLE_SUBCOMMANDS = {
     "version",
     "config",
     "operator-confidence",
+    "playground",
 }
 
 
