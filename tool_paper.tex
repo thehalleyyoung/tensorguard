@@ -69,7 +69,7 @@ modeled with refinement information such as
 \]
 The verifier propagates these facts through constructors, module calls,
 functional operators, reshapes, broadcasts, indexing, attention blocks,
-normalization layers, sparse layouts, distributed wrappers, and deployment
+recurrent modules, normalization layers, sparse layouts, distributed wrappers, and deployment
 gates.  At each operation it asks whether the preconditions of the transfer
 function are entailed by the current abstract state.  Concrete contradictions
 become high-confidence bugs.  Unknown or out-of-fragment regions become
@@ -203,9 +203,10 @@ advanced indexing, gather/scatter, index select, masked select,
 \texttt{kthvalue}, arg reductions, sparse COO/CSR/CSC/BSR/BSC layout invariants,
 FFT/complex view contracts, named tensor alignment, vmap/functorch batch dimensions,
 distribution batch/event/log-prob shapes, grid sampling, affine grids,
-multi-head attention, scaled dot-product attention, LoRA adapter compatibility,
-training-loop checks, quantization/export safety, distributed sharding, tensor
-parallel attention variants, and deployment schemas.
+multi-head attention, scaled dot-product attention, exact RNN/LSTM/GRU
+output and returned-state contracts, LoRA adapter compatibility, training-loop
+checks, quantization/export safety, distributed sharding, tensor parallel
+attention variants, and deployment schemas.
 
 \subsection{Exact Index-Value Operators}
 
@@ -265,6 +266,27 @@ fractional downsampling and per-axis tuple scales.  Options such as
 \texttt{antialias} are captured so literal runtime-invalid combinations are
 reported, while dynamic sizes such as \texttt{x.shape[-2:]} conservatively
 produce symbolic spatial dimensions instead of false positives.
+
+\subsection{Recurrent Tensor Contracts}
+
+Recurrent modules are another place where a shape-preserving approximation is
+wrong.  \tg{} models \texttt{nn.RNN}, \texttt{nn.GRU}, and \texttt{nn.LSTM}
+using PyTorch's sequence contract: \texttt{batch\_first} affects only the input
+and output layout; hidden states keep \((D\cdot L,N,H)\)-style layout; bidirectionality
+doubles the output feature dimension but not each returned hidden direction; and
+projected LSTMs use \texttt{proj\_size} for \texttt{output}/\texttt{h\_n} while
+\texttt{c\_n} retains \texttt{hidden\_size}.  Multilayer and unbatched cases share
+the same contract machinery, so downstream \texttt{Linear}, reshape, and tuple
+unpacking checks see the exact returned tensor ranks instead of a last-dimension
+heuristic.
+
+Packed sequences are treated as an explicit abstention boundary.  Calls such as
+\texttt{pack\_padded\_sequence} produce opaque values; recurrent layers consuming
+them do not fabricate dense tensor shapes, and downstream checks remain honest
+until a supported dense tensor reappears.  The regression tests include direct
+verifier checks for wrong hidden/cell/projection dimensions, a live PyTorch
+projected bidirectional LSTM shape comparison, and a packed-sequence false-positive
+guard.
 
 \subsection{Examples of Transfer Precision}
 
@@ -453,8 +475,9 @@ if it matches the runtime library.  The repository therefore includes tests
 that construct real tensors, run the corresponding PyTorch operator, and compare
 the resulting shape or runtime exception to \tg{}'s predicted contract.  This
 pattern appears for cat, einsum, reshape, broadcasting, convolution, attention,
-fold/unfold, padding, grid sampling, sparse layouts, complex FFT views, named tensors,
-distributions, vmap, chunk/split partitioning, and index-value operators.  When PyTorch's
+recurrent modules, fold/unfold, padding, grid sampling, sparse layouts, complex
+FFT views, named tensors, distributions, vmap, chunk/split partitioning, and
+index-value operators.  When PyTorch's
 edge-case behavior is surprising, as with \texttt{take\_along\_dim(dim=None)}
 flattening before selection or \texttt{topk} rejecting oversized \texttt{k}, the
 static rule follows PyTorch rather than a simplified textbook semantics.
@@ -523,7 +546,7 @@ entry points with soundness modes and domain flags. \\
 \hline
 \texttt{src/model\_checker.py} &
 AST graph extraction, symbolic state propagation, Z3 safety checks, device,
-phase, gradient, dtype, and shape transitions. \\
+phase, gradient, dtype, recurrent, and shape transitions. \\
 \hline
 \texttt{src/tensor\_shapes.py} &
 Shape algebra, transfer helpers, AST shape analyzer, reshape/broadcast/cat and
@@ -837,6 +860,14 @@ The last input dimension must equal \texttt{in\_features}; output replaces the
 last dimension with \texttt{out\_features}. &
 Unit tests for clean and buggy linear models, autofix tests, and end-to-end
 module verification. \\
+\hline
+Recurrent modules &
+\texttt{RNN}, \texttt{GRU}, and \texttt{LSTM} check input feature size, preserve
+sequence/batch layout, account for layers and directions, distinguish LSTM
+\texttt{h\_n} from \texttt{c\_n}, support projections, and abstain on packed
+sequences. &
+Focused recurrent tests plus a live PyTorch projected bidirectional LSTM
+shape oracle and packed-sequence abstention regression. \\
 \hline
 Matrix multiplication &
 Contracting dimensions must match; batched prefixes are propagated or

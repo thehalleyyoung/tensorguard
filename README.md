@@ -20,7 +20,7 @@ runtime errors in ML codebases before any code runs.
   `cat`/`chunk`/`split`, `pad`, `interpolate`/`Upsample`, `view`,
   `reshape`, `transpose`, `permute`, `einsum`, `take_along_dim`,
   `topk`/`sort`, `fold`/`unfold`, `bmm`,
-  attention patterns, and more
+  RNN/LSTM/GRU state contracts, attention patterns, and more
 - **High-value library contracts checked against the real libraries** —
   `einops` (`rearrange` / `reduce` / `repeat`), SDPA,
   `nn.MultiheadAttention` packed/unpacked q/k/v + masks,

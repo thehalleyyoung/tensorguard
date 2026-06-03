@@ -1,6 +1,10 @@
 """Tests for LSTM/GRU shape propagation and verification."""
 import pytest
-from src.model_checker import verify_model
+from src.model_checker import (
+    SymbolicShapePropagator,
+    extract_computation_graph,
+    verify_model,
+)
 
 
 class TestLSTMShapePropagation:
@@ -383,6 +387,139 @@ class M(nn.Module):
         return self.fc(h.squeeze(0))
 ''', input_shapes={"x": ("batch", "seq", 100)})
         assert result.safe, f"Should be safe: {result.pretty()}"
+
+
+class TestExactRecurrentContracts:
+    """Step 197: exact RNN/LSTM/GRU tensor contracts."""
+
+    def test_bilstm_multilayer_hidden_rank_depth_and_batch_are_exact(self):
+        """h_n is (D*num_layers, batch, hidden), independent of batch_first."""
+        result = verify_model('''
+import torch.nn as nn
+class M(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.lstm = nn.LSTM(
+            input_size=11, hidden_size=7, num_layers=2,
+            batch_first=True, bidirectional=True,
+        )
+        self.fc = nn.Linear(21, 2)
+    def forward(self, x):
+        _, (h, _) = self.lstm(x)
+        flat = h.reshape(4, 21)
+        return self.fc(flat)
+''', input_shapes={"x": (3, 5, 11)})
+        assert result.safe, result.pretty()
+
+    def test_lstm_projected_output_hidden_and_cell_shapes_are_distinct(self):
+        """Projected LSTM: output/h_n use proj_size, c_n uses hidden_size."""
+        result = verify_model('''
+import torch.nn as nn
+class M(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.lstm = nn.LSTM(
+            input_size=11, hidden_size=9, num_layers=2,
+            batch_first=True, bidirectional=True, proj_size=5,
+        )
+        self.out = nn.Linear(10, 2)
+        self.h = nn.Linear(5, 2)
+        self.c = nn.Linear(9, 2)
+    def forward(self, x):
+        output, (h_n, c_n) = self.lstm(x)
+        return self.out(output[:, -1, :]) + self.h(h_n[-1]) + self.c(c_n[-1])
+''', input_shapes={"x": (3, 5, 11)})
+        assert result.safe, result.pretty()
+
+    def test_lstm_cell_state_uses_hidden_size_not_projection_size(self):
+        """c_n mismatch is now modeled and refuted."""
+        result = verify_model('''
+import torch.nn as nn
+class M(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.lstm = nn.LSTM(
+            input_size=11, hidden_size=9, batch_first=True, proj_size=5,
+        )
+        self.c = nn.Linear(5, 2)
+    def forward(self, x):
+        _, (_, c_n) = self.lstm(x)
+        return self.c(c_n[-1])
+''', input_shapes={"x": (3, 5, 11)})
+        assert not result.safe
+        assert "Linear expects last dim=5" in result.pretty()
+
+    def test_plain_rnn_hidden_state_contracts_are_supported(self):
+        """nn.RNN gets the same D*num_layers hidden-state contract as GRU."""
+        result = verify_model('''
+import torch.nn as nn
+class M(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.rnn = nn.RNN(
+            input_size=6, hidden_size=8, num_layers=3,
+            batch_first=True, bidirectional=True,
+        )
+        self.fc = nn.Linear(32, 2)
+    def forward(self, x):
+        _, h_n = self.rnn(x)
+        flat = h_n.reshape(6, 32)
+        return self.fc(flat)
+''', input_shapes={"x": (4, 5, 6)})
+        assert result.safe, result.pretty()
+
+    def test_packed_sequence_lstm_abstains_without_shape_guessing(self):
+        """PackedSequence is opaque, so recurrent checks do not fabricate shapes."""
+        result = verify_model('''
+import torch.nn as nn
+from torch.nn.utils.rnn import pack_padded_sequence
+class M(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.lstm = nn.LSTM(11, 7, batch_first=True)
+        self.fc = nn.Linear(999, 2)
+    def forward(self, x, lengths):
+        packed = pack_padded_sequence(
+            x, lengths, batch_first=True, enforce_sorted=False,
+        )
+        output, _ = self.lstm(packed)
+        return self.fc(output)
+''', input_shapes={"x": (3, 5, 11), "lengths": (3,)})
+        assert result.safe, result.pretty()
+        assert result.unsupported_op_tracker is not None
+        assert "pack_padded_sequence" in result.unsupported_op_tracker.unsupported_ops
+
+    def test_recurrent_state_contract_matches_real_torch_shapes(self):
+        """The static contract agrees with real PyTorch on output/h_n/c_n."""
+        torch = pytest.importorskip("torch")
+        source = '''
+import torch.nn as nn
+class M(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.lstm = nn.LSTM(
+            input_size=11, hidden_size=9, num_layers=2,
+            batch_first=True, bidirectional=True, proj_size=5,
+        )
+    def forward(self, x):
+        output, (h_n, c_n) = self.lstm(x)
+        return output, h_n, c_n
+'''
+        graph = extract_computation_graph(source)
+        env = SymbolicShapePropagator(graph).propagate({"x": (3, 5, 11)})
+
+        assert tuple(d.value for d in env["output"].dims) == (3, 5, 10)
+        assert tuple(d.value for d in env["h_n"].dims) == (4, 3, 5)
+        assert tuple(d.value for d in env["c_n"].dims) == (4, 3, 9)
+
+        ns = {}
+        exec(source, ns)
+        model = ns["M"]()
+        x = torch.randn(3, 5, 11)
+        output, h_n, c_n = model(x)
+        assert tuple(output.shape) == (3, 5, 10)
+        assert tuple(h_n.shape) == (4, 3, 5)
+        assert tuple(c_n.shape) == (4, 3, 9)
 
     def test_bilstm_hidden_state_not_doubled(self):
         """BiLSTM h_n last dim is hidden_size, not hidden_size*2."""

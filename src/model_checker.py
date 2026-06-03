@@ -359,6 +359,7 @@ class LayerDef:
     num_layers_rnn: Optional[int] = None
     bidirectional: bool = False
     batch_first: bool = False
+    proj_size: Optional[int] = None
     num_heads: Optional[int] = None
     output_size: Optional[Tuple[int, ...]] = None
     sub_layers: Optional[List["LayerDef"]] = None  # for Sequential/ModuleList
@@ -1463,13 +1464,26 @@ def _extract_layer_params(kind: LayerKind, call: ast.Call,
         layer.in_features = pos[0] if len(pos) > 0 else kw.get("input_size")
         layer.hidden_size = pos[1] if len(pos) > 1 else kw.get("hidden_size")
         layer.num_layers_rnn = pos[2] if len(pos) > 2 else kw.get("num_layers", 1)
-        layer.bidirectional = kw.get("bidirectional", False)
-        layer.batch_first = kw.get("batch_first", False)
+        layer.batch_first = (
+            pos[4] if len(pos) > 4 and isinstance(pos[4], bool)
+            else kw.get("batch_first", False)
+        )
+        layer.bidirectional = (
+            pos[6] if len(pos) > 6 and isinstance(pos[6], bool)
+            else kw.get("bidirectional", False)
+        )
+        if kind == LayerKind.LSTM:
+            layer.proj_size = (
+                pos[7] if len(pos) > 7 and isinstance(pos[7], int)
+                else kw.get("proj_size", 0)
+            )
         layer.params = {"input_size": layer.in_features,
                         "hidden_size": layer.hidden_size,
                         "num_layers": layer.num_layers_rnn,
                         "bidirectional": layer.bidirectional,
                         "batch_first": layer.batch_first}
+        if kind == LayerKind.LSTM:
+            layer.params["proj_size"] = layer.proj_size or 0
 
     elif kind == LayerKind.MULTIHEAD_ATTENTION:
         embed = pos[0] if len(pos) > 0 else kw.get("embed_dim")
@@ -1797,8 +1811,14 @@ def _extract_layer_params(kind: LayerKind, call: ast.Call,
         layer.in_features = pos[0] if len(pos) > 0 else kw.get("input_size")
         layer.hidden_size = pos[1] if len(pos) > 1 else kw.get("hidden_size")
         layer.num_layers_rnn = pos[2] if len(pos) > 2 else kw.get("num_layers", 1)
-        layer.bidirectional = kw.get("bidirectional", False)
-        layer.batch_first = kw.get("batch_first", False)
+        layer.batch_first = (
+            pos[5] if len(pos) > 5 and isinstance(pos[5], bool)
+            else kw.get("batch_first", False)
+        )
+        layer.bidirectional = (
+            pos[7] if len(pos) > 7 and isinstance(pos[7], bool)
+            else kw.get("bidirectional", False)
+        )
         layer.params = {"input_size": layer.in_features,
                         "hidden_size": layer.hidden_size,
                         "num_layers": layer.num_layers_rnn,
@@ -2594,6 +2614,12 @@ _FUNCTIONAL_OPS: Dict[str, OpKind] = {
     "unfold": OpKind.LAYER_CALL,
     "upsample": OpKind.INTERPOLATE,
 }
+
+_PACKED_SEQUENCE_FNS: FrozenSet[str] = frozenset({
+    "pack_padded_sequence",
+    "pack_sequence",
+    "pad_packed_sequence",
+})
 
 # Tensor-factory functions whose output SHAPE is fully determined by the call
 # arguments and is independent of the RNG seed.  ``torch.rand(2, 4)`` always
@@ -3592,10 +3618,14 @@ class _ForwardExtractor(ast.NodeVisitor):
                         self._process_expr(node.value, target_name,
                                            node.lineno, node.col_offset)
                         layer = self.layers.get(layer_name)
-                        if layer and layer.kind in (LayerKind.LSTM, LayerKind.GRU):
-                            self._add_hidden_state_step(
+                        if layer and layer.kind in (LayerKind.LSTM, LayerKind.GRU, LayerKind.RNN):
+                            self._add_recurrent_state_step(
                                 layer_name, layer, inner_tuple.elts[0],
-                                target_name, node.lineno, node.col_offset)
+                                target_name, node.lineno, node.col_offset, "h")
+                            if layer.kind == LayerKind.LSTM and len(inner_tuple.elts) > 1:
+                                self._add_recurrent_state_step(
+                                    layer_name, layer, inner_tuple.elts[1],
+                                    target_name, node.lineno, node.col_offset, "c")
                         self.generic_visit(node)
                         return
 
@@ -3613,10 +3643,10 @@ class _ForwardExtractor(ast.NodeVisitor):
                         self._process_expr(node.value, target_name,
                                            node.lineno, node.col_offset)
                         layer = self.layers.get(layer_name)
-                        if layer and layer.kind in (LayerKind.LSTM, LayerKind.GRU):
-                            self._add_hidden_state_step(
+                        if layer and layer.kind in (LayerKind.LSTM, LayerKind.GRU, LayerKind.RNN):
+                            self._add_recurrent_state_step(
                                 layer_name, layer, target.elts[1],
-                                target_name, node.lineno, node.col_offset)
+                                target_name, node.lineno, node.col_offset, "h")
                         self.generic_visit(node)
                         return
             else:
@@ -3811,29 +3841,34 @@ class _ForwardExtractor(ast.NodeVisitor):
         ))
         self.generic_visit(node)
 
-    def _add_hidden_state_step(
+    def _add_recurrent_state_step(
         self, layer_name: str, layer: LayerDef, h_elt: ast.expr,
-        lstm_output: str, line: int, col: int,
+        rnn_output: str, line: int, col: int, state_kind: str = "h",
     ) -> None:
-        """Create a pseudo-step that establishes the hidden state shape.
-
-        For LSTM/GRU, h_n has shape (num_layers*D, batch, hidden_size).
-        The last dim is always hidden_size, NOT hidden_size*D.
-        """
+        """Create a pseudo layer-call for a returned recurrent state tensor."""
         if isinstance(h_elt, ast.Name) and h_elt.id != '_':
             h_name = h_elt.id
-            pseudo_name = f"__{layer_name}_hidden"
+            pseudo_name = f"__{layer_name}_{state_kind}_state"
             hidden_layer = LayerDef(
                 attr_name=pseudo_name,
-                kind=LayerKind.LINEAR,
+                kind=layer.kind,
                 line=line,
-                in_features=None,   # don't constrain input
-                out_features=layer.hidden_size,
+                in_features=layer.in_features,
+                hidden_size=layer.hidden_size,
+                num_layers_rnn=layer.num_layers_rnn,
+                bidirectional=layer.bidirectional,
+                batch_first=layer.batch_first,
+                proj_size=layer.proj_size,
+                params={
+                    **(layer.params or {}),
+                    "__rnn_state_output__": state_kind,
+                    "__rnn_source_layer__": layer_name,
+                },
             )
             self.layers[pseudo_name] = hidden_layer
             self.steps.append(ComputationStep(
                 op=OpKind.LAYER_CALL,
-                inputs=[lstm_output],
+                inputs=[rnn_output],
                 output=h_name,
                 layer_ref=pseudo_name,
                 line=line, col=col,
@@ -3847,7 +3882,7 @@ class _ForwardExtractor(ast.NodeVisitor):
                 and func.value.id == "self"
                 and func.attr in self.layers):
             layer = self.layers[func.attr]
-            if layer.kind in (LayerKind.LSTM, LayerKind.GRU):
+            if layer.kind in (LayerKind.LSTM, LayerKind.GRU, LayerKind.RNN):
                 return func.attr
         return None
 
@@ -4896,6 +4931,20 @@ class _ForwardExtractor(ast.NodeVisitor):
         func_name = _name_or_attr(func)
         if func_name:
             short = func_name.split(".")[-1]
+
+            if short in _PACKED_SEQUENCE_FNS:
+                inputs = [self._resolve_arg(a) for a in node.args]
+                self.steps.append(ComputationStep(
+                    op=OpKind.UNSUPPORTED,
+                    inputs=inputs,
+                    output=target,
+                    params={
+                        "op_name": func_name,
+                        "packed_sequence": True,
+                    },
+                    line=line, col=col,
+                ))
+                return
 
             # Functional ops
             if short in _FUNCTIONAL_OPS:
@@ -7278,71 +7327,155 @@ def _propagate_transformer_decoder(
     return input_shape, None
 
 
-def _propagate_lstm(
-    input_shape: TensorShape, layer: LayerDef
+def _scale_dim_value(value: Any, multiplier: int, fallback: str) -> Any:
+    if multiplier == 1:
+        return value if value is not None else fallback
+    if isinstance(value, int):
+        return value * multiplier
+    if isinstance(value, str):
+        return f"({value}*{multiplier})"
+    return fallback
+
+
+def _recurrent_directions(layer: LayerDef) -> int:
+    return 2 if bool(layer.bidirectional) else 1
+
+
+def _recurrent_layers_value(layer: LayerDef) -> Any:
+    return layer.num_layers_rnn if layer.num_layers_rnn is not None else 1
+
+
+def _recurrent_state_depth(layer: LayerDef) -> Any:
+    return _scale_dim_value(
+        _recurrent_layers_value(layer),
+        _recurrent_directions(layer),
+        f"_rnn_depth_{layer.attr_name or 'state'}",
+    )
+
+
+def _lstm_projection_size(layer: LayerDef) -> Any:
+    proj = layer.proj_size
+    if proj is None:
+        proj = (layer.params or {}).get("proj_size", 0)
+    return proj
+
+
+def _recurrent_output_feature_size(layer: LayerDef) -> Any:
+    if layer.kind == LayerKind.LSTM:
+        proj = _lstm_projection_size(layer)
+        if isinstance(proj, int) and proj > 0:
+            return proj
+        if isinstance(proj, str):
+            return proj
+    return layer.hidden_size
+
+
+def _validate_lstm_projection(layer: LayerDef) -> Optional[str]:
+    if layer.kind != LayerKind.LSTM:
+        return None
+    proj = _lstm_projection_size(layer)
+    hidden = layer.hidden_size
+    if isinstance(proj, int):
+        if proj < 0:
+            return f"LSTM proj_size must be non-negative, got {proj}"
+        if proj > 0 and isinstance(hidden, int) and proj >= hidden:
+            return (
+                f"LSTM proj_size={proj} must be smaller than "
+                f"hidden_size={hidden}"
+            )
+    return None
+
+
+def _recurrent_output_shape(
+    input_shape: TensorShape, layer: LayerDef, op_name: str
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """Propagate shape through nn.LSTM.
+    """PyTorch RNN/GRU/LSTM sequence-output contract.
 
-    nn.LSTM(input_size, hidden_size, num_layers, batch_first, bidirectional)
-    Default layout (batch_first=False):
-        input  (seq_len, batch, input_size) → output (seq_len, batch, hidden_size * D)
-    batch_first=True:
-        input  (batch, seq_len, input_size) → output (batch, seq_len, hidden_size * D)
-    where D = 2 if bidirectional else 1.
-
-    Verifies input_size matches the last dimension of the input tensor.
+    Accepted inputs are the PyTorch canonical ranks: unbatched
+    ``(seq_len, input_size)`` and batched ``(seq_len, batch, input_size)`` or
+    ``(batch, seq_len, input_size)`` when ``batch_first=True``.  The output
+    preserves the sequence/batch layout and changes only the last dimension to
+    ``num_directions * H_out``.  For projected LSTMs, ``H_out`` is
+    ``proj_size``; otherwise it is ``hidden_size``.
     """
-    if input_shape.ndim < 2:
-        return None, "LSTM requires at least 2D input"
+    if input_shape.ndim not in (2, 3):
+        return None, f"{op_name} expects 2D or 3D input, got {input_shape.ndim}D"
 
     last = input_shape.dims[-1]
-    if layer.in_features is not None and not last.is_symbolic:
+    if (layer.in_features is not None and isinstance(layer.in_features, int)
+            and not last.is_symbolic):
         if last.value != layer.in_features:
             return None, (
-                f"LSTM expects input_size={layer.in_features}, "
+                f"{op_name} expects input_size={layer.in_features}, "
                 f"got {last.value}"
             )
 
-    hidden = layer.hidden_size
-    if hidden is None:
-        return None, "LSTM hidden_size unknown"
+    proj_err = _validate_lstm_projection(layer)
+    if proj_err:
+        return None, proj_err
 
-    D = 2 if layer.bidirectional else 1
-    out_feat = hidden * D
+    hidden_out = _recurrent_output_feature_size(layer)
+    if hidden_out is None:
+        return None, f"{op_name} hidden_size unknown"
+    out_feat = _scale_dim_value(
+        hidden_out, _recurrent_directions(layer),
+        f"_rnn_out_{layer.attr_name or op_name.lower()}",
+    )
+    return TensorShape(input_shape.dims[:-1] + (ShapeDim(out_feat),)), None
 
-    # Output: same leading dims, last dim = hidden_size * D
-    new_dims = input_shape.dims[:-1] + (ShapeDim(out_feat),)
-    return TensorShape(new_dims), None
+
+def _recurrent_state_shape(
+    output_shape: TensorShape, layer: LayerDef, state_kind: str, op_name: str
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    """Shape of returned h_n/c_n from a recurrent layer call.
+
+    ``h_n`` is ``(D*num_layers, H_out)`` for unbatched inputs or
+    ``(D*num_layers, batch, H_out)`` for batched inputs.  ``c_n`` exists only for
+    LSTM and uses ``hidden_size`` even when ``proj_size`` changes ``H_out``.
+    ``batch_first`` never changes state layout; it only identifies which output
+    dimension contains the batch extent.
+    """
+    if output_shape.ndim not in (2, 3):
+        return None, (
+            f"{op_name} state source must be 2D or 3D output, "
+            f"got {output_shape.ndim}D"
+        )
+    if state_kind == "c" and layer.kind != LayerKind.LSTM:
+        return None, f"{op_name} only LSTM returns a cell state"
+
+    feature = (
+        layer.hidden_size if state_kind == "c"
+        else _recurrent_output_feature_size(layer)
+    )
+    if feature is None:
+        return None, f"{op_name} hidden_size unknown"
+
+    depth = ShapeDim(_recurrent_state_depth(layer))
+    feat = ShapeDim(feature)
+    if output_shape.ndim == 2:
+        return TensorShape((depth, feat)), None
+    batch_dim = output_shape.dims[0] if layer.batch_first else output_shape.dims[1]
+    return TensorShape((depth, batch_dim, feat)), None
+
+
+def _propagate_lstm(
+    input_shape: TensorShape, layer: LayerDef
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    """Propagate shape through nn.LSTM, including h_n/c_n pseudo-outputs."""
+    state_kind = (layer.params or {}).get("__rnn_state_output__")
+    if state_kind:
+        return _recurrent_state_shape(input_shape, layer, str(state_kind), "LSTM")
+    return _recurrent_output_shape(input_shape, layer, "LSTM")
 
 
 def _propagate_gru(
     input_shape: TensorShape, layer: LayerDef
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """Propagate shape through nn.GRU.
-
-    nn.GRU(input_size, hidden_size, num_layers, batch_first, bidirectional)
-    Same shape semantics as LSTM for the output tensor.
-    """
-    if input_shape.ndim < 2:
-        return None, "GRU requires at least 2D input"
-
-    last = input_shape.dims[-1]
-    if layer.in_features is not None and not last.is_symbolic:
-        if last.value != layer.in_features:
-            return None, (
-                f"GRU expects input_size={layer.in_features}, "
-                f"got {last.value}"
-            )
-
-    hidden = layer.hidden_size
-    if hidden is None:
-        return None, "GRU hidden_size unknown"
-
-    D = 2 if layer.bidirectional else 1
-    out_feat = hidden * D
-
-    new_dims = input_shape.dims[:-1] + (ShapeDim(out_feat),)
-    return TensorShape(new_dims), None
+    """Propagate shape through nn.GRU, including h_n pseudo-outputs."""
+    state_kind = (layer.params or {}).get("__rnn_state_output__")
+    if state_kind:
+        return _recurrent_state_shape(input_shape, layer, str(state_kind), "GRU")
+    return _recurrent_output_shape(input_shape, layer, "GRU")
 
 
 def _propagate_convtranspose1d(
@@ -7810,8 +7943,11 @@ def _propagate_fractionalmaxpool2d(
 def _propagate_rnn(
     input_shape: TensorShape, layer: LayerDef
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """RNN: same contract as GRU for shape propagation."""
-    return _propagate_gru(input_shape, layer)
+    """Propagate shape through nn.RNN, including h_n pseudo-outputs."""
+    state_kind = (layer.params or {}).get("__rnn_state_output__")
+    if state_kind:
+        return _recurrent_state_shape(input_shape, layer, str(state_kind), "RNN")
+    return _recurrent_output_shape(input_shape, layer, "RNN")
 
 
 def _propagate_pad2d(
@@ -9132,19 +9268,35 @@ class ConstraintVerifier:
                     # preserved (true for every registered stub contract).
                     if pre_d and post_d:
                         cs.append(post_d[0] == pre_d[0])
-                elif layer.kind in (LayerKind.LSTM, LayerKind.GRU):
-                    # LSTM/GRU: leading dims preserved, last dim = hidden_size * D
-                    for i in range(min(len(pre_d) - 1, len(post_d) - 1)):
-                        cs.append(post_d[i] == pre_d[i])
-                    if layer.hidden_size is not None and isinstance(layer.hidden_size, int) and post_d:
-                        D = 2 if layer.bidirectional else 1
-                        cs.append(
-                            post_d[-1] == z3.IntVal(layer.hidden_size * D)
+                elif layer.kind in (LayerKind.LSTM, LayerKind.GRU, LayerKind.RNN):
+                    state_kind = (layer.params or {}).get("__rnn_state_output__")
+                    if state_kind:
+                        depth = _recurrent_state_depth(layer)
+                        feature = (
+                            layer.hidden_size if state_kind == "c"
+                            else _recurrent_output_feature_size(layer)
                         )
-                    if layer.in_features is not None and isinstance(layer.in_features, int) and pre_d:
-                        cs.append(
-                            pre_d[-1] == z3.IntVal(layer.in_features)
-                        )
+                        if isinstance(depth, int) and post_d:
+                            cs.append(post_d[0] == z3.IntVal(depth))
+                        if isinstance(feature, int) and post_d:
+                            cs.append(post_d[-1] == z3.IntVal(feature))
+                        if len(pre_d) == 3 and len(post_d) == 3:
+                            batch_idx = 0 if layer.batch_first else 1
+                            cs.append(post_d[1] == pre_d[batch_idx])
+                    else:
+                        # RNN/LSTM/GRU: leading sequence/batch dims preserved,
+                        # last dim = hidden output size * num_directions.
+                        for i in range(min(len(pre_d) - 1, len(post_d) - 1)):
+                            cs.append(post_d[i] == pre_d[i])
+                        hidden_out = _recurrent_output_feature_size(layer)
+                        out_feat = _scale_dim_value(
+                            hidden_out, _recurrent_directions(layer), "_rnn_out")
+                        if isinstance(out_feat, int) and post_d:
+                            cs.append(post_d[-1] == z3.IntVal(out_feat))
+                        if layer.in_features is not None and isinstance(layer.in_features, int) and pre_d:
+                            cs.append(
+                                pre_d[-1] == z3.IntVal(layer.in_features)
+                            )
                 elif layer.kind in (LayerKind.CONVTRANSPOSE1D,):
                     # ConvTranspose1d: batch preserved, out_channels set
                     if pre_d and post_d:
@@ -9671,8 +9823,10 @@ class ConstraintVerifier:
                                     LayerKind.TRANSFORMER_DECODER):
                     if layer.in_features is not None and isinstance(layer.in_features, int) and dims:
                         cs.append(dims[-1] == z3.IntVal(layer.in_features))
-                elif layer.kind in (LayerKind.LSTM, LayerKind.GRU):
-                    if layer.in_features is not None and isinstance(layer.in_features, int) and dims:
+                elif layer.kind in (LayerKind.LSTM, LayerKind.GRU, LayerKind.RNN):
+                    if ((layer.params or {}).get("__rnn_state_output__")):
+                        pass
+                    elif layer.in_features is not None and isinstance(layer.in_features, int) and dims:
                         cs.append(dims[-1] == z3.IntVal(layer.in_features))
         elif step.op == OpKind.MATMUL and len(step.inputs) >= 2:
             a, b = step.inputs[0], step.inputs[1]
@@ -10028,9 +10182,10 @@ class ConstraintVerifier:
                     cs.append(
                         dims[-1] == z3.IntVal(layer.in_features)
                     )
-                elif (layer.kind in (LayerKind.LSTM, LayerKind.GRU)
+                elif (layer.kind in (LayerKind.LSTM, LayerKind.GRU, LayerKind.RNN)
                         and isinstance(layer.in_features, int)
-                        and dims):
+                        and dims
+                        and not (layer.params or {}).get("__rnn_state_output__")):
                     cs.append(
                         dims[-1] == z3.IntVal(layer.in_features)
                     )
@@ -11023,6 +11178,13 @@ class ConstraintVerifier:
         inp_shape = state.shape_env.get(inp_name) if inp_name else None
 
         if inp_shape is None:
+            return
+
+        if inp_name in self._opaque_tensors():
+            state.shape_env[step.output] = TensorShape(tuple(
+                ShapeDim(f"_opaque_{step.output}_{i}")
+                for i in range(inp_shape.ndim)
+            ))
             return
 
         if layer.kind == LayerKind.DROPOUT and state.phase == Phase.EVAL:
