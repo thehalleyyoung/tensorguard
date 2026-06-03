@@ -11,6 +11,9 @@ actionable error at ``fit``/``train`` time.
   the ``LightningModule`` in ``on_fit_start``.
 * :class:`TensorGuardTrainerCallback` — a Hugging Face ``TrainerCallback`` that
   verifies the model in ``on_train_begin``.
+* ``src.integrations.production_adapters`` — import-light wrappers around
+  Lightning ``fit``, HF ``train``, Accelerate ``prepare``, Keras Core ``fit``,
+  and Ray Train ``fit``/train-loop choke points.
 
 The callbacks degrade gracefully: if Lightning / Transformers is not installed
 they fall back to a plain object base, so importing this module never fails and

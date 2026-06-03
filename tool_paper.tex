@@ -1101,8 +1101,8 @@ For a tool to be credible at PLDI, OOPSLA, ISSTA, or a systems-for-ML venue, it
 must connect a formal idea to the messiness of real code.  \tg{} does that in
 three ways.  First, it makes refinement-style tensor verification usable from
 normal PyTorch files with zero annotations.  Second, it exposes enough product
-surface--CLI, CI, SARIF, Jupyter, decorators, framework hooks, export gates,
-Docker, conda, pipx, docs--that adoption can be evaluated rather than imagined.
+surface--CLI, CI, SARIF, Jupyter, decorators, production trainer adapters,
+export gates, Docker, conda, pipx, docs--that adoption can be evaluated rather than imagined.
 Third, it ships an artifact that reviewers can run, audit, and extend.
 
 The codebase also provides a platform for future work.  New operator rules can
@@ -1906,11 +1906,15 @@ pretend that notebook context is a static module.
 \subsection{Framework integration}
 
 Framework authors can call the public API before launching training, compiling
-a model, exporting an artifact, or serving a checkpoint.  Hooks for Lightning,
-HuggingFace-style trainers, accelerate-like launchers, MLflow, W\&B, and CI
-systems allow \tg{} to act as a precondition gate.  The value is not merely a
-shape checker; it is a common safety layer that can speak JSON, SARIF, JUnit,
-or native annotations.
+a model, exporting an artifact, or serving a checkpoint.  Hooks and production
+adapters cover Lightning \texttt{fit}, HuggingFace Trainer \texttt{train},
+Accelerate \texttt{prepare}, Keras Core \texttt{fit}, and Ray Train
+\texttt{fit}/train-loop execution, in addition to MLflow, W\&B, and CI systems.
+Each adapter verifies the original \texttt{nn.Module} before the framework wraps,
+moves, compiles, or trains it, so a shape/device/phase bug appears as one
+\texttt{TensorGuardViolation} at the integration boundary.  The value is not
+merely a shape checker; it is a common safety layer that can speak JSON, SARIF,
+JUnit, or native annotations.
 
 \subsection{Deployment gate}
 

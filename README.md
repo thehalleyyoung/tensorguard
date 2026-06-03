@@ -413,18 +413,23 @@ from tensorguard.torch import (
     verify_compile_guard_interactions,
 )
 from src.framework_hooks import TensorGuardCallback, TensorGuardTrainerCallback
-from src.integrations.accelerate_hook import prepare_verified
+from src.integrations.production_adapters import (
+    accelerate_prepare_verified, hf_train_verified, keras_fit_verified,
+    lightning_fit_verified, ray_train_verified,
+)
 from src.integrations.hf_hook import guarded_from_pretrained
 
 compiled = guarded_compile(model, input_shapes={"x": ("b", 10)})   # torch.compile
 guard_audit = verify_compile_guard_interactions(model, (x,), input_shapes={"x": ("b", 10)})
 guarded_onnx_export(model, (x,), "model.onnx")                     # ONNX checker + opset + shape-inference round trip
 guarded_aot_package(model, (x,), package_path="m.pt2", dynamic_shapes=ds)  # AOT layout/dtype/device/Dim/lowering gates
-model = prepare_verified(accelerator, model, opt, loader)          # accelerate.prepare
+model = accelerate_prepare_verified(accelerator, model, opt, loader)  # accelerate.prepare
 model = guarded_from_pretrained(AutoModel, "org/ckpt")            # HF from_pretrained
-trainer = pl.Trainer(callbacks=[TensorGuardCallback()])           # Lightning fit
-# … TensorGuardTrainerCallback for the HF Trainer; src.upstream_hook.install()
-# grafts the proposed torch.nn.utils.verify_module onto the real namespace.
+trainer = pl.Trainer(callbacks=[TensorGuardCallback()])           # Lightning hook
+lightning_fit_verified(trainer, lit_model, input_shapes={"x": ("b", 10)})
+hf_train_verified(hf_trainer, input_shapes={"x": ("b", 10)})
+keras_fit_verified(keras_model, input_shapes={"x": ("b", 10)})
+ray_train_verified(ray_trainer, input_shapes={"x": ("b", 10)})
 ```
 
 ---
@@ -2540,17 +2545,18 @@ packaging; `guarded_onnx_export` adds ONNX opset availability and
 `onnx.checker` gates. See `src/torch_integration.py` and
 `src/compile_guard_analysis.py`.
 
-### Framework hooks (Lightning, HF Trainer, `from_pretrained`)
+### Framework hooks (Lightning, HF Trainer, Accelerate, Keras Core, Ray)
 
 Framework users get a one-line pre-flight check that runs before the first
 training step. `TensorGuardCallback` is a `pytorch_lightning.Callback` that
 verifies the `LightningModule` in `on_fit_start`; `TensorGuardTrainerCallback`
 is a Hugging Face `TrainerCallback` that verifies the model in `on_train_begin`;
 `guarded_from_pretrained` verifies a returned `PreTrainedModel` before the loader
-hands it back. A real shape/device/phase bug raises `TensorGuardViolation` at
-`fit`/`train`/load time instead of crashing mid-epoch. Both degrade gracefully
-when the framework is not installed. See `src/framework_hooks.py`,
-`src/integrations/hf_hook.py`, and `examples/lightning_guarded_training.py`.
+hands it back. `src.integrations.production_adapters` also wraps the production
+choke points for Lightning `fit`, HF `train`, Accelerate `prepare`, Keras Core
+`fit`, and Ray Train `fit`/train-loop execution. A real shape/device/phase bug
+raises `TensorGuardViolation` before wrapping or training starts, and every
+adapter is import-safe when its framework is absent.
 
 ### License & redistribution
 
