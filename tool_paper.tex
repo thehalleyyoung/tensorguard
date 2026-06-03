@@ -686,8 +686,9 @@ reviewers and contributors. \\
 Statistical rigor &
 \texttt{tests/test\_statistical\_power.py},
 \texttt{tests/test\_significance.py},
-\texttt{tests/test\_corrected\_meta\_analysis.py}.  Documents effect sizes,
-power, and aggregate evidence. \\
+\texttt{tests/test\_corrected\_meta\_analysis.py},
+\texttt{tests/test\_statistical\_meta\_analysis.py}.  Documents effect sizes,
+power, and cross-corpus evidence without naive synthetic/real pooling. \\
 \hline
 \end{longtable}
 
@@ -724,6 +725,17 @@ buffers, optimizer-state drift, train/eval mode leakage, or quantization output
 drift; the corresponding object-level gates catch all 15 while the artifact
 explicitly labels the corpus as coverage/regression evidence rather than a field
 prevalence estimate.
+
+The statistical synthesis follows the same honesty rule.  The Step-265
+meta-analysis consumes the extended real-bug corpus, hard-recall latent bugs,
+runtime-silent semantic bugs, mutation tests, negative and differential fuzzing,
+false-\unknown{} checks, clean stress tests, natural clean samples, and same-case
+baseline artifacts, but it does not publish one giant pooled denominator.  Each
+artifact is first reduced to a suite-level Bernoulli estimate tagged by
+distribution; the primary interval is a deterministic cluster bootstrap within
+that distribution.  Case-weighted rates and random-effects logit summaries are
+reported only as diagnostics, so a large generated suite cannot wash out a small
+real-bug suite.
 
 The conformance tests are especially important.  A static rule is only useful
 if it matches the runtime library.  The repository therefore includes tests
@@ -987,7 +999,9 @@ encoding faithfulness, and CEGAR reasoning. \\
 The artifact is designed to be regenerated.  The \texttt{make reproduce}
 harness and reproducibility scripts update headline results, numeric claim
 audits, benchmark deltas, scaling curves, CEGAR measurements, and paper evidence
-indices.  For artifact review, \texttt{scripts/reproduce\_main\_results.sh} is a
+indices, including the distribution-stratified meta-analysis that keeps
+synthetic, natural, stress, and real-bug evidence separate.  For artifact review,
+\texttt{scripts/reproduce\_main\_results.sh} is a
 single reviewer-facing entrypoint to the authoritative byte-checking pipeline,
 while \texttt{scripts/check\_main\_results.sh} verifies and previews the command
 catalogue.  The generated \texttt{reproducibility/reviewer\_commands.json} and

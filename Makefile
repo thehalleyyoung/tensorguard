@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs soundness-appendix corpus headline audit evaluation-protocol developer-study silent-bug-benchmark precision-recall stratified-precision-recall head-to-head-step252 stagewise-ablation pr-history-survival labeling-agreement pareto-curves pareto-curves-gate cross-version-stability natural-distribution-study sound-fp false-unknowns hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence artifact-index reviewer-commands test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs soundness-appendix corpus headline audit evaluation-protocol developer-study silent-bug-benchmark statistical-meta-analysis precision-recall stratified-precision-recall head-to-head-step252 stagewise-ablation pr-history-survival labeling-agreement pareto-curves pareto-curves-gate cross-version-stability natural-distribution-study sound-fp false-unknowns hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence artifact-index reviewer-commands test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -57,6 +57,7 @@ help:
 	@echo "  natural-distribution-study Regenerate Step 258 clean public-repo-style study"
 	@echo "  developer-study Regenerate Step 259 controlled developer-study packet"
 	@echo "  silent-bug-benchmark Regenerate Step 261 runtime-silent bug benchmark"
+	@echo "  statistical-meta-analysis Regenerate Step 265 cross-corpus robust bootstrap meta-analysis"
 	@echo "  audit            Run the numeric-claim audit over committed artifacts"
 	@echo "  paper-evidence   Regenerate every table/figure + the single paper-evidence index"
 	@echo "  artifact-index   Regenerate the SHA-256 ledger for generated artifacts"
@@ -246,6 +247,10 @@ developer-study:
 
 silent-bug-benchmark:
 	$(PYTHON) reproducibility/silent_bug_benchmark.py
+
+statistical-meta-analysis:
+	$(PYTHON) reproducibility/statistical_meta_analysis.py
+	$(PYTHON) reproducibility/statistical_meta_analysis.py --check
 
 paper-evidence: reproduce-check
 	@echo "Building the single paper-evidence index (all tables/figures)..."

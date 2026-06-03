@@ -1,6 +1,6 @@
 # Paper-evidence index (Step 125)
 
-`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **58** evidence items (41 render a table); every generator script is present: **False**.
+`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **59** evidence items (42 render a table); every generator script is present: **False**.
 
 | stem | generator | table? | json | md |
 | --- | --- | --- | --- | --- |
@@ -52,6 +52,7 @@
 | smt_backend_comparison | `reproducibility/smt_backend_comparison.py` | True | y | y |
 | soundness_boundary | `reproducibility/soundness_boundary.py` | False | y | y |
 | stagewise_ablation | `reproducibility/stagewise_ablation.py` | True | y | y |
+| statistical_meta_analysis | `reproducibility/statistical_meta_analysis.py` | True | y | y |
 | statistical_power | `reproducibility/statistical_power.py` | True | y | y |
 | stratified_precision_recall | `evaluation/stratified_precision_recall.py` | True | y | y |
 | stub_autogen_coverage | `reproducibility/stub_autogen_coverage.py` | True | y | y |

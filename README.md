@@ -1286,6 +1286,16 @@ corrections, and the two corrections agree on the count. See
 [`reproducibility/effect_sizes.md`](reproducibility/effect_sizes.md)
 and `tests/test_effect_sizes.py`.
 
+### Cross-corpus meta-analysis: no synthetic/real pooling trick
+`reproducibility/statistical_meta_analysis.py` turns every major evidence source
+into a suite-level estimate, then reports distribution-stratified robust
+bootstrap intervals. Real minimized bugs, runtime-silent semantic bugs,
+mutations, fuzzing, clean stress tests, natural clean models, and false-UNKNOWN
+checks stay separate; raw case-weighted rates are diagnostic-only, never a global
+headline. See
+[`reproducibility/statistical_meta_analysis.md`](reproducibility/statistical_meta_analysis.md)
+and `tests/test_statistical_meta_analysis.py`.
+
 ### One-command reproducibility capsule
 Everything above is only as credible as it is reproducible, so the whole
 evidence base ships as a capsule: a pinned wheel lock
