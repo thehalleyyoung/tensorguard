@@ -178,8 +178,11 @@ runtime errors in ML codebases before any code runs.
   pass" fallback policy are published in
   [`VERIFIABLE_FRAGMENT.md`](VERIFIABLE_FRAGMENT.md) (generated from
   `src/verifiable_fragment.py`; the instance-free `analyze_source()` exposes the
-  statically-checkable fallback). Pinned by
-  `tests/test_verifiable_fragment_spec.py`.
+  statically-checkable fallback). The reviewer-facing
+  [`formal_soundness_appendix.pdf`](formal_soundness_appendix.pdf) is generated
+  from that grammar, live Lean theorem statements, and the proof-footprint table.
+  Pinned by `tests/test_verifiable_fragment_spec.py` and
+  `tests/test_formal_soundness_appendix.py`.
 - **Frozen ground-truth benchmark corpus** — [`real_benchmarks/`](real_benchmarks/)
   holds 16 self-contained PyTorch `nn.Module`s (8 clean / 8 buggy) across the
   shape, device, phase, and gradient domains, each content-addressed by SHA-256
@@ -495,7 +498,7 @@ make reproduce-check    # also assert byte-identical regeneration (no git diff)
 `make reproduce` regenerates, from source and in dependency order, the
 generated spec docs/tables (`SOUNDNESS_CONTRACT.md`,
 `VERIFIABLE_FRAGMENT.md`, `operator_confidence_table.json`,
-`proof_footprint_manifest.json`), the frozen
+`formal_soundness_appendix.tex`, `proof_footprint_manifest.json`), the frozen
 benchmark corpus and its audit artifact (`real_benchmarks/`), and the
 headline 60-bug Refuted-Proof figure — then runs the numeric-claim audit,
 which recomputes every `x/y` ratio and `%` token in `README.md` from the

@@ -720,6 +720,14 @@ broadcast helpers point at concrete Lean declarations, while linalg and FFT
 contracts remain correctly labeled as tested-only until they receive their own
 per-operator proofs.
 
+The formal appendix is now generated from the same sources rather than copied
+from prose.  \texttt{formal\_soundness\_appendix.tex} mines namespace-qualified
+Lean theorem statements, resolves every Lean-backed proof-footprint row to its
+source declaration, and embeds the verifiable-fragment grammar and supported
+construct tables.  This makes the paper's trust boundary auditable as a
+repository artifact: if a theorem, operator tier, or fragment production drifts,
+the appendix regeneration test fails.
+
 The newest formal layer lifts those local facts to whole modules.
 \texttt{TensorGuard.SubjectReduction} defines a small environment-based tensor
 language whose statements append outputs from primitive proof-backed families
@@ -1047,7 +1055,8 @@ Formal artifacts &
 Lean proof files, axiom audits, serialized CEGAR predicate replay,
 conditional/straight-line subject reduction, SMT encoding faithfulness checks,
 including broadcast/divisibility/partition/dtype-promotion Z3 parity,
-proof-footprint manifest rows for every registered operator, generated
+proof-footprint manifest rows for every registered operator, a generated formal
+soundness appendix linking Lean declarations to the fragment grammar, generated
 conformance bridges, and proof certificate infrastructure. \\
 \hline
 Reproducibility &
@@ -1836,7 +1845,8 @@ to the artifact that must be rebuilt. \\
 
 A reviewer can inspect the trust boundary by reading
 \texttt{SOUNDNESS\_CONTRACT.md}, \texttt{VERIFIABLE\_FRAGMENT.md}, and
-\texttt{operator\_confidence\_table.json}.  They can run the latest padding
+\texttt{operator\_confidence\_table.json}, then checking the generated
+\texttt{formal\_soundness\_appendix.pdf}.  They can run the latest padding
 tests with:
 \[
 \texttt{python -m pytest -q tests/test\_pad\_semantics.py}.
