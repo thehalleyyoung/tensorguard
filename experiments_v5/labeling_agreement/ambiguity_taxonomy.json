@@ -1,0 +1,45 @@
+{
+  "schema_version": "tensorguard.labeling-ambiguity-taxonomy.v1",
+  "codes": {
+    "BODY_SIGNATURE_ONLY": {
+      "summary": "The frozen miner recorded the PyTorch runtime signature, but the committed title alone does not carry the full error text.",
+      "when_used": "Use when the record is still a valid offline mining signal but would require refetching the issue/PR body before entering a precision/recall gold split."
+    },
+    "CLEAR_SIGNATURE": {
+      "summary": "The committed title or metadata contains an unambiguous tensor runtime signature.",
+      "when_used": "Use for records whose visible metadata is enough to audit the inclusion/root-cause decision without extra context."
+    },
+    "DATA_OR_PREPROCESS": {
+      "summary": "The title suggests input formatting, preprocessing, or dataset shape as the proximate cause.",
+      "when_used": "Use when the tensor error is plausibly in scope, but the root is outside a model-layer architectural contract."
+    },
+    "DEPENDENCY_OR_DOCS": {
+      "summary": "The title suggests dependency churn, documentation, API/schema text, or workflow metadata rather than a tensor execution bug.",
+      "when_used": "Use when the generic signature match should not be treated as a positive bug label without refetching source evidence."
+    },
+    "ENVIRONMENT_DEVICE": {
+      "summary": "The title ties the failure to device placement or accelerator environment.",
+      "when_used": "Use for CPU/CUDA/MPS/XPU placement records, especially when a runtime environment is part of the reported symptom."
+    },
+    "FIX_LINK_ONLY": {
+      "summary": "A PR or fix-style title indicates a possible repair but not enough standalone evidence for a gold positive label.",
+      "when_used": "Use for records accepted as provenance links but deferred from directly scored positive labels."
+    },
+    "GENERIC_INPUT_TYPE_PHRASE": {
+      "summary": "The phrase 'Input type' is overloaded and may refer to non-tensor APIs.",
+      "when_used": "Use for dtype/device-input candidates where the signature is too generic to classify from title-only metadata."
+    },
+    "NON_ENGLISH_OR_MINIMAL_TITLE": {
+      "summary": "The title is non-English, very short, or otherwise too sparse for root-cause adjudication.",
+      "when_used": "Use when the runtime signature keeps the row useful, but title-only review cannot confidently localize the cause."
+    },
+    "OVERLAP_SHAPE_DEVICE_DTYPE": {
+      "summary": "Multiple TensorGuard domains could plausibly explain the record.",
+      "when_used": "Use when the final inclusion decision is positive but the domain/root-cause label is intentionally conservative."
+    },
+    "PR_METADATA_AMBIGUOUS": {
+      "summary": "The PR metadata is too generic to show the bug without the frozen signature match.",
+      "when_used": "Use for pull requests whose titles name a broad change, cleanup, or fixture rather than the tensor failure itself."
+    }
+  }
+}

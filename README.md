@@ -200,8 +200,10 @@ runtime errors in ML codebases before any code runs.
   signature, then [`experiments_v5/provenance_bug_corpus/`](experiments_v5/provenance_bug_corpus/)
   enriches them with license status, PR/candidate commit links, signature
   families, and repo-authored minimized reproducers for all eight error
-  categories. Pinned by `tests/test_github_bug_mining.py` and
-  `tests/test_provenance_bug_corpus.py`.
+  categories; a dual-pass metadata audit publishes the labeling rubric,
+  ambiguity taxonomy, adjudication log, and kappa metrics without overclaiming an
+  external human study. Pinned by `tests/test_github_bug_mining.py`,
+  `tests/test_provenance_bug_corpus.py`, and `tests/test_labeling_agreement.py`.
 - **SARIF 2.1.0 output** — integrates with GitHub Code Scanning / Advanced Security
 - **Beyond PyTorch** — the same Z3-backed verifier core analyzes a **second
   framework**: a Flax/JAX (`nnx.Sequential`) frontend lowers Linear/LayerNorm/

@@ -1,0 +1,228 @@
+{
+  "adjudication": {
+    "ambiguity_codes_used": {
+      "BODY_SIGNATURE_ONLY": 11,
+      "CLEAR_SIGNATURE": 16,
+      "DATA_OR_PREPROCESS": 3,
+      "DEPENDENCY_OR_DOCS": 5,
+      "ENVIRONMENT_DEVICE": 5,
+      "FIX_LINK_ONLY": 1,
+      "GENERIC_INPUT_TYPE_PHRASE": 4,
+      "NON_ENGLISH_OR_MINIMAL_TITLE": 3,
+      "OVERLAP_SHAPE_DEVICE_DTYPE": 1,
+      "PR_METADATA_AMBIGUOUS": 3
+    },
+    "disagreement_axes": {
+      "evidence_strength": 4,
+      "include_decision": 10,
+      "root_cause_family": 9
+    },
+    "final_evidence_strength": {
+      "moderate": 5,
+      "strong": 16,
+      "weak": 11
+    },
+    "final_include_decision": {
+      "defer": 7,
+      "exclude": 5,
+      "include": 20
+    },
+    "final_root_cause_family": {
+      "data_or_preprocess": 1,
+      "device_placement": 4,
+      "out_of_scope": 5,
+      "shape_contract": 16,
+      "unknown_from_metadata": 6
+    },
+    "records_with_any_disagreement": 10,
+    "records_without_disagreement": 22
+  },
+  "annotation_provenance": {
+    "external_independent_annotators_claimed": false,
+    "measured_object": "reviewer judgment over inclusion, root-cause family, and evidence strength; mechanical runtime-signature category labels are not the headline agreement measure",
+    "not_human_subjects_study": true,
+    "status": "dual_pass_repository_metadata_audit"
+  },
+  "generated_by": "experiments_v5/labeling_agreement/agreement.py",
+  "inputs": {
+    "annotations_sha256": "f38494d525b211f35009f07ce18cd94a20a597ef20908a3bfc5bafd0c03475b8",
+    "rubric_path": "experiments_v5/labeling_agreement/rubric.md",
+    "taxonomy_path": "experiments_v5/labeling_agreement/ambiguity_taxonomy.md",
+    "taxonomy_sha256": "04ff14d9fa564db71e944095c0fbe36abdbe46b1850574edb278efe3c2630e9d"
+  },
+  "limitations": [
+    "This is a repository-authored dual-pass audit, not a completed external human-subjects study.",
+    "The sample is stratified by mechanical runtime-signature category, so it is not prevalence-weighted.",
+    "Rows marked defer should not be used as gold precision/recall positives until third-party context is refetched or a fix is inspected."
+  ],
+  "metrics": {
+    "evidence_strength": {
+      "agreements": 28,
+      "cohen_kappa": 0.794872,
+      "cohen_kappa_bootstrap_95ci": [
+        0.603715,
+        0.947967
+      ],
+      "confusion_pass_a_rows_pass_b_columns": {
+        "moderate": {
+          "moderate": 3,
+          "strong": 0,
+          "weak": 1
+        },
+        "strong": {
+          "moderate": 0,
+          "strong": 16,
+          "weak": 0
+        },
+        "weak": {
+          "moderate": 3,
+          "strong": 0,
+          "weak": 9
+        }
+      },
+      "disagreements": 4,
+      "labels": [
+        "strong",
+        "moderate",
+        "weak"
+      ],
+      "n": 32,
+      "observed_agreement": 0.875
+    },
+    "include_decision": {
+      "agreements": 22,
+      "cohen_kappa": 0.418182,
+      "cohen_kappa_bootstrap_95ci": [
+        0.127273,
+        0.683168
+      ],
+      "confusion_pass_a_rows_pass_b_columns": {
+        "defer": {
+          "defer": 2,
+          "exclude": 2,
+          "include": 3
+        },
+        "exclude": {
+          "defer": 2,
+          "exclude": 3,
+          "include": 0
+        },
+        "include": {
+          "defer": 3,
+          "exclude": 0,
+          "include": 17
+        }
+      },
+      "disagreements": 10,
+      "labels": [
+        "include",
+        "defer",
+        "exclude"
+      ],
+      "n": 32,
+      "observed_agreement": 0.6875
+    },
+    "root_cause_family": {
+      "agreements": 23,
+      "cohen_kappa": 0.588571,
+      "cohen_kappa_bootstrap_95ci": [
+        0.335312,
+        0.790164
+      ],
+      "confusion_pass_a_rows_pass_b_columns": {
+        "data_or_preprocess": {
+          "data_or_preprocess": 1,
+          "device_placement": 0,
+          "dtype_device_contract": 0,
+          "out_of_scope": 0,
+          "shape_contract": 0,
+          "unknown_from_metadata": 0
+        },
+        "device_placement": {
+          "data_or_preprocess": 0,
+          "device_placement": 4,
+          "dtype_device_contract": 0,
+          "out_of_scope": 0,
+          "shape_contract": 0,
+          "unknown_from_metadata": 0
+        },
+        "dtype_device_contract": {
+          "data_or_preprocess": 0,
+          "device_placement": 0,
+          "dtype_device_contract": 0,
+          "out_of_scope": 0,
+          "shape_contract": 0,
+          "unknown_from_metadata": 0
+        },
+        "out_of_scope": {
+          "data_or_preprocess": 0,
+          "device_placement": 0,
+          "dtype_device_contract": 0,
+          "out_of_scope": 3,
+          "shape_contract": 0,
+          "unknown_from_metadata": 2
+        },
+        "shape_contract": {
+          "data_or_preprocess": 0,
+          "device_placement": 0,
+          "dtype_device_contract": 0,
+          "out_of_scope": 0,
+          "shape_contract": 13,
+          "unknown_from_metadata": 3
+        },
+        "unknown_from_metadata": {
+          "data_or_preprocess": 0,
+          "device_placement": 0,
+          "dtype_device_contract": 0,
+          "out_of_scope": 2,
+          "shape_contract": 2,
+          "unknown_from_metadata": 2
+        }
+      },
+      "disagreements": 9,
+      "labels": [
+        "shape_contract",
+        "device_placement",
+        "dtype_device_contract",
+        "data_or_preprocess",
+        "unknown_from_metadata",
+        "out_of_scope"
+      ],
+      "n": 32,
+      "observed_agreement": 0.71875
+    }
+  },
+  "sample": {
+    "by_category": {
+      "broadcast_mismatch": 4,
+      "cat_stack_mismatch": 4,
+      "conv_channel_mismatch": 4,
+      "device_mismatch": 4,
+      "dim_out_of_range": 4,
+      "dtype_device_input_mismatch": 4,
+      "matmul_linear_mismatch": 4,
+      "view_reshape_total_size": 4
+    },
+    "by_github_kind": {
+      "issue": 27,
+      "pull_request": 5
+    },
+    "by_project_family": {
+      "diffusion": 5,
+      "language_model": 2,
+      "unclassified_public_repo": 23,
+      "vision_detection": 2
+    },
+    "per_category": 4,
+    "record_ids_sha256": "b874a840add267c6cfecbfd8e04a57efea25c7f600d396e5f6cb21f096e14865",
+    "records": 32,
+    "seed": "tensorguard-step255-labeling-v1"
+  },
+  "schema_version": "tensorguard.labeling-agreement.v1",
+  "source_corpus": {
+    "corpus_sha256": "032db998c924e2bcb98b3711a6bad75e9f85c23aae210f6024840435586ffee4",
+    "manifest_path": "experiments_v5/provenance_bug_corpus/manifest.json",
+    "path": "experiments_v5/provenance_bug_corpus/corpus.jsonl",
+    "records": 2704
+  }
+}

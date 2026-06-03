@@ -538,7 +538,12 @@ with content hashes and labels.  The GitHub-mined dataset under
 signals associated with PyTorch runtime error signatures; its provenance-rich
 expansion adds explicit license metadata, direct or candidate PR commit-page
 links when available offline, and repo-authored minimized reproducers for all
-eight runtime-signature categories.  Fuzzing harnesses generate valid modules
+eight runtime-signature categories.  A separate dual-pass labeling agreement
+audit samples those mined rows, publishes the rubric, ambiguity taxonomy, and
+adjudication log, and reports kappa for inclusion/root-cause/evidence judgments
+in \texttt{experiments\_v5/labeling\_agreement/agreement.json}; it is explicitly
+not a human-subjects study and does not treat the mechanical category label as
+the headline agreement measure.  Fuzzing harnesses generate valid modules
 and mutation harnesses inject shape, device, and dtype faults.  Differential
 conformance tests cross-check transfer functions against the live torch
 dispatcher.  Baseline comparison scripts evaluate PyTea and runtime-tool
@@ -588,6 +593,13 @@ Provenance-rich bug corpus &
 \texttt{tests/test\_provenance\_bug\_corpus.py}.  Deterministic 2,704-record
 expansion with license status, runtime signatures, PR/candidate commit-link
 coverage, and legal category-level reproducers checked against real PyTorch. \\
+\hline
+Labeling agreement &
+\texttt{experiments\_v5/labeling\_agreement/},
+\texttt{tests/test\_labeling\_agreement.py}.  Dual-pass metadata audit over a
+deterministic 32-record stratified sample, with rubric, ambiguity taxonomy,
+adjudication log, and regenerated kappa/confusion metrics for inclusion,
+root-cause, and evidence-strength judgments. \\
 \hline
 PR-history survival &
 \texttt{reproducibility/pr\_history\_survival.py},
@@ -929,7 +941,9 @@ audits, benchmark deltas, scaling curves, CEGAR measurements, and paper evidence
 indices.  Tests pin committed JSON artifacts against freshly generated outputs.
 The benchmark corpus has content hashes, datasheets, citation metadata, and
 loader checks; the mined-bug expansion carries a deterministic corpus hash plus
-explicit no-third-party-code redistribution metadata.  The evaluation protocol
+explicit no-third-party-code redistribution metadata; the labeling-agreement
+artifact pins its sample seed, annotation hash, taxonomy hash, adjudication log,
+and regenerated kappa/confusion tables.  The evaluation protocol
 is regenerated as a first-class deterministic artifact, so split roles, tuning
 locks, metric formulas, and scoring-script hashes drift only through reviewed
 source changes.  The operator confidence table and proof-footprint manifest are
@@ -1553,6 +1567,14 @@ has a minimized TensorGuard-authored reproducer.  The intent is not to treat
 every mined candidate as a theorem; it is to create a large, auditable pool that
 can be stratified, manually labeled, filtered into blind splits, and reused by
 future tools.
+
+The Step-255 agreement artifact adds the missing audit layer for that pool.  It
+does not ask reviewers to trust a fabricated human study: the committed
+\texttt{annotations.jsonl} is labeled as a dual-pass repository metadata audit,
+the rubric states that the mechanical runtime-signature category is not the
+headline agreement object, and the generated \texttt{agreement.json} reports
+moderate inclusion-decision kappa, stronger root-cause kappa, and high
+evidence-strength agreement together with the adjudicated ambiguous rows.
 
 The survival study is the first analysis to consume those fix links directly.
 It reports a category-level answer to ``would this have been caught before
