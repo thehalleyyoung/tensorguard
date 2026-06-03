@@ -1539,17 +1539,67 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                     if obj_shape and new_dims:
                         return compute_reshape_shape(obj_shape, new_dims)
 
-        # transpose
-        if base_name == "transpose":
+        # transpose / swapaxes / swapdims
+        if base_name in ("transpose", "swapaxes", "swapdims"):
             if isinstance(node.func, ast.Attribute):
                 obj_shape = self._infer_shape(node.func.value)
                 if obj_shape and len(node.args) >= 2:
                     d0 = self._const_val(node.args[0])
                     d1 = self._const_val(node.args[1])
-                    if d0 is not None and d1 is not None and obj_shape.ndim > max(d0, d1):
+                    if d0 is not None and d1 is not None:
+                        if d0 < 0:
+                            d0 = obj_shape.ndim + d0
+                        if d1 < 0:
+                            d1 = obj_shape.ndim + d1
+                    if (
+                        d0 is not None and d1 is not None
+                        and 0 <= d0 < obj_shape.ndim
+                        and 0 <= d1 < obj_shape.ndim
+                    ):
                         dims = list(obj_shape.dims)
                         dims[d0], dims[d1] = dims[d1], dims[d0]
                         return TensorShape(tuple(dims))
+
+        # movedim / moveaxis
+        if base_name in ("movedim", "moveaxis"):
+            if isinstance(node.func, ast.Attribute):
+                obj_shape = self._infer_shape(node.func.value)
+                arg_offset = 0
+            else:
+                obj_shape = self._infer_shape(node.args[0]) if node.args else None
+                arg_offset = 1
+            if obj_shape and len(node.args) >= arg_offset + 2:
+                source = self._const_val(node.args[arg_offset])
+                dest = self._const_val(node.args[arg_offset + 1])
+                if isinstance(source, int):
+                    source = (source,)
+                if isinstance(dest, int):
+                    dest = (dest,)
+                if (
+                    isinstance(source, (tuple, list))
+                    and isinstance(dest, (tuple, list))
+                    and len(source) == len(dest)
+                ):
+                    src = [s + obj_shape.ndim if s < 0 else s for s in source]
+                    dst = [d + obj_shape.ndim if d < 0 else d for d in dest]
+                    if (
+                        len(set(src)) == len(src)
+                        and len(set(dst)) == len(dst)
+                        and all(0 <= s < obj_shape.ndim for s in src)
+                        and all(0 <= d < obj_shape.ndim for d in dst)
+                    ):
+                        order = [None] * obj_shape.ndim
+                        src_used = [False] * obj_shape.ndim
+                        dst_used = [False] * obj_shape.ndim
+                        for s, d in zip(src, dst):
+                            order[d] = s
+                            src_used[s] = True
+                            dst_used[d] = True
+                        rest_src = [i for i, used in enumerate(src_used) if not used]
+                        rest_dst = [i for i, used in enumerate(dst_used) if not used]
+                        for d, s in zip(rest_dst, rest_src):
+                            order[d] = s
+                        return TensorShape(tuple(obj_shape.dims[i] for i in order))
 
         # squeeze
         if base_name == "squeeze":
@@ -2141,8 +2191,39 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
                 dims[dim] = ShapeDim(length)
                 return TensorShape(tuple(dims))
 
+        # rot90(k, dims): swaps the two rotation axes when k is odd
+        if base_name == "rot90":
+            if isinstance(node.func, ast.Attribute):
+                obj_shape = self._infer_shape(node.func.value)
+                arg_offset = 0
+            else:
+                obj_shape = self._infer_shape(node.args[0]) if node.args else None
+                arg_offset = 1
+            if obj_shape:
+                k = 1
+                dims = (0, 1)
+                if len(node.args) > arg_offset:
+                    val = self._const_val(node.args[arg_offset])
+                    if isinstance(val, int):
+                        k = val
+                if len(node.args) > arg_offset + 1:
+                    val = self._const_val(node.args[arg_offset + 1])
+                    if isinstance(val, (tuple, list)):
+                        dims = tuple(val)
+                if len(dims) == 2:
+                    d0, d1 = dims
+                    if d0 < 0:
+                        d0 = obj_shape.ndim + d0
+                    if d1 < 0:
+                        d1 = obj_shape.ndim + d1
+                    if 0 <= d0 < obj_shape.ndim and 0 <= d1 < obj_shape.ndim:
+                        out = list(obj_shape.dims)
+                        if k % 2:
+                            out[d0], out[d1] = out[d1], out[d0]
+                        return TensorShape(tuple(out))
+
         # roll(shifts, dims) and flip(dims): shape-preserving
-        if base_name in ("roll", "flip", "fliplr", "flipud", "rot90"):
+        if base_name in ("roll", "flip", "fliplr", "flipud"):
             if isinstance(node.func, ast.Attribute):
                 return self._infer_shape(node.func.value)
             if node.args:

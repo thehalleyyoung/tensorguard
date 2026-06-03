@@ -282,6 +282,10 @@ class OpKind(Enum):
     PERMUTE = auto()          # x.permute(...)
     SQUEEZE = auto()          # x.squeeze(...)
     UNSQUEEZE = auto()        # x.unsqueeze(...)
+    MOVEDIM = auto()          # x.movedim(...) / torch.movedim(...)
+    ROLL = auto()             # x.roll(...) / torch.roll(...)
+    ROT90 = auto()            # x.rot90(...) / torch.rot90(...)
+    FLIP = auto()             # x.flip(...) / torch.flip(...)
     ACTIVATION = auto()       # relu, sigmoid, tanh, …
     DROPOUT = auto()          # F.dropout or nn.Dropout
     SOFTMAX = auto()          # F.softmax
@@ -2579,6 +2583,15 @@ _FUNCTIONAL_OPS: Dict[str, OpKind] = {
     "dstack": OpKind.STACK,
     "column_stack": OpKind.STACK,
     "row_stack": OpKind.STACK,
+    "squeeze": OpKind.SQUEEZE,
+    "unsqueeze": OpKind.UNSQUEEZE,
+    "movedim": OpKind.MOVEDIM,
+    "moveaxis": OpKind.MOVEDIM,
+    "swapaxes": OpKind.TRANSPOSE,
+    "swapdims": OpKind.TRANSPOSE,
+    "roll": OpKind.ROLL,
+    "rot90": OpKind.ROT90,
+    "flip": OpKind.FLIP,
     "where": OpKind.WHERE,
     "chunk": OpKind.CHUNK,
     "split": OpKind.SPLIT,
@@ -2995,6 +3008,13 @@ _METHOD_OPS: Dict[str, OpKind] = {
     "flatten": OpKind.FLATTEN,
     "squeeze": OpKind.SQUEEZE,
     "unsqueeze": OpKind.UNSQUEEZE,
+    "movedim": OpKind.MOVEDIM,
+    "moveaxis": OpKind.MOVEDIM,
+    "swapaxes": OpKind.TRANSPOSE,
+    "swapdims": OpKind.TRANSPOSE,
+    "roll": OpKind.ROLL,
+    "rot90": OpKind.ROT90,
+    "flip": OpKind.FLIP,
     "transpose": OpKind.TRANSPOSE,
     "t": OpKind.TRANSPOSE,        # x.t() — 2D-only transpose; swap dims (-1, -2)
     "permute": OpKind.PERMUTE,
@@ -4770,11 +4790,65 @@ class _ForwardExtractor(ast.NodeVisitor):
                                         params["end_dim"] = ed
                     elif method in ("squeeze", "unsqueeze"):
                         if node.args:
-                            params["dim"] = _const_value(node.args[0])
-                    elif method == "transpose":
+                            dim_val = _const_value(node.args[0], self._scalar_attrs)
+                            params["dim"] = dim_val
+                            if dim_val is None:
+                                params["__dim_dynamic__"] = True
+                        for kw_node in node.keywords:
+                            if kw_node.arg == "dim":
+                                dim_val = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                params["dim"] = dim_val
+                                if dim_val is None:
+                                    params["__dim_dynamic__"] = True
+                    elif method in ("movedim", "moveaxis"):
+                        if node.args:
+                            source = _const_value(node.args[0], self._scalar_attrs)
+                            params["source"] = source
+                            if source is None:
+                                params["__source_dynamic__"] = True
+                        if len(node.args) > 1:
+                            destination = _const_value(
+                                node.args[1], self._scalar_attrs)
+                            params["destination"] = destination
+                            if destination is None:
+                                params["__destination_dynamic__"] = True
+                        for kw_node in node.keywords:
+                            if kw_node.arg == "source":
+                                source = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                params["source"] = source
+                                if source is None:
+                                    params["__source_dynamic__"] = True
+                            elif kw_node.arg == "destination":
+                                destination = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                params["destination"] = destination
+                                if destination is None:
+                                    params["__destination_dynamic__"] = True
+                    elif method in ("transpose", "swapaxes", "swapdims"):
                         if len(node.args) >= 2:
-                            params["dim0"] = _const_value(node.args[0])
-                            params["dim1"] = _const_value(node.args[1])
+                            dim0 = _const_value(node.args[0], self._scalar_attrs)
+                            dim1 = _const_value(node.args[1], self._scalar_attrs)
+                            params["dim0"] = dim0
+                            params["dim1"] = dim1
+                            if dim0 is None:
+                                params["__dim0_dynamic__"] = True
+                            if dim1 is None:
+                                params["__dim1_dynamic__"] = True
+                        for kw_node in node.keywords:
+                            if kw_node.arg in ("dim0", "axis0"):
+                                dim0 = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                params["dim0"] = dim0
+                                if dim0 is None:
+                                    params["__dim0_dynamic__"] = True
+                            elif kw_node.arg in ("dim1", "axis1"):
+                                dim1 = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                params["dim1"] = dim1
+                                if dim1 is None:
+                                    params["__dim1_dynamic__"] = True
                     elif method == "t":
                         # x.t() — 2D transpose, swap last two dimensions
                         params["dim0"] = -2
@@ -4811,6 +4885,73 @@ class _ForwardExtractor(ast.NodeVisitor):
                         params["dims"] = tuple(
                             _const_value(a) for a in rargs
                         )
+                    elif method == "roll":
+                        if node.args:
+                            shifts = _const_value(
+                                node.args[0], self._scalar_attrs)
+                            params["shifts"] = shifts
+                            if shifts is None:
+                                params["__shifts_dynamic__"] = True
+                        if len(node.args) > 1:
+                            dims = _const_value(
+                                node.args[1], self._scalar_attrs)
+                            params["dims"] = dims
+                            params["__dims_present__"] = True
+                            if dims is None:
+                                params["__dims_dynamic__"] = True
+                        for kw_node in node.keywords:
+                            if kw_node.arg in ("shifts", "shift"):
+                                shifts = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                params["shifts"] = shifts
+                                if shifts is None:
+                                    params["__shifts_dynamic__"] = True
+                            elif kw_node.arg in ("dims", "dim"):
+                                dims = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                params["dims"] = dims
+                                params["__dims_present__"] = True
+                                if dims is None:
+                                    params["__dims_dynamic__"] = True
+                    elif method == "rot90":
+                        if node.args:
+                            k = _const_value(node.args[0], self._scalar_attrs)
+                            params["k"] = k
+                            if k is None:
+                                params["__k_dynamic__"] = True
+                        if len(node.args) > 1:
+                            dims = _const_value(
+                                node.args[1], self._scalar_attrs)
+                            params["dims"] = dims
+                            if dims is None:
+                                params["__dims_dynamic__"] = True
+                        for kw_node in node.keywords:
+                            if kw_node.arg == "k":
+                                k = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                params["k"] = k
+                                if k is None:
+                                    params["__k_dynamic__"] = True
+                            elif kw_node.arg in ("dims", "axes"):
+                                dims = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                params["dims"] = dims
+                                if dims is None:
+                                    params["__dims_dynamic__"] = True
+                    elif method == "flip":
+                        if node.args:
+                            dims = _const_value(
+                                node.args[0], self._scalar_attrs)
+                            params["dims"] = dims
+                            if dims is None:
+                                params["__dims_dynamic__"] = True
+                        for kw_node in node.keywords:
+                            if kw_node.arg in ("dims", "dim"):
+                                dims = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                params["dims"] = dims
+                                if dims is None:
+                                    params["__dims_dynamic__"] = True
                     elif method in ("mean", "sum", "max", "min",
                                     "norm", "std", "var"):
                         if node.args:
@@ -4970,6 +5111,11 @@ class _ForwardExtractor(ast.NodeVisitor):
                 elif op == OpKind.INTERPOLATE:
                     inputs = [self._resolve_arg(node.args[0])] if node.args else []
                 elif op in (
+                    OpKind.SQUEEZE, OpKind.UNSQUEEZE, OpKind.MOVEDIM,
+                    OpKind.TRANSPOSE, OpKind.ROLL, OpKind.ROT90, OpKind.FLIP,
+                ):
+                    inputs = [self._resolve_arg(node.args[0])] if node.args else []
+                elif op in (
                     OpKind.ARGSORT, OpKind.SORT, OpKind.TOPK,
                     OpKind.KTHVALUE, OpKind.ARG_REDUCE,
                 ):
@@ -4990,6 +5136,144 @@ class _ForwardExtractor(ast.NodeVisitor):
                         if kw.arg == "dim":
                             params_dict["dim"] = _const_value(
                                 kw.value, self._scalar_attrs)
+
+                if op == OpKind.SQUEEZE:
+                    if len(node.args) >= 2:
+                        dim_val = _const_value(node.args[1], self._scalar_attrs)
+                        params_dict["dim"] = dim_val
+                        if dim_val is None:
+                            params_dict["__dim_dynamic__"] = True
+                    for kw in node.keywords:
+                        if kw.arg == "dim":
+                            dim_val = _const_value(kw.value, self._scalar_attrs)
+                            params_dict["dim"] = dim_val
+                            if dim_val is None:
+                                params_dict["__dim_dynamic__"] = True
+
+                if op == OpKind.UNSQUEEZE:
+                    if len(node.args) >= 2:
+                        dim_val = _const_value(node.args[1], self._scalar_attrs)
+                        params_dict["dim"] = dim_val
+                        if dim_val is None:
+                            params_dict["__dim_dynamic__"] = True
+                    for kw in node.keywords:
+                        if kw.arg == "dim":
+                            dim_val = _const_value(kw.value, self._scalar_attrs)
+                            params_dict["dim"] = dim_val
+                            if dim_val is None:
+                                params_dict["__dim_dynamic__"] = True
+
+                if op == OpKind.MOVEDIM:
+                    if len(node.args) >= 2:
+                        source = _const_value(node.args[1], self._scalar_attrs)
+                        params_dict["source"] = source
+                        if source is None:
+                            params_dict["__source_dynamic__"] = True
+                    if len(node.args) >= 3:
+                        destination = _const_value(
+                            node.args[2], self._scalar_attrs)
+                        params_dict["destination"] = destination
+                        if destination is None:
+                            params_dict["__destination_dynamic__"] = True
+                    for kw in node.keywords:
+                        if kw.arg == "source":
+                            source = _const_value(kw.value, self._scalar_attrs)
+                            params_dict["source"] = source
+                            if source is None:
+                                params_dict["__source_dynamic__"] = True
+                        elif kw.arg == "destination":
+                            destination = _const_value(
+                                kw.value, self._scalar_attrs)
+                            params_dict["destination"] = destination
+                            if destination is None:
+                                params_dict["__destination_dynamic__"] = True
+
+                if op == OpKind.TRANSPOSE and short in (
+                    "transpose", "swapaxes", "swapdims",
+                ):
+                    if len(node.args) >= 3:
+                        dim0 = _const_value(node.args[1], self._scalar_attrs)
+                        dim1 = _const_value(node.args[2], self._scalar_attrs)
+                        params_dict["dim0"] = dim0
+                        params_dict["dim1"] = dim1
+                        if dim0 is None:
+                            params_dict["__dim0_dynamic__"] = True
+                        if dim1 is None:
+                            params_dict["__dim1_dynamic__"] = True
+                    for kw in node.keywords:
+                        if kw.arg in ("dim0", "axis0"):
+                            dim0 = _const_value(kw.value, self._scalar_attrs)
+                            params_dict["dim0"] = dim0
+                            if dim0 is None:
+                                params_dict["__dim0_dynamic__"] = True
+                        elif kw.arg in ("dim1", "axis1"):
+                            dim1 = _const_value(kw.value, self._scalar_attrs)
+                            params_dict["dim1"] = dim1
+                            if dim1 is None:
+                                params_dict["__dim1_dynamic__"] = True
+
+                if op == OpKind.ROLL:
+                    if len(node.args) >= 2:
+                        shifts = _const_value(node.args[1], self._scalar_attrs)
+                        params_dict["shifts"] = shifts
+                        if shifts is None:
+                            params_dict["__shifts_dynamic__"] = True
+                    if len(node.args) >= 3:
+                        dims = _const_value(node.args[2], self._scalar_attrs)
+                        params_dict["dims"] = dims
+                        params_dict["__dims_present__"] = True
+                        if dims is None:
+                            params_dict["__dims_dynamic__"] = True
+                    for kw in node.keywords:
+                        if kw.arg in ("shifts", "shift"):
+                            shifts = _const_value(kw.value, self._scalar_attrs)
+                            params_dict["shifts"] = shifts
+                            if shifts is None:
+                                params_dict["__shifts_dynamic__"] = True
+                        elif kw.arg in ("dims", "dim"):
+                            dims = _const_value(kw.value, self._scalar_attrs)
+                            params_dict["dims"] = dims
+                            params_dict["__dims_present__"] = True
+                            if dims is None:
+                                params_dict["__dims_dynamic__"] = True
+
+                if op == OpKind.ROT90:
+                    if len(node.args) >= 2:
+                        k = _const_value(node.args[1], self._scalar_attrs)
+                        params_dict["k"] = k
+                        if k is None:
+                            params_dict["__k_dynamic__"] = True
+                    if len(node.args) >= 3:
+                        dims = _const_value(node.args[2], self._scalar_attrs)
+                        params_dict["dims"] = dims
+                        if dims is None:
+                            params_dict["__dims_dynamic__"] = True
+                    for kw in node.keywords:
+                        if kw.arg == "k":
+                            k = _const_value(kw.value, self._scalar_attrs)
+                            params_dict["k"] = k
+                            if k is None:
+                                params_dict["__k_dynamic__"] = True
+                        elif kw.arg in ("dims", "axes"):
+                            dims = _const_value(kw.value, self._scalar_attrs)
+                            params_dict["dims"] = dims
+                            if dims is None:
+                                params_dict["__dims_dynamic__"] = True
+
+                if op == OpKind.FLIP:
+                    if len(node.args) >= 2:
+                        dims = _const_value(node.args[1], self._scalar_attrs)
+                        params_dict["dims"] = dims
+                        params_dict["__requires_sequence_dims__"] = True
+                        if dims is None:
+                            params_dict["__dims_dynamic__"] = True
+                    for kw in node.keywords:
+                        if kw.arg in ("dims", "dim"):
+                            dims = _const_value(kw.value, self._scalar_attrs)
+                            params_dict["dims"] = dims
+                            params_dict["__requires_sequence_dims__"] = True
+                            if dims is None:
+                                params_dict["__dims_dynamic__"] = True
 
                 if op == OpKind.INTERPOLATE:
                     params_dict["__interpolate_args_observed__"] = True
@@ -8641,6 +8925,342 @@ def _same_dim_when_decidable(a: ShapeDim, b: ShapeDim) -> bool:
     return True
 
 
+def _symbolic_same_rank_shape(
+    shape: TensorShape,
+    op_name: str,
+    output_name: str,
+    *,
+    rank_delta: int = 0,
+) -> TensorShape:
+    rank = max(0, shape.ndim + rank_delta)
+    return TensorShape(
+        tuple(ShapeDim(f"_{op_name}_{output_name}_{i}") for i in range(rank))
+    )
+
+
+def _static_int_tuple(value: Any) -> Optional[Tuple[int, ...]]:
+    """Return a static int tuple for PyTorch dim/axis arguments."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return (value,)
+    if isinstance(value, (tuple, list)):
+        dims: List[int] = []
+        for item in value:
+            if isinstance(item, bool) or not isinstance(item, int):
+                return None
+            dims.append(item)
+        return tuple(dims)
+    return None
+
+
+def _static_arity(value: Any) -> Optional[int]:
+    dims = _static_int_tuple(value)
+    return len(dims) if dims is not None else None
+
+
+def _normalize_existing_dim(
+    dim: int,
+    ndim: int,
+    op_name: str,
+    *,
+    allow_scalar_dim: bool = False,
+) -> Tuple[Optional[int], Optional[str]]:
+    if isinstance(dim, bool) or not isinstance(dim, int):
+        return None, f"{op_name}: dim must be an integer"
+    if ndim == 0 and allow_scalar_dim and dim in (-1, 0):
+        return 0, None
+    low = -ndim
+    high = ndim - 1
+    if dim < low or dim > high:
+        return None, f"{op_name}: dim {dim} out of range for {ndim}D tensor"
+    return (dim + ndim if dim < 0 else dim), None
+
+
+def _normalize_unsqueeze_dim(
+    dim: int,
+    ndim: int,
+    op_name: str = "unsqueeze",
+) -> Tuple[Optional[int], Optional[str]]:
+    if isinstance(dim, bool) or not isinstance(dim, int):
+        return None, f"{op_name}: dim must be an integer"
+    low = -(ndim + 1)
+    high = ndim
+    if dim < low or dim > high:
+        return None, f"{op_name}: dim {dim} out of range for {ndim}D tensor"
+    return (dim + ndim + 1 if dim < 0 else dim), None
+
+
+def _normalize_dim_tuple(
+    value: Any,
+    ndim: int,
+    op_name: str,
+    *,
+    allow_scalar_dim: bool = False,
+    require_unique: bool = False,
+) -> Tuple[Optional[Tuple[int, ...]], Optional[str]]:
+    dims = _static_int_tuple(value)
+    if dims is None:
+        return None, None
+    normalized: List[int] = []
+    for dim in dims:
+        norm, err = _normalize_existing_dim(
+            dim, ndim, op_name, allow_scalar_dim=allow_scalar_dim)
+        if err is not None:
+            return None, err
+        assert norm is not None
+        normalized.append(norm)
+    if require_unique and len(set(normalized)) != len(normalized):
+        return None, f"{op_name}: repeated dim in {value!r}"
+    return tuple(normalized), None
+
+
+def _movedim_order(
+    ndim: int,
+    source: Any,
+    destination: Any,
+) -> Tuple[Optional[List[int]], Optional[str], bool]:
+    src = _static_int_tuple(source)
+    dst = _static_int_tuple(destination)
+    if src is None or dst is None:
+        return None, None, True
+    if len(src) != len(dst):
+        return None, (
+            f"movedim: source and destination must have the same number of dims "
+            f"({len(src)} vs {len(dst)})"
+        ), False
+
+    norm_src: List[int] = []
+    norm_dst: List[int] = []
+    for dim in src:
+        norm, err = _normalize_existing_dim(
+            dim, ndim, "movedim", allow_scalar_dim=True)
+        if err is not None:
+            return None, err, False
+        assert norm is not None
+        norm_src.append(norm)
+    for dim in dst:
+        norm, err = _normalize_existing_dim(
+            dim, ndim, "movedim", allow_scalar_dim=True)
+        if err is not None:
+            return None, err, False
+        assert norm is not None
+        norm_dst.append(norm)
+
+    if len(set(norm_src)) != len(norm_src):
+        return None, f"movedim: repeated dim in source {source!r}", False
+    if len(set(norm_dst)) != len(norm_dst):
+        return None, f"movedim: repeated dim in destination {destination!r}", False
+    if ndim == 0:
+        return [], None, False
+
+    order: List[Optional[int]] = [None] * ndim
+    src_used = [False] * ndim
+    dst_used = [False] * ndim
+    for s, d in zip(norm_src, norm_dst):
+        order[d] = s
+        src_used[s] = True
+        dst_used[d] = True
+    remaining_src = [i for i, used in enumerate(src_used) if not used]
+    remaining_dst = [i for i, used in enumerate(dst_used) if not used]
+    for d, s in zip(remaining_dst, remaining_src):
+        order[d] = s
+    assert all(i is not None for i in order)
+    return [int(i) for i in order], None, False
+
+
+def _compute_squeeze_shape(
+    input_shape: TensorShape,
+    params: Dict[str, Any],
+    output_name: str,
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    if params.get("__dim_dynamic__"):
+        return _symbolic_same_rank_shape(input_shape, "squeeze", output_name), None
+    if "dim" not in params or params.get("dim") is None:
+        new_dims = [d for d in input_shape.dims
+                    if d.is_symbolic or d.value != 1]
+        return TensorShape(tuple(new_dims)), None
+
+    dim_value = params.get("dim")
+    dims, err = _normalize_dim_tuple(
+        dim_value,
+        input_shape.ndim,
+        "squeeze",
+        allow_scalar_dim=True,
+        require_unique=True,
+    )
+    if err is not None:
+        return None, err
+    if dims is None:
+        return _symbolic_same_rank_shape(input_shape, "squeeze", output_name), None
+
+    remove = set(dims)
+    new_dims = []
+    for idx, dim in enumerate(input_shape.dims):
+        if idx in remove and not dim.is_symbolic and dim.value == 1:
+            continue
+        new_dims.append(dim)
+    return TensorShape(tuple(new_dims)), None
+
+
+def _compute_unsqueeze_shape(
+    input_shape: TensorShape,
+    params: Dict[str, Any],
+    output_name: str,
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    if params.get("__dim_dynamic__"):
+        return _symbolic_same_rank_shape(
+            input_shape, "unsqueeze", output_name, rank_delta=1), None
+    if "dim" not in params or params.get("dim") is None:
+        return None, "unsqueeze: dim argument is required"
+    dim, err = _normalize_unsqueeze_dim(
+        params["dim"], input_shape.ndim, "unsqueeze")
+    if err is not None:
+        return None, err
+    assert dim is not None
+    new_dims = list(input_shape.dims)
+    new_dims.insert(dim, ShapeDim(1))
+    return TensorShape(tuple(new_dims)), None
+
+
+def _compute_transpose_shape(
+    input_shape: TensorShape,
+    params: Dict[str, Any],
+    output_name: str,
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    if params.get("__dim0_dynamic__") or params.get("__dim1_dynamic__"):
+        return _symbolic_same_rank_shape(input_shape, "transpose", output_name), None
+    d0_raw = params.get("dim0", 0)
+    d1_raw = params.get("dim1", 1)
+    d0, err = _normalize_existing_dim(
+        d0_raw, input_shape.ndim, "transpose", allow_scalar_dim=True)
+    if err is not None:
+        return None, err
+    d1, err = _normalize_existing_dim(
+        d1_raw, input_shape.ndim, "transpose", allow_scalar_dim=True)
+    if err is not None:
+        return None, err
+    if input_shape.ndim == 0:
+        return input_shape, None
+    assert d0 is not None and d1 is not None
+    new_dims = list(input_shape.dims)
+    new_dims[d0], new_dims[d1] = new_dims[d1], new_dims[d0]
+    return TensorShape(tuple(new_dims)), None
+
+
+def _compute_movedim_shape(
+    input_shape: TensorShape,
+    params: Dict[str, Any],
+    output_name: str,
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    if params.get("__source_dynamic__") or params.get("__destination_dynamic__"):
+        return _symbolic_same_rank_shape(input_shape, "movedim", output_name), None
+    if "source" not in params or "destination" not in params:
+        return None, "movedim: source and destination arguments are required"
+    order, err, dynamic = _movedim_order(
+        input_shape.ndim, params["source"], params["destination"])
+    if dynamic:
+        return _symbolic_same_rank_shape(input_shape, "movedim", output_name), None
+    if err is not None:
+        return None, err
+    assert order is not None
+    return TensorShape(tuple(input_shape.dims[i] for i in order)), None
+
+
+def _compute_roll_shape(
+    input_shape: TensorShape,
+    params: Dict[str, Any],
+    output_name: str,
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    if params.get("__shifts_dynamic__") or params.get("__dims_dynamic__"):
+        return _symbolic_same_rank_shape(input_shape, "roll", output_name), None
+    if "shifts" not in params:
+        return None, "roll: shifts argument is required"
+    dims_present = bool(params.get("__dims_present__", "dims" in params))
+    dims_value = params.get("dims")
+    shift_arity = _static_arity(params.get("shifts"))
+    if not dims_present or dims_value is None:
+        if shift_arity is not None and shift_arity != 1:
+            return None, (
+                f"roll: shifts and dimensions must align "
+                f"(shifts={shift_arity}, dims=0)"
+            )
+        return input_shape, None
+
+    dims, err = _normalize_dim_tuple(
+        dims_value, input_shape.ndim, "roll", allow_scalar_dim=False)
+    if err is not None:
+        return None, err
+    if dims is None:
+        return _symbolic_same_rank_shape(input_shape, "roll", output_name), None
+    if shift_arity is not None and shift_arity != len(dims):
+        return None, (
+            f"roll: shifts and dimensions must align "
+            f"(shifts={shift_arity}, dims={len(dims)})"
+        )
+    return input_shape, None
+
+
+def _compute_flip_shape(
+    input_shape: TensorShape,
+    params: Dict[str, Any],
+    output_name: str,
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    if params.get("__dims_dynamic__"):
+        return _symbolic_same_rank_shape(input_shape, "flip", output_name), None
+    if "dims" not in params or params.get("dims") is None:
+        return None, "flip: dims argument is required"
+    if params.get("__requires_sequence_dims__") and isinstance(params.get("dims"), int):
+        return None, "flip: dims must be a tuple or list for torch.flip"
+    dims, err = _normalize_dim_tuple(
+        params["dims"],
+        input_shape.ndim,
+        "flip",
+        allow_scalar_dim=True,
+        require_unique=True,
+    )
+    if err is not None:
+        return None, err
+    if dims is None:
+        return _symbolic_same_rank_shape(input_shape, "flip", output_name), None
+    return input_shape, None
+
+
+def _compute_rot90_shape(
+    input_shape: TensorShape,
+    params: Dict[str, Any],
+    output_name: str,
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    if input_shape.ndim < 2:
+        return None, f"rot90: expected total dims >= 2, got {input_shape.ndim}"
+    if params.get("__dims_dynamic__") or params.get("__k_dynamic__"):
+        return _symbolic_same_rank_shape(input_shape, "rot90", output_name), None
+    dims_value = params.get("dims", (0, 1))
+    dims = _static_int_tuple(dims_value)
+    if dims is None:
+        return _symbolic_same_rank_shape(input_shape, "rot90", output_name), None
+    if len(dims) != 2:
+        return None, f"rot90: expected total rotation dims == 2, got {len(dims)}"
+    norm_dims, err = _normalize_dim_tuple(
+        dims,
+        input_shape.ndim,
+        "rot90",
+        allow_scalar_dim=False,
+        require_unique=True,
+    )
+    if err is not None:
+        return None, err
+    assert norm_dims is not None
+    k = params.get("k", 1)
+    if isinstance(k, bool) or not isinstance(k, int):
+        return _symbolic_same_rank_shape(input_shape, "rot90", output_name), None
+    new_dims = list(input_shape.dims)
+    if k % 2:
+        d0, d1 = norm_dims
+        new_dims[d0], new_dims[d1] = new_dims[d1], new_dims[d0]
+    return TensorShape(tuple(new_dims)), None
+
+
 def _promote_stack_family_shape(
     shape: TensorShape,
     kind: str,
@@ -9663,14 +10283,22 @@ class ConstraintVerifier:
                     and step.output in post.shape_vars):
                 pre_d = pre.shape_vars[inp_name]
                 post_d = post.shape_vars[step.output]
+                if (
+                    step.params.get("__dim0_dynamic__")
+                    or step.params.get("__dim1_dynamic__")
+                ):
+                    return cs
                 d0 = step.params.get("dim0", 0)
                 d1 = step.params.get("dim1", 1)
                 n = len(pre_d)
-                if d0 < 0:
-                    d0 = n + d0
-                if d1 < 0:
-                    d1 = n + d1
-                if 0 <= d0 < n and 0 <= d1 < n and len(post_d) == n:
+                d0, err0 = _normalize_existing_dim(
+                    d0, n, "transpose", allow_scalar_dim=True)
+                d1, err1 = _normalize_existing_dim(
+                    d1, n, "transpose", allow_scalar_dim=True)
+                if (
+                    d0 is not None and d1 is not None
+                    and 0 <= d0 < n and 0 <= d1 < n and len(post_d) == n
+                ):
                     for i in range(n):
                         if i == d0:
                             cs.append(post_d[i] == pre_d[d1])
@@ -9678,6 +10306,8 @@ class ConstraintVerifier:
                             cs.append(post_d[i] == pre_d[d0])
                         else:
                             cs.append(post_d[i] == pre_d[i])
+                elif n == 0 and err0 is None and err1 is None and len(post_d) == 0:
+                    pass
 
         elif step.op == OpKind.PERMUTE:
             perm = step.params.get("dims")
@@ -9694,6 +10324,66 @@ class ConstraintVerifier:
                     if all(0 <= p < n for p in resolved):
                         for i, p in enumerate(resolved):
                             cs.append(post_d[i] == pre_d[p])
+
+        elif step.op == OpKind.MOVEDIM:
+            if (inp_name and inp_name in pre.shape_vars
+                    and step.output in post.shape_vars):
+                pre_d = pre.shape_vars[inp_name]
+                post_d = post.shape_vars[step.output]
+                if (
+                    step.params.get("__source_dynamic__")
+                    or step.params.get("__destination_dynamic__")
+                ):
+                    return cs
+                order, err, dynamic = _movedim_order(
+                    len(pre_d),
+                    step.params.get("source"),
+                    step.params.get("destination"),
+                )
+                if not dynamic and err is None and order is not None:
+                    if len(post_d) == len(pre_d):
+                        for i, p in enumerate(order):
+                            cs.append(post_d[i] == pre_d[p])
+
+        elif step.op == OpKind.ROT90:
+            if (inp_name and inp_name in pre.shape_vars
+                    and step.output in post.shape_vars):
+                pre_d = pre.shape_vars[inp_name]
+                post_d = post.shape_vars[step.output]
+                params = step.params or {}
+                if (
+                    not params.get("__dims_dynamic__")
+                    and not params.get("__k_dynamic__")
+                    and len(post_d) == len(pre_d)
+                ):
+                    dims, err = _normalize_dim_tuple(
+                        params.get("dims", (0, 1)),
+                        len(pre_d),
+                        "rot90",
+                        require_unique=True,
+                    )
+                    k = params.get("k", 1)
+                    if (
+                        err is None and dims is not None and len(dims) == 2
+                        and isinstance(k, int) and not isinstance(k, bool)
+                    ):
+                        order = list(range(len(pre_d)))
+                        if k % 2:
+                            d0, d1 = dims
+                            order[d0], order[d1] = order[d1], order[d0]
+                        for i, p in enumerate(order):
+                            cs.append(post_d[i] == pre_d[p])
+
+        elif step.op in (OpKind.ROLL, OpKind.FLIP):
+            if (inp_name and inp_name in pre.shape_vars
+                    and step.output in post.shape_vars
+                    and not (step.params or {}).get("__dims_dynamic__")
+                    and not (step.params or {}).get("__shifts_dynamic__")):
+                pre_d = pre.shape_vars[inp_name]
+                post_d = post.shape_vars[step.output]
+                if len(post_d) == len(pre_d):
+                    for dp, dq in zip(pre_d, post_d):
+                        cs.append(dq == dp)
 
         elif step.op in (OpKind.ACTIVATION, OpKind.DROPOUT, OpKind.SOFTMAX,
                           OpKind.CONTIGUOUS, OpKind.DETACH, OpKind.TO_DEVICE):
@@ -10434,15 +11124,24 @@ class ConstraintVerifier:
                     bw_cs.append(post_d[0] == pre_d[0])
 
             elif step.op == OpKind.TRANSPOSE:
+                if (
+                    step.params.get("__dim0_dynamic__")
+                    or step.params.get("__dim1_dynamic__")
+                ):
+                    continue
                 d0 = step.params.get("dim0", 0)
                 d1 = step.params.get("dim1", 1)
                 nd = len(pre_d)
-                if d0 < 0:
-                    d0 = nd + d0
-                if d1 < 0:
-                    d1 = nd + d1
-                if (0 <= d0 < nd and 0 <= d1 < nd
-                        and len(post_d) == nd):
+                d0, err0 = _normalize_existing_dim(
+                    d0, nd, "transpose", allow_scalar_dim=True)
+                d1, err1 = _normalize_existing_dim(
+                    d1, nd, "transpose", allow_scalar_dim=True)
+                if (
+                    err0 is None and err1 is None
+                    and d0 is not None and d1 is not None
+                    and 0 <= d0 < nd and 0 <= d1 < nd
+                    and len(post_d) == nd
+                ):
                     for j in range(nd):
                         if j == d0:
                             bw_cs.append(pre_d[d1] == post_d[j])
@@ -10460,6 +11159,61 @@ class ConstraintVerifier:
                     if all(0 <= p < nd for p in resolved):
                         for j, p in enumerate(resolved):
                             bw_cs.append(pre_d[p] == post_d[j])
+
+            elif step.op == OpKind.MOVEDIM:
+                if (
+                    step.params.get("__source_dynamic__")
+                    or step.params.get("__destination_dynamic__")
+                ):
+                    continue
+                order, err, dynamic = _movedim_order(
+                    len(pre_d),
+                    step.params.get("source"),
+                    step.params.get("destination"),
+                )
+                if (
+                    not dynamic and err is None and order is not None
+                    and len(post_d) == len(pre_d)
+                ):
+                    for j, p in enumerate(order):
+                        bw_cs.append(pre_d[p] == post_d[j])
+
+            elif step.op == OpKind.ROT90:
+                params = step.params or {}
+                if (
+                    params.get("__dims_dynamic__")
+                    or params.get("__k_dynamic__")
+                ):
+                    continue
+                dims, err = _normalize_dim_tuple(
+                    params.get("dims", (0, 1)),
+                    len(pre_d),
+                    "rot90",
+                    require_unique=True,
+                )
+                k = params.get("k", 1)
+                if (
+                    err is None and dims is not None and len(dims) == 2
+                    and isinstance(k, int) and not isinstance(k, bool)
+                    and len(post_d) == len(pre_d)
+                ):
+                    order = list(range(len(pre_d)))
+                    if k % 2:
+                        d0, d1 = dims
+                        order[d0], order[d1] = order[d1], order[d0]
+                    for j, p in enumerate(order):
+                        bw_cs.append(pre_d[p] == post_d[j])
+
+            elif step.op in (OpKind.ROLL, OpKind.FLIP):
+                params = step.params or {}
+                if (
+                    params.get("__dims_dynamic__")
+                    or params.get("__shifts_dynamic__")
+                ):
+                    continue
+                if len(post_d) == len(pre_d):
+                    for j in range(len(pre_d)):
+                        bw_cs.append(pre_d[j] == post_d[j])
 
             if bw_cs:
                 for c in bw_cs:
@@ -10675,13 +11429,21 @@ class ConstraintVerifier:
                     state.shape_env[step.inputs[0]]
                 )
         elif step.op == OpKind.SQUEEZE:
-            self._apply_squeeze(new_state, step)
+            self._apply_squeeze(new_state, step, violations)
         elif step.op == OpKind.UNSQUEEZE:
-            self._apply_unsqueeze(new_state, step)
+            self._apply_unsqueeze(new_state, step, violations)
         elif step.op == OpKind.TRANSPOSE:
-            self._apply_transpose(new_state, step)
+            self._apply_transpose(new_state, step, violations)
         elif step.op == OpKind.PERMUTE:
             self._apply_permute(new_state, step)
+        elif step.op == OpKind.MOVEDIM:
+            self._apply_movedim(new_state, step, violations)
+        elif step.op == OpKind.ROLL:
+            self._apply_roll(new_state, step, violations)
+        elif step.op == OpKind.ROT90:
+            self._apply_rot90(new_state, step, violations)
+        elif step.op == OpKind.FLIP:
+            self._apply_flip(new_state, step, violations)
         elif step.op == OpKind.CAT:
             self._apply_cat(new_state, step, violations)
         elif step.op == OpKind.TO_DEVICE:
@@ -12253,26 +13015,30 @@ class ConstraintVerifier:
                 state.shape_env[step.output] = out
 
     def _apply_squeeze(
-        self, state: ModelState, step: ComputationStep
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        violations: Optional[List[SafetyViolation]] = None,
     ) -> None:
         inp = step.inputs[0] if step.inputs else None
         inp_shape = state.shape_env.get(inp) if inp else None
         if inp_shape is None:
             return
-        dim = step.params.get("dim")
-        if dim is not None:
-            if dim < 0:
-                dim = inp_shape.ndim + dim
-            new_dims = list(inp_shape.dims)
-            if 0 <= dim < len(new_dims):
-                d = new_dims[dim]
-                if not d.is_symbolic and d.value == 1:
-                    new_dims.pop(dim)
-            state.shape_env[step.output] = TensorShape(tuple(new_dims))
-        else:
-            new_dims = [d for d in inp_shape.dims
-                        if d.is_symbolic or d.value != 1]
-            state.shape_env[step.output] = TensorShape(tuple(new_dims))
+        out_shape, err = _compute_squeeze_shape(
+            inp_shape, step.params or {}, step.output)
+        if err is not None:
+            if violations is not None:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible",
+                    step_index=-1,
+                    step=step,
+                    message=err,
+                    tensor_a=inp,
+                    shape_a=inp_shape,
+                ))
+            return
+        if out_shape is not None:
+            state.shape_env[step.output] = out_shape
 
     def _apply_subscript(
         self, state: ModelState, step: ComputationStep
@@ -12298,36 +13064,160 @@ class ConstraintVerifier:
         state.shape_env[step.output] = TensorShape(tuple(new_dims))
 
     def _apply_unsqueeze(
-        self, state: ModelState, step: ComputationStep
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        violations: Optional[List[SafetyViolation]] = None,
     ) -> None:
         inp = step.inputs[0] if step.inputs else None
         inp_shape = state.shape_env.get(inp) if inp else None
         if inp_shape is None:
             return
-        dim = step.params.get("dim", 0)
-        if dim < 0:
-            dim = inp_shape.ndim + 1 + dim
-        new_dims = list(inp_shape.dims)
-        new_dims.insert(dim, ShapeDim(1))
-        state.shape_env[step.output] = TensorShape(tuple(new_dims))
+        out_shape, err = _compute_unsqueeze_shape(
+            inp_shape, step.params or {}, step.output)
+        if err is not None:
+            if violations is not None:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible",
+                    step_index=-1,
+                    step=step,
+                    message=err,
+                    tensor_a=inp,
+                    shape_a=inp_shape,
+                ))
+            return
+        if out_shape is not None:
+            state.shape_env[step.output] = out_shape
 
     def _apply_transpose(
-        self, state: ModelState, step: ComputationStep
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        violations: Optional[List[SafetyViolation]] = None,
     ) -> None:
         inp = step.inputs[0] if step.inputs else None
         inp_shape = state.shape_env.get(inp) if inp else None
         if inp_shape is None:
             return
-        d0 = step.params.get("dim0", 0)
-        d1 = step.params.get("dim1", 1)
-        if d0 < 0:
-            d0 = inp_shape.ndim + d0
-        if d1 < 0:
-            d1 = inp_shape.ndim + d1
-        new_dims = list(inp_shape.dims)
-        if 0 <= d0 < len(new_dims) and 0 <= d1 < len(new_dims):
-            new_dims[d0], new_dims[d1] = new_dims[d1], new_dims[d0]
-        state.shape_env[step.output] = TensorShape(tuple(new_dims))
+        out_shape, err = _compute_transpose_shape(
+            inp_shape, step.params or {}, step.output)
+        if err is not None:
+            if violations is not None:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible",
+                    step_index=-1,
+                    step=step,
+                    message=err,
+                    tensor_a=inp,
+                    shape_a=inp_shape,
+                ))
+            return
+        if out_shape is not None:
+            state.shape_env[step.output] = out_shape
+
+    def _apply_movedim(
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        violations: Optional[List[SafetyViolation]] = None,
+    ) -> None:
+        inp = step.inputs[0] if step.inputs else None
+        inp_shape = state.shape_env.get(inp) if inp else None
+        if inp_shape is None:
+            return
+        out_shape, err = _compute_movedim_shape(
+            inp_shape, step.params or {}, step.output)
+        if err is not None:
+            if violations is not None:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible",
+                    step_index=-1,
+                    step=step,
+                    message=err,
+                    tensor_a=inp,
+                    shape_a=inp_shape,
+                ))
+            return
+        if out_shape is not None:
+            state.shape_env[step.output] = out_shape
+
+    def _apply_roll(
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        violations: Optional[List[SafetyViolation]] = None,
+    ) -> None:
+        inp = step.inputs[0] if step.inputs else None
+        inp_shape = state.shape_env.get(inp) if inp else None
+        if inp_shape is None:
+            return
+        out_shape, err = _compute_roll_shape(
+            inp_shape, step.params or {}, step.output)
+        if err is not None:
+            if violations is not None:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible",
+                    step_index=-1,
+                    step=step,
+                    message=err,
+                    tensor_a=inp,
+                    shape_a=inp_shape,
+                ))
+            return
+        if out_shape is not None:
+            state.shape_env[step.output] = out_shape
+
+    def _apply_rot90(
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        violations: Optional[List[SafetyViolation]] = None,
+    ) -> None:
+        inp = step.inputs[0] if step.inputs else None
+        inp_shape = state.shape_env.get(inp) if inp else None
+        if inp_shape is None:
+            return
+        out_shape, err = _compute_rot90_shape(
+            inp_shape, step.params or {}, step.output)
+        if err is not None:
+            if violations is not None:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible",
+                    step_index=-1,
+                    step=step,
+                    message=err,
+                    tensor_a=inp,
+                    shape_a=inp_shape,
+                ))
+            return
+        if out_shape is not None:
+            state.shape_env[step.output] = out_shape
+
+    def _apply_flip(
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        violations: Optional[List[SafetyViolation]] = None,
+    ) -> None:
+        inp = step.inputs[0] if step.inputs else None
+        inp_shape = state.shape_env.get(inp) if inp else None
+        if inp_shape is None:
+            return
+        out_shape, err = _compute_flip_shape(
+            inp_shape, step.params or {}, step.output)
+        if err is not None:
+            if violations is not None:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible",
+                    step_index=-1,
+                    step=step,
+                    message=err,
+                    tensor_a=inp,
+                    shape_a=inp_shape,
+                ))
+            return
+        if out_shape is not None:
+            state.shape_env[step.output] = out_shape
 
     def _apply_permute(
         self, state: ModelState, step: ComputationStep
@@ -13662,46 +14552,64 @@ class SymbolicShapePropagator:
             inp = step.inputs[0] if step.inputs else None
             inp_shape = env.get(inp) if inp else None
             if inp_shape:
-                dim = step.params.get("dim")
-                if dim is not None:
-                    if dim < 0:
-                        dim = inp_shape.ndim + dim
-                    new_dims = list(inp_shape.dims)
-                    if 0 <= dim < len(new_dims):
-                        d = new_dims[dim]
-                        if not d.is_symbolic and d.value == 1:
-                            new_dims.pop(dim)
-                    env[step.output] = TensorShape(tuple(new_dims))
-                else:
-                    new_dims = [d for d in inp_shape.dims
-                                if d.is_symbolic or d.value != 1]
-                    env[step.output] = TensorShape(tuple(new_dims))
+                out, _ = _compute_squeeze_shape(
+                    inp_shape, step.params or {}, step.output)
+                if out is not None:
+                    env[step.output] = out
 
         elif step.op == OpKind.UNSQUEEZE:
             inp = step.inputs[0] if step.inputs else None
             inp_shape = env.get(inp) if inp else None
             if inp_shape:
-                dim = step.params.get("dim", 0)
-                if dim < 0:
-                    dim = inp_shape.ndim + 1 + dim
-                new_dims = list(inp_shape.dims)
-                new_dims.insert(dim, ShapeDim(1))
-                env[step.output] = TensorShape(tuple(new_dims))
+                out, _ = _compute_unsqueeze_shape(
+                    inp_shape, step.params or {}, step.output)
+                if out is not None:
+                    env[step.output] = out
 
         elif step.op == OpKind.TRANSPOSE:
             inp = step.inputs[0] if step.inputs else None
             inp_shape = env.get(inp) if inp else None
             if inp_shape:
-                d0 = step.params.get("dim0", 0)
-                d1 = step.params.get("dim1", 1)
-                if d0 < 0:
-                    d0 = inp_shape.ndim + d0
-                if d1 < 0:
-                    d1 = inp_shape.ndim + d1
-                new_dims = list(inp_shape.dims)
-                if 0 <= d0 < len(new_dims) and 0 <= d1 < len(new_dims):
-                    new_dims[d0], new_dims[d1] = new_dims[d1], new_dims[d0]
-                env[step.output] = TensorShape(tuple(new_dims))
+                out, _ = _compute_transpose_shape(
+                    inp_shape, step.params or {}, step.output)
+                if out is not None:
+                    env[step.output] = out
+
+        elif step.op == OpKind.MOVEDIM:
+            inp = step.inputs[0] if step.inputs else None
+            inp_shape = env.get(inp) if inp else None
+            if inp_shape:
+                out, _ = _compute_movedim_shape(
+                    inp_shape, step.params or {}, step.output)
+                if out is not None:
+                    env[step.output] = out
+
+        elif step.op == OpKind.ROLL:
+            inp = step.inputs[0] if step.inputs else None
+            inp_shape = env.get(inp) if inp else None
+            if inp_shape:
+                out, _ = _compute_roll_shape(
+                    inp_shape, step.params or {}, step.output)
+                if out is not None:
+                    env[step.output] = out
+
+        elif step.op == OpKind.ROT90:
+            inp = step.inputs[0] if step.inputs else None
+            inp_shape = env.get(inp) if inp else None
+            if inp_shape:
+                out, _ = _compute_rot90_shape(
+                    inp_shape, step.params or {}, step.output)
+                if out is not None:
+                    env[step.output] = out
+
+        elif step.op == OpKind.FLIP:
+            inp = step.inputs[0] if step.inputs else None
+            inp_shape = env.get(inp) if inp else None
+            if inp_shape:
+                out, _ = _compute_flip_shape(
+                    inp_shape, step.params or {}, step.output)
+                if out is not None:
+                    env[step.output] = out
 
         elif step.op == OpKind.TO_DEVICE:
             inp = step.inputs[0] if step.inputs else None

@@ -435,11 +435,17 @@ def _function_to_op(fn) -> Optional[OpKind]:
         torch.stack: OpKind.STACK,
         torch.flatten: OpKind.FLATTEN,
         torch.reshape: OpKind.RESHAPE,
+        torch.squeeze: OpKind.SQUEEZE,
+        torch.unsqueeze: OpKind.UNSQUEEZE,
+        torch.movedim: OpKind.MOVEDIM,
         torch.broadcast_to: OpKind.EXPAND,
         torch.permute: OpKind.PERMUTE,
         torch.transpose: OpKind.TRANSPOSE,
         torch.swapaxes: OpKind.TRANSPOSE,
         torch.swapdims: OpKind.TRANSPOSE,
+        torch.roll: OpKind.ROLL,
+        torch.rot90: OpKind.ROT90,
+        torch.flip: OpKind.FLIP,
         torch.relu: OpKind.ACTIVATION,
         torch.sigmoid: OpKind.ACTIVATION,
         torch.tanh: OpKind.ACTIVATION,
@@ -470,6 +476,10 @@ def _function_to_op(fn) -> Optional[OpKind]:
         alias_fn = getattr(torch, alias, None)
         if alias_fn is not None:
             fn_map[alias_fn] = OpKind.STACK
+    for alias in ("moveaxis",):
+        alias_fn = getattr(torch, alias, None)
+        if alias_fn is not None:
+            fn_map[alias_fn] = OpKind.MOVEDIM
     # Also handle torch.nn.functional
     import torch.nn.functional as F
     fn_map.update({
@@ -518,8 +528,15 @@ _METHOD_OP_MAP = {
     "flatten": OpKind.FLATTEN,
     "squeeze": OpKind.SQUEEZE,
     "unsqueeze": OpKind.UNSQUEEZE,
+    "movedim": OpKind.MOVEDIM,
+    "moveaxis": OpKind.MOVEDIM,
     "transpose": OpKind.TRANSPOSE,
+    "swapaxes": OpKind.TRANSPOSE,
+    "swapdims": OpKind.TRANSPOSE,
     "permute": OpKind.PERMUTE,
+    "roll": OpKind.ROLL,
+    "rot90": OpKind.ROT90,
+    "flip": OpKind.FLIP,
     "contiguous": OpKind.CONTIGUOUS,
     "detach": OpKind.DETACH,
     "to": OpKind.TO_DEVICE,
@@ -1193,6 +1210,13 @@ def _extract_function_params(
 ) -> Dict[str, Any]:
     """Extract shape-relevant params from a function call node."""
     params: Dict[str, Any] = {}
+
+    def _set_literal(key: str, value: Any, dynamic_key: str) -> None:
+        literal, dynamic = _literal_or_dynamic(value)
+        params[key] = literal
+        if dynamic:
+            params[dynamic_key] = True
+
     if op_kind == OpKind.CAT:
         # dim argument
         if len(node.args) > 1 and isinstance(node.args[1], int):
@@ -1234,6 +1258,56 @@ def _extract_function_params(
             params["start_dim"] = node.args[1]
         if len(node.args) > 2 and isinstance(node.args[2], int):
             params["end_dim"] = node.args[2]
+    elif op_kind == OpKind.SQUEEZE:
+        if len(node.args) > 1:
+            _set_literal("dim", node.args[1], "__dim_dynamic__")
+        elif "dim" in node.kwargs:
+            _set_literal("dim", node.kwargs["dim"], "__dim_dynamic__")
+    elif op_kind == OpKind.UNSQUEEZE:
+        if len(node.args) > 1:
+            _set_literal("dim", node.args[1], "__dim_dynamic__")
+        elif "dim" in node.kwargs:
+            _set_literal("dim", node.kwargs["dim"], "__dim_dynamic__")
+    elif op_kind == OpKind.MOVEDIM:
+        if len(node.args) > 1:
+            _set_literal("source", node.args[1], "__source_dynamic__")
+        elif "source" in node.kwargs:
+            _set_literal("source", node.kwargs["source"], "__source_dynamic__")
+        if len(node.args) > 2:
+            _set_literal(
+                "destination", node.args[2], "__destination_dynamic__")
+        elif "destination" in node.kwargs:
+            _set_literal(
+                "destination",
+                node.kwargs["destination"],
+                "__destination_dynamic__",
+            )
+    elif op_kind == OpKind.ROLL:
+        if len(node.args) > 1:
+            _set_literal("shifts", node.args[1], "__shifts_dynamic__")
+        elif "shifts" in node.kwargs:
+            _set_literal("shifts", node.kwargs["shifts"], "__shifts_dynamic__")
+        if len(node.args) > 2:
+            params["__dims_present__"] = True
+            _set_literal("dims", node.args[2], "__dims_dynamic__")
+        elif "dims" in node.kwargs:
+            params["__dims_present__"] = True
+            _set_literal("dims", node.kwargs["dims"], "__dims_dynamic__")
+    elif op_kind == OpKind.ROT90:
+        if len(node.args) > 1:
+            _set_literal("k", node.args[1], "__k_dynamic__")
+        elif "k" in node.kwargs:
+            _set_literal("k", node.kwargs["k"], "__k_dynamic__")
+        if len(node.args) > 2:
+            _set_literal("dims", node.args[2], "__dims_dynamic__")
+        elif "dims" in node.kwargs:
+            _set_literal("dims", node.kwargs["dims"], "__dims_dynamic__")
+    elif op_kind == OpKind.FLIP:
+        params["__requires_sequence_dims__"] = True
+        if len(node.args) > 1:
+            _set_literal("dims", node.args[1], "__dims_dynamic__")
+        elif "dims" in node.kwargs:
+            _set_literal("dims", node.kwargs["dims"], "__dims_dynamic__")
     elif op_kind == OpKind.INTERPOLATE:
         params["__interpolate_args_observed__"] = True
 
@@ -1294,8 +1368,14 @@ def _extract_function_params(
     elif op_kind == OpKind.TRANSPOSE:
         # torch.transpose / swapaxes / swapdims (x, dim0, dim1).
         if len(node.args) >= 3:
-            params["dim0"] = node.args[1] if isinstance(node.args[1], int) else 0
-            params["dim1"] = node.args[2] if isinstance(node.args[2], int) else 1
+            _set_literal("dim0", node.args[1], "__dim0_dynamic__")
+            _set_literal("dim1", node.args[2], "__dim1_dynamic__")
+        for key, dynamic_key in (
+            ("dim0", "__dim0_dynamic__"),
+            ("dim1", "__dim1_dynamic__"),
+        ):
+            if key in node.kwargs:
+                _set_literal(key, node.kwargs[key], dynamic_key)
     elif op_kind == OpKind.EINSUM:
         # torch.einsum(equation, *tensors): the equation is the first arg.
         if node.args and isinstance(node.args[0], str):
@@ -1381,6 +1461,13 @@ def _extract_method_params(
 ) -> Dict[str, Any]:
     """Extract shape-relevant params from a method call node."""
     params: Dict[str, Any] = {}
+
+    def _set_literal(key: str, value: Any, dynamic_key: str) -> None:
+        literal, dynamic = _literal_or_dynamic(value)
+        params[key] = literal
+        if dynamic:
+            params[dynamic_key] = True
+
     if method_name in ("view", "reshape"):
         # ``x.view(2, 3)`` / ``x.reshape((2, 3))`` / ``x.reshape(b, -1)``.
         dims = _parse_reshape_dims(tuple(node.args[1:]))
@@ -1389,10 +1476,19 @@ def _extract_method_params(
             int_dims = tuple(d for d in dims if isinstance(d, int))
             if int_dims:
                 params["target_shape"] = int_dims
-    elif method_name == "transpose":
+    elif method_name in ("transpose", "swapaxes", "swapdims"):
         if len(node.args) >= 3:
-            params["dim0"] = node.args[1] if isinstance(node.args[1], int) else 0
-            params["dim1"] = node.args[2] if isinstance(node.args[2], int) else 1
+            _set_literal("dim0", node.args[1], "__dim0_dynamic__")
+            _set_literal("dim1", node.args[2], "__dim1_dynamic__")
+        for key, dynamic_key in (
+            ("dim0", "__dim0_dynamic__"),
+            ("dim1", "__dim1_dynamic__"),
+            ("axis0", "__dim0_dynamic__"),
+            ("axis1", "__dim1_dynamic__"),
+        ):
+            if key in node.kwargs:
+                target = "dim0" if key == "axis0" else "dim1" if key == "axis1" else key
+                _set_literal(target, node.kwargs[key], dynamic_key)
     elif method_name == "permute":
         dims = []
         for arg in node.args[1:]:
@@ -1416,8 +1512,49 @@ def _extract_method_params(
         if method_name == "broadcast_to":
             params["expand_kind"] = "broadcast_to"
     elif method_name in ("squeeze", "unsqueeze"):
-        if len(node.args) > 1 and isinstance(node.args[1], int):
-            params["dim"] = node.args[1]
+        if len(node.args) > 1:
+            _set_literal("dim", node.args[1], "__dim_dynamic__")
+        elif "dim" in node.kwargs:
+            _set_literal("dim", node.kwargs["dim"], "__dim_dynamic__")
+    elif method_name in ("movedim", "moveaxis"):
+        if len(node.args) > 1:
+            _set_literal("source", node.args[1], "__source_dynamic__")
+        elif "source" in node.kwargs:
+            _set_literal("source", node.kwargs["source"], "__source_dynamic__")
+        if len(node.args) > 2:
+            _set_literal(
+                "destination", node.args[2], "__destination_dynamic__")
+        elif "destination" in node.kwargs:
+            _set_literal(
+                "destination",
+                node.kwargs["destination"],
+                "__destination_dynamic__",
+            )
+    elif method_name == "roll":
+        if len(node.args) > 1:
+            _set_literal("shifts", node.args[1], "__shifts_dynamic__")
+        elif "shifts" in node.kwargs:
+            _set_literal("shifts", node.kwargs["shifts"], "__shifts_dynamic__")
+        if len(node.args) > 2:
+            params["__dims_present__"] = True
+            _set_literal("dims", node.args[2], "__dims_dynamic__")
+        elif "dims" in node.kwargs:
+            params["__dims_present__"] = True
+            _set_literal("dims", node.kwargs["dims"], "__dims_dynamic__")
+    elif method_name == "rot90":
+        if len(node.args) > 1:
+            _set_literal("k", node.args[1], "__k_dynamic__")
+        elif "k" in node.kwargs:
+            _set_literal("k", node.kwargs["k"], "__k_dynamic__")
+        if len(node.args) > 2:
+            _set_literal("dims", node.args[2], "__dims_dynamic__")
+        elif "dims" in node.kwargs:
+            _set_literal("dims", node.kwargs["dims"], "__dims_dynamic__")
+    elif method_name == "flip":
+        if len(node.args) > 1:
+            _set_literal("dims", node.args[1], "__dims_dynamic__")
+        elif "dims" in node.kwargs:
+            _set_literal("dims", node.kwargs["dims"], "__dims_dynamic__")
     elif op_kind in (
         OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
         OpKind.MASKED_SELECT, OpKind.MASKED_FILL, OpKind.NARROW,
@@ -2035,6 +2172,13 @@ _METHOD_OP_MAP: Dict[str, OpKind] = {
     "permute": OpKind.PERMUTE,
     "squeeze": OpKind.SQUEEZE,
     "unsqueeze": OpKind.UNSQUEEZE,
+    "movedim": OpKind.MOVEDIM,
+    "moveaxis": OpKind.MOVEDIM,
+    "swapaxes": OpKind.TRANSPOSE,
+    "swapdims": OpKind.TRANSPOSE,
+    "roll": OpKind.ROLL,
+    "rot90": OpKind.ROT90,
+    "flip": OpKind.FLIP,
     "mean": OpKind.MEAN_REDUCE,
     "sum": OpKind.SUM_REDUCE,
     "contiguous": OpKind.CONTIGUOUS,
@@ -2111,6 +2255,15 @@ _TORCH_FUNC_MAP: Dict[str, OpKind] = {
     "dstack": OpKind.STACK,
     "column_stack": OpKind.STACK,
     "row_stack": OpKind.STACK,
+    "squeeze": OpKind.SQUEEZE,
+    "unsqueeze": OpKind.UNSQUEEZE,
+    "movedim": OpKind.MOVEDIM,
+    "moveaxis": OpKind.MOVEDIM,
+    "swapaxes": OpKind.TRANSPOSE,
+    "swapdims": OpKind.TRANSPOSE,
+    "roll": OpKind.ROLL,
+    "rot90": OpKind.ROT90,
+    "flip": OpKind.FLIP,
     "where": OpKind.WHERE,
     "masked_select": OpKind.MASKED_SELECT,
     "nonzero": OpKind.NONZERO,

@@ -362,6 +362,12 @@ def _init_universal_registry():
     for op in ["stack", "hstack", "vstack", "dstack", "column_stack", "row_stack"]:
         register_transfer(f"torch.{op}", TransferFunction(
             name=op, doc=f"Stack-family shape transfer: {op}"))
+    for op in [
+        "squeeze", "unsqueeze", "movedim", "moveaxis", "swapaxes",
+        "swapdims", "roll", "rot90", "flip",
+    ]:
+        register_transfer(f"torch.{op}", TransferFunction(
+            name=op, doc=f"Structural shape transfer: {op}"))
     register_transfer("torch.einsum", TransferFunction(
         name="einsum", doc="Einstein summation"))
     register_transfer("torch.tensordot", TransferFunction(

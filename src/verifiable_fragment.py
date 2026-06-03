@@ -252,7 +252,8 @@ SUPPORTED_LAYER_TYPES: Set[str] = {
 
 SUPPORTED_TENSOR_METHODS: Set[str] = {
     "view", "reshape", "flatten", "squeeze", "unsqueeze",
-    "transpose", "permute", "contiguous", "detach",
+    "movedim", "moveaxis", "transpose", "swapaxes", "swapdims",
+    "permute", "roll", "rot90", "flip", "contiguous", "detach",
     "to", "cuda", "cpu", "float", "half", "double",
     "mean", "sum", "expand", "repeat",
     "chunk", "split", "softmax", "relu", "sigmoid", "tanh",
@@ -265,6 +266,9 @@ SUPPORTED_TENSOR_METHODS: Set[str] = {
 SUPPORTED_TORCH_FUNCTIONS: Set[str] = {
     "torch.cat", "torch.stack", "torch.hstack", "torch.vstack",
     "torch.dstack", "torch.column_stack", "torch.row_stack",
+    "torch.squeeze", "torch.unsqueeze", "torch.movedim", "torch.moveaxis",
+    "torch.swapaxes", "torch.swapdims", "torch.roll", "torch.rot90",
+    "torch.flip",
     "torch.matmul", "torch.mm", "torch.bmm",
     "torch.flatten", "torch.relu", "torch.sigmoid", "torch.tanh",
     "torch.softmax", "torch.dropout", "torch.where",

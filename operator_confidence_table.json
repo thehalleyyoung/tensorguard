@@ -3,10 +3,10 @@
   "default_tag": "heuristic",
   "summary": {
     "complete": 75,
-    "sound": 42,
+    "sound": 51,
     "heuristic": 6
   },
-  "total": 123,
+  "total": 132,
   "operators": [
     {
       "operator": "F.celu",
@@ -279,6 +279,11 @@
       "rationale": "FFT family: exact, well-defined output-shape rule (e.g. rfft maps the last dim n -> n//2 + 1) enforced soundly."
     },
     {
+      "operator": "torch.flip",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
       "operator": "torch.floor",
       "confidence": "complete",
       "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
@@ -434,6 +439,16 @@
       "rationale": "Matmul-family op with an exact, well-defined contraction rule that is enforced soundly (full completeness not claimed for every broadcasting / zero-dim edge case)."
     },
     {
+      "operator": "torch.moveaxis",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
+      "operator": "torch.movedim",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
       "operator": "torch.multinomial",
       "confidence": "heuristic",
       "rationale": "Output shape depends on runtime values or is approximated generically; best-effort, neither sound nor complete in general."
@@ -487,6 +502,16 @@
       "operator": "torch.relu",
       "confidence": "complete",
       "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.roll",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
+      "operator": "torch.rot90",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
     },
     {
       "operator": "torch.round",
@@ -569,6 +594,11 @@
       "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
     },
     {
+      "operator": "torch.squeeze",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
       "operator": "torch.stack",
       "confidence": "sound",
       "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
@@ -582,6 +612,16 @@
       "operator": "torch.sum",
       "confidence": "sound",
       "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.swapaxes",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
+      "operator": "torch.swapdims",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
     },
     {
       "operator": "torch.tan",
@@ -612,6 +652,11 @@
       "operator": "torch.unique",
       "confidence": "heuristic",
       "rationale": "Output shape depends on runtime values or is approximated generically; best-effort, neither sound nor complete in general."
+    },
+    {
+      "operator": "torch.unsqueeze",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
     },
     {
       "operator": "torch.var",

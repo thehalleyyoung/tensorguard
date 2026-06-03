@@ -195,6 +195,7 @@ batched matrix multiplication, linear layers, convolution and transpose
 convolution families, pooling, flatten, reshape/view with product reasoning,
 broadcasting, reductions, cat/stack-family aliases, PyTorch-faithful padding,
 interpolation/upsampling, transpose/permute, squeeze/unsqueeze,
+\texttt{movedim}/\texttt{swapaxes}, \texttt{roll}/\texttt{rot90}/\texttt{flip},
 fold/unfold image-column transforms,
 embedding, dtype casts, device moves, and stochastic tensor factories whose
 shapes are seed-independent.  Extended coverage includes einsum parsing,
@@ -213,6 +214,20 @@ Recent stack-family work follows the same standard.  \texttt{torch.stack},
 \texttt{column\_stack}, and \texttt{row\_stack} are modeled with PyTorch's
 singleton and rank-promotion corner cases, then checked by tests that run the
 real operators and compare both output shapes and static error parity.
+
+Axis-structural operators are now treated with the same precision rather than
+hidden behind a generic shape-preserving fallback.  \texttt{squeeze} and
+\texttt{unsqueeze} use PyTorch's exact rank rules, including tuple-dim
+\texttt{squeeze} and the legal \([-\mathrm{rank}-1,\mathrm{rank}]\)
+\texttt{unsqueeze} interval.  \texttt{movedim}/\texttt{moveaxis} use the ATen
+axis-order algorithm, so multi-axis placements preserve symbolic dimension
+identity instead of merely preserving rank.  \texttt{swapaxes}/\texttt{swapdims}
+share the transpose transfer.  \texttt{roll}, \texttt{rot90}, and \texttt{flip}
+preserve or permute shapes while still refuting statically invalid axis
+contracts such as duplicate flip axes, mismatched roll arity, or invalid rotation
+axes.  The regression suite compares source and FX extraction against live
+PyTorch, exhaustively checks rank-4 \texttt{movedim} placements, and proves that
+symbolic dimensions do not create false structural bugs.
 
 \subsection{Exact Index-Value Operators}
 
