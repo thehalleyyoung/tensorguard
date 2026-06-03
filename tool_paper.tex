@@ -205,7 +205,9 @@ advanced indexing, gather/scatter, index select, masked select,
 \texttt{kthvalue}, arg reductions, sparse COO/CSR/CSC/BSR/BSC layout invariants,
 FFT/complex view contracts, exact \texttt{torch.linalg} contracts for
 \texttt{solve}, inverse, Cholesky, SVD, eigendecomposition, and QR, named tensor
-alignment, vmap/functorch batch dimensions, distribution batch/event/log-prob
+alignment, vmap/functorch batch dimensions, \texttt{torch.func} autodiff
+wrappers (\texttt{grad}, \texttt{jacrev}, \texttt{jacfwd}, \texttt{jvp}, and
+\texttt{vjp}), distribution batch/event/log-prob
 shapes, grid sampling, affine grids, multi-head attention, scaled dot-product
 attention, exact RNN/LSTM/GRU output and returned-state contracts, LoRA adapter
 compatibility, training-loop checks, quantization/export safety, distributed
@@ -389,6 +391,15 @@ non-obvious RHS branch: vector-shaped batched RHS tensors do not broadcast like
 matrix RHS tensors, and \texttt{left=False} rejects the exact-batch vector branch.
 Focused tests compare all of these shapes and failures against the installed
 PyTorch dispatcher, while unsupported linalg operators remain heuristic.
+
+The higher-order \texttt{torch.func} rules carry that exactness into
+differentiable wrappers.  \texttt{grad} requires a rank-0 scalar body output and
+preserves PyTorch's int-versus-sequence \texttt{argnums} return structure.
+\texttt{jacrev} and \texttt{jacfwd} map every output pytree leaf with the product
+shape ``output plus differentiated input'', \texttt{jvp} validates tangent
+shapes, and \texttt{vjp} validates cotangent trees while documenting the pullback
+gradient tuple.  Symbolic tangent/cotangent equalities and value-dependent
+closures abstain instead of creating false contracts.
 
 \clearpage
 
@@ -625,7 +636,7 @@ Attention-family contracts for q/k/v, masks, head counts, and output shapes. \\
 Sparse layout and complex/FFT shape-dtype contracts. \\
 \hline
 \texttt{src/distributions\_verify.py}, \texttt{src/named\_tensor\_verify.py},
-\texttt{src/vmap\_verify.py} &
+\texttt{src/vmap\_verify.py}, \texttt{src/func\_autodiff\_verify.py} &
 High-value library contracts beyond ordinary dense layers. \\
 \hline
 \texttt{src/quant\_export\_checks.py}, \texttt{src/distributed\_verification.py},
@@ -1088,10 +1099,13 @@ Distribution shapes &
 Batch, event, sample, and log-probability shapes must be mutually compatible. &
 Distribution verification tests and probabilistic-model examples. \\
 \hline
-vmap/functorch &
+vmap/functorch and \texttt{torch.func} autodiff &
 Batched dimensions are inserted, removed, or moved according to \texttt{in\_dims}
-and \texttt{out\_dims}; impossible batch contracts are rejected. &
-vmap verification tests and live dispatcher checks. \\
+and \texttt{out\_dims}; autodiff wrappers produce gradient/Jacobian/JVP/VJP
+pytrees with PyTorch-faithful \texttt{argnums}, tangent, and cotangent shape
+contracts; impossible concrete contracts are rejected. &
+vmap verification tests plus \texttt{tests/test\_func\_autodiff\_verify.py}
+live dispatcher checks. \\
 \hline
 Export gates &
 Export, ONNX, AOTInductor, and quantization paths check static preconditions

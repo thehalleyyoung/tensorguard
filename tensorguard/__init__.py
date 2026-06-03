@@ -85,6 +85,14 @@ from src.grid_sample_verify import (  # noqa: F401  (re-export)
 )
 from src.mha_verify import verify_multihead_attention  # noqa: F401  (re-export)
 from src.vmap_verify import verify_vmap  # noqa: F401  (re-export)
+from src.func_autodiff_verify import (  # noqa: F401  (re-export)
+    verify_func_autodiff,
+    verify_func_grad,
+    verify_func_jacfwd,
+    verify_func_jacrev,
+    verify_func_jvp,
+    verify_func_vjp,
+)
 
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
 from src import api as api  # noqa: F401
@@ -138,6 +146,12 @@ __all__ = [
     "verify_affine_grid",
     "verify_multihead_attention",
     "verify_vmap",
+    "verify_func_autodiff",
+    "verify_func_grad",
+    "verify_func_jacrev",
+    "verify_func_jacfwd",
+    "verify_func_jvp",
+    "verify_func_vjp",
     "TensorGuardViolation",
     "api",
     "torch",

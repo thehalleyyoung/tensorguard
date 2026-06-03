@@ -47,6 +47,14 @@ from .sparse_verify import (
 from .grid_sample_verify import verify_affine_grid, verify_grid_sample
 from .mha_verify import verify_multihead_attention
 from .vmap_verify import verify_vmap
+from .func_autodiff_verify import (
+    verify_func_autodiff,
+    verify_func_grad,
+    verify_func_jacfwd,
+    verify_func_jacrev,
+    verify_func_jvp,
+    verify_func_vjp,
+)
 
 __all__ = [
     "analyze",
@@ -88,5 +96,11 @@ __all__ = [
     "verify_affine_grid",
     "verify_multihead_attention",
     "verify_vmap",
+    "verify_func_autodiff",
+    "verify_func_grad",
+    "verify_func_jacrev",
+    "verify_func_jacfwd",
+    "verify_func_jvp",
+    "verify_func_vjp",
     "__version__",
 ]
