@@ -1,0 +1,102 @@
+{
+  "environment": {
+    "fresh_workspace": "tempfile.TemporaryDirectory",
+    "install": "pip install --no-deps --editable $REPO",
+    "network_dependency_resolution": false,
+    "virtualenv": "python -m venv --system-site-packages"
+  },
+  "schema": "tensorguard.launch_dry_run/v1",
+  "source_demo_script": "docs/launch/demo_script.md",
+  "step": 289,
+  "steps": [
+    {
+      "command": [
+        "$PYTHON",
+        "-m",
+        "venv",
+        "--system-site-packages",
+        "$TMP/venv"
+      ],
+      "exit_code": 0,
+      "name": "create_fresh_virtualenv",
+      "passed": true
+    },
+    {
+      "command": [
+        "$VENV/bin/pip",
+        "install",
+        "--quiet",
+        "--no-deps",
+        "--editable",
+        "$REPO"
+      ],
+      "exit_code": 0,
+      "name": "install_checkout_no_network_resolution",
+      "passed": true
+    },
+    {
+      "bug_count": 0,
+      "command": [
+        "$VENV/bin/tensorguard",
+        "verify",
+        "$REPO/examples/quickstart.py",
+        "--input-shape",
+        "x=1,3,224,224",
+        "--format",
+        "json",
+        "--no-color",
+        "--no-config"
+      ],
+      "exit_code": 0,
+      "name": "run_quickstart_from_generated_demo",
+      "passed": true,
+      "verdict": "SAFE"
+    },
+    {
+      "bug_count": 2,
+      "command": [
+        "$VENV/bin/tensorguard",
+        "verify",
+        "$TMP/mlp_classifier_head_bug.py",
+        "--input-shape",
+        "x=batch,10",
+        "--format",
+        "json",
+        "--no-color",
+        "--no-config"
+      ],
+      "exit_code": 1,
+      "expected_bug": "Second Linear expects 30 features, but the previous layer produces 20.",
+      "name": "run_gallery_bug_variant",
+      "passed": true,
+      "verdict": "UNSAFE"
+    },
+    {
+      "checked_paths": [
+        "docs/upstream/pytorch_proposal.md",
+        "examples/model_gallery.md",
+        "examples/quickstart.py",
+        "examples/tutorials/README.md",
+        "reproducibility/artifact_index.md",
+        "reproducibility/launch_dry_run.md",
+        "reproducibility/release_readiness.md"
+      ],
+      "command": [
+        "test",
+        "-e",
+        "<each path cited by docs/launch/demo_script.md>"
+      ],
+      "exit_code": 0,
+      "missing_paths": [],
+      "name": "open_evidence_tour_files",
+      "passed": true
+    }
+  ],
+  "summary": {
+    "all_steps_passed": true,
+    "demo_paths_checked": 7,
+    "gallery_bug_verdict": "UNSAFE",
+    "quickstart_verdict": "SAFE",
+    "step_count": 5
+  }
+}

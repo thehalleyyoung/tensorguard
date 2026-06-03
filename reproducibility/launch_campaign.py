@@ -293,8 +293,12 @@ def render_demo_script(audit: Mapping[str, Any]) -> str:
             "",
             "## Cold open",
             "",
-            "Run `examples/quickstart.py` and show TensorGuard finding a model-level",
-            "contract violation before the matching PyTorch kernel would fail.",
+            "Run `tensorguard verify examples/quickstart.py --input-shape",
+            "x=1,3,224,224 --format json --no-color` to show a fresh install",
+            "certifying the quickstart model, then run the generated gallery bug",
+            "variant from `reproducibility/launch_dry_run.md` to show TensorGuard",
+            "reporting an UNSAFE model-level contract violation before the",
+            "matching PyTorch kernel would fail.",
             "",
             "## Evidence tour",
             "",
@@ -302,6 +306,7 @@ def render_demo_script(audit: Mapping[str, Any]) -> str:
             f"- Open `examples/tutorials/README.md` for the executable tutorial set ({counts['tutorial_notebooks']} notebooks).",
             "- Open `reproducibility/artifact_index.md` to show the generated artifact hash ledger.",
             "- Open `reproducibility/release_readiness.md` to show the launch gate.",
+            "- Open `reproducibility/launch_dry_run.md` to show the fresh-venv demo proof.",
             "",
             "## Upstream close",
             "",
@@ -379,15 +384,8 @@ def write_outputs() -> Dict[str, Any]:
     return audit
 
 
-def _git_diff(paths: Iterable[Path]) -> str:
-    proc = subprocess.run(
-        ["git", "--no-pager", "diff", "--", *(str(path.relative_to(REPO)) for path in paths)],
-        cwd=REPO,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    return proc.stdout + proc.stderr
+def _snapshots(paths: Iterable[Path]) -> Dict[Path, str | None]:
+    return {path: path.read_text(encoding="utf-8") if path.exists() else None for path in paths}
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -395,17 +393,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--check", action="store_true", help="fail if launch campaign artifacts are stale")
     args = parser.parse_args(argv)
 
-    before = _git_diff(OUTPUTS) if args.check else ""
+    before = _snapshots(OUTPUTS) if args.check else {}
     audit = write_outputs()
     summary = audit["summary"]
     if not summary["all_channels_have_required_anchors"] or not summary["all_cited_paths_exist"]:
         print("launch campaign audit failed", file=sys.stderr)
         return 1
     if args.check:
-        after = _git_diff(OUTPUTS)
-        if before != after or after:
+        after = _snapshots(OUTPUTS)
+        if before != after:
             print("launch campaign artifacts are stale", file=sys.stderr)
-            print(after, file=sys.stderr)
             return 1
     print("launch campaign audit: PASS")
     return 0

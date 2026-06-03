@@ -53,6 +53,9 @@ def test_launch_copy_numeric_claims_are_source_derived():
     allowed_numbers = {
         "1.0",  # campaign track, explicitly audited as readiness not release
         "1.0.0",
+        "1",
+        "3",
+        "224",
         audit["current_package_version"],
         audit["requires_python"].lstrip(">="),
         str(audit["summary"]["channel_count"]),

@@ -177,7 +177,12 @@ declarative stub-authoring guide, and Lean proof examples whose theorem names ar
 checked against the committed proof tree.
 The public launch surface is generated in the same style: demos, evidence
 ledgers, upstream RFCs, and compatibility/support promises are tied together by
-an auditable campaign rather than a one-off announcement.
+an auditable campaign rather than a one-off announcement.  The launch path is
+also dry-run in a fresh temporary workspace: the harness creates an isolated
+virtualenv, installs the checkout without network dependency resolution, runs
+the public quickstart through the real \texttt{tensorguard} console script, then
+materializes a generated model-gallery bug and proves the same fresh install
+reports \unsafe{} before the matching eager PyTorch kernel would fail.
 
 The editor surface is likewise centralized.  A real JSON-RPC language server
 over stdio analyzes unsaved buffers and publishes diagnostics, hover shapes, and
