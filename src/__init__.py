@@ -27,6 +27,12 @@ from .safe_loader import (
 )
 from .distributions_verify import verify_distribution, verify_log_prob
 from .complex_verify import verify_fft, verify_view_as_complex, verify_view_as_real
+from .embedding_bag_verify import (
+    EmbeddingBagVerdict,
+    TorchRecJaggedSpec,
+    verify_embedding_bag,
+    verify_torchrec_embedding_bag,
+)
 from .linalg_verify import (
     verify_linalg,
     verify_linalg_cholesky,
@@ -86,6 +92,10 @@ __all__ = [
     "verify_fft",
     "verify_view_as_real",
     "verify_view_as_complex",
+    "EmbeddingBagVerdict",
+    "TorchRecJaggedSpec",
+    "verify_embedding_bag",
+    "verify_torchrec_embedding_bag",
     "verify_linalg",
     "verify_linalg_inv",
     "verify_linalg_cholesky",

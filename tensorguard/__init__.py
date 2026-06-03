@@ -58,6 +58,12 @@ from src.complex_verify import (  # noqa: F401  (re-export)
     verify_view_as_complex,
     verify_view_as_real,
 )
+from src.embedding_bag_verify import (  # noqa: F401  (re-export)
+    EmbeddingBagVerdict,
+    TorchRecJaggedSpec,
+    verify_embedding_bag,
+    verify_torchrec_embedding_bag,
+)
 from src.linalg_verify import (  # noqa: F401  (re-export)
     verify_linalg,
     verify_linalg_cholesky,
@@ -139,6 +145,10 @@ __all__ = [
     "verify_fft",
     "verify_view_as_real",
     "verify_view_as_complex",
+    "EmbeddingBagVerdict",
+    "TorchRecJaggedSpec",
+    "verify_embedding_bag",
+    "verify_torchrec_embedding_bag",
     "verify_linalg",
     "verify_linalg_inv",
     "verify_linalg_cholesky",

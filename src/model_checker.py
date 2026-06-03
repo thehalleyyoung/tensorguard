@@ -129,6 +129,7 @@ from src.tensor_shapes import (
     symbolic_split_shape,
 )
 from src.loss_verify import verify_loss
+from src.embedding_bag_verify import verify_embedding_bag
 from src.mha_verify import verify_multihead_attention
 from src.torchvision_v2_verify import (
     normalized_padding_2d,
@@ -433,6 +434,7 @@ class TensorValueRange:
 
     min_value: int
     max_value: int
+    values: Optional[Tuple[int, ...]] = None
 
 
 @dataclass
@@ -2145,8 +2147,12 @@ def _extract_layer_params(kind: LayerKind, call: ast.Call,
     elif kind == LayerKind.EMBEDDINGBAG:
         layer.num_embeddings = pos[0] if len(pos) > 0 else kw.get("num_embeddings")
         layer.embedding_dim = pos[1] if len(pos) > 1 else kw.get("embedding_dim")
+        mode = pos[2] if len(pos) > 2 else kw.get("mode", "mean")
+        include_last_offset = kw.get("include_last_offset", False)
         layer.params = {"num_embeddings": layer.num_embeddings,
-                        "embedding_dim": layer.embedding_dim}
+                        "embedding_dim": layer.embedding_dim,
+                        "mode": mode,
+                        "include_last_offset": include_last_offset}
 
     elif kind == LayerKind.BILINEAR:
         in1 = pos[0] if len(pos) > 0 else kw.get("in1_features")
@@ -2784,6 +2790,7 @@ _FUNCTIONAL_OPS: Dict[str, OpKind] = {
     "pad": OpKind.PAD,
     "grid_sample": OpKind.ACTIVATION,
     "embedding": OpKind.LAYER_CALL,
+    "embedding_bag": OpKind.LAYER_CALL,
     "batch_norm": OpKind.LAYER_CALL,
     "layer_norm": OpKind.LAYER_CALL,
     "group_norm": OpKind.LAYER_CALL,
@@ -2857,6 +2864,7 @@ _FUNC_LAYER_KIND: Dict[str, "LayerKind"] = {
     "group_norm": LayerKind.GROUPNORM,
     "instance_norm": LayerKind.INSTANCENORM2D,
     "embedding": LayerKind.EMBEDDING,
+    "embedding_bag": LayerKind.EMBEDDINGBAG,
     "cross_entropy": LayerKind.LOSS_FUNCTION,
     "nll_loss": LayerKind.LOSS_FUNCTION,
     "mse_loss": LayerKind.LOSS_FUNCTION,
@@ -2902,6 +2910,23 @@ def _make_functional_layer(
         layer.params = dict(kw)
         layer.params["loss_name"] = func_name
         layer.params["reduction"] = reduction if isinstance(reduction, str) else "mean"
+        return layer
+
+    if kind == LayerKind.EMBEDDINGBAG:
+        mode = kw.get("mode", "mean")
+        if len(pos_args) > 5:
+            maybe_mode = _const_value(pos_args[5])
+            if isinstance(maybe_mode, str):
+                mode = maybe_mode
+        include_last_offset = kw.get("include_last_offset", False)
+        if len(pos_args) > 8:
+            maybe_include = _const_value(pos_args[8])
+            if isinstance(maybe_include, bool):
+                include_last_offset = maybe_include
+        layer.params = dict(kw)
+        layer.params["mode"] = mode if isinstance(mode, str) else "mean"
+        layer.params["include_last_offset"] = bool(include_last_offset)
+        layer.params["__functional_embedding_bag__"] = True
         return layer
 
     if kind in (LayerKind.MAXPOOL2D, LayerKind.AVGPOOL2D,
@@ -5887,6 +5912,19 @@ class _ForwardExtractor(ast.NodeVisitor):
                         if syn_layer.kind == LayerKind.LOSS_FUNCTION:
                             # Loss functions consume both prediction and target.
                             inputs = inputs[:2]
+                        elif syn_layer.kind == LayerKind.EMBEDDINGBAG:
+                            # F.embedding_bag consumes indices, weight, optional
+                            # offsets, and optional per_sample_weights.  Scalar
+                            # args stay in params.
+                            tensor_inputs = inputs[:3]
+                            for kw in node.keywords:
+                                if kw.arg == "per_sample_weights":
+                                    tensor_inputs.append(
+                                        self._resolve_arg(kw.value))
+                                elif kw.arg == "offsets" and len(tensor_inputs) < 3:
+                                    tensor_inputs.append(
+                                        self._resolve_arg(kw.value))
+                            inputs = tensor_inputs
                         else:
                             # For most functional layers, first input is the
                             # tensor; the rest are static parameters.
@@ -9087,12 +9125,15 @@ def _propagate_maxunpool3d(
 def _propagate_embeddingbag(
     input_shape: TensorShape, layer: LayerDef
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """EmbeddingBag: (N,) or (N, M) → (N, embedding_dim)."""
+    """EmbeddingBag fallback when offset/per-sample operands are unavailable."""
     if layer.embedding_dim is None:
         return None, "EmbeddingBag embedding_dim unknown"
     if input_shape.ndim < 1:
         return None, "EmbeddingBag requires at least 1D input"
-    batch = input_shape.dims[0]
+    if input_shape.ndim == 2:
+        batch = input_shape.dims[0]
+    else:
+        batch = ShapeDim(f"_embeddingbag_{layer.attr_name}_bags")
     return TensorShape((batch, ShapeDim(layer.embedding_dim))), None
 
 
@@ -10333,7 +10374,7 @@ _PARAMETERISED_LAYERS: FrozenSet[LayerKind] = frozenset({
     LayerKind.LINEAR, LayerKind.CONV2D, LayerKind.CONV1D,
     LayerKind.CONVTRANSPOSE2D, LayerKind.CONVTRANSPOSE1D,
     LayerKind.BATCHNORM1D, LayerKind.BATCHNORM2D,
-    LayerKind.LAYERNORM, LayerKind.EMBEDDING,
+    LayerKind.LAYERNORM, LayerKind.EMBEDDING, LayerKind.EMBEDDINGBAG,
     LayerKind.LSTM, LayerKind.GRU, LayerKind.RNN,
     LayerKind.MULTIHEAD_ATTENTION,
     LayerKind.TRANSFORMER_ENCODER, LayerKind.TRANSFORMER_DECODER,
@@ -12663,7 +12704,8 @@ class ConstraintVerifier:
                     LayerKind.LINEAR, LayerKind.CONV1D, LayerKind.CONV2D,
                     LayerKind.CONV3D, LayerKind.CONVTRANSPOSE1D,
                     LayerKind.CONVTRANSPOSE2D, LayerKind.CONVTRANSPOSE3D,
-                    LayerKind.EMBEDDING, LayerKind.MULTIHEAD_ATTENTION,
+                    LayerKind.EMBEDDING, LayerKind.EMBEDDINGBAG,
+                    LayerKind.MULTIHEAD_ATTENTION,
                     LayerKind.LSTM, LayerKind.GRU, LayerKind.RNN,
                     LayerKind.BATCHNORM1D, LayerKind.BATCHNORM2D,
                     LayerKind.BATCHNORM3D, LayerKind.LAYERNORM,
@@ -13175,6 +13217,138 @@ class ConstraintVerifier:
                 confidence=Confidence.HIGH,
             ))
 
+    def _apply_embeddingbag_layer_call(
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        layer: LayerDef,
+        inp_name: str,
+        inp_shape: TensorShape,
+        violations: List[SafetyViolation],
+    ) -> None:
+        """Apply exact ``nn/F.embedding_bag`` metadata contracts."""
+
+        params: Dict[str, Any] = {}
+        params.update(layer.params or {})
+        params.update(step.params or {})
+        roles = params.get("__embedding_bag_input_roles__")
+        by_role: Dict[str, str] = {}
+        if roles and len(roles) == len(step.inputs):
+            for role, name in zip(roles, step.inputs):
+                by_role.setdefault(role, name)
+        elif params.get("__functional_embedding_bag__"):
+            if len(step.inputs) > 0:
+                by_role["input"] = step.inputs[0]
+            if len(step.inputs) > 1:
+                by_role["weight"] = step.inputs[1]
+            if len(step.inputs) > 2:
+                by_role["offsets"] = step.inputs[2]
+            if len(step.inputs) > 3:
+                by_role["per_sample_weights"] = step.inputs[3]
+        else:
+            if len(step.inputs) > 0:
+                by_role["input"] = step.inputs[0]
+            if len(step.inputs) > 1:
+                by_role["offsets"] = step.inputs[1]
+            if len(step.inputs) > 2:
+                by_role["per_sample_weights"] = step.inputs[2]
+
+        input_name = by_role.get("input", inp_name)
+        weight_name = by_role.get("weight")
+        offsets_name = by_role.get("offsets")
+        psw_name = by_role.get("per_sample_weights")
+
+        input_shape = state.shape_env.get(input_name, inp_shape)
+        weight_shape = state.shape_env.get(weight_name) if weight_name else None
+        offsets_shape = state.shape_env.get(offsets_name) if offsets_name else None
+        psw_shape = state.shape_env.get(psw_name) if psw_name else None
+
+        def vrange(name: Optional[str]) -> Optional[TensorValueRange]:
+            return state.value_ranges.get(name) if name else None
+
+        input_range_obj = vrange(input_name)
+        offsets_range_obj = vrange(offsets_name)
+        input_range = (
+            (input_range_obj.min_value, input_range_obj.max_value)
+            if input_range_obj is not None else None
+        )
+        offsets_range = (
+            (offsets_range_obj.min_value, offsets_range_obj.max_value)
+            if offsets_range_obj is not None else None
+        )
+        offsets_values = (
+            offsets_range_obj.values if offsets_range_obj is not None else None
+        )
+        param_dtype = _canon_dtype(params.get("param_dtype"))
+        if param_dtype is None and weight_name is not None:
+            param_dtype = state.dtype_env.get(weight_name)
+        effective_embedding_dim = params.get("embedding_dim", layer.embedding_dim)
+        effective_num_embeddings = params.get("num_embeddings", layer.num_embeddings)
+        effective_weight_shape = (
+            _loss_shape_values(weight_shape) if weight_shape is not None else None
+        )
+        if effective_embedding_dim is None and effective_weight_shape is None:
+            state.shape_env[step.output] = TensorShape((
+                ShapeDim(f"_embeddingbag_{step.output}_bags"),
+                ShapeDim(f"_embeddingbag_{step.output}_dim"),
+            ))
+            self._record_unknown_reason(
+                "embedding_bag weight shape is unknown; pooled output shape is UNKNOWN"
+            )
+            return
+
+        verdict = verify_embedding_bag(
+            _loss_shape_values(input_shape),
+            embedding_dim=effective_embedding_dim,
+            num_embeddings=effective_num_embeddings,
+            weight_shape=effective_weight_shape,
+            offsets_shape=(
+                _loss_shape_values(offsets_shape) if offsets_shape is not None else None
+            ),
+            per_sample_weights_shape=(
+                _loss_shape_values(psw_shape) if psw_shape is not None else None
+            ),
+            input_dtype=state.dtype_env.get(input_name),
+            offsets_dtype=state.dtype_env.get(offsets_name) if offsets_name else None,
+            weight_dtype=param_dtype,
+            per_sample_weights_dtype=(
+                state.dtype_env.get(psw_name) if psw_name else None
+            ),
+            input_value_range=input_range,
+            offsets_value_range=offsets_range,
+            offsets_values=offsets_values,
+            mode=params.get("mode", "mean"),
+            include_last_offset=bool(params.get("include_last_offset", False)),
+        )
+
+        if not verdict.ok:
+            kind = (
+                "index_bounds"
+                if verdict.error_kind == "index_bounds" else
+                "dtype_error" if verdict.error_kind == "dtype" else
+                "shape_incompatible"
+            )
+            if self._domain_enabled(kind):
+                violations.append(SafetyViolation(
+                    kind=kind,
+                    step_index=-1,
+                    step=step,
+                    message=verdict.message or "embedding_bag contract failed",
+                    tensor_a=input_name,
+                    tensor_b=offsets_name,
+                    shape_a=input_shape,
+                    shape_b=offsets_shape,
+                    confidence=Confidence.HIGH,
+                ))
+            return
+
+        if verdict.output_shape is not None:
+            state.shape_env[step.output] = _loss_tensor_shape(verdict.output_shape)
+        if verdict.output_dtype is not None:
+            state.dtype_env[step.output] = verdict.output_dtype
+        if verdict.unknown_reason:
+            self._record_unknown_reason(verdict.unknown_reason)
+
     def _apply_layer_call(
         self,
         state: ModelState,
@@ -13210,6 +13384,12 @@ class ConstraintVerifier:
 
         if layer.kind == LayerKind.LOSS_FUNCTION:
             self._apply_loss_layer_call(
+                state, step, layer, inp_name, inp_shape, violations
+            )
+            return
+
+        if layer.kind == LayerKind.EMBEDDINGBAG:
+            self._apply_embeddingbag_layer_call(
                 state, step, layer, inp_name, inp_shape, violations
             )
             return

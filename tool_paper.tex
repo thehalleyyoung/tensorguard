@@ -203,7 +203,9 @@ embedding, dtype casts, device moves, and stochastic tensor factories whose
 shapes are seed-independent.  Extended coverage includes einsum parsing,
 advanced indexing, gather/scatter, index select, masked select,
 \texttt{take\_along\_dim}, \texttt{argsort}, \texttt{sort}/\texttt{topk}/
-\texttt{kthvalue}, arg reductions, sparse COO/CSR/CSC/BSR/BSC layout invariants,
+\texttt{kthvalue}, arg reductions, exact \texttt{nn/F.embedding\_bag}
+contracts for offsets, per-sample weights, pooling modes, and TorchRec-style
+jagged pooled embeddings, sparse COO/CSR/CSC/BSR/BSC layout invariants,
 sparse-dense \texttt{mm}/\texttt{addmm}, CSR \texttt{sampled\_addmm},
 sparse softmax/coalesce, layout conversions, FFT/complex view contracts, exact \texttt{torch.linalg} contracts for
 \texttt{solve}, inverse, Cholesky, SVD, eigendecomposition, and QR, named tensor
@@ -562,7 +564,8 @@ small, independently checkable claims.  \tg{}'s benchmark suite exercises real
 failure modes: wrong \texttt{Linear} feature counts after flattening, malformed
 convolution channels, bad Q/K/V dimensions, attention mask errors, invalid
 reshape products, device mismatches between buffers and inputs, dtype
-divergences, gradient detach bugs, invalid sparse compressed layouts and
+divergences, gradient detach bugs, invalid embedding-bag offsets and
+per-sample-weight contracts, invalid sparse compressed layouts and
 sparse-dense kernels, named
 tensor alignment failures, incompatible loss targets, incompatible distribution
 batch/event shapes, export
@@ -573,8 +576,8 @@ if it matches the runtime library.  The repository therefore includes tests
 that construct real tensors, run the corresponding PyTorch operator, and compare
 the resulting shape or runtime exception to \tg{}'s predicted contract.  This
 pattern appears for cat, einsum, reshape, broadcasting, convolution, attention,
-recurrent modules, fold/unfold, padding, grid sampling, sparse layouts and
-sparse operators, complex
+recurrent modules, fold/unfold, padding, grid sampling, embedding-bag
+pooling and jagged-offset contracts, sparse layouts and sparse operators, complex
 FFT views, named tensors, distributions, vmap, loss functions, chunk/split
 partitioning, and index-value operators.  When PyTorch's
 edge-case behavior is surprising, as with \texttt{take\_along\_dim(dim=None)}
@@ -660,6 +663,10 @@ compiler or exporter failures. \\
 \hline
 \texttt{src/mha\_verify.py}, \texttt{src/sdpa\_verify.py} &
 Attention-family contracts for q/k/v, masks, head counts, and output shapes. \\
+\hline
+\texttt{src/embedding\_bag\_verify.py} &
+PyTorch and TorchRec embedding-bag contracts for offsets, per-sample weights,
+pooling modes, index bounds, and jagged/ragged abstention. \\
 \hline
 \texttt{src/sparse\_verify.py}, \texttt{src/complex\_verify.py} &
 Sparse layout, sparse-dense operator, conversion, and complex/FFT shape-dtype
@@ -805,6 +812,11 @@ collapsing to rank-only approximations. \\
 Attention &
 SDPA and MHA contracts, q/k/v dimensions, kdim/vdim, masks, key padding masks,
 batch-first layout, and grouped head variants. \\
+\hline
+Embedding bags &
+\texttt{nn.EmbeddingBag}, \texttt{F.embedding\_bag}, table dimensions, offsets,
+\texttt{include\_last\_offset}, per-sample weights, pooling modes, index
+bounds, and TorchRec-style jagged abstention. \\
 \hline
 Sparse tensors &
 COO/CSR/CSC/BSR/BSC shape and blocksize invariants, sparse-dense
@@ -1206,7 +1218,10 @@ to \tg{}'s transfer function.  This protocol is especially useful for edge cases
 whose behavior is not obvious from memory: \texttt{torch.chunk} returning fewer
 than requested chunks, zero-size split sections, broadcasting of attention
 masks, padding tuple/rank corner cases, compressed sparse block constraints, and
-named-axis alignment.  The same oracle style now covers torchvision v2 image
+named-axis alignment.  The same oracle style now covers embedding-bag corner
+cases such as 1D inputs requiring offsets, 2D inputs forbidding offsets,
+\texttt{include\_last\_offset} changing bag count, and per-sample weights being
+legal only in \texttt{mode="sum"}.  It also covers torchvision v2 image
 transforms, where \texttt{CenterCrop} accepts rank-2 tensors, \texttt{Resize}
 and \texttt{Pad} require tensor-image rank on the tested runtime, and
 \texttt{Normalize} can broadcast a singleton channel dimension.
@@ -1218,7 +1233,8 @@ RHS disambiguation are all dispatcher-visible but easy to misremember.
 
 Mutation tests start from clean models and introduce controlled faults:
 wrong feature counts, wrong channels, bad reshape products, device moves,
-dtype casts, gradient detaches, invalid sparse metadata, and export-incompatible
+dtype casts, gradient detaches, invalid embedding-bag offsets/weights, invalid
+sparse metadata, and export-incompatible
 layouts.  A mutation is useful only if it represents a runtime or semantic
 failure that real code could contain.  The harness therefore records the mutant,
 the expected outcome, and the evidence that the mutation is admitted by the

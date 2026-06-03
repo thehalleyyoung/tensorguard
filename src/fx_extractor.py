@@ -95,6 +95,7 @@ def _init_module_kind_map():
         nn.Softmax: LayerKind.SOFTMAX,
         nn.LogSoftmax: LayerKind.SOFTMAX,
         nn.Embedding: LayerKind.EMBEDDING,
+        nn.EmbeddingBag: LayerKind.EMBEDDINGBAG,
         nn.LSTM: LayerKind.LSTM,
         nn.GRU: LayerKind.GRU,
         nn.MultiheadAttention: LayerKind.MULTIHEAD_ATTENTION,
@@ -215,6 +216,13 @@ def _extract_layer_params(module: "nn.Module", kind: LayerKind) -> Dict[str, Any
     elif kind == LayerKind.EMBEDDING:
         params["num_embeddings"] = module.num_embeddings
         params["embedding_dim"] = module.embedding_dim
+    elif kind == LayerKind.EMBEDDINGBAG:
+        params["num_embeddings"] = module.num_embeddings
+        params["embedding_dim"] = module.embedding_dim
+        params["mode"] = getattr(module, "mode", "mean")
+        params["include_last_offset"] = bool(
+            getattr(module, "include_last_offset", False)
+        )
     elif kind in (LayerKind.LSTM, LayerKind.GRU):
         params["input_size"] = module.input_size
         params["hidden_size"] = module.hidden_size
@@ -392,6 +400,9 @@ def _make_layer_def(name: str, module: "nn.Module") -> LayerDef:
                   LayerKind.BATCHNORM3D):
         ldef.num_features = params.get("num_features")
     elif kind == LayerKind.EMBEDDING:
+        ldef.num_embeddings = params.get("num_embeddings")
+        ldef.embedding_dim = params.get("embedding_dim")
+    elif kind == LayerKind.EMBEDDINGBAG:
         ldef.num_embeddings = params.get("num_embeddings")
         ldef.embedding_dim = params.get("embedding_dim")
     elif kind in (LayerKind.LSTM, LayerKind.GRU, LayerKind.RNN):
@@ -899,9 +910,14 @@ def fx_trace_to_graph(
                     ):
                         try:
                             vals = obj.detach().cpu()
+                            exact_values = (
+                                tuple(int(v) for v in vals.reshape(-1).tolist())
+                                if obj.numel() <= 10_000 else None
+                            )
                             graph.const_value_ranges[tname] = TensorValueRange(
                                 int(vals.min().item()),
                                 int(vals.max().item()),
+                                exact_values,
                             )
                         except Exception:
                             pass
@@ -922,6 +938,9 @@ def fx_trace_to_graph(
                             input_names.append(
                                 node_to_tensor.get(a.name, a.name)
                             )
+            for arg in node.kwargs.values():
+                if isinstance(arg, torch.fx.Node):
+                    input_names.append(node_to_tensor.get(arg.name, arg.name))
 
             output_name = f"_t{step_idx}"
             node_to_tensor[node.name] = output_name
@@ -965,6 +984,19 @@ def fx_trace_to_graph(
                     layer_ref=flat_target,
                     params=layer_params,
                 )
+            elif kind == LayerKind.EMBEDDINGBAG:
+                eb_inputs, eb_params = _collect_embedding_bag_call_inputs(
+                    node, node_to_tensor
+                )
+                layer_params = _extract_layer_params(submodule, kind)
+                layer_params.update(eb_params)
+                step = ComputationStep(
+                    op=OpKind.LAYER_CALL,
+                    inputs=eb_inputs,
+                    output=output_name,
+                    layer_ref=flat_target,
+                    params=layer_params,
+                )
             else:
                 step = ComputationStep(
                     op=OpKind.LAYER_CALL,
@@ -997,6 +1029,15 @@ def fx_trace_to_graph(
             if emb_step is not None:
                 graph.steps.append(emb_step)
                 node_to_tensor[node.name] = emb_step.output
+                step_idx += 1
+                continue
+
+            emb_bag_step = _maybe_functional_embedding_bag(
+                node, node_to_tensor, graph, step_idx
+            )
+            if emb_bag_step is not None:
+                graph.steps.append(emb_bag_step)
+                node_to_tensor[node.name] = emb_bag_step.output
                 step_idx += 1
                 continue
 
@@ -1196,6 +1237,35 @@ def _collect_mha_call_inputs(
         if name in node.kwargs:
             params[name] = node.kwargs[name]
     return inputs, params
+
+
+def _collect_embedding_bag_call_inputs(
+    node: "torch.fx.Node",
+    node_to_tensor: Dict[str, str],
+) -> Tuple[List[str], Dict[str, Any]]:
+    """Collect input/offset/per-sample-weight operands with explicit roles."""
+    inputs: List[str] = []
+    roles: List[str] = []
+
+    def add(role: str, value: Any) -> None:
+        if isinstance(value, torch.fx.Node):
+            inputs.append(node_to_tensor.get(value.name, value.name))
+            roles.append(role)
+
+    if node.args:
+        add("input", node.args[0])
+    elif "input" in node.kwargs:
+        add("input", node.kwargs["input"])
+    if len(node.args) > 1:
+        add("offsets", node.args[1])
+    elif "offsets" in node.kwargs:
+        add("offsets", node.kwargs["offsets"])
+    if len(node.args) > 2:
+        add("per_sample_weights", node.args[2])
+    elif "per_sample_weights" in node.kwargs:
+        add("per_sample_weights", node.kwargs["per_sample_weights"])
+
+    return inputs, {"__embedding_bag_input_roles__": roles}
 
 
 def _parse_reshape_dims(shape_args: Tuple) -> Optional[Tuple]:
@@ -1834,6 +1904,82 @@ def _maybe_functional_embedding(
         output=f"_t{step_idx}",
         layer_ref=layer_name,
         params={"embedding_dim": emb_dim.value},
+    )
+
+
+def _maybe_functional_embedding_bag(
+    node: "torch.fx.Node",
+    node_to_tensor: Dict[str, str],
+    graph: ComputationGraph,
+    step_idx: int,
+) -> Optional[ComputationStep]:
+    """Build a synthetic EmbeddingBag layer for ``F.embedding_bag``."""
+    if not HAS_TORCH:
+        return None
+    target = node.target
+    name = getattr(target, "__name__", "")
+    module = getattr(target, "__module__", "")
+    if name != "embedding_bag" or "functional" not in module:
+        return None
+
+    def tensor_arg(value: Any) -> Optional[str]:
+        if isinstance(value, torch.fx.Node):
+            return node_to_tensor.get(value.name, value.name)
+        return None
+
+    input_name = tensor_arg(node.args[0]) if len(node.args) >= 1 else tensor_arg(node.kwargs.get("input"))
+    weight_name = tensor_arg(node.args[1]) if len(node.args) >= 2 else tensor_arg(node.kwargs.get("weight"))
+    if input_name is None or weight_name is None:
+        return None
+    weight_shape = graph.const_shapes.get(weight_name)
+    if weight_shape is None or weight_shape.ndim != 2:
+        return None
+    embedding_dim = weight_shape.dims[1].value
+    num_embeddings = weight_shape.dims[0].value
+    if not isinstance(embedding_dim, int):
+        return None
+
+    offsets_name = tensor_arg(node.args[2]) if len(node.args) >= 3 else tensor_arg(node.kwargs.get("offsets"))
+    psw_name = (
+        tensor_arg(node.args[7]) if len(node.args) >= 8
+        else tensor_arg(node.kwargs.get("per_sample_weights"))
+    )
+    inputs = [input_name, weight_name]
+    if offsets_name is not None:
+        inputs.append(offsets_name)
+    if psw_name is not None:
+        inputs.append(psw_name)
+
+    mode = node.kwargs.get("mode", "mean")
+    if len(node.args) >= 7 and isinstance(node.args[6], str):
+        mode = node.args[6]
+    include_last_offset = bool(node.kwargs.get("include_last_offset", False))
+    if len(node.args) >= 10 and isinstance(node.args[9], bool):
+        include_last_offset = node.args[9]
+
+    layer_name = f"_func_embedding_bag_{step_idx}"
+    params = {
+        "num_embeddings": num_embeddings if isinstance(num_embeddings, int) else None,
+        "embedding_dim": embedding_dim,
+        "mode": mode,
+        "include_last_offset": include_last_offset,
+        "__functional_embedding_bag__": True,
+    }
+    wdt = graph.const_dtypes.get(weight_name)
+    if wdt is not None:
+        params["param_dtype"] = wdt
+    ldef = LayerDef(attr_name=layer_name, kind=LayerKind.EMBEDDINGBAG, params=params)
+    ldef.embedding_dim = embedding_dim
+    if isinstance(num_embeddings, int):
+        ldef.num_embeddings = num_embeddings
+    graph.layers[layer_name] = ldef
+
+    return ComputationStep(
+        op=OpKind.LAYER_CALL,
+        inputs=inputs,
+        output=f"_t{step_idx}",
+        layer_ref=layer_name,
+        params=params,
     )
 
 
