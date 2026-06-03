@@ -31,6 +31,14 @@ from src.gguf_export import (
     guarded_gguf_export,
     verify_gguf_export_contract,
 )
+from src.optimizer_state_verify import (
+    OptimizerStateIssue,
+    OptimizerStateShard,
+    OptimizerStateVerificationResult,
+    TensorGuardOptimizerStateError,
+    guarded_optimizer_load_state_dict,
+    verify_optimizer_state,
+)
 
 __all__ = [
     "AOTPackageGateResult",
@@ -45,17 +53,23 @@ __all__ = [
     "TensorGuardAOTPackageError",
     "TensorGuardDynamicShapeError",
     "TensorGuardGGUFExportError",
+    "TensorGuardOptimizerStateError",
     "TensorGuardONNXExportError",
     "TensorGuardONNXShapeInferenceError",
     "TensorGuardViolation",
     "guarded_aot_package",
     "guarded_compile",
     "guarded_gguf_export",
+    "guarded_optimizer_load_state_dict",
     "guarded_onnx_export",
     "make_tensorguard_backend",
     "verify_onnx_export_contract",
     "verify_aot_package_contract",
     "verify_exported_program",
     "verify_gguf_export_contract",
+    "verify_optimizer_state",
     "verify_module",
+    "OptimizerStateIssue",
+    "OptimizerStateShard",
+    "OptimizerStateVerificationResult",
 ]

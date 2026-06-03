@@ -159,6 +159,14 @@ from src.distributed_verification import (  # noqa: F401  (re-export)
     verify_parameter_sharding,
     verify_pipeline_boundaries,
 )
+from src.optimizer_state_verify import (  # noqa: F401  (re-export)
+    OptimizerStateIssue,
+    OptimizerStateShard,
+    OptimizerStateVerificationResult,
+    TensorGuardOptimizerStateError,
+    guarded_optimizer_load_state_dict,
+    verify_optimizer_state,
+)
 
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
 from src import api as api  # noqa: F401
@@ -270,6 +278,12 @@ __all__ = [
     "verify_dtensor_specs",
     "verify_parameter_sharding",
     "verify_pipeline_boundaries",
+    "OptimizerStateIssue",
+    "OptimizerStateShard",
+    "OptimizerStateVerificationResult",
+    "TensorGuardOptimizerStateError",
+    "guarded_optimizer_load_state_dict",
+    "verify_optimizer_state",
     "TensorGuardViolation",
     "TensorGuardAOTPackageError",
     "AOTPackageIssue",

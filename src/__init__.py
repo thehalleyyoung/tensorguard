@@ -101,6 +101,14 @@ from .distributed_verification import (
     verify_parameter_sharding,
     verify_pipeline_boundaries,
 )
+from .optimizer_state_verify import (
+    OptimizerStateIssue,
+    OptimizerStateShard,
+    OptimizerStateVerificationResult,
+    TensorGuardOptimizerStateError,
+    guarded_optimizer_load_state_dict,
+    verify_optimizer_state,
+)
 
 __all__ = [
     "analyze",
@@ -188,5 +196,11 @@ __all__ = [
     "verify_dtensor_specs",
     "verify_parameter_sharding",
     "verify_pipeline_boundaries",
+    "OptimizerStateIssue",
+    "OptimizerStateShard",
+    "OptimizerStateVerificationResult",
+    "TensorGuardOptimizerStateError",
+    "guarded_optimizer_load_state_dict",
+    "verify_optimizer_state",
     "__version__",
 ]
