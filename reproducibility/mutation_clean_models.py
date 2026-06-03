@@ -15,7 +15,14 @@ a classical *mutation-testing* protocol:
      cleanly and (b) the mutant raises. Operator applications that still execute
      (e.g. bumping the out-features of a final layer) are discarded -- they are
      not bugs, so a SAFE verdict on them would be *correct*.
-  4. Score the verifier on each genuine-bug mutant. A mutant is **killed** if the
+  4. Automatically minimize each admitted mutant with deterministic
+     delta-debugging over source lines. A deletion is accepted only if the
+     minimized mutant still instantiates, still raises under real PyTorch, and
+     preserves the original exception class plus message prefix. This gives each
+     admitted mutant a compact, certified reproducer instead of an uninspected
+     synthetic edit.
+  5. Score the verifier on each minimized genuine-bug mutant. A mutant is
+     **killed** if the
      verifier returns ``UNSAFE`` and **survived** otherwise. A *survived* mutant
      that the verifier calls ``SAFE`` is the dangerous kind (a missed bug); one
      it calls ``UNKNOWN`` merely declined.
@@ -28,6 +35,7 @@ is byte-identical across machines.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import sys
@@ -49,6 +57,33 @@ OUT_JSON = REPO / "reproducibility" / "mutation_clean_models.json"
 OUT_MD = REPO / "reproducibility" / "mutation_clean_models.md"
 
 MODES = ["sound", "balanced", "heuristic"]
+
+
+def _logical_lines(source: str) -> int:
+    return sum(1 for line in source.splitlines() if line.strip())
+
+
+def _runtime_error_signature(source: str, input_shapes: dict) -> tuple[str, str] | None:
+    """Return the PyTorch runtime failure signature, or None if forward succeeds."""
+    import torch as _t
+
+    ns: dict = {}
+    try:
+        exec(compile(source, "<model>", "exec"), ns)
+        net = ns["Net"]()
+        net.eval()
+    except Exception:
+        return None  # construction errors are not admitted mutation bugs
+    inputs = _make_inputs(source, input_shapes)
+    try:
+        with _t.no_grad():
+            net(*inputs.values())
+        return None
+    except Exception as exc:
+        message = " ".join(str(exc).split())
+        # Keep enough text to distinguish dtype/shape/channel failures while
+        # avoiding machine-specific tensor repr details.
+        return (type(exc).__name__, message[:160])
 
 
 def _wilson(k: int, n: int, z: float = 1.959963984540054) -> dict:
@@ -103,22 +138,71 @@ def _runs_clean(source: str, input_shapes: dict) -> bool:
 
 def _raises(source: str, input_shapes: dict) -> bool:
     """True iff the model instantiates fine but forward raises (a genuine bug)."""
-    import torch as _t
+    return _runtime_error_signature(source, input_shapes) is not None
 
-    ns: dict = {}
-    try:
-        exec(compile(source, "<model>", "exec"), ns)
-        net = ns["Net"]()
-        net.eval()
-    except Exception:
-        return False  # construction error is not the runtime bug we target
-    inputs = _make_inputs(source, input_shapes)
-    try:
-        with _t.no_grad():
-            net(*inputs.values())
-        return False
-    except Exception:
-        return True
+
+def _minimize_source(source: str, input_shapes: dict) -> tuple[str, dict]:
+    """Delta-debug source lines while preserving the real runtime failure.
+
+    This is intentionally syntax-agnostic: candidate deletions must compile,
+    instantiate ``Net``, and reproduce the same PyTorch exception signature before
+    they are accepted. A final single-line pass certifies 1-minimality under this
+    deletion relation.
+    """
+    target = _runtime_error_signature(source, input_shapes)
+    if target is None:
+        raise ValueError("cannot minimize a mutant that does not fail at runtime")
+
+    attempts = 0
+
+    def preserves(candidate_lines: list[str]) -> bool:
+        nonlocal attempts
+        attempts += 1
+        if not any(line.startswith("class Net") for line in candidate_lines):
+            return False
+        candidate = "\n".join(candidate_lines).rstrip() + "\n"
+        return _runtime_error_signature(candidate, input_shapes) == target
+
+    lines = source.splitlines()
+    n = 2
+    while len(lines) >= 2:
+        chunk = max(1, len(lines) // n)
+        ranges = [(i, min(i + chunk, len(lines))) for i in range(0, len(lines), chunk)]
+        reduced = False
+        for start, end in ranges:
+            candidate = lines[:start] + lines[end:]
+            if candidate and preserves(candidate):
+                lines = candidate
+                n = max(2, n - 1)
+                reduced = True
+                break
+        if not reduced:
+            if n >= len(lines):
+                break
+            n = min(len(lines), n * 2)
+
+    # Certify local minimality after chunk shrinking.
+    locally_minimal = True
+    for i in range(len(lines)):
+        if preserves(lines[:i] + lines[i + 1:]):
+            locally_minimal = False
+            break
+
+    minimized = "\n".join(lines).rstrip() + "\n"
+    signature = _runtime_error_signature(minimized, input_shapes)
+    original_lines = _logical_lines(source)
+    minimized_lines = _logical_lines(minimized)
+    return minimized, {
+        "original_logical_lines": original_lines,
+        "minimized_logical_lines": minimized_lines,
+        "removed_logical_lines": original_lines - minimized_lines,
+        "attempts": attempts,
+        "exception_type": target[0],
+        "exception_prefix": target[1],
+        "same_failure_signature": signature == target,
+        "one_line_minimal": locally_minimal,
+        "minimized_sha256": hashlib.sha256(minimized.encode()).hexdigest(),
+    }
 
 
 def _verdict(source: str, input_shapes: dict, mode: str) -> str:
@@ -156,15 +240,17 @@ def measure() -> dict:
                 continue
             if not _raises(mutated, shapes):
                 continue  # operator produced a non-bug; discard
+            minimized, minimization = _minimize_source(mutated, shapes)
             mutants.append({
                 "corpus": corpus,
                 "parent": mid,
                 "family": family,
                 "operator": op_name,
                 "domain": OPERATOR_DOMAIN[op_name],
-                "source": mutated,
+                "source": minimized,
                 "shapes": shapes,
                 "mutant_id": f"{corpus}:{mid}:{op_name}",
+                "minimization": minimization,
             })
 
     mutants.sort(key=lambda d: d["mutant_id"])
@@ -224,6 +310,23 @@ def measure() -> dict:
             "per_domain": per_domain,
         }
 
+    minimizations = {m["mutant_id"]: m["minimization"] for m in mutants}
+    n_shrunk = sum(1 for m in minimizations.values()
+                   if m["removed_logical_lines"] > 0)
+    total_removed = sum(m["removed_logical_lines"] for m in minimizations.values())
+    minimization_by_operator = {}
+    for op in OPERATORS:
+        rows = [m["minimization"] for m in mutants if m["operator"] == op]
+        minimization_by_operator[op] = {
+            "n": len(rows),
+            "n_shrunk": sum(1 for row in rows if row["removed_logical_lines"] > 0),
+            "removed_logical_lines": sum(row["removed_logical_lines"] for row in rows),
+            "all_same_failure_signature": all(
+                row["same_failure_signature"] for row in rows
+            ),
+            "all_one_line_minimal": all(row["one_line_minimal"] for row in rows),
+        }
+
     return {
         "n_clean_parents_examined": len(parents_validated),
         "n_clean_parents": len(parents_clean),
@@ -232,6 +335,20 @@ def measure() -> dict:
         "n_genuine_bug_mutants": n,
         "modes": list(MODES),
         "per_mode": per_mode,
+        "minimization": {
+            "algorithm": "deterministic source-line ddmin preserving PyTorch exception signature",
+            "n_minimized": n,
+            "n_shrunk": n_shrunk,
+            "total_removed_logical_lines": total_removed,
+            "all_same_failure_signature": all(
+                m["same_failure_signature"] for m in minimizations.values()
+            ),
+            "all_one_line_minimal": all(
+                m["one_line_minimal"] for m in minimizations.values()
+            ),
+            "per_operator": minimization_by_operator,
+            "per_mutant": minimizations,
+        },
         # Headline: sound mode kills every genuine bug it does not abstain on,
         # and -- crucially -- never calls a genuine bug SAFE.
         "sound_mode_zero_false_safe": per_mode["sound"]["n_survived_safe"] == 0,
@@ -249,8 +366,9 @@ def render_markdown(data: dict) -> str:
         f"**{data['n_operators']}** mutation operators (Linear/Conv width bumps "
         "and an integer-dtype cast), keep only the "
         f"**{data['n_genuine_bug_mutants']}** mutants that genuinely raise under "
-        "eager PyTorch, and measure how many the verifier kills (returns "
-        "UNSAFE).",
+        "eager PyTorch, automatically minimize each admitted mutant while "
+        "preserving its real PyTorch exception signature, and measure how many "
+        "the verifier kills (returns UNSAFE).",
         "",
         "| mode | killed | survived (SAFE) | survived (UNKNOWN) | kill rate [95% CI] |",
         "| --- | --- | --- | --- | --- |",
@@ -263,6 +381,19 @@ def render_markdown(data: dict) -> str:
             f"{d['n_survived_unknown']} | "
             f"{kr['point']} [{kr['low']}, {kr['high']}] |"
         )
+    lines += [
+        "",
+        "Automatic minimization (all admitted mutants):",
+        "",
+        "| minimized | shrunk | removed logical lines | preserves failure signature | 1-line minimal |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    mz = data["minimization"]
+    lines.append(
+        f"| {mz['n_minimized']} | {mz['n_shrunk']} | "
+        f"{mz['total_removed_logical_lines']} | "
+        f"{mz['all_same_failure_signature']} | {mz['all_one_line_minimal']} |"
+    )
     lines += [
         "",
         "Per-operator kill rate (sound mode):",

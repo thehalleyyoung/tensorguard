@@ -1078,12 +1078,14 @@ Zero false alarms is only half the story; the dual question is *sensitivity*.
 protocol over the clean stress and natural corpora: it applies five local
 mutation operators (`corpus_extended/model_mutators.py` — bump a Linear or Conv
 in/out width by one, or cast the forward input to an integer dtype), keeps only
-the mutants that *genuinely* raise under eager PyTorch, and measures how many the
-verifier kills with an UNSAFE verdict. Across three hundred seventy six
-genuine-bug mutants drawn from one hundred thirty validated-clean parents,
-sound mode kills every one — a kill rate of one with a Wilson lower bound above
-ninety eight percent — and never once reports a genuine bug SAFE. Building this
-harness surfaced and fixed three real soundness gaps: a shape mismatch hidden
+mutants that *genuinely* raise under eager PyTorch, minimizes every admitted
+mutant while preserving its exception signature, and measures how many the
+verifier kills with an UNSAFE verdict. Across 756 genuine-bug mutants drawn from
+275 validated-clean parents, sound mode kills every one — a kill rate of one
+with a Wilson lower bound above 99% — and never once reports a genuine bug SAFE.
+The minimizer shrinks 716 mutants and removes 2,990 logical lines while proving
+every minimized reproducer is 1-line-minimal under failure-preserving deletion.
+Building this harness surfaced and fixed three real soundness gaps: a shape mismatch hidden
 inside an `nn.Sequential` had been silently abstained to SAFE; source-level
 dtype casts such as `x.long()` were not parsed; and an integer tensor fed into a
 floating layer (Linear, Conv, recurrent, attention/transformer or

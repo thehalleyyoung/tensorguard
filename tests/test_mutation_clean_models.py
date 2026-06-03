@@ -1,4 +1,4 @@
-"""Regression tests for the clean-model mutation-testing harness (Step 112)."""
+"""Regression tests for the clean-model mutation-testing harness (Step 260)."""
 
 from __future__ import annotations
 
@@ -111,3 +111,48 @@ def test_per_operator_and_domain_present(data):
         assert d["domain"] == ops.OPERATOR_DOMAIN[op]
     for dom in ("shape", "dtype"):
         assert dom in sm["per_domain"]
+
+
+def test_minimization_certifies_every_admitted_mutant(data):
+    mz = data["minimization"]
+    assert mz["n_minimized"] == data["n_genuine_bug_mutants"]
+    assert mz["all_same_failure_signature"] is True
+    assert mz["all_one_line_minimal"] is True
+    assert len(mz["per_mutant"]) == data["n_genuine_bug_mutants"]
+
+    for mutant_id, row in mz["per_mutant"].items():
+        assert mutant_id
+        assert row["same_failure_signature"] is True
+        assert row["one_line_minimal"] is True
+        assert row["attempts"] > 0
+        assert row["original_logical_lines"] >= row["minimized_logical_lines"]
+        assert row["removed_logical_lines"] >= 0
+        assert len(row["minimized_sha256"]) == 64
+
+
+def test_minimizer_actually_shrinks_redundant_bug_reproducer():
+    src = (
+        "import torch\nimport torch.nn as nn\n\n"
+        "class Net(nn.Module):\n"
+        "    def __init__(self):\n"
+        "        super().__init__()\n"
+        "        self.dead = nn.Linear(3, 3)\n"
+        "        self.a = nn.Linear(4, 5)\n"
+        "        self.b = nn.Linear(4, 2)\n"
+        "    def helper(self, y):\n"
+        "        return y\n"
+        "    def forward(self, x):\n"
+        "        z = x + 0\n"
+        "        return self.b(self.a(z))\n"
+    )
+    shapes = {"x": (2, 4)}
+    assert mut._runtime_error_signature(src, shapes) is not None
+    minimized, meta = mut._minimize_source(src, shapes)
+    assert meta["same_failure_signature"] is True
+    assert meta["one_line_minimal"] is True
+    assert meta["removed_logical_lines"] > 0
+    assert "self.dead" not in minimized
+    assert mut._runtime_error_signature(minimized, shapes) == (
+        meta["exception_type"],
+        meta["exception_prefix"],
+    )

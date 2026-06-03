@@ -1674,9 +1674,15 @@ wrong feature counts, wrong channels, bad reshape products, device moves,
 dtype casts, gradient detaches, invalid embedding-bag offsets/weights, invalid
 sparse metadata, and export-incompatible
 layouts.  A mutation is useful only if it represents a runtime or semantic
-failure that real code could contain.  The harness therefore records the mutant,
-the expected outcome, and the evidence that the mutation is admitted by the
-source syntax but rejected by the verifier or runtime.
+failure that real code could contain.  The clean-model mutation harness therefore
+admits only mutants whose parent executes under eager PyTorch and whose mutant
+raises under eager PyTorch, then automatically minimizes the admitted source with
+deterministic line-level delta debugging.  A deletion is accepted only when the
+candidate still instantiates, still raises, and preserves the original exception
+class plus message prefix.  The current artifact contains 756 admitted mutants
+from 275 validated-clean parents; all are killed by sound mode, none are reported
+\safe{}, and 716 minimized reproducers shrink by 2,990 logical lines while
+remaining one-line-minimal under this failure-preserving deletion relation.
 
 \subsection{Ablation protocol}
 
@@ -1736,7 +1742,7 @@ Differential torch oracle & Incorrect operator semantics & Static transfer
 matches PyTorch shape or exception on generated cases. \\
 \hline
 Mutation benchmark & Weak recall on realistic edits & Injected faults are
-detected at the intended operation site. \\
+runtime-proven, automatically minimized, and killed without \safe{} survivors. \\
 \hline
 Fuzzing & Hidden disagreement surfaces & Minimized disagreements become
 regression tests. \\
