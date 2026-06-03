@@ -1,0 +1,97 @@
+{
+  "current_open_alerts": [
+    {
+      "count": 1,
+      "identity": "fp:tensorguard/v1:8448eca8fb220ecc",
+      "level": "error",
+      "line": 8,
+      "message": "Layer conv2 (line 8) expects input dimension 9, but receives (batch, 8, 6, 6) from __inner_2",
+      "ruleId": "shape-incompatible",
+      "uri": "models/conv.py"
+    },
+    {
+      "count": 1,
+      "identity": "fp:tensorguard/v1:9e0e303c78769708",
+      "level": "error",
+      "line": 8,
+      "message": "Layer fc2 (line 8) expects input dimension 30, but receives (batch, 20) from __inner_2",
+      "ruleId": "shape-incompatible",
+      "uri": "models/linear.py"
+    }
+  ],
+  "recurring_alerts": [
+    {
+      "identity": "fp:tensorguard/v1:9e0e303c78769708",
+      "level": "error",
+      "line": 8,
+      "message": "Layer fc2 (line 8) expects input dimension 30, but receives (batch, 20) from __inner_2",
+      "release": "v0.1.2",
+      "ruleId": "shape-incompatible",
+      "uri": "models/linear.py"
+    }
+  ],
+  "releases": [
+    {
+      "carried": 0,
+      "closed": 0,
+      "closed_identities": [],
+      "net_open_delta": 1,
+      "open_total": 1,
+      "opened": 1,
+      "opened_identities": [
+        "fp:tensorguard/v1:9e0e303c78769708"
+      ],
+      "per_rule_open": {
+        "shape-incompatible": 1
+      },
+      "recurred": 0,
+      "recurred_identities": [],
+      "release": "v0.1.0"
+    },
+    {
+      "carried": 0,
+      "closed": 1,
+      "closed_identities": [
+        "fp:tensorguard/v1:9e0e303c78769708"
+      ],
+      "net_open_delta": -1,
+      "open_total": 0,
+      "opened": 0,
+      "opened_identities": [],
+      "per_rule_open": {},
+      "recurred": 0,
+      "recurred_identities": [],
+      "release": "v0.1.1"
+    },
+    {
+      "carried": 0,
+      "closed": 0,
+      "closed_identities": [],
+      "net_open_delta": 2,
+      "open_total": 2,
+      "opened": 2,
+      "opened_identities": [
+        "fp:tensorguard/v1:8448eca8fb220ecc",
+        "fp:tensorguard/v1:9e0e303c78769708"
+      ],
+      "per_rule_open": {
+        "shape-incompatible": 2
+      },
+      "recurred": 1,
+      "recurred_identities": [
+        "fp:tensorguard/v1:9e0e303c78769708"
+      ],
+      "release": "v0.1.2"
+    }
+  ],
+  "schema": "tensorguard-sarif-trends",
+  "summary": {
+    "current_open": 2,
+    "max_open": 2,
+    "net_open_delta": 1,
+    "recurrence_total": 1,
+    "release_count": 3,
+    "resolved_total": 1
+  },
+  "version": "1.0"
+}

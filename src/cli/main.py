@@ -3679,6 +3679,39 @@ class AdoptionRecipesCommand:
         return 0
 
 
+# ── SarifTrendsCommand ──────────────────────────────────────────────────────
+
+
+class SarifTrendsCommand:
+    """Build a Code Scanning trend dashboard from ordered SARIF snapshots."""
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "snapshots",
+            nargs="+",
+            help="Ordered release snapshots as RELEASE=path/to/tensorguard.sarif",
+        )
+        parser.add_argument("-o", "--output", help="Write JSON dashboard here")
+        parser.add_argument("-m", "--markdown", help="Write Markdown dashboard here")
+
+    def execute(self, args: argparse.Namespace) -> int:
+        from src.sarif_trend_dashboard import load_snapshot, write_dashboard
+
+        try:
+            snapshots = [load_snapshot(s) for s in getattr(args, "snapshots", [])]
+            dashboard = write_dashboard(
+                snapshots,
+                json_path=getattr(args, "output", None),
+                markdown_path=getattr(args, "markdown", None),
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            sys.stderr.write(f"Could not build SARIF trend dashboard: {exc}\n")
+            return 2
+        if not getattr(args, "output", None):
+            sys.stdout.write(json.dumps(dashboard, indent=2, sort_keys=True) + "\n")
+        return 0
+
+
 # ---------------------------------------------------------------------------
 # ReftypeCliApp — main application
 # ---------------------------------------------------------------------------
@@ -3703,6 +3736,7 @@ class ReftypeCliApp:
         "operator-confidence": lambda: OperatorConfidenceCommand(),
         "playground": lambda: PlaygroundCommand(),
         "adoption-recipes": lambda: AdoptionRecipesCommand(),
+        "sarif-trends": lambda: SarifTrendsCommand(),
     }
 
     def __init__(self) -> None:
@@ -3761,6 +3795,7 @@ class ReftypeCliApp:
             "operator-confidence": "Show per-operator confidence tags (sound/complete/heuristic)",
             "playground": "Generate a no-upload local static TensorGuard playground",
             "adoption-recipes": "Print one-line setup recipes for CI, hooks, editors, and notebooks",
+            "sarif-trends": "Build a Code Scanning trend dashboard from SARIF snapshots",
         }
         return helps.get(name, "")
 

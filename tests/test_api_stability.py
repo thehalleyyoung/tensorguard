@@ -57,6 +57,7 @@ _STABLE_SUBCOMMANDS = {
     "config",
     "operator-confidence",
     "playground",
+    "sarif-trends",
 }
 
 

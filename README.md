@@ -206,7 +206,8 @@ runtime errors in ML codebases before any code runs.
   ambiguity taxonomy, adjudication log, and kappa metrics without overclaiming an
   external human study. Pinned by `tests/test_github_bug_mining.py`,
   `tests/test_provenance_bug_corpus.py`, and `tests/test_labeling_agreement.py`.
-- **SARIF 2.1.0 output** — integrates with GitHub Code Scanning / Advanced Security
+- **SARIF 2.1.0 + trend dashboards** — integrates with GitHub Code Scanning /
+  Advanced Security and tracks open/closed/recurrent alerts across releases
 - **Beyond PyTorch** — the same Z3-backed verifier core analyzes a **second
   framework**: a Flax/JAX (`nnx.Sequential`) frontend lowers Linear/LayerNorm/
   BatchNorm/Dropout to the shared IR and refutes real shape bugs, abstaining
@@ -339,6 +340,7 @@ tensorguard verify FILE [options]
 | Command | Description |
 |---------|-------------|
 | `tensorguard ci-check [PATHS...] --sarif-output out.sarif` | CI mode with SARIF output |
+| `tensorguard sarif-trends v1=old.sarif v2=new.sarif --markdown trend.md` | Track Code Scanning open/closed/recurrent alert deltas |
 | `tensorguard watch [PATHS...]` | Watch and re-verify on changes |
 | `tensorguard adoption-recipes` | Print one-line setup commands for CI, pre-commit, pytest, nox/tox, Makefiles, editors, and Jupyter |
 | `tensorguard playground --output tensorguard_playground` | Generate a self-contained local playground: editable examples, precomputed TensorGuard verdicts, no upload/import/execution |
