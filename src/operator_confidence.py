@@ -86,7 +86,8 @@ _STRUCTURAL_EXACT = frozenset({
     "gather", "scatter", "index_select", "sort", "argsort", "topk",
     "stack", "hstack", "vstack", "dstack", "column_stack", "row_stack",
     "squeeze", "unsqueeze", "movedim", "moveaxis", "swapaxes", "swapdims",
-    "roll", "rot90", "flip",
+    "roll", "rot90", "flip", "repeat_interleave", "tile",
+    "broadcast_tensors", "broadcast_shapes",
     # Sampling ops whose output shape is a static argument / equals the input.
     "bernoulli", "poisson", "cdist",
 })

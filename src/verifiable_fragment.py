@@ -41,7 +41,8 @@ A module M is in V_TG iff:
 
   SupportedMethod ::= view | reshape | flatten | squeeze | unsqueeze
                     |  transpose | permute | contiguous | detach
-                    |  to | cuda | cpu | mean | sum | expand | repeat
+                    |  to | cuda | cpu | mean | sum | expand | repeat | tile
+                    |  repeat_interleave
                     |  chunk | split | softmax | relu | sigmoid | tanh
 
   SupportedLayer  ::= Linear | Conv{1,2,3}d | ConvTranspose{1,2,3}d
@@ -255,7 +256,7 @@ SUPPORTED_TENSOR_METHODS: Set[str] = {
     "movedim", "moveaxis", "transpose", "swapaxes", "swapdims",
     "permute", "roll", "rot90", "flip", "contiguous", "detach",
     "to", "cuda", "cpu", "float", "half", "double",
-    "mean", "sum", "expand", "repeat",
+    "mean", "sum", "expand", "repeat", "tile", "repeat_interleave",
     "chunk", "split", "softmax", "relu", "sigmoid", "tanh",
     "size", "shape", "dim", "numel",
     "clone", "narrow", "select",
@@ -268,7 +269,8 @@ SUPPORTED_TORCH_FUNCTIONS: Set[str] = {
     "torch.dstack", "torch.column_stack", "torch.row_stack",
     "torch.squeeze", "torch.unsqueeze", "torch.movedim", "torch.moveaxis",
     "torch.swapaxes", "torch.swapdims", "torch.roll", "torch.rot90",
-    "torch.flip",
+    "torch.flip", "torch.repeat_interleave", "torch.tile",
+    "torch.broadcast_tensors", "torch.broadcast_shapes",
     "torch.matmul", "torch.mm", "torch.bmm",
     "torch.flatten", "torch.relu", "torch.sigmoid", "torch.tanh",
     "torch.softmax", "torch.dropout", "torch.where",

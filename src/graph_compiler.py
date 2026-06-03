@@ -364,7 +364,8 @@ def _init_universal_registry():
             name=op, doc=f"Stack-family shape transfer: {op}"))
     for op in [
         "squeeze", "unsqueeze", "movedim", "moveaxis", "swapaxes",
-        "swapdims", "roll", "rot90", "flip",
+        "swapdims", "roll", "rot90", "flip", "repeat_interleave",
+        "tile", "broadcast_tensors", "broadcast_shapes",
     ]:
         register_transfer(f"torch.{op}", TransferFunction(
             name=op, doc=f"Structural shape transfer: {op}"))

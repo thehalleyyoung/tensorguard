@@ -305,6 +305,9 @@ class OpKind(Enum):
     UNBIND = auto()           # x.unbind(dim) → fixed-length tuple of slices
     EXPAND = auto()           # x.expand(...)
     REPEAT = auto()           # x.repeat(...)
+    TILE = auto()             # torch.tile / x.tile(...)
+    REPEAT_INTERLEAVE = auto()  # torch.repeat_interleave / x.repeat_interleave
+    BROADCAST_TENSORS = auto()  # torch.broadcast_tensors(...)
     PAD = auto()              # F.pad(x, ...)
     EINSUM = auto()           # torch.einsum(...)
     MEAN_REDUCE = auto()      # x.mean(dim=...)
@@ -2595,6 +2598,10 @@ _FUNCTIONAL_OPS: Dict[str, OpKind] = {
     "where": OpKind.WHERE,
     "chunk": OpKind.CHUNK,
     "split": OpKind.SPLIT,
+    "repeat_interleave": OpKind.REPEAT_INTERLEAVE,
+    "tile": OpKind.TILE,
+    "broadcast_tensors": OpKind.BROADCAST_TENSORS,
+    "broadcast_to": OpKind.EXPAND,
     "masked_select": OpKind.MASKED_SELECT,
     "nonzero": OpKind.NONZERO,
     "take_along_dim": OpKind.TAKE_ALONG_DIM,
@@ -3026,7 +3033,8 @@ _METHOD_OPS: Dict[str, OpKind] = {
     "expand": OpKind.EXPAND,
     "repeat": OpKind.REPEAT,
     "expand_as": OpKind.EXPAND,
-    "repeat_interleave": OpKind.REPEAT,
+    "repeat_interleave": OpKind.REPEAT_INTERLEAVE,
+    "tile": OpKind.TILE,
     "chunk": OpKind.CHUNK,
     "split": OpKind.SPLIT,
     "unbind": OpKind.UNBIND,
@@ -3316,7 +3324,94 @@ class _ForwardExtractor(ast.NodeVisitor):
         # Name reference to a previously-recorded shape tuple.
         if isinstance(value, ast.Name) and value.id in self._shape_tuples:
             return list(self._shape_tuples[value.id])
+        # torch.broadcast_shapes(shape_a, shape_b, ...): a shape-tuple result,
+        # not a tensor.  We evaluate it only when every argument is itself a
+        # recognised shape tuple; otherwise callers abstain rather than creating
+        # a bogus tensor op.
+        if isinstance(value, ast.Call):
+            func_name = _name_or_attr(value.func)
+            if func_name and func_name.split(".")[-1] == "broadcast_shapes":
+                shapes: List[List[Any]] = []
+                for arg in value.args:
+                    st = self._eval_shape_tuple(arg)
+                    if st is None:
+                        return None
+                    mat = self._materialise_shape_tuple(st)
+                    if mat is None:
+                        return None
+                    shapes.append(mat)
+                return self._broadcast_shape_tuple_entries(shapes)
         return None
+
+    @staticmethod
+    def _shape_entry_is_one(entry: Any) -> bool:
+        return isinstance(entry, int) and not isinstance(entry, bool) and entry == 1
+
+    @staticmethod
+    def _shape_entries_same(a: Any, b: Any) -> bool:
+        return a == b
+
+    def _broadcast_shape_tuple_entries(
+        self, shapes: List[List[Any]]
+    ) -> Optional[List[Any]]:
+        if not shapes:
+            return None
+        result = list(shapes[0])
+        for shape in shapes[1:]:
+            out_rev: List[Any] = []
+            for i in range(1, max(len(result), len(shape)) + 1):
+                a = result[-i] if i <= len(result) else 1
+                b = shape[-i] if i <= len(shape) else 1
+                if self._shape_entries_same(a, b):
+                    out_rev.append(a)
+                elif self._shape_entry_is_one(a):
+                    out_rev.append(b)
+                elif self._shape_entry_is_one(b):
+                    out_rev.append(a)
+                elif (isinstance(a, int) and not isinstance(a, bool)
+                      and isinstance(b, int) and not isinstance(b, bool)):
+                    return None
+                elif isinstance(a, int) and not isinstance(a, bool):
+                    out_rev.append(a)
+                elif isinstance(b, int) and not isinstance(b, bool):
+                    out_rev.append(b)
+                else:
+                    candidates: List[Any] = []
+                    if (isinstance(a, tuple) and a
+                            and a[0] == "broadcast_dim"):
+                        candidates.extend(a[1])
+                    else:
+                        candidates.append(a)
+                    if (isinstance(b, tuple) and b
+                            and b[0] == "broadcast_dim"):
+                        candidates.extend(b[1])
+                    else:
+                        candidates.append(b)
+                    out_rev.append(("broadcast_dim", tuple(candidates)))
+            result = list(reversed(out_rev))
+        return result
+
+    def _shape_tuple_to_dim_params(
+        self, value: ast.expr,
+    ) -> Tuple[Optional[Tuple[Any, ...]], Dict[int, Tuple[str, int]]]:
+        st = self._eval_shape_tuple(value)
+        if st is None:
+            return None, {}
+        mat = self._materialise_shape_tuple(st)
+        if mat is None:
+            return None, {}
+        dims: List[Any] = []
+        aliases: Dict[int, Tuple[str, int]] = {}
+        for idx, entry in enumerate(mat):
+            if isinstance(entry, tuple) and entry and entry[0] == "copy":
+                aliases[idx] = (entry[1], entry[2])
+                dims.append(entry[1])
+            elif (isinstance(entry, tuple) and entry
+                  and entry[0] == "broadcast_dim"):
+                dims.append(entry)
+            else:
+                dims.append(entry)
+        return tuple(dims), aliases
 
     def _try_record_shape_tuple(self, target_name: str,
                                  value: ast.expr) -> bool:
@@ -3629,6 +3724,11 @@ class _ForwardExtractor(ast.NodeVisitor):
                     self.generic_visit(node)
                     return
 
+                if self._try_emit_broadcast_tensors_unpack(
+                        target, node.value, node.lineno, node.col_offset):
+                    self.generic_visit(node)
+                    return
+
                 # Handle nested tuple for LSTM hidden state extraction:
                 #   _, (h, _) = self.lstm(x)  or  output, (h_n, c_n) = self.lstm(x)
                 # The inner tuple contains the hidden state which has a different
@@ -3841,6 +3941,34 @@ class _ForwardExtractor(ast.NodeVisitor):
                 inputs=[base], output=out_name,
                 params={"dim": dim_val, "unbind_index": i, "n_outputs": n},
                 line=line, col=col,
+            ))
+        return True
+
+    def _try_emit_broadcast_tensors_unpack(
+        self, target: ast.Tuple, value: ast.expr, line: int, col: int
+    ) -> bool:
+        """Emit one common-shape step per torch.broadcast_tensors output."""
+        if not isinstance(value, ast.Call):
+            return False
+        func_name = _name_or_attr(value.func)
+        if not func_name or func_name.split(".")[-1] != "broadcast_tensors":
+            return False
+        inputs = [self._resolve_arg(a) for a in value.args]
+        if not inputs:
+            return False
+        for i, elt in enumerate(target.elts):
+            out_name = (
+                elt.id
+                if isinstance(elt, ast.Name) and elt.id != "_"
+                else self._fresh("broadcast")
+            )
+            self.steps.append(ComputationStep(
+                op=OpKind.BROADCAST_TENSORS,
+                inputs=inputs,
+                output=out_name,
+                params={"broadcast_index": i},
+                line=line,
+                col=col,
             ))
         return True
 
@@ -4872,10 +5000,18 @@ class _ForwardExtractor(ast.NodeVisitor):
                         if (len(eargs) == 1
                                 and isinstance(eargs[0], (ast.Tuple, ast.List))):
                             eargs = eargs[0].elts
-                        params["dims"] = tuple(
-                            _const_value(a) for a in eargs
-                        )
-                    elif method in ("expand_as", "repeat_interleave"):
+                        elif len(eargs) == 1:
+                            dims, aliases = self._shape_tuple_to_dim_params(eargs[0])
+                            if dims is not None:
+                                params["dims"] = dims
+                                if aliases:
+                                    params["__alias_resolutions__"] = aliases
+                                eargs = []
+                        if eargs:
+                            params["dims"] = tuple(
+                                _const_value(a) for a in eargs
+                            )
+                    elif method == "expand_as":
                         pass  # shape-preserving approximation
                     elif method == "repeat":
                         rargs = node.args
@@ -4885,6 +5021,51 @@ class _ForwardExtractor(ast.NodeVisitor):
                         params["dims"] = tuple(
                             _const_value(a) for a in rargs
                         )
+                    elif method == "tile":
+                        rargs = node.args
+                        if (len(rargs) == 1
+                                and isinstance(rargs[0], (ast.Tuple, ast.List))):
+                            rargs = rargs[0].elts
+                        params["reps"] = tuple(
+                            _const_value(a) for a in rargs
+                        )
+                    elif method == "repeat_interleave":
+                        if node.args:
+                            repeats = _const_value(
+                                node.args[0], self._scalar_attrs)
+                            params["repeats"] = repeats
+                            if repeats is None:
+                                params["__repeats_dynamic__"] = True
+                        if len(node.args) > 1:
+                            dim = _const_value(node.args[1], self._scalar_attrs)
+                            params["dim"] = dim
+                            if dim is None:
+                                params["__dim_dynamic__"] = True
+                        if len(node.args) > 2:
+                            output_size = _const_value(
+                                node.args[2], self._scalar_attrs)
+                            params["output_size"] = output_size
+                            if output_size is None:
+                                params["__output_size_dynamic__"] = True
+                        for kw_node in node.keywords:
+                            if kw_node.arg == "repeats":
+                                repeats = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                params["repeats"] = repeats
+                                if repeats is None:
+                                    params["__repeats_dynamic__"] = True
+                            elif kw_node.arg == "dim":
+                                dim = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                params["dim"] = dim
+                                if dim is None:
+                                    params["__dim_dynamic__"] = True
+                            elif kw_node.arg == "output_size":
+                                output_size = _const_value(
+                                    kw_node.value, self._scalar_attrs)
+                                params["output_size"] = output_size
+                                if output_size is None:
+                                    params["__output_size_dynamic__"] = True
                     elif method == "roll":
                         if node.args:
                             shifts = _const_value(
@@ -5104,6 +5285,12 @@ class _ForwardExtractor(ast.NodeVisitor):
                     inputs = [self._resolve_arg(elt) for elt in node.args[0].elts]
                 elif op in (OpKind.CHUNK, OpKind.SPLIT):
                     inputs = [self._resolve_arg(node.args[0])] if node.args else []
+                elif op in (
+                    OpKind.REPEAT_INTERLEAVE, OpKind.TILE, OpKind.EXPAND,
+                ):
+                    inputs = [self._resolve_arg(node.args[0])] if node.args else []
+                elif op == OpKind.BROADCAST_TENSORS:
+                    inputs = [self._resolve_arg(a) for a in node.args]
                 elif op == OpKind.TAKE_ALONG_DIM:
                     inputs = [self._resolve_arg(a) for a in node.args[:2]]
                 elif op == OpKind.PAD:
@@ -5370,6 +5557,64 @@ class _ForwardExtractor(ast.NodeVisitor):
                         elif kw.arg == "dim":
                             params_dict["dim"] = _const_value(
                                 kw.value, self._scalar_attrs)
+
+                if op == OpKind.REPEAT_INTERLEAVE:
+                    if len(node.args) >= 2:
+                        repeats = _const_value(node.args[1], self._scalar_attrs)
+                        params_dict["repeats"] = repeats
+                        if repeats is None:
+                            params_dict["__repeats_dynamic__"] = True
+                    if len(node.args) >= 3:
+                        dim = _const_value(node.args[2], self._scalar_attrs)
+                        params_dict["dim"] = dim
+                        if dim is None:
+                            params_dict["__dim_dynamic__"] = True
+                    for kw in node.keywords:
+                        if kw.arg == "repeats":
+                            repeats = _const_value(kw.value, self._scalar_attrs)
+                            params_dict["repeats"] = repeats
+                            if repeats is None:
+                                params_dict["__repeats_dynamic__"] = True
+                        elif kw.arg == "dim":
+                            dim = _const_value(kw.value, self._scalar_attrs)
+                            params_dict["dim"] = dim
+                            if dim is None:
+                                params_dict["__dim_dynamic__"] = True
+                        elif kw.arg == "output_size":
+                            output_size = _const_value(
+                                kw.value, self._scalar_attrs)
+                            params_dict["output_size"] = output_size
+                            if output_size is None:
+                                params_dict["__output_size_dynamic__"] = True
+
+                if op == OpKind.TILE:
+                    reps_expr = node.args[1:] if len(node.args) > 1 else ()
+                    if len(reps_expr) == 1 and isinstance(
+                            reps_expr[0], (ast.Tuple, ast.List)):
+                        reps_expr = tuple(reps_expr[0].elts)
+                    params_dict["reps"] = tuple(
+                        _const_value(a, self._scalar_attrs)
+                        for a in reps_expr
+                    )
+
+                if op == OpKind.EXPAND and short == "broadcast_to":
+                    if len(node.args) >= 2:
+                        dims, aliases = self._shape_tuple_to_dim_params(
+                            node.args[1])
+                        if dims is not None:
+                            params_dict["dims"] = dims
+                            if aliases:
+                                params_dict["__alias_resolutions__"] = aliases
+                        else:
+                            dims_expr = node.args[1:]
+                            if len(dims_expr) == 1 and isinstance(
+                                    dims_expr[0], (ast.Tuple, ast.List)):
+                                dims_expr = tuple(dims_expr[0].elts)
+                            params_dict["dims"] = tuple(
+                                _const_value(a, self._scalar_attrs)
+                                for a in dims_expr
+                            )
+                    params_dict["expand_kind"] = "broadcast_to"
 
                 if op == OpKind.NONZERO:
                     for kw in node.keywords:
@@ -9015,6 +9260,248 @@ def _normalize_dim_tuple(
     return tuple(normalized), None
 
 
+def _repeat_factor_tuple(
+    value: Any,
+    op_name: str,
+) -> Tuple[Optional[Tuple[int, ...]], Optional[str]]:
+    reps = _static_int_tuple(value)
+    if reps is None:
+        return None, None
+    for r in reps:
+        if r < 0:
+            return None, f"{op_name}: repeat factors must be non-negative, got {r}"
+    return reps, None
+
+
+def _multiply_dim(dim: ShapeDim, factor: int) -> ShapeDim:
+    if factor == 1:
+        return dim
+    if factor == 0:
+        return ShapeDim(0)
+    if not dim.is_symbolic and isinstance(dim.value, int):
+        return ShapeDim(dim.value * factor)
+    return ShapeDim(f"{dim.value}_x{factor}")
+
+
+def _compute_tile_shape(
+    input_shape: TensorShape,
+    reps_value: Any,
+    output_name: str,
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    reps, err = _repeat_factor_tuple(reps_value, "tile")
+    if err is not None:
+        return None, err
+    if reps is None:
+        return _symbolic_same_rank_shape(input_shape, "tile", output_name), None
+
+    ndim = max(input_shape.ndim, len(reps))
+    padded_dims: List[ShapeDim] = [ShapeDim(1)] * (ndim - input_shape.ndim)
+    padded_dims.extend(input_shape.dims)
+    padded_reps = [1] * (ndim - len(reps)) + list(reps)
+    return TensorShape(tuple(
+        _multiply_dim(dim, factor)
+        for dim, factor in zip(padded_dims, padded_reps)
+    )), None
+
+
+def _compute_repeat_shape(
+    input_shape: TensorShape,
+    reps_value: Any,
+    output_name: str,
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    reps, err = _repeat_factor_tuple(reps_value, "repeat")
+    if err is not None:
+        return None, err
+    if reps is None:
+        return _symbolic_same_rank_shape(input_shape, "repeat", output_name), None
+    if len(reps) < input_shape.ndim:
+        return None, (
+            "repeat: number of repeat dims cannot be smaller than tensor rank "
+            f"({len(reps)} < {input_shape.ndim})"
+        )
+
+    padded_dims: List[ShapeDim] = [ShapeDim(1)] * (len(reps) - input_shape.ndim)
+    padded_dims.extend(input_shape.dims)
+    return TensorShape(tuple(
+        _multiply_dim(dim, factor)
+        for dim, factor in zip(padded_dims, reps)
+    )), None
+
+
+def _shape_numel(shape: TensorShape) -> Optional[int]:
+    total = 1
+    for dim in shape.dims:
+        if dim.is_symbolic or not isinstance(dim.value, int):
+            return None
+        total *= dim.value
+    return total
+
+
+def _repeat_interleave_static_total(
+    repeats: Any,
+    source_len: Optional[int],
+) -> Tuple[Optional[int], Optional[str]]:
+    if isinstance(repeats, bool):
+        return None, None
+    if isinstance(repeats, int):
+        if repeats < 0:
+            return None, (
+                f"repeat_interleave: repeats must be non-negative, got {repeats}"
+            )
+        if source_len is None:
+            return None, None
+        return source_len * repeats, None
+    if isinstance(repeats, (tuple, list)):
+        if not all(isinstance(r, int) and not isinstance(r, bool) for r in repeats):
+            return None, None
+        if any(r < 0 for r in repeats):
+            return None, "repeat_interleave: repeats must be non-negative"
+        if source_len is not None and len(repeats) != source_len:
+            return None, (
+                f"repeat_interleave: repeats length {len(repeats)} must match "
+                f"input length {source_len}"
+            )
+        return sum(repeats), None
+    return None, None
+
+
+def _compute_repeat_interleave_shape(
+    input_shape: TensorShape,
+    params: Dict[str, Any],
+    output_name: str,
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    if "repeats" not in params:
+        return None, "repeat_interleave: repeats argument is required"
+
+    output_size = params.get("output_size")
+    if output_size is not None:
+        if (isinstance(output_size, bool)
+                or not isinstance(output_size, int)
+                or output_size < 0):
+            return None, (
+                f"repeat_interleave: output_size must be a non-negative int, "
+                f"got {output_size!r}"
+            )
+
+    dim_value = params.get("dim")
+    has_dim = dim_value is not None
+    if params.get("__dim_dynamic__"):
+        if isinstance(output_size, int):
+            return _symbolic_same_rank_shape(
+                input_shape, "repeat_interleave", output_name), None
+        return _symbolic_same_rank_shape(
+            input_shape, "repeat_interleave", output_name), None
+
+    if has_dim:
+        dim, err = _normalize_existing_dim(
+            dim_value, input_shape.ndim, "repeat_interleave",
+            allow_scalar_dim=False)
+        if err is not None:
+            return None, err
+        assert dim is not None
+        axis_dim = input_shape.dims[dim]
+        source_len = (
+            axis_dim.value
+            if not axis_dim.is_symbolic and isinstance(axis_dim.value, int)
+            else None
+        )
+    else:
+        dim = None
+        source_len = _shape_numel(input_shape)
+
+    total, err = _repeat_interleave_static_total(
+        params.get("repeats"), source_len)
+    if err is not None:
+        return None, err
+    if isinstance(output_size, int) and total is not None and output_size != total:
+        return None, (
+            f"repeat_interleave: Invalid output_size, expected {total} "
+            f"but got {output_size}"
+        )
+
+    if isinstance(output_size, int):
+        out_dim = ShapeDim(output_size)
+    elif total is not None:
+        out_dim = ShapeDim(total)
+    else:
+        out_dim = ShapeDim(f"_repeat_interleave_{output_name}")
+
+    if dim is None:
+        return TensorShape((out_dim,)), None
+    new_dims = list(input_shape.dims)
+    new_dims[dim] = out_dim
+    return TensorShape(tuple(new_dims)), None
+
+
+def _compute_broadcast_many_shape(
+    shapes: Sequence[TensorShape],
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    if not shapes:
+        return None, "broadcast_tensors: expected at least one input"
+    result = shapes[0]
+    for shape in shapes[1:]:
+        next_result = compute_broadcast_shape(result, shape)
+        if next_result is None:
+            rendered = ", ".join(s.pretty() for s in shapes)
+            return None, f"broadcast_tensors: cannot broadcast shapes {rendered}"
+        result = next_result
+    return result, None
+
+
+def _resolve_dim_aliases(
+    dims: Any,
+    params: Dict[str, Any],
+    shape_env: Dict[str, TensorShape],
+) -> Any:
+    if not dims:
+        return dims
+    dims_list = list(dims)
+    aliases = params.get("__alias_resolutions__") if params else None
+    if aliases:
+        for di, (src_var, src_di) in aliases.items():
+            if di < 0 or di >= len(dims_list):
+                continue
+            src_shape = shape_env.get(src_var)
+            if src_shape is not None and 0 <= src_di < src_shape.ndim:
+                sd = src_shape.dims[src_di]
+                dims_list[di] = sd.value
+
+    def _entry_dim(entry: Any) -> Optional[ShapeDim]:
+        if isinstance(entry, int) and not isinstance(entry, bool):
+            return ShapeDim(entry)
+        if isinstance(entry, str):
+            return ShapeDim(entry)
+        if (isinstance(entry, tuple) and entry
+                and entry[0] == "copy"):
+            src_shape = shape_env.get(entry[1])
+            if src_shape is not None and 0 <= entry[2] < src_shape.ndim:
+                return src_shape.dims[entry[2]]
+        return None
+
+    for di, entry in enumerate(list(dims_list)):
+        if not (isinstance(entry, tuple) and entry
+                and entry[0] == "broadcast_dim"):
+            continue
+        result: Optional[TensorShape] = None
+        unresolved = False
+        for candidate in entry[1]:
+            dim = _entry_dim(candidate)
+            if dim is None:
+                unresolved = True
+                break
+            one = TensorShape((dim,))
+            result = one if result is None else compute_broadcast_shape(result, one)
+            if result is None:
+                unresolved = True
+                break
+        if result is not None and not unresolved:
+            out_dim = result.dims[0]
+            dims_list[di] = out_dim.value
+        else:
+            dims_list[di] = f"_broadcast_{di}"
+    return tuple(dims_list)
+
+
 def _movedim_order(
     ndim: int,
     source: Any,
@@ -11572,6 +12059,8 @@ class ConstraintVerifier:
                         d.value if not d.is_symbolic else str(d.value)
                         for d in ref.dims
                     )
+                dims = _resolve_dim_aliases(
+                    dims, step.params or {}, state.shape_env)
                 if dims and all(d is not None for d in dims):
                     allow_neg_one = (
                         step.params.get("expand_kind") != "broadcast_to"
@@ -11595,17 +12084,76 @@ class ConstraintVerifier:
         elif step.op == OpKind.REPEAT:
             if step.inputs and step.inputs[0] in state.shape_env:
                 inp_shape = state.shape_env[step.inputs[0]]
-                dims = step.params.get("dims")
-                if dims and all(d is not None for d in dims):
-                    new_dims = []
-                    for i, d in enumerate(dims):
-                        if i < inp_shape.ndim and not inp_shape.dims[i].is_symbolic:
-                            new_dims.append(ShapeDim(inp_shape.dims[i].value * d))
-                        else:
-                            new_dims.append(ShapeDim("_rep"))
-                    new_state.shape_env[step.output] = TensorShape(tuple(new_dims))
-                else:
-                    new_state.shape_env[step.output] = inp_shape
+                out_shape, err = _compute_repeat_shape(
+                    inp_shape, step.params.get("dims"), step.output)
+                if err is not None:
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible",
+                        step_index=-1,
+                        step=step,
+                        message=err,
+                        tensor_a=step.inputs[0],
+                        shape_a=inp_shape,
+                    ))
+                elif out_shape is not None:
+                    new_state.shape_env[step.output] = out_shape
+        elif step.op == OpKind.TILE:
+            if step.inputs and step.inputs[0] in state.shape_env:
+                inp_shape = state.shape_env[step.inputs[0]]
+                out_shape, err = _compute_tile_shape(
+                    inp_shape, step.params.get("reps"), step.output)
+                if err is not None:
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible",
+                        step_index=-1,
+                        step=step,
+                        message=err,
+                        tensor_a=step.inputs[0],
+                        shape_a=inp_shape,
+                    ))
+                elif out_shape is not None:
+                    new_state.shape_env[step.output] = out_shape
+        elif step.op == OpKind.REPEAT_INTERLEAVE:
+            if step.inputs and step.inputs[0] in state.shape_env:
+                inp_shape = state.shape_env[step.inputs[0]]
+                out_shape, err = _compute_repeat_interleave_shape(
+                    inp_shape, step.params or {}, step.output)
+                if err is not None:
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible",
+                        step_index=-1,
+                        step=step,
+                        message=err,
+                        tensor_a=step.inputs[0],
+                        shape_a=inp_shape,
+                    ))
+                elif out_shape is not None:
+                    if (out_shape.ndim > 0
+                            and any(d.is_symbolic for d in out_shape.dims)
+                            and step.params.get("__repeats_dynamic__")
+                            and step.params.get("output_size") is None):
+                        self._record_unknown_reason(
+                            "repeat_interleave with data-dependent repeats "
+                            f"makes {step.output} extent UNKNOWN"
+                        )
+                    new_state.shape_env[step.output] = out_shape
+        elif step.op == OpKind.BROADCAST_TENSORS:
+            shapes = [
+                state.shape_env[inp]
+                for inp in step.inputs
+                if inp in state.shape_env
+            ]
+            if len(shapes) == len(step.inputs) and shapes:
+                out_shape, err = _compute_broadcast_many_shape(shapes)
+                if err is not None:
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible",
+                        step_index=-1,
+                        step=step,
+                        message=err,
+                    ))
+                elif out_shape is not None:
+                    new_state.shape_env[step.output] = out_shape
         elif step.op in (OpKind.MEAN_REDUCE, OpKind.SUM_REDUCE):
             if step.inputs and step.inputs[0] in state.shape_env:
                 inp_shape = state.shape_env[step.inputs[0]]
@@ -14714,6 +15262,7 @@ class SymbolicShapePropagator:
                         d.value if not d.is_symbolic else str(d.value)
                         for d in ref.dims
                     )
+                dims = _resolve_dim_aliases(dims, step.params or {}, env)
                 if dims and all(d is not None for d in dims):
                     allow_neg_one = (
                         step.params.get("expand_kind") != "broadcast_to"
@@ -14732,17 +15281,35 @@ class SymbolicShapePropagator:
             inp = step.inputs[0] if step.inputs else None
             inp_shape = env.get(inp) if inp else None
             if inp_shape:
-                dims = step.params.get("dims")
-                if dims and all(d is not None for d in dims):
-                    new_dims = []
-                    for i, d in enumerate(dims):
-                        if i < inp_shape.ndim and not inp_shape.dims[i].is_symbolic:
-                            new_dims.append(ShapeDim(inp_shape.dims[i].value * d))
-                        else:
-                            new_dims.append(ShapeDim("_rep"))
-                    env[step.output] = TensorShape(tuple(new_dims))
-                else:
-                    env[step.output] = inp_shape
+                out_shape, _err = _compute_repeat_shape(
+                    inp_shape, step.params.get("dims"), step.output)
+                if out_shape is not None:
+                    env[step.output] = out_shape
+
+        elif step.op == OpKind.TILE:
+            inp = step.inputs[0] if step.inputs else None
+            inp_shape = env.get(inp) if inp else None
+            if inp_shape:
+                out_shape, _err = _compute_tile_shape(
+                    inp_shape, step.params.get("reps"), step.output)
+                if out_shape is not None:
+                    env[step.output] = out_shape
+
+        elif step.op == OpKind.REPEAT_INTERLEAVE:
+            inp = step.inputs[0] if step.inputs else None
+            inp_shape = env.get(inp) if inp else None
+            if inp_shape:
+                out_shape, _err = _compute_repeat_interleave_shape(
+                    inp_shape, step.params or {}, step.output)
+                if out_shape is not None:
+                    env[step.output] = out_shape
+
+        elif step.op == OpKind.BROADCAST_TENSORS:
+            shapes = [env[inp] for inp in step.inputs if inp in env]
+            if len(shapes) == len(step.inputs) and shapes:
+                out_shape, _err = _compute_broadcast_many_shape(shapes)
+                if out_shape is not None:
+                    env[step.output] = out_shape
 
         elif step.op in (OpKind.MEAN_REDUCE, OpKind.SUM_REDUCE):
             inp = step.inputs[0] if step.inputs else None

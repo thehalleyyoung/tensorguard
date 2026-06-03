@@ -196,6 +196,7 @@ convolution families, pooling, flatten, reshape/view with product reasoning,
 broadcasting, reductions, cat/stack-family aliases, PyTorch-faithful padding,
 interpolation/upsampling, transpose/permute, squeeze/unsqueeze,
 \texttt{movedim}/\texttt{swapaxes}, \texttt{roll}/\texttt{rot90}/\texttt{flip},
+\texttt{repeat\_interleave}/\texttt{tile}, tensor broadcasting helpers,
 fold/unfold image-column transforms,
 embedding, dtype casts, device moves, and stochastic tensor factories whose
 shapes are seed-independent.  Extended coverage includes einsum parsing,
@@ -228,6 +229,19 @@ contracts such as duplicate flip axes, mismatched roll arity, or invalid rotatio
 axes.  The regression suite compares source and FX extraction against live
 PyTorch, exhaustively checks rank-4 \texttt{movedim} placements, and proves that
 symbolic dimensions do not create false structural bugs.
+
+Repeat and broadcast helpers are modeled as first-class structural transfers,
+not as generic repeats or activations.  \texttt{repeat} and \texttt{tile} use
+their distinct eager-PyTorch rank rules: \texttt{repeat} requires enough factors
+for the input rank, while \texttt{tile} left-pads factors before multiplying
+axes.  \texttt{repeat\_interleave} preserves the flattening behavior of
+\texttt{dim=None}, statically checks \texttt{output\_size} when the repeated
+extent is provable, and otherwise keeps a fresh symbolic extent instead of
+claiming a false proof for data-dependent repeat vectors.
+\texttt{torch.broadcast\_tensors} now gives every returned tensor the exact joint
+broadcast shape, while source-level \texttt{torch.broadcast\_shapes} is carried
+as a shape value that can feed \texttt{expand}.  Focused source and FX tests
+compare these contracts against live PyTorch successes and exceptions.
 
 \subsection{Exact Index-Value Operators}
 

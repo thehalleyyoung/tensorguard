@@ -439,6 +439,9 @@ def _function_to_op(fn) -> Optional[OpKind]:
         torch.unsqueeze: OpKind.UNSQUEEZE,
         torch.movedim: OpKind.MOVEDIM,
         torch.broadcast_to: OpKind.EXPAND,
+        torch.repeat_interleave: OpKind.REPEAT_INTERLEAVE,
+        torch.tile: OpKind.TILE,
+        torch.broadcast_tensors: OpKind.BROADCAST_TENSORS,
         torch.permute: OpKind.PERMUTE,
         torch.transpose: OpKind.TRANSPOSE,
         torch.swapaxes: OpKind.TRANSPOSE,
@@ -557,6 +560,8 @@ _METHOD_OP_MAP = {
     "split": OpKind.SPLIT,
     "expand": OpKind.EXPAND,
     "repeat": OpKind.REPEAT,
+    "repeat_interleave": OpKind.REPEAT_INTERLEAVE,
+    "tile": OpKind.TILE,
     "take_along_dim": OpKind.TAKE_ALONG_DIM,
     "argsort": OpKind.ARGSORT,
     "sort": OpKind.SORT,
@@ -1253,6 +1258,26 @@ def _extract_function_params(
         if dims is not None:
             params["dims"] = dims
         params["expand_kind"] = "broadcast_to"
+    elif op_kind == OpKind.TILE:
+        reps = _parse_reshape_dims(tuple(node.args[1:]))
+        if reps is not None:
+            params["reps"] = reps
+    elif op_kind == OpKind.REPEAT_INTERLEAVE:
+        if len(node.args) > 1:
+            _set_literal("repeats", node.args[1], "__repeats_dynamic__")
+        elif "repeats" in node.kwargs:
+            _set_literal(
+                "repeats", node.kwargs["repeats"], "__repeats_dynamic__")
+        if len(node.args) > 2:
+            _set_literal("dim", node.args[2], "__dim_dynamic__")
+        elif "dim" in node.kwargs:
+            _set_literal("dim", node.kwargs["dim"], "__dim_dynamic__")
+        if "output_size" in node.kwargs:
+            _set_literal(
+                "output_size",
+                node.kwargs["output_size"],
+                "__output_size_dynamic__",
+            )
     elif op_kind == OpKind.FLATTEN:
         if len(node.args) > 1 and isinstance(node.args[1], int):
             params["start_dim"] = node.args[1]
@@ -1511,6 +1536,30 @@ def _extract_method_params(
             params["dims"] = dims
         if method_name == "broadcast_to":
             params["expand_kind"] = "broadcast_to"
+    elif method_name == "repeat":
+        dims = _parse_reshape_dims(tuple(node.args[1:]))
+        if dims is not None:
+            params["dims"] = dims
+    elif method_name == "tile":
+        reps = _parse_reshape_dims(tuple(node.args[1:]))
+        if reps is not None:
+            params["reps"] = reps
+    elif method_name == "repeat_interleave":
+        if len(node.args) > 1:
+            _set_literal("repeats", node.args[1], "__repeats_dynamic__")
+        elif "repeats" in node.kwargs:
+            _set_literal(
+                "repeats", node.kwargs["repeats"], "__repeats_dynamic__")
+        if len(node.args) > 2:
+            _set_literal("dim", node.args[2], "__dim_dynamic__")
+        elif "dim" in node.kwargs:
+            _set_literal("dim", node.kwargs["dim"], "__dim_dynamic__")
+        if "output_size" in node.kwargs:
+            _set_literal(
+                "output_size",
+                node.kwargs["output_size"],
+                "__output_size_dynamic__",
+            )
     elif method_name in ("squeeze", "unsqueeze"):
         if len(node.args) > 1:
             _set_literal("dim", node.args[1], "__dim_dynamic__")
@@ -2186,6 +2235,9 @@ _METHOD_OP_MAP: Dict[str, OpKind] = {
     "expand": OpKind.EXPAND,
     "expand_as": OpKind.EXPAND,
     "broadcast_to": OpKind.EXPAND,
+    "repeat": OpKind.REPEAT,
+    "repeat_interleave": OpKind.REPEAT_INTERLEAVE,
+    "tile": OpKind.TILE,
     "gather": OpKind.GATHER,
     "index_select": OpKind.INDEX_SELECT,
     "scatter": OpKind.SCATTER,
@@ -2264,6 +2316,9 @@ _TORCH_FUNC_MAP: Dict[str, OpKind] = {
     "roll": OpKind.ROLL,
     "rot90": OpKind.ROT90,
     "flip": OpKind.FLIP,
+    "repeat_interleave": OpKind.REPEAT_INTERLEAVE,
+    "tile": OpKind.TILE,
+    "broadcast_tensors": OpKind.BROADCAST_TENSORS,
     "where": OpKind.WHERE,
     "masked_select": OpKind.MASKED_SELECT,
     "nonzero": OpKind.NONZERO,

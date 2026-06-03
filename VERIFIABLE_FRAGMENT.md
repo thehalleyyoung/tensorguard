@@ -50,27 +50,29 @@ TransformerDecoder, TransformerDecoderLayer, TransformerEncoder,
 TransformerEncoderLayer, Unflatten, Unfold, Upsample, ZeroPad2d
 ```
 
-### Tensor methods (46)
+### Tensor methods (48)
 
 ```
 add, add_, bmm, chunk, clone, contiguous, cpu, cuda, detach, dim, double,
 expand, flatten, flip, float, half, matmul, mean, mm, moveaxis, movedim,
-mul, mul_, narrow, numel, permute, relu, repeat, reshape, roll, rot90,
-select, shape, sigmoid, size, softmax, split, squeeze, sum, swapaxes,
-swapdims, tanh, to, transpose, unsqueeze, view
+mul, mul_, narrow, numel, permute, relu, repeat, repeat_interleave,
+reshape, roll, rot90, select, shape, sigmoid, size, softmax, split,
+squeeze, sum, swapaxes, swapdims, tanh, tile, to, transpose, unsqueeze,
+view
 ```
 
-### torch.* functions (37)
+### torch.* functions (41)
 
 ```
-torch.add, torch.arange, torch.bmm, torch.cat, torch.chunk,
-torch.column_stack, torch.dropout, torch.dstack, torch.einsum,
-torch.flatten, torch.flip, torch.hstack, torch.linspace, torch.matmul,
-torch.mm, torch.moveaxis, torch.movedim, torch.mul, torch.ones,
-torch.ones_like, torch.relu, torch.roll, torch.rot90, torch.row_stack,
+torch.add, torch.arange, torch.bmm, torch.broadcast_shapes,
+torch.broadcast_tensors, torch.cat, torch.chunk, torch.column_stack,
+torch.dropout, torch.dstack, torch.einsum, torch.flatten, torch.flip,
+torch.hstack, torch.linspace, torch.matmul, torch.mm, torch.moveaxis,
+torch.movedim, torch.mul, torch.ones, torch.ones_like, torch.relu,
+torch.repeat_interleave, torch.roll, torch.rot90, torch.row_stack,
 torch.sigmoid, torch.softmax, torch.split, torch.squeeze, torch.stack,
-torch.swapaxes, torch.swapdims, torch.tanh, torch.unsqueeze, torch.vstack,
-torch.where, torch.zeros, torch.zeros_like
+torch.swapaxes, torch.swapdims, torch.tanh, torch.tile, torch.unsqueeze,
+torch.vstack, torch.where, torch.zeros, torch.zeros_like
 ```
 
 ### torch.nn.functional (F.*) functions (21)
