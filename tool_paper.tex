@@ -571,7 +571,8 @@ per-sample-weight contracts, invalid sparse compressed layouts and
 sparse-dense kernels, named
 tensor alignment failures, incompatible loss targets, incompatible distribution
 batch/event shapes, export
-contracts, quantization observer placement, and distributed sharding mistakes.
+contracts, quantization observer calibration/qscheme and quant/dequant placement,
+and distributed sharding mistakes.
 
 The conformance tests are especially important.  A static rule is only useful
 if it matches the runtime library.  The repository therefore includes tests
@@ -968,8 +969,10 @@ Gradient and training-loop contracts beyond forward shape checking. \\
 \hline
 \texttt{tests/test\_onnx\_export\_gate.py},
 \texttt{tests/test\_export\_aot\_gate.py},
-\texttt{tests/test\_quant\_export\_checks.py} &
-Deployment-facing gates for export, opsets, AOT packaging, and quantization. \\
+\texttt{tests/test\_quant\_export\_checks.py},
+\texttt{tests/test\_quantization\_verify.py} &
+Deployment-facing gates for export, opsets, AOT packaging, and source/eager/FX
+quantization. \\
 \hline
 \texttt{tests/test\_distributed\_verification.py},
 \texttt{tests/test\_tensor\_parallel\_checks.py} &
@@ -1357,7 +1360,8 @@ or native annotations.
 \subsection{Deployment gate}
 
 Deployment introduces contracts that ordinary training does not: ONNX opset
-availability, AOTInductor input layouts, quantization observer placement,
+availability, AOTInductor input layouts, quantization observer calibration,
+activation qscheme placement, eager/FX quant-dequant boundaries,
 mixed-precision dtype boundaries, TorchServe or FastAPI request schemas, GGUF
 or llama.cpp checkpoint shapes, CUDA graph capture assumptions, and
 distributed shard boundaries.  \tg{}'s deployment modules check these contracts

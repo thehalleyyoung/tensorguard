@@ -43,6 +43,13 @@ from .linalg_verify import (
     verify_linalg_svd,
 )
 from .named_tensor_verify import verify_align_to, verify_named_tensor_source, verify_refine_names
+from .quantization_verify import (
+    QuantizationIssue,
+    QuantizationVerdict,
+    verify_quantization,
+    verify_quantization_eager,
+    verify_quantization_fx,
+)
 from .sparse_verify import (
     verify_sparse_addmm,
     verify_sparse_bsc,
@@ -106,6 +113,11 @@ __all__ = [
     "verify_refine_names",
     "verify_align_to",
     "verify_named_tensor_source",
+    "QuantizationIssue",
+    "QuantizationVerdict",
+    "verify_quantization",
+    "verify_quantization_eager",
+    "verify_quantization_fx",
     "verify_sparse_coo",
     "verify_sparse_csr",
     "verify_sparse_csc",
