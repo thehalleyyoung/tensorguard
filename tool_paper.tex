@@ -143,7 +143,12 @@ adoption-recipes} command emits tested one-line setup commands for GitHub
 Actions, pre-commit, pytest, nox, tox, Makefile, VS Code, JetBrains, Neovim, and
 Jupyter workflows.  Each recipe is pinned to a committed example repository and
 to the actual integration files it configures, so the install surface is tested
-against real code rather than documented from memory.
+against real code rather than documented from memory.  The same philosophy now
+extends to a twenty-five-case model gallery: each row pairs a pasteable clean
+\texttt{nn.Module}, a minimally changed buggy variant, the exact
+\texttt{tensorguard verify} input-shape command, and a test that executes the
+clean model under eager PyTorch while proving the buggy source is refuted by the
+verifier.
 
 The editor surface is likewise centralized.  A real JSON-RPC language server
 over stdio analyzes unsaved buffers and publishes diagnostics, hover shapes, and

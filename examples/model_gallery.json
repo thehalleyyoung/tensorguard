@@ -1,0 +1,475 @@
+{
+  "case_count": 25,
+  "cases": [
+    {
+      "buggy_class": "MlpClassifierHeadBug",
+      "buggy_source": "import torch.nn as nn\n\nclass MlpClassifierHeadBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(10, 20),\n            nn.ReLU(),\n            nn.Linear(30, 5),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 30 features, but the previous layer produces 20.",
+      "clean_class": "MlpClassifierHeadClean",
+      "clean_source": "import torch.nn as nn\n\nclass MlpClassifierHeadClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(10, 20),\n            nn.ReLU(),\n            nn.Linear(20, 5),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify mlp_classifier_head.py -s x=batch,10",
+      "family": "tabular",
+      "filename": "mlp_classifier_head.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          10
+        ]
+      },
+      "slug": "mlp_classifier_head",
+      "title": "MLP classifier head"
+    },
+    {
+      "buggy_class": "ResidualProjectionHeadBug",
+      "buggy_source": "import torch.nn as nn\n\nclass ResidualProjectionHeadBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(12, 24),\n            nn.ReLU(),\n            nn.Linear(18, 6),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 18 features, but the previous layer produces 24.",
+      "clean_class": "ResidualProjectionHeadClean",
+      "clean_source": "import torch.nn as nn\n\nclass ResidualProjectionHeadClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(12, 24),\n            nn.ReLU(),\n            nn.Linear(24, 6),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify residual_projection_head.py -s x=batch,12",
+      "family": "vision",
+      "filename": "residual_projection_head.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          12
+        ]
+      },
+      "slug": "residual_projection_head",
+      "title": "Residual projection head"
+    },
+    {
+      "buggy_class": "TransformerFfnBlockBug",
+      "buggy_source": "import torch.nn as nn\n\nclass TransformerFfnBlockBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(16, 32),\n            nn.ReLU(),\n            nn.Linear(40, 8),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 40 features, but the previous layer produces 32.",
+      "clean_class": "TransformerFfnBlockClean",
+      "clean_source": "import torch.nn as nn\n\nclass TransformerFfnBlockClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(16, 32),\n            nn.ReLU(),\n            nn.Linear(32, 8),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify transformer_ffn_block.py -s x=batch,16",
+      "family": "attention",
+      "filename": "transformer_ffn_block.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          16
+        ]
+      },
+      "slug": "transformer_ffn_block",
+      "title": "Transformer feed-forward block"
+    },
+    {
+      "buggy_class": "BertPoolerHeadBug",
+      "buggy_source": "import torch.nn as nn\n\nclass BertPoolerHeadBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(768, 64),\n            nn.ReLU(),\n            nn.Linear(96, 2),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 96 features, but the previous layer produces 64.",
+      "clean_class": "BertPoolerHeadClean",
+      "clean_source": "import torch.nn as nn\n\nclass BertPoolerHeadClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(768, 64),\n            nn.ReLU(),\n            nn.Linear(64, 2),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify bert_pooler_head.py -s x=batch,768",
+      "family": "nlp",
+      "filename": "bert_pooler_head.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          768
+        ]
+      },
+      "slug": "bert_pooler_head",
+      "title": "BERT-style pooler head"
+    },
+    {
+      "buggy_class": "VitPatchClassifierBug",
+      "buggy_source": "import torch.nn as nn\n\nclass VitPatchClassifierBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(64, 128),\n            nn.ReLU(),\n            nn.Linear(96, 10),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 96 features, but the previous layer produces 128.",
+      "clean_class": "VitPatchClassifierClean",
+      "clean_source": "import torch.nn as nn\n\nclass VitPatchClassifierClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(64, 128),\n            nn.ReLU(),\n            nn.Linear(128, 10),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify vit_patch_classifier.py -s x=batch,64",
+      "family": "vision",
+      "filename": "vit_patch_classifier.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          64
+        ]
+      },
+      "slug": "vit_patch_classifier",
+      "title": "ViT patch classifier"
+    },
+    {
+      "buggy_class": "UnetTimeMlpBug",
+      "buggy_source": "import torch.nn as nn\n\nclass UnetTimeMlpBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(32, 64),\n            nn.ReLU(),\n            nn.Linear(48, 32),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 48 features, but the previous layer produces 64.",
+      "clean_class": "UnetTimeMlpClean",
+      "clean_source": "import torch.nn as nn\n\nclass UnetTimeMlpClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(32, 64),\n            nn.ReLU(),\n            nn.Linear(64, 32),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify unet_time_mlp.py -s x=batch,32",
+      "family": "diffusion",
+      "filename": "unet_time_mlp.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          32
+        ]
+      },
+      "slug": "unet_time_mlp",
+      "title": "U-Net timestep MLP"
+    },
+    {
+      "buggy_class": "GanDiscriminatorHeadBug",
+      "buggy_source": "import torch.nn as nn\n\nclass GanDiscriminatorHeadBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(100, 50),\n            nn.ReLU(),\n            nn.Linear(40, 1),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 40 features, but the previous layer produces 50.",
+      "clean_class": "GanDiscriminatorHeadClean",
+      "clean_source": "import torch.nn as nn\n\nclass GanDiscriminatorHeadClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(100, 50),\n            nn.ReLU(),\n            nn.Linear(50, 1),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify gan_discriminator_head.py -s x=batch,100",
+      "family": "generative",
+      "filename": "gan_discriminator_head.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          100
+        ]
+      },
+      "slug": "gan_discriminator_head",
+      "title": "GAN discriminator head"
+    },
+    {
+      "buggy_class": "VaeLatentDecoderBug",
+      "buggy_source": "import torch.nn as nn\n\nclass VaeLatentDecoderBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(20, 40),\n            nn.ReLU(),\n            nn.Linear(32, 64),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 32 features, but the previous layer produces 40.",
+      "clean_class": "VaeLatentDecoderClean",
+      "clean_source": "import torch.nn as nn\n\nclass VaeLatentDecoderClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(20, 40),\n            nn.ReLU(),\n            nn.Linear(40, 64),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify vae_latent_decoder.py -s x=batch,20",
+      "family": "generative",
+      "filename": "vae_latent_decoder.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          20
+        ]
+      },
+      "slug": "vae_latent_decoder",
+      "title": "VAE latent decoder stem"
+    },
+    {
+      "buggy_class": "RecommenderDenseTowerBug",
+      "buggy_source": "import torch.nn as nn\n\nclass RecommenderDenseTowerBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(14, 28),\n            nn.ReLU(),\n            nn.Linear(21, 1),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 21 features, but the previous layer produces 28.",
+      "clean_class": "RecommenderDenseTowerClean",
+      "clean_source": "import torch.nn as nn\n\nclass RecommenderDenseTowerClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(14, 28),\n            nn.ReLU(),\n            nn.Linear(28, 1),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify recommender_dense_tower.py -s x=batch,14",
+      "family": "recommender",
+      "filename": "recommender_dense_tower.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          14
+        ]
+      },
+      "slug": "recommender_dense_tower",
+      "title": "Recommender dense tower"
+    },
+    {
+      "buggy_class": "SpeechCtcProjectionBug",
+      "buggy_source": "import torch.nn as nn\n\nclass SpeechCtcProjectionBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(80, 160),\n            nn.ReLU(),\n            nn.Linear(128, 29),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 128 features, but the previous layer produces 160.",
+      "clean_class": "SpeechCtcProjectionClean",
+      "clean_source": "import torch.nn as nn\n\nclass SpeechCtcProjectionClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(80, 160),\n            nn.ReLU(),\n            nn.Linear(160, 29),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify speech_ctc_projection.py -s x=batch,80",
+      "family": "speech",
+      "filename": "speech_ctc_projection.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          80
+        ]
+      },
+      "slug": "speech_ctc_projection",
+      "title": "Speech CTC projection"
+    },
+    {
+      "buggy_class": "RlPolicyHeadBug",
+      "buggy_source": "import torch.nn as nn\n\nclass RlPolicyHeadBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(17, 34),\n            nn.ReLU(),\n            nn.Linear(24, 6),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 24 features, but the previous layer produces 34.",
+      "clean_class": "RlPolicyHeadClean",
+      "clean_source": "import torch.nn as nn\n\nclass RlPolicyHeadClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(17, 34),\n            nn.ReLU(),\n            nn.Linear(34, 6),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify rl_policy_head.py -s x=batch,17",
+      "family": "reinforcement",
+      "filename": "rl_policy_head.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          17
+        ]
+      },
+      "slug": "rl_policy_head",
+      "title": "RL policy head"
+    },
+    {
+      "buggy_class": "QValueEstimatorBug",
+      "buggy_source": "import torch.nn as nn\n\nclass QValueEstimatorBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(22, 44),\n            nn.ReLU(),\n            nn.Linear(33, 8),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 33 features, but the previous layer produces 44.",
+      "clean_class": "QValueEstimatorClean",
+      "clean_source": "import torch.nn as nn\n\nclass QValueEstimatorClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(22, 44),\n            nn.ReLU(),\n            nn.Linear(44, 8),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify q_value_estimator.py -s x=batch,22",
+      "family": "reinforcement",
+      "filename": "q_value_estimator.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          22
+        ]
+      },
+      "slug": "q_value_estimator",
+      "title": "Q-value estimator"
+    },
+    {
+      "buggy_class": "MetricLearningEmbedderBug",
+      "buggy_source": "import torch.nn as nn\n\nclass MetricLearningEmbedderBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(48, 96),\n            nn.ReLU(),\n            nn.Linear(72, 16),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 72 features, but the previous layer produces 96.",
+      "clean_class": "MetricLearningEmbedderClean",
+      "clean_source": "import torch.nn as nn\n\nclass MetricLearningEmbedderClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(48, 96),\n            nn.ReLU(),\n            nn.Linear(96, 16),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify metric_learning_embedder.py -s x=batch,48",
+      "family": "retrieval",
+      "filename": "metric_learning_embedder.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          48
+        ]
+      },
+      "slug": "metric_learning_embedder",
+      "title": "Metric-learning embedder"
+    },
+    {
+      "buggy_class": "SiameseProjectionHeadBug",
+      "buggy_source": "import torch.nn as nn\n\nclass SiameseProjectionHeadBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(36, 72),\n            nn.ReLU(),\n            nn.Linear(54, 18),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 54 features, but the previous layer produces 72.",
+      "clean_class": "SiameseProjectionHeadClean",
+      "clean_source": "import torch.nn as nn\n\nclass SiameseProjectionHeadClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(36, 72),\n            nn.ReLU(),\n            nn.Linear(72, 18),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify siamese_projection_head.py -s x=batch,36",
+      "family": "retrieval",
+      "filename": "siamese_projection_head.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          36
+        ]
+      },
+      "slug": "siamese_projection_head",
+      "title": "Siamese projection head"
+    },
+    {
+      "buggy_class": "ContrastiveTextHeadBug",
+      "buggy_source": "import torch.nn as nn\n\nclass ContrastiveTextHeadBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(128, 256),\n            nn.ReLU(),\n            nn.Linear(192, 64),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 192 features, but the previous layer produces 256.",
+      "clean_class": "ContrastiveTextHeadClean",
+      "clean_source": "import torch.nn as nn\n\nclass ContrastiveTextHeadClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(128, 256),\n            nn.ReLU(),\n            nn.Linear(256, 64),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify contrastive_text_head.py -s x=batch,128",
+      "family": "multimodal",
+      "filename": "contrastive_text_head.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          128
+        ]
+      },
+      "slug": "contrastive_text_head",
+      "title": "Contrastive text head"
+    },
+    {
+      "buggy_class": "ImageCaptionBridgeBug",
+      "buggy_source": "import torch.nn as nn\n\nclass ImageCaptionBridgeBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(256, 128),\n            nn.ReLU(),\n            nn.Linear(96, 512),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 96 features, but the previous layer produces 128.",
+      "clean_class": "ImageCaptionBridgeClean",
+      "clean_source": "import torch.nn as nn\n\nclass ImageCaptionBridgeClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(256, 128),\n            nn.ReLU(),\n            nn.Linear(128, 512),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify image_caption_bridge.py -s x=batch,256",
+      "family": "multimodal",
+      "filename": "image_caption_bridge.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          256
+        ]
+      },
+      "slug": "image_caption_bridge",
+      "title": "Image-caption bridge"
+    },
+    {
+      "buggy_class": "TabnetDecisionHeadBug",
+      "buggy_source": "import torch.nn as nn\n\nclass TabnetDecisionHeadBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(30, 60),\n            nn.ReLU(),\n            nn.Linear(45, 2),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 45 features, but the previous layer produces 60.",
+      "clean_class": "TabnetDecisionHeadClean",
+      "clean_source": "import torch.nn as nn\n\nclass TabnetDecisionHeadClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(30, 60),\n            nn.ReLU(),\n            nn.Linear(60, 2),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify tabnet_decision_head.py -s x=batch,30",
+      "family": "tabular",
+      "filename": "tabnet_decision_head.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          30
+        ]
+      },
+      "slug": "tabnet_decision_head",
+      "title": "TabNet decision head"
+    },
+    {
+      "buggy_class": "GraphNodeClassifierBug",
+      "buggy_source": "import torch.nn as nn\n\nclass GraphNodeClassifierBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(42, 84),\n            nn.ReLU(),\n            nn.Linear(63, 7),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 63 features, but the previous layer produces 84.",
+      "clean_class": "GraphNodeClassifierClean",
+      "clean_source": "import torch.nn as nn\n\nclass GraphNodeClassifierClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(42, 84),\n            nn.ReLU(),\n            nn.Linear(84, 7),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify graph_node_classifier.py -s x=batch,42",
+      "family": "graph",
+      "filename": "graph_node_classifier.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          42
+        ]
+      },
+      "slug": "graph_node_classifier",
+      "title": "Graph node classifier"
+    },
+    {
+      "buggy_class": "TimeSeriesForecasterBug",
+      "buggy_source": "import torch.nn as nn\n\nclass TimeSeriesForecasterBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(24, 48),\n            nn.ReLU(),\n            nn.Linear(36, 12),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 36 features, but the previous layer produces 48.",
+      "clean_class": "TimeSeriesForecasterClean",
+      "clean_source": "import torch.nn as nn\n\nclass TimeSeriesForecasterClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(24, 48),\n            nn.ReLU(),\n            nn.Linear(48, 12),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify time_series_forecaster.py -s x=batch,24",
+      "family": "forecasting",
+      "filename": "time_series_forecaster.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          24
+        ]
+      },
+      "slug": "time_series_forecaster",
+      "title": "Time-series forecaster"
+    },
+    {
+      "buggy_class": "AnomalyDetectorHeadBug",
+      "buggy_source": "import torch.nn as nn\n\nclass AnomalyDetectorHeadBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(18, 36),\n            nn.ReLU(),\n            nn.Linear(27, 1),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 27 features, but the previous layer produces 36.",
+      "clean_class": "AnomalyDetectorHeadClean",
+      "clean_source": "import torch.nn as nn\n\nclass AnomalyDetectorHeadClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(18, 36),\n            nn.ReLU(),\n            nn.Linear(36, 1),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify anomaly_detector_head.py -s x=batch,18",
+      "family": "monitoring",
+      "filename": "anomaly_detector_head.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          18
+        ]
+      },
+      "slug": "anomaly_detector_head",
+      "title": "Anomaly detector head"
+    },
+    {
+      "buggy_class": "AutofixRegressionHeadBug",
+      "buggy_source": "import torch.nn as nn\n\nclass AutofixRegressionHeadBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(11, 22),\n            nn.ReLU(),\n            nn.Linear(17, 3),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 17 features, but the previous layer produces 22.",
+      "clean_class": "AutofixRegressionHeadClean",
+      "clean_source": "import torch.nn as nn\n\nclass AutofixRegressionHeadClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(11, 22),\n            nn.ReLU(),\n            nn.Linear(22, 3),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify autofix_regression_head.py -s x=batch,11",
+      "family": "tabular",
+      "filename": "autofix_regression_head.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          11
+        ]
+      },
+      "slug": "autofix_regression_head",
+      "title": "Regression head"
+    },
+    {
+      "buggy_class": "AdapterBottleneckBug",
+      "buggy_source": "import torch.nn as nn\n\nclass AdapterBottleneckBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(40, 10),\n            nn.ReLU(),\n            nn.Linear(12, 40),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 12 features, but the previous layer produces 10.",
+      "clean_class": "AdapterBottleneckClean",
+      "clean_source": "import torch.nn as nn\n\nclass AdapterBottleneckClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(40, 10),\n            nn.ReLU(),\n            nn.Linear(10, 40),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify adapter_bottleneck.py -s x=batch,40",
+      "family": "fine-tuning",
+      "filename": "adapter_bottleneck.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          40
+        ]
+      },
+      "slug": "adapter_bottleneck",
+      "title": "Adapter bottleneck"
+    },
+    {
+      "buggy_class": "LoraMergeProbeBug",
+      "buggy_source": "import torch.nn as nn\n\nclass LoraMergeProbeBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(64, 16),\n            nn.ReLU(),\n            nn.Linear(20, 64),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 20 features, but the previous layer produces 16.",
+      "clean_class": "LoraMergeProbeClean",
+      "clean_source": "import torch.nn as nn\n\nclass LoraMergeProbeClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(64, 16),\n            nn.ReLU(),\n            nn.Linear(16, 64),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify lora_merge_probe.py -s x=batch,64",
+      "family": "fine-tuning",
+      "filename": "lora_merge_probe.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          64
+        ]
+      },
+      "slug": "lora_merge_probe",
+      "title": "LoRA merge probe"
+    },
+    {
+      "buggy_class": "OptimizerResumeProbeBug",
+      "buggy_source": "import torch.nn as nn\n\nclass OptimizerResumeProbeBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(9, 18),\n            nn.ReLU(),\n            nn.Linear(13, 9),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 13 features, but the previous layer produces 18.",
+      "clean_class": "OptimizerResumeProbeClean",
+      "clean_source": "import torch.nn as nn\n\nclass OptimizerResumeProbeClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(9, 18),\n            nn.ReLU(),\n            nn.Linear(18, 9),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify optimizer_resume_probe.py -s x=batch,9",
+      "family": "training",
+      "filename": "optimizer_resume_probe.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          9
+        ]
+      },
+      "slug": "optimizer_resume_probe",
+      "title": "Optimizer resume probe"
+    },
+    {
+      "buggy_class": "ServingSchemaHeadBug",
+      "buggy_source": "import torch.nn as nn\n\nclass ServingSchemaHeadBug(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(15, 30),\n            nn.ReLU(),\n            nn.Linear(20, 4),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "caught_bug": "Second Linear expects 20 features, but the previous layer produces 30.",
+      "clean_class": "ServingSchemaHeadClean",
+      "clean_source": "import torch.nn as nn\n\nclass ServingSchemaHeadClean(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(15, 30),\n            nn.ReLU(),\n            nn.Linear(30, 4),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n",
+      "copy_config": "tensorguard verify serving_schema_head.py -s x=batch,15",
+      "family": "serving",
+      "filename": "serving_schema_head.py",
+      "input_shapes": {
+        "x": [
+          "batch",
+          15
+        ]
+      },
+      "slug": "serving_schema_head",
+      "title": "Serving schema head"
+    }
+  ],
+  "families": [
+    "attention",
+    "diffusion",
+    "fine-tuning",
+    "forecasting",
+    "generative",
+    "graph",
+    "monitoring",
+    "multimodal",
+    "nlp",
+    "recommender",
+    "reinforcement",
+    "retrieval",
+    "serving",
+    "speech",
+    "tabular",
+    "training",
+    "vision"
+  ],
+  "schema": "tensorguard.model_gallery.v1"
+}
