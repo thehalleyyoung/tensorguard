@@ -1,0 +1,1 @@
+from tensorguard import verify_architecture as tensorguard_verify_architecture

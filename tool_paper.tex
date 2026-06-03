@@ -138,6 +138,13 @@ soundness-contract fingerprints.  CI can authenticate those artifacts and replay
 the embedded proof DAG with either the public replay helper or a standalone
 standard-library checker, without re-running Z3.
 
+Adoption is deliberately copy-pasteable.  The \texttt{tensorguard
+adoption-recipes} command emits tested one-line setup commands for GitHub
+Actions, pre-commit, pytest, nox, tox, Makefile, VS Code, JetBrains, Neovim, and
+Jupyter workflows.  Each recipe is pinned to a committed example repository and
+to the actual integration files it configures, so the install surface is tested
+against real code rather than documented from memory.
+
 \subsection{Frontends}
 
 The source frontend is deliberately useful on unannotated Python.  It recognizes

@@ -340,6 +340,7 @@ tensorguard verify FILE [options]
 |---------|-------------|
 | `tensorguard ci-check [PATHS...] --sarif-output out.sarif` | CI mode with SARIF output |
 | `tensorguard watch [PATHS...]` | Watch and re-verify on changes |
+| `tensorguard adoption-recipes` | Print one-line setup commands for CI, pre-commit, pytest, nox/tox, Makefiles, editors, and Jupyter |
 | `tensorguard playground --output tensorguard_playground` | Generate a self-contained local playground: editable examples, precomputed TensorGuard verdicts, no upload/import/execution |
 | `tensorguard version` | Show version info |
 

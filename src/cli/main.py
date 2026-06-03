@@ -3627,6 +3627,58 @@ class PlaygroundCommand:
         return 0
 
 
+# ── AdoptionRecipesCommand ─────────────────────────────────────────────────
+
+
+class AdoptionRecipesCommand:
+    """Print one-line setup recipes for TensorGuard integrations."""
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "targets",
+            nargs="*",
+            help=(
+                "Recipe target(s): github-actions, pre-commit, pytest, nox, tox, "
+                "makefile, vscode, jetbrains, neovim, jupyter. Omit for all."
+            ),
+        )
+        parser.add_argument("--json", action="store_true", dest="as_json")
+        parser.add_argument(
+            "--check",
+            action="store_true",
+            help="Validate that every advertised recipe is backed by repo files.",
+        )
+
+    def execute(self, args: argparse.Namespace) -> int:
+        from src.setup_recipes import (
+            recipe_for,
+            recipes,
+            render_json,
+            render_text,
+            validate_recipes,
+        )
+
+        if getattr(args, "check", False):
+            repo = pathlib.Path(__file__).resolve().parents[2]
+            errors = validate_recipes(repo)
+            if errors:
+                sys.stderr.write("\n".join(errors) + "\n")
+                return 1
+
+        targets = list(getattr(args, "targets", []) or [])
+        try:
+            selected = [recipe_for(t) for t in targets] if targets else recipes()
+        except KeyError as exc:
+            sys.stderr.write(str(exc) + "\n")
+            return 2
+
+        if getattr(args, "as_json", False):
+            sys.stdout.write(render_json(selected))
+        else:
+            sys.stdout.write(render_text(selected))
+        return 0
+
+
 # ---------------------------------------------------------------------------
 # ReftypeCliApp — main application
 # ---------------------------------------------------------------------------
@@ -3650,6 +3702,7 @@ class ReftypeCliApp:
         "config": lambda: ConfigCommand(),
         "operator-confidence": lambda: OperatorConfidenceCommand(),
         "playground": lambda: PlaygroundCommand(),
+        "adoption-recipes": lambda: AdoptionRecipesCommand(),
     }
 
     def __init__(self) -> None:
@@ -3707,6 +3760,7 @@ class ReftypeCliApp:
             "config": "Show or edit configuration",
             "operator-confidence": "Show per-operator confidence tags (sound/complete/heuristic)",
             "playground": "Generate a no-upload local static TensorGuard playground",
+            "adoption-recipes": "Print one-line setup recipes for CI, hooks, editors, and notebooks",
         }
         return helps.get(name, "")
 

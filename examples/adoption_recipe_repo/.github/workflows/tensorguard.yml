@@ -1,0 +1,11 @@
+name: TensorGuard
+on: [pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: thehalleyyoung/tensorguard@v0.1.0
+        with:
+          paths: .
+          soundness-mode: sound
