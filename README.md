@@ -954,7 +954,11 @@ once and checks the registration: zero false positives on clean blind modules,
 recall above the registered floor, and an overfitting gap within the registered
 bound. On the blind split TensorGuard catches all one hundred thirty-eight
 runtime-failing cases with zero false positives on the forty-eight clean modules
-and a zero overfitting gap in both modes. See
+and a zero overfitting gap in both modes. The broader evaluation protocol is now
+hash-registered in
+[`reproducibility/evaluation_protocol.md`](reproducibility/evaluation_protocol.md),
+freezing split roles, tuning locks, metric formulas, and analysis scripts before
+downstream scoring. See
 [`reproducibility/blind_split_eval.md`](reproducibility/blind_split_eval.md) and
 `tests/test_blind_split.py`.
 

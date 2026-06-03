@@ -158,6 +158,39 @@ def _x_blind():
     return headline, metrics
 
 
+def _x_protocol():
+    d = _load("evaluation_protocol.json")
+    ro = d["reproduction_order"]
+    headline = (
+        "pre-specified protocol freezes splits, tuning rules, metric formulas, "
+        f"and {len(d['analysis_scripts'])} analysis-script hashes"
+    )
+    metrics = [
+        {"label": "protocol version", "value": str(d["protocol_version"])},
+        {
+            "label": "registered splits",
+            "value": str(len(d["splits"])),
+        },
+        {
+            "label": "dev/blind disjoint",
+            "value": str(d["split_disjointness"]["development_vs_blind_disjoint"]),
+        },
+        {
+            "label": "blind hash matches registration",
+            "value": str(d["blind_preregistration"]["hash_matches_document"]),
+        },
+        {
+            "label": "all scripts present",
+            "value": str(d["all_analysis_scripts_present"]),
+        },
+        {
+            "label": "protocol precedes governed scoring",
+            "value": str(ro["protocol_precedes_governed_scoring"]),
+        },
+    ]
+    return headline, metrics
+
+
 def _x_time_to_detect():
     d = _load("time_to_detect.json")
     s = d["static"]
@@ -285,6 +318,13 @@ REGISTRY = [
         "Methodology",
         _x_blind,
         "blind_split_eval.json",
+    ),
+    (
+        "evaluation_protocol",
+        "Pre-specified evaluation protocol",
+        "Methodology",
+        _x_protocol,
+        "evaluation_protocol.json",
     ),
     (
         "domain_ablation",

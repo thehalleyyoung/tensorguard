@@ -545,9 +545,26 @@ dispatcher.  Baseline comparison scripts evaluate PyTea and runtime-tool
 alternatives.  Dashboards and JSON artifacts track coverage, precision/recall,
 latency, ablations, false positives, and statistical rigor.
 
+A new protocol registry, \texttt{reproducibility/evaluation\_protocol.py},
+turns the methodology itself into a checkable artifact.  It does not score
+\tg{}; it hashes the development corpus, primary held-out blind split, external
+real benchmark, and every governed analysis script; proves the dev/blind case
+IDs are disjoint; freezes the no-blind-tuning and negative-result policies; and
+records the exact formulas for recall, specificity, false-positive rate,
+precision, abstention, Wilson intervals, paired McNemar tests, effect sizes,
+power, and overfitting gap.  The one-command reproduction pipeline regenerates
+this protocol before the downstream scoring scripts it governs, while the paper
+evidence index and dashboard expose the protocol hash alongside the results.
+
 \begin{longtable}{|p{0.25\linewidth}|p{0.68\linewidth}|}
 \hline
 \textbf{Evidence family} & \textbf{Repository artifact and purpose} \\
+\hline
+Evaluation protocol &
+\texttt{reproducibility/evaluation\_protocol.py},
+\texttt{tests/test\_evaluation\_protocol.py}.  Pre-specified split registry,
+tuning freeze, metric definitions, script hashes, and reproduction-order guard
+before governed scoring artifacts. \\
 \hline
 Ground-truth corpus &
 \texttt{real\_benchmarks/}, \texttt{tests/test\_real\_benchmarks.py}.  Frozen
@@ -871,7 +888,10 @@ audits, benchmark deltas, scaling curves, CEGAR measurements, and paper evidence
 indices.  Tests pin committed JSON artifacts against freshly generated outputs.
 The benchmark corpus has content hashes, datasheets, citation metadata, and
 loader checks; the mined-bug expansion carries a deterministic corpus hash plus
-explicit no-third-party-code redistribution metadata.  The operator confidence table and proof-footprint manifest are
+explicit no-third-party-code redistribution metadata.  The evaluation protocol
+is regenerated as a first-class deterministic artifact, so split roles, tuning
+locks, metric formulas, and scoring-script hashes drift only through reviewed
+source changes.  The operator confidence table and proof-footprint manifest are
 generated from one source of truth and pinned against committed JSON: the
 confidence table is mechanically projected from proof-footprint rows.  The dashboard is
 regenerated from committed results.  Proof-carrying certificates are replayed
