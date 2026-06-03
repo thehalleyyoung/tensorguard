@@ -43,7 +43,8 @@ runtime errors in ML codebases before any code runs.
   `MSELoss`, `BCEWithLogitsLoss`, `KLDivLoss`), and
   `torch.sparse` COO/CSR/CSC/BSR/BSC layout + blocksize invariants, sparse-dense
   `mm`/`addmm`, CSR `sampled_addmm`, sparse softmax/coalesce, and layout
-  conversions are verified by shape-only models that are **differentially checked** against real
+  conversions, quantization placement, and mixed-precision/autocast dtype gates
+  are verified by shape-only models that are **differentially checked** against real
   `einops` / `torch`; non-divisible patch embeds, head-dim-mismatched
   attention, unusable probabilistic batch/event contracts, invalid
   named-axis refinements/reorderings, unsupported complex FFT dtypes, and
@@ -61,6 +62,7 @@ runtime errors in ML codebases before any code runs.
   `verify_sparse_mm`, `verify_sparse_addmm`, `verify_sparse_sampled_addmm`,
   `verify_sparse_softmax`, `verify_sparse_coalesce`, `verify_sparse_to_dense`,
   `verify_sparse_layout_conversion`,
+  `verify_mixed_precision`, `verify_mixed_precision_fx`,
   `verify_grid_sample`, `verify_affine_grid`,
   `verify_torchvision_v2_transform`,
   `verify_multihead_attention`)

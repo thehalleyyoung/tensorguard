@@ -219,8 +219,9 @@ PIL-only abstention), multi-head attention, scaled dot-product
 attention, training loss contracts for \texttt{CrossEntropyLoss},
 \texttt{NLLLoss}, \texttt{MSELoss}, \texttt{BCEWithLogitsLoss}, and
 \texttt{KLDivLoss}, exact RNN/LSTM/GRU output and returned-state contracts,
-LoRA adapter compatibility, training-loop checks, quantization/export safety, distributed
-sharding, tensor parallel attention variants, and deployment schemas.
+LoRA adapter compatibility, training-loop checks, quantization/export safety,
+mixed-precision/autocast dtype-divergence gates, distributed sharding, tensor
+parallel attention variants, and deployment schemas.
 
 Recent stack-family work follows the same standard.  \texttt{torch.stack},
 \texttt{hstack}, \texttt{vstack}, \texttt{dstack},
@@ -572,7 +573,7 @@ sparse-dense kernels, named
 tensor alignment failures, incompatible loss targets, incompatible distribution
 batch/event shapes, export
 contracts, quantization observer calibration/qscheme and quant/dequant placement,
-and distributed sharding mistakes.
+mixed-precision/autocast dtype drift, and distributed sharding mistakes.
 
 The conformance tests are especially important.  A static rule is only useful
 if it matches the runtime library.  The repository therefore includes tests
@@ -692,9 +693,10 @@ contracts. \\
 High-value library contracts beyond ordinary dense layers, including image
 preprocessing transforms whose tensor shapes feed the model. \\
 \hline
-\texttt{src/quant\_export\_checks.py}, \texttt{src/distributed\_verification.py},
-\texttt{src/lora\_verification.py} &
-Deployment, distributed training, and adapter-compatibility gates. \\
+\texttt{src/quant\_export\_checks.py}, \texttt{src/mixed\_precision\_verify.py},
+\texttt{src/distributed\_verification.py}, \texttt{src/lora\_verification.py} &
+Deployment, mixed-precision, distributed training, and adapter-compatibility
+gates. \\
 \hline
 \texttt{src/reporters.py}, \texttt{src/sarif\_codescan.py},
 \texttt{src/github\_action.py} &
@@ -804,8 +806,9 @@ Propagation through tensor creation, module calls, \texttt{to}/\texttt{cuda}/
 \texttt{cpu}, buffers, and cross-device operations. \\
 \hline
 Dtype reasoning &
-Promotion/cast checks, autocast boundaries, parameter/input dtype matching,
-quantization/export dtype gates, and dtype-related runtime-error prevention. \\
+Promotion/cast checks, explicit autocast backend/dtype contexts, AMP allowlists,
+GradScaler requirements, parameter/input dtype matching, quantization/export
+dtype gates, and dtype-related runtime-error prevention. \\
 \hline
 Phase reasoning &
 Train/eval tagging and phase-sensitive diagnostics for modules such as
@@ -946,8 +949,10 @@ shape flow, and runtime-error parity for invalid modes/options. \\
 \hline
 \texttt{tests/test\_dtype\_precise.py},
 \texttt{tests/test\_dtype\_promote\_chain.py},
-\texttt{tests/test\_bool\_dtype\_soundness.py} &
-Dtype propagation, promotion, and boolean/integer safety. \\
+\texttt{tests/test\_bool\_dtype\_soundness.py},
+\texttt{tests/test\_mixed\_precision\_verify.py} &
+Dtype propagation, promotion, boolean/integer safety, and live PyTorch
+CPU-autocast parity for mixed-precision policy gates. \\
 \hline
 \texttt{tests/test\_loss\_verify.py} &
 Loss-function conformance for target shape, reduction, dtype, class weights,
@@ -1187,9 +1192,9 @@ vmap verification tests plus \texttt{tests/test\_func\_autodiff\_verify.py}
 live dispatcher checks. \\
 \hline
 Export gates &
-Export, ONNX, AOTInductor, and quantization paths check static preconditions
-before invoking downstream compilers. &
-ONNX, AOT, quantization, and guarded compile/export tests. \\
+Export, ONNX, AOTInductor, quantization, and mixed-precision paths check static
+preconditions before invoking downstream compilers. &
+ONNX, AOT, quantization, mixed-precision, and guarded compile/export tests. \\
 \hline
 Distributed and adapter gates &
 Sharding, tensor parallelism, optimizer state, checkpoints, and LoRA adapters
@@ -1362,11 +1367,11 @@ or native annotations.
 Deployment introduces contracts that ordinary training does not: ONNX opset
 availability, AOTInductor input layouts, quantization observer calibration,
 activation qscheme placement, eager/FX quant-dequant boundaries,
-mixed-precision dtype boundaries, TorchServe or FastAPI request schemas, GGUF
-or llama.cpp checkpoint shapes, CUDA graph capture assumptions, and
-distributed shard boundaries.  \tg{}'s deployment modules check these contracts
-before the downstream system emits a harder-to-debug compiler, exporter, or
-serving error.
+mixed-precision dtype boundaries, AMP backend allowlists, fp16 GradScaler
+requirements, TorchServe or FastAPI request schemas, GGUF or llama.cpp
+checkpoint shapes, CUDA graph capture assumptions, and distributed shard
+boundaries.  \tg{}'s deployment modules check these contracts before the
+downstream system emits a harder-to-debug compiler, exporter, or serving error.
 
 \subsection{Research artifact review}
 

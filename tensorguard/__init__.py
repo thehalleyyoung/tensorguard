@@ -85,6 +85,13 @@ from src.quantization_verify import (  # noqa: F401  (re-export)
     verify_quantization_eager,
     verify_quantization_fx,
 )
+from src.mixed_precision_verify import (  # noqa: F401  (re-export)
+    AutocastTraceEntry,
+    MixedPrecisionIssue,
+    MixedPrecisionVerdict,
+    verify_mixed_precision,
+    verify_mixed_precision_fx,
+)
 from src.sparse_verify import (  # noqa: F401  (re-export)
     verify_sparse_addmm,
     verify_sparse_bsc,
@@ -171,6 +178,11 @@ __all__ = [
     "verify_quantization",
     "verify_quantization_eager",
     "verify_quantization_fx",
+    "AutocastTraceEntry",
+    "MixedPrecisionIssue",
+    "MixedPrecisionVerdict",
+    "verify_mixed_precision",
+    "verify_mixed_precision_fx",
     "verify_sparse_coo",
     "verify_sparse_csr",
     "verify_sparse_csc",

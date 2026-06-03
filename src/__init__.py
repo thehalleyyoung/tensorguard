@@ -50,6 +50,13 @@ from .quantization_verify import (
     verify_quantization_eager,
     verify_quantization_fx,
 )
+from .mixed_precision_verify import (
+    AutocastTraceEntry,
+    MixedPrecisionIssue,
+    MixedPrecisionVerdict,
+    verify_mixed_precision,
+    verify_mixed_precision_fx,
+)
 from .sparse_verify import (
     verify_sparse_addmm,
     verify_sparse_bsc,
@@ -118,6 +125,11 @@ __all__ = [
     "verify_quantization",
     "verify_quantization_eager",
     "verify_quantization_fx",
+    "AutocastTraceEntry",
+    "MixedPrecisionIssue",
+    "MixedPrecisionVerdict",
+    "verify_mixed_precision",
+    "verify_mixed_precision_fx",
     "verify_sparse_coo",
     "verify_sparse_csr",
     "verify_sparse_csc",
