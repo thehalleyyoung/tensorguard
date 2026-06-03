@@ -443,3 +443,53 @@ import TensorGuard
 #print axioms TensorGuard.NamedTensor.align_anon_target_insert_example
 #print axioms TensorGuard.NamedTensor.align_missing_name_rejected
 #print axioms TensorGuard.NamedTensor.align_duplicate_names_rejected
+
+-- grid_sample / affine_grid shape rules (Step 233): rank-4 2-D and rank-5
+-- 3-D sampler variants are distinguished, grid coordinate sizes select the
+-- variant, input spatial axes / affine output sizes must be positive, empty
+-- grid_sample output grids remain legal, and affine theta matrices are tied to
+-- the requested sampler dimension.
+#print axioms TensorGuard.GridSample.gridSample2DValid_iff
+#print axioms TensorGuard.GridSample.gridSample3DValid_iff
+#print axioms TensorGuard.GridSample.gridSample2D_valid_link
+#print axioms TensorGuard.GridSample.gridSample3D_valid_link
+#print axioms TensorGuard.GridSample.gridSample2D_invalid_link
+#print axioms TensorGuard.GridSample.gridSample3D_invalid_link
+#print axioms TensorGuard.GridSample.gridSample2D_output_shape
+#print axioms TensorGuard.GridSample.gridSample3D_output_shape
+#print axioms TensorGuard.GridSample.gridSample2D_output_rank
+#print axioms TensorGuard.GridSample.gridSample3D_output_rank
+#print axioms TensorGuard.GridSample.gridSample_wrong_input_rank_rejected
+#print axioms TensorGuard.GridSample.gridSample_grid_rank_mismatch_rejected
+#print axioms TensorGuard.GridSample.gridSample2D_coord_dim_flagged
+#print axioms TensorGuard.GridSample.gridSample3D_coord_dim_flagged
+#print axioms TensorGuard.GridSample.gridSample2D_zero_height_flagged
+#print axioms TensorGuard.GridSample.gridSample2D_zero_width_flagged
+#print axioms TensorGuard.GridSample.gridSample3D_zero_depth_flagged
+#print axioms TensorGuard.GridSample.gridSample3D_zero_height_flagged
+#print axioms TensorGuard.GridSample.gridSample3D_zero_width_flagged
+#print axioms TensorGuard.GridSample.gridSample2D_batch_mismatch_flagged
+#print axioms TensorGuard.GridSample.gridSample_accepts_empty_output_grid
+#print axioms TensorGuard.GridSample.affineGrid2DValid_iff
+#print axioms TensorGuard.GridSample.affineGrid3DValid_iff
+#print axioms TensorGuard.GridSample.affineGrid2D_valid_link
+#print axioms TensorGuard.GridSample.affineGrid3D_valid_link
+#print axioms TensorGuard.GridSample.affineGrid2D_invalid_link
+#print axioms TensorGuard.GridSample.affineGrid3D_invalid_link
+#print axioms TensorGuard.GridSample.affineGrid2D_output_shape
+#print axioms TensorGuard.GridSample.affineGrid3D_output_shape
+#print axioms TensorGuard.GridSample.affineGrid2D_output_rank
+#print axioms TensorGuard.GridSample.affineGrid3D_output_rank
+#print axioms TensorGuard.GridSample.affineGrid_size_rank_rejected
+#print axioms TensorGuard.GridSample.affineGrid_theta_rank_rejected
+#print axioms TensorGuard.GridSample.affineGrid2D_theta_rows_flagged
+#print axioms TensorGuard.GridSample.affineGrid2D_theta_cols_flagged
+#print axioms TensorGuard.GridSample.affineGrid3D_theta_rows_flagged
+#print axioms TensorGuard.GridSample.affineGrid3D_theta_cols_flagged
+#print axioms TensorGuard.GridSample.affineGrid2D_size_batch_positive_required
+#print axioms TensorGuard.GridSample.affineGrid2D_size_channel_positive_required
+#print axioms TensorGuard.GridSample.affineGrid2D_size_height_positive_required
+#print axioms TensorGuard.GridSample.affineGrid2D_size_width_positive_required
+#print axioms TensorGuard.GridSample.affineGrid3D_size_depth_positive_required
+#print axioms TensorGuard.GridSample.affineGrid_theta_batch_positive_required
+#print axioms TensorGuard.GridSample.affineGrid2D_batch_mismatch_flagged

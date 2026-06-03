@@ -39,3 +39,4 @@ import TensorGuard.Einops
 import TensorGuard.SDPA
 import TensorGuard.ChunkSplit
 import TensorGuard.NamedTensor
+import TensorGuard.GridSample

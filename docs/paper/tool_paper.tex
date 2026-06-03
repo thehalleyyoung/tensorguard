@@ -71,7 +71,7 @@ corpus, \tg{} reports TP=8, FP=0, TN=8, FN=0; on 80 clean sound-mode models and
 200 random clean fuzzed modules it reports zero false positives; on 281 genuine
 injected faults it reports perfect recall; and on 2,000 dispatcher-generated
 modules it agrees exactly with eager PyTorch with no abstentions.  The formal
-side includes a Lean 4 library whose 371 public theorems are discovered and
+side includes a Lean 4 library whose 496 public theorems are discovered and
 axiom-audited by tests to depend only on the trusted Lean kernel axioms and not
 on \texttt{sorryAx}, plus parity checks against the Python verifier, Z3, cvc5,
 and the live torch dispatcher.
@@ -132,7 +132,7 @@ rather than as a sequence of roadmap checkboxes.
   and one environment-qualified claim.
   \item \textbf{Machine-checked core obligations.}  Lean modules model the
   central operator rules, reduced products, CEGAR bounds, fragment modes, and
-  SMT encodings; tests discover and axiom-audit all 371 public theorems.
+  SMT encodings; tests discover and axiom-audit all 496 public theorems.
 \end{enumerate}
 
 \section{User-visible capabilities}
@@ -500,7 +500,7 @@ and lemma, generates \texttt{\#print axioms} commands for each, elaborates them
 through the Lean kernel, and asserts that no declaration depends on
 \texttt{sorryAx} and that every reported axiom is one of
 \texttt{propext}, \texttt{Classical.choice}, or \texttt{Quot.sound}.  The
-current discovered count is 371 public theorems.
+current discovered count is 496 public theorems.
 
 The proof corpus is paired with Python tests rather than left disconnected.
 Conformance tests map Lean theorem names to randomized property tests of the
@@ -519,7 +519,8 @@ Additional modules cover dtype promotion chains, gradient-flow chains,
 device-placement chains, phase chains, broadcast chains, rank-transfer chains,
 flatten, cat, embedding, reshape \texttt{-1} inference, Linear, Conv1d/Conv2d,
 ConvTranspose1d, pooling, LayerNorm, PixelShuffle, AdaptiveAvgPool2d,
-Unflatten, and BatchNorm.
+Unflatten, BatchNorm, and the 2-D/3-D \texttt{grid\_sample}/\texttt{affine\_grid}
+rank and positive-size contracts.
 
 \subsection{Soundness footprint}
 
@@ -1207,7 +1208,7 @@ TP=8, FP=0, TN=8, FN=0 on frozen real benchmarks &
 \path{evaluation/operator_frequency.json} \\
 21/21 torchvision models traced and lowered by fx &
 \path{evaluation/fx_trace_success.json} \\
-371 public Lean theorems discovered and axiom-audited &
+496 public Lean theorems discovered and axiom-audited &
 \path{tests/test_lean_whole_pipeline_audit.py} \\
 12 verified, one regime-qualified, one environment-qualified numeric claims &
 \path{reproducibility/numeric_claims_audit.json} \\

@@ -123,7 +123,8 @@ runtime errors in ML codebases before any code runs.
   transfers and per-operator shape rules (`nn.Linear`/`Conv`/pooling/`LayerNorm`/
   `BatchNorm`/`PixelShuffle`/flatten/`cat`/`chunk`/`split` partition
   reconstruction/`Embedding`/reshape-`-1`/einops decomposition/SDPA
-  broadcast-mask-GQA/named-axis refine-align uniqueness and singleton insertion),
+  broadcast-mask-GQA/named-axis refine-align uniqueness and singleton
+  insertion/grid-sampler rank and positive-size contracts),
   each
   replayed op-by-op on real tensors and cross-checked against torch *and* the
   verifier's own propagators. Every audited public theorem is
