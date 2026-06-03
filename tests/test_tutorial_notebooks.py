@@ -1,4 +1,4 @@
-"""Step 175 — the tutorial notebooks actually run (Colab-runnable, CI-proven).
+"""Step 175/277 — the tutorial notebooks actually run (Colab-runnable, CI-proven).
 
 Each notebook in ``examples/tutorials/`` is executed end-to-end with nbclient
 against the *real* libraries it targets (torch, onnx, pytorch_lightning).
@@ -27,6 +27,17 @@ TUT_DIR = os.path.normpath(os.path.join(HERE, "..", "examples", "tutorials"))
 _EXTRA_DEP = {
     "03_onnx_export.ipynb": "onnx",
     "04_lightning.ipynb": "pytorch_lightning",
+    "08_quantization.ipynb": "torch.ao.quantization",
+}
+
+_REQUIRED_TRACKS = {
+    "shapes",
+    "attention",
+    "export",
+    "distributed",
+    "quantization",
+    "stubs",
+    "formal_certificates",
 }
 
 
@@ -43,7 +54,33 @@ def test_there_are_tutorial_notebooks():
         "03_onnx_export.ipynb",
         "04_lightning.ipynb",
         "05_ci_precommit.ipynb",
+        "06_attention.ipynb",
+        "07_distributed.ipynb",
+        "08_quantization.ipynb",
+        "09_community_stubs.ipynb",
+        "10_formal_certificates.ipynb",
     } <= names
+
+
+def test_tutorial_tracks_cover_requested_surfaces():
+    import importlib.util
+
+    gen = os.path.join(TUT_DIR, "build_notebooks.py")
+    spec = importlib.util.spec_from_file_location("build_notebooks", gen)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    notebooks = {os.path.basename(path) for path in _notebooks()}
+    assert _REQUIRED_TRACKS <= set(mod.TUTORIAL_TRACKS)
+    for track in _REQUIRED_TRACKS:
+        members = mod.TUTORIAL_TRACKS[track]
+        assert members, f"{track} track has no notebooks"
+        assert set(members) <= notebooks
+        assert any(
+            any(cell.cell_type == "code" and cell.source.strip()
+                for cell in mod.build_notebooks()[name].cells)
+            for name in members
+        ), f"{track} track has no smoke-testable code cells"
 
 
 @pytest.mark.parametrize("nb_path", _notebooks(), ids=lambda p: os.path.basename(p))

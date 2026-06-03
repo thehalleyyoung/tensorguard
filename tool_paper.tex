@@ -148,7 +148,11 @@ extends to a twenty-five-case model gallery: each row pairs a pasteable clean
 \texttt{nn.Module}, a minimally changed buggy variant, the exact
 \texttt{tensorguard verify} input-shape command, and a test that executes the
 clean model under eager PyTorch while proving the buggy source is refuted by the
-verifier.
+verifier.  The tutorial surface is generated the same way: ten Colab-runnable
+notebooks are grouped into seven tracks---shapes, attention, export,
+distributed, quantization, community stubs, and formal certificates---and the
+CI smoke test executes the committed code cells rather than merely checking that
+the notebooks render.
 
 The editor surface is likewise centralized.  A real JSON-RPC language server
 over stdio analyzes unsaved buffers and publishes diagnostics, hover shapes, and
@@ -646,6 +650,13 @@ PR-history survival &
 332 GitHub PR/issue records: every direct or candidate-linked record maps to a
 runtime-signature witness that current \tg{} rejects before execution, with
 category-level scope made explicit and structural CI-cost proxies reported. \\
+\hline
+Tutorial tracks &
+\texttt{examples/tutorials/},
+\texttt{tests/test\_tutorial\_notebooks.py}.  Generator-backed Colab notebooks
+for shapes, attention, export, distributed, quantization, governed stubs, and
+formal certificates; the focused test executes the code cells and checks the
+track manifest so onboarding examples cannot silently drift. \\
 \hline
 Precision/recall &
 \texttt{tests/test\_precision\_recall.py},

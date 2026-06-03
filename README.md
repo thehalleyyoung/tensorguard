@@ -216,8 +216,9 @@ runtime errors in ML codebases before any code runs.
   community stub registry**: declarative manifests (no executable code, with
   mandatory provenance and *executed* conformance cases) turn `UNKNOWN`
   abstentions into precise checks (`community_stubs/`, `src/stub_governance.py`).
-  Five executable **Colab tutorials** (`examples/tutorials/`) and a 25-case
-  copyable **model gallery** (`examples/model_gallery.md`) onboard new users
+  Seven-track executable **Colab tutorials** (`examples/tutorials/`) cover
+  shapes, attention, export, distributed, quantization, stubs, and formal
+  certificates, while a 25-case copyable **model gallery** (`examples/model_gallery.md`) onboards new users
   with paired clean paths, caught bugs, and minimal `tensorguard verify` configs.
 - **Sub-second analysis** — typical models verified in < 1 second
 
