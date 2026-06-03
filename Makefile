@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs soundness-appendix corpus headline audit evaluation-protocol precision-recall stratified-precision-recall head-to-head-step252 stagewise-ablation sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs soundness-appendix corpus headline audit evaluation-protocol precision-recall stratified-precision-recall head-to-head-step252 stagewise-ablation pr-history-survival sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -49,6 +49,7 @@ help:
 	@echo "  deployment-dashboard-gate Gate deployment backend outcomes against the baseline"
 	@echo "  evaluation-protocol Regenerate the pre-specified evaluation protocol registry"
 	@echo "  stagewise-ablation Regenerate Step 253 extraction/domain/reduction/CEGAR/stub/proof ablation"
+	@echo "  pr-history-survival Regenerate Step 254 fix-linked PR-history survival study"
 	@echo "  audit            Run the numeric-claim audit over committed artifacts"
 	@echo "  paper-evidence   Regenerate every table/figure + the single paper-evidence index"
 	@echo "  test             Run the pytest suite"
@@ -91,6 +92,9 @@ head-to-head-step252:
 
 stagewise-ablation:
 	$(PYTHON) reproducibility/stagewise_ablation.py
+
+pr-history-survival:
+	$(PYTHON) reproducibility/pr_history_survival.py
 
 sound-fp:
 	$(PYTHON) evaluation/sound_mode_fp.py

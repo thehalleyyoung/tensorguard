@@ -589,6 +589,13 @@ Provenance-rich bug corpus &
 expansion with license status, runtime signatures, PR/candidate commit-link
 coverage, and legal category-level reproducers checked against real PyTorch. \\
 \hline
+PR-history survival &
+\texttt{reproducibility/pr\_history\_survival.py},
+\texttt{tests/test\_pr\_history\_survival.py}.  Offline fix-linked study over
+332 GitHub PR/issue records: every direct or candidate-linked record maps to a
+runtime-signature witness that current \tg{} rejects before execution, with
+category-level scope made explicit and structural CI-cost proxies reported. \\
+\hline
 Precision/recall &
 \texttt{tests/test\_precision\_recall.py},
 \texttt{tests/test\_hard\_recall.py}, \texttt{experiments/}.  Tracks caught
@@ -712,6 +719,19 @@ contract-level diagnostics at depth one without false alarms; a third-party stub
 turns an opaque clean model into a safe analyzable one while still rejecting bad
 input contracts; and strict sound mode accepts the Lean-backed \texttt{torch.relu}
 case while abstaining on heuristic \texttt{torch.unique} with an explicit reason.
+
+The PR-history survival study asks a complementary operational question: if a
+TensorGuard gate had run before a fix-linked GitHub PR merged, would the
+runtime-signature category have been rejected?  Because the provenance corpus
+does not redistribute historical pre-fix source or patches, the answer is
+deliberately scoped to category-level replay: 332 fix-linked issue/PR records
+provide the real GitHub multiplicities, while the eight runtime-signature
+families are replayed through trusted source witnesses and the repo-authored
+minimized PyTorch reproducers.  The result is a fully deterministic before-merge
+survival estimate with zero historical-checkout overclaim: direct PR rows,
+candidate same-repository issue links, device-CUDA-qualified evidence, dtype
+runtime-family caveats, detection depth, and CI cost are all explicit fields in
+\texttt{reproducibility/pr\_history\_survival.json}.
 
 Latency and scalability scripts ensure the verifier remains useful.  Solver
 queries are cached or avoided when a transfer can be decided syntactically.
@@ -1533,6 +1553,13 @@ has a minimized TensorGuard-authored reproducer.  The intent is not to treat
 every mined candidate as a theorem; it is to create a large, auditable pool that
 can be stratified, manually labeled, filtered into blind splits, and reused by
 future tools.
+
+The survival study is the first analysis to consume those fix links directly.
+It reports a category-level answer to ``would this have been caught before
+merge?'' without claiming to replay private or unredistributed source: linked
+GitHub rows count the opportunity, runtime-signature witnesses define the static
+check, live PyTorch reproducers validate the failure family, and structural
+operation counts estimate the CI work avoided by static detection.
 
 \subsection{Stratified precision and recall}
 

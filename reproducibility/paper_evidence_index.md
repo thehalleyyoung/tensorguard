@@ -1,6 +1,6 @@
 # Paper-evidence index (Step 125)
 
-`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **51** evidence items (34 render a table); every generator script is present: **False**.
+`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **52** evidence items (35 render a table); every generator script is present: **False**.
 
 | stem | generator | table? | json | md |
 | --- | --- | --- | --- | --- |
@@ -37,6 +37,7 @@
 | numeric_claims_audit | `(missing)` | False | y | - |
 | operator_confidence_table | `(missing)` | False | y | - |
 | paper_evidence_index | `reproducibility/paper_evidence_index.py` | True | y | y |
+| pr_history_survival | `reproducibility/pr_history_survival.py` | True | y | y |
 | quant_export_safety | `reproducibility/quant_export_safety.py` | True | y | y |
 | real_benchmarks_audit | `(missing)` | False | y | - |
 | real_model_operator_coverage | `evaluation/real_model_operator_coverage.py` | False | y | y |

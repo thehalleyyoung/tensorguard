@@ -1,0 +1,336 @@
+{
+  "category_replay": {
+    "broadcast_mismatch": {
+      "candidate_issue_records": 26,
+      "category_level_caught_records": 43,
+      "category_level_missed_records": 0,
+      "constructed_tensor_count": 2,
+      "direct_pr_records": 17,
+      "dynamic_prefix_ops_before_failure": 0,
+      "eager_reproducer": {
+        "expected_to_raise": true,
+        "observed_error_fragment_present": true,
+        "observed_nonzero_exit": true,
+        "path": "experiments_v5/provenance_bug_corpus/reproducers/broadcast_mismatch.py",
+        "proven_live_on_this_host": true,
+        "status": "proven_live"
+      },
+      "evidence_note": "binary broadcast mismatch, same runtime-signature family as mined records",
+      "fix_linked_records": 43,
+      "static_detect_depth_ops": 0,
+      "static_replay": {
+        "bug_tags": [
+          "SHAPE-INCOMPATIBLE"
+        ],
+        "caught_by_tensorguard": true,
+        "executes_model_code": false,
+        "graph_steps": 2,
+        "input_count": 2,
+        "needs_concrete_input_values": false,
+        "verdict": "UNSAFE"
+      }
+    },
+    "cat_stack_mismatch": {
+      "candidate_issue_records": 3,
+      "category_level_caught_records": 20,
+      "category_level_missed_records": 0,
+      "constructed_tensor_count": 2,
+      "direct_pr_records": 17,
+      "dynamic_prefix_ops_before_failure": 0,
+      "eager_reproducer": {
+        "expected_to_raise": true,
+        "observed_error_fragment_present": true,
+        "observed_nonzero_exit": true,
+        "path": "experiments_v5/provenance_bug_corpus/reproducers/cat_stack_mismatch.py",
+        "proven_live_on_this_host": true,
+        "status": "proven_live"
+      },
+      "evidence_note": "concat non-axis dimension mismatch",
+      "fix_linked_records": 20,
+      "static_detect_depth_ops": 0,
+      "static_replay": {
+        "bug_tags": [
+          "SHAPE-INCOMPATIBLE"
+        ],
+        "caught_by_tensorguard": true,
+        "executes_model_code": false,
+        "graph_steps": 2,
+        "input_count": 2,
+        "needs_concrete_input_values": false,
+        "verdict": "UNSAFE"
+      }
+    },
+    "conv_channel_mismatch": {
+      "candidate_issue_records": 3,
+      "category_level_caught_records": 12,
+      "category_level_missed_records": 0,
+      "constructed_tensor_count": 1,
+      "direct_pr_records": 9,
+      "dynamic_prefix_ops_before_failure": 0,
+      "eager_reproducer": {
+        "expected_to_raise": true,
+        "observed_error_fragment_present": true,
+        "observed_nonzero_exit": true,
+        "path": "experiments_v5/provenance_bug_corpus/reproducers/conv_channel_mismatch.py",
+        "proven_live_on_this_host": true,
+        "status": "proven_live"
+      },
+      "evidence_note": "Conv2d in-channel contract mismatch",
+      "fix_linked_records": 12,
+      "static_detect_depth_ops": 0,
+      "static_replay": {
+        "bug_tags": [
+          "SHAPE-INCOMPATIBLE"
+        ],
+        "caught_by_tensorguard": true,
+        "executes_model_code": false,
+        "graph_steps": 2,
+        "input_count": 1,
+        "needs_concrete_input_values": false,
+        "verdict": "UNSAFE"
+      }
+    },
+    "device_mismatch": {
+      "candidate_issue_records": 5,
+      "category_level_caught_records": 22,
+      "category_level_missed_records": 0,
+      "constructed_tensor_count": 2,
+      "direct_pr_records": 17,
+      "dynamic_prefix_ops_before_failure": 2,
+      "eager_reproducer": {
+        "expected_to_raise": true,
+        "path": "experiments_v5/provenance_bug_corpus/reproducers/device_mismatch.py",
+        "proven_live_on_this_host": false,
+        "status": "cuda_qualified_not_executed_in_cpu_ci"
+      },
+      "evidence_note": "CPU/CUDA tensor factory mismatch; eager replay is CUDA-qualified",
+      "fix_linked_records": 22,
+      "static_detect_depth_ops": 0,
+      "static_replay": {
+        "bug_tags": [
+          "DEVICE-MISMATCH"
+        ],
+        "caught_by_tensorguard": true,
+        "executes_model_code": false,
+        "graph_steps": 4,
+        "input_count": 0,
+        "needs_concrete_input_values": false,
+        "verdict": "UNSAFE"
+      }
+    },
+    "dim_out_of_range": {
+      "candidate_issue_records": 43,
+      "category_level_caught_records": 130,
+      "category_level_missed_records": 0,
+      "constructed_tensor_count": 1,
+      "direct_pr_records": 87,
+      "dynamic_prefix_ops_before_failure": 0,
+      "eager_reproducer": {
+        "expected_to_raise": true,
+        "observed_error_fragment_present": true,
+        "observed_nonzero_exit": true,
+        "path": "experiments_v5/provenance_bug_corpus/reproducers/dim_out_of_range.py",
+        "proven_live_on_this_host": true,
+        "status": "proven_live"
+      },
+      "evidence_note": "rank-2 tensor with out-of-range dim index",
+      "fix_linked_records": 130,
+      "static_detect_depth_ops": 0,
+      "static_replay": {
+        "bug_tags": [
+          "SHAPE-INCOMPATIBLE"
+        ],
+        "caught_by_tensorguard": true,
+        "executes_model_code": false,
+        "graph_steps": 2,
+        "input_count": 1,
+        "needs_concrete_input_values": false,
+        "verdict": "UNSAFE"
+      }
+    },
+    "dtype_device_input_mismatch": {
+      "candidate_issue_records": 0,
+      "category_level_caught_records": 9,
+      "category_level_missed_records": 0,
+      "constructed_tensor_count": 1,
+      "direct_pr_records": 9,
+      "dynamic_prefix_ops_before_failure": 1,
+      "eager_reproducer": {
+        "expected_to_raise": true,
+        "observed_error_fragment_present": true,
+        "observed_nonzero_exit": true,
+        "path": "experiments_v5/provenance_bug_corpus/reproducers/dtype_device_input_mismatch.py",
+        "proven_live_on_this_host": true,
+        "status": "proven_live"
+      },
+      "evidence_note": "non-floating input into a floating-parameter layer; the committed runtime reproducer covers the sibling input/weight dtype mismatch",
+      "fix_linked_records": 9,
+      "static_detect_depth_ops": 0,
+      "static_replay": {
+        "bug_tags": [
+          "DTYPE-ERROR"
+        ],
+        "caught_by_tensorguard": true,
+        "executes_model_code": false,
+        "graph_steps": 3,
+        "input_count": 1,
+        "needs_concrete_input_values": false,
+        "verdict": "UNSAFE"
+      }
+    },
+    "matmul_linear_mismatch": {
+      "candidate_issue_records": 24,
+      "category_level_caught_records": 57,
+      "category_level_missed_records": 0,
+      "constructed_tensor_count": 1,
+      "direct_pr_records": 33,
+      "dynamic_prefix_ops_before_failure": 0,
+      "eager_reproducer": {
+        "expected_to_raise": true,
+        "observed_error_fragment_present": true,
+        "observed_nonzero_exit": true,
+        "path": "experiments_v5/provenance_bug_corpus/reproducers/matmul_linear_mismatch.py",
+        "proven_live_on_this_host": true,
+        "status": "proven_live"
+      },
+      "evidence_note": "Linear/matmul contracted-dimension mismatch",
+      "fix_linked_records": 57,
+      "static_detect_depth_ops": 0,
+      "static_replay": {
+        "bug_tags": [
+          "SHAPE-INCOMPATIBLE"
+        ],
+        "caught_by_tensorguard": true,
+        "executes_model_code": false,
+        "graph_steps": 2,
+        "input_count": 1,
+        "needs_concrete_input_values": false,
+        "verdict": "UNSAFE"
+      }
+    },
+    "view_reshape_total_size": {
+      "candidate_issue_records": 23,
+      "category_level_caught_records": 39,
+      "category_level_missed_records": 0,
+      "constructed_tensor_count": 1,
+      "direct_pr_records": 16,
+      "dynamic_prefix_ops_before_failure": 0,
+      "eager_reproducer": {
+        "expected_to_raise": true,
+        "observed_error_fragment_present": true,
+        "observed_nonzero_exit": true,
+        "path": "experiments_v5/provenance_bug_corpus/reproducers/view_reshape_total_size.py",
+        "proven_live_on_this_host": true,
+        "status": "proven_live"
+      },
+      "evidence_note": "reshape/view total-element-count mismatch",
+      "fix_linked_records": 39,
+      "static_detect_depth_ops": 0,
+      "static_replay": {
+        "bug_tags": [
+          "SHAPE-INCOMPATIBLE"
+        ],
+        "caught_by_tensorguard": true,
+        "executes_model_code": false,
+        "graph_steps": 2,
+        "input_count": 1,
+        "needs_concrete_input_values": false,
+        "verdict": "UNSAFE"
+      }
+    }
+  },
+  "detection_depth_and_ci_cost_proxy": {
+    "comparison": {
+      "concrete_tensor_constructions_avoided_by_static_gate": 417,
+      "static_detects_before_runtime_execution": true,
+      "successful_prefix_ops_saved_by_static_gate": 53
+    },
+    "dynamic_forward_baseline": {
+      "concrete_tensors_constructed": 417,
+      "failing_ops_reached": 332,
+      "forward_invocations": 332,
+      "requires_concrete_inputs": true,
+      "successful_prefix_ops_before_failure": 53
+    },
+    "static": {
+      "analyzer_passes": 332,
+      "concrete_tensors_constructed": 0,
+      "graph_steps_analyzed": 717,
+      "model_executions": 0,
+      "requires_historical_checkout": false
+    },
+    "unit": "structural_proxy_not_wall_clock"
+  },
+  "evidence_scope": {
+    "claim": "For every fix-linked GitHub record, TensorGuard is evaluated on the corresponding runtime-signature category witness, not on the historical repository checkout.",
+    "granularity": "runtime_signature_category_replay",
+    "historical_pre_fix_checkouts_replayed": false,
+    "per_row_counts_are_category_multiplicities": true,
+    "stored_patch": false,
+    "stored_source_blob": false
+  },
+  "fix_linked_breakdown": {
+    "by_category": {
+      "broadcast_mismatch": 43,
+      "cat_stack_mismatch": 20,
+      "conv_channel_mismatch": 12,
+      "device_mismatch": 22,
+      "dim_out_of_range": 130,
+      "dtype_device_input_mismatch": 9,
+      "matmul_linear_mismatch": 57,
+      "view_reshape_total_size": 39
+    },
+    "by_commit_link_status": {
+      "candidate_same_repo_category_pr": 127,
+      "direct_pr_commits_page": 205
+    },
+    "by_github_kind": {
+      "issue": 127,
+      "pull_request": 205
+    },
+    "by_project_family": {
+      "diffusion": 70,
+      "graph_learning": 4,
+      "language_model": 47,
+      "unclassified_public_repo": 203,
+      "vision_detection": 8
+    }
+  },
+  "honesty_notes": [
+    "No historical patches or source bodies are redistributed or replayed.",
+    "Device eager replay is CUDA-qualified; source-level static replay still exercises the device-transfer contract.",
+    "Dtype replay covers the same runtime-signature family with a source-visible non-floating input; the committed eager reproducer covers the sibling input/weight dtype mismatch.",
+    "All cost figures are deterministic structural proxies, not wall-clock measurements."
+  ],
+  "schema_version": "tensorguard.pr-history-survival.v1",
+  "source_corpus": {
+    "candidate_issue_records": 127,
+    "direct_pr_records": 205,
+    "fix_linked_records": 332,
+    "path": "experiments_v5/provenance_bug_corpus/corpus.jsonl",
+    "records": 2704,
+    "records_without_fix_link": 2372
+  },
+  "step": 254,
+  "survival_estimate": {
+    "all_categories_represented": true,
+    "all_fix_linked": {
+      "category_level_catch_rate": 1.0,
+      "category_level_caught": 332,
+      "category_level_missed": 0,
+      "records": 332
+    },
+    "candidate_issue_links_only": {
+      "category_level_catch_rate": 1.0,
+      "category_level_caught": 127,
+      "category_level_missed": 0,
+      "records": 127
+    },
+    "direct_pr_only": {
+      "category_level_catch_rate": 1.0,
+      "category_level_caught": 205,
+      "category_level_missed": 0,
+      "records": 205
+    }
+  }
+}

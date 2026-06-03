@@ -1223,6 +1223,17 @@ Lean-backed `torch.relu` transfer from a heuristic `torch.unique` abstention. Se
 [`reproducibility/stagewise_ablation.md`](reproducibility/stagewise_ablation.md)
 and `tests/test_stagewise_ablation.py`.
 
+### PR-history survival study: before-merge catchability, without overclaiming
+`reproducibility/pr_history_survival.py` asks whether the current verifier would
+have rejected the runtime-signature category behind a fix-linked GitHub PR or
+issue before the fix merged. Because the corpus does not redistribute historical
+pre-fix source, the answer is explicitly category-level: real GitHub fix links
+provide the multiplicities, while repo-authored reproducers and trusted source
+witnesses provide the live PyTorch/TensorGuard replay. The artifact also reports
+structural detection-depth and CI-cost proxies, not wall-clock theater. See
+[`reproducibility/pr_history_survival.md`](reproducibility/pr_history_survival.md)
+and `tests/test_pr_history_survival.py`.
+
 ### Statistical power: every headline number is sample-size-justified
 A confidence interval says how precise an estimate is; a power analysis says
 whether the sample was ever large enough to *earn* the claim.
