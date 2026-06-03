@@ -1028,7 +1028,10 @@ model grows. A separate machine-dependent companion records wall-clock per size
 with a log-log regression exponent below three, confirming polynomial rather
 than exponential scaling; the regression test re-asserts this live. See
 [`reproducibility/scaling_study.md`](reproducibility/scaling_study.md) and
-`tests/test_scaling_study.py`.
+`tests/test_scaling_study.py`. A companion Pareto study now joins model size,
+operator coverage, CEGAR budget, abstention, and hardware-normalized latency
+ratios without committing raw machine timings
+([`evaluation/pareto_curves.md`](evaluation/pareto_curves.md)).
 
 ### Head-to-head against baselines
 The sharpest reviewer question is "why not just use an existing tool?". The
@@ -2043,7 +2046,8 @@ comfortably inside budget, establishing the baseline that the performance work
 in the following steps tightens. Deployment release gates extend this to
 pre/post export and compile checks with live memory budgets and per-backend
 Pareto curves (`make deployment-budgets-gate`). See
-`tests/test_latency_budgets.py` and `tests/test_deployment_budgets.py`.
+`tests/test_latency_budgets.py`, `tests/test_pareto_curves.py`, and
+`tests/test_deployment_budgets.py`.
 
 ### Solver-call avoidance (syntactic short-circuit)
 

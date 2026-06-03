@@ -137,6 +137,8 @@ GENERATED_DETERMINISTIC = [
     "evaluation/real_model_operator_coverage.md",
     "evaluation/deployment_gallery.json",
     "evaluation/deployment_gallery.md",
+    "evaluation/pareto_curves.json",
+    "evaluation/pareto_curves.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -146,6 +148,7 @@ VOLATILE_REGENERATED = [
     "reproducibility/reproduce_headline_60bug.json",
     "reproducibility/scaling_walltime.json",
     "reproducibility/cegar_depth_walltime.json",
+    "evaluation/pareto_latency.json",
 ]
 
 # Artifacts that need CUDA / HuggingFace / Lean and cannot be rebuilt in a
@@ -294,6 +297,8 @@ STEPS = [
      [PY, "evaluation/real_model_operator_coverage.py"], None),
     ("deploy: real-model gallery with FX/export gates",
      [PY, "evaluation/deployment_gallery.py"], None),
+    ("cost/latency: Step 256 hardware-normalized Pareto curves",
+     [PY, "evaluation/pareto_curves.py"], None),
     ("dashboard: rebuild the static evidence site from committed artifacts",
      [PY, "reproducibility/build_dashboard.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",

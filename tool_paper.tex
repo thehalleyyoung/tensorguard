@@ -642,8 +642,9 @@ traces. \\
 Latency and scaling &
 \texttt{tests/test\_cost\_benchmarks.py},
 \texttt{tests/test\_latency\_budgets.py},
-\texttt{tests/test\_scaling\_study.py}.  Measures model-size and solver-cost
-behavior. \\
+\texttt{tests/test\_scaling\_study.py},
+\texttt{tests/test\_pareto\_curves.py}.  Measures model-size, operator-coverage,
+solver-budget, abstention, and hardware-normalized latency trade-offs. \\
 \hline
 Baselines &
 \texttt{tests/test\_baselines.py},
@@ -1656,6 +1657,14 @@ costs; solver calls avoided by syntactic transfer functions; incremental
 reverification under diffs; parallel per-module verification; and timeout
 behavior.  The important metric is not only mean runtime but the tail behavior
 under symbolic constraints and unsupported regions.
+
+The Step-256 Pareto harness adds the missing joint view: source models are swept
+by size and CEGAR budget, operator occurrences are checked against the live
+coverage census, \unknown{} outcomes are counted as abstentions with reasons, and
+the non-dominated budget frontier is computed from deterministic structural work
+and quality axes.  A separate volatile companion reports latency only as a ratio
+to an anchor verification measured in the same run, so the paper can discuss
+hardware-normalized cost without committing raw host-specific timings.
 
 Deployment adds a second budget surface: the verifier must be cheap enough to
 run both before and after graph capture.  The deployment budget harness measures
