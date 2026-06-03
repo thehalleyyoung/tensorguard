@@ -1,0 +1,81 @@
+{
+  "generator": "reproducibility/docs_site.py",
+  "operator_confidence_summary": {
+    "complete": 75,
+    "heuristic": 3,
+    "sound": 61
+  },
+  "pages": [
+    {
+      "category": "overview",
+      "description": "A generated, repository-backed guide to the verifier, its evidence, and its adoption path.",
+      "path": "index.html",
+      "title": "TensorGuard documentation"
+    },
+    {
+      "category": "concept chapter",
+      "description": "The three-valued contract: refute real bugs, prove only inside the fragment, abstain honestly otherwise.",
+      "path": "concepts/soundness.html",
+      "title": "Soundness modes"
+    },
+    {
+      "category": "concept chapter",
+      "description": "The grammar TensorGuard can prove over, plus every unsupported construct that becomes UNKNOWN in sound mode.",
+      "path": "concepts/verifiable-fragment.html",
+      "title": "Verifiable fragment"
+    },
+    {
+      "category": "concept chapter",
+      "description": "How TensorGuard connects real code, generated artifacts, audits, and CI gates into one reproducible trust story.",
+      "path": "concepts/evidence.html",
+      "title": "Evidence model"
+    },
+    {
+      "category": "operator reference",
+      "description": "A compact reference for registered transfer functions and their confidence tags.",
+      "path": "operators/index.html",
+      "title": "Operator reference"
+    },
+    {
+      "category": "proof reference",
+      "description": "Operator evidence tiers generated from the audited proof-footprint manifest.",
+      "path": "proof-footprint/index.html",
+      "title": "Proof footprint"
+    },
+    {
+      "category": "migration guide",
+      "description": "Keep valuable dynamic checks, but move deterministic tensor-contract failures to a pre-forward static gate.",
+      "path": "migration/runtime-assertions.html",
+      "title": "Migrate from runtime assertions"
+    },
+    {
+      "category": "migration guide",
+      "description": "Adopt a broader PyTorch safety net while preserving shape-only fairness in comparisons.",
+      "path": "migration/pytea.html",
+      "title": "Migrate from PyTea-style shape checks"
+    }
+  ],
+  "proof_footprint_summary": {
+    "heuristic": 3,
+    "lean_theorem": 16,
+    "pen_and_paper_rule": 102,
+    "tested_only_rule": 18
+  },
+  "schema": "tensorguard.docs_site/v1",
+  "source_documents": [
+    "src/soundness_contract.py",
+    "src/verifiable_fragment.py",
+    "src/operator_confidence.py",
+    "src/proof_footprint.py",
+    "evaluation/confusion_matrices.json",
+    "evaluation/sound_mode_fp.json",
+    "evaluation/neg_fuzz.json"
+  ],
+  "step": 285,
+  "supported_surface_counts": {
+    "functional_calls": 21,
+    "layers": 70,
+    "methods": 54,
+    "torch_functions": 45
+  }
+}

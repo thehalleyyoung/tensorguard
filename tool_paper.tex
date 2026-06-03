@@ -155,7 +155,12 @@ freshness checks observe drift.  The tutorial surface is generated the same way:
 ten Colab-runnable notebooks are grouped into seven tracks---shapes, attention, export,
 distributed, quantization, community stubs, and formal certificates---and the
 CI smoke test executes the committed code cells rather than merely checking that
-the notebooks render.
+the notebooks render.  The public documentation site follows the same
+repository-backed rule: \texttt{reproducibility/docs\_site.py} emits static
+GitHub Pages under \texttt{docs/site/} with concept chapters, an operator
+reference, proof-footprint pages, and migration guides, all sourced from the live
+soundness contract, verifiable-fragment tables, operator-confidence registry,
+proof-footprint manifest, and committed benchmark artifacts.
 
 The editor surface is likewise centralized.  A real JSON-RPC language server
 over stdio analyzes unsaved buffers and publishes diagnostics, hover shapes, and

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TensorGuard documentation - TensorGuard</title>
+  <title>Evidence model - TensorGuard</title>
   <style>
     :root { color-scheme: dark; --bg:#0d1117; --panel:#161b22; --muted:#8b949e; --text:#e6edf3; --accent:#7ee787; --line:#30363d; }
     * { box-sizing: border-box; }
@@ -34,28 +34,23 @@
   </style>
 </head>
 <body>
-<nav><a href="index.html">TensorGuard documentation</a><a href="concepts/soundness.html">Soundness modes</a><a href="concepts/verifiable-fragment.html">Verifiable fragment</a><a href="concepts/evidence.html">Evidence model</a><a href="operators/index.html">Operator reference</a><a href="proof-footprint/index.html">Proof footprint</a><a href="migration/runtime-assertions.html">Migrate from runtime assertions</a><a href="migration/pytea.html">Migrate from PyTea-style shape checks</a></nav>
+<nav><a href="../index.html">TensorGuard documentation</a><a href="../concepts/soundness.html">Soundness modes</a><a href="../concepts/verifiable-fragment.html">Verifiable fragment</a><a href="../concepts/evidence.html">Evidence model</a><a href="../operators/index.html">Operator reference</a><a href="../proof-footprint/index.html">Proof footprint</a><a href="../migration/runtime-assertions.html">Migrate from runtime assertions</a><a href="../migration/pytea.html">Migrate from PyTea-style shape checks</a></nav>
 <header>
-  <span class="pill">overview</span>
-  <h1>TensorGuard documentation</h1>
-  <p class="lede">A generated, repository-backed guide to the verifier, its evidence, and its adoption path.</p>
+  <span class="pill">concept chapter</span>
+  <h1>Evidence model</h1>
+  <p class="lede">How TensorGuard connects real code, generated artifacts, audits, and CI gates into one reproducible trust story.</p>
 </header>
 <main>
 
             <div class="cards"><article><strong>real benchmark</strong><span>16 labeled modules</span><p>8 clean / 8 buggy ground truth</p></article><article><strong>TensorGuard corpus score</strong><span>TP=8 FP=0 TN=8 FN=0</span><p>from the committed precision/recall confusion matrix</p></article><article><strong>sound-mode clean hunt</strong><span>80 clean models</span><p>zero false positives and non-vacuous SAFE coverage</p></article><article><strong>negative fuzzing</strong><span>281 genuine injected faults</span><p>all observed to fail in eager PyTorch before verifier scoring</p></article><article><strong>mined public bugs</strong><span>2704 GitHub records</span><p>frozen signature-labeled shape/device bug snapshot</p></article></div>
-            <h2>Start here</h2>
-            <div class="cards">
-              <article><strong>Concepts</strong><span>soundness first</span><p>Learn the SAFE/UNSAFE/UNKNOWN contract and the supported fragment.</p></article>
-              <article><strong>Reference</strong><span>139 operators</span><p>Browse confidence tags and proof-footprint tiers generated from real registry data.</p></article>
-              <article><strong>Migration</strong><span>CI-ready</span><p>Move from runtime asserts or PyTea-style shape-only checks to sound-mode TensorGuard gates.</p></article>
-            </div>
-            <h2>Reader map</h2>
+            <h2>Regeneration commands</h2>
+            <pre><code>make reproduce-check\nmake dashboard-gate\nmake docs-site\npython reproducibility/artifact_index.py --check</code></pre>
+            <h2>Primary artifacts</h2>
             <ul>
-              <li><a href="concepts/soundness.html">Soundness modes</a> explains the contract a CI gate can rely on.</li>
-              <li><a href="concepts/verifiable-fragment.html">Verifiable fragment</a> lists supported Python/PyTorch constructs and explicit abstentions.</li>
-              <li><a href="operators/index.html">Operator reference</a> summarizes confidence tags for every registered transfer.</li>
-              <li><a href="proof-footprint/index.html">Proof footprint</a> ties operators to Lean, pen-and-paper, tested-only, or heuristic evidence.</li>
-              <li><a href="migration/runtime-assertions.html">Migration guides</a> show how to adopt TensorGuard without losing existing runtime checks.</li>
+              <li><code>real_benchmarks/manifest.json</code> freezes the executable labeled corpus.</li>
+              <li><code>evaluation/confusion_matrices.json</code> stores head-to-head baseline outcomes.</li>
+              <li><code>reproducibility/numeric_claims_audit.json</code> audits README and paper claims.</li>
+              <li><code>reproducibility/artifact_index.json</code> hashes generated artifacts, including this site.</li>
             </ul>
 
 </main>
