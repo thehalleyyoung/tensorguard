@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 from src.graph_compiler import _UNIVERSAL_TRANSFER_REGISTRY
-from src.operator_confidence import ConfidenceTag
+from src.confidence_tags import ConfidenceTag
 from src.proof_footprint import ProofStatus, footprint_for, proof_footprint_table, to_json
 
 
@@ -52,6 +52,7 @@ def test_manifest_rows_are_well_formed():
             "operator",
             "proof_status",
             "confidence",
+            "confidence_rationale",
             "rule",
             "lean_modules",
             "lean_theorems",
@@ -60,6 +61,7 @@ def test_manifest_rows_are_well_formed():
         }
         assert row["proof_status"] in valid_statuses
         assert row["confidence"] in valid_confidence
+        assert row["confidence_rationale"]
         assert row["rule"]
         assert row["rationale"]
         assert row["evidence"]

@@ -202,10 +202,12 @@ surface.
 
 The trust label is now itself auditable.  The generated
 \texttt{proof\_footprint\_manifest.json} maps every one of the 139 live
-registered transfer functions to an evidence tier: explicit Lean theorem,
-pen-and-paper rule, tested-only rule, or heuristic.  In the current artifact the
-manifest records 16 Lean-backed operator rows, 102 pen-and-paper static rules,
-18 tested-only library contracts, and 3 honest heuristics.  Lean rows name the
+registered transfer functions to both a confidence tag and an evidence tier:
+explicit Lean theorem, pen-and-paper rule, tested-only rule, or heuristic.  The
+public \texttt{operator\_confidence\_table.json} is a projection of that manifest,
+not a parallel hand-maintained classifier.  In the current artifact the manifest
+records 16 Lean-backed operator rows, 102 pen-and-paper static rules, 18
+tested-only library contracts, and 3 honest heuristics.  Lean rows name the
 imported module and theorem declaration; broad families are deliberately not
 promoted to Lean status unless that per-operator evidence exists.
 
@@ -571,7 +573,7 @@ Operator coverage &
 \texttt{tests/test\_operator\_coverage.py},
 \texttt{tests/test\_operator\_coverage\_gate.py},
 \texttt{tests/test\_real\_model\_operator\_coverage.py}.  Tracks supported
-operators, confidence tags, evidence tiers, release gates, and
+operators, manifest-derived confidence tags, evidence tiers, release gates, and
 frequency-weighted real-model coverage over torchvision, timm, and HuggingFace
 traces. \\
 \hline
@@ -843,7 +845,8 @@ audits, benchmark deltas, scaling curves, CEGAR measurements, and paper evidence
 indices.  Tests pin committed JSON artifacts against freshly generated outputs.
 The benchmark corpus has content hashes, datasheets, citation metadata, and
 loader checks.  The operator confidence table and proof-footprint manifest are
-generated from code and pinned against committed JSON.  The dashboard is
+generated from one source of truth and pinned against committed JSON: the
+confidence table is mechanically projected from proof-footprint rows.  The dashboard is
 regenerated from committed results.  The public docs explain what the verifier
 can and cannot prove.
 

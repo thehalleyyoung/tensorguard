@@ -159,12 +159,12 @@ runtime errors in ML codebases before any code runs.
 - **Per-operator confidence** — every registered operator transfer function is
   tagged `complete`, `sound`, or `heuristic` so you know how much to trust each
   inference (unknown ops default to `heuristic`).
-  Inspect the table with `tensorguard operator-confidence [--json]` (machine-readable
-  table committed to `operator_confidence_table.json`, source of truth
-  `src/operator_confidence.py`, pinned by `tests/test_operator_confidence.py`);
-  `proof_footprint_manifest.json` goes one level deeper by mapping every
-  supported operator to Lean theorem, pen-and-paper rule, tested-only rule, or
-  heuristic evidence (`src/proof_footprint.py`, `tests/test_proof_footprint.py`).
+  Inspect the table with `tensorguard operator-confidence [--json]`; its
+  committed `operator_confidence_table.json` is now a projection of
+  `proof_footprint_manifest.json`, which maps every supported operator to Lean
+  theorem, pen-and-paper rule, tested-only rule, or heuristic evidence
+  (`src/proof_footprint.py`, `tests/test_operator_confidence.py`,
+  `tests/test_proof_footprint.py`).
 - **Soundness modes** — `tensorguard verify --soundness-mode {sound,balanced,heuristic}`
   selects a three-valued verdict (`SAFE`/`UNKNOWN`/`UNSAFE`). `sound` is the
   contract you can rely on: it reports `SAFE` only when the module is fully

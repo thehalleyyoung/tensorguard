@@ -16,6 +16,7 @@ from src.operator_confidence import (
     tag_for,
     to_json,
 )
+from src.proof_footprint import footprint_for, proof_footprint_table
 
 _REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -66,6 +67,23 @@ def test_confidence_table_covers_full_registry():
     assert [r["operator"] for r in table] == sorted(table_ops)
     for row in table:
         assert set(row.keys()) == {"operator", "confidence", "rationale"}
+
+
+def test_confidence_table_is_projection_of_proof_footprint_manifest():
+    manifest_projection = [
+        {
+            "operator": row["operator"],
+            "confidence": row["confidence"],
+            "rationale": row["confidence_rationale"],
+        }
+        for row in proof_footprint_table()
+    ]
+    assert confidence_table() == manifest_projection
+
+
+def test_tag_for_uses_proof_footprint_confidence():
+    for name in _UNIVERSAL_TRANSFER_REGISTRY:
+        assert tag_for(name).value == footprint_for(name)["confidence"]
 
 
 def test_to_json_is_machine_readable_and_consistent():

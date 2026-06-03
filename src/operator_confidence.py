@@ -1,229 +1,64 @@
-"""Per-operator confidence tagging (Step 6 of 100_STEPS).
+"""Per-operator confidence tags derived from the proof-footprint manifest.
 
-Every operator whose shape transfer function TensorGuard knows about is tagged
-with one of three machine-readable confidence levels so that downstream users
-know *how much to trust* an inference involving that operator:
-
-    complete  - The transfer function is exact: it is both sound (never
-                silently accepts an ill-typed program) and complete (it does
-                not raise on a well-typed one). These are the shape-preserving
-                pointwise families (activations, elementwise unary math,
-                elementwise comparisons) whose output shape is, by
-                construction, identical to the input.
-
-    sound     - The transfer function is sound (no false "OK") and has an
-                exact, well-defined shape rule that the verifier enforces, but
-                we do not claim full completeness for every broadcasting /
-                zero-dim / keepdim edge case. Structural ops (matmul family,
-                reductions, gather/scatter, sort/topk, FFTs, sampling ops with
-                a static shape) live here.
-
-    heuristic - The output shape is genuinely data-dependent (e.g. the number
-                of rows depends on runtime *values*, not just shapes) or the
-                operator's rule is approximated generically. Inferences through
-                these ops are best-effort and may be neither sound nor complete.
-
-The default for any operator *not* explicitly classified here - including ops
-with no registered transfer function at all - is ``HEURISTIC``. This is the
-honest, conservative choice: we never claim more confidence than we can defend.
-
-This module is the single source of truth for the tags. It exposes:
-
-    tag_for(op_name)        -> ConfidenceTag
-    rationale_for(op_name)  -> str
-    confidence_table()      -> list[dict]   (machine-readable, sorted)
-    to_json()               -> str
-    annotate_registry()     -> int          (stamp tags onto TransferFunctions)
+``src.proof_footprint`` is the source of truth for operator trust metadata: each
+manifest row records the confidence tag, confidence-specific rationale, and the
+proof/evidence footprint that justifies it.  This module intentionally exposes
+the historical ``operator-confidence`` API as a projection of that manifest so
+the JSON table cannot drift from the audited footprint.
 """
 
 from __future__ import annotations
 
-import enum
 import json
-from typing import Dict, List, Tuple
+from functools import lru_cache
+from typing import Dict, List
 
-
-class ConfidenceTag(str, enum.Enum):
-    """Confidence level for an operator's shape transfer function."""
-
-    COMPLETE = "complete"
-    SOUND = "sound"
-    HEURISTIC = "heuristic"
-
-
-# ── Operator families ──────────────────────────────────────────────────────
-# Names are the *base* operator (namespace prefix such as ``torch.`` / ``F.``
-# stripped). ``torch.fft.*`` and ``torch.linalg.*`` are handled specially in
-# :func:`_classify` because their family is encoded in the namespace.
-
-_ACTIVATIONS = frozenset({
-    "relu", "gelu", "silu", "mish", "hardswish", "hardsigmoid", "leaky_relu",
-    "elu", "selu", "celu", "prelu", "rrelu", "softplus", "softsign",
-    "tanhshrink", "softshrink", "hardshrink", "logsigmoid", "sigmoid", "tanh",
-})
-
-_ELEMENTWISE_UNARY = frozenset({
-    "abs", "neg", "sign", "ceil", "floor", "round", "exp", "log", "log2",
-    "log10", "sqrt", "rsqrt", "sin", "cos", "tan", "asin", "acos", "atan",
-    "sinh", "cosh", "erf", "erfc", "clamp", "clip", "nan_to_num",
-})
-
-_COMPARISON = frozenset({
-    "eq", "ne", "gt", "ge", "lt", "le", "equal", "isnan", "isinf", "isfinite",
-})
-
-_MATMUL_FAMILY = frozenset({
-    "matmul", "bmm", "mm", "mv", "outer", "kron", "tensordot", "cross",
-})
-
-_REDUCTIONS = frozenset({
-    "sum", "mean", "prod", "max", "min", "std", "var", "norm", "logsumexp",
-    "any", "all", "amax", "amin",
-})
-
-# Output shape is an exact function of shapes (and static integer args).
-_STRUCTURAL_EXACT = frozenset({
-    "gather", "scatter", "index_select", "sort", "argsort", "topk",
-    "stack", "hstack", "vstack", "dstack", "column_stack", "row_stack",
-    "squeeze", "unsqueeze", "movedim", "moveaxis", "swapaxes", "swapdims",
-    "roll", "rot90", "flip", "repeat_interleave", "tile",
-    "broadcast_tensors", "broadcast_shapes",
-    # Sampling ops whose output shape is a static argument / equals the input.
-    "bernoulli", "poisson", "cdist",
-})
-
-# Output shape depends on runtime *values*, or the rule is approximated.
-_DATA_DEPENDENT = frozenset({
-    "unique", "multinomial", "einsum",
-})
-
-_EXACT_LINALG = frozenset({
-    "cholesky", "eig", "inv", "qr", "solve", "svd",
-})
-
-
-def _base_name(op_name: str) -> str:
-    """Strip a leading ``torch.``/``F.``/namespace prefix, keeping the last part."""
-    return op_name.rsplit(".", 1)[-1]
-
-
-def _classify(op_name: str) -> Tuple[ConfidenceTag, str]:
-    """Return the (tag, rationale) for a fully-qualified operator name."""
-    # Namespace-encoded families first.
-    if op_name.startswith("torch.linalg."):
-        base = _base_name(op_name)
-        if base in _EXACT_LINALG:
-            return (
-                ConfidenceTag.SOUND,
-                "torch.linalg shape contract with exact rank, square, "
-                "broadcasting and multi-output shape checks enforced soundly.",
-            )
-        return (
-            ConfidenceTag.HEURISTIC,
-            "torch.linalg operator without an exact TensorGuard shape contract; "
-            "defaulting conservatively to heuristic.",
-        )
-    if op_name.startswith("torch.fft."):
-        return (
-            ConfidenceTag.SOUND,
-            "FFT family: exact, well-defined output-shape rule (e.g. rfft maps "
-            "the last dim n -> n//2 + 1) enforced soundly.",
-        )
-
-    base = _base_name(op_name)
-
-    if base in _ACTIVATIONS:
-        return (
-            ConfidenceTag.COMPLETE,
-            "Pointwise activation: output shape is identical to the input, so "
-            "the transfer is exact (sound and complete).",
-        )
-    if base in _ELEMENTWISE_UNARY:
-        return (
-            ConfidenceTag.COMPLETE,
-            "Elementwise unary op: shape-preserving, so the transfer is exact "
-            "(sound and complete).",
-        )
-    if base in _COMPARISON:
-        return (
-            ConfidenceTag.COMPLETE,
-            "Elementwise comparison: shape-preserving boolean output, so the "
-            "transfer is exact (sound and complete).",
-        )
-    if base in _MATMUL_FAMILY:
-        return (
-            ConfidenceTag.SOUND,
-            "Matmul-family op with an exact, well-defined contraction rule that "
-            "is enforced soundly (full completeness not claimed for every "
-            "broadcasting / zero-dim edge case).",
-        )
-    if base in _REDUCTIONS:
-        return (
-            ConfidenceTag.SOUND,
-            "Reduction with an exact dim/keepdim shape rule enforced soundly "
-            "(full completeness not claimed for every keepdim edge case).",
-        )
-    if base in _STRUCTURAL_EXACT:
-        return (
-            ConfidenceTag.SOUND,
-            "Structural op whose output shape is an exact function of the input "
-            "shapes and static integer arguments; enforced soundly.",
-        )
-    if base in _DATA_DEPENDENT:
-        return (
-            ConfidenceTag.HEURISTIC,
-            "Output shape depends on runtime values or is approximated "
-            "generically; best-effort, neither sound nor complete in general.",
-        )
-
-    return (
-        ConfidenceTag.HEURISTIC,
-        "No explicit confidence classification; defaulting conservatively to "
-        "heuristic (best-effort).",
-    )
+from src.confidence_tags import ConfidenceTag
 
 
 def tag_for(op_name: str) -> ConfidenceTag:
     """Return the :class:`ConfidenceTag` for an operator name.
 
-    Unknown / unregistered operators default to ``HEURISTIC``.
+    Unknown / unregistered operators default to ``HEURISTIC`` through the
+    proof-footprint confidence policy.
     """
-    return _classify(op_name)[0]
+
+    from src.proof_footprint import confidence_for
+
+    return confidence_for(op_name)[0]
 
 
 def rationale_for(op_name: str) -> str:
     """Return the human-readable justification for an operator's tag."""
-    return _classify(op_name)[1]
 
+    from src.proof_footprint import confidence_for
 
-def _registry_names() -> List[str]:
-    """All operator names with a registered transfer function (best-effort)."""
-    try:
-        from src.graph_compiler import _UNIVERSAL_TRANSFER_REGISTRY
-    except Exception:  # pragma: no cover - import guard
-        return []
-    return list(_UNIVERSAL_TRANSFER_REGISTRY.keys())
+    return confidence_for(op_name)[1]
 
 
 def confidence_table() -> List[Dict[str, str]]:
     """Return the full machine-readable confidence table, sorted by name.
 
     Covers every operator with a registered transfer function. Each row is
-    ``{"operator", "confidence", "rationale"}``.
+    ``{"operator", "confidence", "rationale"}``, projected from the generated
+    proof-footprint rows.
     """
+
+    from src.proof_footprint import proof_footprint_table
+
     rows: List[Dict[str, str]] = []
-    for name in sorted(set(_registry_names())):
-        tag, rationale = _classify(name)
+    for row in proof_footprint_table():
         rows.append({
-            "operator": name,
-            "confidence": tag.value,
-            "rationale": rationale,
+            "operator": str(row["operator"]),
+            "confidence": str(row["confidence"]),
+            "rationale": str(row["confidence_rationale"]),
         })
     return rows
 
 
 def to_json(indent: int = 2) -> str:
     """Serialize the confidence table (with a summary header) to JSON."""
+
     table = confidence_table()
     summary: Dict[str, int] = {t.value: 0 for t in ConfidenceTag}
     for row in table:
@@ -239,10 +74,11 @@ def to_json(indent: int = 2) -> str:
 
 
 def annotate_registry() -> int:
-    """Stamp the confidence tag onto every registered ``TransferFunction``.
+    """Stamp the manifest-derived confidence tag onto registered transfers.
 
     Returns the number of transfer functions annotated. Idempotent.
     """
+
     try:
         from src.graph_compiler import _UNIVERSAL_TRANSFER_REGISTRY
     except Exception:  # pragma: no cover - import guard
@@ -254,21 +90,32 @@ def annotate_registry() -> int:
     return count
 
 
-# Base operator names whose transfer function is only ``heuristic`` and which
-# can be spotted by a lightweight source scan (used by ``sound`` mode to refuse
-# a confident SAFE).  Exact linalg contracts are whitelisted above; unsupported
-# or still-approximated linalg calls are handled by tag lookup below.
-_HEURISTIC_BASE_OPS = frozenset(_DATA_DEPENDENT)
+def _base_name(op_name: str) -> str:
+    return op_name.rsplit(".", 1)[-1]
+
+
+@lru_cache(maxsize=1)
+def _heuristic_base_ops() -> frozenset[str]:
+    """Base operator names whose manifest confidence is heuristic."""
+
+    from src.proof_footprint import proof_footprint_table
+
+    return frozenset(
+        _base_name(str(row["operator"]))
+        for row in proof_footprint_table()
+        if row["confidence"] == ConfidenceTag.HEURISTIC.value
+    )
 
 
 def heuristic_ops_in_source(source: str) -> List[str]:
     """Return sorted qualified names of heuristic-tagged ops called in *source*.
 
     A best-effort static scan of call expressions (e.g. ``torch.unique(...)``,
-    ``x.einsum(...)``, ``torch.linalg.svd(...)``). Used so ``sound`` mode can
+    ``x.einsum(...)``, ``torch.linalg.lstsq(...)``). Used so ``sound`` mode can
     abstain rather than emit a confident SAFE when an inference would rely on a
     heuristic transfer function.
     """
+
     import ast
 
     try:
@@ -277,6 +124,7 @@ def heuristic_ops_in_source(source: str) -> List[str]:
         return []
 
     found = set()
+    heuristic_bases = _heuristic_base_ops()
 
     def _qualified(node: ast.AST) -> str:
         parts = []
@@ -297,7 +145,7 @@ def heuristic_ops_in_source(source: str) -> List[str]:
         base = func.attr
         qualified = _qualified(func)
         parents = qualified.split(".")
-        if base in _HEURISTIC_BASE_OPS:
+        if base in heuristic_bases:
             found.add(qualified)
         elif len(parents) >= 2 and parents[-2] == "linalg" and tag_for(qualified) is ConfidenceTag.HEURISTIC:
             found.add(qualified)

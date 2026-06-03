@@ -1,8 +1,9 @@
-"""Per-operator proof-footprint manifest (Step 243).
+"""Per-operator proof-footprint manifest (Steps 243-244).
 
-The existing operator-confidence table answers "how much should I trust this
-transfer?"  This manifest answers the more auditable question "what kind of
-evidence backs that trust?"  It covers every operator registered in
+The operator-confidence table answers "how much should I trust this transfer?"
+This manifest is its auditable source of truth: each row records both that
+confidence tag and the proof/evidence footprint backing it.  It covers every
+operator registered in
 ``graph_compiler._UNIVERSAL_TRANSFER_REGISTRY`` and classifies each transfer as
 one of:
 
@@ -24,9 +25,9 @@ from __future__ import annotations
 import enum
 import json
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Mapping, Sequence
+from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
 
-from src.operator_confidence import ConfidenceTag, rationale_for, tag_for
+from src.confidence_tags import ConfidenceTag
 
 
 SCHEMA = "tensorguard.proof_footprint/v1"
@@ -207,17 +208,23 @@ _LEAN: Mapping[str, LeanFootprint] = {
 }
 
 
-_HEURISTIC = frozenset({"torch.einsum", "torch.unique", "torch.multinomial"})
-
-_POINTWISE_BASES = frozenset({
+_ACTIVATIONS = frozenset({
     "relu", "gelu", "silu", "mish", "hardswish", "hardsigmoid", "leaky_relu",
     "elu", "selu", "celu", "prelu", "rrelu", "softplus", "softsign",
     "tanhshrink", "softshrink", "hardshrink", "logsigmoid", "sigmoid", "tanh",
+})
+
+_ELEMENTWISE_UNARY = frozenset({
     "abs", "neg", "sign", "ceil", "floor", "round", "exp", "log", "log2",
     "log10", "sqrt", "rsqrt", "sin", "cos", "tan", "asin", "acos", "atan",
     "sinh", "cosh", "erf", "erfc", "clamp", "clip", "nan_to_num",
+})
+
+_COMPARISON = frozenset({
     "eq", "ne", "gt", "ge", "lt", "le", "equal", "isnan", "isinf", "isfinite",
 })
+
+_POINTWISE_BASES = _ACTIVATIONS | _ELEMENTWISE_UNARY | _COMPARISON
 
 _REDUCTION_BASES = frozenset({
     "sum", "mean", "prod", "max", "min", "std", "var", "norm", "logsumexp",
@@ -233,6 +240,27 @@ _STACK_BASES = frozenset({"stack", "hstack", "vstack", "dstack", "column_stack",
 
 _MATMUL_BASES = frozenset({"matmul", "bmm", "mm", "mv", "outer", "kron", "tensordot", "cross"})
 
+_STRUCTURAL_EXACT = (
+    _STRUCTURAL_BASES
+    | _STACK_BASES
+    | frozenset({
+        "gather",
+        "scatter",
+        "index_select",
+        "sort",
+        "argsort",
+        "topk",
+        "broadcast_tensors",
+        "broadcast_shapes",
+        "bernoulli",
+        "poisson",
+        "cdist",
+    })
+)
+
+_HEURISTIC = frozenset({"torch.einsum", "torch.unique", "torch.multinomial"})
+_DATA_DEPENDENT = frozenset({"einsum", "unique", "multinomial"})
+_EXACT_LINALG = frozenset({"cholesky", "eig", "inv", "qr", "solve", "svd"})
 _TESTED_PREFIXES = ("torch.linalg.", "torch.fft.")
 
 _TESTED_ONLY: Mapping[str, RuleFootprint] = {
@@ -273,6 +301,81 @@ def _base_name(op_name: str) -> str:
     return op_name.rsplit(".", 1)[-1]
 
 
+def confidence_for(op_name: str) -> Tuple[ConfidenceTag, str]:
+    """Return the confidence tag and confidence-specific rationale for an op."""
+
+    if op_name.startswith("torch.linalg."):
+        base = _base_name(op_name)
+        if base in _EXACT_LINALG:
+            return (
+                ConfidenceTag.SOUND,
+                "torch.linalg shape contract with exact rank, square, "
+                "broadcasting and multi-output shape checks enforced soundly.",
+            )
+        return (
+            ConfidenceTag.HEURISTIC,
+            "torch.linalg operator without an exact TensorGuard shape contract; "
+            "defaulting conservatively to heuristic.",
+        )
+    if op_name.startswith("torch.fft."):
+        return (
+            ConfidenceTag.SOUND,
+            "FFT family: exact, well-defined output-shape rule (e.g. rfft maps "
+            "the last dim n -> n//2 + 1) enforced soundly.",
+        )
+
+    base = _base_name(op_name)
+    if base in _ACTIVATIONS:
+        return (
+            ConfidenceTag.COMPLETE,
+            "Pointwise activation: output shape is identical to the input, so "
+            "the transfer is exact (sound and complete).",
+        )
+    if base in _ELEMENTWISE_UNARY:
+        return (
+            ConfidenceTag.COMPLETE,
+            "Elementwise unary op: shape-preserving, so the transfer is exact "
+            "(sound and complete).",
+        )
+    if base in _COMPARISON:
+        return (
+            ConfidenceTag.COMPLETE,
+            "Elementwise comparison: shape-preserving boolean output, so the "
+            "transfer is exact (sound and complete).",
+        )
+    if base in _MATMUL_BASES:
+        return (
+            ConfidenceTag.SOUND,
+            "Matmul-family op with an exact, well-defined contraction rule that "
+            "is enforced soundly (full completeness not claimed for every "
+            "broadcasting / zero-dim edge case).",
+        )
+    if base in _REDUCTION_BASES:
+        return (
+            ConfidenceTag.SOUND,
+            "Reduction with an exact dim/keepdim shape rule enforced soundly "
+            "(full completeness not claimed for every keepdim edge case).",
+        )
+    if base in _STRUCTURAL_EXACT:
+        return (
+            ConfidenceTag.SOUND,
+            "Structural op whose output shape is an exact function of the input "
+            "shapes and static integer arguments; enforced soundly.",
+        )
+    if base in _DATA_DEPENDENT:
+        return (
+            ConfidenceTag.HEURISTIC,
+            "Output shape depends on runtime values or is approximated "
+            "generically; best-effort, neither sound nor complete in general.",
+        )
+
+    return (
+        ConfidenceTag.HEURISTIC,
+        "No explicit confidence classification; defaulting conservatively to "
+        "heuristic (best-effort).",
+    )
+
+
 def _registry_names() -> List[str]:
     from src.graph_compiler import _UNIVERSAL_TRANSFER_REGISTRY
 
@@ -285,12 +388,12 @@ def _pen_and_paper(status_rule: str, evidence: Sequence[str], rationale: str) ->
 
 def _fallback_for(op_name: str) -> RuleFootprint:
     base = _base_name(op_name)
-    if op_name in _HEURISTIC or tag_for(op_name) is ConfidenceTag.HEURISTIC:
+    if op_name in _HEURISTIC or confidence_for(op_name)[0] is ConfidenceTag.HEURISTIC:
         return RuleFootprint(
             ProofStatus.HEURISTIC,
             "no proof rule claimed for data-dependent or approximated output shape",
-            ("src/operator_confidence.py", "tests/test_operator_confidence.py"),
-            rationale_for(op_name),
+            ("src/proof_footprint.py", "tests/test_operator_confidence.py"),
+            confidence_for(op_name)[1],
         )
     if op_name.startswith("torch.linalg."):
         return _TESTED_ONLY["linalg"]
@@ -346,13 +449,14 @@ def _fallback_for(op_name: str) -> RuleFootprint:
 def footprint_for(op_name: str) -> Dict[str, object]:
     """Return the proof-footprint row for one operator name."""
 
-    confidence = tag_for(op_name).value
+    confidence, confidence_rationale = confidence_for(op_name)
     if op_name in _LEAN:
         fp = _LEAN[op_name]
         return {
             "operator": op_name,
             "proof_status": ProofStatus.LEAN_THEOREM.value,
-            "confidence": confidence,
+            "confidence": confidence.value,
+            "confidence_rationale": confidence_rationale,
             "rule": fp.rule,
             "lean_modules": list(fp.modules),
             "lean_theorems": list(fp.theorems),
@@ -363,7 +467,8 @@ def footprint_for(op_name: str) -> Dict[str, object]:
     return {
         "operator": op_name,
         "proof_status": fp2.status.value,
-        "confidence": confidence,
+        "confidence": confidence.value,
+        "confidence_rationale": confidence_rationale,
         "rule": fp2.rule,
         "lean_modules": [],
         "lean_theorems": [],
