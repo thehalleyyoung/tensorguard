@@ -22,6 +22,8 @@ both versions agree, otherwise reporting a QUALIFIED skip.
 This harness also documents the **Step 22 implementations**: the highest-
 frequency previously-uncovered shape operators (`permute`, `expand`, `repeat`)
 now have denotational transfer functions (see `src/denotational_semantics.py`).
+Step 208 extends the real-model census with hot functional/vision operators
+whose FX paths are now explicitly modelled or surfaced by the coverage census.
 """
 
 from __future__ import annotations
@@ -41,6 +43,13 @@ import torch  # noqa: E402
 HERE = os.path.dirname(os.path.abspath(__file__))
 JSON_PATH = os.path.join(HERE, "operator_frequency.json")
 MD_PATH = os.path.join(HERE, "operator_frequency.md")
+
+STEP208_HOT_OPERATORS = [
+    "stochastic_depth",
+    "layer_norm",
+    "adaptive_avg_pool2d",
+    "scaled_dot_product_attention",
+]
 
 # Fixed, deterministic torchvision corpus spanning CNNs, mobile nets, vision
 # transformers, and modern conv nets.
@@ -76,6 +85,14 @@ def implemented_operator_census() -> Set[str]:
     # Functional / torch dispatch tables.
     names.update(n.lower() for n in fx._F_FUNC_MAP)
     names.update(n.lower() for n in fx._TORCH_FUNC_MAP)
+    # FX also accepts a strict allowlist of unary/vision functions that are
+    # provably shape-preserving. Count the function names from that allowlist so
+    # the census is tied to actual extractor behavior rather than hand-written
+    # aliases.
+    for fn in getattr(fx, "_SHAPE_PRESERVING_FUNCTIONS", ()):
+        name = getattr(fn, "__name__", "")
+        if name:
+            names.add(name.lower())
     # nn.Module classes.
     names.update(c.__name__.lower() for c in fx._MODULE_KIND_MAP)
     # Common element-wise / structural aliases the engine treats as covered.
@@ -145,6 +162,7 @@ def build_report() -> Dict[str, object]:
             if total_weight else 0.0,
         },
         "step22_implemented": ["permute", "expand", "repeat"],
+        "step208_hot_operators": STEP208_HOT_OPERATORS,
         "operators": operators,
         "uncovered_ranked": uncovered_ranked,
     }
@@ -174,6 +192,9 @@ def render_markdown(rep: Dict[str, object]) -> str:
         ("Step 22 added denotational transfer functions for the highest-"
          "frequency previously-uncovered shape operators: `%s`."
          % "`, `".join(rep["step22_implemented"])),
+        "",
+        ("Step 208 additionally pins hot real-model operators in the census: "
+         "`%s`." % "`, `".join(rep["step208_hot_operators"])),
         "",
         "## Top operators by frequency",
         "",

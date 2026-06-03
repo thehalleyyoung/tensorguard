@@ -73,7 +73,7 @@
       "operator": "mul"
     },
     {
-      "covered": false,
+      "covered": true,
       "frequency": 51,
       "operator": "stochastic_depth"
     },
@@ -183,7 +183,7 @@
       "operator": "flatten"
     },
     {
-      "covered": false,
+      "covered": true,
       "frequency": 5,
       "operator": "layer_norm"
     },
@@ -203,7 +203,7 @@
       "operator": "Flatten"
     },
     {
-      "covered": false,
+      "covered": true,
       "frequency": 2,
       "operator": "adaptive_avg_pool2d"
     },
@@ -228,25 +228,26 @@
       "operator": "reshape"
     }
   ],
+  "step208_hot_operators": [
+    "stochastic_depth",
+    "layer_norm",
+    "adaptive_avg_pool2d",
+    "scaled_dot_product_attention"
+  ],
   "step22_implemented": [
     "permute",
     "expand",
     "repeat"
   ],
   "summary": {
-    "covered_occurrences": 2437,
+    "covered_occurrences": 2495,
     "distinct_operators": 41,
-    "distinct_uncovered": 9,
-    "frequency_coverage_ratio": 0.9486,
+    "distinct_uncovered": 6,
+    "frequency_coverage_ratio": 0.9712,
     "total_op_occurrences": 2569,
-    "uncovered_occurrences": 132
+    "uncovered_occurrences": 74
   },
   "uncovered_ranked": [
-    {
-      "covered": false,
-      "frequency": 51,
-      "operator": "stochastic_depth"
-    },
     {
       "covered": false,
       "frequency": 18,
@@ -274,18 +275,8 @@
     },
     {
       "covered": false,
-      "frequency": 5,
-      "operator": "layer_norm"
-    },
-    {
-      "covered": false,
       "frequency": 3,
       "operator": "_patch_merging_pad"
-    },
-    {
-      "covered": false,
-      "frequency": 2,
-      "operator": "adaptive_avg_pool2d"
     }
   ]
 }

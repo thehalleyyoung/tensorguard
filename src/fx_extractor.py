@@ -640,9 +640,13 @@ _SHAPE_PRESERVING_METHODS = frozenset({
 
 if HAS_TORCH:
     import torch.nn.functional as _F
+    try:
+        import torchvision.ops as _TV_OPS
+    except Exception:  # pragma: no cover - optional dependency
+        _TV_OPS = None
 
     def _maybe(mod, name):
-        return getattr(mod, name, None)
+        return getattr(mod, name, None) if mod is not None else None
 
     _SHAPE_PRESERVING_FUNCTIONS = frozenset(
         fn for fn in (
@@ -665,6 +669,7 @@ if HAS_TORCH:
             _maybe(_F, "hardtanh"), _maybe(_F, "softplus"),
             _maybe(_F, "softsign"), _maybe(_F, "logsigmoid"),
             _maybe(_F, "log_softmax"), _maybe(_F, "celu"), _maybe(_F, "selu"),
+            _maybe(_TV_OPS, "stochastic_depth"),
         )
         if fn is not None
     )
@@ -791,6 +796,86 @@ def _maybe_functional_loss(
     return ComputationStep(
         op=OpKind.LAYER_CALL,
         inputs=inputs,
+        output=f"_t{step_idx}",
+        layer_ref=layer_name,
+        params=params,
+    )
+
+
+_FX_FUNCTIONAL_LAYER_KINDS: Dict[str, LayerKind] = {
+    "layer_norm": LayerKind.LAYERNORM,
+    "adaptive_avg_pool2d": LayerKind.ADAPTIVE_AVGPOOL2D,
+}
+
+
+def _literal_sequence(value: Any) -> Any:
+    if isinstance(value, torch.Size):
+        return tuple(int(v) for v in value)
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return int(value)
+    if isinstance(value, (tuple, list)):
+        out = []
+        for item in value:
+            if isinstance(item, bool) or not isinstance(item, int):
+                return None
+            out.append(int(item))
+        return tuple(out)
+    return None
+
+
+def _maybe_fx_functional_layer(
+    node: "torch.fx.Node",
+    node_to_tensor: Dict[str, str],
+    graph: ComputationGraph,
+    step_idx: int,
+) -> Optional[ComputationStep]:
+    """Build a synthetic layer for FX functional calls with real layer rules."""
+
+    short = getattr(node.target, "__name__", None)
+    kind = _FX_FUNCTIONAL_LAYER_KINDS.get(short or "")
+    if kind is None:
+        return None
+
+    input_arg = node.args[0] if node.args else node.kwargs.get("input")
+    if not isinstance(input_arg, torch.fx.Node):
+        return None
+
+    layer_name = f"__fx_func_{short}_{step_idx}"
+    params: Dict[str, Any] = {}
+    layer = LayerDef(attr_name=layer_name, kind=kind, params=params)
+
+    if kind == LayerKind.LAYERNORM:
+        norm_shape = (
+            node.args[1]
+            if len(node.args) > 1
+            else node.kwargs.get("normalized_shape")
+        )
+        norm_shape = _literal_sequence(norm_shape)
+        if norm_shape is None:
+            return None
+        params["normalized_shape"] = norm_shape
+        layer.params = params
+    elif kind == LayerKind.ADAPTIVE_AVGPOOL2D:
+        out = (
+            node.args[1]
+            if len(node.args) > 1
+            else node.kwargs.get("output_size")
+        )
+        out = _literal_sequence(out)
+        if out is None:
+            return None
+        if isinstance(out, int) and not isinstance(out, bool):
+            out = (out, out)
+        params["output_size"] = out
+        layer.output_size = out
+        layer.params = params
+
+    graph.layers[layer_name] = layer
+    return ComputationStep(
+        op=OpKind.LAYER_CALL,
+        inputs=[node_to_tensor.get(input_arg.name, input_arg.name)],
         output=f"_t{step_idx}",
         layer_ref=layer_name,
         params=params,
@@ -1038,6 +1123,15 @@ def fx_trace_to_graph(
             if emb_bag_step is not None:
                 graph.steps.append(emb_bag_step)
                 node_to_tensor[node.name] = emb_bag_step.output
+                step_idx += 1
+                continue
+
+            functional_layer_step = _maybe_fx_functional_layer(
+                node, node_to_tensor, graph, step_idx
+            )
+            if functional_layer_step is not None:
+                graph.steps.append(functional_layer_step)
+                node_to_tensor[node.name] = functional_layer_step.output
                 step_idx += 1
                 continue
 
@@ -2611,7 +2705,11 @@ _F_FUNC_MAP: Dict[str, OpKind] = {
     "dropout": OpKind.DROPOUT,
     "interpolate": OpKind.INTERPOLATE,
     "upsample": OpKind.INTERPOLATE,
+    "layer_norm": OpKind.LAYER_CALL,
+    "adaptive_avg_pool2d": OpKind.LAYER_CALL,
 }
+if HAS_TORCH and hasattr(torch.nn.functional, "scaled_dot_product_attention"):
+    _F_FUNC_MAP["scaled_dot_product_attention"] = OpKind.SDPA
 
 # ast BinOp operator → OpKind
 _BINOP_MAP: Dict[type, OpKind] = {

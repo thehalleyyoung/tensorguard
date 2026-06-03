@@ -122,6 +122,8 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/verified_reduction_diff.md",
     "reproducibility/paper_evidence_index.json",
     "reproducibility/paper_evidence_index.md",
+    "evaluation/real_model_operator_coverage.json",
+    "evaluation/real_model_operator_coverage.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -263,6 +265,8 @@ STEPS = [
      [PY, "reproducibility/verified_reduction_diff.py"], None),
     ("paper-evidence index: single catalogue of every regenerable table/figure",
      [PY, "reproducibility/paper_evidence_index.py"], None),
+    ("coverage: Step 208 real-model operator coverage over torchvision/timm/HF",
+     [PY, "evaluation/real_model_operator_coverage.py"], None),
     ("dashboard: rebuild the static evidence site from committed artifacts",
      [PY, "reproducibility/build_dashboard.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",

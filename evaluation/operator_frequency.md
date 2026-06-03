@@ -2,9 +2,11 @@
 
 Operators counted by `torch.fx` trace over 13 torchvision models, weighted by occurrence and cross-referenced against the operators TensorGuard reasons about. Generated against torch `2.9.1`, torchvision `0.24.1`.
 
-Frequency-weighted coverage: **2437** of **2569** operator occurrences are covered (ratio 0.949).
+Frequency-weighted coverage: **2495** of **2569** operator occurrences are covered (ratio 0.971).
 
 Step 22 added denotational transfer functions for the highest-frequency previously-uncovered shape operators: `permute`, `expand`, `repeat`.
+
+Step 208 additionally pins hot real-model operators in the census: `stochastic_depth`, `layer_norm`, `adaptive_avg_pool2d`, `scaled_dot_product_attention`.
 
 ## Top operators by frequency
 
@@ -20,7 +22,7 @@ Step 22 added denotational transfer functions for the highest-frequency previous
 | `LayerNorm` | 72 | yes |
 | `Dropout` | 67 | yes |
 | `mul` | 51 | yes |
-| `stochastic_depth` | 51 | NO |
+| `stochastic_depth` | 51 | yes |
 | `SiLU` | 49 | yes |
 | `permute` | 49 | yes |
 | `GELU` | 42 | yes |
@@ -43,12 +45,9 @@ Step 22 added denotational transfer functions for the highest-frequency previous
 
 ## Remaining uncovered operators (ranked)
 
-* `stochastic_depth` (51)
 * `floordiv` (18)
 * `size` (16)
 * `dim` (13)
 * `_get_relative_position_bias` (12)
 * `shifted_window_attention` (12)
-* `layer_norm` (5)
 * `_patch_merging_pad` (3)
-* `adaptive_avg_pool2d` (2)

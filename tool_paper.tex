@@ -520,8 +520,10 @@ and injected bugs. \\
 Operator coverage &
 \texttt{operator\_confidence\_table.json},
 \texttt{tests/test\_operator\_coverage.py},
-\texttt{tests/test\_operator\_coverage\_gate.py}.  Tracks supported operators,
-confidence tags, and release gates. \\
+\texttt{tests/test\_operator\_coverage\_gate.py},
+\texttt{tests/test\_real\_model\_operator\_coverage.py}.  Tracks supported
+operators, confidence tags, release gates, and frequency-weighted real-model
+coverage over torchvision, timm, and HuggingFace traces. \\
 \hline
 Latency and scaling &
 \texttt{tests/test\_cost\_benchmarks.py},
@@ -599,6 +601,17 @@ sharing, divisibility normalization, and short-circuiting.  Per-module
 verification can run in parallel, and incremental analysis reuses results when
 only part of a model changes.  Timeout and anytime modes return sound partial
 results instead of claiming full coverage after a budget expires.
+
+Operator coverage is measured by the operators that actually occur in traced
+models, not just by the raw public PyTorch surface.  The latest census traces
+torchvision, timm, and no-download HuggingFace models, publishes a before/after
+matrix, and pins each newly counted hot operator with real extractor tests:
+\texttt{torchvision.ops.stochastic\_depth} is treated as shape-preserving,
+functional \texttt{layer\_norm} and \texttt{adaptive\_avg\_pool2d} build
+synthetic FX layers, and SDPA maps to the existing attention contract.  Scalar
+shape-metadata queries such as \texttt{size}, \texttt{dim}, and integer
+\texttt{floordiv} are reported separately instead of being counted as tensor
+transfer functions.
 
 \section{Formal and Trust Story}
 

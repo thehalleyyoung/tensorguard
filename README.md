@@ -23,7 +23,9 @@ runtime errors in ML codebases before any code runs.
   `einsum`, `gather`/`scatter` integer-index and static bounds checks,
   `take_along_dim`,
   `topk`/`sort`, `fold`/`unfold`, `bmm`,
-  RNN/LSTM/GRU state contracts, attention patterns, and more
+  RNN/LSTM/GRU state contracts, attention patterns, and more, with
+  frequency-weighted real-model coverage tracked across torchvision, timm, and
+  HuggingFace traces
 - **High-value library contracts checked against the real libraries** —
   `einops` (`rearrange` / `reduce` / `repeat`), SDPA,
   `nn.MultiheadAttention` packed/unpacked q/k/v + masks,
