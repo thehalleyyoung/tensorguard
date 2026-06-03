@@ -17,6 +17,7 @@ import torch.distributions as D  # noqa: E402
 
 from src.distributions_verify import (  # noqa: E402
     DistributionSpec,
+    TransformSpec,
     verify_distribution,
     verify_log_prob,
 )
@@ -267,6 +268,150 @@ def test_independent_log_prob_shapes_match_torch():
         assert tuple(out.shape) == expected
         assert verify_log_prob(spec, value_shape).output_shape == expected
     assert not verify_log_prob(spec, (5,)).ok
+
+
+def test_transformed_distribution_identity_descriptor_matches_torch():
+    base = verify_distribution("Normal", loc=(2, 1, 3), scale=(1, 4, 3)).spec
+    verdict = verify_distribution(
+        "TransformedDistribution",
+        base=base,
+        transforms=["ExpTransform"],
+    )
+    real = D.TransformedDistribution(
+        D.Normal(_zeros((2, 1, 3)), _ones((1, 4, 3)), validate_args=False),
+        [D.transforms.ExpTransform()],
+        validate_args=False,
+    )
+
+    assert verdict.ok
+    assert verdict.spec is not None
+    assert verdict.spec.batch_shape == tuple(real.batch_shape) == (2, 4, 3)
+    assert verdict.spec.event_shape == tuple(real.event_shape) == ()
+    assert verify_log_prob(verdict, (5, 2, 4, 3)).output_shape == (5, 2, 4, 3)
+
+
+def test_transformed_distribution_reshape_descriptor_matches_torch():
+    normal = D.Normal(_zeros((4, 2, 3)), _ones((4, 2, 3)), validate_args=False)
+    base = verify_distribution("Normal", loc=(4, 2, 3), scale=(4, 2, 3)).spec
+    independent = verify_distribution(
+        "Independent",
+        base=base,
+        reinterpreted_batch_ndims=2,
+    )
+    descriptor = TransformSpec.reshape((2, 3), (6,))
+    verdict = verify_distribution(
+        "TransformedDistribution",
+        base=independent,
+        transforms=[descriptor],
+    )
+    real = D.TransformedDistribution(
+        D.Independent(normal, 2, validate_args=False),
+        [D.transforms.ReshapeTransform((2, 3), (6,))],
+        validate_args=False,
+    )
+
+    assert verdict.ok
+    assert verdict.spec is not None
+    assert verdict.spec.batch_shape == tuple(real.batch_shape) == (4,)
+    assert verdict.spec.event_shape == tuple(real.event_shape) == (6,)
+    assert verify_log_prob(verdict, (7, 4, 6)).output_shape == (7, 4)
+    assert not verify_log_prob(verdict, (4, 5)).ok
+
+
+def test_transformed_distribution_reinterprets_batch_dims_like_torch():
+    base = verify_distribution("Normal", loc=(2, 3), scale=(2, 3)).spec
+    transform = D.transforms.ReshapeTransform((3,), (3,))
+    verdict = verify_distribution(
+        "TransformedDistribution",
+        base=base,
+        transforms=[transform],
+    )
+    real = D.TransformedDistribution(
+        D.Normal(_zeros((2, 3)), _ones((2, 3)), validate_args=False),
+        [transform],
+        validate_args=False,
+    )
+
+    assert verdict.ok
+    assert verdict.spec is not None
+    assert verdict.spec.batch_shape == tuple(real.batch_shape) == (2,)
+    assert verdict.spec.event_shape == tuple(real.event_shape) == (3,)
+
+
+def test_transformed_distribution_composite_event_dim_matches_torch():
+    base = verify_distribution("Normal", loc=(4, 2, 3), scale=(4, 2, 3)).spec
+    independent = verify_distribution(
+        "Independent",
+        base=base,
+        reinterpreted_batch_ndims=2,
+    )
+    transforms = [
+        TransformSpec.reshape((2, 3), (6,)),
+        "ExpTransform",
+    ]
+    verdict = verify_distribution(
+        "TransformedDistribution",
+        base=independent,
+        transforms=transforms,
+    )
+    real = D.TransformedDistribution(
+        D.Independent(
+            D.Normal(_zeros((4, 2, 3)), _ones((4, 2, 3)), validate_args=False),
+            2,
+            validate_args=False,
+        ),
+        [D.transforms.ReshapeTransform((2, 3), (6,)), D.transforms.ExpTransform()],
+        validate_args=False,
+    )
+
+    assert verdict.ok
+    assert verdict.spec is not None
+    assert verdict.spec.batch_shape == tuple(real.batch_shape) == (4,)
+    assert verdict.spec.event_shape == tuple(real.event_shape) == (6,)
+
+
+def test_transformed_distribution_real_affine_broadcast_matches_torch():
+    transform = D.transforms.AffineTransform(torch.zeros(5), 1.0)
+    base = verify_distribution("Normal", loc=(1,), scale=(1,)).spec
+    verdict = verify_distribution(
+        "TransformedDistribution",
+        base=base,
+        transforms=[transform],
+    )
+    real = D.TransformedDistribution(
+        D.Normal(_zeros((1,)), _ones((1,)), validate_args=False),
+        [transform],
+        validate_args=False,
+    )
+    assert verdict.ok
+    assert verdict.spec is not None
+    assert verdict.spec.batch_shape == tuple(real.batch_shape) == (5,)
+    assert verdict.spec.event_shape == tuple(real.event_shape) == ()
+
+    bad = verify_distribution(
+        "TransformedDistribution",
+        base=verify_distribution("Normal", loc=(3,), scale=(3,)).spec,
+        transforms=[transform],
+    )
+    assert not bad.ok
+    assert bad.error_kind == "transform_forward_shape"
+    with pytest.raises(RuntimeError):
+        D.TransformedDistribution(
+            D.Normal(_zeros((3,)), _ones((3,)), validate_args=False),
+            [transform],
+            validate_args=False,
+        )
+
+
+def test_transformed_distribution_bad_reshape_descriptor_rejected():
+    base = verify_distribution("Normal", loc=(2, 3), scale=(2, 3)).spec
+    verdict = verify_distribution(
+        "TransformedDistribution",
+        base=base,
+        transforms=[TransformSpec.reshape((4,), (4,))],
+    )
+    assert not verdict.ok
+    assert verdict.error_kind == "transform_forward_shape"
 
 
 def test_symbolic_dims_are_not_refuted_when_undecidable():

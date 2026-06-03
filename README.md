@@ -35,7 +35,7 @@ runtime errors in ML codebases before any code runs.
   `Normalize` / flips, with PIL-only paths abstaining), and
   `nn/F.embedding_bag` plus TorchRec-style jagged pooled embeddings
   (offsets, per-sample weights, pooling modes, and ragged abstention),
-  `torch.distributions` batch/event/log-prob shapes, plus PyTorch
+  Lean-backed `torch.distributions` batch/event/log-prob shapes, plus PyTorch
   named-tensor `refine_names` / `align_to` alignment, complex
   `view_as_real` / `view_as_complex` / `torch.fft` shape-dtype contracts,
   `torch.vmap` plus `torch.func` grad/jacrev/jacfwd/jvp/vjp shape transfers,

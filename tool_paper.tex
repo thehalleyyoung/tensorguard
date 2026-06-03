@@ -219,8 +219,9 @@ sparse softmax/coalesce, layout conversions, FFT/complex view contracts, exact \
 \texttt{solve}, inverse, Cholesky, SVD, eigendecomposition, and QR, named tensor
 refinement/alignment, vmap/functorch batch dimensions, \texttt{torch.func} autodiff
 wrappers (\texttt{grad}, \texttt{jacrev}, \texttt{jacfwd}, \texttt{jvp}, and
-\texttt{vjp}), distribution batch/event/log-prob
-shapes, grid sampling, affine grids, source-level
+\texttt{vjp}), distribution batch/event/log-prob shapes including
+\texttt{TransformedDistribution} identity/reshape and real transform-shape
+oracles, grid sampling, affine grids, source-level
 \texttt{torchvision.transforms.v2} tensor transforms
 (\texttt{Resize}, crops, \texttt{Pad}, \texttt{Normalize}, flips, and
 PIL-only abstention), multi-head attention, scaled dot-product
@@ -659,8 +660,10 @@ CEGAR convergence bounds, infeasible-contract abstention, fragment modes,
 device/dtype transfer soundness, SMT encoding faithfulness, cross-domain
 composition, and operator-specific rules such as cat, chunk/split partition
 reconstruction, reshape, einops decomposition/bijection families, SDPA
-broadcast/mask/GQA shape laws, and named-tensor refine/align name preservation,
-singleton insertion, and duplicate-name rejection.
+broadcast/mask/GQA shape laws, distribution batch/event/log-prob algebra,
+TransformedDistribution identity/reshape event-rank rules, and named-tensor
+refine/align name preservation, singleton insertion, and duplicate-name
+rejection.
 The Lean audit checks theorem statements for sorry-free status under the
 trusted kernel axioms used by the environment.
 

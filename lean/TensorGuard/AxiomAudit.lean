@@ -493,3 +493,38 @@ import TensorGuard
 #print axioms TensorGuard.GridSample.affineGrid3D_size_depth_positive_required
 #print axioms TensorGuard.GridSample.affineGrid_theta_batch_positive_required
 #print axioms TensorGuard.GridSample.affineGrid2D_batch_mismatch_flagged
+
+-- Distribution batch/event/log_prob rules (Step 234): constructor shape
+-- algebra for Normal, Categorical, MultivariateNormal, Independent, plus the
+-- identity/reshape TransformedDistribution fragment and event-rank reduction in
+-- log_prob.
+#print axioms TensorGuard.Distributions.bcDim_same
+#print axioms TensorGuard.Distributions.bcDim_one_left
+#print axioms TensorGuard.Distributions.bcDim_one_right
+#print axioms TensorGuard.Distributions.bcDim_incompatible_example
+#print axioms TensorGuard.Distributions.broadcast_example
+#print axioms TensorGuard.Distributions.broadcast_incompatible_example
+#print axioms TensorGuard.Distributions.normal_broadcast_output
+#print axioms TensorGuard.Distributions.normal_bad_broadcast_rejected
+#print axioms TensorGuard.Distributions.categorical_batch_drops_category_dim
+#print axioms TensorGuard.Distributions.categorical_empty_rank_rejected
+#print axioms TensorGuard.Distributions.categorical_zero_categories_rejected
+#print axioms TensorGuard.Distributions.mvn_batch_event_output
+#print axioms TensorGuard.Distributions.mvn_matrix_square_rejected
+#print axioms TensorGuard.Distributions.mvn_event_mismatch_rejected
+#print axioms TensorGuard.Distributions.mvn_batch_broadcast_rejected
+#print axioms TensorGuard.Distributions.independent_moves_batch_to_event
+#print axioms TensorGuard.Distributions.independent_preserves_when_zero
+#print axioms TensorGuard.Distributions.independent_too_many_rejected
+#print axioms TensorGuard.Distributions.normal_logProb_broadcasts_value
+#print axioms TensorGuard.Distributions.categorical_logProb_drops_no_event
+#print axioms TensorGuard.Distributions.mvn_logProb_drops_event_dim
+#print axioms TensorGuard.Distributions.logProb_bad_value_broadcast_rejected
+#print axioms TensorGuard.Distributions.reshapeShape_output
+#print axioms TensorGuard.Distributions.reshapeShape_wrong_suffix_rejected
+#print axioms TensorGuard.Distributions.reshapeShape_numel_mismatch_rejected
+#print axioms TensorGuard.Distributions.transformed_identity_preserves_shape
+#print axioms TensorGuard.Distributions.transformed_reshape_event_shape
+#print axioms TensorGuard.Distributions.transformed_reshape_reinterprets_batch
+#print axioms TensorGuard.Distributions.transformed_composed_reshape_identity
+#print axioms TensorGuard.Distributions.transformed_wrong_domain_rejected

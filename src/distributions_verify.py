@@ -15,8 +15,10 @@ Symbolic dimensions are never refuted when compatibility cannot be decided.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Optional, Sequence, Tuple, Union
+from dataclasses import dataclass, field
+from functools import reduce
+from operator import mul
+from typing import Callable, Optional, Sequence, Tuple, Union
 
 Dim = Union[int, str]
 Shape = Tuple[Dim, ...]
@@ -24,6 +26,7 @@ Shape = Tuple[Dim, ...]
 __all__ = [
     "DistributionSpec",
     "DistributionVerdict",
+    "TransformSpec",
     "verify_distribution",
     "verify_log_prob",
 ]
@@ -36,6 +39,65 @@ class DistributionSpec:
     name: str
     batch_shape: Shape
     event_shape: Shape
+
+
+@dataclass(frozen=True)
+class TransformSpec:
+    """Static shape contract for a supported distribution transform.
+
+    The descriptor mirrors the shape-facing part of
+    ``torch.distributions.Transform``: the domain/codomain event ranks and the
+    forward/inverse shape maps used by ``TransformedDistribution``.  Users can
+    also pass real torch Transform objects; this class exists for pure-static
+    call sites that do not want to import torch.
+    """
+
+    name: str
+    domain_event_dim: int = 0
+    codomain_event_dim: int = 0
+    input_event_shape: Optional[Shape] = None
+    output_event_shape: Optional[Shape] = None
+    _forward_shape: Optional[Callable[[Shape], Shape]] = field(
+        default=None, repr=False, compare=False
+    )
+    _inverse_shape: Optional[Callable[[Shape], Shape]] = field(
+        default=None, repr=False, compare=False
+    )
+
+    @staticmethod
+    def identity(name: str = "IdentityTransform") -> "TransformSpec":
+        return TransformSpec(name=name, domain_event_dim=0, codomain_event_dim=0)
+
+    @staticmethod
+    def reshape(
+        input_event_shape: Sequence[Dim],
+        output_event_shape: Sequence[Dim],
+    ) -> "TransformSpec":
+        in_shape = tuple(input_event_shape)
+        out_shape = tuple(output_event_shape)
+        return TransformSpec(
+            name="ReshapeTransform",
+            domain_event_dim=len(in_shape),
+            codomain_event_dim=len(out_shape),
+            input_event_shape=in_shape,
+            output_event_shape=out_shape,
+        )
+
+    def forward_shape(self, shape: Sequence[Dim]) -> Optional[Shape]:
+        base = tuple(shape)
+        if self._forward_shape is not None:
+            return _call_shape_fn(self._forward_shape, base)
+        if self.input_event_shape is None or self.output_event_shape is None:
+            return base
+        return _reshape_shape(base, self.input_event_shape, self.output_event_shape)
+
+    def inverse_shape(self, shape: Sequence[Dim]) -> Optional[Shape]:
+        base = tuple(shape)
+        if self._inverse_shape is not None:
+            return _call_shape_fn(self._inverse_shape, base)
+        if self.input_event_shape is None or self.output_event_shape is None:
+            return base
+        return _reshape_shape(base, self.output_event_shape, self.input_event_shape)
 
 
 @dataclass
@@ -71,6 +133,12 @@ def _ok(name: str, batch: Sequence[Dim], event: Sequence[Dim]) -> DistributionVe
 
 def _known_mismatch(a: Dim, b: Dim) -> bool:
     return isinstance(a, int) and isinstance(b, int) and a != b
+
+
+def _known_product(shape: Shape) -> Optional[int]:
+    if not all(isinstance(dim, int) for dim in shape):
+        return None
+    return reduce(mul, (int(dim) for dim in shape), 1)
 
 
 def _broadcast_dim(a: Dim, b: Dim) -> Optional[Dim]:
@@ -109,6 +177,67 @@ def _broadcast_shapes(shapes: Sequence[Sequence[Dim]]) -> Optional[Shape]:
         out.append(cur)
     out.reverse()
     return tuple(out)
+
+
+def _can_expand_batch(current: Shape, target: Shape) -> bool:
+    """Return whether a torch Distribution batch can expand to ``target``."""
+
+    if len(target) < len(current):
+        return False
+    for old, new in zip(reversed(current), reversed(target)):
+        if old == new or old == 1:
+            continue
+        if isinstance(old, str) or isinstance(new, str):
+            continue
+        return False
+    return True
+
+
+def _suffix_compatible(shape: Shape, suffix: Shape) -> bool:
+    if len(suffix) > len(shape):
+        return False
+    for actual, expected in zip(shape[-len(suffix) :] if suffix else (), suffix):
+        if _known_mismatch(actual, expected):
+            return False
+        if actual != expected and not (
+            isinstance(actual, str) or isinstance(expected, str)
+        ):
+            return False
+    return True
+
+
+def _reshape_shape(shape: Shape, input_event: Shape, output_event: Shape) -> Optional[Shape]:
+    in_numel = _known_product(input_event)
+    out_numel = _known_product(output_event)
+    if in_numel is not None and out_numel is not None and in_numel != out_numel:
+        return None
+    if not _suffix_compatible(shape, input_event):
+        return None
+    return shape[: len(shape) - len(input_event)] + output_event
+
+
+def _shape_result(value: object) -> Optional[Shape]:
+    try:
+        raw = tuple(value)  # torch.Size and ordinary tuples both work here.
+    except TypeError:
+        return None
+    out = []
+    for dim in raw:
+        if isinstance(dim, (int, str)):
+            out.append(dim)
+        else:
+            try:
+                out.append(int(dim))
+            except Exception:
+                return None
+    return tuple(out)
+
+
+def _call_shape_fn(fn: Callable[[Shape], object], shape: Shape) -> Optional[Shape]:
+    try:
+        return _shape_result(fn(tuple(shape)))
+    except Exception:
+        return None
 
 
 def _canonical_name(name: str) -> str:
@@ -228,6 +357,236 @@ def _independent(params: dict) -> DistributionVerdict:
     return _ok(f"Independent[{spec.name}]", batch, event)
 
 
+_IDENTITY_TRANSFORMS = {
+    "identity",
+    "identitytransform",
+    "exp",
+    "exptransform",
+    "sigmoid",
+    "sigmoidtransform",
+    "tanh",
+    "tanhtransform",
+    "softplus",
+    "softplustransform",
+}
+
+
+def _coerce_transform(value: object) -> Union[TransformSpec, DistributionVerdict]:
+    if isinstance(value, TransformSpec):
+        return value
+    if isinstance(value, str):
+        key = _canonical_name(value)
+        if key in _IDENTITY_TRANSFORMS:
+            return TransformSpec.identity(value)
+        return _fail("unsupported_transform", f"unsupported transform descriptor {value!r}")
+    if isinstance(value, dict):
+        kind = _canonical_name(
+            str(value.get("kind") or value.get("type") or value.get("name") or "")
+        )
+        if kind in _IDENTITY_TRANSFORMS:
+            return TransformSpec.identity(
+                str(value.get("name") or value.get("kind") or "IdentityTransform")
+            )
+        if kind in {"reshape", "reshapetransform"}:
+            in_shape = value.get(
+                "input_event_shape", value.get("input_shape", value.get("in_shape"))
+            )
+            out_shape = value.get(
+                "output_event_shape", value.get("output_shape", value.get("out_shape"))
+            )
+            if in_shape is None or out_shape is None:
+                return _fail(
+                    "transform_descriptor",
+                    "ReshapeTransform requires input and output event shapes",
+                )
+            spec = TransformSpec.reshape(tuple(in_shape), tuple(out_shape))
+            in_numel = _known_product(spec.input_event_shape or ())
+            out_numel = _known_product(spec.output_event_shape or ())
+            if in_numel is not None and out_numel is not None and in_numel != out_numel:
+                return _fail(
+                    "reshape_numel",
+                    "ReshapeTransform input/output event shapes must preserve numel",
+                )
+            return spec
+        return _fail("unsupported_transform", f"unsupported transform descriptor {value!r}")
+
+    domain = getattr(value, "domain", None)
+    codomain = getattr(value, "codomain", None)
+    forward_shape = getattr(value, "forward_shape", None)
+    inverse_shape = getattr(value, "inverse_shape", None)
+    domain_event_dim = getattr(domain, "event_dim", None)
+    codomain_event_dim = getattr(codomain, "event_dim", None)
+    if (
+        isinstance(domain_event_dim, int)
+        and isinstance(codomain_event_dim, int)
+        and callable(forward_shape)
+        and callable(inverse_shape)
+    ):
+        return TransformSpec(
+            name=type(value).__name__,
+            domain_event_dim=domain_event_dim,
+            codomain_event_dim=codomain_event_dim,
+            _forward_shape=forward_shape,
+            _inverse_shape=inverse_shape,
+        )
+    return _fail("unsupported_transform", f"unsupported transform object {value!r}")
+
+
+def _normalize_transforms(
+    value: object,
+) -> Union[Tuple[TransformSpec, ...], DistributionVerdict]:
+    if isinstance(value, (TransformSpec, str, dict)) or (
+        hasattr(value, "domain") and hasattr(value, "codomain")
+    ):
+        raw = (value,)
+    elif isinstance(value, (list, tuple)):
+        raw = tuple(value)
+    else:
+        return _fail(
+            "missing_parameter",
+            "TransformedDistribution requires a transform or non-empty transform list",
+        )
+    if not raw:
+        return _fail("transform_list", "TransformedDistribution requires at least one transform")
+
+    specs = []
+    for item in raw:
+        spec = _coerce_transform(item)
+        if isinstance(spec, DistributionVerdict):
+            return spec
+        if spec.domain_event_dim < 0 or spec.codomain_event_dim < 0:
+            return _fail(
+                "transform_event_dim",
+                "transform event dimensions must be non-negative",
+            )
+        specs.append(spec)
+    return tuple(specs)
+
+
+def _adjust_event_dim(current: int, plus: int, minus: int) -> int:
+    return current + plus - minus
+
+
+def _compose_domain_event_dim(transforms: Sequence[TransformSpec]) -> int:
+    event_dim = transforms[-1].codomain_event_dim
+    for transform in reversed(transforms):
+        event_dim = _adjust_event_dim(
+            event_dim,
+            transform.domain_event_dim,
+            transform.codomain_event_dim,
+        )
+        event_dim = max(event_dim, transform.domain_event_dim)
+    return event_dim
+
+
+def _compose_codomain_event_dim(transforms: Sequence[TransformSpec]) -> int:
+    event_dim = transforms[0].domain_event_dim
+    for transform in transforms:
+        event_dim = _adjust_event_dim(
+            event_dim,
+            transform.codomain_event_dim,
+            transform.domain_event_dim,
+        )
+        event_dim = max(event_dim, transform.codomain_event_dim)
+    return event_dim
+
+
+def _run_forward_shape(transforms: Sequence[TransformSpec], shape: Shape) -> Optional[Shape]:
+    out = shape
+    for transform in transforms:
+        nxt = transform.forward_shape(out)
+        if nxt is None:
+            return None
+        out = nxt
+    return out
+
+
+def _run_inverse_shape(transforms: Sequence[TransformSpec], shape: Shape) -> Optional[Shape]:
+    out = shape
+    for transform in reversed(transforms):
+        nxt = transform.inverse_shape(out)
+        if nxt is None:
+            return None
+        out = nxt
+    return out
+
+
+def _transformed_distribution(params: dict) -> DistributionVerdict:
+    base = params.get("base")
+    if isinstance(base, DistributionVerdict):
+        if not base.ok or base.spec is None:
+            return _fail("base_distribution", base.error or "base distribution is invalid")
+        spec = base.spec
+    elif isinstance(base, DistributionSpec):
+        spec = base
+    else:
+        return _fail(
+            "missing_parameter",
+            "TransformedDistribution requires a DistributionSpec base",
+        )
+
+    transforms = _normalize_transforms(params.get("transforms"))
+    if isinstance(transforms, DistributionVerdict):
+        return transforms
+
+    base_shape = spec.batch_shape + spec.event_shape
+    base_event_dim = len(spec.event_shape)
+    domain_event_dim = _compose_domain_event_dim(transforms)
+    codomain_event_dim = _compose_codomain_event_dim(transforms)
+    if len(base_shape) < domain_event_dim:
+        return _fail(
+            "transform_domain",
+            f"base shape {base_shape} has rank {len(base_shape)}, "
+            f"but transform domain requires {domain_event_dim} event dims",
+        )
+
+    forward_shape = _run_forward_shape(transforms, base_shape)
+    if forward_shape is None:
+        return _fail(
+            "transform_forward_shape",
+            "transform forward_shape rejected the base shape",
+        )
+    expanded_base_shape = _run_inverse_shape(transforms, forward_shape)
+    if expanded_base_shape is None:
+        return _fail(
+            "transform_inverse_shape",
+            "transform inverse_shape rejected its forward shape",
+        )
+
+    if expanded_base_shape != base_shape:
+        if len(expanded_base_shape) < base_event_dim:
+            return _fail(
+                "transform_inverse_shape",
+                "transform inverse shape is shorter than the base event rank",
+            )
+        expanded_event = expanded_base_shape[-base_event_dim:] if base_event_dim else ()
+        if any(_known_mismatch(a, b) for a, b in zip(expanded_event, spec.event_shape)):
+            return _fail(
+                "transform_inverse_event",
+                f"transform inverse event shape {expanded_event} disagrees with base event {spec.event_shape}",
+            )
+        expanded_batch = expanded_base_shape[: len(expanded_base_shape) - base_event_dim]
+        if not _can_expand_batch(spec.batch_shape, expanded_batch):
+            return _fail(
+                "transform_expand",
+                f"base batch {spec.batch_shape} cannot expand to transform-required {expanded_batch}",
+            )
+
+    transformed_event_base = base_event_dim + codomain_event_dim - domain_event_dim
+    event_dim = max(codomain_event_dim, transformed_event_base)
+    if event_dim < 0 or event_dim > len(forward_shape):
+        return _fail(
+            "transform_event_dim",
+            f"transform event rank {event_dim} is invalid for forward shape {forward_shape}",
+        )
+    cut = len(forward_shape) - event_dim
+    return _ok(
+        f"TransformedDistribution[{spec.name}]",
+        forward_shape[:cut],
+        forward_shape[cut:],
+    )
+
+
 def verify_distribution(name: str, **params: object) -> DistributionVerdict:
     """Verify constructor batch/event shapes for a supported distribution.
 
@@ -250,10 +609,12 @@ def verify_distribution(name: str, **params: object) -> DistributionVerdict:
         return _multivariate_normal(params)
     if family == "independent":
         return _independent(params)
+    if family == "transformeddistribution":
+        return _transformed_distribution(params)
     return _fail(
         "unsupported_distribution",
         f"unsupported distribution {name!r}; supported: Normal, Bernoulli, Uniform, "
-        "Exponential, Categorical, MultivariateNormal, Independent",
+        "Exponential, Categorical, MultivariateNormal, Independent, TransformedDistribution",
     )
 
 
