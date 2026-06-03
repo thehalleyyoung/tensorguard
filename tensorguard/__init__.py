@@ -199,6 +199,14 @@ from src.cuda_graph_capture import (  # noqa: F401  (re-export)
     guarded_cuda_graph_capture,
     verify_cuda_graph_capture_eligibility,
 )
+from src.compile_guard_analysis import (  # noqa: F401  (re-export)
+    CompileGuardComparisonResult,
+    CompileGuardIssue,
+    DynamoGuard,
+    GuardConstraintMatch,
+    TensorGuardSymbolicConstraint,
+    verify_compile_guard_interactions,
+)
 
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
 from src import api as api  # noqa: F401
@@ -340,6 +348,12 @@ __all__ = [
     "TensorGuardCudaGraphCaptureError",
     "guarded_cuda_graph_capture",
     "verify_cuda_graph_capture_eligibility",
+    "CompileGuardComparisonResult",
+    "CompileGuardIssue",
+    "DynamoGuard",
+    "GuardConstraintMatch",
+    "TensorGuardSymbolicConstraint",
+    "verify_compile_guard_interactions",
     "TensorGuardViolation",
     "TensorGuardAOTPackageError",
     "AOTPackageIssue",

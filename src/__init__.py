@@ -141,6 +141,14 @@ from .cuda_graph_capture import (
     guarded_cuda_graph_capture,
     verify_cuda_graph_capture_eligibility,
 )
+from .compile_guard_analysis import (
+    CompileGuardComparisonResult,
+    CompileGuardIssue,
+    DynamoGuard,
+    GuardConstraintMatch,
+    TensorGuardSymbolicConstraint,
+    verify_compile_guard_interactions,
+)
 
 __all__ = [
     "analyze",
@@ -258,5 +266,11 @@ __all__ = [
     "TensorGuardCudaGraphCaptureError",
     "guarded_cuda_graph_capture",
     "verify_cuda_graph_capture_eligibility",
+    "CompileGuardComparisonResult",
+    "CompileGuardIssue",
+    "DynamoGuard",
+    "GuardConstraintMatch",
+    "TensorGuardSymbolicConstraint",
+    "verify_compile_guard_interactions",
     "__version__",
 ]

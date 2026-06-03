@@ -70,7 +70,8 @@ runtime errors in ML codebases before any code runs.
   compatibility (missing/unexpected keys, tied weights, tensor-parallel shards,
   dtype drift), full LoRA/PEFT adapter compatibility (rank, `target_modules`,
   merged state, and quantized bases), and optimizer-state compatibility for
-  AdamW, Adafactor, fused AdamW, sharded resume buffers, CUDA graph capture
+  AdamW, Adafactor, fused AdamW, sharded resume buffers, `torch.compile`
+  guard-set parity against TensorGuard symbolic constraints, CUDA graph capture
   eligibility (dynamic allocation, data-dependent shapes, unsupported ops, and
   static-input replay contracts), plus TorchServe/FastAPI request→preprocess→model→response
   schema gates that reject bad preprocessing layouts before forward execution
@@ -372,12 +373,16 @@ the model is compiled, exported, or wrapped, so a shape/device/phase bug is one
 clear `TensorGuardViolation` instead of an opaque downstream failure:
 
 ```python
-from tensorguard.torch import guarded_compile, guarded_onnx_export, guarded_aot_package
+from tensorguard.torch import (
+    guarded_compile, guarded_onnx_export, guarded_aot_package,
+    verify_compile_guard_interactions,
+)
 from src.framework_hooks import TensorGuardCallback, TensorGuardTrainerCallback
 from src.integrations.accelerate_hook import prepare_verified
 from src.integrations.hf_hook import guarded_from_pretrained
 
 compiled = guarded_compile(model, input_shapes={"x": ("b", 10)})   # torch.compile
+guard_audit = verify_compile_guard_interactions(model, (x,), input_shapes={"x": ("b", 10)})
 guarded_onnx_export(model, (x,), "model.onnx")                     # ONNX checker + opset + shape-inference round trip
 guarded_aot_package(model, (x,), package_path="m.pt2", dynamic_shapes=ds)  # AOT layout/dtype/device/Dim/lowering gates
 model = prepare_verified(accelerator, model, opt, loader)          # accelerate.prepare
@@ -2384,10 +2389,13 @@ same bug surfaces as an opaque guard failure or a deep inductor traceback).
 `guarded_compile(model, input_shapes=…)` verifies a live `nn.Module`, raises a
 `TensorGuardViolation` (or warns) on a real bug, then returns
 `torch.compile(model)`; `make_tensorguard_backend(model)` is a `torch.compile`
-backend that gates verification inside the pipeline; `verify_exported_program`
-and `guarded_aot_package` do the same before `torch.export.export` and
-AOTInductor packaging; `guarded_onnx_export` adds ONNX opset availability and
-`onnx.checker` gates. See `src/torch_integration.py`.
+backend that gates verification inside the pipeline; `verify_compile_guard_interactions`
+compares TensorGuard rank/dim/layer constraints with Dynamo `ExplainOutput.out_guards`
+and reports missing runtime guards; `verify_exported_program` and
+`guarded_aot_package` do the same before `torch.export.export` and AOTInductor
+packaging; `guarded_onnx_export` adds ONNX opset availability and
+`onnx.checker` gates. See `src/torch_integration.py` and
+`src/compile_guard_analysis.py`.
 
 ### Framework hooks (Lightning, HF Trainer, `from_pretrained`)
 

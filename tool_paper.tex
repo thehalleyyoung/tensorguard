@@ -667,7 +667,7 @@ axes, preventing false claims about a final chunk size.
 
 The system is intentionally broad because tensor bugs are not confined to a
 single frontend.  The repository includes modules for source analysis, model
-checking, graph compilation, torch integration, export extraction, Dynamo gap
+checking, graph compilation, torch integration, compile-guard comparison, export extraction, Dynamo gap
 analysis, framework hooks, sparse and complex verification, SDPA and MHA
 verification, distribution checks, named tensor checks, vmap checks, quant/export
 checks, distributed verification, LoRA verification, training-loop checks,
@@ -892,7 +892,10 @@ Export and compile &
 Pre-pass verification for \texttt{torch.compile}, \texttt{torch.export}, ONNX,
 AOTInductor packaging, and deployment gates, including package-time layout,
 dtype, device, dynamic-guard, ONNX opset availability, lowering checks, and
-post-export ONNX shape-inference agreement.  GGUF/llama.cpp export gates check
+post-export ONNX shape-inference agreement.  The compile-guard audit compares
+\tg{} rank, concrete-dimension, repeated-symbol, and layer-boundary constraints
+against Dynamo \texttt{ExplainOutput.out\_guards}, reporting missing shape-env
+guards rather than trusting a compiled graph by inspection.  GGUF/llama.cpp export gates check
 q/k/v packing, rotary dimensions, vocab projections, quant block divisibility,
 and metadata consistency before an external converter is invoked; model
 checkpoint gates check missing/unexpected keys, tied weights, adapter-only LoRA
@@ -1269,7 +1272,9 @@ symbols before tracing; ONNX exports check exporter opset bounds, lowered ATen
 minimum opsets, and backend-specific dynamic-shape support before writing a
 proto; and AOT packages additionally reject invalid example layouts, devices,
 dtypes, missing dynamic guards, and denied ATen lowerings before the packager
-writes an artifact.  The GGUF gate checks architecture-prefixed llama.cpp
+writes an artifact.  Compile-guard comparison normalizes Dynamo rank, shape-index,
+range, and cross-input equality guards and checks them against \tg{} symbolic
+constraints on real \texttt{nn.Linear}, residual, and convolution modules.  The GGUF gate checks architecture-prefixed llama.cpp
 metadata, q/k/v and packed-qkv tensor shapes, grouped-query head consistency,
 rotary dimensions, vocab/output projection padding, and GGUF quant block sizes
 before the converter writes a checkpoint; the optimizer-state gate checks
@@ -1281,7 +1286,7 @@ contracts, and postprocessed response payloads before invoking or returning from
 FastAPI/TorchServe-style wrappers; the CUDA graph gate flags fresh allocation,
 data-dependent extents, unsupported capture-time host operations, and replay
 shape/dtype/device/stride drift. &
-ONNX, AOT, GGUF, CUDA graph, serving-schema, quantization, mixed-precision, and guarded compile/export
+ONNX, AOT, GGUF, CUDA graph, serving-schema, quantization, mixed-precision, compile-guard, and guarded compile/export
 tests. \\
 \hline
 Distributed and adapter gates &
@@ -1460,7 +1465,8 @@ or native annotations.
 Deployment introduces contracts that ordinary training does not: ONNX opset
 availability, \texttt{torch.export} dynamic-shape \texttt{Dim} ranges and
 relations, ONNX-inexpressible derived dynamic dimensions, AOTInductor input
-layouts, dtype/device policies, preserved dynamic guards and package-lowering
+layouts, dtype/device policies, \texttt{torch.compile} guard coverage,
+preserved dynamic guards and package-lowering
 denylists, quantization observer calibration,
 activation qscheme placement, eager/FX quant-dequant boundaries,
 mixed-precision dtype boundaries, AMP backend allowlists, fp16 GradScaler
@@ -1468,6 +1474,11 @@ requirements, TorchServe or FastAPI request schemas, GGUF or llama.cpp
 checkpoint shapes, CUDA graph capture assumptions, and distributed shard
 and pipeline activation boundaries.  \tg{}'s deployment modules check these contracts before the
 downstream system emits a harder-to-debug compiler, exporter, or serving error.
+For \texttt{torch.compile}, \texttt{src/compile\_guard\_analysis.py} makes the
+boundary auditable: it extracts \tg{}'s symbolic input and direct layer
+constraints, reads Dynamo guard code from \texttt{torch.\_dynamo.explain} when
+available, accepts recorded guard objects for deterministic CI, and reports the
+static facts that no runtime guard appears to protect.
 For model serving, \texttt{src/serving\_schema.py} splits a pure
 \texttt{verify\_serving\_schema} checker from guarded wrappers for
 FastAPI-style callables and TorchServe-style handlers.  The pure gate validates
