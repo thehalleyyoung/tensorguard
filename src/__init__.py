@@ -45,6 +45,7 @@ from .sparse_verify import (
     verify_sparse_csr,
 )
 from .grid_sample_verify import verify_affine_grid, verify_grid_sample
+from .loss_verify import LossVerdict, verify_loss
 from .mha_verify import verify_multihead_attention
 from .vmap_verify import verify_vmap
 from .func_autodiff_verify import (
@@ -94,6 +95,8 @@ __all__ = [
     "verify_sparse_bsc",
     "verify_grid_sample",
     "verify_affine_grid",
+    "LossVerdict",
+    "verify_loss",
     "verify_multihead_attention",
     "verify_vmap",
     "verify_func_autodiff",

@@ -209,8 +209,10 @@ alignment, vmap/functorch batch dimensions, \texttt{torch.func} autodiff
 wrappers (\texttt{grad}, \texttt{jacrev}, \texttt{jacfwd}, \texttt{jvp}, and
 \texttt{vjp}), distribution batch/event/log-prob
 shapes, grid sampling, affine grids, multi-head attention, scaled dot-product
-attention, exact RNN/LSTM/GRU output and returned-state contracts, LoRA adapter
-compatibility, training-loop checks, quantization/export safety, distributed
+attention, training loss contracts for \texttt{CrossEntropyLoss},
+\texttt{NLLLoss}, \texttt{MSELoss}, \texttt{BCEWithLogitsLoss}, and
+\texttt{KLDivLoss}, exact RNN/LSTM/GRU output and returned-state contracts,
+LoRA adapter compatibility, training-loop checks, quantization/export safety, distributed
 sharding, tensor parallel attention variants, and deployment schemas.
 
 Recent stack-family work follows the same standard.  \texttt{torch.stack},
@@ -401,6 +403,15 @@ shapes, and \texttt{vjp} validates cotangent trees while documenting the pullbac
 gradient tuple.  Symbolic tangent/cotangent equalities and value-dependent
 closures abstain instead of creating false contracts.
 
+Training loss functions are modeled as multi-input contracts rather than unary
+shape reducers.  \tg{} distinguishes class-index and probability-target
+\texttt{cross\_entropy}, checks NLL class targets, MSE and KL broadcasting,
+BCE-with-logits exact target shapes, scalar versus unreduced outputs, class
+weights, \texttt{pos\_weight}, and eager-PyTorch dtype failures.  The source and
+\texttt{torch.fx} frontends preserve both prediction and target operands for
+\texttt{nn.*Loss} modules and functional calls, so malformed training snippets
+are rejected before the first optimizer step.
+
 \clearpage
 
 \section{Developer Experience}
@@ -537,7 +548,8 @@ failure modes: wrong \texttt{Linear} feature counts after flattening, malformed
 convolution channels, bad Q/K/V dimensions, attention mask errors, invalid
 reshape products, device mismatches between buffers and inputs, dtype
 divergences, gradient detach bugs, invalid sparse compressed layouts, named
-tensor alignment failures, incompatible distribution batch/event shapes, export
+tensor alignment failures, incompatible loss targets, incompatible distribution
+batch/event shapes, export
 contracts, quantization observer placement, and distributed sharding mistakes.
 
 The conformance tests are especially important.  A static rule is only useful
@@ -546,8 +558,8 @@ that construct real tensors, run the corresponding PyTorch operator, and compare
 the resulting shape or runtime exception to \tg{}'s predicted contract.  This
 pattern appears for cat, einsum, reshape, broadcasting, convolution, attention,
 recurrent modules, fold/unfold, padding, grid sampling, sparse layouts, complex
-FFT views, named tensors, distributions, vmap, chunk/split partitioning, and
-index-value operators.  When PyTorch's
+FFT views, named tensors, distributions, vmap, loss functions, chunk/split
+partitioning, and index-value operators.  When PyTorch's
 edge-case behavior is surprising, as with \texttt{take\_along\_dim(dim=None)}
 flattening before selection or \texttt{topk} rejecting oversized \texttt{k}, the
 static rule follows PyTorch rather than a simplified textbook semantics.
@@ -636,7 +648,8 @@ Attention-family contracts for q/k/v, masks, head counts, and output shapes. \\
 Sparse layout and complex/FFT shape-dtype contracts. \\
 \hline
 \texttt{src/distributions\_verify.py}, \texttt{src/named\_tensor\_verify.py},
-\texttt{src/vmap\_verify.py}, \texttt{src/func\_autodiff\_verify.py} &
+\texttt{src/vmap\_verify.py}, \texttt{src/func\_autodiff\_verify.py},
+\texttt{src/loss\_verify.py} &
 High-value library contracts beyond ordinary dense layers. \\
 \hline
 \texttt{src/quant\_export\_checks.py}, \texttt{src/distributed\_verification.py},
@@ -762,6 +775,10 @@ Gradient reasoning &
 Detection of detached or broken gradient flow and training-loop checks around
 optimizers, parameters, and checkpoint-like patterns. \\
 \hline
+Training losses &
+Target-shape, reduction, dtype, class-weight, and \texttt{pos\_weight}
+contracts for cross entropy, NLL, MSE, BCE-with-logits, and KL losses. \\
+\hline
 Stride and permutation &
 Layout and viewability support that keeps reshape/permute reasoning from
 collapsing to rank-only approximations. \\
@@ -881,6 +898,11 @@ shape flow, and runtime-error parity for invalid modes/options. \\
 \texttt{tests/test\_dtype\_promote\_chain.py},
 \texttt{tests/test\_bool\_dtype\_soundness.py} &
 Dtype propagation, promotion, and boolean/integer safety. \\
+\hline
+\texttt{tests/test\_loss\_verify.py} &
+Loss-function conformance for target shape, reduction, dtype, class weights,
+\texttt{pos\_weight}, source snippets, functional calls, FX modules, and eager
+PyTorch runtime-error parity. \\
 \hline
 \texttt{tests/test\_device\_propagation\_precise.py},
 \texttt{tests/test\_device\_placement\_transfer.py} &

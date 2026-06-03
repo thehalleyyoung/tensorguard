@@ -140,6 +140,11 @@ def _init_module_kind_map():
         nn.Hardswish: LayerKind.RELU,
         nn.Hardsigmoid: LayerKind.RELU,
         nn.ReLU6: LayerKind.RELU,
+        nn.CrossEntropyLoss: LayerKind.LOSS_FUNCTION,
+        nn.NLLLoss: LayerKind.LOSS_FUNCTION,
+        nn.MSELoss: LayerKind.LOSS_FUNCTION,
+        nn.BCEWithLogitsLoss: LayerKind.LOSS_FUNCTION,
+        nn.KLDivLoss: LayerKind.LOSS_FUNCTION,
     }
     for name, kind in (
         ("ConstantPad1d", LayerKind.CONSTANTPAD1D),
@@ -345,6 +350,17 @@ def _extract_layer_params(module: "nn.Module", kind: LayerKind) -> Dict[str, Any
             params["dilation"] = module.dilation
         if hasattr(module, 'groups'):
             params["groups"] = module.groups
+    elif kind == LayerKind.LOSS_FUNCTION:
+        params["loss_name"] = type(module).__name__
+        params["reduction"] = getattr(module, "reduction", "mean")
+        if hasattr(module, "ignore_index"):
+            params["ignore_index"] = getattr(module, "ignore_index")
+        if hasattr(module, "log_target"):
+            params["log_target"] = getattr(module, "log_target")
+        for attr in ("weight", "pos_weight"):
+            tensor = getattr(module, attr, None)
+            if tensor is not None and hasattr(tensor, "shape"):
+                params[f"{attr}_shape"] = tuple(int(d) for d in tensor.shape)
     # Record the layer's parameter dtype (used by the dtype algebra). Reading
     # the live weight captures .half()/.to(dtype=) casts applied to the module.
     w = getattr(module, "weight", None)
@@ -701,6 +717,75 @@ def _maybe_tensor_factory(node, output_name: str):
     )
 
 
+_FUNCTIONAL_LOSS_NAMES = frozenset({
+    "cross_entropy",
+    "nll_loss",
+    "mse_loss",
+    "binary_cross_entropy_with_logits",
+    "kl_div",
+})
+
+
+def _maybe_functional_loss(
+    node: "torch.fx.Node",
+    node_to_tensor: Dict[str, str],
+    graph: ComputationGraph,
+    step_idx: int,
+) -> Optional[ComputationStep]:
+    """Build a synthetic LOSS_FUNCTION layer for torch.nn.functional losses."""
+
+    short = getattr(node.target, "__name__", None)
+    if short not in _FUNCTIONAL_LOSS_NAMES:
+        return None
+
+    reduction_pos = {
+        "mse_loss": 4,
+        "kl_div": 4,
+        "binary_cross_entropy_with_logits": 5,
+        "cross_entropy": 6,
+        "nll_loss": 6,
+    }.get(short)
+    reduction = node.kwargs.get("reduction", "mean")
+    if reduction_pos is not None and len(node.args) > reduction_pos:
+        reduction = node.args[reduction_pos]
+    if not isinstance(reduction, str):
+        reduction = "mean"
+
+    params: Dict[str, Any] = {"loss_name": short, "reduction": reduction}
+    if "log_target" in node.kwargs:
+        params["log_target"] = node.kwargs["log_target"]
+
+    layer_name = f"__func_{short}_{step_idx}"
+    graph.layers[layer_name] = LayerDef(
+        attr_name=layer_name,
+        kind=LayerKind.LOSS_FUNCTION,
+        params=params,
+    )
+
+    inputs: List[str] = []
+
+    def add_tensor_arg(value: Any) -> None:
+        if isinstance(value, torch.fx.Node):
+            inputs.append(node_to_tensor.get(value.name, value.name))
+
+    if len(node.args) >= 1:
+        add_tensor_arg(node.args[0])
+    elif "input" in node.kwargs:
+        add_tensor_arg(node.kwargs["input"])
+    if len(node.args) >= 2:
+        add_tensor_arg(node.args[1])
+    elif "target" in node.kwargs:
+        add_tensor_arg(node.kwargs["target"])
+
+    return ComputationStep(
+        op=OpKind.LAYER_CALL,
+        inputs=inputs,
+        output=f"_t{step_idx}",
+        layer_ref=layer_name,
+        params=params,
+    )
+
+
 def _op_display_name(target) -> str:
     """Human-readable name of an fx call target for the unsupported-op
     diagnostic, e.g. ``torch.fft.fft`` or ``Tensor.unfold``."""
@@ -892,6 +977,15 @@ def fx_trace_to_graph(
             step_idx += 1
 
         elif node.op == "call_function":
+            loss_step = _maybe_functional_loss(
+                node, node_to_tensor, graph, step_idx
+            )
+            if loss_step is not None:
+                graph.steps.append(loss_step)
+                node_to_tensor[node.name] = loss_step.output
+                step_idx += 1
+                continue
+
             # Functional embedding: F.embedding(input, weight) /
             # torch.embedding(weight, input) produces input.shape + (embed_dim,).
             # Mapping it to a shape-preserving ACTIVATION (the generic fallback)

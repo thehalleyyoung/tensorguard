@@ -128,6 +128,7 @@ from src.tensor_shapes import (
     compute_sdpa_shape,
     symbolic_split_shape,
 )
+from src.loss_verify import verify_loss
 from src.mha_verify import verify_multihead_attention
 
 
@@ -1925,8 +1926,10 @@ def _extract_layer_params(kind: LayerKind, call: ast.Call,
     # --- New operators: param extraction ---
 
     elif kind == LayerKind.LOSS_FUNCTION:
+        loss_name = _name_or_attr(call.func)
+        loss_short = loss_name.split(".")[-1] if loss_name else "loss"
         reduction = kw.get("reduction", "mean")
-        layer.params = {"reduction": reduction}
+        layer.params = {"loss_name": loss_short, "reduction": reduction}
 
     elif kind == LayerKind.GLU:
         dim = pos[0] if len(pos) > 0 else kw.get("dim", -1)
@@ -2655,6 +2658,11 @@ _FUNCTIONAL_OPS: Dict[str, OpKind] = {
     "pixel_unshuffle": OpKind.LAYER_CALL,
     "fold": OpKind.LAYER_CALL,
     "unfold": OpKind.LAYER_CALL,
+    "cross_entropy": OpKind.LAYER_CALL,
+    "nll_loss": OpKind.LAYER_CALL,
+    "mse_loss": OpKind.LAYER_CALL,
+    "binary_cross_entropy_with_logits": OpKind.LAYER_CALL,
+    "kl_div": OpKind.LAYER_CALL,
     "upsample": OpKind.INTERPOLATE,
 }
 
@@ -2701,6 +2709,11 @@ _FUNC_LAYER_KIND: Dict[str, "LayerKind"] = {
     "group_norm": LayerKind.GROUPNORM,
     "instance_norm": LayerKind.INSTANCENORM2D,
     "embedding": LayerKind.EMBEDDING,
+    "cross_entropy": LayerKind.LOSS_FUNCTION,
+    "nll_loss": LayerKind.LOSS_FUNCTION,
+    "mse_loss": LayerKind.LOSS_FUNCTION,
+    "binary_cross_entropy_with_logits": LayerKind.LOSS_FUNCTION,
+    "kl_div": LayerKind.LOSS_FUNCTION,
     "pixel_shuffle": OpKind.LAYER_CALL,
     "pixel_unshuffle": OpKind.LAYER_CALL,
     "fold": LayerKind.FOLD,
@@ -2726,6 +2739,22 @@ def _make_functional_layer(
     kw = {k.arg: _const_value(k.value) for k in call_node.keywords if k.arg}
 
     layer = LayerDef(attr_name=f"__func_{func_name}", kind=kind, params=dict(kw))
+
+    if kind == LayerKind.LOSS_FUNCTION:
+        reduction_pos = {
+            "mse_loss": 4,
+            "kl_div": 4,
+            "binary_cross_entropy_with_logits": 5,
+            "cross_entropy": 6,
+            "nll_loss": 6,
+        }.get(func_name)
+        reduction = kw.get("reduction", "mean")
+        if reduction_pos is not None and len(call_node.args) > reduction_pos:
+            reduction = _const_value(call_node.args[reduction_pos])
+        layer.params = dict(kw)
+        layer.params["loss_name"] = func_name
+        layer.params["reduction"] = reduction if isinstance(reduction, str) else "mean"
+        return layer
 
     if kind in (LayerKind.MAXPOOL2D, LayerKind.AVGPOOL2D,
                 LayerKind.MAXPOOL1D, LayerKind.AVGPOOL1D,
@@ -5707,9 +5736,13 @@ class _ForwardExtractor(ast.NodeVisitor):
                         syn_layer.attr_name = syn_name
                         self.layers[syn_name] = syn_layer
                         layer_ref_name = syn_name
-                        # For functional calls, first input is the tensor;
-                        # the rest are parameters — only keep the tensor.
-                        inputs = inputs[:1]
+                        if syn_layer.kind == LayerKind.LOSS_FUNCTION:
+                            # Loss functions consume both prediction and target.
+                            inputs = inputs[:2]
+                        else:
+                            # For most functional layers, first input is the
+                            # tensor; the rest are static parameters.
+                            inputs = inputs[:1]
 
                 self.steps.append(ComputationStep(
                     op=_FUNCTIONAL_OPS[short],
@@ -8683,14 +8716,36 @@ def _propagate_layernorm(inp_shape: TensorShape, layer: LayerDef) -> Tuple[Optio
 def _propagate_loss(
     input_shape: TensorShape, layer: LayerDef
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """Loss functions: output depends on reduction param.
+    """Fallback for unmodelled loss functions.
 
-    reduction='none' → same shape as input; 'mean'/'sum' → scalar (1,).
+    Modelled losses are handled by ``ConstraintVerifier._apply_loss_layer_call``
+    because they need both prediction and target operands.  This fallback keeps
+    older, unmodelled losses conservative and fixes PyTorch scalar reductions:
+    ``mean``/``sum`` produce rank-0 tensors, not shape ``(1,)``.
     """
     reduction = layer.params.get("reduction", "mean")
     if reduction == "none":
         return input_shape, None
-    return TensorShape((ShapeDim(1),)), None
+    return TensorShape(()), None
+
+
+def _loss_shape_values(shape: TensorShape) -> Tuple[Union[int, str], ...]:
+    return tuple(d.value for d in shape.dims)
+
+
+def _loss_tensor_shape(values: Tuple[Union[int, str], ...]) -> TensorShape:
+    return TensorShape(tuple(ShapeDim(v) for v in values))
+
+
+def _loss_param_shape(layer: LayerDef, key: str) -> Optional[Tuple[Union[int, str], ...]]:
+    value = layer.params.get(key)
+    if value is None:
+        return None
+    if isinstance(value, TensorShape):
+        return _loss_shape_values(value)
+    if isinstance(value, (tuple, list)):
+        return tuple(v.value if isinstance(v, ShapeDim) else v for v in value)
+    return None
 
 
 def _propagate_glu(
@@ -12708,6 +12763,126 @@ class ConstraintVerifier:
             confidence=Confidence.HIGH,
         ))
 
+    def _apply_loss_layer_call(
+        self,
+        state: ModelState,
+        step: ComputationStep,
+        layer: LayerDef,
+        inp_name: str,
+        inp_shape: TensorShape,
+        violations: List[SafetyViolation],
+    ) -> None:
+        """Apply PyTorch loss contracts that depend on prediction and target."""
+
+        if len(step.inputs) < 2:
+            out_shape, err = _propagate_loss(inp_shape, layer)
+            if err:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible",
+                    step_index=-1,
+                    step=step,
+                    message=err,
+                    tensor_a=inp_name,
+                    shape_a=inp_shape,
+                ))
+            elif out_shape is not None:
+                state.shape_env[step.output] = out_shape
+            return
+
+        target_name = step.inputs[1]
+        target_shape = state.shape_env.get(target_name)
+        if target_shape is None:
+            out_shape, err = _propagate_loss(inp_shape, layer)
+            if err:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible",
+                    step_index=-1,
+                    step=step,
+                    message=err,
+                    tensor_a=inp_name,
+                    shape_a=inp_shape,
+                ))
+            elif out_shape is not None:
+                state.shape_env[step.output] = out_shape
+            return
+
+        loss_name = layer.params.get("loss_name") or layer.attr_name or "loss"
+        reduction = layer.params.get("reduction", "mean")
+        kwargs = {
+            "reduction": reduction if isinstance(reduction, str) else "mean",
+            "weight_shape": _loss_param_shape(layer, "weight_shape"),
+            "pos_weight_shape": _loss_param_shape(layer, "pos_weight_shape"),
+            "log_target": bool(layer.params.get("log_target", False)),
+        }
+
+        shape_verdict = verify_loss(
+            loss_name,
+            _loss_shape_values(inp_shape),
+            _loss_shape_values(target_shape),
+            **kwargs,
+        )
+        if shape_verdict.error_kind in {"unsupported", "unknown"}:
+            out_shape, err = _propagate_loss(inp_shape, layer)
+            if err:
+                violations.append(SafetyViolation(
+                    kind="shape_incompatible",
+                    step_index=-1,
+                    step=step,
+                    message=err,
+                    tensor_a=inp_name,
+                    shape_a=inp_shape,
+                ))
+            elif out_shape is not None:
+                state.shape_env[step.output] = out_shape
+            if shape_verdict.unknown_reason:
+                self.unknown_reasons.append(shape_verdict.unknown_reason)
+            return
+
+        if not shape_verdict.ok:
+            violations.append(SafetyViolation(
+                kind="shape_incompatible",
+                step_index=-1,
+                step=step,
+                message=shape_verdict.message or "loss shape contract failed",
+                tensor_a=inp_name,
+                tensor_b=target_name,
+                shape_a=inp_shape,
+                shape_b=target_shape,
+                confidence=Confidence.HIGH,
+            ))
+            return
+
+        if shape_verdict.output_shape is not None:
+            state.shape_env[step.output] = _loss_tensor_shape(shape_verdict.output_shape)
+        if (
+            shape_verdict.unknown_reason
+            and shape_verdict.unknown_reason not in self.unknown_reasons
+        ):
+            self.unknown_reasons.append(shape_verdict.unknown_reason)
+
+        inp_dt = state.dtype_env.get(inp_name)
+        target_dt = state.dtype_env.get(target_name)
+        dtype_verdict = verify_loss(
+            loss_name,
+            _loss_shape_values(inp_shape),
+            _loss_shape_values(target_shape),
+            input_dtype=inp_dt,
+            target_dtype=target_dt,
+            **kwargs,
+        )
+        if dtype_verdict.ok and dtype_verdict.output_dtype is not None:
+            state.dtype_env[step.output] = dtype_verdict.output_dtype
+        elif self.check_dtypes and dtype_verdict.error_kind == "dtype":
+            violations.append(SafetyViolation(
+                kind="dtype_error",
+                step_index=-1,
+                step=step,
+                message=dtype_verdict.message or "loss dtype contract failed",
+                tensor_a=inp_name,
+                tensor_b=target_name,
+                confidence=Confidence.HIGH,
+            ))
+
     def _apply_layer_call(
         self,
         state: ModelState,
@@ -12739,6 +12914,12 @@ class ConstraintVerifier:
 
         if layer.kind == LayerKind.MULTIHEAD_ATTENTION:
             self._apply_mha_layer_call(state, step, layer, violations)
+            return
+
+        if layer.kind == LayerKind.LOSS_FUNCTION:
+            self._apply_loss_layer_call(
+                state, step, layer, inp_name, inp_shape, violations
+            )
             return
 
         propagator = _LAYER_PROPAGATORS.get(layer.kind)

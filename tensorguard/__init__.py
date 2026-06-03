@@ -83,6 +83,7 @@ from src.grid_sample_verify import (  # noqa: F401  (re-export)
     verify_affine_grid,
     verify_grid_sample,
 )
+from src.loss_verify import LossVerdict, verify_loss  # noqa: F401  (re-export)
 from src.mha_verify import verify_multihead_attention  # noqa: F401  (re-export)
 from src.vmap_verify import verify_vmap  # noqa: F401  (re-export)
 from src.func_autodiff_verify import (  # noqa: F401  (re-export)
@@ -144,6 +145,8 @@ __all__ = [
     "verify_sparse_bsc",
     "verify_grid_sample",
     "verify_affine_grid",
+    "LossVerdict",
+    "verify_loss",
     "verify_multihead_attention",
     "verify_vmap",
     "verify_func_autodiff",
