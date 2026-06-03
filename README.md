@@ -196,12 +196,12 @@ runtime errors in ML codebases before any code runs.
   datasheet (built from the manifest so its counts can never drift) and a
   repository-root [`CITATION.cff`](CITATION.cff) make it directly citable.
 - **GitHub-mined bug dataset** — [`experiments_v5/github_bug_mining/`](experiments_v5/github_bug_mining/)
-  is a frozen, labeled dataset of thousands of real PyTorch shape/device bugs
-  mined from public GitHub issues/PRs by matching verbatim PyTorch runtime error
-  signatures, content-addressed by sha256. Verify it offline with
-  `python experiments_v5/github_bug_mining/load.py`; pinned by
-  `tests/test_github_bug_mining.py`. Re-mine from live GitHub with
-  `experiments_v5/github_bug_mining/mine_github_bugs.py`.
+  freezes 2,704 real PyTorch shape/device issue/PR records by verbatim runtime
+  signature, then [`experiments_v5/provenance_bug_corpus/`](experiments_v5/provenance_bug_corpus/)
+  enriches them with license status, PR/candidate commit links, signature
+  families, and repo-authored minimized reproducers for all eight error
+  categories. Pinned by `tests/test_github_bug_mining.py` and
+  `tests/test_provenance_bug_corpus.py`.
 - **SARIF 2.1.0 output** — integrates with GitHub Code Scanning / Advanced Security
 - **Beyond PyTorch** — the same Z3-backed verifier core analyzes a **second
   framework**: a Flax/JAX (`nnx.Sequential`) frontend lowers Linear/LayerNorm/

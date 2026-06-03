@@ -1,0 +1,128 @@
+{
+  "by_category": {
+    "broadcast_mismatch": 398,
+    "cat_stack_mismatch": 398,
+    "conv_channel_mismatch": 399,
+    "device_mismatch": 291,
+    "dim_out_of_range": 400,
+    "dtype_device_input_mismatch": 19,
+    "matmul_linear_mismatch": 400,
+    "view_reshape_total_size": 399
+  },
+  "by_domain": {
+    "device": 310,
+    "shape": 2394
+  },
+  "by_github_kind": {
+    "issue": 2499,
+    "pull_request": 205
+  },
+  "by_project_family": {
+    "diffusion": 451,
+    "graph_learning": 40,
+    "language_model": 164,
+    "unclassified_public_repo": 1835,
+    "vision_detection": 214
+  },
+  "commit_link_coverage": {
+    "by_status": {
+      "candidate_same_repo_category_pr": 127,
+      "direct_pr_commits_page": 205,
+      "not_available_in_offline_snapshot": 2372
+    },
+    "claim": "PR rows carry direct PR commit-page links; issue rows carry same-repo/same-category candidate PR commit-page links when available in the frozen offline snapshot.",
+    "records_with_any_commit_link": 332,
+    "records_without_commit_link": 2372
+  },
+  "corpus_sha256": "032db998c924e2bcb98b3711a6bad75e9f85c23aae210f6024840435586ffee4",
+  "deterministic": true,
+  "generated_by": "experiments_v5/provenance_bug_corpus/build.py",
+  "license_metadata": {
+    "by_spdx_id": {
+      "AGPL-3.0": 11,
+      "Apache-2.0": 145,
+      "BSD-3-Clause": 52,
+      "GPL-3.0": 57,
+      "MIT": 29,
+      "NOASSERTION": 2410
+    },
+    "known_records": 294,
+    "known_repositories": 17,
+    "known_snapshot_repositories": [
+      "AUTOMATIC1111/stable-diffusion-webui",
+      "Comfy-Org/ComfyUI",
+      "VainF/Torch-Pruning",
+      "deepspeedai/DeepSpeed",
+      "huggingface/diffusers",
+      "huggingface/trl",
+      "kijai/ComfyUI-WanVideoWrapper",
+      "modelscope/ms-swift",
+      "open-mmlab/mmdetection",
+      "open-mmlab/mmsegmentation",
+      "pyg-team/pytorch_geometric",
+      "pytorch/ao",
+      "pytorch/executorch",
+      "pytorch/pytorch",
+      "sgl-project/sglang",
+      "sktime/pytorch-forecasting",
+      "vllm-project/vllm"
+    ],
+    "long_tail_policy": "NOASSERTION rather than guessed when no offline license snapshot is committed",
+    "noassertion_records": 2410
+  },
+  "redistribution": {
+    "issue_bodies_redistributed": false,
+    "legal_basis": "facts/URLs plus repo-authored minimized reproducers only",
+    "patches_redistributed": false,
+    "reproducer_license": "MIT",
+    "third_party_code_redistributed": false
+  },
+  "reproducers": {
+    "categories_covered": 8,
+    "cpu_executable_categories": [
+      "broadcast_mismatch",
+      "cat_stack_mismatch",
+      "conv_channel_mismatch",
+      "dim_out_of_range",
+      "dtype_device_input_mismatch",
+      "matmul_linear_mismatch",
+      "view_reshape_total_size"
+    ],
+    "cuda_qualified_categories": [
+      "device_mismatch"
+    ],
+    "missing_categories": [],
+    "paths": {
+      "broadcast_mismatch": "experiments_v5/provenance_bug_corpus/reproducers/broadcast_mismatch.py",
+      "cat_stack_mismatch": "experiments_v5/provenance_bug_corpus/reproducers/cat_stack_mismatch.py",
+      "conv_channel_mismatch": "experiments_v5/provenance_bug_corpus/reproducers/conv_channel_mismatch.py",
+      "device_mismatch": "experiments_v5/provenance_bug_corpus/reproducers/device_mismatch.py",
+      "dim_out_of_range": "experiments_v5/provenance_bug_corpus/reproducers/dim_out_of_range.py",
+      "dtype_device_input_mismatch": "experiments_v5/provenance_bug_corpus/reproducers/dtype_device_input_mismatch.py",
+      "matmul_linear_mismatch": "experiments_v5/provenance_bug_corpus/reproducers/matmul_linear_mismatch.py",
+      "view_reshape_total_size": "experiments_v5/provenance_bug_corpus/reproducers/view_reshape_total_size.py"
+    },
+    "scope": "one repo-authored minimized reproducer per runtime-signature category"
+  },
+  "runtime_signatures": {
+    "by_signature": {
+      "Dimension out of range": 400,
+      "Expected all tensors to be on the same device": 291,
+      "Given groups=1, weight of size": 399,
+      "Input type": 19,
+      "Sizes of tensors must match except in dimension": 398,
+      "The size of tensor a": 398,
+      "is invalid for input of size": 399,
+      "mat1 and mat2 shapes cannot be multiplied": 400
+    },
+    "source": "verbatim PyTorch runtime error fragments"
+  },
+  "schema_version": "tensorguard.provenance-bug-corpus.v1",
+  "source_dataset": {
+    "manifest_path": "experiments_v5/github_bug_mining/mined_bugs_manifest.json",
+    "path": "experiments_v5/github_bug_mining/mined_bugs_dataset.jsonl",
+    "records": 2704,
+    "sha256": "f64276fbba37541d229e34ccfb145407ac67169a211a25d6e7c0a4c2ba8c815a"
+  },
+  "total": 2704
+}

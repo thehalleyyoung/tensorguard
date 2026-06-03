@@ -534,14 +534,16 @@ The repository answers these questions through several benchlines and
 experiments rather than a single benchmark number.  The frozen ground-truth
 corpus in \texttt{real\_benchmarks/} contains clean and buggy PyTorch modules
 with content hashes and labels.  The GitHub-mined dataset under
-\texttt{experiments\_v5/github\_bug\_mining/} records real public issue and PR
-signals associated with PyTorch runtime error signatures.  Fuzzing harnesses
-generate valid modules and mutation harnesses inject shape, device, and dtype
-faults.  Differential conformance tests cross-check transfer functions against
-the live torch dispatcher.  Baseline comparison scripts evaluate PyTea and
-runtime-tool alternatives.  Dashboards and JSON artifacts track coverage,
-precision/recall, latency, ablations, false positives, and statistical
-rigor.
+\texttt{experiments\_v5/github\_bug\_mining/} records 2,704 public issue and PR
+signals associated with PyTorch runtime error signatures; its provenance-rich
+expansion adds explicit license metadata, direct or candidate PR commit-page
+links when available offline, and repo-authored minimized reproducers for all
+eight runtime-signature categories.  Fuzzing harnesses generate valid modules
+and mutation harnesses inject shape, device, and dtype faults.  Differential
+conformance tests cross-check transfer functions against the live torch
+dispatcher.  Baseline comparison scripts evaluate PyTea and runtime-tool
+alternatives.  Dashboards and JSON artifacts track coverage, precision/recall,
+latency, ablations, false positives, and statistical rigor.
 
 \begin{longtable}{|p{0.25\linewidth}|p{0.68\linewidth}|}
 \hline
@@ -554,6 +556,12 @@ clean/buggy modules with a manifest, hashes, labels, and loader checks. \\
 GitHub-mined bugs &
 \texttt{experiments\_v5/github\_bug\_mining/}.  Offline dataset plus miner for
 public shape/device bug candidates from issue and PR history. \\
+\hline
+Provenance-rich bug corpus &
+\texttt{experiments\_v5/provenance\_bug\_corpus/},
+\texttt{tests/test\_provenance\_bug\_corpus.py}.  Deterministic 2,704-record
+expansion with license status, runtime signatures, PR/candidate commit-link
+coverage, and legal category-level reproducers checked against real PyTorch. \\
 \hline
 Precision/recall &
 \texttt{tests/test\_precision\_recall.py},
@@ -862,7 +870,8 @@ harness and reproducibility scripts update headline results, numeric claim
 audits, benchmark deltas, scaling curves, CEGAR measurements, and paper evidence
 indices.  Tests pin committed JSON artifacts against freshly generated outputs.
 The benchmark corpus has content hashes, datasheets, citation metadata, and
-loader checks.  The operator confidence table and proof-footprint manifest are
+loader checks; the mined-bug expansion carries a deterministic corpus hash plus
+explicit no-third-party-code redistribution metadata.  The operator confidence table and proof-footprint manifest are
 generated from one source of truth and pinned against committed JSON: the
 confidence table is mechanically projected from proof-footprint rows.  The dashboard is
 regenerated from committed results.  Proof-carrying certificates are replayed
@@ -1474,9 +1483,15 @@ Real bugs are valuable only when provenance is preserved.  The repository's
 corpus entries carry labels, hashes, and loader checks so that a benchmark case
 cannot silently drift.  GitHub-mined cases are derived from public issue and PR
 signals, especially runtime error messages that indicate shape or device
-failures.  The intent is not to treat every mined candidate as a theorem; it is
-to create a large, auditable pool that can be stratified, manually labeled,
-filtered into blind splits, and reused by future tools.
+failures.  The Step-249 expansion keeps those records as facts and URLs rather
+than redistributing third-party code: long-tail licenses are marked
+\texttt{NOASSERTION} instead of guessed, known high-frequency repositories carry
+SPDX snapshots, PR rows carry direct commit-page links, issue rows carry
+same-repository candidate links when present, and each runtime-signature family
+has a minimized TensorGuard-authored reproducer.  The intent is not to treat
+every mined candidate as a theorem; it is to create a large, auditable pool that
+can be stratified, manually labeled, filtered into blind splits, and reused by
+future tools.
 
 \subsection{Clean-model protocol}
 
