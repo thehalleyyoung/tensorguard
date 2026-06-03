@@ -168,6 +168,17 @@ from .model_hub_badge import (
     render_model_card_snippet,
     write_model_hub_badge_bundle,
 )
+from .operator_plugin_abi import (
+    ConformanceCase,
+    OperatorTheoryContract,
+    PluginProvenance,
+    PluginValidationReport,
+    SecurityReview,
+    install_operator_theories,
+    is_abi_compatible,
+    validate_operator_theories,
+    validate_operator_theory,
+)
 
 __all__ = [
     "analyze",
@@ -304,5 +315,14 @@ __all__ = [
     "render_badge_svg",
     "render_model_card_snippet",
     "write_model_hub_badge_bundle",
+    "ConformanceCase",
+    "OperatorTheoryContract",
+    "PluginProvenance",
+    "PluginValidationReport",
+    "SecurityReview",
+    "install_operator_theories",
+    "is_abi_compatible",
+    "validate_operator_theories",
+    "validate_operator_theory",
     "__version__",
 ]

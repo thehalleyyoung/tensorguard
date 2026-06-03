@@ -213,9 +213,10 @@ runtime errors in ML codebases before any code runs.
   BatchNorm/Dropout to the shared IR and refutes real shape bugs, abstaining
   soundly on layouts it can't prove (`src/flax_extractor.py`,
   `tests/test_flax_frontend.py`). Coverage extends safely via a **governed
-  community stub registry**: declarative manifests (no executable code, with
-  mandatory provenance and *executed* conformance cases) turn `UNKNOWN`
-  abstentions into precise checks (`community_stubs/`, `src/stub_governance.py`).
+  community stub registry** (declarative, no executable code) and a trusted,
+  explicitly imported **operator-plugin ABI** with versioned contracts, security
+  review attestations, and executed conformance cases
+  (`community_stubs/`, `src/stub_governance.py`, `src/operator_plugin_abi.py`).
   Seven-track executable **Colab tutorials** (`examples/tutorials/`) cover
   shapes, attention, export, distributed, quantization, stubs, and formal
   certificates, while a 25-case copyable **model gallery** (`examples/model_gallery.md`) onboards new users

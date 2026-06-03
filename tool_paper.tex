@@ -161,6 +161,19 @@ Neovim, and the JetBrains plugin template launch that same
 \texttt{src.lsp\_server} process, keeping editor support as transport glue
 rather than a second verifier.
 
+Extension is split into two trust levels.  Untrusted community contributions use
+declarative JSON stubs with mandatory provenance and executed conformance cases;
+they cannot carry Python code.  Trusted library authors can instead use the
+stable operator-plugin ABI in \texttt{src.operator\_plugin\_abi}: a versioned
+\texttt{OperatorTheoryContract} supplies an executable shape transfer, provenance,
+human security-review attestations, and conformance examples.  TensorGuard never
+auto-discovers or auto-imports such plugins; an integrator must explicitly import
+the package, validate the contracts, and install only the passing transfers.  A
+focused regression test installs a third-party last-dimension theory, verifies a
+real \texttt{nn.Module} through it, rejects future-major ABI versions, failed
+security attestations, conformance drift, and crashing transfers, and confirms the
+no-autoload policy is documented.
+
 \subsection{Frontends}
 
 The source frontend is deliberately useful on unannotated Python.  It recognizes
