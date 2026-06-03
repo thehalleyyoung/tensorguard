@@ -1,4 +1,11 @@
 {
+  "anti_overfitting_rules": [
+    "Scores are recomputed from raw verdicts; self-reported metrics are rejected.",
+    "Corpus cases are content-addressed and future additions are scored only after freeze.",
+    "Submitters must disclose benchmark-specific tuning, manual triage, and abstention policies.",
+    "One leaderboard-affecting entry per public tool release is reviewed per refresh window.",
+    "Clean-case precision regressions are treated as release-blocking for highlighted entries."
+  ],
   "corpus": {
     "buggy": 8,
     "clean": 8,
@@ -82,5 +89,17 @@
       "url": ""
     }
   ],
-  "n_entries": 2
+  "n_entries": 2,
+  "refresh_policy": {
+    "cadence": "monthly",
+    "cron_utc": "17 9 1 * *",
+    "mode": "read-only reproducibility check plus maintainer-reviewed PRs",
+    "workflow": ".github/workflows/leaderboard.yml"
+  },
+  "scorer_version": "leaderboard-v2-signed-submissions",
+  "submission_policy": {
+    "issue_template": ".github/ISSUE_TEMPLATE/leaderboard_submission.md",
+    "signature_namespace": "tensorguard-leaderboard-v1",
+    "trust_anchor": "benchmarks/leaderboard_entries/allowed_signers"
+  }
 }

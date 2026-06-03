@@ -7,11 +7,16 @@ name: Leaderboard submissions
 # (a submitter's self-reported metrics are never trusted). The job fails if an
 # entry is malformed or if the regenerated leaderboard is not deterministic.
 on:
+  schedule:
+    # Public leaderboard freshness check: first day of each month at 09:17 UTC.
+    - cron: "17 9 1 * *"
   pull_request:
     paths:
       - "benchmarks/leaderboard_entries/**"
+      - ".github/ISSUE_TEMPLATE/leaderboard_submission.md"
       - "reproducibility/leaderboard.py"
       - "reproducibility/validate_entry.py"
+      - "docs/leaderboard/**"
       - "real_benchmarks/**"
   workflow_dispatch:
 

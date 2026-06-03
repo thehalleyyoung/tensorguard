@@ -726,8 +726,10 @@ domains, cross-domain reductions, stubs, proof policy, and refinement depth. \\
 \hline
 Dashboards &
 \texttt{tests/test\_dashboard.py}, \texttt{tests/test\_build\_dashboard.py},
-\texttt{tests/test\_leaderboard.py}.  Regenerates static result views for
-reviewers and contributors. \\
+\texttt{tests/test\_leaderboard.py},
+\texttt{tests/test\_leaderboard\_submission.py}.  Regenerates static result
+views for reviewers and contributors, including the signed public leaderboard,
+monthly freshness cadence, SSH trust anchor, and anti-overfitting intake rules. \\
 \hline
 Statistical rigor &
 \texttt{tests/test\_statistical\_power.py},
@@ -1134,9 +1136,11 @@ be added with confidence tags, conformance tests, and proof footprints.  New
 benchmarks can enter the frozen corpus through provenance and hashing.  New
 frontends can lower into the same graph representation.  New proof-carrying
 certificates can reuse the existing safety certificate and replay infrastructure.
-The next natural milestones are larger blind real-bug corpora, broader
-deployment galleries, independently checkable certificates, and a community
-leaderboard that makes tensor-verifier progress measurable.
+Community comparisons now flow through a signed public leaderboard: submissions
+are SSH-authenticated against a maintainer trust anchor, re-scored from raw
+verdicts, checked monthly for freshness, and reviewed under explicit
+anti-overfitting rules.  The next natural milestones are larger blind real-bug
+corpora, broader deployment galleries, and independently checkable certificates.
 
 \section{Conclusion}
 

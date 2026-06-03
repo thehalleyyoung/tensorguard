@@ -38,6 +38,25 @@ from real_benchmarks.load import load_items, read_source, verify_item  # noqa: E
 OUT_JSON = REPO / "reproducibility" / "leaderboard.json"
 OUT_MD = REPO / "reproducibility" / "leaderboard.md"
 ENTRIES_DIR = REPO / "benchmarks" / "leaderboard_entries"
+SCORER_VERSION = "leaderboard-v2-signed-submissions"
+REFRESH_POLICY = {
+    "cadence": "monthly",
+    "cron_utc": "17 9 1 * *",
+    "mode": "read-only reproducibility check plus maintainer-reviewed PRs",
+    "workflow": ".github/workflows/leaderboard.yml",
+}
+SUBMISSION_POLICY = {
+    "signature_namespace": "tensorguard-leaderboard-v1",
+    "trust_anchor": "benchmarks/leaderboard_entries/allowed_signers",
+    "issue_template": ".github/ISSUE_TEMPLATE/leaderboard_submission.md",
+}
+ANTI_OVERFITTING_RULES = [
+    "Scores are recomputed from raw verdicts; self-reported metrics are rejected.",
+    "Corpus cases are content-addressed and future additions are scored only after freeze.",
+    "Submitters must disclose benchmark-specific tuning, manual triage, and abstention policies.",
+    "One leaderboard-affecting entry per public tool release is reviewed per refresh window.",
+    "Clean-case precision regressions are treated as release-blocking for highlighted entries.",
+]
 
 
 def _corpus_fingerprint(items: List[dict]) -> str:
@@ -156,6 +175,10 @@ def measure() -> Dict:
             "buggy": sum(1 for v in labels.values() if v == "buggy"),
             "fingerprint_sha256": fingerprint,
         },
+        "scorer_version": SCORER_VERSION,
+        "refresh_policy": REFRESH_POLICY,
+        "submission_policy": SUBMISSION_POLICY,
+        "anti_overfitting_rules": ANTI_OVERFITTING_RULES,
         "n_entries": len(entries),
         "entries": entries,
     }
@@ -175,6 +198,15 @@ def render_markdown(data: Dict) -> str:
              f"`{c['fingerprint_sha256'][:16]}…`. Scores are recomputed here "
              f"from raw per-case verdicts, so a submission cannot self-report "
              f"inflated metrics.")
+    L.append("")
+    L.append(f"**Refresh cadence.** The public board is checked on a "
+             f"{data['refresh_policy']['cadence']} cadence by "
+             f"`{data['refresh_policy']['workflow']}` "
+             f"(`{data['refresh_policy']['cron_utc']}` UTC) and refreshed "
+             f"through maintainer-reviewed PRs. Community entries must be "
+             f"SSH-signed under namespace "
+             f"`{data['submission_policy']['signature_namespace']}` by a key "
+             f"in `{data['submission_policy']['trust_anchor']}`.")
     L.append("")
     L.append("| Rank | Tool | Source | Recall | Precision | F1 | Accuracy | "
              "TP | FP | FN | Abstain |")
@@ -206,6 +238,11 @@ def render_markdown(data: Dict) -> str:
              "to ship inside a framework. The open challenge is to drive "
              "**recall** up on ever-harder real-world bugs without sacrificing "
              "that precision.")
+    L.append("")
+    L.append("## Anti-overfitting rules")
+    L.append("")
+    for rule in data["anti_overfitting_rules"]:
+        L.append(f"- {rule}")
     L.append("")
     return "\n".join(L)
 

@@ -83,6 +83,25 @@ def test_artifact_is_byte_deterministic():
     assert lb.run(check=True) == 0
 
 
+def test_signed_submission_policy_and_cadence_are_published():
+    data = lb.measure()
+    assert data["scorer_version"] == "leaderboard-v2-signed-submissions"
+    assert data["refresh_policy"]["cadence"] == "monthly"
+    assert data["refresh_policy"]["workflow"] == ".github/workflows/leaderboard.yml"
+    assert data["submission_policy"]["signature_namespace"] == (
+        "tensorguard-leaderboard-v1"
+    )
+    assert data["submission_policy"]["trust_anchor"].endswith("allowed_signers")
+    assert any("self-reported metrics" in r for r in data["anti_overfitting_rules"])
+
+
+def test_rendered_markdown_documents_cadence_and_overfitting_rules():
+    md = lb.render_markdown(lb.measure())
+    assert "Refresh cadence" in md
+    assert "SSH-signed" in md
+    assert "Anti-overfitting rules" in md
+
+
 def test_artifact_has_no_volatile_fields():
     data = json.loads(lb.OUT_JSON.read_text())
     for key in _walk_keys(data):

@@ -37,7 +37,7 @@ real-world mistake.
 ## 2. Submit a tool entry
 
 Score any verifier — yours or a baseline — without trusting its self-reported
-numbers. Drop a JSON file in `benchmarks/leaderboard_entries/<tool>.json`:
+numbers. Drop a signed JSON file in `benchmarks/leaderboard_entries/<tool>.json`:
 
 ```json
 {
@@ -48,16 +48,43 @@ numbers. Drop a JSON file in `benchmarks/leaderboard_entries/<tool>.json`:
     "clean_mlp": "SAFE",
     "buggy_linear_inout_mismatch": "UNSAFE",
     "buggy_view_total_size": "UNKNOWN"
+  },
+  "signature": {
+    "identity": "my-verifier",
+    "namespace": "tensorguard-leaderboard-v1",
+    "value": "-----BEGIN SSH SIGNATURE-----\n...\n-----END SSH SIGNATURE-----"
   }
 }
 ```
 
 * Keys are corpus case ids (see `real_benchmarks/manifest.json`); values are
-  `SAFE`, `UNSAFE`, or `UNKNOWN` (abstention).
+  uppercase `SAFE`, `UNSAFE`, or `UNKNOWN` (abstention).
 * A missing id is treated as `UNKNOWN`.
 * The leaderboard **recomputes** recall / precision / F1 / accuracy from these
   raw verdicts — submitters cannot self-report inflated metrics; only the
   per-case verdicts are trusted.
+* The JSON must be signed with an SSH key listed in
+  `benchmarks/leaderboard_entries/allowed_signers`. Adding or rotating a signer
+  key is a maintainer-reviewed PR, which is the trust anchor; embedding an
+  arbitrary public key in the submission is not accepted.
+
+To sign, first write the canonical payload covered by the signature (the entry
+without the `signature` field, with verdicts uppercase and keys sorted):
+
+```bash
+PYTHONPATH=. python3 - <<'PY' my-verifier.json > payload.json
+import json, sys
+from pathlib import Path
+from reproducibility.validate_entry import canonical_signed_payload
+raw = json.loads(Path(sys.argv[1]).read_text())
+sys.stdout.buffer.write(canonical_signed_payload(raw))
+PY
+ssh-keygen -Y sign -f ~/.ssh/my_leaderboard_key \
+  -n tensorguard-leaderboard-v1 payload.json
+```
+
+Paste the armored contents of `payload.json.sig` into `signature.value` and set
+`signature.identity` to the matching principal in `allowed_signers`.
 
 Scoring rules:
 
@@ -72,12 +99,26 @@ A committed example, `benchmarks/leaderboard_entries/trivial-always-safe.json`,
 shows the format: a trivial always-SAFE baseline that scores recall 0 — the
 floor the field has to beat.
 
-### The bar
+### The bar and anti-overfitting rules
 
 **Precision must stay at 1.000.** A single false alarm on a clean module is
 disqualifying for a tool meant to ship inside a framework. The open challenge
 is to drive **recall** up on ever-harder real-world bugs while keeping that
-zero-false-alarm guarantee. Regenerate after any change:
+zero-false-alarm guarantee.
+
+Leaderboard review also enforces anti-overfitting rules:
+
+1. self-reported metrics are rejected; CI recomputes scores from raw verdicts;
+2. corpus cases are content-addressed and future additions are scored only after
+   they are frozen into `real_benchmarks/manifest.json`;
+3. submitters must disclose benchmark-specific tuning, manual triage, and
+   abstention policies;
+4. at most one leaderboard-affecting entry per public tool release is reviewed
+   in a monthly refresh window;
+5. clean-case precision regressions are treated as release-blocking for
+   highlighted entries.
+
+Regenerate after any change:
 
 ```bash
 PYTHONPATH=. python3 reproducibility/leaderboard.py          # regenerate
@@ -92,10 +133,13 @@ which:
 
 1. validates each entry with
    [`reproducibility/validate_entry.py`](../../reproducibility/validate_entry.py)
-   — rejecting unknown case ids, bad verdict tokens, a missing `tool`/`verdicts`,
-   and any **self-reported metric field** (`recall`, `f1`, `scorecard`, …): only
-   the raw per-case verdicts are accepted, scoring is recomputed;
+   — rejecting unknown case ids, bad verdict tokens, unsigned or untrusted
+   signatures, a missing `tool`/`verdicts`, and any **self-reported metric
+   field** (`recall`, `f1`, `scorecard`, …): only the raw per-case verdicts are
+   accepted, scoring is recomputed;
 2. re-scores the whole leaderboard from those verdicts;
 3. asserts the regenerated artifact is byte-deterministic (`--check`).
 
 So a submission can never inflate its own numbers or silently corrupt the board.
+The same workflow runs monthly (`17 9 1 * *` UTC) as a public freshness check;
+artifact updates still land through maintainer-reviewed PRs.

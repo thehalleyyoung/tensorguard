@@ -749,12 +749,11 @@ PYTHONPATH=. python3 reproducibility/leaderboard.py   # writes leaderboard.{json
 ```
 
 TensorGuard is the reference entry and scores perfect recall and precision on
-the frozen corpus. Community tools are added by dropping a per-case verdict
-file in `benchmarks/leaderboard_entries/`; the harness **recomputes** every
-metric from the raw verdicts, so a submission cannot self-report inflated
-numbers (a committed trivial always-SAFE baseline illustrates the recall floor).
-Precision must stay at one to be taken seriously — the open challenge is higher
-recall on ever-harder real-world bugs with no new false alarms. See
+the frozen corpus. Community tools submit SSH-signed per-case verdict files;
+CI verifies the signer, **recomputes** every metric from raw verdicts, and runs
+a monthly freshness check, so the public board has a real trust anchor without
+trusting self-reported numbers. Precision must stay at one — the open challenge
+is higher recall on ever-harder real-world bugs with no new false alarms. See
 [`reproducibility/leaderboard.md`](reproducibility/leaderboard.md),
 [`docs/leaderboard/CONTRIBUTING.md`](docs/leaderboard/CONTRIBUTING.md) and
 `tests/test_leaderboard.py`.

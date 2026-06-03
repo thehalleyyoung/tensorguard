@@ -4,6 +4,8 @@
 
 Corpus **tensorguard-real-benchmarks**: 16 content-addressed cases (8 clean, 8 buggy). Corpus fingerprint `ddad8f8a047c6fae…`. Scores are recomputed here from raw per-case verdicts, so a submission cannot self-report inflated metrics.
 
+**Refresh cadence.** The public board is checked on a monthly cadence by `.github/workflows/leaderboard.yml` (`17 9 1 * *` UTC) and refreshed through maintainer-reviewed PRs. Community entries must be SSH-signed under namespace `tensorguard-leaderboard-v1` by a key in `benchmarks/leaderboard_entries/allowed_signers`.
+
 | Rank | Tool | Source | Recall | Precision | F1 | Accuracy | TP | FP | FN | Abstain |
 |------|------|--------|--------|-----------|----|----------|----|----|----|---------|
 | 1 | TensorGuard | reference | 1.000 | 1.000 | 1.000 | 1.000 | 8 | 0 | 0 | 0 |
@@ -17,3 +19,11 @@ Two ways to contribute, both documented in [`docs/leaderboard/CONTRIBUTING.md`](
 2. **Submit a tool entry** — drop a results JSON in `benchmarks/leaderboard_entries/` giving your tool's verdict (`SAFE`/`UNSAFE`/`UNKNOWN`) for each case id. The harness re-scores it here; only the raw verdicts are trusted.
 
 Precision must stay at 1.000 to be taken seriously: a single false alarm on a clean module is disqualifying for a tool meant to ship inside a framework. The open challenge is to drive **recall** up on ever-harder real-world bugs without sacrificing that precision.
+
+## Anti-overfitting rules
+
+- Scores are recomputed from raw verdicts; self-reported metrics are rejected.
+- Corpus cases are content-addressed and future additions are scored only after freeze.
+- Submitters must disclose benchmark-specific tuning, manual triage, and abstention policies.
+- One leaderboard-affecting entry per public tool release is reviewed per refresh window.
+- Clean-case precision regressions are treated as release-blocking for highlighted entries.
