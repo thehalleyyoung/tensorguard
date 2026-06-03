@@ -1044,7 +1044,8 @@ Gradient and training-loop contracts beyond forward shape checking. \\
 \texttt{tests/test\_serving\_schema.py},
 \texttt{tests/test\_cuda\_graph\_capture.py},
 \texttt{tests/test\_quant\_export\_checks.py},
-\texttt{tests/test\_quantization\_verify.py} &
+\texttt{tests/test\_quantization\_verify.py},
+\texttt{tests/test\_deployment\_budgets.py} &
 Deployment-facing gates for export, \texttt{torch.export.Dim} ranges and
 relations, ONNX opset-version availability and dynamic-shape support, AOT
 package input/layout/dtype/device/lowering contracts, and source/eager/FX
@@ -1382,7 +1383,7 @@ timeouts, and frontend variants can be compared.  This is the right protocol
 for answering whether the tool's complexity is justified.  If a domain never
 catches a unique bug, it should either be simplified or documented as diagnostic.
 
-\subsection{Latency protocol}
+\subsection{Latency and deployment budget protocol}
 
 Static verification must run before it can help.  The latency protocol measures
 small, medium, and large models; import-time, install-time, and analysis-time
@@ -1390,6 +1391,16 @@ costs; solver calls avoided by syntactic transfer functions; incremental
 reverification under diffs; parallel per-module verification; and timeout
 behavior.  The important metric is not only mean runtime but the tail behavior
 under symbolic constraints and unsupported regions.
+
+Deployment adds a second budget surface: the verifier must be cheap enough to
+run both before and after graph capture.  The deployment budget harness measures
+real FX pre-export/pre-compile checks, \texttt{torch.export} post-export checks,
+and \texttt{torch.dynamo} post-compile checks when the interpreter supports
+\texttt{torch.compile}; unsupported compile backends become explicit skips
+rather than false passes.  Its committed artifact stores deterministic
+latency/memory budgets plus non-dominated per-backend Pareto curves, while the
+live gate measures wall-clock time and verifier-stage memory on real
+\texttt{nn.Module}s.
 
 \begin{longtable}{|p{0.25\linewidth}|p{0.31\linewidth}|p{0.33\linewidth}|}
 \hline
@@ -1422,6 +1433,9 @@ specific cases until convergence without unbounded runtime. \\
 \hline
 Operator coverage gate & Silent regression in transfer surface & Coverage and
 confidence tables remain in sync with code. \\
+\hline
+Deployment budget gate & Release-host regressions in export/compile checks &
+Pre/post export and compile gates stay within latency and memory budgets. \\
 \hline
 Dashboard regeneration & Stale paper claims & Committed result artifacts match
 freshly regenerated outputs. \\
@@ -1493,6 +1507,11 @@ boundary auditable: it extracts \tg{}'s symbolic input and direct layer
 constraints, reads Dynamo guard code from \texttt{torch.\_dynamo.explain} when
 available, accepts recorded guard objects for deterministic CI, and reports the
 static facts that no runtime guard appears to protect.
+\texttt{evaluation/deployment\_budgets.py} turns those checks into a release
+budget: FX runs before export and compile, \texttt{torch.export} runs after
+export graph capture, and Dynamo runs after compile capture on supported
+interpreters.  The manifest records per-backend latency/memory Pareto curves, and
+the live gate fails if any supported row is unsafe or over budget.
 For model serving, \texttt{src/serving\_schema.py} splits a pure
 \texttt{verify\_serving\_schema} checker from guarded wrappers for
 FastAPI-style callables and TorchServe-style handlers.  The pure gate validates

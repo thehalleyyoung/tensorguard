@@ -1970,7 +1970,10 @@ is measured live by `make latency-budgets-gate`, which fails on any budget
 breach. On reference hardware the small tier verifies in tens of milliseconds,
 the medium tier in about one second, and the large tier in roughly ten seconds —
 comfortably inside budget, establishing the baseline that the performance work
-in the following steps tightens. See `tests/test_latency_budgets.py`.
+in the following steps tightens. Deployment release gates extend this to
+pre/post export and compile checks with live memory budgets and per-backend
+Pareto curves (`make deployment-budgets-gate`). See
+`tests/test_latency_budgets.py` and `tests/test_deployment_budgets.py`.
 
 ### Solver-call avoidance (syntactic short-circuit)
 

@@ -1,0 +1,170 @@
+{
+  "backend_pareto_curves": {
+    "fx": [
+      {
+        "latency_budget_s": 6.0,
+        "memory_budget_mb": 96.0,
+        "profile": "interactive",
+        "use": "pre-export local feedback"
+      },
+      {
+        "latency_budget_s": 8.0,
+        "memory_budget_mb": 80.0,
+        "profile": "memory_capped",
+        "use": "pre-compile constrained CI runner"
+      }
+    ],
+    "torch.dynamo": [
+      {
+        "latency_budget_s": 24.0,
+        "memory_budget_mb": 420.0,
+        "profile": "fast_compile",
+        "use": "warm compile-capable host"
+      },
+      {
+        "latency_budget_s": 35.0,
+        "memory_budget_mb": 320.0,
+        "profile": "compile_cold_start",
+        "use": "default cold compile release gate"
+      }
+    ],
+    "torch.export": [
+      {
+        "latency_budget_s": 12.0,
+        "memory_budget_mb": 240.0,
+        "profile": "fast_export",
+        "use": "release smoke on beefy runners"
+      },
+      {
+        "latency_budget_s": 18.0,
+        "memory_budget_mb": 192.0,
+        "profile": "balanced",
+        "use": "default post-export release gate"
+      }
+    ]
+  },
+  "budget_rows": [
+    {
+      "backend": "torch.dynamo",
+      "gate": "src.dynamo_extractor.verify_module_dynamo",
+      "latency_budget_s": 35.0,
+      "memory_budget_mb": 320.0,
+      "model": "tiny_mlp_classifier",
+      "phase": "after",
+      "pipeline": "compile",
+      "profile": "compile_cold_start",
+      "tier": "tabular-small"
+    },
+    {
+      "backend": "fx",
+      "gate": "src.fx_extractor.verify_module(backend='fx')",
+      "latency_budget_s": 8.0,
+      "memory_budget_mb": 80.0,
+      "model": "tiny_mlp_classifier",
+      "phase": "before",
+      "pipeline": "compile",
+      "profile": "memory_capped",
+      "tier": "tabular-small"
+    },
+    {
+      "backend": "torch.export",
+      "gate": "src.export_extractor.verify_module_export",
+      "latency_budget_s": 18.0,
+      "memory_budget_mb": 192.0,
+      "model": "tiny_mlp_classifier",
+      "phase": "after",
+      "pipeline": "export",
+      "profile": "balanced",
+      "tier": "tabular-small"
+    },
+    {
+      "backend": "fx",
+      "gate": "src.fx_extractor.verify_module(backend='fx')",
+      "latency_budget_s": 6.0,
+      "memory_budget_mb": 96.0,
+      "model": "tiny_mlp_classifier",
+      "phase": "before",
+      "pipeline": "export",
+      "profile": "interactive",
+      "tier": "tabular-small"
+    },
+    {
+      "backend": "torch.dynamo",
+      "gate": "src.dynamo_extractor.verify_module_dynamo",
+      "latency_budget_s": 35.0,
+      "memory_budget_mb": 320.0,
+      "model": "tiny_vision_classifier",
+      "phase": "after",
+      "pipeline": "compile",
+      "profile": "compile_cold_start",
+      "tier": "vision-small"
+    },
+    {
+      "backend": "fx",
+      "gate": "src.fx_extractor.verify_module(backend='fx')",
+      "latency_budget_s": 8.0,
+      "memory_budget_mb": 80.0,
+      "model": "tiny_vision_classifier",
+      "phase": "before",
+      "pipeline": "compile",
+      "profile": "memory_capped",
+      "tier": "vision-small"
+    },
+    {
+      "backend": "torch.export",
+      "gate": "src.export_extractor.verify_module_export",
+      "latency_budget_s": 18.0,
+      "memory_budget_mb": 192.0,
+      "model": "tiny_vision_classifier",
+      "phase": "after",
+      "pipeline": "export",
+      "profile": "balanced",
+      "tier": "vision-small"
+    },
+    {
+      "backend": "fx",
+      "gate": "src.fx_extractor.verify_module(backend='fx')",
+      "latency_budget_s": 6.0,
+      "memory_budget_mb": 96.0,
+      "model": "tiny_vision_classifier",
+      "phase": "before",
+      "pipeline": "export",
+      "profile": "interactive",
+      "tier": "vision-small"
+    }
+  ],
+  "meta": {
+    "command": "PYTHONPATH=. python3 evaluation/deployment_budgets.py",
+    "gate_command": "PYTHONPATH=. python3 evaluation/deployment_budgets.py --gate",
+    "generated_by": "evaluation/deployment_budgets.py",
+    "note": "Manifest records deterministic deployment gate budgets only; wall-clock latency and verifier-stage memory are machine-dependent and checked live by --gate. Compile rows are explicit skips on Python/PyTorch builds where torch.compile/Dynamo is not supported."
+  },
+  "models": [
+    {
+      "description": "Two-layer ReLU MLP used as the fast interactive gate.",
+      "input_shapes": {
+        "x": [
+          2,
+          16
+        ]
+      },
+      "model": "tiny_mlp_classifier",
+      "parameter_count": 874,
+      "tier": "tabular-small"
+    },
+    {
+      "description": "Conv/ReLU/pool/linear classifier with exportable image ops.",
+      "input_shapes": {
+        "x": [
+          1,
+          3,
+          16,
+          16
+        ]
+      },
+      "model": "tiny_vision_classifier",
+      "parameter_count": 269,
+      "tier": "vision-small"
+    }
+  ]
+}
