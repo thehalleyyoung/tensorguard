@@ -201,7 +201,8 @@ surface.
 The repository includes transfer functions and tests for a wide range of
 PyTorch constructs.  The core structural set covers matrix multiplication,
 batched matrix multiplication, linear layers, convolution and transpose
-convolution families, pooling, flatten, reshape/view with product reasoning,
+convolution families, pooling, flatten, reshape/view with product and
+stride-viewability reasoning,
 broadcasting, reductions, cat/stack-family aliases, PyTorch-faithful padding,
 interpolation/upsampling, transpose/permute, squeeze/unsqueeze,
 \texttt{movedim}/\texttt{swapaxes}, \texttt{roll}/\texttt{rot90}/\texttt{flip},
@@ -659,7 +660,8 @@ contains Lean artifacts for several core rules and proof obligations, including
 CEGAR convergence bounds, infeasible-contract abstention, fragment modes,
 device/dtype transfer soundness, SMT encoding faithfulness, cross-domain
 composition, and operator-specific rules such as cat, chunk/split partition
-reconstruction, reshape, einops decomposition/bijection families, SDPA
+reconstruction, reshape, contiguity/stride/storage-offset viewability with
+channels-last caveats, einops decomposition/bijection families, SDPA
 broadcast/mask/GQA shape laws, distribution batch/event/log-prob algebra,
 TransformedDistribution identity/reshape event-rank rules, and named-tensor
 refine/align name preservation, singleton insertion, and duplicate-name

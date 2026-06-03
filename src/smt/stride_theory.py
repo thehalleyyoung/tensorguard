@@ -117,6 +117,31 @@ def compute_contiguous_strides(shape: Tuple[int, ...]) -> Tuple[int, ...]:
     return tuple(strides)
 
 
+@dataclass(frozen=True)
+class StridedLayout:
+    """Concrete tensor layout used by the stride/viewability checks.
+
+    The helpers below intentionally model the non-negative-stride fragment used
+    by PyTorch views and memory-format checks.  Channels-last predicates are
+    scoped to non-degenerate rank-4 NCHW tensors because size-1/zero axes make
+    PyTorch's row-major and channels-last answers intentionally ambiguous.
+    """
+
+    shape: Tuple[int, ...]
+    strides: Tuple[int, ...]
+    storage_offset: int = 0
+
+    def __post_init__(self) -> None:
+        if len(self.shape) != len(self.strides):
+            raise ValueError("shape and strides must have the same rank")
+        if any(dim < 0 for dim in self.shape):
+            raise ValueError("shape dimensions must be non-negative")
+        if any(stride < 0 for stride in self.strides):
+            raise ValueError("strides must be non-negative")
+        if self.storage_offset < 0:
+            raise ValueError("storage_offset must be non-negative")
+
+
 def is_contiguous(
     shape: Tuple[int, ...], strides: Tuple[int, ...]
 ) -> bool:
@@ -124,6 +149,128 @@ def is_contiguous(
     if len(shape) != len(strides):
         return False
     return strides == compute_contiguous_strides(shape)
+
+
+def is_nondegenerate_nchw(shape: Tuple[int, ...]) -> bool:
+    """True for the rank-4 NCHW fragment with unambiguous channels-last strides."""
+    return len(shape) == 4 and shape[1] > 1 and shape[2] > 1 and shape[3] > 1
+
+
+def compute_channels_last_strides(
+    shape: Tuple[int, ...],
+    *,
+    require_non_degenerate: bool = True,
+) -> Optional[Tuple[int, ...]]:
+    """Compute canonical rank-4 NCHW channels-last strides.
+
+    When ``require_non_degenerate`` is true (the default), return ``None`` for
+    size-1/zero C/H/W axes.  PyTorch may report those tensors as both default
+    contiguous and channels-last contiguous, so TensorGuard's canonical predicate
+    abstains rather than conflating the two memory-format notions.
+    """
+    if len(shape) != 4:
+        return None
+    if require_non_degenerate and not is_nondegenerate_nchw(shape):
+        return None
+    _n, c, h, w = shape
+    return (h * w * c, 1, w * c, c)
+
+
+def is_canonical_channels_last_contiguous(
+    shape: Tuple[int, ...],
+    strides: Tuple[int, ...],
+    *,
+    require_non_degenerate: bool = True,
+) -> bool:
+    """Check canonical non-degenerate rank-4 NCHW channels-last layout."""
+    expected = compute_channels_last_strides(
+        shape, require_non_degenerate=require_non_degenerate
+    )
+    return expected is not None and strides == expected
+
+
+def can_collapse_adjacent_dims(
+    left_stride: int,
+    right_size: int,
+    right_stride: int,
+) -> bool:
+    """PyTorch view condition for collapsing two adjacent non-degenerate dims."""
+    if left_stride < 0 or right_size < 0 or right_stride < 0:
+        return False
+    return left_stride == right_size * right_stride
+
+
+def can_view_nchw_tail(layout: StridedLayout) -> bool:
+    """Whether ``layout`` can be viewed as ``(N, C*H*W)`` without copying.
+
+    This is the exact adjacent-stride check for the non-degenerate CHW tail used
+    in the Lean proof and in the torch conformance tests.
+    """
+    if len(layout.shape) != 4 or len(layout.strides) != 4:
+        return False
+    if not is_nondegenerate_nchw(layout.shape):
+        return False
+    _n, c, h, w = layout.shape
+    _sn, sc, sh, sw = layout.strides
+    return (
+        c > 1
+        and can_collapse_adjacent_dims(sh, w, sw)
+        and can_collapse_adjacent_dims(sc, h, sh)
+    )
+
+
+def view_nchw_tail_layout(layout: StridedLayout) -> Optional[StridedLayout]:
+    """Return the metadata-only ``view(N, C*H*W)`` layout when it is legal."""
+    if not can_view_nchw_tail(layout):
+        return None
+    n, c, h, w = layout.shape
+    sn, _sc, _sh, sw = layout.strides
+    return StridedLayout(
+        shape=(n, c * h * w),
+        strides=(sn, sw),
+        storage_offset=layout.storage_offset,
+    )
+
+
+def narrow_channel_layout(
+    layout: StridedLayout,
+    start: int,
+    length: int,
+) -> Optional[StridedLayout]:
+    """Return the NCHW channel-axis narrow layout.
+
+    The storage offset follows PyTorch's ``old_offset + start * stride_C`` rule.
+    """
+    if len(layout.shape) != 4 or len(layout.strides) != 4:
+        return None
+    if start < 0 or length < 0:
+        return None
+    n, c, h, w = layout.shape
+    _sn, sc, _sh, _sw = layout.strides
+    if start + length > c:
+        return None
+    return StridedLayout(
+        shape=(n, length, h, w),
+        strides=layout.strides,
+        storage_offset=layout.storage_offset + start * sc,
+    )
+
+
+def permute_nchw_to_nhwc_layout(layout: StridedLayout) -> Optional[StridedLayout]:
+    """Return metadata for ``permute(0, 2, 3, 1)``.
+
+    This preserves storage offset but does not make the tensor channels-last
+    contiguous; it simply reorders logical axes and strides.
+    """
+    if len(layout.shape) != 4 or len(layout.strides) != 4:
+        return None
+    n, c, h, w = layout.shape
+    sn, sc, sh, sw = layout.strides
+    return StridedLayout(
+        shape=(n, h, w, c),
+        strides=(sn, sh, sw, sc),
+        storage_offset=layout.storage_offset,
+    )
 
 
 def total_elements(shape: Tuple[int, ...]) -> int:

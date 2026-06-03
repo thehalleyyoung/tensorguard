@@ -220,6 +220,23 @@ import TensorGuard
 #print axioms TensorGuard.ContigFlow.run_after_contig
 #print axioms TensorGuard.ContigFlow.run_transpose_involution
 #print axioms TensorGuard.ContigFlow.run_allKeep
+-- Concrete layout algebra (Step 235): row-major stride recurrence, canonical
+-- non-degenerate channels-last NCHW strides, storage-offset preservation, and
+-- CHW-tail viewability/refutation cases.
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.contigLayout_is_contiguous
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.rowMajorCHWTail_viewable
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.rowMajorCHWTail_view_layout
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.transpose01_preserves_storageOffset
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.permuteNCHWtoNHWC_preserves_storageOffset
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.rowMajor4_strides
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.rowMajor4_view_tail
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.channelsLast4_is_canonical_channels_last
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.channelsLast4_not_row_major_contiguous
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.channelsLast4_tail_not_viewable
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.channelsLast4_view_tail_rejected
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.narrowChannel_rowMajor_offset
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.narrowChannel_channelsLast_offset
+#print axioms TensorGuard.ContigFlow.LayoutAlgebra.canonicalChannelsLast4_degenerateC_abstains
 
 -- Flatten shape rule (Step 147): numel preservation, rank law, full flatten =
 -- [numel], flattened dim = product of spanned sizes.
