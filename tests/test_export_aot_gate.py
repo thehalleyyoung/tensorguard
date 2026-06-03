@@ -27,9 +27,11 @@ import torch
 import torch.nn as nn
 
 from src.torch_integration import (
+    TensorGuardAOTPackageError,
     TensorGuardDynamicShapeError,
     TensorGuardViolation,
     guarded_aot_package,
+    verify_aot_package_contract,
     verify_exported_program,
 )
 
@@ -108,6 +110,23 @@ def test_invalid_on_violation_is_rejected():
 class Identity2D(nn.Module):
     def forward(self, x):
         return x.relu()
+
+
+class EchoNet(nn.Module):
+    def forward(self, x):
+        return x
+
+
+class ViewOpsNet(nn.Module):
+    def forward(self, x):
+        left = x.reshape(x.shape[0], 2, 5).transpose(1, 2)
+        right = x.reshape(x.shape[0], 2, 5).transpose(1, 2)
+        return torch.cat([left, right], dim=1)
+
+
+class SVDNet(nn.Module):
+    def forward(self, x):
+        return torch.linalg.svd(x).S
 
 
 def _has_range(ep, lower, upper):
@@ -233,6 +252,129 @@ def test_matching_derived_dynamic_dim_exports_with_range_constraints():
     assert isinstance(ep, torch.export.ExportedProgram)
     assert _has_range(ep, 2, 8)
     assert _has_range(ep, 4, 16)
+
+
+def test_aot_package_rejects_non_contiguous_input_before_packaging(monkeypatch):
+    compiled = {"n": 0}
+    monkeypatch.setattr(
+        torch._inductor,
+        "aoti_compile_and_package",
+        lambda *a, **k: compiled.__setitem__("n", compiled["n"] + 1),
+    )
+    x = torch.randn(10, 2).t()
+    assert not x.is_contiguous()
+    with pytest.raises(TensorGuardAOTPackageError, match="non-contiguous") as exc:
+        guarded_aot_package(EchoNet(), (x,), package_path="unused.pt2")
+    assert compiled["n"] == 0
+    assert exc.value.issues[0].category == "input_layout"
+
+
+def test_aot_package_rejects_complex_dtype_before_packaging(monkeypatch):
+    compiled = {"n": 0}
+    monkeypatch.setattr(
+        torch._inductor,
+        "aoti_compile_and_package",
+        lambda *a, **k: compiled.__setitem__("n", compiled["n"] + 1),
+    )
+    with pytest.raises(TensorGuardAOTPackageError, match="complex") as exc:
+        guarded_aot_package(EchoNet(), (torch.randn(2, 3, dtype=torch.complex64),))
+    assert compiled["n"] == 0
+    assert exc.value.issues[0].category == "input_dtype"
+
+
+def test_aot_package_enforces_dtype_and_device_policy_before_packaging(monkeypatch):
+    compiled = {"n": 0}
+    monkeypatch.setattr(
+        torch._inductor,
+        "aoti_compile_and_package",
+        lambda *a, **k: compiled.__setitem__("n", compiled["n"] + 1),
+    )
+    with pytest.raises(TensorGuardAOTPackageError) as exc:
+        guarded_aot_package(
+            EchoNet(),
+            (torch.randn(2, 3, dtype=torch.float64),),
+            aot_allowed_dtypes={torch.float32},
+            aot_allowed_devices={"cuda"},
+        )
+    categories = {issue.category for issue in exc.value.issues}
+    assert {"input_dtype", "input_device"} <= categories
+    assert compiled["n"] == 0
+
+
+def test_aot_package_dynamic_shape_guards_are_checked_on_real_export():
+    b = torch.export.Dim("b", min=2, max=8)
+    ep = verify_exported_program(
+        Identity2D(),
+        (torch.randn(3, 10),),
+        input_shapes={"x": ("b", 10)},
+        dynamic_shapes={"x": {0: b}},
+    )
+    gate = verify_aot_package_contract(
+        Identity2D(),
+        (torch.randn(3, 10),),
+        input_shapes={"x": ("b", 10)},
+        dynamic_shapes={"x": {0: b}},
+        exported_program=ep,
+    )
+    assert gate.ok
+    assert gate.dynamic_guard_count >= 1
+
+
+def test_aot_package_rejects_missing_dynamic_shape_guards():
+    class FakeExportedProgram:
+        range_constraints = {}
+
+        class graph_module:
+            class graph:
+                nodes = []
+
+    b = torch.export.Dim("b", min=2, max=8)
+    gate = verify_aot_package_contract(
+        Identity2D(),
+        (torch.randn(3, 10),),
+        input_shapes={"x": ("b", 10)},
+        dynamic_shapes={"x": {0: b}},
+        exported_program=FakeExportedProgram(),
+    )
+    assert not gate.ok
+    assert gate.issues[0].category == "dynamic_shape_guard"
+
+
+def test_aot_package_rejects_unsupported_lowering_before_packaging(monkeypatch):
+    compiled = {"n": 0}
+    monkeypatch.setattr(
+        torch._inductor,
+        "aoti_compile_and_package",
+        lambda *a, **k: compiled.__setitem__("n", compiled["n"] + 1),
+    )
+    with pytest.raises(TensorGuardAOTPackageError) as exc:
+        guarded_aot_package(SVDNet(), (torch.randn(3, 3),))
+    assert compiled["n"] == 0
+    assert any(issue.category == "unsupported_lowering" for issue in exc.value.issues)
+
+
+def test_aot_package_allows_common_view_ops_not_in_tensor_guard_allowlist():
+    ep = verify_exported_program(ViewOpsNet(), (torch.randn(3, 10),))
+    gate = verify_aot_package_contract(
+        ViewOpsNet(),
+        (torch.randn(3, 10),),
+        exported_program=ep,
+    )
+    assert gate.ok
+    assert any("transpose" in op for op in gate.checked_ops)
+    assert any("cat" in op for op in gate.checked_ops)
+
+
+def test_public_tensorguard_torch_exports_aot_gate():
+    from tensorguard.torch import (
+        TensorGuardAOTPackageError as PublicError,
+        guarded_aot_package as public_package,
+        verify_aot_package_contract as public_gate,
+    )
+
+    assert public_package is guarded_aot_package
+    assert public_gate is verify_aot_package_contract
+    assert PublicError is TensorGuardAOTPackageError
 
 
 @pytest.mark.slow

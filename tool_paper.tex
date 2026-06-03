@@ -859,7 +859,8 @@ Batched dimension transfer and out-dim contract checks. \\
 \hline
 Export and compile &
 Pre-pass verification for \texttt{torch.compile}, \texttt{torch.export}, ONNX,
-AOTInductor packaging, and deployment gates. \\
+AOTInductor packaging, and deployment gates, including package-time layout,
+dtype, device, dynamic-guard, and lowering checks. \\
 \hline
 Distributed and adapters &
 DDP/FSDP/DTensor/tensor-parallel checks, optimizer-state checks, checkpoint
@@ -977,7 +978,8 @@ Gradient and training-loop contracts beyond forward shape checking. \\
 \texttt{tests/test\_quant\_export\_checks.py},
 \texttt{tests/test\_quantization\_verify.py} &
 Deployment-facing gates for export, \texttt{torch.export.Dim} ranges and
-relations, opsets, AOT packaging, and source/eager/FX quantization. \\
+relations, opsets, AOT package input/layout/dtype/device/lowering contracts, and
+source/eager/FX quantization. \\
 \hline
 \texttt{tests/test\_distributed\_verification.py},
 \texttt{tests/test\_tensor\_parallel\_checks.py} &
@@ -1195,7 +1197,9 @@ Export gates &
 Export, ONNX, AOTInductor, quantization, and mixed-precision paths check static
 preconditions before invoking downstream compilers; dynamic
 \texttt{torch.export.Dim} ranges are reconciled with TensorGuard input-shape
-symbols before tracing. &
+symbols before tracing, and AOT packages additionally reject invalid example
+layouts, devices, dtypes, missing dynamic guards, and denied ATen lowerings
+before the packager writes an artifact. &
 ONNX, AOT, quantization, mixed-precision, and guarded compile/export tests. \\
 \hline
 Distributed and adapter gates &
@@ -1368,7 +1372,8 @@ or native annotations.
 
 Deployment introduces contracts that ordinary training does not: ONNX opset
 availability, \texttt{torch.export} dynamic-shape \texttt{Dim} ranges and
-relations, AOTInductor input layouts, quantization observer calibration,
+relations, AOTInductor input layouts, dtype/device policies, preserved dynamic
+guards and package-lowering denylists, quantization observer calibration,
 activation qscheme placement, eager/FX quant-dequant boundaries,
 mixed-precision dtype boundaries, AMP backend allowlists, fp16 GradScaler
 requirements, TorchServe or FastAPI request schemas, GGUF or llama.cpp

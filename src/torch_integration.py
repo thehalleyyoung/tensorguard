@@ -27,7 +27,8 @@ import inspect
 import os
 import re
 import warnings
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 _IMPORT_PRELUDE = "import torch\nimport torch.nn as nn\nimport torch.nn.functional as F\n"
 
@@ -66,9 +67,58 @@ class TensorGuardDynamicShapeError(ValueError):
     """Raised when a ``torch.export`` dynamic-shape contract contradicts TG."""
 
 
+class TensorGuardAOTPackageError(ValueError):
+    """Raised when an AOTInductor package contract is rejected before packaging."""
+
+    def __init__(self, issues: Sequence["AOTPackageIssue"]):
+        self.issues = tuple(issues)
+        details = "; ".join(issue.message for issue in self.issues[:3])
+        more = "" if len(self.issues) <= 3 else f" (+{len(self.issues) - 3} more)"
+        super().__init__(
+            f"TensorGuard rejected AOTInductor packaging with "
+            f"{len(self.issues)} issue(s): {details}{more}"
+        )
+
+
+@dataclass(frozen=True)
+class AOTPackageIssue:
+    """A precise pre-package contract violation for AOTInductor artifacts."""
+
+    category: str
+    message: str
+    input_name: Optional[str] = None
+    op_name: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class AOTPackageGateResult:
+    """Result of TensorGuard's AOTInductor package gate."""
+
+    ok: bool
+    issues: Tuple[AOTPackageIssue, ...]
+    checked_ops: Tuple[str, ...] = ()
+    dynamic_guard_count: int = 0
+
+
 _DimRange = Tuple[Optional[int], Optional[int]]
 _DynamicKey = Tuple[str, _DimRange]
 _AxisDynamic = Tuple[str, _DimRange, str, int, bool]
+
+_AOT_UNSUPPORTED_LOWERING_BASES = frozenset({
+    # Tuple-valued/data-dependent ATen ops that are not admitted by the stable
+    # AOT package gate.  This is intentionally a denylist: TensorGuard's own
+    # analysis allowlist is not an Inductor lowering oracle.
+    "linalg_svd",
+    "linalg_eig",
+    "linalg_eigh",
+    "svd",
+    "eig",
+    "unique",
+    "unique_dim",
+    "nonzero",
+    "bincount",
+    "histc",
+})
 
 
 def module_source(model: Any) -> Optional[str]:
@@ -213,6 +263,292 @@ def make_tensorguard_backend(
     return backend
 
 
+def verify_aot_package_contract(
+    model: Any,
+    example_args: Tuple,
+    *,
+    input_shapes: Optional[Dict[str, Tuple]] = None,
+    dynamic_shapes: Any = None,
+    exported_program: Any = None,
+    require_contiguous_inputs: bool = True,
+    allowed_dtypes: Optional[Iterable[Any]] = None,
+    allowed_devices: Optional[Iterable[Any]] = None,
+    allow_unsupported_ops: bool = False,
+    require_dynamic_shape_guards: bool = True,
+    check_inputs: bool = True,
+    check_exported_program: bool = True,
+) -> AOTPackageGateResult:
+    """Validate AOTInductor package preconditions without invoking the packager.
+
+    The gate is deliberately conservative and concrete: it checks the example
+    tensors that specialise the AOT artifact (layout/dtype/device), then checks
+    the already-exported program for preserved dynamic-shape guards and a small
+    denylist of ATen ops that this packaging path does not admit.  It does not
+    conflate TensorGuard's analysis coverage with Inductor lowering coverage.
+    """
+    args = example_args if isinstance(example_args, tuple) else (example_args,)
+    issues: List[AOTPackageIssue] = []
+    if check_inputs:
+        issues.extend(
+            _aot_input_contract_issues(
+                args,
+                require_contiguous_inputs=require_contiguous_inputs,
+                allowed_dtypes=allowed_dtypes,
+                allowed_devices=allowed_devices,
+            )
+        )
+
+    checked_ops: Tuple[str, ...] = ()
+    dynamic_guard_count = 0
+    if check_exported_program and exported_program is not None:
+        if require_dynamic_shape_guards and _has_recognized_dynamic_dims(
+            model, args, dynamic_shapes
+        ):
+            dynamic_guard_count = len(
+                getattr(exported_program, "range_constraints", {}) or {}
+            )
+            if dynamic_guard_count == 0:
+                issues.append(
+                    AOTPackageIssue(
+                        category="dynamic_shape_guard",
+                        message=(
+                            "dynamic_shapes declares torch.export.Dim axes, but "
+                            "the exported program carries no range constraints"
+                        ),
+                    )
+                )
+        if not allow_unsupported_ops:
+            op_issues, checked_ops = _aot_unsupported_lowering_issues(exported_program)
+            issues.extend(op_issues)
+
+    return AOTPackageGateResult(
+        ok=not issues,
+        issues=tuple(issues),
+        checked_ops=checked_ops,
+        dynamic_guard_count=dynamic_guard_count,
+    )
+
+
+def _handle_aot_gate_result(
+    result: AOTPackageGateResult,
+    on_violation: str,
+) -> None:
+    if result.ok or on_violation == "ignore":
+        return
+    error = TensorGuardAOTPackageError(result.issues)
+    if on_violation == "raise":
+        raise error
+    if on_violation == "warn":
+        warnings.warn(str(error), stacklevel=2)
+
+
+def _flatten_tensor_args(value: Any, prefix: str = "arg0") -> List[Tuple[str, Any]]:
+    try:
+        import torch
+    except Exception:  # pragma: no cover
+        return []
+    if isinstance(value, torch.Tensor):
+        return [(prefix, value)]
+    if isinstance(value, (tuple, list)):
+        items: List[Tuple[str, Any]] = []
+        for index, child in enumerate(value):
+            items.extend(_flatten_tensor_args(child, f"{prefix}.{index}"))
+        return items
+    if isinstance(value, dict):
+        items = []
+        for key in sorted(value, key=str):
+            items.extend(_flatten_tensor_args(value[key], f"{prefix}.{key}"))
+        return items
+    return []
+
+
+def _normalize_dtype_set(values: Optional[Iterable[Any]]) -> Optional[Set[Any]]:
+    if values is None:
+        return None
+    try:
+        import torch
+    except Exception:  # pragma: no cover
+        return set(values)
+    normalized: Set[Any] = set()
+    for value in values:
+        if isinstance(value, torch.dtype):
+            normalized.add(value)
+            continue
+        text = str(value)
+        normalized.add(getattr(torch, text.removeprefix("torch."), value))
+    return normalized
+
+
+def _normalize_device_set(values: Optional[Iterable[Any]]) -> Optional[Set[str]]:
+    if values is None:
+        return None
+    normalized: Set[str] = set()
+    for value in values:
+        device = getattr(value, "type", None)
+        normalized.add(str(device or value))
+    return normalized
+
+
+def _aot_input_contract_issues(
+    args: Tuple[Any, ...],
+    *,
+    require_contiguous_inputs: bool,
+    allowed_dtypes: Optional[Iterable[Any]],
+    allowed_devices: Optional[Iterable[Any]],
+) -> List[AOTPackageIssue]:
+    try:
+        import torch
+    except Exception:  # pragma: no cover
+        return []
+
+    dtype_policy = _normalize_dtype_set(allowed_dtypes)
+    device_policy = _normalize_device_set(allowed_devices)
+    issues: List[AOTPackageIssue] = []
+    seen_device_types: Set[str] = set()
+    tensor_items: List[Tuple[str, Any]] = []
+    for index, arg in enumerate(args):
+        tensor_items.extend(_flatten_tensor_args(arg, f"arg{index}"))
+
+    for name, tensor in tensor_items:
+        layout = getattr(tensor, "layout", None)
+        if layout is not torch.strided:
+            issues.append(
+                AOTPackageIssue(
+                    category="input_layout",
+                    input_name=name,
+                    message=(
+                        f"{name} has layout {layout}; AOTInductor packages in "
+                        "this gate require dense strided example inputs"
+                    ),
+                )
+            )
+        elif require_contiguous_inputs and not tensor.is_contiguous():
+            issues.append(
+                AOTPackageIssue(
+                    category="input_layout",
+                    input_name=name,
+                    message=(
+                        f"{name} is non-contiguous with stride {tuple(tensor.stride())}; "
+                        "package with a contiguous example input or opt out of "
+                        "the contiguous-input gate"
+                    ),
+                )
+            )
+
+        if dtype_policy is not None and tensor.dtype not in dtype_policy:
+            allowed = ", ".join(sorted(str(dtype) for dtype in dtype_policy))
+            issues.append(
+                AOTPackageIssue(
+                    category="input_dtype",
+                    input_name=name,
+                    message=f"{name} has dtype {tensor.dtype}; allowed dtypes: {allowed}",
+                )
+            )
+        elif tensor.is_complex() or getattr(tensor, "is_quantized", False):
+            issues.append(
+                AOTPackageIssue(
+                    category="input_dtype",
+                    input_name=name,
+                    message=(
+                        f"{name} has dtype {tensor.dtype}; complex and quantized "
+                        "example inputs are rejected before AOT packaging"
+                    ),
+                )
+            )
+
+        device = tensor.device
+        seen_device_types.add(device.type)
+        if device.type == "meta":
+            issues.append(
+                AOTPackageIssue(
+                    category="input_device",
+                    input_name=name,
+                    message=f"{name} is on the meta device, which cannot be packaged",
+                )
+            )
+        if device_policy is not None and str(device) not in device_policy and device.type not in device_policy:
+            allowed = ", ".join(sorted(device_policy))
+            issues.append(
+                AOTPackageIssue(
+                    category="input_device",
+                    input_name=name,
+                    message=f"{name} is on {device}; allowed devices: {allowed}",
+                )
+            )
+
+    if len(seen_device_types) > 1:
+        issues.append(
+            AOTPackageIssue(
+                category="input_device",
+                message=(
+                    "AOTInductor package examples span multiple device types "
+                    f"{sorted(seen_device_types)}; package one target device at a time"
+                ),
+            )
+        )
+    return issues
+
+
+def _has_recognized_dynamic_dims(model: Any, args: Tuple[Any, ...], dynamic_shapes: Any) -> bool:
+    if dynamic_shapes is None:
+        return False
+    names = _forward_param_names(model, args)
+    for index, name in enumerate(names):
+        spec = _dynamic_spec_for_input(dynamic_shapes, name, index)
+        for _axis, dim in _iter_axis_specs(spec):
+            if _is_export_dim(dim):
+                return True
+    return False
+
+
+def _aot_op_display_name(target: Any) -> str:
+    module = getattr(target, "__module__", "") or ""
+    name = getattr(target, "__name__", None) or str(target)
+    if module and module not in {"builtins", "operator"}:
+        return f"{module}.{name}"
+    return name
+
+
+def _aot_op_base_name(target: Any) -> str:
+    name = getattr(target, "__name__", None) or getattr(target, "_opname", None) or str(target)
+    name = name.split(".")[0]
+    if "::" in name:
+        name = name.split("::")[-1]
+    return name
+
+
+def _aot_unsupported_lowering_issues(
+    exported_program: Any,
+) -> Tuple[List[AOTPackageIssue], Tuple[str, ...]]:
+    graph_module = getattr(exported_program, "graph_module", None)
+    graph = getattr(graph_module, "graph", None)
+    if graph is None:
+        return [], ()
+    issues: List[AOTPackageIssue] = []
+    checked_ops: List[str] = []
+    seen_unsupported: Set[str] = set()
+    for node in graph.nodes:
+        if getattr(node, "op", None) != "call_function":
+            continue
+        target = getattr(node, "target", None)
+        display = _aot_op_display_name(target)
+        checked_ops.append(display)
+        base = _aot_op_base_name(target)
+        if base in _AOT_UNSUPPORTED_LOWERING_BASES and display not in seen_unsupported:
+            seen_unsupported.add(display)
+            issues.append(
+                AOTPackageIssue(
+                    category="unsupported_lowering",
+                    op_name=display,
+                    message=(
+                        f"{display} is not admitted by TensorGuard's stable "
+                        "AOTInductor package lowering gate"
+                    ),
+                )
+            )
+    return issues, tuple(checked_ops)
+
+
 def verify_exported_program(
     model: Any,
     example_args: Tuple,
@@ -265,6 +601,11 @@ def guarded_aot_package(
     on_violation: str = "raise",
     soundness_mode: str = "balanced",
     inductor_configs: Optional[Dict[str, Any]] = None,
+    aot_require_contiguous_inputs: bool = True,
+    aot_allowed_dtypes: Optional[Iterable[Any]] = None,
+    aot_allowed_devices: Optional[Iterable[Any]] = None,
+    aot_allow_unsupported_ops: bool = False,
+    aot_require_dynamic_shape_guards: bool = True,
 ):
     """Verify *model*, then AOTInductor-compile and package it.
 
@@ -279,13 +620,48 @@ def guarded_aot_package(
     Returns the path to the compiled ``.pt2`` package (the string
     ``aoti_compile_and_package`` returns).
     """
+    if on_violation not in ("raise", "warn", "ignore"):
+        raise ValueError(f"on_violation must be raise/warn/ignore, got {on_violation!r}")
+    args = example_args if isinstance(example_args, tuple) else (example_args,)
+    _handle_aot_gate_result(
+        verify_aot_package_contract(
+            model,
+            args,
+            input_shapes=input_shapes,
+            dynamic_shapes=dynamic_shapes,
+            require_contiguous_inputs=aot_require_contiguous_inputs,
+            allowed_dtypes=aot_allowed_dtypes,
+            allowed_devices=aot_allowed_devices,
+            allow_unsupported_ops=aot_allow_unsupported_ops,
+            require_dynamic_shape_guards=aot_require_dynamic_shape_guards,
+            check_exported_program=False,
+        ),
+        on_violation,
+    )
+
     ep = verify_exported_program(
         model,
-        example_args,
+        args,
         input_shapes=input_shapes,
         dynamic_shapes=dynamic_shapes,
         on_violation=on_violation,
         soundness_mode=soundness_mode,
+    )
+    _handle_aot_gate_result(
+        verify_aot_package_contract(
+            model,
+            args,
+            input_shapes=input_shapes,
+            dynamic_shapes=dynamic_shapes,
+            exported_program=ep,
+            require_contiguous_inputs=aot_require_contiguous_inputs,
+            allowed_dtypes=aot_allowed_dtypes,
+            allowed_devices=aot_allowed_devices,
+            allow_unsupported_ops=aot_allow_unsupported_ops,
+            require_dynamic_shape_guards=aot_require_dynamic_shape_guards,
+            check_inputs=False,
+        ),
+        on_violation,
     )
     import torch
 

@@ -38,11 +38,15 @@ from src import (  # noqa: F401  (re-export)
     verify_source_safely,
 )
 from src.torch_integration import (  # noqa: F401  (re-export)
+    AOTPackageGateResult,
+    AOTPackageIssue,
+    TensorGuardAOTPackageError,
     TensorGuardViolation,
     guarded_aot_package,
     guarded_compile,
     guarded_onnx_export,
     make_tensorguard_backend,
+    verify_aot_package_contract,
     verify_exported_program,
     verify_module,
 )
@@ -128,7 +132,7 @@ from src.func_autodiff_verify import (  # noqa: F401  (re-export)
 
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
 from src import api as api  # noqa: F401
-from src import torch_integration as torch  # noqa: F401
+from . import torch as torch  # noqa: F401
 
 __all__ = [
     "analyze",
@@ -151,6 +155,7 @@ __all__ = [
     "make_tensorguard_backend",
     "guarded_onnx_export",
     "verify_exported_program",
+    "verify_aot_package_contract",
     "guarded_aot_package",
     "verify_einops",
     "verify_einops_source",
@@ -210,6 +215,9 @@ __all__ = [
     "verify_func_jvp",
     "verify_func_vjp",
     "TensorGuardViolation",
+    "TensorGuardAOTPackageError",
+    "AOTPackageIssue",
+    "AOTPackageGateResult",
     "api",
     "torch",
     "__version__",
