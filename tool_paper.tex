@@ -225,7 +225,8 @@ attention, training loss contracts for \texttt{CrossEntropyLoss},
 \texttt{KLDivLoss}, exact RNN/LSTM/GRU output and returned-state contracts,
 LoRA adapter compatibility, training-loop checks, quantization/export safety,
 mixed-precision/autocast dtype-divergence gates, FSDP/FSDP2/DTensor sharding,
-tensor-parallel attention variants, and deployment schemas.
+explicit pipeline-stage boundary contracts, tensor-parallel sharding checks,
+and deployment schemas.
 
 Recent stack-family work follows the same standard.  \texttt{torch.stack},
 \texttt{hstack}, \texttt{vstack}, \texttt{dstack},
@@ -704,7 +705,8 @@ preprocessing transforms whose tensor shapes feed the model. \\
 \texttt{src/distributed\_verification.py}, \texttt{src/lora\_verification.py} &
 Deployment, mixed-precision, distributed training, and adapter-compatibility
 gates, including GGUF/llama.cpp checkpoint preflight checks and FSDP2/DTensor
-rank-local shard contracts checked against PyTorch's own placement splitter. \\
+rank-local shard contracts checked against PyTorch's own placement splitter,
+plus explicit pipeline activation-boundary contracts. \\
 \hline
 \texttt{src/reporters.py}, \texttt{src/sarif\_codescan.py},
 \texttt{src/github\_action.py} &
@@ -874,7 +876,8 @@ q/k/v packing, rotary dimensions, vocab projections, quant block divisibility,
 and metadata consistency before an external converter is invoked. \\
 \hline
 Distributed and adapters &
-DDP/FSDP/FSDP2/DTensor/per-parameter and tensor-parallel checks, plus
+DDP/FSDP/FSDP2/DTensor/per-parameter, explicit pipeline-boundary, and
+tensor-parallel checks, plus
 optimizer-state, checkpoint-schema, and LoRA/PEFT adapter compatibility gates. \\
 \hline
 Reports and integrations &
@@ -998,7 +1001,7 @@ state\_dict tensors and logical quantized descriptors. \\
 \hline
 \texttt{tests/test\_distributed\_verification.py},
 \texttt{tests/test\_tensor\_parallel\_checks.py} &
-FSDP, DeepSpeed, FSDP2, DTensor, per-parameter, and tensor-parallel
+FSDP, DeepSpeed, FSDP2, DTensor, per-parameter, pipeline-boundary, and tensor-parallel
 shape/device contracts, including rank-specific shard-shape conformance against
 PyTorch's \texttt{torch.distributed.tensor} placement helper. \\
 \hline
@@ -1226,8 +1229,9 @@ ONNX, AOT, GGUF, quantization, mixed-precision, and guarded compile/export
 tests. \\
 \hline
 Distributed and adapter gates &
-Sharding, tensor parallelism, optimizer state, checkpoints, and LoRA adapters
-have shape/dtype/rank contracts layered over base verification. &
+Sharding, explicit pipeline stage boundaries, tensor parallelism, optimizer
+state, checkpoints, and LoRA adapters have shape/dtype/rank contracts layered
+over base verification. &
 Distributed verification, tensor-parallel, training-loop, checkpoint, and LoRA
 tests. \\
 \hline
@@ -1402,7 +1406,7 @@ activation qscheme placement, eager/FX quant-dequant boundaries,
 mixed-precision dtype boundaries, AMP backend allowlists, fp16 GradScaler
 requirements, TorchServe or FastAPI request schemas, GGUF or llama.cpp
 checkpoint shapes, CUDA graph capture assumptions, and distributed shard
-boundaries.  \tg{}'s deployment modules check these contracts before the
+and pipeline activation boundaries.  \tg{}'s deployment modules check these contracts before the
 downstream system emits a harder-to-debug compiler, exporter, or serving error.
 For GGUF/llama.cpp, the gate reads the checkpoint tensors and metadata directly:
 it validates architecture-prefixed metadata, q/k/v or packed-qkv projections,

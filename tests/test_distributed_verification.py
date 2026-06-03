@@ -22,12 +22,16 @@ from src.distributed_verification import (
     ParameterShardingStrategy,
     ParameterShardingVerifier,
     ParamShardInfo,
+    PipelineBoundarySpec,
+    PipelineParallelVerifier,
+    PipelineStageSpec,
     ShardingResult,
     WrapPolicy,
     ZeROStage,
     verify_dtensor_specs,
     verify_distributed,
     verify_parameter_sharding,
+    verify_pipeline_boundaries,
 )
 
 
@@ -398,6 +402,229 @@ class TestFSDP2Verifier:
         result = verifier.verify_sharding({"w": (8, 8)})
         assert not result.safe
         assert any("mesh product" in v for v in result.violations)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Pipeline-parallel boundary tests
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class TestPipelineParallelVerifier:
+    def test_valid_stage_boundary_with_microbatch_contract(self):
+        stages = [
+            PipelineStageSpec(index=0, name="embed", output_shape=(8, 128)),
+            PipelineStageSpec(index=1, name="mlp", input_shape=(8, 128)),
+        ]
+        boundary = PipelineBoundarySpec(
+            name="embed_to_mlp",
+            producer_stage=0,
+            consumer_stage=1,
+            activation_shape=(8, 128),
+            microbatch_dim=0,
+            microbatches=4,
+            global_batch_size=32,
+            activation_dtype="torch.float16",
+            expected_dtype="torch.float16",
+            activation_device="cuda:1",
+            expected_device="cuda:1",
+        )
+        result = PipelineParallelVerifier(stages).verify_boundaries([boundary])
+        assert result.safe
+        assert result.params_checked == 1
+        assert result.local_shapes["embed_to_mlp"][(0, 1)] == (8, 128)
+
+    def test_shape_mismatch_refutes_boundary_and_top_level(self):
+        boundary = PipelineBoundarySpec(
+            name="bad_hidden",
+            producer_stage=0,
+            consumer_stage=1,
+            activation_shape=(8, 128),
+            expected_input_shape=(8, 256),
+        )
+        direct = verify_pipeline_boundaries([boundary])
+        assert not direct.safe
+        assert any("consumer expected input" in v for v in direct.violations)
+
+        aggregate = verify_distributed(
+            source=SIMPLE_MODEL,
+            input_shapes={"x": ("batch", 256)},
+            pipeline_boundaries=[boundary],
+        )
+        assert aggregate.pipeline_result is not None
+        assert not aggregate.pipeline_result.safe
+        assert not aggregate.safe
+        assert "Pipeline" in aggregate.pretty()
+
+    def test_microbatch_mismatch_and_invalid_axis_refute(self):
+        mismatch = PipelineBoundarySpec(
+            name="bad_microbatch",
+            producer_stage=0,
+            consumer_stage=1,
+            activation_shape=(15, 128),
+            microbatches=4,
+            global_batch_size=64,
+        )
+        bad_axis = PipelineBoundarySpec(
+            name="bad_axis",
+            producer_stage=0,
+            consumer_stage=1,
+            activation_shape=(8, 128),
+            microbatch_dim=3,
+        )
+        result = verify_pipeline_boundaries([mismatch, bad_axis])
+        assert not result.safe
+        assert any("per-microbatch dimension" in v for v in result.violations)
+        assert any("microbatch_dim" in v for v in result.violations)
+
+    def test_uneven_final_microbatch_warns_without_refuting(self):
+        boundary = PipelineBoundarySpec(
+            name="uneven",
+            producer_stage=0,
+            consumer_stage=1,
+            activation_shape=(8, 128),
+            microbatches=4,
+            global_batch_size=30,
+        )
+        result = verify_pipeline_boundaries([boundary])
+        assert result.safe
+        assert any("uneven final microbatches" in w for w in result.warnings)
+
+    def test_dtype_and_device_mismatch_refute_only_when_expected_is_explicit(self):
+        implicit = PipelineBoundarySpec(
+            name="implicit_runtime_transfer",
+            producer_stage=0,
+            consumer_stage=1,
+            activation_shape=(8, 128),
+            activation_dtype="torch.float16",
+            activation_device="cuda:0",
+        )
+        explicit = PipelineBoundarySpec(
+            name="bad_boundary_contract",
+            producer_stage=0,
+            consumer_stage=1,
+            activation_shape=(8, 128),
+            activation_dtype="torch.float16",
+            expected_dtype="torch.float32",
+            activation_device="cuda:0",
+            expected_device="cuda:1",
+        )
+        implicit_result = verify_pipeline_boundaries([implicit])
+        assert implicit_result.safe
+
+        stage_expected = PipelineParallelVerifier([
+            PipelineStageSpec(index=0),
+            PipelineStageSpec(index=1, dtype="torch.float32", device="cuda:1"),
+        ]).verify_boundaries([implicit])
+        assert not stage_expected.safe
+        assert any("activation dtype" in v for v in stage_expected.violations)
+        assert any("activation device" in v for v in stage_expected.violations)
+
+        explicit_result = verify_pipeline_boundaries([explicit])
+        assert not explicit_result.safe
+        assert any("activation dtype" in v for v in explicit_result.violations)
+        assert any("activation device" in v for v in explicit_result.violations)
+
+    def test_checkpoint_recompute_contracts_are_checked(self):
+        boundary = PipelineBoundarySpec(
+            name="checkpointed_block",
+            producer_stage=0,
+            consumer_stage=1,
+            activation_shape=(8, 128),
+            checkpoint_boundary=True,
+            recompute_shape=(8, 64),
+            activation_dtype="bf16",
+            recompute_dtype="fp32",
+            activation_device="cuda:0",
+            recompute_device="cuda:1",
+        )
+        result = verify_pipeline_boundaries([boundary])
+        assert not result.safe
+        assert any("checkpoint recompute_shape" in v for v in result.violations)
+        assert any("checkpoint recompute dtype" in v for v in result.violations)
+        assert any("checkpoint recompute device" in v for v in result.violations)
+
+    def test_symbolic_dims_and_interleaved_schedule_warn_not_refute(self):
+        boundary = PipelineBoundarySpec(
+            name="symbolic_virtual_stage",
+            producer_stage=2,
+            consumer_stage=1,
+            activation_shape=("microbatch", "hidden"),
+            expected_input_shape=("microbatch", 128),
+            microbatches=4,
+            global_batch_size=32,
+        )
+        result = verify_pipeline_boundaries([boundary])
+        assert result.safe
+        assert any("symbolic dimensions" in w for w in result.warnings)
+        assert any("interleaved" in w for w in result.warnings)
+        assert any("symbolic microbatch extent" in w for w in result.warnings)
+
+    def test_stage_specs_refute_duplicate_missing_and_negative_shape(self):
+        stages = [
+            PipelineStageSpec(index=0, output_shape=(8, 128)),
+            PipelineStageSpec(index=0, input_shape=(8, -1)),
+        ]
+        boundary = PipelineBoundarySpec(
+            name="missing_consumer",
+            producer_stage=0,
+            consumer_stage=2,
+            activation_shape=(8, 128),
+        )
+        result = PipelineParallelVerifier(stages).verify_boundaries([boundary])
+        assert not result.safe
+        assert any("duplicate stage index" in v for v in result.violations)
+        assert any("negative" in v for v in result.violations)
+        assert any("consumer_stage 2 is not declared" in v for v in result.violations)
+
+    def test_real_torch_split_stage_shape_oracle_when_available(self):
+        torch = pytest.importorskip("torch")
+        nn = torch.nn
+
+        stage0 = nn.Sequential(nn.Linear(16, 32), nn.GELU())
+        stage1 = nn.Sequential(nn.Linear(32, 4))
+        x = torch.randn(8, 16)
+        activation = stage0(x)
+        output = stage1(activation)
+        assert tuple(output.shape) == (8, 4)
+
+        boundary = PipelineBoundarySpec(
+            name="real_stage0_to_stage1",
+            producer_stage=0,
+            consumer_stage=1,
+            activation_shape=tuple(activation.shape),
+            expected_input_shape=(8, 32),
+            microbatches=4,
+            global_batch_size=32,
+            activation_dtype=str(activation.dtype),
+            expected_dtype="torch.float32",
+            activation_device=str(activation.device),
+            expected_device="cpu",
+            checkpoint_boundary=True,
+            recompute_shape=tuple(stage0(x).shape),
+            recompute_dtype=str(stage0(x).dtype),
+            recompute_device=str(stage0(x).device),
+        )
+        ok = verify_pipeline_boundaries([boundary])
+        assert ok.safe
+
+        broken = verify_pipeline_boundaries([
+            PipelineBoundarySpec(
+                name="real_bad_hidden",
+                producer_stage=0,
+                consumer_stage=1,
+                activation_shape=tuple(activation.shape),
+                expected_input_shape=(8, 31),
+            )
+        ])
+        assert not broken.safe
+
+    def test_public_package_exports_pipeline_helpers(self):
+        import tensorguard
+
+        assert tensorguard.PipelineBoundarySpec is PipelineBoundarySpec
+        assert tensorguard.PipelineStageSpec is PipelineStageSpec
+        assert tensorguard.PipelineParallelVerifier is PipelineParallelVerifier
+        assert tensorguard.verify_pipeline_boundaries is verify_pipeline_boundaries
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

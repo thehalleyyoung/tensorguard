@@ -188,6 +188,54 @@ class ParameterShardingSpec:
     expected_local_shape: Optional[Shape] = None
 
 
+@dataclass(frozen=True)
+class PipelineStageSpec:
+    """One user-declared pipeline-parallel stage in a split model graph.
+
+    The verifier does not infer graph partitions.  It checks the explicit stage
+    contracts a pipeline runtime or partitioner intends to enforce.
+    """
+
+    index: int
+    name: str = ""
+    input_shape: Optional[Shape] = None
+    output_shape: Optional[Shape] = None
+    dtype: Optional[str] = None
+    device: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class PipelineBoundarySpec:
+    """A user-declared activation contract between two pipeline stages.
+
+    ``activation_shape`` is the per-microbatch tensor shape at the boundary.  A
+    concrete ``global_batch_size`` is checked against equal-sized microbatches
+    only when it is evenly divisible by ``microbatches``; uneven final
+    microbatches are reported as warnings rather than false violations.
+
+    Dtype/device checks are consumer-contract checks: they refute only when both
+    the activation-side value and the consumer ``expected_*`` value are provided
+    and concrete.
+    """
+
+    name: str
+    producer_stage: int
+    consumer_stage: int
+    activation_shape: Shape
+    expected_input_shape: Optional[Shape] = None
+    microbatch_dim: int = 0
+    microbatches: int = 1
+    global_batch_size: Optional[int] = None
+    activation_dtype: Optional[str] = None
+    expected_dtype: Optional[str] = None
+    activation_device: Optional[str] = None
+    expected_device: Optional[str] = None
+    checkpoint_boundary: bool = False
+    recompute_shape: Optional[Shape] = None
+    recompute_dtype: Optional[str] = None
+    recompute_device: Optional[str] = None
+
+
 @dataclass
 class FSDP2Config:
     """Configuration for PyTorch composable FSDP2/per-parameter sharding.
@@ -398,6 +446,31 @@ def _shapes_definitely_differ(actual: Shape, expected: Shape) -> bool:
         if isinstance(a, int) and isinstance(e, int) and a != e:
             return True
     return False
+
+
+def _shape_has_symbolic_uncertainty(actual: Shape, expected: Shape) -> bool:
+    if len(actual) != len(expected):
+        return False
+    return any(
+        not (isinstance(a, int) and isinstance(e, int)) and a != e
+        for a, e in zip(actual, expected)
+    )
+
+
+def _validate_shape_dimensions(label: str, shape: Shape) -> List[str]:
+    violations: List[str] = []
+    for dim_index, dim in enumerate(shape):
+        if isinstance(dim, int) and dim < 0:
+            violations.append(
+                f"{label}: shape dimension {dim_index} is negative ({dim})"
+            )
+    return violations
+
+
+def _normalize_token(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    return str(value).strip().lower()
 
 
 def _same_shape_for_all_ranks(local_shapes: Dict[RankCoordinate, Shape]) -> Optional[Shape]:
@@ -1882,7 +1955,341 @@ class AdapterCompositionVerifier:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 5.  Distributed Verification Result
+# 5.  Pipeline-parallel stage-boundary verifier
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class PipelineParallelVerifier:
+    """Verify explicit pipeline-parallel stage-boundary contracts.
+
+    The verifier is intentionally contract-driven: it checks the split graph a
+    pipeline runtime, exporter, or manual partitioner declares through
+    ``PipelineStageSpec`` and ``PipelineBoundarySpec``.  It does not infer a
+    partition from arbitrary Python source.
+    """
+
+    def __init__(self, stages: Optional[List[PipelineStageSpec]] = None):
+        self.stages = list(stages or [])
+
+    def verify_boundaries(
+        self,
+        boundaries: List[PipelineBoundarySpec],
+    ) -> ShardingResult:
+        t0 = time.perf_counter()
+        violations, warnings, stage_map = self._validate_stages()
+        local_shapes: Dict[str, Dict[RankCoordinate, Shape]] = {}
+
+        for boundary in boundaries:
+            b_violations, b_warnings = self._verify_boundary(boundary, stage_map)
+            violations.extend(b_violations)
+            warnings.extend(b_warnings)
+            local_shapes[boundary.name] = {
+                (boundary.producer_stage, boundary.consumer_stage): (
+                    boundary.activation_shape
+                )
+            }
+
+        elapsed = (time.perf_counter() - t0) * 1000
+        return ShardingResult(
+            safe=len(violations) == 0,
+            violations=violations,
+            warnings=warnings,
+            params_checked=len(boundaries),
+            verification_time_ms=elapsed,
+            local_shapes=local_shapes,
+        )
+
+    def _validate_stages(
+        self,
+    ) -> Tuple[List[str], List[str], Dict[int, PipelineStageSpec]]:
+        violations: List[str] = []
+        warnings: List[str] = []
+        stage_map: Dict[int, PipelineStageSpec] = {}
+
+        for stage in self.stages:
+            if stage.index < 0:
+                violations.append(
+                    f"pipeline stage {stage.name or stage.index}: index must be non-negative"
+                )
+            if stage.index in stage_map:
+                violations.append(f"pipeline stage {stage.index}: duplicate stage index")
+            else:
+                stage_map[stage.index] = stage
+            if stage.input_shape is not None:
+                violations.extend(
+                    _validate_shape_dimensions(
+                        f"pipeline stage {stage.index} input_shape",
+                        stage.input_shape,
+                    )
+                )
+            if stage.output_shape is not None:
+                violations.extend(
+                    _validate_shape_dimensions(
+                        f"pipeline stage {stage.index} output_shape",
+                        stage.output_shape,
+                    )
+                )
+
+        return violations, warnings, stage_map
+
+    def _verify_boundary(
+        self,
+        boundary: PipelineBoundarySpec,
+        stage_map: Dict[int, PipelineStageSpec],
+    ) -> Tuple[List[str], List[str]]:
+        violations: List[str] = []
+        warnings: List[str] = []
+        label = f"pipeline boundary {boundary.name}"
+
+        if boundary.producer_stage < 0:
+            violations.append(f"{label}: producer_stage must be non-negative")
+        if boundary.consumer_stage < 0:
+            violations.append(f"{label}: consumer_stage must be non-negative")
+        if boundary.consumer_stage <= boundary.producer_stage:
+            warnings.append(
+                f"{label}: consumer_stage {boundary.consumer_stage} is not after "
+                f"producer_stage {boundary.producer_stage}; accepted for interleaved "
+                "or virtual pipeline schedules"
+            )
+
+        if self.stages:
+            if boundary.producer_stage not in stage_map:
+                violations.append(
+                    f"{label}: producer_stage {boundary.producer_stage} is not declared"
+                )
+            if boundary.consumer_stage not in stage_map:
+                violations.append(
+                    f"{label}: consumer_stage {boundary.consumer_stage} is not declared"
+                )
+
+        violations.extend(
+            _validate_shape_dimensions(
+                f"{label} activation_shape",
+                boundary.activation_shape,
+            )
+        )
+        if boundary.expected_input_shape is not None:
+            violations.extend(
+                _validate_shape_dimensions(
+                    f"{label} expected_input_shape",
+                    boundary.expected_input_shape,
+                )
+            )
+        if boundary.recompute_shape is not None:
+            violations.extend(
+                _validate_shape_dimensions(
+                    f"{label} recompute_shape",
+                    boundary.recompute_shape,
+                )
+            )
+
+        producer = stage_map.get(boundary.producer_stage)
+        if producer is not None and producer.output_shape is not None:
+            self._compare_shapes(
+                label,
+                "producer output_shape",
+                boundary.activation_shape,
+                producer.output_shape,
+                violations,
+                warnings,
+            )
+
+        consumer_expected = boundary.expected_input_shape
+        consumer = stage_map.get(boundary.consumer_stage)
+        if consumer_expected is None and consumer is not None:
+            consumer_expected = consumer.input_shape
+        if consumer_expected is not None:
+            self._compare_shapes(
+                label,
+                "consumer expected input",
+                boundary.activation_shape,
+                consumer_expected,
+                violations,
+                warnings,
+            )
+
+        consumer_expected_dtype = boundary.expected_dtype
+        consumer_expected_device = boundary.expected_device
+        if consumer is not None:
+            consumer_expected_dtype = consumer_expected_dtype or consumer.dtype
+            consumer_expected_device = consumer_expected_device or consumer.device
+
+        self._verify_microbatch_contract(boundary, label, violations, warnings)
+        self._compare_tokens(
+            label,
+            "dtype",
+            boundary.activation_dtype,
+            consumer_expected_dtype,
+            violations,
+            "activation",
+            "consumer expected",
+        )
+        self._compare_tokens(
+            label,
+            "device",
+            boundary.activation_device,
+            consumer_expected_device,
+            violations,
+            "activation",
+            "consumer expected",
+        )
+        self._verify_checkpoint_contract(boundary, label, violations, warnings)
+
+        return violations, warnings
+
+    def _compare_shapes(
+        self,
+        label: str,
+        role: str,
+        actual: Shape,
+        expected: Shape,
+        violations: List[str],
+        warnings: List[str],
+    ) -> None:
+        if _shapes_definitely_differ(actual, expected):
+            violations.append(
+                f"{label}: activation shape {actual} does not match {role} {expected}"
+            )
+        elif _shape_has_symbolic_uncertainty(actual, expected):
+            warnings.append(
+                f"{label}: symbolic dimensions prevent a concrete proof that "
+                f"activation shape {actual} matches {role} {expected}"
+            )
+
+    def _verify_microbatch_contract(
+        self,
+        boundary: PipelineBoundarySpec,
+        label: str,
+        violations: List[str],
+        warnings: List[str],
+    ) -> None:
+        if boundary.microbatches <= 0:
+            violations.append(f"{label}: microbatches must be positive")
+            return
+        dim = _normalize_dim(boundary.microbatch_dim, len(boundary.activation_shape))
+        if dim is None:
+            violations.append(
+                f"{label}: microbatch_dim {boundary.microbatch_dim} is invalid "
+                f"for rank {len(boundary.activation_shape)}"
+            )
+            return
+
+        if boundary.global_batch_size is None:
+            return
+        if boundary.global_batch_size <= 0:
+            violations.append(f"{label}: global_batch_size must be positive")
+            return
+
+        micro_extent = boundary.activation_shape[dim]
+        if not isinstance(micro_extent, int):
+            warnings.append(
+                f"{label}: symbolic microbatch extent {micro_extent!r} prevents "
+                "checking global_batch_size exactly"
+            )
+            return
+
+        if boundary.global_batch_size % boundary.microbatches != 0:
+            warnings.append(
+                f"{label}: global_batch_size {boundary.global_batch_size} is not "
+                f"evenly divisible by microbatches {boundary.microbatches}; "
+                "uneven final microbatches are runtime-policy dependent"
+            )
+            return
+
+        expected_micro_extent = boundary.global_batch_size // boundary.microbatches
+        if micro_extent != expected_micro_extent:
+            violations.append(
+                f"{label}: per-microbatch dimension {micro_extent} at axis {dim} "
+                f"does not match global_batch_size/microbatches "
+                f"({boundary.global_batch_size}/{boundary.microbatches}="
+                f"{expected_micro_extent})"
+            )
+
+    def _compare_tokens(
+        self,
+        label: str,
+        kind: str,
+        actual: Optional[str],
+        expected: Optional[str],
+        violations: List[str],
+        actual_role: str,
+        expected_role: str,
+    ) -> None:
+        actual_norm = _normalize_token(actual)
+        expected_norm = _normalize_token(expected)
+        if actual_norm is None or expected_norm is None:
+            return
+        if actual_norm != expected_norm:
+            violations.append(
+                f"{label}: {actual_role} {kind} {actual!r} does not match "
+                f"{expected_role} {kind} {expected!r}"
+            )
+
+    def _verify_checkpoint_contract(
+        self,
+        boundary: PipelineBoundarySpec,
+        label: str,
+        violations: List[str],
+        warnings: List[str],
+    ) -> None:
+        if not boundary.checkpoint_boundary:
+            if (
+                boundary.recompute_shape is not None
+                or boundary.recompute_dtype is not None
+                or boundary.recompute_device is not None
+            ):
+                warnings.append(
+                    f"{label}: recompute_* fields are ignored because "
+                    "checkpoint_boundary=False"
+                )
+            return
+
+        if boundary.recompute_shape is None:
+            warnings.append(
+                f"{label}: activation checkpoint boundary lacks recompute_shape; "
+                "shape preservation cannot be proven"
+            )
+        else:
+            self._compare_shapes(
+                label,
+                "checkpoint recompute_shape",
+                boundary.activation_shape,
+                boundary.recompute_shape,
+                violations,
+                warnings,
+            )
+
+        self._compare_tokens(
+            label,
+            "dtype",
+            boundary.recompute_dtype,
+            boundary.activation_dtype,
+            violations,
+            "checkpoint recompute",
+            "activation",
+        )
+        self._compare_tokens(
+            label,
+            "device",
+            boundary.recompute_device,
+            boundary.activation_device,
+            violations,
+            "checkpoint recompute",
+            "activation",
+        )
+
+
+def verify_pipeline_boundaries(
+    boundaries: List[PipelineBoundarySpec],
+    stages: Optional[List[PipelineStageSpec]] = None,
+) -> ShardingResult:
+    """Verify explicit pipeline-parallel stage-boundary specs."""
+
+    return PipelineParallelVerifier(stages).verify_boundaries(boundaries)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 6.  Distributed Verification Result
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
@@ -1906,6 +2313,8 @@ class DistributedVerificationResult:
         DTensor mesh/placement verification result.
     parameter_sharding_result : ShardingResult or None
         Explicit per-parameter sharding verification result.
+    pipeline_result : ShardingResult or None
+        Pipeline-parallel stage-boundary verification result.
     adapter_result : ShardingResult or None
         Adapter composition verification result.
     verification_time_ms : float
@@ -1919,6 +2328,7 @@ class DistributedVerificationResult:
     deepspeed_result: Optional[ShardingResult] = None
     dtensor_result: Optional[ShardingResult] = None
     parameter_sharding_result: Optional[ShardingResult] = None
+    pipeline_result: Optional[ShardingResult] = None
     adapter_result: Optional[ShardingResult] = None
     verification_time_ms: float = 0.0
 
@@ -1951,12 +2361,13 @@ class DistributedVerificationResult:
         self._append_sharding_lines(
             lines, "Param shard", self.parameter_sharding_result
         )
+        self._append_sharding_lines(lines, "Pipeline  ", self.pipeline_result)
         self._append_sharding_lines(lines, "Adapters   ", self.adapter_result)
         return "\n".join(lines)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 6.  Parameter extraction helpers
+# 7.  Parameter extraction helpers
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
@@ -2022,7 +2433,7 @@ def _extract_params_from_source(
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 7.  Top-level API
+# 8.  Top-level API
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
@@ -2035,11 +2446,14 @@ def verify_distributed(
     fsdp2_config: Optional[FSDP2Config] = None,
     dtensor_specs: Optional[List[DTensorSpec]] = None,
     parameter_sharding: Optional[List[ParameterShardingSpec]] = None,
+    pipeline_stages: Optional[List[PipelineStageSpec]] = None,
+    pipeline_boundaries: Optional[List[PipelineBoundarySpec]] = None,
 ) -> DistributedVerificationResult:
     """Verify a model under distributed training configurations.
 
     Extends the standard ``verify_model()`` pipeline with FSDP sharding,
-    FSDP2/DTensor sharding, DeepSpeed ZeRO, and adapter composition checks.
+    FSDP2/DTensor sharding, pipeline stage-boundary gates, DeepSpeed ZeRO, and
+    adapter composition checks.
 
     Parameters
     ----------
@@ -2056,6 +2470,10 @@ def verify_distributed(
         Explicit DTensor mesh/placement specs to verify.
     parameter_sharding : list of ParameterShardingSpec, optional
         Explicit per-parameter sharding specs to verify.
+    pipeline_stages : list of PipelineStageSpec, optional
+        Explicit split-graph stage contracts for pipeline-parallel verification.
+    pipeline_boundaries : list of PipelineBoundarySpec, optional
+        Explicit activation-boundary contracts to verify between pipeline stages.
     deepspeed_config : DeepSpeedConfig, optional
         DeepSpeed configuration.  If provided, runs ZeRO stage checks.
     adapter_composition : AdapterComposition, optional
@@ -2114,7 +2532,15 @@ def verify_distributed(
     if parameter_sharding is not None:
         parameter_sharding_result = verify_parameter_sharding(parameter_sharding)
 
-    # 8. Adapter composition verification
+    # 8. Pipeline-parallel boundary verification
+    pipeline_result: Optional[ShardingResult] = None
+    if pipeline_boundaries is not None:
+        pipeline_result = verify_pipeline_boundaries(
+            pipeline_boundaries,
+            stages=pipeline_stages,
+        )
+
+    # 9. Adapter composition verification
     adapter_result: Optional[ShardingResult] = None
     if adapter_composition is not None:
         comp_verifier = AdapterCompositionVerifier(adapter_composition)
@@ -2134,6 +2560,8 @@ def verify_distributed(
         safe = False
     if parameter_sharding_result is not None and not parameter_sharding_result.safe:
         safe = False
+    if pipeline_result is not None and not pipeline_result.safe:
+        safe = False
     if adapter_result is not None and not adapter_result.safe:
         safe = False
 
@@ -2146,6 +2574,7 @@ def verify_distributed(
         deepspeed_result=ds_result,
         dtensor_result=dtensor_result,
         parameter_sharding_result=parameter_sharding_result,
+        pipeline_result=pipeline_result,
         adapter_result=adapter_result,
         verification_time_ms=elapsed,
     )

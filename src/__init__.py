@@ -94,8 +94,12 @@ from .distributed_verification import (
     ParameterShardingSpec,
     ParameterShardingStrategy,
     ParameterShardingVerifier,
+    PipelineBoundarySpec,
+    PipelineParallelVerifier,
+    PipelineStageSpec,
     verify_dtensor_specs,
     verify_parameter_sharding,
+    verify_pipeline_boundaries,
 )
 
 __all__ = [
@@ -178,7 +182,11 @@ __all__ = [
     "ParameterShardingSpec",
     "ParameterShardingStrategy",
     "ParameterShardingVerifier",
+    "PipelineBoundarySpec",
+    "PipelineParallelVerifier",
+    "PipelineStageSpec",
     "verify_dtensor_specs",
     "verify_parameter_sharding",
+    "verify_pipeline_boundaries",
     "__version__",
 ]

@@ -152,8 +152,12 @@ from src.distributed_verification import (  # noqa: F401  (re-export)
     ParameterShardingSpec,
     ParameterShardingStrategy,
     ParameterShardingVerifier,
+    PipelineBoundarySpec,
+    PipelineParallelVerifier,
+    PipelineStageSpec,
     verify_dtensor_specs,
     verify_parameter_sharding,
+    verify_pipeline_boundaries,
 )
 
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
@@ -260,8 +264,12 @@ __all__ = [
     "ParameterShardingSpec",
     "ParameterShardingStrategy",
     "ParameterShardingVerifier",
+    "PipelineBoundarySpec",
+    "PipelineParallelVerifier",
+    "PipelineStageSpec",
     "verify_dtensor_specs",
     "verify_parameter_sharding",
+    "verify_pipeline_boundaries",
     "TensorGuardViolation",
     "TensorGuardAOTPackageError",
     "AOTPackageIssue",
