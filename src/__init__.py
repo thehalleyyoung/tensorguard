@@ -47,6 +47,7 @@ from .sparse_verify import (
 from .grid_sample_verify import verify_affine_grid, verify_grid_sample
 from .loss_verify import LossVerdict, verify_loss
 from .mha_verify import verify_multihead_attention
+from .torchvision_v2_verify import TransformVerdict, verify_torchvision_v2_transform
 from .vmap_verify import verify_vmap
 from .func_autodiff_verify import (
     verify_func_autodiff,
@@ -98,6 +99,8 @@ __all__ = [
     "LossVerdict",
     "verify_loss",
     "verify_multihead_attention",
+    "TransformVerdict",
+    "verify_torchvision_v2_transform",
     "verify_vmap",
     "verify_func_autodiff",
     "verify_func_grad",

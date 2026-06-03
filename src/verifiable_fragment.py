@@ -18,6 +18,7 @@ A module M is in V_TG iff:
 
   InitBody    ::=  (self.<attr> = <LayerExpr>)*
   LayerExpr   ::=  nn.<SupportedLayer>(<literal>*)
+                |  torchvision.transforms.v2.<SupportedTransform>(<literal>*)
                 |  nn.Sequential(<LayerExpr>*)
                 |  nn.ModuleList([<LayerExpr>*])
 
@@ -58,6 +59,10 @@ A module M is in V_TG iff:
                     |  TransformerDecoder{,Layer}
                     |  Flatten | Identity | Upsample | PixelShuffle
                     |  ...  (full list in SUPPORTED_LAYER_TYPES)
+
+  SupportedTransform ::= torchvision.transforms.v2.{Resize, CenterCrop,
+                         RandomCrop, RandomResizedCrop, Pad, Normalize,
+                         RandomHorizontalFlip, RandomVerticalFlip, ...}
 
 Excluded (outside V_TG):
   - Data-dependent control flow:  if <tensor>.cond: ... / while ...
@@ -249,6 +254,16 @@ SUPPORTED_LAYER_TYPES: Set[str] = {
     "Unfold", "Fold",
     "ReflectionPad2d", "ReplicationPad2d", "ZeroPad2d", "ConstantPad2d",
     "Sequential", "ModuleList", "ModuleDict",
+}
+
+SUPPORTED_TORCHVISION_V2_TRANSFORMS: Set[str] = {
+    "Resize", "CenterCrop", "RandomCrop", "RandomResizedCrop",
+    "FiveCrop", "TenCrop", "Pad", "Normalize",
+    "RandomHorizontalFlip", "RandomVerticalFlip",
+    "ColorJitter", "RandomInvert", "RandomPosterize", "RandomSolarize",
+    "RandomAutocontrast", "RandomEqualize", "RandomAdjustSharpness",
+    "RandomGrayscale", "GaussianBlur", "Identity", "ToDtype",
+    "ToPureTensor", "PILToTensor", "ToPILImage", "Compose",
 }
 
 SUPPORTED_TENSOR_METHODS: Set[str] = {
@@ -837,6 +852,10 @@ def render_spec_markdown() -> str:
     parts.append("## Supported constructs")
     parts.append("")
     parts.append(_md_table_block("Layer types", SUPPORTED_LAYER_TYPES))
+    parts.append(_md_table_block(
+        "torchvision.transforms.v2 transforms",
+        SUPPORTED_TORCHVISION_V2_TRANSFORMS,
+    ))
     parts.append(_md_table_block("Tensor methods", SUPPORTED_TENSOR_METHODS))
     parts.append(_md_table_block("torch.* functions", SUPPORTED_TORCH_FUNCTIONS))
     parts.append(_md_table_block("torch.nn.functional (F.*) functions", SUPPORTED_F_FUNCTIONS))

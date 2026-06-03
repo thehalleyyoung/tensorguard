@@ -28,8 +28,10 @@ runtime errors in ML codebases before any code runs.
   `einops` (`rearrange` / `reduce` / `repeat`), SDPA,
   `nn.MultiheadAttention` packed/unpacked q/k/v + masks,
   `torch.linalg` solve/inv/cholesky/SVD/eig/QR contracts,
-  `grid_sample` / `affine_grid`, and `torch.distributions`
-  batch/event/log-prob shapes, plus PyTorch
+  `grid_sample` / `affine_grid`, source-level
+  `torchvision.transforms.v2` tensor transforms (`Resize` / crops / `Pad` /
+  `Normalize` / flips, with PIL-only paths abstaining), and
+  `torch.distributions` batch/event/log-prob shapes, plus PyTorch
   named-tensor `refine_names` / `align_to` alignment, complex
   `view_as_real` / `view_as_complex` / `torch.fft` shape-dtype contracts,
   `torch.vmap` plus `torch.func` grad/jacrev/jacfwd/jvp/vjp shape transfers,
@@ -52,6 +54,7 @@ runtime errors in ML codebases before any code runs.
   `verify_sparse_csr`,
   `verify_sparse_csc`, `verify_sparse_bsr`, `verify_sparse_bsc`,
   `verify_grid_sample`, `verify_affine_grid`,
+  `verify_torchvision_v2_transform`,
   `verify_multihead_attention`)
 - **5-theory product domain** — jointly reasons over
   **Shape × Device × Phase × Stride × Permutation** for each tensor

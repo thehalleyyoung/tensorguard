@@ -130,6 +130,10 @@ from src.tensor_shapes import (
 )
 from src.loss_verify import verify_loss
 from src.mha_verify import verify_multihead_attention
+from src.torchvision_v2_verify import (
+    normalized_padding_2d,
+    verify_torchvision_v2_transform,
+)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -268,6 +272,7 @@ class LayerKind(Enum):
     UNFLATTEN = auto()
     SUBMODULE = auto()         # user-defined nn.Module subclass
     STUB = auto()              # third-party layer matched by the shape-stub registry
+    TORCHVISION_V2_TRANSFORM = auto()
     UNKNOWN = auto()
 
 
@@ -1370,6 +1375,135 @@ def _is_nn_layer(name: Optional[str]) -> Tuple[bool, LayerKind]:
 
     kind = _map.get(name, LayerKind.UNKNOWN)
     return kind != LayerKind.UNKNOWN, kind
+
+
+_TORCHVISION_V2_TRANSFORM_CTORS: FrozenSet[str] = frozenset({
+    "Resize",
+    "CenterCrop",
+    "RandomCrop",
+    "RandomResizedCrop",
+    "FiveCrop",
+    "TenCrop",
+    "Pad",
+    "Normalize",
+    "RandomHorizontalFlip",
+    "RandomVerticalFlip",
+    "ColorJitter",
+    "RandomInvert",
+    "RandomPosterize",
+    "RandomSolarize",
+    "RandomAutocontrast",
+    "RandomEqualize",
+    "RandomAdjustSharpness",
+    "RandomGrayscale",
+    "GaussianBlur",
+    "Identity",
+    "ToDtype",
+    "ToPureTensor",
+    "PILToTensor",
+    "ToPILImage",
+    "Compose",
+})
+
+
+def _is_torchvision_v2_transform_constructor(name: Optional[str]) -> Tuple[bool, str]:
+    """Return whether *name* denotes a torchvision.transforms.v2 transform."""
+
+    if name is None:
+        return False, ""
+    short = name.split(".")[-1]
+    return short in _TORCHVISION_V2_TRANSFORM_CTORS, short
+
+
+def _extract_torchvision_v2_transform_params(
+    transform_name: str,
+    call: ast.Call,
+    param_map: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Extract static constructor parameters for v2 tensor transforms."""
+
+    pos = [_const_value(a, param_map) for a in call.args]
+    kw = {k.arg: _const_value(k.value, param_map) for k in call.keywords if k.arg}
+    params: Dict[str, Any] = {"transform_name": transform_name}
+
+    def arg(index: int, key: str, default: Any = None) -> Any:
+        if key in kw:
+            return kw[key]
+        if len(pos) > index:
+            return pos[index]
+        return default
+
+    if transform_name in ("Resize",):
+        params["size"] = arg(0, "size")
+        params["max_size"] = arg(2, "max_size")
+    elif transform_name in (
+        "CenterCrop",
+        "RandomCrop",
+        "RandomResizedCrop",
+        "FiveCrop",
+        "TenCrop",
+    ):
+        params["size"] = arg(0, "size")
+        if transform_name == "RandomCrop":
+            params["padding"] = arg(1, "padding")
+            params["pad_if_needed"] = bool(arg(3, "pad_if_needed", False))
+    elif transform_name == "Pad":
+        params["padding"] = arg(0, "padding")
+    elif transform_name == "Normalize":
+        params["mean"] = arg(0, "mean")
+        params["std"] = arg(1, "std")
+    elif transform_name == "Compose":
+        params["transform_name"] = "Compose"
+    return params
+
+
+def _extract_torchvision_v2_transform_layer(
+    transform_name: str,
+    call: ast.Call,
+    param_map: Optional[Dict[str, Any]] = None,
+) -> LayerDef:
+    """Build a LayerDef for a source-level torchvision v2 transform."""
+
+    layer = LayerDef(
+        attr_name="",
+        kind=LayerKind.TORCHVISION_V2_TRANSFORM,
+        line=getattr(call, "lineno", 0),
+        params=_extract_torchvision_v2_transform_params(
+            transform_name, call, param_map
+        ),
+    )
+    if transform_name != "Compose":
+        return layer
+
+    transform_list: Optional[ast.expr] = None
+    if call.args:
+        transform_list = call.args[0]
+    for kw in call.keywords:
+        if kw.arg == "transforms":
+            transform_list = kw.value
+            break
+    sub_layers: List[LayerDef] = []
+    if isinstance(transform_list, (ast.List, ast.Tuple)):
+        for i, elt in enumerate(transform_list.elts):
+            if isinstance(elt, ast.Call):
+                child_name = _name_or_attr(elt.func)
+                is_transform, child_short = (
+                    _is_torchvision_v2_transform_constructor(child_name)
+                )
+                if is_transform:
+                    child = _extract_torchvision_v2_transform_layer(
+                        child_short, elt, param_map
+                    )
+                    child.attr_name = f"_v2_{i}_{child_short}"
+                    sub_layers.append(child)
+                    continue
+            sub_layers.append(LayerDef(
+                attr_name=f"_v2_{i}_unknown",
+                kind=LayerKind.UNKNOWN,
+                line=getattr(elt, "lineno", 0),
+            ))
+    layer.sub_layers = sub_layers if sub_layers else None
+    return layer
 
 
 def _extract_layer_params(kind: LayerKind, call: ast.Call,
@@ -2517,6 +2651,20 @@ class _InitExtractor(ast.NodeVisitor):
                     prefixed_layer = copy.copy(inner_layer)
                     prefixed_layer.attr_name = prefixed
                     self.layers[prefixed] = prefixed_layer
+            return
+
+        # torchvision.transforms.v2 tensor transforms are not nn.Module
+        # subclasses in every release, but source-level model code commonly
+        # stores them on ``self`` and calls them like layers.
+        is_v2_transform, transform_short = (
+            _is_torchvision_v2_transform_constructor(func_name)
+        )
+        if is_v2_transform:
+            layer = _extract_torchvision_v2_transform_layer(
+                transform_short, value, self._param_map
+            )
+            layer.attr_name = attr
+            self.layers[attr] = layer
             return
 
         # Third-party layer matched by the pluggable shape-stub registry
@@ -5843,6 +5991,27 @@ class _ForwardExtractor(ast.NodeVisitor):
                     line=line, col=col,
                 ))
                 return
+            is_v2_transform, transform_short = (
+                _is_torchvision_v2_transform_constructor(ctor_name)
+            )
+            if is_v2_transform:
+                layer = _extract_torchvision_v2_transform_layer(
+                    transform_short, func
+                )
+                inline_name = f"__inline_v2_{self._tmp_counter}"
+                self._tmp_counter += 1
+                layer.attr_name = inline_name
+                self.layers[inline_name] = layer
+                inputs = [self._resolve_arg(a) for a in node.args]
+                self.steps.append(ComputationStep(
+                    op=OpKind.LAYER_CALL,
+                    inputs=inputs,
+                    output=target,
+                    layer_ref=inline_name,
+                    line=line,
+                    col=col,
+                ))
+                return
 
         # Fallback: custom
         inputs = [self._resolve_arg(a) for a in node.args]
@@ -9141,6 +9310,58 @@ def _is_nonfloat_input_dtype(dt: Optional[str]) -> bool:
     return dt in _NONFLOAT_INPUT_DTYPES
 
 
+def _tv2_symbolic_shape(input_shape: TensorShape, layer: LayerDef) -> TensorShape:
+    return TensorShape(tuple(
+        ShapeDim(f"_tv2_{layer.attr_name or 'transform'}_{i}")
+        for i in range(input_shape.ndim)
+    ))
+
+
+def _tv2_tensor_shape(values: Tuple[Any, ...]) -> TensorShape:
+    return TensorShape(tuple(ShapeDim(v) for v in values))
+
+
+def _propagate_torchvision_v2_transform(
+    input_shape: TensorShape, layer: LayerDef
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    """Propagate source-level torchvision.transforms.v2 tensor transforms."""
+
+    params = dict(layer.params or {})
+    transform_name = params.get("transform_name", "")
+    if transform_name == "Compose":
+        current = input_shape
+        if not layer.sub_layers:
+            return _tv2_symbolic_shape(input_shape, layer), None
+        for sub in layer.sub_layers:
+            if sub.kind != LayerKind.TORCHVISION_V2_TRANSFORM:
+                return _tv2_symbolic_shape(current, sub), None
+            out, err = _propagate_torchvision_v2_transform(current, sub)
+            if err is not None:
+                return None, err
+            if out is None:
+                return _tv2_symbolic_shape(current, sub), None
+            current = out
+        return current, None
+
+    verdict = verify_torchvision_v2_transform(
+        transform_name,
+        tuple(d.value for d in input_shape.dims),
+        size=params.get("size"),
+        padding=params.get("padding"),
+        pad_if_needed=bool(params.get("pad_if_needed", False)),
+        max_size=params.get("max_size"),
+        mean=params.get("mean"),
+        std=params.get("std"),
+    )
+    if not verdict.ok:
+        if verdict.error_kind == "unsupported":
+            return _tv2_symbolic_shape(input_shape, layer), None
+        return None, verdict.message or "torchvision.transforms.v2 shape contract failed"
+    if verdict.output_shape is None:
+        return _tv2_symbolic_shape(input_shape, layer), None
+    return _tv2_tensor_shape(verdict.output_shape), None
+
+
 _LAYER_PROPAGATORS = {
     LayerKind.LINEAR: _propagate_linear,
     LayerKind.CONV2D: _propagate_conv2d,
@@ -9234,6 +9455,7 @@ _LAYER_PROPAGATORS = {
     LayerKind.COSINE_SIMILARITY: _propagate_pairwise_or_cosine,
     LayerKind.CHANNEL_SHUFFLE: _propagate_channel_shuffle,
     LayerKind.UNFLATTEN: _propagate_unflatten,
+    LayerKind.TORCHVISION_V2_TRANSFORM: _propagate_torchvision_v2_transform,
 }
 
 
@@ -10617,6 +10839,76 @@ class ConstraintVerifier:
                     # preserved (true for every registered stub contract).
                     if pre_d and post_d:
                         cs.append(post_d[0] == pre_d[0])
+                elif layer.kind == LayerKind.TORCHVISION_V2_TRANSFORM:
+                    params = layer.params or {}
+                    tname = str(params.get("transform_name", ""))
+                    if tname in {
+                        "RandomHorizontalFlip",
+                        "RandomVerticalFlip",
+                        "ColorJitter",
+                        "RandomInvert",
+                        "RandomPosterize",
+                        "RandomSolarize",
+                        "RandomEqualize",
+                        "RandomAdjustSharpness",
+                        "RandomGrayscale",
+                        "GaussianBlur",
+                        "Identity",
+                        "ToDtype",
+                        "ToPureTensor",
+                    }:
+                        for dp, dq in zip(pre_d, post_d):
+                            cs.append(dq == dp)
+                    elif tname in {
+                        "CenterCrop",
+                        "RandomCrop",
+                        "RandomResizedCrop",
+                        "FiveCrop",
+                        "TenCrop",
+                        "Resize",
+                    }:
+                        offset = 1 if tname in {"FiveCrop", "TenCrop"} else 0
+                        size = params.get("size")
+                        exact_size: Optional[Tuple[int, int]] = None
+                        if isinstance(size, int) and tname != "Resize":
+                            exact_size = (size, size)
+                        elif isinstance(size, (tuple, list)):
+                            vals = tuple(size)
+                            if len(vals) == 1 and tname != "Resize" and isinstance(vals[0], int):
+                                exact_size = (vals[0], vals[0])
+                            elif len(vals) == 2 and all(isinstance(v, int) for v in vals):
+                                exact_size = (vals[0], vals[1])
+                        if offset and post_d:
+                            cs.append(post_d[0] == z3.IntVal(5 if tname == "FiveCrop" else 10))
+                        prefix_len = min(len(pre_d) - 2, len(post_d) - 2 - offset)
+                        for i in range(max(0, prefix_len)):
+                            cs.append(post_d[i + offset] == pre_d[i])
+                        if exact_size is not None and len(post_d) >= 2 + offset:
+                            cs.append(post_d[-2] == z3.IntVal(exact_size[0]))
+                            cs.append(post_d[-1] == z3.IntVal(exact_size[1]))
+                    elif tname == "Pad":
+                        norm = normalized_padding_2d(params.get("padding"))
+                        if norm is not None and len(pre_d) >= 2 and len(post_d) >= 2:
+                            left, top, right, bottom = norm
+                            for dp, dq in zip(pre_d[:-2], post_d[:-2]):
+                                cs.append(dq == dp)
+                            cs.append(post_d[-2] == pre_d[-2] + z3.IntVal(top + bottom))
+                            cs.append(post_d[-1] == pre_d[-1] + z3.IntVal(left + right))
+                    elif tname == "Normalize":
+                        mean = params.get("mean")
+                        std = params.get("std")
+                        try:
+                            stat_channels = max(len(mean), len(std))
+                        except TypeError:
+                            stat_channels = None
+                        if stat_channels == 1:
+                            for dp, dq in zip(pre_d, post_d):
+                                cs.append(dq == dp)
+                        elif len(pre_d) >= 3 and len(post_d) >= 3:
+                            for dp, dq in zip(pre_d[:-3], post_d[:-3]):
+                                cs.append(dq == dp)
+                            cs.append(post_d[-2] == pre_d[-2])
+                            cs.append(post_d[-1] == pre_d[-1])
                 elif layer.kind in (LayerKind.LSTM, LayerKind.GRU, LayerKind.RNN):
                     state_kind = (layer.params or {}).get("__rnn_state_output__")
                     if state_kind:

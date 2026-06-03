@@ -50,6 +50,16 @@ TransformerDecoder, TransformerDecoderLayer, TransformerEncoder,
 TransformerEncoderLayer, Unflatten, Unfold, Upsample, ZeroPad2d
 ```
 
+### torchvision.transforms.v2 transforms (25)
+
+```
+CenterCrop, ColorJitter, Compose, FiveCrop, GaussianBlur, Identity,
+Normalize, PILToTensor, Pad, RandomAdjustSharpness, RandomAutocontrast,
+RandomCrop, RandomEqualize, RandomGrayscale, RandomHorizontalFlip,
+RandomInvert, RandomPosterize, RandomResizedCrop, RandomSolarize,
+RandomVerticalFlip, Resize, TenCrop, ToDtype, ToPILImage, ToPureTensor
+```
+
 ### Tensor methods (54)
 
 ```

@@ -85,6 +85,10 @@ from src.grid_sample_verify import (  # noqa: F401  (re-export)
 )
 from src.loss_verify import LossVerdict, verify_loss  # noqa: F401  (re-export)
 from src.mha_verify import verify_multihead_attention  # noqa: F401  (re-export)
+from src.torchvision_v2_verify import (  # noqa: F401  (re-export)
+    TransformVerdict,
+    verify_torchvision_v2_transform,
+)
 from src.vmap_verify import verify_vmap  # noqa: F401  (re-export)
 from src.func_autodiff_verify import (  # noqa: F401  (re-export)
     verify_func_autodiff,
@@ -148,6 +152,8 @@ __all__ = [
     "LossVerdict",
     "verify_loss",
     "verify_multihead_attention",
+    "TransformVerdict",
+    "verify_torchvision_v2_transform",
     "verify_vmap",
     "verify_func_autodiff",
     "verify_func_grad",

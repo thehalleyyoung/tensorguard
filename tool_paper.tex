@@ -69,7 +69,8 @@ modeled with refinement information such as
 \]
 The verifier propagates these facts through constructors, module calls,
 functional operators, reshapes, broadcasts, indexing, attention blocks,
-recurrent modules, normalization layers, sparse layouts, distributed wrappers, and deployment
+recurrent modules, normalization layers, torchvision v2 image transforms,
+sparse layouts, distributed wrappers, and deployment
 gates.  At each operation it asks whether the preconditions of the transfer
 function are entailed by the current abstract state.  Concrete contradictions
 become high-confidence bugs.  Unknown or out-of-fragment regions become
@@ -208,7 +209,10 @@ FFT/complex view contracts, exact \texttt{torch.linalg} contracts for
 alignment, vmap/functorch batch dimensions, \texttt{torch.func} autodiff
 wrappers (\texttt{grad}, \texttt{jacrev}, \texttt{jacfwd}, \texttt{jvp}, and
 \texttt{vjp}), distribution batch/event/log-prob
-shapes, grid sampling, affine grids, multi-head attention, scaled dot-product
+shapes, grid sampling, affine grids, source-level
+\texttt{torchvision.transforms.v2} tensor transforms
+(\texttt{Resize}, crops, \texttt{Pad}, \texttt{Normalize}, flips, and
+PIL-only abstention), multi-head attention, scaled dot-product
 attention, training loss contracts for \texttt{CrossEntropyLoss},
 \texttt{NLLLoss}, \texttt{MSELoss}, \texttt{BCEWithLogitsLoss}, and
 \texttt{KLDivLoss}, exact RNN/LSTM/GRU output and returned-state contracts,
@@ -649,8 +653,9 @@ Sparse layout and complex/FFT shape-dtype contracts. \\
 \hline
 \texttt{src/distributions\_verify.py}, \texttt{src/named\_tensor\_verify.py},
 \texttt{src/vmap\_verify.py}, \texttt{src/func\_autodiff\_verify.py},
-\texttt{src/loss\_verify.py} &
-High-value library contracts beyond ordinary dense layers. \\
+\texttt{src/loss\_verify.py}, \texttt{src/torchvision\_v2\_verify.py} &
+High-value library contracts beyond ordinary dense layers, including image
+preprocessing transforms whose tensor shapes feed the model. \\
 \hline
 \texttt{src/quant\_export\_checks.py}, \texttt{src/distributed\_verification.py},
 \texttt{src/lora\_verification.py} &
@@ -791,6 +796,10 @@ Sparse tensors &
 COO/CSR/CSC/BSR/BSC shape and blocksize invariants, with sparse operation
 extensions in progress. \\
 \hline
+Torchvision v2 transforms &
+Source-level tensor contracts for resize, crops, padding, normalization,
+flips/color/dtype transforms, and PIL-only abstention. \\
+\hline
 Named tensors &
 \texttt{refine\_names} and \texttt{align\_to} alignment checks. \\
 \hline
@@ -903,6 +912,11 @@ Dtype propagation, promotion, and boolean/integer safety. \\
 Loss-function conformance for target shape, reduction, dtype, class weights,
 \texttt{pos\_weight}, source snippets, functional calls, FX modules, and eager
 PyTorch runtime-error parity. \\
+\hline
+\texttt{tests/test\_torchvision\_v2\_verify.py} &
+Live torchvision v2 conformance for resize/crop/pad/normalize/flips, source
+\texttt{Compose} and inline constructor extraction, runtime-error parity, and
+PIL-only symbolic abstention. \\
 \hline
 \texttt{tests/test\_device\_propagation\_precise.py},
 \texttt{tests/test\_device\_placement\_transfer.py} &
@@ -1177,7 +1191,10 @@ to \tg{}'s transfer function.  This protocol is especially useful for edge cases
 whose behavior is not obvious from memory: \texttt{torch.chunk} returning fewer
 than requested chunks, zero-size split sections, broadcasting of attention
 masks, padding tuple/rank corner cases, compressed sparse block constraints, and
-named-axis alignment.
+named-axis alignment.  The same oracle style now covers torchvision v2 image
+transforms, where \texttt{CenterCrop} accepts rank-2 tensors, \texttt{Resize}
+and \texttt{Pad} require tensor-image rank on the tested runtime, and
+\texttt{Normalize} can broadcast a singleton channel dimension.
 Recent linalg tests add another such case: QR's \texttt{mode="r"} empty
 \texttt{Q}, SVD full-vs-reduced output tuples, and \texttt{solve}'s vector/matrix
 RHS disambiguation are all dispatcher-visible but easy to misremember.
