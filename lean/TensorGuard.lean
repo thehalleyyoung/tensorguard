@@ -41,3 +41,4 @@ import TensorGuard.ChunkSplit
 import TensorGuard.NamedTensor
 import TensorGuard.GridSample
 import TensorGuard.Distributions
+import TensorGuard.SparseLayouts

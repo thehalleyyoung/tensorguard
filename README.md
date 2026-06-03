@@ -41,7 +41,7 @@ runtime errors in ML codebases before any code runs.
   `torch.vmap` plus `torch.func` grad/jacrev/jacfwd/jvp/vjp shape transfers,
   PyTorch loss target/reduction/dtype contracts (`CrossEntropyLoss`, `NLLLoss`,
   `MSELoss`, `BCEWithLogitsLoss`, `KLDivLoss`), and
-  `torch.sparse` COO/CSR/CSC/BSR/BSC layout + blocksize invariants, sparse-dense
+  Lean-backed `torch.sparse` COO/CSR/CSC/BSR/BSC layout + blocksize invariants, sparse-dense
   `mm`/`addmm`, CSR `sampled_addmm`, sparse softmax/coalesce, and layout
   conversions, quantization placement, and mixed-precision/autocast dtype gates
   are verified by shape-only models that are **differentially checked** against real

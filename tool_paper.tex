@@ -214,7 +214,7 @@ advanced indexing, gather/scatter, index select, masked select,
 \texttt{take\_along\_dim}, \texttt{argsort}, \texttt{sort}/\texttt{topk}/
 \texttt{kthvalue}, arg reductions, exact \texttt{nn/F.embedding\_bag}
 contracts for offsets, per-sample weights, pooling modes, and TorchRec-style
-jagged pooled embeddings, sparse COO/CSR/CSC/BSR/BSC layout invariants,
+jagged pooled embeddings, Lean-backed sparse COO/CSR/CSC/BSR/BSC layout invariants,
 sparse-dense \texttt{mm}/\texttt{addmm}, CSR \texttt{sampled\_addmm},
 sparse softmax/coalesce, layout conversions, FFT/complex view contracts, exact \texttt{torch.linalg} contracts for
 \texttt{solve}, inverse, Cholesky, SVD, eigendecomposition, and QR, named tensor
@@ -268,15 +268,19 @@ broadcast shape, while source-level \texttt{torch.broadcast\_shapes} is carried
 as a shape value that can feed \texttt{expand}.  Focused source and FX tests
 compare these contracts against live PyTorch successes and exceptions.
 
-Sparse tensors are checked beyond construction.  \tg{} verifies sparse-dense
+Sparse tensors are checked beyond construction and now carry a Lean-backed
+constructor contract.  \tg{} verifies COO index/value tails; CSR/CSC batch,
+\texttt{nnz}, compressed-axis, and dense-tail invariants; BSR/BSC blocksize and
+divisibility invariants; sparse-dense
 \texttt{torch.sparse.mm} and \texttt{addmm} for COO/CSR/CSC matrices, exact
 one-way \texttt{addmm} input broadcasting, CSR \texttt{sampled\_addmm} including
 batched dense operands, COO-only sparse softmax and coalescing,
 \texttt{to\_dense}, and \texttt{to\_sparse\_\{coo,csr,csc,bsr,bsc\}}
 conversions with blocked-layout divisibility.  The parity tests compare every
-successful output to live PyTorch via dense shape equality and keep unsupported
-BSR/BSC sparse matrix kernels as explicit non-passes rather than build-dependent
-silent approvals.
+successful output to live PyTorch via dense shape equality, use
+\texttt{check\_invariants=True} where compressed constructors otherwise validate
+lazily, and keep unsupported BSR/BSC sparse matrix kernels as explicit
+non-passes rather than build-dependent silent approvals.
 
 \subsection{Exact Index-Value Operators}
 
@@ -665,7 +669,10 @@ channels-last caveats, einops decomposition/bijection families, SDPA
 broadcast/mask/GQA shape laws, distribution batch/event/log-prob algebra,
 TransformedDistribution identity/reshape event-rank rules, and named-tensor
 refine/align name preservation, singleton insertion, and duplicate-name
-rejection.
+rejection.  The sparse-layout artifact proves accepted COO/CSR/CSC/BSR/BSC
+constructor models materialize to exactly the requested dense shape, with
+theorem-shaped rejection witnesses for bad compressed lengths, block
+divisibility failures, and unusable dense tails.
 The Lean audit checks theorem statements for sorry-free status under the
 trusted kernel axioms used by the environment.
 
@@ -900,7 +907,7 @@ Embedding bags &
 bounds, and TorchRec-style jagged abstention. \\
 \hline
 Sparse tensors &
-COO/CSR/CSC/BSR/BSC shape and blocksize invariants, sparse-dense
+Lean-backed COO/CSR/CSC/BSR/BSC shape and blocksize invariants, sparse-dense
 \texttt{mm}/\texttt{addmm}, CSR \texttt{sampled\_addmm}, sparse softmax,
 coalesce, \texttt{to\_dense}, and layout conversions. \\
 \hline
@@ -1281,8 +1288,10 @@ Normalization rule tests and phase-flow tests. \\
 \hline
 Sparse layouts &
 Compressed and coordinate layouts carry index/value shape invariants and
-blocksize constraints. &
-Sparse verification tests across COO, CSR, CSC, BSR, and BSC. \\
+blocksize constraints; accepted layouts prove dense-materialization shape
+preservation. &
+Sparse verification tests across COO, CSR, CSC, BSR, and BSC plus Lean axiom
+audits. \\
 \hline
 Complex and FFT &
 Complex view conversions enforce final-dimension and dtype contracts; FFT

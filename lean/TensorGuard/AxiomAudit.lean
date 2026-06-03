@@ -116,6 +116,31 @@ import TensorGuard
 #print axioms TensorGuard.SmtEncoding.dtype_smt_matches_dtMatmulBug
 #print axioms TensorGuard.SmtEncoding.dtype_same_sat
 
+-- Sparse-layout constructor invariants (Step 236): COO/CSR/CSC/BSR/BSC accepted
+-- constructor models materialize to the requested dense shape; checked examples
+-- cover batched and blocked layouts plus invariant and dense-tail rejections.
+#print axioms TensorGuard.SparseLayouts.dense_materialization_shape_sound
+#print axioms TensorGuard.SparseLayouts.mkAccepted_dense_shape_sound
+#print axioms TensorGuard.SparseLayouts.coo234_accepts
+#print axioms TensorGuard.SparseLayouts.csr23_accepts
+#print axioms TensorGuard.SparseLayouts.csc23_accepts
+#print axioms TensorGuard.SparseLayouts.bsr43_accepts
+#print axioms TensorGuard.SparseLayouts.bsc23_accepts
+#print axioms TensorGuard.SparseLayouts.batched_csr_accepts
+#print axioms TensorGuard.SparseLayouts.batched_bsr_accepts
+#print axioms TensorGuard.SparseLayouts.coo234_toDense_shape
+#print axioms TensorGuard.SparseLayouts.csr23_toDense_shape
+#print axioms TensorGuard.SparseLayouts.csc23_toDense_shape
+#print axioms TensorGuard.SparseLayouts.bsr43_toDense_shape
+#print axioms TensorGuard.SparseLayouts.bsc23_toDense_shape
+#print axioms TensorGuard.SparseLayouts.batched_csr_toDense_shape
+#print axioms TensorGuard.SparseLayouts.batched_bsr_toDense_shape
+#print axioms TensorGuard.SparseLayouts.csr_bad_compressed_length_rejected
+#print axioms TensorGuard.SparseLayouts.csc_bad_compressed_length_rejected
+#print axioms TensorGuard.SparseLayouts.bsr_bad_row_divisibility_rejected
+#print axioms TensorGuard.SparseLayouts.bsr_bad_column_divisibility_rejected
+#print axioms TensorGuard.SparseLayouts.compressed_dense_tail_mismatch_rejected
+
 -- Cross-domain (shape × device) encoding faithfulness (Step 136): a transfer op
 -- preserves shape exactly (device free); a non-transfer op preserves device
 -- exactly (shape free), so the solver flags a cross-domain violation iff the
