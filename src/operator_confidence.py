@@ -97,6 +97,10 @@ _DATA_DEPENDENT = frozenset({
     "unique", "multinomial", "einsum",
 })
 
+_EXACT_LINALG = frozenset({
+    "cholesky", "eig", "inv", "qr", "solve", "svd",
+})
+
 
 def _base_name(op_name: str) -> str:
     """Strip a leading ``torch.``/``F.``/namespace prefix, keeping the last part."""
@@ -107,10 +111,17 @@ def _classify(op_name: str) -> Tuple[ConfidenceTag, str]:
     """Return the (tag, rationale) for a fully-qualified operator name."""
     # Namespace-encoded families first.
     if op_name.startswith("torch.linalg."):
+        base = _base_name(op_name)
+        if base in _EXACT_LINALG:
+            return (
+                ConfidenceTag.SOUND,
+                "torch.linalg shape contract with exact rank, square, "
+                "broadcasting and multi-output shape checks enforced soundly.",
+            )
         return (
             ConfidenceTag.HEURISTIC,
-            "Linear-algebra decomposition with multiple outputs and "
-            "value-dependent / approximated shape handling.",
+            "torch.linalg operator without an exact TensorGuard shape contract; "
+            "defaulting conservatively to heuristic.",
         )
     if op_name.startswith("torch.fft."):
         return (
@@ -245,9 +256,9 @@ def annotate_registry() -> int:
 
 # Base operator names whose transfer function is only ``heuristic`` and which
 # can be spotted by a lightweight source scan (used by ``sound`` mode to refuse
-# a confident SAFE). ``torch.linalg.*`` is matched via the namespace.
+# a confident SAFE).  Exact linalg contracts are whitelisted above; unsupported
+# or still-approximated linalg calls are handled by tag lookup below.
 _HEURISTIC_BASE_OPS = frozenset(_DATA_DEPENDENT)
-_HEURISTIC_NAMESPACES = ("linalg",)
 
 
 def heuristic_ops_in_source(source: str) -> List[str]:
@@ -288,7 +299,7 @@ def heuristic_ops_in_source(source: str) -> List[str]:
         parents = qualified.split(".")
         if base in _HEURISTIC_BASE_OPS:
             found.add(qualified)
-        elif len(parents) >= 2 and parents[-2] in _HEURISTIC_NAMESPACES:
+        elif len(parents) >= 2 and parents[-2] == "linalg" and tag_for(qualified) is ConfidenceTag.HEURISTIC:
             found.add(qualified)
     return sorted(found)
 

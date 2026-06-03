@@ -203,12 +203,13 @@ shapes are seed-independent.  Extended coverage includes einsum parsing,
 advanced indexing, gather/scatter, index select, masked select,
 \texttt{take\_along\_dim}, \texttt{argsort}, \texttt{sort}/\texttt{topk}/
 \texttt{kthvalue}, arg reductions, sparse COO/CSR/CSC/BSR/BSC layout invariants,
-FFT/complex view contracts, named tensor alignment, vmap/functorch batch dimensions,
-distribution batch/event/log-prob shapes, grid sampling, affine grids,
-multi-head attention, scaled dot-product attention, exact RNN/LSTM/GRU
-output and returned-state contracts, LoRA adapter compatibility, training-loop
-checks, quantization/export safety, distributed sharding, tensor parallel
-attention variants, and deployment schemas.
+FFT/complex view contracts, exact \texttt{torch.linalg} contracts for
+\texttt{solve}, inverse, Cholesky, SVD, eigendecomposition, and QR, named tensor
+alignment, vmap/functorch batch dimensions, distribution batch/event/log-prob
+shapes, grid sampling, affine grids, multi-head attention, scaled dot-product
+attention, exact RNN/LSTM/GRU output and returned-state contracts, LoRA adapter
+compatibility, training-loop checks, quantization/export safety, distributed
+sharding, tensor parallel attention variants, and deployment schemas.
 
 Recent stack-family work follows the same standard.  \texttt{torch.stack},
 \texttt{hstack}, \texttt{vstack}, \texttt{dstack},
@@ -377,6 +378,17 @@ shape---and then emits symbolic extents plus explicit \unknown{} reasons instead
 of guessing a concrete selected length.  This design is repeated throughout the
 codebase: useful exactness where the contract is shape-determined, conservative
 abstention where it is not.
+
+The linear-algebra rules illustrate the same standard for multi-output operators.
+\texttt{torch.linalg.svd} and \texttt{qr} return named output tuples whose shapes
+depend on \(\min(M,N)\), \texttt{full\_matrices}, and QR mode; the \texttt{r}
+mode's empty \texttt{Q} output is modeled exactly.  Square-matrix operators
+(\texttt{inv}, Cholesky, and eigendecomposition) reject only statically known
+rank or trailing-dimension violations.  \texttt{solve} preserves PyTorch's
+non-obvious RHS branch: vector-shaped batched RHS tensors do not broadcast like
+matrix RHS tensors, and \texttt{left=False} rejects the exact-batch vector branch.
+Focused tests compare all of these shapes and failures against the installed
+PyTorch dispatcher, while unsupported linalg operators remain heuristic.
 
 \clearpage
 
@@ -1061,6 +1073,12 @@ Complex view conversions enforce final-dimension and dtype contracts; FFT
 families compute output dimensions such as real FFT half-spectrum sizes. &
 Complex verification tests, FFT tests, and operator confidence tags. \\
 \hline
+Linear algebra &
+\texttt{solve}, inverse, Cholesky, SVD, eigendecomposition, and QR enforce
+rank, square-matrix, batch-broadcast, mode, and named output-tuple contracts. &
+Linalg differential tests against real PyTorch plus sound per-op confidence
+tags. \\
+\hline
 Named tensors &
 Name refinement and alignment require axis-name consistency and legal reorder
 operations. &
@@ -1124,6 +1142,9 @@ whose behavior is not obvious from memory: \texttt{torch.chunk} returning fewer
 than requested chunks, zero-size split sections, broadcasting of attention
 masks, padding tuple/rank corner cases, compressed sparse block constraints, and
 named-axis alignment.
+Recent linalg tests add another such case: QR's \texttt{mode="r"} empty
+\texttt{Q}, SVD full-vs-reduced output tuples, and \texttt{solve}'s vector/matrix
+RHS disambiguation are all dispatcher-visible but easy to misremember.
 
 \subsection{Mutation protocol}
 

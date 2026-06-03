@@ -3,10 +3,10 @@
   "default_tag": "heuristic",
   "summary": {
     "complete": 75,
-    "sound": 55,
-    "heuristic": 6
+    "sound": 61,
+    "heuristic": 3
   },
-  "total": 136,
+  "total": 139,
   "operators": [
     {
       "operator": "F.celu",
@@ -374,19 +374,34 @@
       "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
     },
     {
+      "operator": "torch.linalg.cholesky",
+      "confidence": "sound",
+      "rationale": "torch.linalg shape contract with exact rank, square, broadcasting and multi-output shape checks enforced soundly."
+    },
+    {
+      "operator": "torch.linalg.eig",
+      "confidence": "sound",
+      "rationale": "torch.linalg shape contract with exact rank, square, broadcasting and multi-output shape checks enforced soundly."
+    },
+    {
+      "operator": "torch.linalg.inv",
+      "confidence": "sound",
+      "rationale": "torch.linalg shape contract with exact rank, square, broadcasting and multi-output shape checks enforced soundly."
+    },
+    {
       "operator": "torch.linalg.qr",
-      "confidence": "heuristic",
-      "rationale": "Linear-algebra decomposition with multiple outputs and value-dependent / approximated shape handling."
+      "confidence": "sound",
+      "rationale": "torch.linalg shape contract with exact rank, square, broadcasting and multi-output shape checks enforced soundly."
     },
     {
       "operator": "torch.linalg.solve",
-      "confidence": "heuristic",
-      "rationale": "Linear-algebra decomposition with multiple outputs and value-dependent / approximated shape handling."
+      "confidence": "sound",
+      "rationale": "torch.linalg shape contract with exact rank, square, broadcasting and multi-output shape checks enforced soundly."
     },
     {
       "operator": "torch.linalg.svd",
-      "confidence": "heuristic",
-      "rationale": "Linear-algebra decomposition with multiple outputs and value-dependent / approximated shape handling."
+      "confidence": "sound",
+      "rationale": "torch.linalg shape contract with exact rank, square, broadcasting and multi-output shape checks enforced soundly."
     },
     {
       "operator": "torch.log",

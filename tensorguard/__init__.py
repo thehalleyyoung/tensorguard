@@ -58,6 +58,15 @@ from src.complex_verify import (  # noqa: F401  (re-export)
     verify_view_as_complex,
     verify_view_as_real,
 )
+from src.linalg_verify import (  # noqa: F401  (re-export)
+    verify_linalg,
+    verify_linalg_cholesky,
+    verify_linalg_eig,
+    verify_linalg_inv,
+    verify_linalg_qr,
+    verify_linalg_solve,
+    verify_linalg_svd,
+)
 from src.named_tensor_verify import (  # noqa: F401  (re-export)
     verify_align_to,
     verify_named_tensor_source,
@@ -110,6 +119,13 @@ __all__ = [
     "verify_fft",
     "verify_view_as_real",
     "verify_view_as_complex",
+    "verify_linalg",
+    "verify_linalg_inv",
+    "verify_linalg_cholesky",
+    "verify_linalg_eig",
+    "verify_linalg_qr",
+    "verify_linalg_svd",
+    "verify_linalg_solve",
     "verify_refine_names",
     "verify_align_to",
     "verify_named_tensor_source",

@@ -45,11 +45,12 @@ def test_known_tags_are_defensible():
     assert tag_for("torch.bmm") is ConfidenceTag.SOUND
     assert tag_for("torch.sum") is ConfidenceTag.SOUND
     assert tag_for("torch.fft.rfft") is ConfidenceTag.SOUND
+    assert tag_for("torch.linalg.svd") is ConfidenceTag.SOUND
     # heuristic: data-dependent / approximated
     assert tag_for("torch.unique") is ConfidenceTag.HEURISTIC
     assert tag_for("torch.multinomial") is ConfidenceTag.HEURISTIC
     assert tag_for("torch.einsum") is ConfidenceTag.HEURISTIC
-    assert tag_for("torch.linalg.svd") is ConfidenceTag.HEURISTIC
+    assert tag_for("torch.linalg.lstsq") is ConfidenceTag.HEURISTIC
 
 
 def test_every_op_has_a_nonempty_rationale():

@@ -343,12 +343,16 @@ def _init_universal_registry():
         name="mm", input_ranks=[2], doc="Matrix multiply"))
     register_transfer("torch.mv", TransferFunction(
         name="mv", doc="Matrix-vector multiply"))
-    register_transfer("torch.linalg.solve", TransferFunction(
-        name="linalg.solve", doc="Solve linear system"))
-    register_transfer("torch.linalg.svd", TransferFunction(
-        name="linalg.svd", doc="Singular value decomposition"))
-    register_transfer("torch.linalg.qr", TransferFunction(
-        name="linalg.qr", doc="QR decomposition"))
+    for op, doc in [
+        ("cholesky", "Cholesky factorization"),
+        ("eig", "Eigenvalue decomposition"),
+        ("inv", "Matrix inverse"),
+        ("qr", "QR decomposition"),
+        ("solve", "Solve linear system"),
+        ("svd", "Singular value decomposition"),
+    ]:
+        register_transfer(f"torch.linalg.{op}", TransferFunction(
+            name=f"linalg.{op}", doc=doc))
 
     # Scatter/gather
     register_transfer("torch.scatter", TransferFunction(

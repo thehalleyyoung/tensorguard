@@ -27,6 +27,15 @@ from .safe_loader import (
 )
 from .distributions_verify import verify_distribution, verify_log_prob
 from .complex_verify import verify_fft, verify_view_as_complex, verify_view_as_real
+from .linalg_verify import (
+    verify_linalg,
+    verify_linalg_cholesky,
+    verify_linalg_eig,
+    verify_linalg_inv,
+    verify_linalg_qr,
+    verify_linalg_solve,
+    verify_linalg_svd,
+)
 from .named_tensor_verify import verify_align_to, verify_named_tensor_source, verify_refine_names
 from .sparse_verify import (
     verify_sparse_bsc,
@@ -60,6 +69,13 @@ __all__ = [
     "verify_fft",
     "verify_view_as_real",
     "verify_view_as_complex",
+    "verify_linalg",
+    "verify_linalg_inv",
+    "verify_linalg_cholesky",
+    "verify_linalg_eig",
+    "verify_linalg_qr",
+    "verify_linalg_svd",
+    "verify_linalg_solve",
     "verify_refine_names",
     "verify_align_to",
     "verify_named_tensor_source",

@@ -27,6 +27,7 @@ runtime errors in ML codebases before any code runs.
 - **High-value library contracts checked against the real libraries** —
   `einops` (`rearrange` / `reduce` / `repeat`), SDPA,
   `nn.MultiheadAttention` packed/unpacked q/k/v + masks,
+  `torch.linalg` solve/inv/cholesky/SVD/eig/QR contracts,
   `grid_sample` / `affine_grid`, and `torch.distributions`
   batch/event/log-prob shapes, plus PyTorch
   named-tensor `refine_names` / `align_to` alignment, complex
@@ -37,14 +38,15 @@ runtime errors in ML codebases before any code runs.
   `einops` / `torch`; non-divisible patch embeds, head-dim-mismatched
   attention, unusable probabilistic batch/event contracts, invalid
   named-axis refinements/reorderings, unsupported complex FFT dtypes, and
-  impossible vmap batch/out-dim contracts, unusable sparse compressed
+  impossible vmap batch/out-dim contracts, invalid linalg square, broadcast, and
+  output-tuple contracts, unusable sparse compressed
   layouts, invalid sampler grids, and broken MHA key/value/mask contracts are
   caught before kernels raise, while
   symbolic dims are never refuted
   (`verify_einops`, `verify_einops_source`, `verify_distribution`,
   `verify_log_prob`, `verify_refine_names`, `verify_align_to`,
   `verify_view_as_real`, `verify_view_as_complex`, `verify_fft`,
-  `verify_vmap`, `verify_sparse_coo`, `verify_sparse_csr`,
+  `verify_vmap`, `verify_linalg`, `verify_sparse_coo`, `verify_sparse_csr`,
   `verify_sparse_csc`, `verify_sparse_bsr`, `verify_sparse_bsc`,
   `verify_grid_sample`, `verify_affine_grid`,
   `verify_multihead_attention`)

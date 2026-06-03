@@ -26,6 +26,15 @@ import re
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
+from src.linalg_verify import (
+    LinalgVerdict,
+    verify_linalg_cholesky,
+    verify_linalg_eig,
+    verify_linalg_inv,
+    verify_linalg_qr,
+    verify_linalg_solve,
+    verify_linalg_svd,
+)
 from src.tensor_shapes import TensorShape, ShapeDim
 
 
@@ -837,9 +846,40 @@ def transfer_linalg_square(
     Input:  (..., M, M)
     Output: (..., M, M)
     """
-    if input_shape.ndim < 2:
+    return transfer_linalg_inv(input_shape)
+
+
+def _shape_to_tuple(shape: TensorShape) -> Tuple[Union[int, str], ...]:
+    return tuple(dim.value for dim in shape.dims)
+
+
+def _tuple_to_shape(shape: Sequence[Union[int, str]]) -> TensorShape:
+    return TensorShape(tuple(ShapeDim(dim) for dim in shape))
+
+
+def _verdict_shape(verdict: LinalgVerdict, name: str = "output") -> Optional[TensorShape]:
+    if not verdict.ok:
         return None
-    return TensorShape(input_shape.dims)
+    shape = verdict.shape(name)
+    if shape is None:
+        return None
+    return _tuple_to_shape(shape)
+
+
+def transfer_linalg_inv(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for ``torch.linalg.inv``: ``(..., M, M) -> (..., M, M)``."""
+
+    return _verdict_shape(verify_linalg_inv(_shape_to_tuple(input_shape)))
+
+
+def transfer_linalg_cholesky(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for ``torch.linalg.cholesky``: ``(..., M, M) -> (..., M, M)``."""
+
+    return _verdict_shape(verify_linalg_cholesky(_shape_to_tuple(input_shape)))
 
 
 def transfer_linalg_det(
@@ -881,16 +921,7 @@ def transfer_linalg_svd(
     Output: U (..., M, K), S (..., K), Vh (..., K, N) where K = min(M, N).
     Returns S shape (most common use case).
     """
-    if input_shape.ndim < 2:
-        return None
-    m = input_shape.dims[-2]
-    n = input_shape.dims[-1]
-    batch = input_shape.dims[:-2]
-    if m.is_symbolic or n.is_symbolic:
-        k = ShapeDim("_svd_k")
-    else:
-        k = ShapeDim(min(m.value, n.value))
-    return TensorShape(batch + (k,))
+    return _verdict_shape(verify_linalg_svd(_shape_to_tuple(input_shape)), "S")
 
 
 def transfer_linalg_qr(
@@ -902,29 +933,27 @@ def transfer_linalg_qr(
     Output: Q (..., M, K), R (..., K, N) where K = min(M, N).
     Returns Q shape.
     """
-    if input_shape.ndim < 2:
-        return None
-    m = input_shape.dims[-2]
-    n = input_shape.dims[-1]
-    batch = input_shape.dims[:-2]
-    if m.is_symbolic or n.is_symbolic:
-        k = ShapeDim("_qr_k")
-    else:
-        k = ShapeDim(min(m.value, n.value))
-    return TensorShape(batch + (m, k))
+    return _verdict_shape(verify_linalg_qr(_shape_to_tuple(input_shape)), "Q")
 
 
 def transfer_linalg_solve(
-    input_shape: TensorShape,
+    a_shape: TensorShape,
+    b_shape: Optional[TensorShape] = None,
+    *,
+    left: bool = True,
 ) -> Optional[TensorShape]:
     """Shape rule for torch.linalg.solve.
 
     Input A: (..., M, M), B: (..., M, K) or (..., M)
     Output: same shape as B.  Returns input_shape (representing B).
     """
-    if input_shape.ndim < 1:
-        return None
-    return TensorShape(input_shape.dims)
+    if b_shape is None:
+        if a_shape.ndim < 1:
+            return None
+        return TensorShape(a_shape.dims)
+    return _verdict_shape(
+        verify_linalg_solve(_shape_to_tuple(a_shape), _shape_to_tuple(b_shape), left=left)
+    )
 
 
 def transfer_linalg_eig(
@@ -935,9 +964,7 @@ def transfer_linalg_eig(
     Input:  (..., M, M)
     Output eigenvalues: (..., M)
     """
-    if input_shape.ndim < 2:
-        return None
-    return TensorShape(input_shape.dims[:-1])
+    return _verdict_shape(verify_linalg_eig(_shape_to_tuple(input_shape)), "eigenvalues")
 
 
 def transfer_linalg_lstsq(
@@ -951,6 +978,16 @@ def transfer_linalg_lstsq(
     if input_shape.ndim < 1:
         return None
     return TensorShape(input_shape.dims)
+
+
+def transfer_linalg_pinv(
+    input_shape: TensorShape,
+) -> Optional[TensorShape]:
+    """Shape rule for ``torch.linalg.pinv``: ``(..., M, N) -> (..., N, M)``."""
+
+    if input_shape.ndim < 2:
+        return None
+    return TensorShape(input_shape.dims[:-2] + (input_shape.dims[-1], input_shape.dims[-2]))
 
 
 def transfer_linalg_norm(
@@ -1715,15 +1752,15 @@ MODERN_TORCH_SHAPE_OPS = {
     # ── torch.linalg ops ──
     "linalg_svd": "linalg_svd",
     "linalg_qr": "linalg_qr",
-    "linalg_cholesky": "linalg_square",
+    "linalg_cholesky": "linalg_cholesky",
     "linalg_solve": "linalg_solve",
-    "linalg_inv": "linalg_square",
+    "linalg_inv": "linalg_inv",
     "linalg_eig": "linalg_eig",
     "linalg_eigvalsh": "linalg_eig",
     "linalg_det": "linalg_det",
     "linalg_slogdet": "linalg_slogdet",
     "linalg_matrix_rank": "linalg_det",
-    "linalg_pinv": "linalg_square",
+    "linalg_pinv": "linalg_pinv",
     "linalg_lstsq": "linalg_lstsq",
     "linalg_norm": "linalg_norm",
     "linalg_cross": "elementwise",
@@ -1901,6 +1938,8 @@ MODERN_SHAPE_TRANSFERS = {
     "rms_norm": transfer_rms_norm,
     # ── linalg ──
     "linalg_square": transfer_linalg_square,
+    "linalg_inv": transfer_linalg_inv,
+    "linalg_cholesky": transfer_linalg_cholesky,
     "linalg_det": transfer_linalg_det,
     "linalg_slogdet": transfer_linalg_slogdet,
     "linalg_svd": transfer_linalg_svd,
@@ -1908,6 +1947,7 @@ MODERN_SHAPE_TRANSFERS = {
     "linalg_solve": transfer_linalg_solve,
     "linalg_eig": transfer_linalg_eig,
     "linalg_lstsq": transfer_linalg_lstsq,
+    "linalg_pinv": transfer_linalg_pinv,
     "linalg_norm": transfer_linalg_norm,
     # ── fft ──
     "fft_c2c": transfer_fft_c2c,
