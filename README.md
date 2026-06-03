@@ -129,7 +129,11 @@ runtime errors in ML codebases before any code runs.
   insertion/grid-sampler rank and positive-size contracts),
   each
   replayed op-by-op on real tensors and cross-checked against torch *and* the
-  verifier's own propagators. Every audited public theorem is
+  verifier's own propagators. Whole-module straight-line composition is now
+  Lean-checked too (`lean/TensorGuard/SubjectReduction.lean`): local
+  complete/sound transfer certificates compose across an entire module, with
+  theorem-shaped MLP, CNN-head, indexing, and SDPA programs cross-checked against
+  real PyTorch. Every audited public theorem is
   machine-audited **sorry-free**, on only the trusted kernel axioms.
 - **Per-domain verification** — beyond shape, the device and gradient
   domains each refute real bugs that the base shape view misses (a cuda
@@ -146,9 +150,9 @@ runtime errors in ML codebases before any code runs.
   constructs are over-/under-approximated or skipped — is published in
   [`SOUNDNESS_CONTRACT.md`](SOUNDNESS_CONTRACT.md) (generated from
   `src/soundness_contract.py`, including the currently-known unsoundness gaps).
-- **Per-operator confidence** — every one of the 117 registered operator
-  transfer functions is tagged `complete`, `sound`, or `heuristic` so you know
-  how much to trust each inference (unknown ops default to `heuristic`).
+- **Per-operator confidence** — every registered operator transfer function is
+  tagged `complete`, `sound`, or `heuristic` so you know how much to trust each
+  inference (unknown ops default to `heuristic`).
   Inspect the table with `tensorguard operator-confidence [--json]` (machine-readable
   table committed to `operator_confidence_table.json`, source of truth
   `src/operator_confidence.py`, pinned by `tests/test_operator_confidence.py`).

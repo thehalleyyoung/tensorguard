@@ -43,3 +43,4 @@ import TensorGuard.GridSample
 import TensorGuard.Distributions
 import TensorGuard.SparseLayouts
 import TensorGuard.RecurrentRule
+import TensorGuard.SubjectReduction

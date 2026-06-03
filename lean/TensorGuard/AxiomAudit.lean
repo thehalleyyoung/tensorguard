@@ -164,6 +164,20 @@ import TensorGuard
 #print axioms TensorGuard.RecurrentRule.wrong_input_size_rejected
 #print axioms TensorGuard.RecurrentRule.bad_rank_rejected
 
+-- Whole-module straight-line subject reduction (Step 238): local
+-- complete/sound transfer functions compose across an entire straight-line
+-- module, preserving well-formed positive shapes for all intermediates and
+-- final outputs.  Concrete theorem-shaped MLP/CNN/indexing/attention programs
+-- pin execution of representative real-code families.
+#print axioms TensorGuard.SubjectReduction.step_subject_reduction
+#print axioms TensorGuard.SubjectReduction.exec_subject_reduction
+#print axioms TensorGuard.SubjectReduction.whole_module_subject_reduction
+#print axioms TensorGuard.SubjectReduction.program_outputs_have_positive_shapes
+#print axioms TensorGuard.SubjectReduction.mlp_exec_shape
+#print axioms TensorGuard.SubjectReduction.cnn_head_exec_shape
+#print axioms TensorGuard.SubjectReduction.indexing_exec_shape
+#print axioms TensorGuard.SubjectReduction.attention_exec_shape
+
 -- Cross-domain (shape × device) encoding faithfulness (Step 136): a transfer op
 -- preserves shape exactly (device free); a non-transfer op preserves device
 -- exactly (shape free), so the solver flags a cross-domain violation iff the

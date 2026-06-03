@@ -682,6 +682,18 @@ divisibility failures, and unusable dense tails.
 The Lean audit checks theorem statements for sorry-free status under the
 trusted kernel axioms used by the environment.
 
+The newest formal layer lifts those local facts to whole straight-line modules.
+\texttt{TensorGuard.SubjectReduction} defines a small environment-based tensor
+language whose statements append outputs from primitive proof-backed families
+or from explicit proof-carrying local transfer certificates.  It proves
+\texttt{step\_subject\_reduction}, \texttt{exec\_subject\_reduction}, and
+\texttt{whole\_module\_subject\_reduction}: if every local complete/sound
+transfer succeeds, every intermediate and final tensor in the entire
+straight-line module remains well-formed.  The registry surface is synchronized
+with the current 136 non-heuristic operator-confidence entries, while complex
+operators still rely on their local conformance tests rather than being
+over-claimed in the composition proof.
+
 The formalization is intentionally scoped.  It does not claim to prove all of
 PyTorch.  Instead, it proves the algebraic cores that the implementation relies
 on and pairs them with runtime conformance tests for library behavior.  For a
