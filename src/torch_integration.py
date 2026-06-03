@@ -93,6 +93,24 @@ class TensorGuardONNXExportError(ValueError):
         )
 
 
+class TensorGuardONNXShapeInferenceError(ValueError):
+    """Raised when post-export ONNX shape inference contradicts TensorGuard."""
+
+    def __init__(
+        self,
+        issues: Sequence["ONNXExportIssue"],
+        checks: Sequence["ONNXShapeRoundTripCheck"] = (),
+    ):
+        self.issues = tuple(issues)
+        self.checks = tuple(checks)
+        details = "; ".join(issue.message for issue in self.issues[:3])
+        more = "" if len(self.issues) <= 3 else f" (+{len(self.issues) - 3} more)"
+        super().__init__(
+            f"TensorGuard rejected ONNX shape-inference round trip with "
+            f"{len(self.issues)} issue(s): {details}{more}"
+        )
+
+
 @dataclass(frozen=True)
 class AOTPackageIssue:
     """A precise pre-package contract violation for AOTInductor artifacts."""
@@ -124,6 +142,18 @@ class ONNXExportIssue:
     min_opset: Optional[int] = None
     requested_opset: Optional[int] = None
     input_name: Optional[str] = None
+    output_name: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class ONNXShapeRoundTripCheck:
+    """One concrete output-shape comparison between TensorGuard and ONNX."""
+
+    output_name: str
+    tensorguard_shape: Tuple[Any, ...]
+    onnx_shape: Tuple[Optional[int], ...]
+    compared_axes: Tuple[int, ...]
+    matched: bool
 
 
 @dataclass(frozen=True)
@@ -147,6 +177,7 @@ class ONNXExportGateResult:
     unknown_ops: Tuple[str, ...] = ()
     dynamic_shape_axes: int = 0
     graph_capture_error: Optional[str] = None
+    predicted_output_shapes: Tuple[Tuple[Any, ...], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -747,6 +778,7 @@ def verify_onnx_export_contract(
             ),
         )
     if captured_program is not None:
+        predicted_output_shapes = _exported_program_output_shapes(captured_program)
         op_issues, checked_ops, unknown_ops = _onnx_opset_availability_issues(
             captured_program,
             resolved_opset,
@@ -754,6 +786,8 @@ def verify_onnx_export_contract(
             allow_unknown_ops=allow_unknown_ops,
         )
         issues.extend(op_issues)
+    else:
+        predicted_output_shapes = ()
 
     return ONNXExportGateResult(
         ok=not issues,
@@ -763,6 +797,7 @@ def verify_onnx_export_contract(
         unknown_ops=unknown_ops,
         dynamic_shape_axes=dynamic_axes_count,
         graph_capture_error=graph_capture_error,
+        predicted_output_shapes=predicted_output_shapes,
     )
 
 
@@ -937,6 +972,51 @@ def _capture_onnx_gate_program(
         return export_fn(model, args, **kwargs), None
     except Exception as exc:
         return None, f"{type(exc).__name__}: {str(exc).splitlines()[0]}"
+
+
+def _exported_program_output_shapes(exported_program: Any) -> Tuple[Tuple[Any, ...], ...]:
+    """Read tensor output shapes from ``torch.export`` node metadata."""
+    graph_module = getattr(exported_program, "graph_module", None)
+    graph = getattr(graph_module, "graph", None)
+    if graph is None:
+        return ()
+    output_node = None
+    for node in graph.nodes:
+        if getattr(node, "op", None) == "output":
+            output_node = node
+    if output_node is None or not getattr(output_node, "args", None):
+        return ()
+    shapes: List[Tuple[Any, ...]] = []
+    _collect_exported_output_shapes(output_node.args[0], shapes)
+    return tuple(shapes)
+
+
+def _collect_exported_output_shapes(value: Any, shapes: List[Tuple[Any, ...]]) -> None:
+    meta = getattr(value, "meta", None)
+    if isinstance(meta, dict):
+        shape = _shape_tuple_from_meta_value(meta.get("val"))
+        if shape is not None:
+            shapes.append(shape)
+            return
+    if isinstance(value, (tuple, list)):
+        for child in value:
+            _collect_exported_output_shapes(child, shapes)
+        return
+    if isinstance(value, dict):
+        for child in value.values():
+            _collect_exported_output_shapes(child, shapes)
+
+
+def _shape_tuple_from_meta_value(value: Any) -> Optional[Tuple[Any, ...]]:
+    shape = getattr(value, "shape", None)
+    if shape is not None:
+        try:
+            return tuple(shape)
+        except TypeError:
+            return None
+    if isinstance(value, (tuple, list)):
+        return None
+    return None
 
 
 def _onnx_op_display_name(target: Any) -> str:
@@ -1469,6 +1549,7 @@ def guarded_onnx_export(
     soundness_mode: str = "balanced",
     check_model: bool = True,
     check_opset: bool = True,
+    check_shape_roundtrip: bool = True,
     allow_unknown_opset_ops: bool = True,
     **export_kwargs: Any,
 ):
@@ -1502,6 +1583,12 @@ def guarded_onnx_export(
     bounds, ``dynamic_shapes`` is rejected on the legacy exporter before tracing,
     ONNX-inexpressible derived ``torch.export.Dim`` relations are rejected, and
     captured lowered ATen ops are mapped to their minimum supported ONNX opset.
+
+    When ``check_shape_roundtrip=True`` (default), TensorGuard also compares the
+    tensor output shapes predicted by the captured ``torch.export`` graph against
+    ``onnx.shape_inference`` on the just-written artifact.  The round trip is
+    conservative: symbolic or uninferred axes are skipped, and only concrete
+    TensorGuard-vs-ONNX disagreements fail the export.
     """
     args_tuple = args if isinstance(args, tuple) else (args,)
     inferred_input_shapes = input_shapes is None
@@ -1521,45 +1608,187 @@ def guarded_onnx_export(
     import torch
 
     export_kwargs.setdefault("dynamo", False)
+    predicted_output_shapes: Tuple[Tuple[Any, ...], ...] = ()
     if check_opset:
-        _handle_onnx_gate_result(
-            verify_onnx_export_contract(
-                model,
-                args_tuple,
-                input_shapes=input_shapes,
-                dynamic_shapes=dynamic_shapes,
-                dynamic_axes=export_kwargs.get("dynamic_axes"),
-                opset_version=export_kwargs.get("opset_version"),
-                dynamo=bool(export_kwargs.get("dynamo")),
-                allow_unknown_ops=allow_unknown_opset_ops,
-            ),
-            on_violation,
+        gate_result = verify_onnx_export_contract(
+            model,
+            args_tuple,
+            input_shapes=input_shapes,
+            dynamic_shapes=dynamic_shapes,
+            dynamic_axes=export_kwargs.get("dynamic_axes"),
+            opset_version=export_kwargs.get("opset_version"),
+            dynamo=bool(export_kwargs.get("dynamo")),
+            allow_unknown_ops=allow_unknown_opset_ops,
         )
+        predicted_output_shapes = gate_result.predicted_output_shapes
+        _handle_onnx_gate_result(gate_result, on_violation)
+    elif check_shape_roundtrip:
+        captured_program, _capture_error = _capture_onnx_gate_program(
+            model,
+            args_tuple,
+            dynamic_shapes=dynamic_shapes if bool(export_kwargs.get("dynamo")) else None,
+        )
+        if captured_program is not None:
+            predicted_output_shapes = _exported_program_output_shapes(captured_program)
     result = torch.onnx.export(model, args, f, **export_kwargs)
-    if check_model:
-        _post_export_check(f)
+    if check_model or check_shape_roundtrip:
+        _post_export_check(
+            f,
+            check_model=check_model,
+            expected_output_shapes=(
+                predicted_output_shapes if check_shape_roundtrip else ()
+            ),
+        )
     return result
 
 
-def _post_export_check(f: Any) -> None:
-    """Parse the just-written ONNX sink and run ``onnx.checker.check_model``.
+def _post_export_check(
+    f: Any,
+    *,
+    check_model: bool = True,
+    expected_output_shapes: Sequence[Tuple[Any, ...]] = (),
+) -> Tuple[ONNXShapeRoundTripCheck, ...]:
+    """Validate the just-written ONNX sink and optional shape round trip.
 
     Silently no-ops if ``onnx`` is unavailable.  Raises whatever
     ``onnx.checker.check_model`` raises (``onnx.checker.ValidationError``) on a
-    structurally invalid graph.
+    structurally invalid graph, and raises
+    :class:`TensorGuardONNXShapeInferenceError` when ONNX infers a concrete
+    output dimension that contradicts TensorGuard's exported-program prediction.
     """
     try:
         import onnx  # type: ignore
     except Exception:
-        return
-    # File-like sink (e.g. io.BytesIO): parse the written bytes and check.
+        return ()
+
+    path = _onnx_sink_path(f)
+    if check_model:
+        if path is not None:
+            onnx.checker.check_model(path)
+            model_proto = None
+        else:
+            model_proto = _load_onnx_model_from_sink(onnx, f)
+            if model_proto is not None:
+                onnx.checker.check_model(model_proto)
+    else:
+        model_proto = None
+    if not expected_output_shapes or model_proto is None:
+        if not expected_output_shapes:
+            return ()
+        model_proto = _load_onnx_model_from_sink(onnx, f)
+        if model_proto is None:
+            return ()
+
+    shape_inference = getattr(onnx, "shape_inference", None)
+    infer_shapes = getattr(shape_inference, "infer_shapes", None)
+    if infer_shapes is None:
+        return ()
+    try:
+        inferred = infer_shapes(model_proto)
+    except Exception:
+        return ()
+    checks, issues = _compare_onnx_shape_roundtrip(
+        expected_output_shapes,
+        _onnx_graph_output_shapes(inferred),
+    )
+    if issues:
+        raise TensorGuardONNXShapeInferenceError(issues, checks)
+    return checks
+
+
+def _onnx_sink_path(f: Any) -> Optional[str]:
+    if isinstance(f, (str, bytes)) or hasattr(f, "__fspath__"):
+        return os.fspath(f)
+    return None
+
+
+def _load_onnx_model_from_sink(onnx: Any, f: Any) -> Any:
+    path = _onnx_sink_path(f)
+    if path is not None:
+        return onnx.load(path)
     getvalue = getattr(f, "getvalue", None)
     if callable(getvalue):
         data = getvalue()
         if data:
-            onnx.checker.check_model(onnx.load_from_string(bytes(data)))
-        return
-    # Filesystem sink: check by path so large/external-data models validate the
-    # way onnx.checker intends (without loading the whole proto into memory).
-    if isinstance(f, (str, bytes)) or hasattr(f, "__fspath__"):
-        onnx.checker.check_model(os.fspath(f))
+            return onnx.load_from_string(bytes(data))
+    return None
+
+
+def _onnx_graph_output_shapes(
+    model_proto: Any,
+) -> Tuple[Tuple[str, Tuple[Optional[int], ...]], ...]:
+    outputs: List[Tuple[str, Tuple[Optional[int], ...]]] = []
+    graph = getattr(model_proto, "graph", None)
+    if graph is None:
+        return ()
+    for value_info in graph.output:
+        value_type = getattr(value_info, "type", None)
+        if value_type is None or not value_type.HasField("tensor_type"):
+            return ()
+        tensor_type = value_type.tensor_type
+        if not tensor_type.HasField("shape"):
+            return ()
+        dims: List[Optional[int]] = []
+        for dim in tensor_type.shape.dim:
+            if dim.HasField("dim_value"):
+                dims.append(int(dim.dim_value))
+            else:
+                dims.append(None)
+        outputs.append((str(value_info.name), tuple(dims)))
+    return tuple(outputs)
+
+
+def _compare_onnx_shape_roundtrip(
+    expected_shapes: Sequence[Tuple[Any, ...]],
+    onnx_outputs: Sequence[Tuple[str, Tuple[Optional[int], ...]]],
+) -> Tuple[Tuple[ONNXShapeRoundTripCheck, ...], Tuple[ONNXExportIssue, ...]]:
+    if len(expected_shapes) != len(onnx_outputs):
+        return (), ()
+
+    checks: List[ONNXShapeRoundTripCheck] = []
+    issues: List[ONNXExportIssue] = []
+    for expected, (output_name, observed) in zip(expected_shapes, onnx_outputs):
+        if len(expected) != len(observed):
+            continue
+        compared_axes: List[int] = []
+        matched = True
+        for axis, (tg_dim, onnx_dim) in enumerate(zip(expected, observed)):
+            tg_concrete = _concrete_dimension(tg_dim)
+            if tg_concrete is None or onnx_dim is None:
+                continue
+            compared_axes.append(axis)
+            if tg_concrete != onnx_dim:
+                matched = False
+                issues.append(
+                    ONNXExportIssue(
+                        category="shape_inference_roundtrip",
+                        output_name=output_name,
+                        message=(
+                            f"ONNX shape inference inferred output "
+                            f"{output_name!r} axis {axis} as {onnx_dim}, but "
+                            f"TensorGuard predicted {tg_concrete}"
+                        ),
+                    )
+                )
+        if compared_axes:
+            checks.append(
+                ONNXShapeRoundTripCheck(
+                    output_name=output_name,
+                    tensorguard_shape=tuple(expected),
+                    onnx_shape=tuple(observed),
+                    compared_axes=tuple(compared_axes),
+                    matched=matched,
+                )
+            )
+    return tuple(checks), tuple(issues)
+
+
+def _concrete_dimension(value: Any) -> Optional[int]:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return int(value)
+    text = str(value)
+    if re.fullmatch(r"-?\d+", text):
+        return int(text)
+    return None

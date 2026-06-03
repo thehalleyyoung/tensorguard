@@ -39,9 +39,10 @@ artifacts for core rules, and reproducible empirical harnesses.
 The repository is not merely a prototype pass over toy models.  It contains
 operator transfer functions for everyday PyTorch programs, frontends for real
 \texttt{nn.Module} code, integration hooks for CLIs, GitHub Actions, SARIF,
-watch mode, Jupyter, decorators, framework adapters, deployment gates, and
-artifact scripts that regenerate precision/recall, latency, ablation, coverage,
-conformance, fuzzing, mutation, and benchmark evidence.  This paper describes
+watch mode, Jupyter, decorators, framework adapters, deployment gates, ONNX
+shape-inference round trips, and artifact scripts that regenerate
+precision/recall, latency, ablation, coverage, conformance, fuzzing, mutation,
+and benchmark evidence.  This paper describes
 the system as shipped in the repository, with emphasis on the engineering and
 evaluation choices that make \tg{} a credible research artifact and a useful
 developer tool.
@@ -144,8 +145,11 @@ support traces real modules and preserves enough source mapping for diagnostics.
 for export and compile pipelines.  The repository also includes integration
 points for guarded \texttt{torch.compile}, AOTInductor packaging, ONNX export,
 GGUF/llama.cpp-oriented checks, framework hooks, and deployment request/response
-schemas.  These paths are important because many production tensor bugs appear
-only when a model is compiled, exported, quantized, sharded, or served.
+schemas.  The ONNX path validates structural checker and opset contracts, then
+round-trips output shapes predicted from captured \texttt{torch.export} metadata
+against \texttt{onnx.shape\_inference} wherever both sides infer concrete
+dimensions.  These paths are important because many production tensor bugs
+appear only when a model is compiled, exported, quantized, sharded, or served.
 
 \subsection{Verifier}
 
@@ -573,7 +577,8 @@ sparse-dense kernels, named
 tensor alignment failures, incompatible loss targets, incompatible distribution
 batch/event shapes, export
 contracts, quantization observer calibration/qscheme and quant/dequant placement,
-mixed-precision/autocast dtype drift, and distributed sharding mistakes.
+ONNX shape-inference disagreements, mixed-precision/autocast dtype drift, and
+distributed sharding mistakes.
 
 The conformance tests are especially important.  A static rule is only useful
 if it matches the runtime library.  The repository therefore includes tests
@@ -674,7 +679,8 @@ Tracing and export-oriented frontends for real modules and deployment flows. \\
 \hline
 \texttt{src/torch\_integration.py} &
 Guarded compile/export/package pre-passes that surface \tg{} violations before
-compiler or exporter failures. \\
+compiler or exporter failures, then validate ONNX checker/opset and
+shape-inference round trips on emitted artifacts. \\
 \hline
 \texttt{src/mha\_verify.py}, \texttt{src/sdpa\_verify.py} &
 Attention-family contracts for q/k/v, masks, head counts, and output shapes. \\
@@ -860,7 +866,8 @@ Batched dimension transfer and out-dim contract checks. \\
 Export and compile &
 Pre-pass verification for \texttt{torch.compile}, \texttt{torch.export}, ONNX,
 AOTInductor packaging, and deployment gates, including package-time layout,
-dtype, device, dynamic-guard, ONNX opset availability, and lowering checks. \\
+dtype, device, dynamic-guard, ONNX opset availability, lowering checks, and
+post-export ONNX shape-inference agreement. \\
 \hline
 Distributed and adapters &
 DDP/FSDP/DTensor/tensor-parallel checks, optimizer-state checks, checkpoint

@@ -367,7 +367,7 @@ from src.integrations.accelerate_hook import prepare_verified
 from src.integrations.hf_hook import guarded_from_pretrained
 
 compiled = guarded_compile(model, input_shapes={"x": ("b", 10)})   # torch.compile
-guarded_onnx_export(model, (x,), "model.onnx")                     # ONNX checker + opset gates
+guarded_onnx_export(model, (x,), "model.onnx")                     # ONNX checker + opset + shape-inference round trip
 guarded_aot_package(model, (x,), package_path="m.pt2", dynamic_shapes=ds)  # AOT layout/dtype/device/Dim/lowering gates
 model = prepare_verified(accelerator, model, opt, loader)          # accelerate.prepare
 model = guarded_from_pretrained(AutoModel, "org/ckpt")            # HF from_pretrained
