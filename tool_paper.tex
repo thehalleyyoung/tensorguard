@@ -171,7 +171,9 @@ records the discovered predicates as metadata.  If the predicates jointly imply
 an impossible input contract, the conflict is promoted to a real
 \texttt{cegar\_refined\_contract} bug rather than hidden as an internal note.
 The repository includes convergence measurements and Lean-checked statements
-for the predicate-bound argument.
+for the predicate-bound argument, plus a versioned serialized predicate-record
+replay proof: append-only CEGAR histories are monotone at the actual Python
+record boundary and infeasible replay abstains instead of reporting \safe{}.
 
 \subsection{Soundness Modes}
 
@@ -666,8 +668,9 @@ transfer functions.
 
 \tg{} does not ask users to trust only implementation tests.  The repository
 contains Lean artifacts for several core rules and proof obligations, including
-CEGAR convergence bounds, infeasible-contract abstention, fragment modes,
-device/dtype transfer soundness, SMT encoding faithfulness, cross-domain
+CEGAR convergence bounds, infeasible-contract abstention tied to the versioned
+Python predicate serialization format, fragment modes, device/dtype transfer
+soundness, SMT encoding faithfulness, cross-domain
 composition, and operator-specific rules such as cat, chunk/split partition
 reconstruction, reshape, contiguity/stride/storage-offset viewability with
 channels-last caveats, einops decomposition/bijection families, SDPA
@@ -992,8 +995,9 @@ CLI, JSON, JUnit, SARIF, GitHub annotations, GitHub Action, pre-commit, pytest
 plugin, nox/tox, watch mode, Jupyter, decorators, and framework hooks. \\
 \hline
 Formal artifacts &
-Lean proof files, axiom audits, conditional/straight-line subject reduction,
-SMT encoding faithfulness checks, generated conformance bridges, and proof
+Lean proof files, axiom audits, serialized CEGAR predicate replay,
+conditional/straight-line subject reduction, SMT encoding faithfulness checks,
+generated conformance bridges, and proof
 certificate infrastructure. \\
 \hline
 Reproducibility &

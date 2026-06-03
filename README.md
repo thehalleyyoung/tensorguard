@@ -110,7 +110,9 @@ runtime errors in ML codebases before any code runs.
   the loop's termination are now **machine-checked in Lean**
   (`lean/TensorGuard/CegarBound.lean`), and the once-known SAFE-on-infeasible
   unsoundness gap is **closed with a Lean-checked fix** that abstains instead of
-  reporting safe (`lean/TensorGuard/CegarInfeasible.lean`). The mode-dependent
+  reporting safe (`lean/TensorGuard/CegarInfeasible.lean`), now tied to the
+  versioned Python predicate-record replay format
+  (`lean/TensorGuard/CegarPredicateSerialization.lean`). The mode-dependent
   fragment boundary itself (gap U1) is likewise Lean-backed: `sound` mode is
   proved sound while the permissive modes' recall trade-off is made precise
   (`lean/TensorGuard/FragmentModes.lean`). The four non-shape transfer functions

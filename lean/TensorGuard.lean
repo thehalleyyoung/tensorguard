@@ -10,6 +10,7 @@ import TensorGuard.SoundnessV5
 import TensorGuard.ReducedProduct
 import TensorGuard.CegarBound
 import TensorGuard.CegarInfeasible
+import TensorGuard.CegarPredicateSerialization
 import TensorGuard.FragmentModes
 import TensorGuard.DeviceDtype
 import TensorGuard.SmtEncoding

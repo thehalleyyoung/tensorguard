@@ -141,7 +141,7 @@ class ShapePredicate:
     kind: PredicateKind
     tensor: str
     axis: Optional[int] = None
-    value: Optional[int] = None
+    value: Optional[Union[int, Tuple[Any, ...]]] = None
     match_tensor: Optional[str] = None
     match_axis: Optional[int] = None
     divisor: Optional[int] = None
@@ -170,6 +170,118 @@ class ShapePredicate:
 
     def __repr__(self) -> str:
         return f"ShapePredicate({self.pretty()})"
+
+
+SHAPE_PREDICATE_RECORD_SCHEMA = "tensorguard.shape_predicate.v1"
+SHAPE_PREDICATE_RECORD_FIELDS = (
+    "schema",
+    "kind",
+    "tensor",
+    "axis",
+    "value",
+    "match_tensor",
+    "match_axis",
+    "divisor",
+    "provenance",
+)
+
+
+def _encode_predicate_record_value(value: Any) -> Any:
+    """Return a JSON-compatible predicate value without losing tuple shapes."""
+    if isinstance(value, tuple):
+        return list(value)
+    return value
+
+
+def _decode_predicate_record_value(value: Any) -> Any:
+    if isinstance(value, list):
+        return tuple(value)
+    return value
+
+
+def _optional_int_field(value: Any, field_name: str) -> Optional[int]:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        raise ValueError(f"{field_name} must be an int or None")
+    try:
+        return int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{field_name} must be an int or None") from exc
+
+
+def shape_predicate_to_record(pred: ShapePredicate) -> Dict[str, Any]:
+    """Serialize a predicate to TensorGuard's stable Python record format.
+
+    The format is intentionally a plain JSON-compatible dictionary so CEGAR
+    traces can be replayed by tools that do not import the analyzer.  `value`
+    preserves exact-shape tuples by encoding them as JSON lists and decoding
+    them back to tuples.
+    """
+    return {
+        "schema": SHAPE_PREDICATE_RECORD_SCHEMA,
+        "kind": pred.kind.name,
+        "tensor": pred.tensor,
+        "axis": pred.axis,
+        "value": _encode_predicate_record_value(pred.value),
+        "match_tensor": pred.match_tensor,
+        "match_axis": pred.match_axis,
+        "divisor": pred.divisor,
+        "provenance": pred.provenance,
+    }
+
+
+def shape_predicate_from_record(record: Dict[str, Any]) -> ShapePredicate:
+    """Deserialize a stable predicate record produced by
+    :func:`shape_predicate_to_record`.
+    """
+    missing = set(SHAPE_PREDICATE_RECORD_FIELDS) - set(record)
+    extra = set(record) - set(SHAPE_PREDICATE_RECORD_FIELDS)
+    if missing or extra:
+        raise ValueError(
+            "shape predicate record has unexpected fields "
+            f"(missing={sorted(missing)}, extra={sorted(extra)})"
+        )
+    if record["schema"] != SHAPE_PREDICATE_RECORD_SCHEMA:
+        raise ValueError(f"unsupported shape predicate schema {record['schema']!r}")
+    try:
+        kind = PredicateKind[str(record["kind"])]
+    except KeyError as exc:
+        raise ValueError(f"unknown shape predicate kind {record['kind']!r}") from exc
+    tensor = record["tensor"]
+    if not isinstance(tensor, str) or not tensor:
+        raise ValueError("tensor must be a non-empty string")
+    provenance = record["provenance"]
+    if not isinstance(provenance, str):
+        raise ValueError("provenance must be a string")
+    match_tensor = record["match_tensor"]
+    if match_tensor is not None and not isinstance(match_tensor, str):
+        raise ValueError("match_tensor must be a string or None")
+    return ShapePredicate(
+        kind=kind,
+        tensor=tensor,
+        axis=_optional_int_field(record["axis"], "axis"),
+        value=_decode_predicate_record_value(record["value"]),
+        match_tensor=match_tensor,
+        match_axis=_optional_int_field(record["match_axis"], "match_axis"),
+        divisor=_optional_int_field(record["divisor"], "divisor"),
+        provenance=provenance,
+    )
+
+
+def _freeze_record_value(value: Any) -> Any:
+    if isinstance(value, list):
+        return tuple(_freeze_record_value(v) for v in value)
+    if isinstance(value, dict):
+        return tuple(sorted((k, _freeze_record_value(v)) for k, v in value.items()))
+    return value
+
+
+def _shape_predicate_record_identity(record: Dict[str, Any]) -> Tuple[Tuple[str, Any], ...]:
+    return tuple(
+        (field, _freeze_record_value(record[field]))
+        for field in SHAPE_PREDICATE_RECORD_FIELDS
+    )
 
 
 def _parse_predicate_string(s: str) -> Optional[ShapePredicate]:
@@ -405,6 +517,60 @@ class IterationRecord:
     num_real: int
     predicates_added: List[ShapePredicate] = field(default_factory=list)
     time_ms: float = 0.0
+
+
+def shape_predicate_records_from_result(
+    result: ShapeCEGARResult,
+) -> List[Dict[str, Any]]:
+    """Serialize the final CEGAR predicate set from a result."""
+    return [
+        shape_predicate_to_record(pred)
+        for pred in result.discovered_predicates
+    ]
+
+
+def shape_predicate_history_from_result(
+    result: ShapeCEGARResult,
+) -> List[List[Dict[str, Any]]]:
+    """Return cumulative serialized predicate sets after each CEGAR iteration.
+
+    The history is keyed by the actual predicate-record identity, so duplicate
+    proposals do not make the logical set grow.  Every later entry must contain
+    every earlier entry; `shape_predicate_history_is_monotone` checks that
+    invariant directly on serialized records.
+    """
+    cumulative: List[Dict[str, Any]] = []
+    seen: Set[Tuple[Tuple[str, Any], ...]] = set()
+    history: List[List[Dict[str, Any]]] = []
+
+    for record in result.iteration_log:
+        for pred in record.predicates_added:
+            serialized = shape_predicate_to_record(pred)
+            key = _shape_predicate_record_identity(serialized)
+            if key not in seen:
+                seen.add(key)
+                cumulative.append(serialized)
+        history.append([dict(item) for item in cumulative])
+
+    if not history and result.discovered_predicates:
+        history.append(shape_predicate_records_from_result(result))
+    return history
+
+
+def shape_predicate_history_is_monotone(
+    history: List[List[Dict[str, Any]]],
+) -> bool:
+    """Check set-inclusion monotonicity for serialized CEGAR predicate history."""
+    previous: Set[Tuple[Tuple[str, Any], ...]] = set()
+    for step in history:
+        current = {
+            _shape_predicate_record_identity(record)
+            for record in step
+        }
+        if not previous.issubset(current):
+            return False
+        previous = current
+    return True
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -2130,6 +2296,24 @@ class ShapeRefinement:
             solver.add(c)
 
         return solver.check() == z3.sat
+
+
+def serialized_predicates_feasible(records: List[Dict[str, Any]]) -> bool:
+    """Check feasibility after replaying serialized predicate records."""
+    predicates = [shape_predicate_from_record(record) for record in records]
+    return ShapeRefinement.check_feasibility(predicates)
+
+
+def serialized_predicates_status(records: List[Dict[str, Any]]) -> CEGARStatus:
+    """Map serialized predicate feasibility to the CEGAR terminal status.
+
+    Only predicates encoded by `ShapeRefinement.predicates_to_z3` can refute
+    feasibility; unsupported predicate kinds remain soundly incomplete and keep
+    the status `SAFE` rather than inventing a contradiction.
+    """
+    if serialized_predicates_feasible(records):
+        return CEGARStatus.SAFE
+    return CEGARStatus.INFEASIBLE_REFINEMENT
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

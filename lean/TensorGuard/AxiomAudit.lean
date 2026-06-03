@@ -65,6 +65,20 @@ import TensorGuard
 #print axioms TensorGuard.CegarU2.fix_keeps_safe_when_feasible
 #print axioms TensorGuard.CegarU2.old_always_safe
 
+-- CEGAR predicate-record serialization (Step 241): the Lean mirror covers the
+-- actual Python schema-v1 record keys and `PredicateKind.name` tags, append-only
+-- serialized histories are monotone, and replaying jointly infeasible serialized
+-- predicates abstains instead of reporting SAFE.
+#print axioms TensorGuard.CegarSerialized.python_record_keys_match_v1
+#print axioms TensorGuard.CegarSerialized.python_kind_names_cover_v1
+#print axioms TensorGuard.CegarSerialized.serialized_append_preserves_membership
+#print axioms TensorGuard.CegarSerialized.serialized_append_length_mono
+#print axioms TensorGuard.CegarSerialized.serialized_history_step_prefix
+#print axioms TensorGuard.CegarSerialized.serialized_infeasible_abstains
+#print axioms TensorGuard.CegarSerialized.serialized_feasible_safe
+#print axioms TensorGuard.CegarSerialized.decideSerialized_safeSound
+#print axioms TensorGuard.CegarSerialized.infeasible_serialized_safeSound_any_bug
+
 -- Known-unsoundness U1 re-audited (Step 133): the verifiable-fragment boundary
 -- is mode-dependent. `sound` mode abstains on every fragment violation and is
 -- sound (sound_safeSound); `balanced`/`heuristic` may report SAFE on an
