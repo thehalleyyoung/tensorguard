@@ -149,6 +149,11 @@ from .compile_guard_analysis import (
     TensorGuardSymbolicConstraint,
     verify_compile_guard_interactions,
 )
+from .graph_break_attribution import (
+    GraphBreakAttribution,
+    GraphBreakAttributionReport,
+    classify_graph_break_failure,
+)
 
 __all__ = [
     "analyze",
@@ -272,5 +277,8 @@ __all__ = [
     "GuardConstraintMatch",
     "TensorGuardSymbolicConstraint",
     "verify_compile_guard_interactions",
+    "GraphBreakAttribution",
+    "GraphBreakAttributionReport",
+    "classify_graph_break_failure",
     "__version__",
 ]

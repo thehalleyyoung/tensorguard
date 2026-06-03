@@ -71,7 +71,8 @@ runtime errors in ML codebases before any code runs.
   dtype drift), full LoRA/PEFT adapter compatibility (rank, `target_modules`,
   merged state, and quantized bases), and optimizer-state compatibility for
   AdamW, Adafactor, fused AdamW, sharded resume buffers, `torch.compile`
-  guard-set parity against TensorGuard symbolic constraints, CUDA graph capture
+  guard-set parity against TensorGuard symbolic constraints, source-mapped
+  Dynamo/export graph-break attribution, CUDA graph capture
   eligibility (dynamic allocation, data-dependent shapes, unsupported ops, and
   static-input replay contracts), plus TorchServe/FastAPI request→preprocess→model→response
   schema gates that reject bad preprocessing layouts before forward execution

@@ -207,6 +207,11 @@ from src.compile_guard_analysis import (  # noqa: F401  (re-export)
     TensorGuardSymbolicConstraint,
     verify_compile_guard_interactions,
 )
+from src.graph_break_attribution import (  # noqa: F401  (re-export)
+    GraphBreakAttribution,
+    GraphBreakAttributionReport,
+    classify_graph_break_failure,
+)
 
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
 from src import api as api  # noqa: F401
@@ -354,6 +359,9 @@ __all__ = [
     "GuardConstraintMatch",
     "TensorGuardSymbolicConstraint",
     "verify_compile_guard_interactions",
+    "GraphBreakAttribution",
+    "GraphBreakAttributionReport",
+    "classify_graph_break_failure",
     "TensorGuardViolation",
     "TensorGuardAOTPackageError",
     "AOTPackageIssue",

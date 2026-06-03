@@ -47,6 +47,10 @@ from src.model_checker import (
     VerificationResult,
     Confidence,
 )
+from src.graph_break_attribution import (
+    GraphBreakAttributionReport,
+    classify_graph_break_failure,
+)
 
 from src.fx_extractor import (
     fx_trace_to_graph,
@@ -59,6 +63,22 @@ from src.fx_extractor import (
     _extract_method_params,
     verify_module as fx_verify_module,
 )
+
+
+def _attach_graph_break_attribution(
+    result: VerificationResult,
+    report: GraphBreakAttributionReport,
+) -> VerificationResult:
+    """Attach graph-break attribution without changing verification semantics."""
+    result.dynamic_features["graph_break_attribution"] = report.to_dict()
+    if report.attributions:
+        first = report.attributions[0]
+        location = "" if first.line is None else f" at line {first.line}"
+        result.dynamic_feature_warnings.append(
+            f"{report.backend} graph capture failed{location}: "
+            f"{first.category}. Minimal change: {first.minimal_change}"
+        )
+    return result
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -601,7 +621,7 @@ def verify_module_dynamo(
             logger.info("Dynamo extraction failed: %s; trying fallback", exc)
 
     if graph is None and fallback_to_fx:
-        return fx_verify_module(
+        result = fx_verify_module(
             module,
             input_shapes=input_shapes,
             default_device=default_device,
@@ -611,13 +631,34 @@ def verify_module_dynamo(
             high_confidence_only=high_confidence_only,
             class_name=class_name,
         )
+        if dynamo_error is not None:
+            report = classify_graph_break_failure(
+                module,
+                dynamo_error,
+                backend="dynamo",
+                fallback_used="fx",
+            )
+            _attach_graph_break_attribution(result, report)
+        return result
 
     if graph is None:
         msg = dynamo_error or "TorchDynamo not available"
+        report = classify_graph_break_failure(
+            module,
+            msg,
+            backend="dynamo",
+        )
         return VerificationResult(
             safe=False,
             errors=[f"Dynamo graph capture failed: {msg}"],
             verification_time_ms=(time.monotonic() - t0) * 1000,
+            dynamic_features={"graph_break_attribution": report.to_dict()},
+            dynamic_feature_warnings=[
+                (
+                    f"dynamo graph capture failed: {report.attributions[0].category}. "
+                    f"Minimal change: {report.attributions[0].minimal_change}"
+                )
+            ] if report.attributions else [],
         )
 
     # Verify

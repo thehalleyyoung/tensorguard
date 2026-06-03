@@ -147,7 +147,8 @@ for export and compile pipelines.  The repository also includes integration
 points for guarded \texttt{torch.compile}, AOTInductor packaging, ONNX export,
 GGUF/llama.cpp-oriented checks, model checkpoint load preflights,
 optimizer-state load/resume preflights,
-CUDA graph capture eligibility diagnostics, framework hooks, and deployment
+CUDA graph capture eligibility diagnostics, source-mapped Dynamo/export
+graph-break attribution, framework hooks, and deployment
 request/response schemas.  The ONNX path validates structural checker and opset contracts, then
 round-trips output shapes predicted from captured \texttt{torch.export} metadata
 against \texttt{onnx.shape\_inference} wherever both sides infer concrete
@@ -468,6 +469,19 @@ state refutable.  When a domain is disabled, the solver encoders for that
 domain emit no constraints, so the flag removes solver work instead of merely
 filtering the final verdict.  This matters for ablation experiments and for
 users who need predictable CI behavior.
+
+When \texttt{torch.compile}/Dynamo or \texttt{torch.export} cannot capture a
+model, \tg{} now preserves the failure as a structured graph-break attribution
+instead of an opaque backend exception.  The report maps the failing source site
+back to the verifiable-fragment taxonomy---for example data-dependent Python
+branching, tensor-to-scalar extraction, dynamic assertions, data-dependent
+iteration, opaque helper calls, or mutation/JIT/custom-autograd boundaries---and
+attaches the exact snippet, confidence, reason, and smallest mechanical rewrite
+the user should try, such as replacing tensor-value branching with
+\texttt{torch.cond}/\texttt{torch.where} or moving scalar extraction outside
+\texttt{forward}.  Dynamo-to-FX fallback keeps this metadata, so successful
+fallback verification does not erase the explanation of why the stronger backend
+failed.
 
 \section{Empirical Methodology}
 

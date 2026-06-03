@@ -52,6 +52,7 @@ from src.model_checker import (
     Phase,
     VerificationResult,
 )
+from src.graph_break_attribution import classify_graph_break_failure
 from src.fx_extractor import (
     _make_layer_def,
     _extract_layer_params,
@@ -360,10 +361,22 @@ def verify_module_export(
         graph = export_trace_to_graph(module, example_inputs=example_inputs,
                                       class_name=class_name)
     except Exception as exc:
+        report = classify_graph_break_failure(
+            module,
+            str(exc),
+            backend="export",
+        )
         return VerificationResult(
             safe=False,
             errors=[f"torch.export extraction failed: {exc}"],
             verification_time_ms=(time.monotonic() - t0) * 1000,
+            dynamic_features={"graph_break_attribution": report.to_dict()},
+            dynamic_feature_warnings=[
+                (
+                    f"torch.export capture failed: {report.attributions[0].category}. "
+                    f"Minimal change: {report.attributions[0].minimal_change}"
+                )
+            ] if report.attributions else [],
         )
     checker = ConstraintVerifier(
         graph,
