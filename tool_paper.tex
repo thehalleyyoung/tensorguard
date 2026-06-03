@@ -40,7 +40,8 @@ The repository is not merely a prototype pass over toy models.  It contains
 operator transfer functions for everyday PyTorch programs, frontends for real
 \texttt{nn.Module} code, integration hooks for CLIs, GitHub Actions, SARIF,
 watch mode, Jupyter, decorators, framework adapters, deployment gates, ONNX
-shape-inference round trips, optimizer-state resume gates, and artifact scripts that regenerate
+shape-inference round trips, model-checkpoint schema gates,
+optimizer-state resume gates, and artifact scripts that regenerate
 precision/recall, latency, ablation, coverage, conformance, fuzzing, mutation,
 and benchmark evidence.  This paper describes
 the system as shipped in the repository, with emphasis on the engineering and
@@ -144,7 +145,8 @@ support traces real modules and preserves enough source mapping for diagnostics.
 \texttt{torch.export} and Dynamo-oriented paths let \tg{} run as a pre-pass
 for export and compile pipelines.  The repository also includes integration
 points for guarded \texttt{torch.compile}, AOTInductor packaging, ONNX export,
-GGUF/llama.cpp-oriented checks, optimizer-state load/resume preflights,
+GGUF/llama.cpp-oriented checks, model checkpoint load preflights,
+optimizer-state load/resume preflights,
 framework hooks, and deployment request/response schemas.  The ONNX path validates structural checker and opset contracts, then
 round-trips output shapes predicted from captured \texttt{torch.export} metadata
 against \texttt{onnx.shape\_inference} wherever both sides infer concrete
@@ -226,7 +228,8 @@ attention, training loss contracts for \texttt{CrossEntropyLoss},
 LoRA adapter compatibility, training-loop checks, quantization/export safety,
 mixed-precision/autocast dtype-divergence gates, FSDP/FSDP2/DTensor sharding,
 explicit pipeline-stage boundary contracts, tensor-parallel sharding checks,
-optimizer-state checkpoint compatibility, and deployment schemas.
+model \texttt{state\_dict} schema compatibility, optimizer-state checkpoint
+compatibility, and deployment schemas.
 
 Recent stack-family work follows the same standard.  \texttt{torch.stack},
 \texttt{hstack}, \texttt{vstack}, \texttt{dstack},
@@ -580,10 +583,14 @@ batch/event shapes, export
 contracts, quantization observer calibration/qscheme and quant/dequant placement,
 ONNX shape-inference disagreements, mixed-precision/autocast dtype drift,
 FSDP2/DTensor local-shard mistakes, and tensor-parallel sharding mistakes.
-New optimizer-state checks add another resume-only failure class: AdamW and
-fused-AdamW moment buffers, Adafactor factored \texttt{row\_var}/\texttt{col\_var}
-buffers, lazy pre-step state, and declared ZeRO-style shards are validated before
-an incompatible checkpoint can corrupt a resumed run.
+Checkpoint-schema gates add another resume-only failure class: model
+\texttt{state\_dict} loads are checked for missing or unexpected keys, tied
+weights whose aliases disagree, LoRA adapter matrix compatibility,
+tensor-parallel shard coverage, and dtype drift that PyTorch would otherwise
+silently cast.  Optimizer-state checks cover AdamW and fused-AdamW moment
+buffers, Adafactor factored \texttt{row\_var}/\texttt{col\_var} buffers, lazy
+pre-step state, and declared ZeRO-style shards before an incompatible checkpoint
+can corrupt a resumed run.
 
 The conformance tests are especially important.  A static rule is only useful
 if it matches the runtime library.  The repository therefore includes tests
@@ -705,12 +712,14 @@ High-value library contracts beyond ordinary dense layers, including image
 preprocessing transforms whose tensor shapes feed the model. \\
 \hline
 \texttt{src/quant\_export\_checks.py}, \texttt{src/mixed\_precision\_verify.py},
-\texttt{src/gguf\_export.py}, \texttt{src/optimizer\_state\_verify.py},
+\texttt{src/gguf\_export.py}, \texttt{src/checkpoint\_verify.py},
+\texttt{src/optimizer\_state\_verify.py},
 \texttt{src/distributed\_verification.py}, \texttt{src/tensor\_parallel\_checks.py},
 \texttt{src/lora\_verification.py} &
 Deployment, mixed-precision, distributed training, and adapter-compatibility
-gates, including GGUF/llama.cpp checkpoint preflight checks, AdamW/Adafactor
-optimizer-state resume checks, and FSDP2/DTensor
+gates, including GGUF/llama.cpp checkpoint preflight checks, model
+\texttt{state\_dict} schema checks, AdamW/Adafactor optimizer-state resume
+checks, and FSDP2/DTensor
 rank-local shard contracts checked against PyTorch's own placement splitter,
 explicit pipeline activation-boundary contracts, and MQA/GQA tensor-parallel
 attention contracts. \\
@@ -881,8 +890,10 @@ AOTInductor packaging, and deployment gates, including package-time layout,
 dtype, device, dynamic-guard, ONNX opset availability, lowering checks, and
 post-export ONNX shape-inference agreement.  GGUF/llama.cpp export gates check
 q/k/v packing, rotary dimensions, vocab projections, quant block divisibility,
-and metadata consistency before an external converter is invoked; optimizer-state
-gates check AdamW, Adafactor, fused AdamW, and sharded resume buffers before
+and metadata consistency before an external converter is invoked; model
+checkpoint gates check missing/unexpected keys, tied weights, LoRA adapters,
+tensor-parallel shards, and silent dtype drift; optimizer-state gates check
+AdamW, Adafactor, fused AdamW, and sharded resume buffers before
 \texttt{load\_state\_dict}. \\
 \hline
 Distributed and adapters &
@@ -1001,6 +1012,7 @@ Gradient and training-loop contracts beyond forward shape checking. \\
 \texttt{tests/test\_onnx\_opset\_gate.py},
 \texttt{tests/test\_export\_aot\_gate.py},
 \texttt{tests/test\_gguf\_export\_gate.py},
+\texttt{tests/test\_checkpoint\_verify.py},
 \texttt{tests/test\_optimizer\_state\_verify.py},
 \texttt{tests/test\_quant\_export\_checks.py},
 \texttt{tests/test\_quantization\_verify.py} &
@@ -1008,9 +1020,10 @@ Deployment-facing gates for export, \texttt{torch.export.Dim} ranges and
 relations, ONNX opset-version availability and dynamic-shape support, AOT
 package input/layout/dtype/device/lowering contracts, and source/eager/FX
 quantization, plus GGUF/llama.cpp checkpoint checks over real transformer
-state\_dict tensors, logical quantized descriptors, and real optimizer
-state\_dict compatibility for AdamW, Adafactor, fused AdamW, lazy state, sharded
-resume buffers, and load-time shape rejection. \\
+state\_dict tensors, logical quantized descriptors, model checkpoint-schema
+compatibility for tied weights, LoRA adapters, tensor-parallel shards, and
+dtype drift, plus real optimizer state\_dict compatibility for AdamW, Adafactor,
+fused AdamW, lazy state, sharded resume buffers, and load-time shape rejection. \\
 \hline
 \texttt{tests/test\_distributed\_verification.py},
 \texttt{tests/test\_tensor\_parallel\_checks.py} &

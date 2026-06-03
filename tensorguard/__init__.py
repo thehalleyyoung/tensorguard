@@ -167,6 +167,14 @@ from src.optimizer_state_verify import (  # noqa: F401  (re-export)
     guarded_optimizer_load_state_dict,
     verify_optimizer_state,
 )
+from src.checkpoint_verify import (  # noqa: F401  (re-export)
+    CheckpointIssue,
+    CheckpointVerificationResult,
+    TensorGuardCheckpointError,
+    TensorParallelCheckpointShard,
+    guarded_load_state_dict,
+    verify_checkpoint_state_dict,
+)
 
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
 from src import api as api  # noqa: F401
@@ -284,6 +292,12 @@ __all__ = [
     "TensorGuardOptimizerStateError",
     "guarded_optimizer_load_state_dict",
     "verify_optimizer_state",
+    "CheckpointIssue",
+    "CheckpointVerificationResult",
+    "TensorGuardCheckpointError",
+    "TensorParallelCheckpointShard",
+    "guarded_load_state_dict",
+    "verify_checkpoint_state_dict",
     "TensorGuardViolation",
     "TensorGuardAOTPackageError",
     "AOTPackageIssue",

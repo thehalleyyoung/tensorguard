@@ -39,6 +39,14 @@ from src.optimizer_state_verify import (
     guarded_optimizer_load_state_dict,
     verify_optimizer_state,
 )
+from src.checkpoint_verify import (
+    CheckpointIssue,
+    CheckpointVerificationResult,
+    TensorGuardCheckpointError,
+    TensorParallelCheckpointShard,
+    guarded_load_state_dict,
+    verify_checkpoint_state_dict,
+)
 
 __all__ = [
     "AOTPackageGateResult",
@@ -53,6 +61,7 @@ __all__ = [
     "TensorGuardAOTPackageError",
     "TensorGuardDynamicShapeError",
     "TensorGuardGGUFExportError",
+    "TensorGuardCheckpointError",
     "TensorGuardOptimizerStateError",
     "TensorGuardONNXExportError",
     "TensorGuardONNXShapeInferenceError",
@@ -60,6 +69,7 @@ __all__ = [
     "guarded_aot_package",
     "guarded_compile",
     "guarded_gguf_export",
+    "guarded_load_state_dict",
     "guarded_optimizer_load_state_dict",
     "guarded_onnx_export",
     "make_tensorguard_backend",
@@ -67,9 +77,13 @@ __all__ = [
     "verify_aot_package_contract",
     "verify_exported_program",
     "verify_gguf_export_contract",
+    "verify_checkpoint_state_dict",
     "verify_optimizer_state",
     "verify_module",
     "OptimizerStateIssue",
     "OptimizerStateShard",
     "OptimizerStateVerificationResult",
+    "CheckpointIssue",
+    "CheckpointVerificationResult",
+    "TensorParallelCheckpointShard",
 ]

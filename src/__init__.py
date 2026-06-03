@@ -109,6 +109,14 @@ from .optimizer_state_verify import (
     guarded_optimizer_load_state_dict,
     verify_optimizer_state,
 )
+from .checkpoint_verify import (
+    CheckpointIssue,
+    CheckpointVerificationResult,
+    TensorGuardCheckpointError,
+    TensorParallelCheckpointShard,
+    guarded_load_state_dict,
+    verify_checkpoint_state_dict,
+)
 
 __all__ = [
     "analyze",
@@ -202,5 +210,11 @@ __all__ = [
     "TensorGuardOptimizerStateError",
     "guarded_optimizer_load_state_dict",
     "verify_optimizer_state",
+    "CheckpointIssue",
+    "CheckpointVerificationResult",
+    "TensorGuardCheckpointError",
+    "TensorParallelCheckpointShard",
+    "guarded_load_state_dict",
+    "verify_checkpoint_state_dict",
     "__version__",
 ]

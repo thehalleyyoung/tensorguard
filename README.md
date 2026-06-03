@@ -66,9 +66,12 @@ runtime errors in ML codebases before any code runs.
   `verify_grid_sample`, `verify_affine_grid`,
   `verify_torchvision_v2_transform`,
   `verify_multihead_attention`).  Deployment/resume gates now also cover
-  GGUF/llama.cpp checkpoint export invariants and optimizer-state compatibility
-  for AdamW, Adafactor, fused AdamW, and sharded resume buffers
-  (`verify_gguf_export_contract`, `verify_optimizer_state`).
+  GGUF/llama.cpp checkpoint export invariants, model `state_dict` schema
+  compatibility (missing/unexpected keys, tied weights, LoRA adapters,
+  tensor-parallel shards, dtype drift), and optimizer-state compatibility for
+  AdamW, Adafactor, fused AdamW, and sharded resume buffers
+  (`verify_gguf_export_contract`, `verify_checkpoint_state_dict`,
+  `verify_optimizer_state`).
 - **5-theory product domain** — jointly reasons over
   **Shape × Device × Phase × Stride × Permutation** for each tensor
 - **Zero annotations required** — shapes are inferred from constructors,
