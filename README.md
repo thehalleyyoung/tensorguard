@@ -2320,18 +2320,18 @@ on a buggy model, rewrites the offending layer on disk, and observes the verdict
 flip to verified safe within one polling interval. See
 `tests/test_watch_mode.py`.
 
-### Editor integration: a language server + VS Code extension
+### Editor integration: one language server, multiple clients
 
 `python -m src.lsp_server` is a real Language Server (JSON-RPC over stdio) that
 analyses the **unsaved editor buffer** on every keystroke: inline squiggles for
 shape/device/dtype/phase/gradient bugs, hover shapes (the inferred tensor and
 its shape), and quick-fixes whose workspace edit reproduces the mechanical
 autofix — clearing the moment the code becomes correct. The bundled VS Code
-extension in `editors/vscode/` is a thin language client over it, so the editor
-is a transport, not a re-implementation. `tensorguard verify --lsp FILE` also
-emits the same payloads as one-shot JSON. See `src/lsp_server.py`,
-`src/lsp_provider.py`, and `tests/test_lsp_server.py` (a byte-framed handshake
-proving buffer-based diagnostics that clear on fix).
+extension, Neovim Lua client, and structurally validated JetBrains LSP plugin
+template are thin transports over it, not re-implementations. `tensorguard
+verify --lsp FILE` also emits the same payloads as one-shot JSON. See
+`src/lsp_server.py`, `src/lsp_provider.py`, `editors/`, and
+`tests/test_lsp_server.py` / `tests/test_editor_lsp_clients.py`.
 
 ### Jupyter / notebook integration
 

@@ -145,6 +145,13 @@ Jupyter workflows.  Each recipe is pinned to a committed example repository and
 to the actual integration files it configures, so the install surface is tested
 against real code rather than documented from memory.
 
+The editor surface is likewise centralized.  A real JSON-RPC language server
+over stdio analyzes unsaved buffers and publishes diagnostics, hover shapes, and
+quick-fix code actions from the shared \texttt{lsp\_provider}.  VS Code,
+Neovim, and the JetBrains plugin template launch that same
+\texttt{src.lsp\_server} process, keeping editor support as transport glue
+rather than a second verifier.
+
 \subsection{Frontends}
 
 The source frontend is deliberately useful on unannotated Python.  It recognizes

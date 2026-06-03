@@ -1,0 +1,16 @@
+<idea-plugin>
+  <id>dev.tensorguard.jetbrains</id>
+  <name>TensorGuard</name>
+  <vendor email="maintainers@tensorguard.dev">TensorGuard Authors</vendor>
+  <description>
+    TensorGuard LSP client for Python nn.Module diagnostics, hovers, and quick-fixes.
+  </description>
+
+  <depends>com.intellij.modules.platform</depends>
+  <depends optional="true">com.intellij.modules.python</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <platform.lsp.serverSupportProvider
+      implementation="dev.tensorguard.jetbrains.TensorGuardLspServerSupportProvider" />
+  </extensions>
+</idea-plugin>
