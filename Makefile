@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs docs-site soundness-appendix corpus headline audit evaluation-protocol developer-study silent-bug-benchmark statistical-meta-analysis negative-controls artifact-package release-readiness contributor-onboarding launch-campaign launch-dry-run camera-ready-paper governance-acceptance paper-results-freshness playground adoption-recipes third-party-conformance sarif-trends precision-recall stratified-precision-recall head-to-head-step252 stagewise-ablation pr-history-survival labeling-agreement pareto-curves pareto-curves-gate cross-version-stability natural-distribution-study sound-fp false-unknowns hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence artifact-index reviewer-commands test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs docs-site soundness-appendix corpus headline audit evaluation-protocol developer-study silent-bug-benchmark statistical-meta-analysis negative-controls artifact-package release-readiness contributor-onboarding launch-campaign launch-dry-run terminal-demo-gif camera-ready-paper governance-acceptance paper-results-freshness playground adoption-recipes third-party-conformance sarif-trends precision-recall stratified-precision-recall head-to-head-step252 stagewise-ablation pr-history-survival labeling-agreement pareto-curves pareto-curves-gate cross-version-stability natural-distribution-study sound-fp false-unknowns hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence artifact-index reviewer-commands test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -65,6 +65,7 @@ help:
 	@echo "  contributor-onboarding Regenerate Step 287 good-first operator onboarding"
 	@echo "  launch-campaign Regenerate Step 288 public 1.0-readiness campaign"
 	@echo "  launch-dry-run Execute Step 289 launch demo dry-run in a fresh virtualenv"
+	@echo "  terminal-demo-gif Regenerate Step 290 quickstart terminal demo GIF"
 	@echo "  camera-ready-paper Regenerate Step 268 paper claim ledger and validate tool_paper"
 	@echo "  governance-acceptance Regenerate third-party acceptance policy + gate audit"
 	@echo "  paper-results-freshness Rerun paper artifact freshness + benchmark-delta gates"
@@ -293,6 +294,10 @@ launch-campaign:
 launch-dry-run:
 	$(PYTHON) reproducibility/launch_dry_run.py
 	$(PYTHON) reproducibility/launch_dry_run.py --check
+
+terminal-demo-gif:
+	$(PYTHON) reproducibility/terminal_demo_gif.py
+	$(PYTHON) reproducibility/terminal_demo_gif.py --check
 
 camera-ready-paper:
 	$(PYTHON) reproducibility/camera_ready_paper.py

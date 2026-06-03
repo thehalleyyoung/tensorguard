@@ -234,7 +234,8 @@ runtime errors in ML codebases before any code runs.
   (`docs/contributing/operator_onboarding.md`).
 - **Launch-ready evidence** — public launch materials combine real demos,
   reproducibility ledgers, upstream RFCs, and the compatibility/support promise
-  into an auditable campaign (`docs/launch/one_point_zero_launch_campaign.md`).
+  into an auditable campaign, including a fresh-dry-run-backed terminal GIF
+  (`docs/launch/quickstart_terminal_demo.gif`).
 - **Sub-second analysis** — typical models verified in < 1 second
 
 ---

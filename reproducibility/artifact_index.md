@@ -2,10 +2,10 @@
 
 This is a tamper-evident ledger for every generated artifact owned by `reproducibility/reproduce_all.py`. Each non-index artifact is recorded with byte size and SHA-256; the aggregate root digest changes if any artifact path, size, or content hash changes.
 
-- artifacts indexed: **586**
-- hashed artifacts: **584**
+- artifacts indexed: **589**
+- hashed artifacts: **587**
 - missing artifacts: **0**
-- artifact root sha256: `950f1de3dd83e88745d245a534486b1122d5a869329bd1969060518e9199c99a`
+- artifact root sha256: `6a66116c47fcb75c84d05b8b1c63e82190508b91f4bb2959aefcf6591ea4a6a8`
 - check command: `python reproducibility/artifact_index.py --check`
 
 | path | category | bytes | sha256 |
@@ -438,8 +438,9 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `docs/dashboard/index.html` | generated_evidence | 13169 | `b4dd7f7171ad69c11f3c69f0e1c48297dea6dd545a5bbf119bf48ec233fd2893` |
 | `docs/governance/third_party_acceptance.md` | generated_evidence | 6121 | `18dc6393edcda058f7b83dfa43abccb3f4e7ef5bd1f056d7950e2975de8b6e1c` |
 | `docs/launch/compatibility_support_promise.md` | generated_evidence | 1089 | `6ebe99ba61fa5f160b9c981f95f8a38c6aba8117397deb225e6ecb66a7e78f1f` |
-| `docs/launch/demo_script.md` | generated_evidence | 963 | `6e1d311fb348775ce2290ca9138a57782fdca21c458a62228754714650076155` |
+| `docs/launch/demo_script.md` | generated_evidence | 1125 | `4e84936d2c50e64375dd24dc06f814f653a2f70a94ce48ff82184535db0be75a` |
 | `docs/launch/one_point_zero_launch_campaign.md` | generated_evidence | 2267 | `4a5959de82560e72890e9f3dbcadd45f88f2cae342e9fa9b467577592f2ea79f` |
+| `docs/launch/quickstart_terminal_demo.gif` | generated_artifact | 28495 | `7815142fae9024e3a1e98518e745949a2086e1f817c89971f3c9cda571a4c628` |
 | `docs/launch/social_copy.md` | generated_evidence | 675 | `fe0ea4883722e95e0c7f6d3f5b57c45f12c3b12d4c12ec7020d72edd203e2d14` |
 | `docs/site/concepts/evidence.html` | generated_evidence | 4742 | `4e7d686c8a467b7ab7a3d86ea304a6d202ccdcfd1ce75ccacf90c2f041ca4292` |
 | `docs/site/concepts/soundness.html` | generated_evidence | 6730 | `0bc041c3eae864363b607f58a7b5192d4e799bce87ee87b1a428268583d0d5d6` |
@@ -585,6 +586,8 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `reproducibility/stub_autogen_coverage.md` | generated_evidence | 2863 | `3618cae9e4ed1719d49ecd93ee94ad73ea69d8007a606a5cafa1c2320e904707` |
 | `reproducibility/tensor_parallel_sharding.json` | generated_evidence | 4376 | `b9796647312919b0d2c8faef13196025d9d5d3c4ce14ebb8538211aa2ab5b65a` |
 | `reproducibility/tensor_parallel_sharding.md` | generated_evidence | 2380 | `4f0e246878f819c879a745577410e6d6273c7cadf3293e681fd202a68f2d0998` |
+| `reproducibility/terminal_demo_gif.json` | generated_evidence | 933 | `a1588eb25cfc05bd433e4f6b64f27cd264bf85aa7ea8664e0d0345b6ec213962` |
+| `reproducibility/terminal_demo_gif.md` | generated_evidence | 846 | `e3ddd5dde14bacd95e733d56ceef07dccf0623b8fe3755fa237bdc205fc79b07` |
 | `reproducibility/threats_to_validity.json` | generated_evidence | 3912 | `b64572591f9b36e5eacc0985801cb29ada097564b655a9d4366a404e229e1b02` |
 | `reproducibility/threats_to_validity.md` | generated_evidence | 2722 | `07f72877fd73c11750fc6232868626d237beec647824e2f16c7b8abbafd42278` |
 | `reproducibility/time_to_detect.json` | generated_evidence | 1034 | `2d38b430c54538c83af7a1190b0a844dd655102b6af7f97281ac97f47b5a2d33` |
@@ -595,4 +598,4 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `reproducibility/upstream_hook_demo.md` | generated_evidence | 978 | `3655a0c1289d751754083218388b68da90d37b8bb5978ce7a1c6c046669a6573` |
 | `reproducibility/verified_reduction_diff.json` | generated_evidence | 5545 | `993368cbf21b84708508eee4e938ee9c7bf4809dae789a33aea9e483d4b974c6` |
 | `reproducibility/verified_reduction_diff.md` | generated_evidence | 2439 | `778b2aeb56c738925d3c57cc5ebb84b7d30bd9434ce8a951c3a29afa86629e7c` |
-| `tool_paper.pdf` | generated_pdf | 302238 | `44d399b1613e791925deed6ddd11cf91ee978b6a0f97e77e2eac97f7a588d1ea` |
+| `tool_paper.pdf` | generated_pdf | 302373 | `277dd9e5f89e6f577518e553ab44f6f69c35219f439faf1bca5622848e683d93` |

@@ -9,6 +9,10 @@ variant from `reproducibility/launch_dry_run.md` to show TensorGuard
 reporting an UNSAFE model-level contract violation before the
 matching PyTorch kernel would fail.
 
+For the shareable terminal capture, use
+`docs/launch/quickstart_terminal_demo.gif`; it is generated from
+`reproducibility/launch_dry_run.json`, not hand-edited.
+
 ## Evidence tour
 
 - Open `examples/model_gallery.md` for the generated model gallery (4 entries).
