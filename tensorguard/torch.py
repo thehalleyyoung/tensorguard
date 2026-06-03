@@ -47,6 +47,12 @@ from src.checkpoint_verify import (
     guarded_load_state_dict,
     verify_checkpoint_state_dict,
 )
+from src.lora_verification import (
+    LoRACompatibilityIssue,
+    LoRACompatibilityResult,
+    verify_lora_adapter_compatibility,
+    verify_lora_model,
+)
 
 __all__ = [
     "AOTPackageGateResult",
@@ -78,6 +84,8 @@ __all__ = [
     "verify_exported_program",
     "verify_gguf_export_contract",
     "verify_checkpoint_state_dict",
+    "verify_lora_adapter_compatibility",
+    "verify_lora_model",
     "verify_optimizer_state",
     "verify_module",
     "OptimizerStateIssue",
@@ -86,4 +94,6 @@ __all__ = [
     "CheckpointIssue",
     "CheckpointVerificationResult",
     "TensorParallelCheckpointShard",
+    "LoRACompatibilityIssue",
+    "LoRACompatibilityResult",
 ]

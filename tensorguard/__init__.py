@@ -175,6 +175,12 @@ from src.checkpoint_verify import (  # noqa: F401  (re-export)
     guarded_load_state_dict,
     verify_checkpoint_state_dict,
 )
+from src.lora_verification import (  # noqa: F401  (re-export)
+    LoRACompatibilityIssue,
+    LoRACompatibilityResult,
+    verify_lora_adapter_compatibility,
+    verify_lora_model,
+)
 
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
 from src import api as api  # noqa: F401
@@ -298,6 +304,10 @@ __all__ = [
     "TensorParallelCheckpointShard",
     "guarded_load_state_dict",
     "verify_checkpoint_state_dict",
+    "LoRACompatibilityIssue",
+    "LoRACompatibilityResult",
+    "verify_lora_adapter_compatibility",
+    "verify_lora_model",
     "TensorGuardViolation",
     "TensorGuardAOTPackageError",
     "AOTPackageIssue",

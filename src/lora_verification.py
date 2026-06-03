@@ -15,7 +15,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
 
 logger = logging.getLogger(__name__)
 
@@ -726,7 +726,727 @@ def _check_lora_full_precision(model: Any, adapter: LoRAAdapter) -> bool:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 5.  LoRA verification result
+# 5.  PEFT / adapter compatibility gates
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+Shape = Tuple[int, ...]
+
+
+@dataclass(frozen=True)
+class LoRACompatibilityIssue:
+    """One actionable LoRA/PEFT adapter compatibility finding."""
+
+    category: str
+    message: str
+    module_name: Optional[str] = None
+    adapter_name: Optional[str] = None
+    key: Optional[str] = None
+    expected_shape: Optional[Shape] = None
+    actual_shape: Optional[Shape] = None
+    severity: str = "error"
+    suggestion: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class LoRACompatibilityResult:
+    """Result of TensorGuard's LoRA/PEFT compatibility gate."""
+
+    ok: bool
+    issues: Tuple[LoRACompatibilityIssue, ...]
+    warnings: Tuple[LoRACompatibilityIssue, ...] = ()
+    adapters: Tuple[LoRAAdapter, ...] = ()
+    checked_targets: Tuple[str, ...] = ()
+    matched_target_modules: Tuple[str, ...] = ()
+    quantized_targets: Tuple[str, ...] = ()
+    merged_targets: Tuple[str, ...] = ()
+    skipped_checks: Tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class _LoRACompatibilityRecord:
+    target_name: str
+    raw_target_name: str
+    adapter_name: str
+    a_tensor: Optional[Any]
+    b_tensor: Optional[Any]
+    a_key: Optional[str]
+    b_key: Optional[str]
+    base_weight: Optional[Any]
+    base_key: Optional[str]
+    module: Optional[Any] = None
+    source: str = "model"
+    merged: Optional[bool] = None
+    adapters_disabled: bool = False
+    quantized_base: bool = False
+
+    @property
+    def a_shape(self) -> Optional[Shape]:
+        return _shape(self.a_tensor)
+
+    @property
+    def b_shape(self) -> Optional[Shape]:
+        return _shape(self.b_tensor)
+
+    @property
+    def base_shape(self) -> Optional[Shape]:
+        return _shape(self.base_weight)
+
+
+def verify_lora_adapter_compatibility(
+    model: Optional[Any] = None,
+    adapter_state: Optional[Mapping[str, Any]] = None,
+    *,
+    peft_config: Optional[Any] = None,
+    target_modules: Optional[Sequence[str]] = None,
+    require_all_targets: bool = True,
+    expected_merged: Optional[bool] = None,
+    allow_quantized_base: bool = True,
+    require_float_adapters: bool = True,
+) -> LoRACompatibilityResult:
+    """Verify LoRA/PEFT adapters against a target model without mutating it.
+
+    The gate understands both live PEFT-style modules
+    (``lora_A.<adapter>.weight`` / ``lora_B.<adapter>.weight`` ModuleDicts) and
+    adapter-only state dicts using HuggingFace PEFT key layouts such as
+    ``base_model.model.layers.0.q_proj.lora_A.default.weight``.  Base-relative
+    compatibility checks require ``model``; adapter-only inputs still validate
+    A/B rank agreement and surface skipped base checks as warnings.
+    """
+
+    if model is None and adapter_state is None:
+        raise TypeError("model or adapter_state is required")
+
+    patterns = tuple(_target_modules_from_config(peft_config, target_modules))
+    records = (
+        _collect_state_lora_records(model, _unwrap_adapter_state(adapter_state))
+        if adapter_state is not None
+        else _collect_live_lora_records(model)
+    )
+
+    issues: List[LoRACompatibilityIssue] = []
+    warnings_: List[LoRACompatibilityIssue] = []
+    skipped: List[str] = []
+    adapters: List[LoRAAdapter] = []
+    checked_targets: List[str] = []
+    quantized_targets: List[str] = []
+    merged_targets: List[str] = []
+
+    for record in records:
+        checked_targets.append(record.target_name)
+        if record.quantized_base:
+            quantized_targets.append(record.target_name)
+        if record.merged:
+            merged_targets.append(record.target_name)
+        adapter = _adapter_from_record(record)
+        if adapter is not None:
+            adapters.append(adapter)
+        _check_lora_compatibility_record(
+            record,
+            issues,
+            warnings_,
+            skipped,
+            expected_merged=expected_merged,
+            allow_quantized_base=allow_quantized_base,
+            require_float_adapters=require_float_adapters,
+            model_available=model is not None,
+        )
+
+    matched_patterns = _check_target_module_patterns(
+        records,
+        patterns,
+        require_all_targets=require_all_targets,
+        issues=issues,
+    )
+
+    return LoRACompatibilityResult(
+        ok=not issues,
+        issues=tuple(issues),
+        warnings=tuple(warnings_),
+        adapters=tuple(adapters),
+        checked_targets=tuple(dict.fromkeys(checked_targets)),
+        matched_target_modules=tuple(matched_patterns),
+        quantized_targets=tuple(dict.fromkeys(quantized_targets)),
+        merged_targets=tuple(dict.fromkeys(merged_targets)),
+        skipped_checks=tuple(dict.fromkeys(skipped)),
+    )
+
+
+def _unwrap_adapter_state(adapter_state: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
+    if adapter_state is None:
+        return {}
+    if not isinstance(adapter_state, Mapping):
+        raise TypeError("adapter_state must be a mapping")
+    for key in ("state_dict", "adapter_state_dict", "model_state_dict", "model"):
+        value = adapter_state.get(key)
+        if isinstance(value, Mapping):
+            return value
+    return adapter_state
+
+
+def _target_modules_from_config(
+    peft_config: Optional[Any],
+    target_modules: Optional[Sequence[str]],
+) -> Tuple[str, ...]:
+    if target_modules is not None:
+        return _normalize_target_module_sequence(target_modules)
+    if peft_config is None:
+        return ()
+    value = (
+        peft_config.get("target_modules")
+        if isinstance(peft_config, Mapping)
+        else getattr(peft_config, "target_modules", None)
+    )
+    return _normalize_target_module_sequence(value)
+
+
+def _normalize_target_module_sequence(value: Optional[Any]) -> Tuple[str, ...]:
+    if value is None:
+        return ()
+    if isinstance(value, str):
+        return (value,)
+    try:
+        return tuple(str(item) for item in value)
+    except TypeError:
+        return (str(value),)
+
+
+def _collect_live_lora_records(model: Optional[Any]) -> List[_LoRACompatibilityRecord]:
+    if model is None or not HAS_TORCH:
+        return []
+    records: List[_LoRACompatibilityRecord] = []
+    named_modules = getattr(model, "named_modules", None)
+    if not callable(named_modules):
+        return records
+    for raw_name, module in named_modules():
+        if not hasattr(module, "lora_A") and not hasattr(module, "lora_B"):
+            continue
+        display_name = raw_name or "(root)"
+        a_tensors = _extract_lora_member_tensors(getattr(module, "lora_A", None))
+        b_tensors = _extract_lora_member_tensors(getattr(module, "lora_B", None))
+        adapter_names = sorted(set(a_tensors) | set(b_tensors))
+        base_weight, base_suffix = _module_base_weight(module)
+        merged = _module_merged(module)
+        disabled = bool(getattr(module, "disable_adapters", False))
+        quantized = _is_quantized_base_layer(module, model)
+        for adapter_name in adapter_names:
+            records.append(
+                _LoRACompatibilityRecord(
+                    target_name=_normalize_peft_target(display_name),
+                    raw_target_name=display_name,
+                    adapter_name=adapter_name,
+                    a_tensor=a_tensors.get(adapter_name),
+                    b_tensor=b_tensors.get(adapter_name),
+                    a_key=f"{display_name}.lora_A.{adapter_name}.weight",
+                    b_key=f"{display_name}.lora_B.{adapter_name}.weight",
+                    base_weight=base_weight,
+                    base_key=f"{display_name}.{base_suffix}" if base_suffix else None,
+                    module=module,
+                    merged=merged,
+                    adapters_disabled=disabled,
+                    quantized_base=quantized,
+                )
+            )
+    return records
+
+
+def _collect_state_lora_records(
+    model: Optional[Any],
+    state: Mapping[str, Any],
+) -> List[_LoRACompatibilityRecord]:
+    groups: Dict[Tuple[str, str], Dict[str, str]] = {}
+    for key in state:
+        parsed = _parse_lora_state_key(key)
+        if parsed is None:
+            continue
+        raw_target, role, adapter_name = parsed
+        groups.setdefault((raw_target, adapter_name), {})[role] = key
+
+    model_state = _model_state_dict(model)
+    records: List[_LoRACompatibilityRecord] = []
+    for (raw_target, adapter_name), group in sorted(groups.items()):
+        target = _normalize_peft_target(raw_target)
+        module = _find_module_by_target(model, raw_target, target)
+        base_weight, base_key = _state_base_weight(model_state, raw_target, target)
+        if base_weight is None and module is not None:
+            base_weight, suffix = _module_base_weight(module)
+            base_key = f"{target}.{suffix}" if suffix else None
+        records.append(
+            _LoRACompatibilityRecord(
+                target_name=target,
+                raw_target_name=raw_target,
+                adapter_name=adapter_name,
+                a_tensor=state.get(group.get("A", "")),
+                b_tensor=state.get(group.get("B", "")),
+                a_key=group.get("A"),
+                b_key=group.get("B"),
+                base_weight=base_weight,
+                base_key=base_key,
+                module=module,
+                source="state",
+                merged=_module_merged(module) if module is not None else None,
+                adapters_disabled=bool(getattr(module, "disable_adapters", False)) if module is not None else False,
+                quantized_base=_is_quantized_base_layer(module, model) if module is not None else _model_quantized(model),
+            )
+        )
+    return records
+
+
+def _parse_lora_state_key(key: str) -> Optional[Tuple[str, str, str]]:
+    for marker, role in ((".lora_A.", "A"), (".lora_B.", "B")):
+        if marker in key and key.endswith(".weight"):
+            raw_target, _, rest = key.rpartition(marker)
+            adapter_name = rest[: -len(".weight")] or "default"
+            if raw_target:
+                return raw_target, role, adapter_name
+    suffixes = (
+        (".lora_A.weight", "A"),
+        (".lora_B.weight", "B"),
+        (".lora_A", "A"),
+        (".lora_B", "B"),
+    )
+    for suffix, role in suffixes:
+        if key.endswith(suffix) and len(key) > len(suffix):
+            return key[: -len(suffix)], role, "default"
+    return None
+
+
+def _extract_lora_member_tensors(value: Any) -> Dict[str, Any]:
+    if value is None or not HAS_TORCH:
+        return {}
+    if isinstance(value, nn.ModuleDict):
+        return {
+            str(name): tensor
+            for name, member in value.items()
+            for tensor in [_weight_tensor(member)]
+            if tensor is not None
+        }
+    if isinstance(value, nn.ParameterDict):
+        return {str(name): tensor for name, tensor in value.items()}
+    if isinstance(value, Mapping):
+        return {
+            str(name): tensor
+            for name, member in value.items()
+            for tensor in [_weight_tensor(member)]
+            if tensor is not None
+        }
+    tensor = _weight_tensor(value)
+    return {"default": tensor} if tensor is not None else {}
+
+
+def _weight_tensor(value: Any) -> Optional[Any]:
+    if value is None or not HAS_TORCH:
+        return None
+    if isinstance(value, nn.Linear):
+        return value.weight
+    if isinstance(value, (nn.Parameter, torch.Tensor)):
+        return value
+    weight = getattr(value, "weight", None)
+    if isinstance(weight, (nn.Parameter, torch.Tensor)):
+        return weight
+    return None
+
+
+def _module_base_weight(module: Any) -> Tuple[Optional[Any], Optional[str]]:
+    if module is None or not HAS_TORCH:
+        return None, None
+    base_layer = getattr(module, "base_layer", None)
+    if base_layer is not None:
+        tensor = _weight_tensor(base_layer)
+        if tensor is not None:
+            return tensor, "base_layer.weight"
+    tensor = _weight_tensor(module)
+    if tensor is not None:
+        return tensor, "weight"
+    return None, None
+
+
+def _model_state_dict(model: Optional[Any]) -> Mapping[str, Any]:
+    if model is None:
+        return {}
+    if isinstance(model, Mapping):
+        return model
+    state_dict = getattr(model, "state_dict", None)
+    if callable(state_dict):
+        return state_dict()
+    return {}
+
+
+def _state_base_weight(
+    model_state: Mapping[str, Any],
+    raw_target: str,
+    target: str,
+) -> Tuple[Optional[Any], Optional[str]]:
+    for base in dict.fromkeys((raw_target, target, _normalize_peft_target(raw_target))):
+        for key in (f"{base}.weight", f"{base}.base_layer.weight"):
+            if key in model_state:
+                return model_state[key], key
+    return None, None
+
+
+def _find_module_by_target(
+    model: Optional[Any],
+    raw_target: str,
+    target: str,
+) -> Optional[Any]:
+    if model is None or not HAS_TORCH:
+        return None
+    named_modules = getattr(model, "named_modules", None)
+    if not callable(named_modules):
+        return None
+    modules = dict(named_modules())
+    candidates = [
+        raw_target,
+        target,
+        f"base_model.model.{target}",
+        f"model.{target}",
+    ]
+    if target == "(root)":
+        candidates.append("")
+    for candidate in candidates:
+        if candidate in modules:
+            return modules[candidate]
+    return None
+
+
+def _check_lora_compatibility_record(
+    record: _LoRACompatibilityRecord,
+    issues: List[LoRACompatibilityIssue],
+    warnings_: List[LoRACompatibilityIssue],
+    skipped: List[str],
+    *,
+    expected_merged: Optional[bool],
+    allow_quantized_base: bool,
+    require_float_adapters: bool,
+    model_available: bool,
+) -> None:
+    if record.a_tensor is None or record.b_tensor is None:
+        existing_key = record.a_key or record.b_key
+        missing = "lora_B" if record.a_tensor is not None else "lora_A"
+        issues.append(
+            LoRACompatibilityIssue(
+                category="lora_pair_incomplete",
+                module_name=record.target_name,
+                adapter_name=record.adapter_name,
+                key=existing_key,
+                message=f"{record.target_name}: adapter {record.adapter_name!r} is missing {missing}",
+                suggestion="Save both LoRA A and B matrices for every adapter.",
+            )
+        )
+        return
+
+    a_shape = record.a_shape
+    b_shape = record.b_shape
+    if a_shape is None or b_shape is None or len(a_shape) != 2 or len(b_shape) != 2:
+        issues.append(
+            LoRACompatibilityIssue(
+                category="lora_matrix_rank",
+                module_name=record.target_name,
+                adapter_name=record.adapter_name,
+                key=record.a_key or record.b_key,
+                actual_shape=a_shape or b_shape,
+                message=f"{record.target_name}: LoRA A/B tensors must both be rank-2 matrices",
+            )
+        )
+        return
+
+    rank_a, in_a = a_shape
+    out_b, rank_b = b_shape
+    if rank_a != rank_b:
+        issues.append(
+            LoRACompatibilityIssue(
+                category="lora_rank_mismatch",
+                module_name=record.target_name,
+                adapter_name=record.adapter_name,
+                key=record.b_key,
+                expected_shape=(out_b, rank_a),
+                actual_shape=b_shape,
+                message=(
+                    f"{record.target_name}: lora_A rank {rank_a} does not match "
+                    f"lora_B rank {rank_b}"
+                ),
+                suggestion="Use the same low-rank dimension for LoRA A and B.",
+            )
+        )
+    if rank_a <= 0:
+        issues.append(
+            LoRACompatibilityIssue(
+                category="lora_rank_invalid",
+                module_name=record.target_name,
+                adapter_name=record.adapter_name,
+                key=record.a_key,
+                message=f"{record.target_name}: LoRA rank must be positive, got {rank_a}",
+            )
+        )
+
+    base_shape = record.base_shape
+    if base_shape is None:
+        skipped.append(f"base_shape:{record.target_name}")
+        target = warnings_ if not model_available else issues
+        target.append(
+            LoRACompatibilityIssue(
+                category="lora_base_unverified" if not model_available else "lora_target_missing",
+                module_name=record.target_name,
+                adapter_name=record.adapter_name,
+                key=record.a_key or record.b_key,
+                severity="warning" if not model_available else "error",
+                message=(
+                    f"{record.target_name}: base weight is unavailable; "
+                    "TensorGuard cannot prove adapter/base compatibility"
+                    if not model_available
+                    else f"{record.target_name}: adapter target has no matching base weight"
+                ),
+                suggestion="Verify adapter-only states together with the base model they target.",
+            )
+        )
+    elif len(base_shape) != 2:
+        issues.append(
+            LoRACompatibilityIssue(
+                category="lora_target_not_linear",
+                module_name=record.target_name,
+                adapter_name=record.adapter_name,
+                key=record.base_key,
+                actual_shape=base_shape,
+                message=f"{record.target_name}: LoRA target weight is not a rank-2 Linear-style matrix",
+            )
+        )
+    else:
+        out_features, in_features = base_shape
+        if in_a != in_features:
+            issues.append(
+                LoRACompatibilityIssue(
+                    category="lora_input_mismatch",
+                    module_name=record.target_name,
+                    adapter_name=record.adapter_name,
+                    key=record.a_key,
+                    expected_shape=(rank_a, in_features),
+                    actual_shape=a_shape,
+                    message=(
+                        f"{record.target_name}: lora_A input dimension {in_a} "
+                        f"does not match base in_features {in_features}"
+                    ),
+                )
+            )
+        if out_b != out_features:
+            issues.append(
+                LoRACompatibilityIssue(
+                    category="lora_output_mismatch",
+                    module_name=record.target_name,
+                    adapter_name=record.adapter_name,
+                    key=record.b_key,
+                    expected_shape=(out_features, rank_b),
+                    actual_shape=b_shape,
+                    message=(
+                        f"{record.target_name}: lora_B output dimension {out_b} "
+                        f"does not match base out_features {out_features}"
+                    ),
+                )
+            )
+        if rank_a > min(in_features, out_features):
+            issues.append(
+                LoRACompatibilityIssue(
+                    category="lora_rank_invalid",
+                    module_name=record.target_name,
+                    adapter_name=record.adapter_name,
+                    key=record.a_key,
+                    message=(
+                        f"{record.target_name}: LoRA rank {rank_a} must be in "
+                        f"[1, min({in_features}, {out_features})]"
+                    ),
+                )
+            )
+
+    if expected_merged is not None and record.merged is not None and record.merged != expected_merged:
+        issues.append(
+            LoRACompatibilityIssue(
+                category="lora_merge_state_mismatch",
+                module_name=record.target_name,
+                adapter_name=record.adapter_name,
+                message=(
+                    f"{record.target_name}: merged={record.merged} but "
+                    f"expected merged={expected_merged}"
+                ),
+                suggestion="Call merge_adapter()/unmerge_adapter() or update the expected_merged gate.",
+            )
+        )
+    if record.adapters_disabled:
+        warnings_.append(
+            LoRACompatibilityIssue(
+                category="lora_adapter_disabled",
+                module_name=record.target_name,
+                adapter_name=record.adapter_name,
+                severity="warning",
+                message=f"{record.target_name}: LoRA adapters are attached but disabled",
+            )
+        )
+
+    if record.quantized_base and not allow_quantized_base:
+        issues.append(
+            LoRACompatibilityIssue(
+                category="lora_quantized_base_disallowed",
+                module_name=record.target_name,
+                adapter_name=record.adapter_name,
+                key=record.base_key,
+                message=f"{record.target_name}: base layer is quantized but quantized bases are disallowed",
+            )
+        )
+    if require_float_adapters:
+        for key, tensor in ((record.a_key, record.a_tensor), (record.b_key, record.b_tensor)):
+            if not _is_floating_tensor(tensor):
+                issues.append(
+                    LoRACompatibilityIssue(
+                        category="lora_adapter_not_floating",
+                        module_name=record.target_name,
+                        adapter_name=record.adapter_name,
+                        key=key,
+                        message=f"{record.target_name}: adapter tensor {key!r} is not floating point",
+                        suggestion="QLoRA keeps the base quantized but the low-rank adapter matrices floating.",
+                    )
+                )
+
+
+def _check_target_module_patterns(
+    records: Sequence[_LoRACompatibilityRecord],
+    patterns: Sequence[str],
+    *,
+    require_all_targets: bool,
+    issues: List[LoRACompatibilityIssue],
+) -> Tuple[str, ...]:
+    if not patterns:
+        return ()
+    matched: Dict[str, bool] = {pattern: False for pattern in patterns}
+    for record in records:
+        if any(_target_matches_pattern(record.target_name, pattern) for pattern in patterns):
+            for pattern in patterns:
+                if _target_matches_pattern(record.target_name, pattern):
+                    matched[pattern] = True
+        else:
+            issues.append(
+                LoRACompatibilityIssue(
+                    category="lora_target_unexpected",
+                    module_name=record.target_name,
+                    adapter_name=record.adapter_name,
+                    message=(
+                        f"{record.target_name}: adapter target is not listed in "
+                        f"target_modules={tuple(patterns)!r}"
+                    ),
+                    suggestion="Check the PEFT target_modules config for stale or over-broad adapter targets.",
+                )
+            )
+    if require_all_targets:
+        for pattern, was_matched in matched.items():
+            if not was_matched:
+                issues.append(
+                    LoRACompatibilityIssue(
+                        category="lora_target_pattern_missing",
+                        module_name=pattern,
+                        message=f"target_modules pattern {pattern!r} matched no LoRA adapter",
+                    )
+                )
+    return tuple(pattern for pattern, was_matched in matched.items() if was_matched)
+
+
+def _target_matches_pattern(target: str, pattern: str) -> bool:
+    target = _normalize_peft_target(target)
+    pattern = _normalize_peft_target(pattern)
+    if pattern == "all-linear":
+        return True
+    if "." in pattern:
+        return target == pattern or target.endswith(f".{pattern}")
+    return target.split(".")[-1] == pattern
+
+
+def _adapter_from_record(record: _LoRACompatibilityRecord) -> Optional[LoRAAdapter]:
+    a_shape = record.a_shape
+    b_shape = record.b_shape
+    if a_shape is None or b_shape is None or len(a_shape) != 2 or len(b_shape) != 2:
+        return None
+    base_shape = record.base_shape
+    in_features = base_shape[1] if base_shape is not None and len(base_shape) == 2 else a_shape[1]
+    out_features = base_shape[0] if base_shape is not None and len(base_shape) == 2 else b_shape[0]
+    return LoRAAdapter(
+        base_module_name=record.target_name,
+        in_features=in_features,
+        out_features=out_features,
+        rank=a_shape[0],
+        lora_A_shape=a_shape,
+        lora_B_shape=b_shape,
+    )
+
+
+def _normalize_peft_target(target: str) -> str:
+    normalized = target
+    for prefix in ("base_model.model.", "base_model.", "model."):
+        if normalized.startswith(prefix):
+            normalized = normalized[len(prefix):]
+            break
+    if normalized.endswith(".base_layer"):
+        normalized = normalized[: -len(".base_layer")]
+    return normalized
+
+
+def _module_merged(module: Optional[Any]) -> Optional[bool]:
+    if module is None:
+        return None
+    merged_adapters = getattr(module, "merged_adapters", None)
+    if merged_adapters:
+        return True
+    merged = getattr(module, "merged", None)
+    if isinstance(merged, bool):
+        return merged
+    return None
+
+
+def _is_quantized_base_layer(module: Optional[Any], model: Optional[Any] = None) -> bool:
+    if module is None:
+        return _model_quantized(model)
+    base_layer = getattr(module, "base_layer", module)
+    candidates = (module, base_layer, getattr(base_layer, "weight", None))
+    quant_markers = ("Linear4bit", "Linear8bitLt", "Params4bit", "Int8Params")
+    for obj in candidates:
+        if obj is None:
+            continue
+        cls_name = type(obj).__name__
+        if any(marker in cls_name for marker in quant_markers):
+            return True
+        if hasattr(obj, "quant_state") or hasattr(obj, "quant_type"):
+            return True
+        dtype = getattr(obj, "dtype", None)
+        if HAS_TORCH and dtype in (torch.int8, torch.uint8):
+            return True
+    return _model_quantized(model)
+
+
+def _model_quantized(model: Optional[Any]) -> bool:
+    if model is None:
+        return False
+    for attr in ("is_loaded_in_4bit", "is_loaded_in_8bit"):
+        if bool(getattr(model, attr, False)):
+            return True
+    return False
+
+
+def _is_floating_tensor(tensor: Any) -> bool:
+    if tensor is None:
+        return False
+    if HAS_TORCH and isinstance(tensor, torch.Tensor):
+        return bool(torch.is_floating_point(tensor))
+    dtype = str(getattr(tensor, "dtype", "")).lower()
+    return "float" in dtype or "bfloat" in dtype
+
+
+def _shape(value: Any) -> Optional[Shape]:
+    shape = getattr(value, "shape", None)
+    if shape is None:
+        return None
+    try:
+        return tuple(int(dim) for dim in shape)
+    except TypeError:
+        return None
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 6.  LoRA verification result
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
@@ -764,10 +1484,16 @@ class LoRAVerificationResult:
     merge_safe: bool = True
     composition_result: Optional[VerificationResult] = None
     quantization: QuantizationBits = QuantizationBits.FULL
+    compatibility_result: Optional[LoRACompatibilityResult] = None
     verification_time_ms: float = 0.0
 
     def pretty(self) -> str:
         status = "SAFE" if self.safe else "UNSAFE"
+        compatibility_issues = (
+            len(self.compatibility_result.issues)
+            if self.compatibility_result is not None
+            else 0
+        )
         lines = [
             f"LoRAVerificationResult: {status}",
             f"  LoRA detected:    {self.has_lora}",
@@ -775,15 +1501,19 @@ class LoRAVerificationResult:
             f"  Merge safe:       {self.merge_safe}",
             f"  Quantization:     {self.quantization.name}",
             f"  Rank violations:  {len(self.rank_violations)}",
+            f"  PEFT issues:      {compatibility_issues}",
             f"  Time:             {self.verification_time_ms:.1f} ms",
         ]
         for v in self.rank_violations:
             lines.append(f"  ✗ {v.module_name}: {v.message}")
+        if self.compatibility_result is not None:
+            for issue in self.compatibility_result.issues:
+                lines.append(f"  ✗ {issue.module_name}: {issue.message}")
         return "\n".join(lines)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 6.  Top-level API
+# 7.  Top-level API
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
@@ -792,6 +1522,13 @@ def verify_lora_model(
     input_shapes: Optional[Dict[str, tuple]] = None,
     lora_config: Optional[LoRAConfig] = None,
     source: Optional[str] = None,
+    adapter_state: Optional[Mapping[str, Any]] = None,
+    peft_config: Optional[Any] = None,
+    target_modules: Optional[Sequence[str]] = None,
+    require_all_targets: bool = True,
+    expected_merged: Optional[bool] = None,
+    allow_quantized_base: bool = True,
+    require_float_adapters: bool = True,
 ) -> LoRAVerificationResult:
     """Verify a model that may contain LoRA adapters.
 
@@ -860,12 +1597,25 @@ def verify_lora_model(
     quant_verifier = QuantizationVerifier(model)
     quant = quant_verifier.detect_quantization()
 
+    # PEFT compatibility check
+    compatibility_result = verify_lora_adapter_compatibility(
+        model,
+        adapter_state,
+        peft_config=peft_config,
+        target_modules=target_modules,
+        require_all_targets=require_all_targets,
+        expected_merged=expected_merged,
+        allow_quantized_base=allow_quantized_base,
+        require_float_adapters=require_float_adapters,
+    )
+
     # Overall safety
     safe = (
         shape_result.safe
         and len(rank_violations) == 0
         and merge_safe
         and (comp_result is None or comp_result.safe)
+        and compatibility_result.ok
     )
 
     elapsed = (time.perf_counter() - t0) * 1000
@@ -878,5 +1628,22 @@ def verify_lora_model(
         merge_safe=merge_safe,
         composition_result=comp_result,
         quantization=quant,
+        compatibility_result=compatibility_result,
         verification_time_ms=elapsed,
     )
+
+
+__all__ = [
+    "LoRAAdapter",
+    "LoRACompatibilityIssue",
+    "LoRACompatibilityResult",
+    "LoRAConfig",
+    "LoRAShapeContract",
+    "LoRAVerificationResult",
+    "LoRAVerifier",
+    "QuantizationBits",
+    "QuantizationVerifier",
+    "RankViolation",
+    "verify_lora_adapter_compatibility",
+    "verify_lora_model",
+]

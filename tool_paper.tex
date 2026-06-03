@@ -585,9 +585,11 @@ ONNX shape-inference disagreements, mixed-precision/autocast dtype drift,
 FSDP2/DTensor local-shard mistakes, and tensor-parallel sharding mistakes.
 Checkpoint-schema gates add another resume-only failure class: model
 \texttt{state\_dict} loads are checked for missing or unexpected keys, tied
-weights whose aliases disagree, LoRA adapter matrix compatibility,
-tensor-parallel shard coverage, and dtype drift that PyTorch would otherwise
-silently cast.  Optimizer-state checks cover AdamW and fused-AdamW moment
+weights whose aliases disagree, adapter-only LoRA matrices, tensor-parallel
+shard coverage, and dtype drift that PyTorch would otherwise silently cast.
+The dedicated LoRA/PEFT gate checks HuggingFace-style adapter keys and live
+modules for rank, target-module matching, merged/unmerged state, and
+quantized-base compatibility.  Optimizer-state checks cover AdamW and fused-AdamW moment
 buffers, Adafactor factored \texttt{row\_var}/\texttt{col\_var} buffers, lazy
 pre-step state, and declared ZeRO-style shards before an incompatible checkpoint
 can corrupt a resumed run.
@@ -891,8 +893,9 @@ dtype, device, dynamic-guard, ONNX opset availability, lowering checks, and
 post-export ONNX shape-inference agreement.  GGUF/llama.cpp export gates check
 q/k/v packing, rotary dimensions, vocab projections, quant block divisibility,
 and metadata consistency before an external converter is invoked; model
-checkpoint gates check missing/unexpected keys, tied weights, LoRA adapters,
-tensor-parallel shards, and silent dtype drift; optimizer-state gates check
+checkpoint gates check missing/unexpected keys, tied weights, adapter-only LoRA
+matrices, tensor-parallel shards, and silent dtype drift; LoRA/PEFT gates check
+rank, target-module matching, merge state, and quantized bases; optimizer-state gates check
 AdamW, Adafactor, fused AdamW, and sharded resume buffers before
 \texttt{load\_state\_dict}. \\
 \hline
@@ -1264,7 +1267,9 @@ tests. \\
 Distributed and adapter gates &
 Sharding, explicit pipeline stage boundaries, tensor-parallel linears and
 MQA/GQA attention, optimizer state, checkpoints, and LoRA adapters have
-shape/dtype/rank contracts layered over base verification. &
+shape/dtype/rank contracts layered over base verification; PEFT-style
+\texttt{target\_modules}, merged/unmerged flags, and quantized bases are checked
+without mutating the model. &
 Distributed verification, tensor-parallel, optimizer-state, training-loop,
 checkpoint, and LoRA tests, including real PyTorch optimizer state dicts,
 real PyTorch sharded attention, and HuggingFace
@@ -1457,6 +1462,16 @@ rejects shape-incompatible checkpoint loads before \texttt{load\_state\_dict}
 mutates the optimizer.  Dtype handling follows PyTorch's resume semantics:
 castable checkpoint dtypes are not rejected before load, but nonsensical live
 state dtypes remain actionable diagnostics.
+
+For LoRA and PEFT fine-tuning, \tg{} separates three concerns that PyTorch and
+PEFT normally discover only during load or inference.  Adapter-only checkpoints
+are parsed using the HuggingFace key layout, live PEFT modules are inspected via
+their \texttt{lora\_A}/\texttt{lora\_B} dictionaries, and every discovered adapter
+is checked against the target base weight for rank agreement, input/output
+shape, declared \texttt{target\_modules}, expected merged state, and QLoRA-style
+quantized-base placement with floating low-rank matrices.  If only an adapter
+state is available, base-relative checks are explicitly reported as skipped
+rather than converted into a false proof.
 
 \subsection{Research artifact review}
 

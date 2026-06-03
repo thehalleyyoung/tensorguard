@@ -1,11 +1,16 @@
 """Tests for LoRA/fine-tuning verification support."""
 
+from collections import OrderedDict
+import importlib.util
+
 import pytest
 import torch
 import torch.nn as nn
 
 from src.lora_verification import (
     LoRAAdapter,
+    LoRACompatibilityIssue,
+    LoRACompatibilityResult,
     LoRAConfig,
     LoRAShapeContract,
     LoRAVerificationResult,
@@ -13,6 +18,7 @@ from src.lora_verification import (
     QuantizationBits,
     QuantizationVerifier,
     RankViolation,
+    verify_lora_adapter_compatibility,
     verify_lora_model,
 )
 from src.model_checker import VerificationResult
@@ -131,6 +137,50 @@ class TransformerWithLoRA(nn.Module):
         k = self.k_proj(x)
         v = self.v_proj(x)
         return self.out_proj(q + k + v)
+
+
+class Linear4bit(nn.Linear):
+    """Small bitsandbytes-like quantized-linear stand-in for offline tests."""
+
+
+class PeftLikeLinear(nn.Module):
+    """PEFT-shaped LoRA wrapper: base_layer plus lora_A/B ModuleDicts."""
+
+    def __init__(
+        self,
+        in_features=8,
+        out_features=8,
+        rank=2,
+        *,
+        base_cls=nn.Linear,
+    ):
+        super().__init__()
+        self.base_layer = base_cls(in_features, out_features, bias=False)
+        self.lora_A = nn.ModuleDict(
+            {"default": nn.Linear(in_features, rank, bias=False)}
+        )
+        self.lora_B = nn.ModuleDict(
+            {"default": nn.Linear(rank, out_features, bias=False)}
+        )
+        self.merged = False
+        self.merged_adapters = []
+        self.disable_adapters = False
+
+    def forward(self, x):
+        return self.base_layer(x) + self.lora_B["default"](self.lora_A["default"](x))
+
+
+class PeftLikeBlock(nn.Module):
+    """Tiny HuggingFace-style block with PEFT target names."""
+
+    def __init__(self, *, quantized=False):
+        super().__init__()
+        base_cls = Linear4bit if quantized else nn.Linear
+        self.q_proj = PeftLikeLinear(8, 8, 2, base_cls=base_cls)
+        self.v_proj = PeftLikeLinear(8, 4, 2, base_cls=base_cls)
+
+    def forward(self, x):
+        return self.q_proj(x) + self.v_proj(x)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -553,3 +603,218 @@ class TestEdgeCases:
         )
         assert v.rank == 100
         assert "too large" in v.message
+
+
+class TestPEFTCompatibility:
+    def test_live_peft_module_dict_adapters_are_verified(self):
+        model = PeftLikeBlock()
+
+        result = verify_lora_adapter_compatibility(
+            model,
+            target_modules=["q_proj", "v_proj"],
+        )
+
+        assert isinstance(result, LoRACompatibilityResult)
+        assert result.ok
+        assert result.issues == ()
+        assert set(result.checked_targets) == {"q_proj", "v_proj"}
+        assert set(result.matched_target_modules) == {"q_proj", "v_proj"}
+        assert {adapter.base_module_name for adapter in result.adapters} == {
+            "q_proj",
+            "v_proj",
+        }
+
+    def test_peft_state_dict_keys_resolve_to_base_layer_weight(self):
+        model = PeftLikeBlock()
+        adapter_state = OrderedDict(
+            {
+                "base_model.model.q_proj.lora_A.default.weight": torch.randn(2, 8),
+                "base_model.model.q_proj.lora_B.default.weight": torch.randn(8, 2),
+                "base_model.model.v_proj.lora_A.default.weight": torch.randn(2, 8),
+                "base_model.model.v_proj.lora_B.default.weight": torch.randn(4, 2),
+            }
+        )
+
+        result = verify_lora_adapter_compatibility(
+            model,
+            adapter_state,
+            peft_config={"target_modules": {"q_proj", "v_proj"}},
+        )
+
+        assert result.ok
+        assert result.issues == ()
+        assert set(result.checked_targets) == {"q_proj", "v_proj"}
+
+    def test_shape_rank_and_missing_target_issues_are_actionable(self):
+        model = PeftLikeBlock()
+        adapter_state = OrderedDict(
+            {
+                "base_model.model.q_proj.lora_A.default.weight": torch.randn(3, 9),
+                "base_model.model.q_proj.lora_B.default.weight": torch.randn(8, 2),
+                "base_model.model.missing.lora_A.default.weight": torch.randn(2, 8),
+                "base_model.model.missing.lora_B.default.weight": torch.randn(8, 2),
+                "base_model.model.v_proj.lora_A.default.weight": torch.randn(2, 8),
+            }
+        )
+
+        result = verify_lora_adapter_compatibility(
+            model,
+            adapter_state,
+            target_modules=["q_proj", "v_proj"],
+        )
+        categories = {issue.category for issue in result.issues}
+
+        assert {
+            "lora_rank_mismatch",
+            "lora_input_mismatch",
+            "lora_pair_incomplete",
+            "lora_target_missing",
+            "lora_target_unexpected",
+        } <= categories
+
+    def test_target_module_matching_uses_dot_segment_boundaries(self):
+        class PrefixTrap(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.additional_q_proj = PeftLikeLinear(8, 8, 2)
+
+        result = verify_lora_adapter_compatibility(
+            PrefixTrap(),
+            target_modules=["q_proj"],
+        )
+        categories = {issue.category for issue in result.issues}
+
+        assert "lora_target_unexpected" in categories
+        assert "lora_target_pattern_missing" in categories
+
+    def test_merged_peft_state_checks_flag_only_expected_state_mismatch(self):
+        model = PeftLikeBlock()
+        model.q_proj.merged = True
+        model.q_proj.merged_adapters = ["default"]
+
+        merged_result = verify_lora_adapter_compatibility(
+            model,
+            target_modules=["q_proj", "v_proj"],
+            expected_merged=True,
+        )
+        unmerged_result = verify_lora_adapter_compatibility(
+            model,
+            target_modules=["q_proj", "v_proj"],
+            expected_merged=False,
+        )
+
+        assert not any(
+            issue.category == "lora_merge_state_mismatch"
+            for issue in merged_result.issues
+            if issue.module_name == "q_proj"
+        )
+        assert any(
+            issue.category == "lora_merge_state_mismatch"
+            and issue.module_name == "q_proj"
+            for issue in unmerged_result.issues
+        )
+
+    def test_quantized_base_accepts_float_adapters_and_rejects_int_adapters(self):
+        model = PeftLikeBlock(quantized=True)
+        float_result = verify_lora_adapter_compatibility(
+            model,
+            target_modules=["q_proj", "v_proj"],
+            allow_quantized_base=True,
+        )
+        disallowed_result = verify_lora_adapter_compatibility(
+            model,
+            target_modules=["q_proj", "v_proj"],
+            allow_quantized_base=False,
+        )
+        bad_state = OrderedDict(
+            {
+                "base_model.model.q_proj.lora_A.default.weight": torch.ones(
+                    2, 8, dtype=torch.int8
+                ),
+                "base_model.model.q_proj.lora_B.default.weight": torch.randn(8, 2),
+            }
+        )
+        int_adapter_result = verify_lora_adapter_compatibility(
+            model,
+            bad_state,
+            target_modules=["q_proj"],
+        )
+
+        assert float_result.ok
+        assert set(float_result.quantized_targets) == {"q_proj", "v_proj"}
+        assert any(
+            issue.category == "lora_quantized_base_disallowed"
+            for issue in disallowed_result.issues
+        )
+        assert any(
+            issue.category == "lora_adapter_not_floating"
+            for issue in int_adapter_result.issues
+        )
+
+    def test_adapter_only_state_reports_base_checks_as_skipped_warning(self):
+        adapter_state = OrderedDict(
+            {
+                "base_model.model.q_proj.lora_A.default.weight": torch.randn(2, 8),
+                "base_model.model.q_proj.lora_B.default.weight": torch.randn(8, 2),
+            }
+        )
+
+        result = verify_lora_adapter_compatibility(adapter_state=adapter_state)
+
+        assert result.ok
+        assert result.skipped_checks == ("base_shape:q_proj",)
+        assert any(
+            warning.category == "lora_base_unverified"
+            for warning in result.warnings
+        )
+
+    def test_verify_lora_model_includes_compatibility_result(self):
+        model = PeftLikeBlock()
+
+        result = verify_lora_model(model, target_modules=["q_proj", "v_proj"])
+
+        assert result.safe
+        assert result.compatibility_result is not None
+        assert result.compatibility_result.ok
+        assert "PEFT issues" in result.pretty()
+
+    def test_public_exports_lora_compatibility_gate(self):
+        import tensorguard
+        from tensorguard.torch import (
+            LoRACompatibilityIssue as PublicIssue,
+            LoRACompatibilityResult as PublicResult,
+            verify_lora_adapter_compatibility as public_verify,
+        )
+
+        assert public_verify is verify_lora_adapter_compatibility
+        assert PublicIssue is LoRACompatibilityIssue
+        assert PublicResult is LoRACompatibilityResult
+        assert tensorguard.verify_lora_adapter_compatibility is verify_lora_adapter_compatibility
+
+    @pytest.mark.skipif(
+        importlib.util.find_spec("peft") is None,
+        reason="optional HuggingFace PEFT dependency is not installed",
+    )
+    def test_real_huggingface_peft_linear_example_when_installed(self):
+        from peft import LoraConfig, get_peft_model
+
+        class TinyHFStyle(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.q_proj = nn.Linear(8, 8, bias=False)
+
+            def forward(self, x):
+                return self.q_proj(x)
+
+        peft_model = get_peft_model(
+            TinyHFStyle(),
+            LoraConfig(r=2, lora_alpha=4, target_modules=["q_proj"]),
+        )
+
+        result = verify_lora_adapter_compatibility(
+            peft_model,
+            peft_config={"target_modules": ["q_proj"]},
+        )
+
+        assert result.ok
+        assert result.adapters[0].rank == 2

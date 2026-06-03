@@ -117,6 +117,12 @@ from .checkpoint_verify import (
     guarded_load_state_dict,
     verify_checkpoint_state_dict,
 )
+from .lora_verification import (
+    LoRACompatibilityIssue,
+    LoRACompatibilityResult,
+    verify_lora_adapter_compatibility,
+    verify_lora_model,
+)
 
 __all__ = [
     "analyze",
@@ -216,5 +222,9 @@ __all__ = [
     "TensorParallelCheckpointShard",
     "guarded_load_state_dict",
     "verify_checkpoint_state_dict",
+    "LoRACompatibilityIssue",
+    "LoRACompatibilityResult",
+    "verify_lora_adapter_compatibility",
+    "verify_lora_model",
     "__version__",
 ]
