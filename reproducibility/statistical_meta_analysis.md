@@ -2,7 +2,7 @@
 
 This artifact summarizes heterogeneous TensorGuard evidence without naively pooling raw cases across real, synthetic, fuzzed, mutation, and stress-test distributions. The primary interval is a deterministic suite-level cluster bootstrap within each distribution.
 
-- suites analyzed: **13**
+- suites analyzed: **14**
 - bootstrap resamples: **5000**
 - naive global pooling allowed: **False**
 - resampling unit: **suite, not individual cases**
@@ -14,6 +14,7 @@ This artifact summarizes heterogeneous TensorGuard evidence without naively pool
 | clean_stress | 2 | 1.000 | [1.000, 1.000] | [1.000, 1.000] | 1.000 |
 | mixed_decidable | 1 | 1.000 | [1.000, 1.000] | [1.000, 1.000] | 1.000 |
 | natural_clean | 1 | 1.000 | [1.000, 1.000] | [1.000, 1.000] | 1.000 |
+| negative_control | 1 | 1.000 | [1.000, 1.000] | [1.000, 1.000] | 1.000 |
 | real_minimized | 5 | 0.950 | [0.850, 1.000] | [0.750, 1.000] | 0.996 |
 | real_semantic | 1 | 1.000 | [1.000, 1.000] | [1.000, 1.000] | 1.000 |
 | synthetic_fuzz | 2 | 1.000 | [1.000, 1.000] | [1.000, 1.000] | 1.000 |
@@ -23,6 +24,7 @@ This artifact summarizes heterogeneous TensorGuard evidence without naively pool
 
 | metric | suites | suite mean | bootstrap CI | case-weighted diagnostic |
 | --- | ---: | ---: | --- | ---: |
+| boundary_honesty | 1 | 1.000 | [1.000, 1.000] | 1.000 |
 | bug_detection | 6 | 0.958 | [0.875, 1.000] | 0.999 |
 | clean_acceptance | 6 | 1.000 | [1.000, 1.000] | 1.000 |
 | decision | 1 | 1.000 | [1.000, 1.000] | 1.000 |
@@ -44,5 +46,6 @@ This artifact summarizes heterogeneous TensorGuard evidence without naively pool
 | differential clean fuzz | synthetic_fuzz | clean_acceptance | 200/200 | 1.000 | `evaluation/diff_fuzz.json` |
 | same-case baseline full-corpus recall | real_minimized | bug_detection | 153/153 | 1.000 | `reproducibility/baseline_head_to_head.json` |
 | same-case baseline full-corpus clean specificity | real_minimized | clean_acceptance | 74/74 | 1.000 | `reproducibility/baseline_head_to_head.json` |
+| value-domain negative controls | negative_control | boundary_honesty | 12/12 | 1.000 | `evaluation/negative_controls.json` |
 
 real bugs, natural clean models, fuzzed modules, mutation tests, and stress corpora are different sampling distributions; a single raw pooled denominator would overweight the largest synthetic suite.

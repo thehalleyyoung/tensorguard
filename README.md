@@ -1290,11 +1290,21 @@ and `tests/test_effect_sizes.py`.
 `reproducibility/statistical_meta_analysis.py` turns every major evidence source
 into a suite-level estimate, then reports distribution-stratified robust
 bootstrap intervals. Real minimized bugs, runtime-silent semantic bugs,
-mutations, fuzzing, clean stress tests, natural clean models, and false-UNKNOWN
-checks stay separate; raw case-weighted rates are diagnostic-only, never a global
-headline. See
+negative controls where runtime value checks beat TensorGuard, mutations,
+fuzzing, clean stress tests, natural clean models, and false-UNKNOWN checks stay
+separate; raw case-weighted rates are diagnostic-only, never a global headline.
+See
 [`reproducibility/statistical_meta_analysis.md`](reproducibility/statistical_meta_analysis.md)
 and `tests/test_statistical_meta_analysis.py`.
+
+### Negative controls: honest losses to runtime value checks
+`evaluation/negative_controls.py` freezes value-dependent PyTorch failures
+(NaN/Inf outputs and value assertions) that are outside TensorGuard's
+shape/device/dtype/phase/gradient contract. TensorGuard catches 0/6 by design,
+plain runtime smoke tests catch only the assertion cases, and an explicit
+finite-output runtime check catches 6/6 on crafted inputs. This is boundary
+evidence, not a defect; see `evaluation/negative_controls.md` and
+`tests/test_negative_controls.py`.
 
 ### One-command reproducibility capsule
 Everything above is only as credible as it is reproducible, so the whole

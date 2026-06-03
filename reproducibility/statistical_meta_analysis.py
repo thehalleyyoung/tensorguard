@@ -232,6 +232,25 @@ def collect_suites() -> List[Suite]:
         evidence="same-case baseline comparison clean half",
     )
 
+    controls = _load("evaluation/negative_controls.json")["summary"]
+    _add_suite(
+        suites,
+        name="value-domain negative controls",
+        metric="boundary_honesty",
+        distribution="negative_control",
+        successes=(
+            controls["n_cases"]
+            - controls["tensorguard_caught"]
+            + controls["runtime_finite_output_check_caught"]
+        ),
+        trials=2 * controls["n_cases"],
+        source="evaluation/negative_controls.json",
+        evidence=(
+            "out-of-contract value bugs: TensorGuard should not catch them; "
+            "explicit runtime finite-output checks should"
+        ),
+    )
+
     return suites
 
 

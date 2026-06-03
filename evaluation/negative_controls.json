@@ -1,0 +1,160 @@
+{
+  "by_family": {
+    "nonfinite_value": {
+      "runtime_finite_output_check_caught": 4,
+      "runtime_smoke_caught": 0,
+      "tensorguard_caught": 0,
+      "total": 4
+    },
+    "value_assertion": {
+      "runtime_finite_output_check_caught": 2,
+      "runtime_smoke_caught": 2,
+      "tensorguard_caught": 0,
+      "total": 2
+    }
+  },
+  "meta": {
+    "command": "python3 evaluation/negative_controls.py",
+    "design": "value-dependent negative controls with crafted concrete inputs; TensorGuard is expected not to beat runtime value checks because value semantics are outside its declared tensor-structure contract",
+    "generated_by": "evaluation/negative_controls.py",
+    "headline_method": "runtime_finite_output_check",
+    "step": 266,
+    "tensorguard_scope": "shape/device/dtype/phase/stride/permutation/gradient-flow; not arbitrary value-domain assertions or finite-output monitoring"
+  },
+  "per_case": [
+    {
+      "family": "nonfinite_value",
+      "genuine_runtime_signal": "nonfinite_output",
+      "id": "log_negative_nan",
+      "out_of_contract_dimension": "value_semantics",
+      "runtime_finite_output_check": {
+        "caught": true,
+        "detail": "nonfinite_output"
+      },
+      "runtime_smoke": {
+        "caught": false,
+        "detail": "ran_ok"
+      },
+      "tensorguard": {
+        "bug_count": 0,
+        "caught": false,
+        "unknown_reasons": [],
+        "verdict": "SAFE"
+      }
+    },
+    {
+      "family": "nonfinite_value",
+      "genuine_runtime_signal": "nonfinite_output",
+      "id": "sqrt_negative_nan",
+      "out_of_contract_dimension": "value_semantics",
+      "runtime_finite_output_check": {
+        "caught": true,
+        "detail": "nonfinite_output"
+      },
+      "runtime_smoke": {
+        "caught": false,
+        "detail": "ran_ok"
+      },
+      "tensorguard": {
+        "bug_count": 0,
+        "caught": false,
+        "unknown_reasons": [],
+        "verdict": "SAFE"
+      }
+    },
+    {
+      "family": "nonfinite_value",
+      "genuine_runtime_signal": "nonfinite_output",
+      "id": "divide_by_zero_inf",
+      "out_of_contract_dimension": "value_semantics",
+      "runtime_finite_output_check": {
+        "caught": true,
+        "detail": "nonfinite_output"
+      },
+      "runtime_smoke": {
+        "caught": false,
+        "detail": "ran_ok"
+      },
+      "tensorguard": {
+        "bug_count": 0,
+        "caught": false,
+        "unknown_reasons": [],
+        "verdict": "SAFE"
+      }
+    },
+    {
+      "family": "nonfinite_value",
+      "genuine_runtime_signal": "nonfinite_output",
+      "id": "reciprocal_zero_inf",
+      "out_of_contract_dimension": "value_semantics",
+      "runtime_finite_output_check": {
+        "caught": true,
+        "detail": "nonfinite_output"
+      },
+      "runtime_smoke": {
+        "caught": false,
+        "detail": "ran_ok"
+      },
+      "tensorguard": {
+        "bug_count": 0,
+        "caught": false,
+        "unknown_reasons": [],
+        "verdict": "SAFE"
+      }
+    },
+    {
+      "family": "value_assertion",
+      "genuine_runtime_signal": "exception:AssertionError",
+      "id": "assert_positive_min",
+      "out_of_contract_dimension": "value_semantics",
+      "runtime_finite_output_check": {
+        "caught": true,
+        "detail": "exception:AssertionError"
+      },
+      "runtime_smoke": {
+        "caught": true,
+        "detail": "exception:AssertionError"
+      },
+      "tensorguard": {
+        "bug_count": 0,
+        "caught": false,
+        "unknown_reasons": [
+          "static fragment violation(s): DYNAMIC_ASSERTION"
+        ],
+        "verdict": "UNKNOWN"
+      }
+    },
+    {
+      "family": "value_assertion",
+      "genuine_runtime_signal": "exception:AssertionError",
+      "id": "assert_probability_range",
+      "out_of_contract_dimension": "value_semantics",
+      "runtime_finite_output_check": {
+        "caught": true,
+        "detail": "exception:AssertionError"
+      },
+      "runtime_smoke": {
+        "caught": true,
+        "detail": "exception:AssertionError"
+      },
+      "tensorguard": {
+        "bug_count": 0,
+        "caught": false,
+        "unknown_reasons": [
+          "static fragment violation(s): DYNAMIC_ASSERTION"
+        ],
+        "verdict": "UNKNOWN"
+      }
+    }
+  ],
+  "summary": {
+    "honest_outcome": "TensorGuard loss to explicit runtime finite-output checking",
+    "n_cases": 6,
+    "runtime_finite_output_check_caught": 6,
+    "runtime_finite_output_check_recall": 1.0,
+    "runtime_smoke_caught": 2,
+    "runtime_smoke_recall": 0.3333,
+    "tensorguard_caught": 0,
+    "tensorguard_recall": 0.0
+  }
+}

@@ -737,6 +737,15 @@ that distribution.  Case-weighted rates and random-effects logit summaries are
 reported only as diagnostics, so a large generated suite cannot wash out a small
 real-bug suite.
 
+The same machinery includes explicit negative controls.  Six value-dependent
+programs produce NaNs, infinities, or failed runtime value assertions on crafted
+inputs while remaining structurally well-formed.  \tg{} catches 0/6, as it
+should: arbitrary value semantics are outside its declared tensor-structure
+contract.  A plain eager smoke test catches only the assertion cases, while an
+explicit finite-output runtime checker catches 6/6.  Reporting that loss keeps
+the claim sharp: \tg{} is a static tensor-contract verifier, not a replacement
+for value-domain tests.
+
 The conformance tests are especially important.  A static rule is only useful
 if it matches the runtime library.  The repository therefore includes tests
 that construct real tensors, run the corresponding PyTorch operator, and compare

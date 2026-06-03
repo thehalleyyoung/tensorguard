@@ -1,6 +1,6 @@
 # Paper-evidence index (Step 125)
 
-`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **59** evidence items (42 render a table); every generator script is present: **False**.
+`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **60** evidence items (43 render a table); every generator script is present: **False**.
 
 | stem | generator | table? | json | md |
 | --- | --- | --- | --- | --- |
@@ -36,6 +36,7 @@
 | manifest | `(missing)` | False | y | - |
 | mutation_clean_models | `reproducibility/mutation_clean_models.py` | True | y | y |
 | natural_distribution_study | `reproducibility/natural_distribution_study.py` | True | y | y |
+| negative_controls | `evaluation/negative_controls.py` | True | y | y |
 | numeric_claims_audit | `(missing)` | False | y | - |
 | operator_confidence_table | `(missing)` | False | y | - |
 | paper_evidence_index | `reproducibility/paper_evidence_index.py` | True | y | y |

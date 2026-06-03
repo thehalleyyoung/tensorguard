@@ -73,6 +73,27 @@
       "total_successes": 174,
       "total_trials": 174
     },
+    "negative_control": {
+      "case_weighted_rate_diagnostic_only": 1.0,
+      "label": "negative_control",
+      "n_suites": 1,
+      "random_effects_logit_diagnostic": null,
+      "robust_suite_bootstrap": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "confidence": 0.95,
+        "n_resamples": 5000,
+        "point": 1.0
+      },
+      "suite_mean_rate": 1.0,
+      "suite_rate_max": 1.0,
+      "suite_rate_min": 1.0,
+      "suites": [
+        "value-domain negative controls"
+      ],
+      "total_successes": 12,
+      "total_trials": 12
+    },
     "real_minimized": {
       "case_weighted_rate_diagnostic_only": 0.995671,
       "label": "real_minimized",
@@ -191,6 +212,27 @@
     "why_no_global_pool": "real bugs, natural clean models, fuzzed modules, mutation tests, and stress corpora are different sampling distributions; a single raw pooled denominator would overweight the largest synthetic suite."
   },
   "metrics": {
+    "boundary_honesty": {
+      "case_weighted_rate_diagnostic_only": 1.0,
+      "label": "boundary_honesty",
+      "n_suites": 1,
+      "random_effects_logit_diagnostic": null,
+      "robust_suite_bootstrap": {
+        "ci_high": 1.0,
+        "ci_low": 1.0,
+        "confidence": 0.95,
+        "n_resamples": 5000,
+        "point": 1.0
+      },
+      "suite_mean_rate": 1.0,
+      "suite_rate_max": 1.0,
+      "suite_rate_min": 1.0,
+      "suites": [
+        "value-domain negative controls"
+      ],
+      "total_successes": 12,
+      "total_trials": 12
+    },
     "bug_detection": {
       "case_weighted_rate_diagnostic_only": 0.998536,
       "label": "bug_detection",
@@ -281,7 +323,7 @@
       "total_trials": 86
     }
   },
-  "n_suites": 13,
+  "n_suites": 14,
   "step": 265,
   "suites": [
     {
@@ -413,6 +455,16 @@
       "source": "reproducibility/baseline_head_to_head.json",
       "successes": 74,
       "trials": 74
+    },
+    {
+      "distribution": "negative_control",
+      "evidence": "out-of-contract value bugs: TensorGuard should not catch them; explicit runtime finite-output checks should",
+      "metric": "boundary_honesty",
+      "name": "value-domain negative controls",
+      "rate": 1.0,
+      "source": "evaluation/negative_controls.json",
+      "successes": 12,
+      "trials": 12
     }
   ]
 }
