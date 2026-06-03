@@ -215,10 +215,11 @@ def runtime_runs_clean(source: str, input_shapes: Dict[str, tuple]) -> bool:
 
 def tensorguard_verdict(source: str, input_shapes: Dict[str, tuple]) -> Tuple[str, int]:
     from src.api import verify_architecture
+    from src.model_checker import Phase
     shapes = {k: tuple(v) for k, v in input_shapes.items()}
     result = verify_architecture(
         source, input_shapes=shapes, max_cegar_iterations=0,
-        soundness_mode="sound",
+        soundness_mode="sound", default_phase=Phase.EVAL,
     )
     if result.bug_count > 0:
         return "REFUTED", result.bug_count

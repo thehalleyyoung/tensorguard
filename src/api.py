@@ -942,6 +942,7 @@ def verify_architecture(
     check_devices: bool = True,
     check_phases: bool = True,
     check_gradients: bool = True,
+    default_phase: Optional[Any] = None,
     max_cegar_iterations: int = 10,
     max_loop_unrolls: Optional[int] = None,
     filename: str = "<string>",
@@ -968,6 +969,8 @@ def verify_architecture(
         check_devices: Whether to verify device consistency.
         check_phases: Whether to check train/eval phase dependencies.
         check_gradients: Whether to verify gradient flow.
+        default_phase: Optional ``src.model_checker.Phase`` used as the initial
+            train/eval state. Defaults to the model checker's train phase.
         max_cegar_iterations: Max contract discovery iterations.
         max_loop_unrolls: Maximum number of statically-resolved loop iterations
             (ModuleList/Sequential or literal ``range`` loops) to unroll before
@@ -1027,6 +1030,7 @@ def verify_architecture(
         check_devices=check_devices,
         check_phases=check_phases,
         check_gradients=check_gradients,
+        **({"default_phase": default_phase} if default_phase is not None else {}),
         infer_inputs=infer_inputs,
         max_loop_unrolls=max_loop_unrolls,
         produce_certificates=produce_certificates,

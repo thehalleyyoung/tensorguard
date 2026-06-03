@@ -704,7 +704,9 @@ Fuzzing and mutation &
 \texttt{tests/test\_diff\_fuzz.py}, \texttt{tests/test\_neg\_fuzz.py},
 \texttt{tests/test\_hypothesis\_module\_ast.py},
 \texttt{tests/test\_mutation\_clean\_models.py}.  Searches for disagreements
-and injected bugs. \\
+and injected bugs; the differential fuzzer now checks the same eval phase it
+executes, preserving the 200/200 clean-model zero-false-positive invariant even
+for BatchNorm edge cases with one value per channel. \\
 \hline
 Runtime-silent bugs &
 \texttt{reproducibility/silent\_bug\_benchmark.py},
@@ -750,10 +752,12 @@ Dashboards &
 \texttt{tests/test\_dashboard.py}, \texttt{tests/test\_build\_dashboard.py},
 \texttt{tests/test\_leaderboard.py},
 \texttt{tests/test\_leaderboard\_submission.py},
-\texttt{tests/test\_model\_zoo\_certification.py}.  Regenerates static result
+\texttt{tests/test\_model\_zoo\_certification.py},
+\texttt{tests/test\_paper\_results\_freshness.py}.  Regenerates static result
 views for reviewers and contributors, including the signed public leaderboard,
-monthly freshness cadence, SSH trust anchor, anti-overfitting intake rules, and
-status-badged gallery certification jobs. \\
+monthly freshness cadence, SSH trust anchor, anti-overfitting intake rules,
+status-badged gallery certification jobs, and a paper-results freshness bot that
+reruns artifact checks before applying benchmark-delta gates. \\
 \hline
 Statistical rigor &
 \texttt{tests/test\_statistical\_power.py},
@@ -1087,7 +1091,15 @@ The artifact is designed to be regenerated.  The \texttt{make reproduce}
 harness and reproducibility scripts update headline results, numeric claim
 audits, benchmark deltas, scaling curves, CEGAR measurements, and paper evidence
 indices, including the distribution-stratified meta-analysis that keeps
-synthetic, natural, stress, and real-bug evidence separate.  For artifact review,
+synthetic, natural, stress, and real-bug evidence separate.  A newer
+\texttt{make paper-results-freshness} target is the scheduled paper-results bot:
+it reruns the committed freshness checks for precision/recall, fuzzing, hard
+recall, triage, and deployment dashboards, then normalizes the paper-facing
+dashboards into snapshots and compares them with
+\texttt{scripts/benchmark\_delta.py}.  This caught stale
+\texttt{confusion\_matrices.json} and \texttt{diff\_fuzz.json} during this
+revision, and forced the eval-phase differential-fuzz oracle fix described
+above before the paper artifacts could pass.  For artifact review,
 \texttt{scripts/reproduce\_main\_results.sh} is a
 single reviewer-facing entrypoint to the authoritative byte-checking pipeline,
 while \texttt{scripts/check\_main\_results.sh} verifies and previews the command
@@ -1478,9 +1490,11 @@ artifact regeneration. \\
 \hline
 \texttt{tests/test\_artifact\_index.py},
 \texttt{tests/test\_paper\_evidence\_index.py},
-\texttt{tests/test\_paper\_capsule\_wiring.py} &
+\texttt{tests/test\_paper\_capsule\_wiring.py},
+\texttt{tests/test\_paper\_results\_freshness.py} &
 Paper/artifact wiring so claims can be tied to scripts, committed evidence, and
-tamper-evident SHA-256 generated-output hashes. \\
+tamper-evident SHA-256 generated-output hashes; the freshness bot additionally
+proves paper dashboards are regenerated and benchmark-delta gated. \\
 \hline
 \end{longtable}
 

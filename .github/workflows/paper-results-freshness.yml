@@ -1,0 +1,73 @@
+name: Paper results freshness
+
+# Step 283 — rerun paper-facing benchmark freshness checks and compare the
+# regenerated/current snapshots against reviewed baselines with benchmark-delta
+# semantics. This catches stale artifacts and unreviewed result regressions
+# before paper claims drift.
+on:
+  schedule:
+    # Weekly paper-results freshness check, Wednesday 09:17 UTC.
+    - cron: "17 9 * * 3"
+  pull_request:
+    paths:
+      - "evaluation/**"
+      - "real_benchmarks/**"
+      - "reproducibility/**"
+      - "scripts/benchmark_delta.py"
+      - "tests/test_benchmark_delta.py"
+      - "tests/test_paper_results_freshness.py"
+      - ".github/workflows/paper-results-freshness.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Refresh and rerun paper-results freshness bot
+        id: freshness
+        continue-on-error: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        run: PYTHONPATH=. python reproducibility/paper_results_freshness.py --refresh --write
+      - name: Assert PR artifacts are committed and fresh
+        if: github.event_name == 'pull_request'
+        run: git diff --exit-code -- reproducibility/paper_results_freshness.json reproducibility/paper_results_freshness.md
+      - name: Open drift PR
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: bot/paper-results-freshness
+          commit-message: "Refresh paper results freshness artifacts"
+          title: "Refresh paper results freshness artifacts"
+          body: |
+            Automated paper-results freshness run regenerated benchmark artifacts
+            and the benchmark-delta report. Review any metric drift before merge.
+          add-paths: |
+            evaluation/confusion_matrices.json
+            evaluation/confusion_matrices.md
+            evaluation/sound_mode_fp.json
+            evaluation/sound_mode_fp.md
+            evaluation/diff_fuzz.json
+            evaluation/diff_fuzz.md
+            evaluation/neg_fuzz.json
+            evaluation/neg_fuzz.md
+            evaluation/hard_recall.json
+            evaluation/hard_recall.md
+            evaluation/triage_regressions.json
+            evaluation/triage_regressions.md
+            evaluation/dashboard.md
+            evaluation/deployment_dashboard.json
+            evaluation/deployment_dashboard.md
+            reproducibility/paper_results_freshness.json
+            reproducibility/paper_results_freshness.md
+      - name: Fail on benchmark regression
+        if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && steps.freshness.outcome == 'failure'
+        run: exit 1

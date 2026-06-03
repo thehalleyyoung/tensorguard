@@ -536,7 +536,8 @@ git diff. The orchestrator is `reproducibility/reproduce_all.py`, pinned by
 tables/figures, their regeneration commands, and their committed outputs. The
 generated outputs are also sealed by `reproducibility/artifact_index.{json,md}`,
 a SHA-256 ledger whose aggregate root changes if any indexed artifact is
-tampered with.
+tampered with. `make paper-results-freshness` reruns the paper-facing artifact
+checks and gates the resulting dashboards with benchmark-delta semantics.
 
 **Honest scope.** Artifacts that need CUDA, a HuggingFace download, or a
 Lean toolchain cannot be rebuilt in a standard CI box; their committed
