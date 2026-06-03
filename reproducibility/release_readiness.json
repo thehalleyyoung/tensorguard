@@ -1,0 +1,264 @@
+{
+  "all_channels_release_ready": true,
+  "channels": [
+    {
+      "channel": "pypi",
+      "items": [
+        {
+          "area": "benchmark dashboards",
+          "command": "PYTHONPATH=. python evaluation/dashboard.py --check",
+          "detail": "20 metrics, regressions=0, orphans=0, unregistered=0, markdown_fresh=True",
+          "evidence": [
+            "evaluation/dashboard.py",
+            "evaluation/dashboard.md",
+            "evaluation/dashboard_baseline.json"
+          ],
+          "key": "benchmark-dashboard",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "benchmark dashboards",
+          "command": "PYTHONPATH=. python evaluation/deployment_dashboard.py --check --gate",
+          "detail": "rows=4, regressions=0, missing=0, unregistered_supported=0, markdown_fresh=True",
+          "evidence": [
+            "evaluation/deployment_dashboard.py",
+            "evaluation/deployment_dashboard.md",
+            "evaluation/deployment_dashboard_baseline.json"
+          ],
+          "key": "deployment-dashboard",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "audit status",
+          "command": "PYTHONPATH=. python reproducibility/audit_numeric_claims.py",
+          "detail": "statuses=QUALIFIED_ENV:1, QUALIFIED_REGIME:1, VERIFIED:15",
+          "evidence": [
+            "reproducibility/audit_numeric_claims.py",
+            "reproducibility/numeric_claims_audit.json"
+          ],
+          "key": "numeric-claim-audit",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "security review",
+          "command": "python -m pytest tests/test_security.py -q",
+          "detail": "static-only threat model, regression test, and CI coverage are present",
+          "evidence": [
+            "SECURITY.md",
+            "tests/test_security.py",
+            ".github/workflows/matrix.yml"
+          ],
+          "key": "security-review",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "artifact freshness",
+          "command": "PYTHONPATH=. python reproducibility/artifact_package.py --check",
+          "detail": "checks=6, failed=none",
+          "evidence": [
+            "reproducibility/artifact_package.py",
+            "reproducibility/artifact_package.json"
+          ],
+          "key": "source-artifact-package",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "versioning and supply chain",
+          "command": "python -m build --sdist --wheel",
+          "detail": "version=0.1.0, roadmap_excluded=True",
+          "evidence": [
+            "pyproject.toml",
+            "MANIFEST.in",
+            "CHANGELOG.md",
+            "CITATION.cff"
+          ],
+          "key": "pypi-metadata",
+          "passed": true,
+          "required": true
+        }
+      ],
+      "passed_items": 6,
+      "publish_command": "python -m build --sdist --wheel && twine upload dist/tensorguard-*",
+      "release_ready": true,
+      "required_items": 6
+    },
+    {
+      "channel": "conda",
+      "items": [
+        {
+          "area": "benchmark dashboards",
+          "command": "PYTHONPATH=. python evaluation/dashboard.py --check",
+          "detail": "20 metrics, regressions=0, orphans=0, unregistered=0, markdown_fresh=True",
+          "evidence": [
+            "evaluation/dashboard.py",
+            "evaluation/dashboard.md",
+            "evaluation/dashboard_baseline.json"
+          ],
+          "key": "benchmark-dashboard",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "benchmark dashboards",
+          "command": "PYTHONPATH=. python evaluation/deployment_dashboard.py --check --gate",
+          "detail": "rows=4, regressions=0, missing=0, unregistered_supported=0, markdown_fresh=True",
+          "evidence": [
+            "evaluation/deployment_dashboard.py",
+            "evaluation/deployment_dashboard.md",
+            "evaluation/deployment_dashboard_baseline.json"
+          ],
+          "key": "deployment-dashboard",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "audit status",
+          "command": "PYTHONPATH=. python reproducibility/audit_numeric_claims.py",
+          "detail": "statuses=QUALIFIED_ENV:1, QUALIFIED_REGIME:1, VERIFIED:15",
+          "evidence": [
+            "reproducibility/audit_numeric_claims.py",
+            "reproducibility/numeric_claims_audit.json"
+          ],
+          "key": "numeric-claim-audit",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "security review",
+          "command": "python -m pytest tests/test_security.py -q",
+          "detail": "static-only threat model, regression test, and CI coverage are present",
+          "evidence": [
+            "SECURITY.md",
+            "tests/test_security.py",
+            ".github/workflows/matrix.yml"
+          ],
+          "key": "security-review",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "artifact freshness",
+          "command": "PYTHONPATH=. python reproducibility/artifact_package.py --check",
+          "detail": "checks=6, failed=none",
+          "evidence": [
+            "reproducibility/artifact_package.py",
+            "reproducibility/artifact_package.json"
+          ],
+          "key": "conda-artifact-package",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "versioning and supply chain",
+          "command": "conda build conda-recipe/",
+          "detail": "pyproject_version=0.1.0, conda_version=0.1.0",
+          "evidence": [
+            "conda-recipe/meta.yaml",
+            "pyproject.toml",
+            "LICENSE"
+          ],
+          "key": "conda-metadata",
+          "passed": true,
+          "required": true
+        }
+      ],
+      "passed_items": 6,
+      "publish_command": "conda build conda-recipe/ && anaconda upload <built-package>",
+      "release_ready": true,
+      "required_items": 6
+    },
+    {
+      "channel": "docker",
+      "items": [
+        {
+          "area": "benchmark dashboards",
+          "command": "PYTHONPATH=. python evaluation/dashboard.py --check",
+          "detail": "20 metrics, regressions=0, orphans=0, unregistered=0, markdown_fresh=True",
+          "evidence": [
+            "evaluation/dashboard.py",
+            "evaluation/dashboard.md",
+            "evaluation/dashboard_baseline.json"
+          ],
+          "key": "benchmark-dashboard",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "benchmark dashboards",
+          "command": "PYTHONPATH=. python evaluation/deployment_dashboard.py --check --gate",
+          "detail": "rows=4, regressions=0, missing=0, unregistered_supported=0, markdown_fresh=True",
+          "evidence": [
+            "evaluation/deployment_dashboard.py",
+            "evaluation/deployment_dashboard.md",
+            "evaluation/deployment_dashboard_baseline.json"
+          ],
+          "key": "deployment-dashboard",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "audit status",
+          "command": "PYTHONPATH=. python reproducibility/audit_numeric_claims.py",
+          "detail": "statuses=QUALIFIED_ENV:1, QUALIFIED_REGIME:1, VERIFIED:15",
+          "evidence": [
+            "reproducibility/audit_numeric_claims.py",
+            "reproducibility/numeric_claims_audit.json"
+          ],
+          "key": "numeric-claim-audit",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "security review",
+          "command": "python -m pytest tests/test_security.py -q",
+          "detail": "static-only threat model, regression test, and CI coverage are present",
+          "evidence": [
+            "SECURITY.md",
+            "tests/test_security.py",
+            ".github/workflows/matrix.yml"
+          ],
+          "key": "security-review",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "artifact freshness",
+          "command": "PYTHONPATH=. python reproducibility/artifact_package.py --check",
+          "detail": "checks=6, failed=none",
+          "evidence": [
+            "reproducibility/artifact_package.py",
+            "reproducibility/artifact_package.json"
+          ],
+          "key": "docker-artifact-package",
+          "passed": true,
+          "required": true
+        },
+        {
+          "area": "versioning and supply chain",
+          "command": "docker build -t tensorguard .",
+          "detail": "multi-stage wheel-only, non-root image with local roadmap excluded",
+          "evidence": [
+            "Dockerfile",
+            ".dockerignore"
+          ],
+          "key": "docker-metadata",
+          "passed": true,
+          "required": true
+        }
+      ],
+      "passed_items": 6,
+      "publish_command": "docker build -t ghcr.io/thehalleyyoung/tensorguard:<version> . && docker push ghcr.io/thehalleyyoung/tensorguard:<version>",
+      "release_ready": true,
+      "required_items": 6
+    }
+  ],
+  "check_command": "python reproducibility/release_readiness.py --check",
+  "purpose": "release-readiness checklist gating PyPI, conda, and Docker releases",
+  "step": 286,
+  "version": "0.1.0"
+}

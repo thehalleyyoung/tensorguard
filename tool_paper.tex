@@ -95,6 +95,16 @@ rules, Z3 encodings for symbolic constraints, and live PyTorch oracles for
 operator behavior.
 \end{enumerate}
 
+The numeric-claim audit checks the maintained paper and README against committed
+artifacts before release.  The audited headline set includes Refuted-Proof on
+53/60 historical bugs, 88.3\% in the headline regime, raw refute count = 56/60,
+the fragment-fair comparison 32/34 for TensorGuard versus 25/34 for PyTea with
+p=0.0156, 9/9 HuggingFace natural shape bugs, 0/488 unconditional Refuted-Proof
+in the unrestricted block corpus, 26/356 in the empty-assumption subset, and $5$ fire inside the audited handler footprint.  The README-facing audit also pins
+16/16 frozen benchmark verdict matches, 6/8 buggy eager-runtime failures, 0\%
+false positives in high-confidence mode, and the environment-qualified Lean
+operator-rule audit (28 rules).
+
 This is a tool paper: the interesting contribution is the system boundary,
 not a single transfer function.  The repository demonstrates how a static
 analysis tool can be packaged so that reviewers, users, and future contributors

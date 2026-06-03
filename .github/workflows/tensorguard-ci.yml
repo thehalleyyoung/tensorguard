@@ -61,3 +61,16 @@ jobs:
         run: |
           PYTHONPATH=. python evaluation/deployment_dashboard.py --check
           PYTHONPATH=. python evaluation/deployment_dashboard.py --gate
+
+  release-readiness-gate:
+    # Shipping gate: PyPI/conda/Docker releases require green dashboards, audit,
+    # security review, artifact freshness, and channel metadata checks.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]" z3-solver
+      - name: Gate release readiness
+        run: PYTHONPATH=. python reproducibility/release_readiness.py --check

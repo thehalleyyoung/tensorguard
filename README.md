@@ -77,8 +77,9 @@ runtime errors in ML codebases before any code runs.
   static-input replay contracts), plus TorchServe/FastAPI request→preprocess→model→response
   schema gates that reject bad preprocessing layouts before forward execution,
   a real-model deployment gallery spanning ResNet, ViT, Llama-style, diffusion,
-  recommender, and speech blocks before and after export, and a release dashboard
-  that ratchets quant/export/compile/distributed gates
+  recommender, and speech blocks before and after export, and release gates
+  that ratchet quant/export/compile/distributed backends plus PyPI/conda/Docker
+  publish readiness
   (`verify_gguf_export_contract`, `verify_checkpoint_state_dict`,
   `verify_lora_adapter_compatibility`, `verify_optimizer_state`,
   `verify_cuda_graph_capture_eligibility`, `verify_serving_schema`), plus

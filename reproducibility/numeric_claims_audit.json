@@ -1,9 +1,9 @@
 {
   "meta": {
     "note": "Audits committed regeneration artifacts; not a fresh regeneration (see module docstring).",
-    "n_claims": 14,
+    "n_claims": 17,
     "counts": {
-      "VERIFIED": 12,
+      "VERIFIED": 15,
       "QUALIFIED_REGIME": 1,
       "QUALIFIED_ENV": 1
     }
@@ -168,19 +168,55 @@
         8
       ],
       "status": "VERIFIED"
+    },
+    {
+      "id": "mutation_clean_wilson_above_99",
+      "regime": "sound-mode mutation kill-rate Wilson lower bound",
+      "claim": "Wilson lower bound above 99%",
+      "artifacts": [
+        "mutation_clean_models.json"
+      ],
+      "actual": 0.9949,
+      "status": "VERIFIED"
+    },
+    {
+      "id": "negative_controls_tg_0_of_6",
+      "regime": "value-domain negative controls outside TensorGuard contract",
+      "claim": "TensorGuard catches 0/6 negative controls",
+      "artifacts": [
+        "../evaluation/negative_controls.json"
+      ],
+      "actual": [
+        0,
+        6
+      ],
+      "status": "VERIFIED"
+    },
+    {
+      "id": "negative_controls_runtime_6_of_6",
+      "regime": "finite-output runtime check on value-domain negative controls",
+      "claim": "finite-output runtime check catches 6/6",
+      "artifacts": [
+        "../evaluation/negative_controls.json"
+      ],
+      "actual": [
+        6,
+        6
+      ],
+      "status": "VERIFIED"
     }
   ],
   "readme_uncovered_tokens": [],
   "readme_ignored_catalogue_rows": [
     {
-      "line": 2433,
+      "line": 2774,
       "tokens": [
         "80%"
       ],
       "reason": "script-catalogue row (regen script named in-row)"
     },
     {
-      "line": 2434,
+      "line": 2775,
       "tokens": [
         "2/3"
       ],

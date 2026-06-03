@@ -7,7 +7,7 @@ Single numeric-claim audit harness for TensorGuard (100_STEPS.md Step 4).
 WHAT THIS DOES (and does NOT do)
 --------------------------------
 This is a *single* script that audits every registered headline numeric claim
-in `README.md`, `neurips.tex`, and `workshop_fmai.tex` against the committed
+in `README.md` and `tool_paper.tex` against the committed
 regeneration artifacts under `reproducibility/` (the JSON outputs of the
 per-experiment scripts).  For each claim it:
 
@@ -65,8 +65,7 @@ REPO = ROOT.parent
 REPRO = REPO / "reproducibility"
 
 README = REPO / "README.md"
-NEURIPS = REPO / "neurips.tex"
-WORKSHOP = REPO / "workshop_fmai.tex"
+TOOL_PAPER = REPO / "tool_paper.tex"
 
 OUT_JSON = REPRO / "numeric_claims_audit.json"
 
@@ -114,7 +113,7 @@ REGISTRY: List[Dict[str, Any]] = [
         "regime": "headline default regime (verify_architecture(src), RP@0.99)",
         "claim": "53/60 Refuted-Proof",
         "sources": [_R(README, r"Refuted-Proof on 53/60"),
-                    _R(NEURIPS, r"53/60")],
+                    _R(TOOL_PAPER, r"53/60")],
         "artifacts": ["reproduce_headline_60bug.json"],
         "compute": lambda: (_art("reproduce_headline_60bug.json")["headline_regime"]["refuted_proof_high_confidence"],
                             _art("reproduce_headline_60bug.json")["meta"]["n"]),
@@ -134,7 +133,7 @@ REGISTRY: List[Dict[str, Any]] = [
         "id": "rp_percent_88_3",
         "regime": "headline default regime, derived percentage",
         "claim": "88.3% (=53/60)",
-        "sources": [_R(NEURIPS, r"88\.3\\%")],
+        "sources": [_R(TOOL_PAPER, r"88\.3\\%")],
         "artifacts": ["reproduce_headline_60bug.json"],
         "compute": lambda: 100.0 * _art("reproduce_headline_60bug.json")["headline_regime"]["refuted_proof_high_confidence"]
                           / _art("reproduce_headline_60bug.json")["meta"]["n"],
@@ -144,8 +143,7 @@ REGISTRY: List[Dict[str, Any]] = [
         "id": "tg_32_of_34_fragmentfair",
         "regime": "fragment-fair N=34 head-to-head vs Pytea",
         "claim": "32/34 TensorGuard",
-        "sources": [_R(NEURIPS, r"32/34"),
-                    _R(WORKSHOP, r"32/34")],
+        "sources": [_R(TOOL_PAPER, r"32/34")],
         "artifacts": ["pytea_fragment_fair.json"],
         "compute": lambda: (_art("pytea_fragment_fair.json")["meta"]["tensorguard_refuted"],
                             _art("pytea_fragment_fair.json")["meta"]["n_subset"]),
@@ -156,8 +154,7 @@ REGISTRY: List[Dict[str, Any]] = [
         "regime": "fragment-fair N=34 (Pytea 2024 fragment); a STRICTER 2024 "
                   "catalogue regime gives 22/34 — different regime, both valid",
         "claim": "25/34 Pytea",
-        "sources": [_R(NEURIPS, r"25/34"),
-                    _R(WORKSHOP, r"25/34")],
+        "sources": [_R(TOOL_PAPER, r"25/34")],
         "artifacts": ["pytea_fragment_fair.json"],
         "compute": lambda: (_art("pytea_fragment_fair.json")["meta"]["pytea_refuted"],
                             _art("pytea_fragment_fair.json")["meta"]["n_subset"]),
@@ -168,8 +165,7 @@ REGISTRY: List[Dict[str, Any]] = [
         "id": "mcnemar_p_0_0156",
         "regime": "fragment-fair McNemar exact two-sided p",
         "claim": "p=0.0156",
-        "sources": [_R(NEURIPS, r"p\{?=\}?0\.0156"),
-                    _R(WORKSHOP, r"0\.0156")],
+        "sources": [_R(TOOL_PAPER, r"p\{?=\}?0\.0156")],
         "artifacts": ["pytea_fragment_fair.json"],
         "compute": lambda: _art("pytea_fragment_fair.json")["meta"]["mcnemar_exact_two_sided_p"],
         "check": lambda a: _approx(a, 0.0156, 5e-4),
@@ -179,7 +175,7 @@ REGISTRY: List[Dict[str, Any]] = [
         "regime": "naturally-occurring HF cross-family bugs (union of the "
                   "Llama/Qwen2/Mistral/Phi-3 set + the Gemma 2 round-5 set)",
         "claim": "9/9 HuggingFace natural shape bugs",
-        "sources": [_R(NEURIPS, r"9/9")],
+        "sources": [_R(TOOL_PAPER, r"9/9")],
         "artifacts": ["cross_family_natural_bugs.json", "upstream_gemma2_round5.json"],
         "compute": lambda: (
             _art("cross_family_natural_bugs.json")["summary"]["RP"]
@@ -194,7 +190,7 @@ REGISTRY: List[Dict[str, Any]] = [
         "id": "block_488_unconditional_0",
         "regime": "unrestricted 488-block corpus, unconditional RP",
         "claim": "0/488 unconditional Refuted-Proof",
-        "sources": [_R(NEURIPS, r"0/488")],
+        "sources": [_R(TOOL_PAPER, r"0/488")],
         "artifacts": ["block_corpus_488_reconciliation.json"],
         "compute": lambda: _art("block_corpus_488_reconciliation.json")["summary"]["n"],
         "check": lambda a: a == 488,
@@ -203,7 +199,7 @@ REGISTRY: List[Dict[str, Any]] = [
         "id": "unconditional_rp_26",
         "regime": "empty-assume_M subset unconditional RP count",
         "claim": "26 unconditional RP (26/356)",
-        "sources": [_R(NEURIPS, r"26/356")],
+        "sources": [_R(TOOL_PAPER, r"26/356")],
         "artifacts": ["audited_footprint_unconditional_rp.json"],
         "compute": lambda: _art("audited_footprint_unconditional_rp.json")["n_unconditional_rp"],
         "check": lambda a: a == 26,
@@ -212,7 +208,7 @@ REGISTRY: List[Dict[str, Any]] = [
         "id": "audited_footprint_5",
         "regime": "blocks firing inside the audited handler footprint",
         "claim": "5 fire inside the audited handler footprint",
-        "sources": [_R(NEURIPS, r"\$5\$ fire inside")],
+        "sources": [_R(TOOL_PAPER, r"\$5\$ fire inside")],
         "artifacts": ["audited_footprint_per_block_lean_pinning.json"],
         "compute": lambda: _art("audited_footprint_per_block_lean_pinning.json")["n_audited_footprint_blocks"],
         "check": lambda a: a == 5,
@@ -261,6 +257,39 @@ REGISTRY: List[Dict[str, Any]] = [
         "compute": lambda: (_art("real_benchmarks_audit.json")["n_buggy_runtime_error"],
                             _art("real_benchmarks_audit.json")["n_buggy"]),
         "check": lambda a: a == (6, 8),
+    },
+    {
+        "id": "mutation_clean_wilson_above_99",
+        "regime": "sound-mode mutation kill-rate Wilson lower bound",
+        "claim": "Wilson lower bound above 99%",
+        "sources": [_R(README, r"Wilson lower bound above 99%")],
+        "artifacts": ["mutation_clean_models.json"],
+        "compute": lambda: _art("mutation_clean_models.json")["per_mode"]["sound"]["kill_rate"]["low"],
+        "check": lambda a: float(a) > 0.99,
+    },
+    {
+        "id": "negative_controls_tg_0_of_6",
+        "regime": "value-domain negative controls outside TensorGuard contract",
+        "claim": "TensorGuard catches 0/6 negative controls",
+        "sources": [_R(README, r"TensorGuard catches 0/6")],
+        "artifacts": ["../evaluation/negative_controls.json"],
+        "compute": lambda: (
+            json.loads((REPO / "evaluation" / "negative_controls.json").read_text())["summary"]["tensorguard_caught"],
+            json.loads((REPO / "evaluation" / "negative_controls.json").read_text())["summary"]["n_cases"],
+        ),
+        "check": lambda a: a == (0, 6),
+    },
+    {
+        "id": "negative_controls_runtime_6_of_6",
+        "regime": "finite-output runtime check on value-domain negative controls",
+        "claim": "finite-output runtime check catches 6/6",
+        "sources": [_R(README, r"finite-output runtime check catches 6/6")],
+        "artifacts": ["../evaluation/negative_controls.json"],
+        "compute": lambda: (
+            json.loads((REPO / "evaluation" / "negative_controls.json").read_text())["summary"]["runtime_finite_output_check_caught"],
+            json.loads((REPO / "evaluation" / "negative_controls.json").read_text())["summary"]["n_cases"],
+        ),
+        "check": lambda a: a == (6, 6),
     },
 ]
 
