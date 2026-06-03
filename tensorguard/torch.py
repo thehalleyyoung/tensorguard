@@ -53,6 +53,16 @@ from src.lora_verification import (
     verify_lora_adapter_compatibility,
     verify_lora_model,
 )
+from src.serving_schema import (
+    ServingSchemaGateResult,
+    ServingSchemaIssue,
+    ServingTensorSpec,
+    TensorGuardServingSchemaError,
+    guarded_fastapi_endpoint,
+    guarded_model_serving_call,
+    guarded_torchserve_handler,
+    verify_serving_schema,
+)
 
 __all__ = [
     "AOTPackageGateResult",
@@ -71,13 +81,17 @@ __all__ = [
     "TensorGuardOptimizerStateError",
     "TensorGuardONNXExportError",
     "TensorGuardONNXShapeInferenceError",
+    "TensorGuardServingSchemaError",
     "TensorGuardViolation",
     "guarded_aot_package",
     "guarded_compile",
     "guarded_gguf_export",
     "guarded_load_state_dict",
+    "guarded_model_serving_call",
     "guarded_optimizer_load_state_dict",
     "guarded_onnx_export",
+    "guarded_fastapi_endpoint",
+    "guarded_torchserve_handler",
     "make_tensorguard_backend",
     "verify_onnx_export_contract",
     "verify_aot_package_contract",
@@ -87,6 +101,7 @@ __all__ = [
     "verify_lora_adapter_compatibility",
     "verify_lora_model",
     "verify_optimizer_state",
+    "verify_serving_schema",
     "verify_module",
     "OptimizerStateIssue",
     "OptimizerStateShard",
@@ -96,4 +111,7 @@ __all__ = [
     "TensorParallelCheckpointShard",
     "LoRACompatibilityIssue",
     "LoRACompatibilityResult",
+    "ServingSchemaGateResult",
+    "ServingSchemaIssue",
+    "ServingTensorSpec",
 ]

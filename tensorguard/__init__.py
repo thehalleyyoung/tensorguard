@@ -181,6 +181,16 @@ from src.lora_verification import (  # noqa: F401  (re-export)
     verify_lora_adapter_compatibility,
     verify_lora_model,
 )
+from src.serving_schema import (  # noqa: F401  (re-export)
+    ServingSchemaGateResult,
+    ServingSchemaIssue,
+    ServingTensorSpec,
+    TensorGuardServingSchemaError,
+    guarded_fastapi_endpoint,
+    guarded_model_serving_call,
+    guarded_torchserve_handler,
+    verify_serving_schema,
+)
 
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
 from src import api as api  # noqa: F401
@@ -308,6 +318,14 @@ __all__ = [
     "LoRACompatibilityResult",
     "verify_lora_adapter_compatibility",
     "verify_lora_model",
+    "ServingSchemaGateResult",
+    "ServingSchemaIssue",
+    "ServingTensorSpec",
+    "TensorGuardServingSchemaError",
+    "guarded_fastapi_endpoint",
+    "guarded_model_serving_call",
+    "guarded_torchserve_handler",
+    "verify_serving_schema",
     "TensorGuardViolation",
     "TensorGuardAOTPackageError",
     "AOTPackageIssue",

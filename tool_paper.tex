@@ -229,7 +229,7 @@ LoRA adapter compatibility, training-loop checks, quantization/export safety,
 mixed-precision/autocast dtype-divergence gates, FSDP/FSDP2/DTensor sharding,
 explicit pipeline-stage boundary contracts, tensor-parallel sharding checks,
 model \texttt{state\_dict} schema compatibility, optimizer-state checkpoint
-compatibility, and deployment schemas.
+compatibility, and TorchServe/FastAPI serving schemas.
 
 Recent stack-family work follows the same standard.  \texttt{torch.stack},
 \texttt{hstack}, \texttt{vstack}, \texttt{dstack},
@@ -897,7 +897,9 @@ checkpoint gates check missing/unexpected keys, tied weights, adapter-only LoRA
 matrices, tensor-parallel shards, and silent dtype drift; LoRA/PEFT gates check
 rank, target-module matching, merge state, and quantized bases; optimizer-state gates check
 AdamW, Adafactor, fused AdamW, and sharded resume buffers before
-\texttt{load\_state\_dict}. \\
+\texttt{load\_state\_dict}; serving-schema gates check request fields,
+preprocessing tensor layouts, model outputs, and response payloads before a
+TorchServe/FastAPI wrapper turns a bad batch into an opaque inference failure. \\
 \hline
 Distributed and adapters &
 DDP/FSDP/FSDP2/DTensor/per-parameter, explicit pipeline-boundary, and
@@ -1017,6 +1019,7 @@ Gradient and training-loop contracts beyond forward shape checking. \\
 \texttt{tests/test\_gguf\_export\_gate.py},
 \texttt{tests/test\_checkpoint\_verify.py},
 \texttt{tests/test\_optimizer\_state\_verify.py},
+\texttt{tests/test\_serving\_schema.py},
 \texttt{tests/test\_quant\_export\_checks.py},
 \texttt{tests/test\_quantization\_verify.py} &
 Deployment-facing gates for export, \texttt{torch.export.Dim} ranges and
@@ -1026,7 +1029,10 @@ quantization, plus GGUF/llama.cpp checkpoint checks over real transformer
 state\_dict tensors, logical quantized descriptors, model checkpoint-schema
 compatibility for tied weights, LoRA adapters, tensor-parallel shards, and
 dtype drift, plus real optimizer state\_dict compatibility for AdamW, Adafactor,
-fused AdamW, lazy state, sharded resume buffers, and load-time shape rejection. \\
+fused AdamW, lazy state, sharded resume buffers, and load-time shape rejection;
+FastAPI/TorchServe-style serving pipelines whose request, preprocessing-output,
+model-output, and response contracts are checked against real PyTorch modules,
+including an NHWC-vs-NCHW preprocessing bug rejected before \texttt{forward}. \\
 \hline
 \texttt{tests/test\_distributed\_verification.py},
 \texttt{tests/test\_tensor\_parallel\_checks.py} &
@@ -1247,7 +1253,7 @@ vmap verification tests plus \texttt{tests/test\_func\_autodiff\_verify.py}
 live dispatcher checks. \\
 \hline
 Export gates &
-Export, ONNX, AOTInductor, GGUF, quantization, and mixed-precision paths check static
+Export, ONNX, AOTInductor, GGUF, serving, quantization, and mixed-precision paths check static
 preconditions before invoking downstream compilers; dynamic
 \texttt{torch.export.Dim} ranges are reconciled with TensorGuard input-shape
 symbols before tracing; ONNX exports check exporter opset bounds, lowered ATen
@@ -1260,8 +1266,11 @@ rotary dimensions, vocab/output projection padding, and GGUF quant block sizes
 before the converter writes a checkpoint; the optimizer-state gate checks
 AdamW/fused-AdamW moment shape, Adafactor factored variance buffers, lazy
 initialization, sharded-state coverage, and checkpoint resume compatibility
-before \texttt{optimizer.load\_state\_dict}. &
-ONNX, AOT, GGUF, quantization, mixed-precision, and guarded compile/export
+before \texttt{optimizer.load\_state\_dict}; serving gates validate captured
+request fields, preprocessed tensor shapes/dtypes/devices, model-output
+contracts, and postprocessed response payloads before invoking or returning from
+FastAPI/TorchServe-style wrappers. &
+ONNX, AOT, GGUF, serving-schema, quantization, mixed-precision, and guarded compile/export
 tests. \\
 \hline
 Distributed and adapter gates &
@@ -1448,6 +1457,15 @@ requirements, TorchServe or FastAPI request schemas, GGUF or llama.cpp
 checkpoint shapes, CUDA graph capture assumptions, and distributed shard
 and pipeline activation boundaries.  \tg{}'s deployment modules check these contracts before the
 downstream system emits a harder-to-debug compiler, exporter, or serving error.
+For model serving, \texttt{src/serving\_schema.py} splits a pure
+\texttt{verify\_serving\_schema} checker from guarded wrappers for
+FastAPI-style callables and TorchServe-style handlers.  The pure gate validates
+materialized request, preprocessing, model-output, and response payloads against
+named specs with concrete, wildcard, or symbolic dimensions; the guarded path
+stops on request or preprocessing-output violations before model invocation.
+The regression tests run real \texttt{nn.Module}s and prove that an
+NHWC image batch is rejected against an NCHW \texttt{Conv2d} schema while the
+model's \texttt{forward} counter remains zero.
 For GGUF/llama.cpp, the gate reads the checkpoint tensors and metadata directly:
 it validates architecture-prefixed metadata, q/k/v or packed-qkv projections,
 rotary-pair dimensions, vocabulary and output projections, and per-quantization
@@ -1563,7 +1581,7 @@ factored Adafactor layout, or shard coverage for the target parameter. & Report
 the parameter, state key, expected buffer contract, and whether the problem blocks
 checkpoint loading or is only a lazy/master-state warning. \\
 \hline
-Export precondition & ONNX, AOT, quantization, serving, or accelerator-specific
+Export/serving precondition & ONNX, AOT, quantization, serving, or accelerator-specific
 constraints are violated. & Report the backend-specific contract and the nearest
 portable replacement if known. \\
 \hline

@@ -123,6 +123,16 @@ from .lora_verification import (
     verify_lora_adapter_compatibility,
     verify_lora_model,
 )
+from .serving_schema import (
+    ServingSchemaGateResult,
+    ServingSchemaIssue,
+    ServingTensorSpec,
+    TensorGuardServingSchemaError,
+    guarded_fastapi_endpoint,
+    guarded_model_serving_call,
+    guarded_torchserve_handler,
+    verify_serving_schema,
+)
 
 __all__ = [
     "analyze",
@@ -226,5 +236,13 @@ __all__ = [
     "LoRACompatibilityResult",
     "verify_lora_adapter_compatibility",
     "verify_lora_model",
+    "ServingSchemaGateResult",
+    "ServingSchemaIssue",
+    "ServingTensorSpec",
+    "TensorGuardServingSchemaError",
+    "guarded_fastapi_endpoint",
+    "guarded_model_serving_call",
+    "guarded_torchserve_handler",
+    "verify_serving_schema",
     "__version__",
 ]
