@@ -1,0 +1,130 @@
+{
+  "conditions": {
+    "control": "runtime traceback + repro source",
+    "treatment": "TensorGuard diagnostic + same repro source"
+  },
+  "outcomes_collected": [
+    "time_to_localize_seconds",
+    "fix_quality_score_0_to_3",
+    "trust_calibration_choice"
+  ],
+  "protocol": "docs/user_study/protocol.md",
+  "status": "participant-facing materials; scoring keys live in reproducibility/developer_study.json",
+  "tasks": [
+    {
+      "id": "rb_003_gptneox_odd_heads",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_003_gptneox_odd_heads.py",
+      "upstream_references": [
+        "https://github.com/huggingface/transformers/issues/23081"
+      ]
+    },
+    {
+      "id": "rb_004_convbert_head_ratio",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_004_convbert_head_ratio.py",
+      "upstream_references": [
+        "https://github.com/huggingface/transformers/issues/21523"
+      ]
+    },
+    {
+      "id": "rb_005_longformer_global_attn",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_005_longformer_global_attn.py",
+      "upstream_references": [
+        "https://github.com/huggingface/transformers/issues/5646"
+      ]
+    },
+    {
+      "id": "rb_006_longt5_tp_attention",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_006_longt5_tp_attention.py",
+      "upstream_references": [
+        "https://github.com/huggingface/transformers/pull/45109"
+      ]
+    },
+    {
+      "id": "rb_007_gptneox_gqa_reshape",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_007_gptneox_gqa_reshape.py",
+      "upstream_references": [
+        "https://github.com/EleutherAI/gpt-neox/issues/1314",
+        "https://github.com/EleutherAI/gpt-neox/pull/1315"
+      ]
+    },
+    {
+      "id": "rb_008_diffusers_unet1d_fourier",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_008_diffusers_unet1d_fourier.py",
+      "upstream_references": [
+        "https://github.com/huggingface/diffusers/issues/12110",
+        "https://github.com/huggingface/diffusers/pull/12111"
+      ]
+    },
+    {
+      "id": "rb_009_peft_prefix_tuning",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_009_peft_prefix_tuning.py",
+      "upstream_references": [
+        "https://github.com/huggingface/peft/issues/385"
+      ]
+    },
+    {
+      "id": "rb_010_peft_dora_conv_groups",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_010_peft_dora_conv_groups.py",
+      "upstream_references": [
+        "https://github.com/huggingface/peft/issues/2549"
+      ]
+    },
+    {
+      "id": "rb_pf_001_diffusers_longcat_ffmult",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_001_diffusers_longcat_ffmult.py",
+      "upstream_references": [
+        "https://github.com/huggingface/diffusers/pull/13494"
+      ]
+    },
+    {
+      "id": "rb_pf_003_peft_lora_moe_swap",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_003_peft_lora_moe_swap.py",
+      "upstream_references": [
+        "https://github.com/huggingface/peft/pull/3165"
+      ]
+    },
+    {
+      "id": "rb_pf_004_routerparallel_topk",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_004_routerparallel_topk.py",
+      "upstream_references": [
+        "https://github.com/huggingface/transformers/pull/45473"
+      ]
+    },
+    {
+      "id": "rb_uf_008_wan_vae_decoder",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_008_wan_vae_decoder.py",
+      "upstream_references": [
+        "https://github.com/huggingface/diffusers/pull/13520"
+      ]
+    },
+    {
+      "id": "rb_uf_010_phi5_dtype",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_010_phi5_dtype.py",
+      "upstream_references": [
+        "https://github.com/huggingface/transformers/pull/45611"
+      ]
+    },
+    {
+      "id": "rb_uf_012_hunyuan_vae_nan_branch",
+      "participant_prompt": "Find the root cause, patch the module, and record whether you trusted, verified, or rejected the diagnostic.",
+      "repro_path": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_012_hunyuan_vae_nan_branch.py",
+      "upstream_references": [
+        "https://github.com/huggingface/diffusers/pull/13561"
+      ]
+    }
+  ],
+  "title": "TensorGuard controlled developer-study task packet"
+}

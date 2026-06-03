@@ -1,6 +1,6 @@
 # Paper-evidence index (Step 125)
 
-`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **53** evidence items (36 render a table); every generator script is present: **False**.
+`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **55** evidence items (38 render a table); every generator script is present: **False**.
 
 | stem | generator | table? | json | md |
 | --- | --- | --- | --- | --- |
@@ -21,6 +21,7 @@
 | cross_version_stability | `reproducibility/cross_version_stability.py` | True | y | y |
 | data | `(missing)` | False | y | - |
 | deployment_gallery | `evaluation/deployment_gallery.py` | False | y | y |
+| developer_study | `reproducibility/developer_study.py` | True | y | y |
 | differential_dispatcher | `reproducibility/differential_dispatcher.py` | True | y | y |
 | domain_ablation | `reproducibility/domain_ablation.py` | True | y | y |
 | effect_sizes | `reproducibility/effect_sizes.py` | True | y | y |
@@ -51,6 +52,7 @@
 | statistical_power | `reproducibility/statistical_power.py` | True | y | y |
 | stratified_precision_recall | `evaluation/stratified_precision_recall.py` | True | y | y |
 | stub_autogen_coverage | `reproducibility/stub_autogen_coverage.py` | True | y | y |
+| task_packet | `reproducibility/developer_study.py` | True | y | y |
 | tensor_parallel_sharding | `reproducibility/tensor_parallel_sharding.py` | False | y | y |
 | threats_to_validity | `reproducibility/threats_to_validity.py` | False | y | y |
 | time_to_detect | `reproducibility/time_to_detect.py` | False | y | y |

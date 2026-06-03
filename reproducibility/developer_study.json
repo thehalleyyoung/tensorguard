@@ -1,0 +1,599 @@
+{
+  "instruments": {
+    "fix_quality": {
+      "criteria": [
+        "root cause removed",
+        "declared INPUT_SHAPES execute",
+        "public forward signature preserved"
+      ],
+      "passing_score": 3,
+      "score_range": [
+        0,
+        3
+      ]
+    },
+    "localization_time": {
+      "control_material": "stock runtime traceback plus repro file",
+      "primary_measure": "observed time-to-first-correct-root-cause in the human study; deterministic artifact reports only the proxy",
+      "treatment_material": "TensorGuard verdict, counterexample, and reported source line plus the same repro file"
+    },
+    "trust_calibration": {
+      "expected_misleading_ids": [
+        "rb_pf_001_diffusers_longcat_ffmult",
+        "rb_pf_003_peft_lora_moe_swap"
+      ],
+      "items_include_helpful_and_misleading_tg_advice": true,
+      "question": "After seeing the diagnostic, should the participant trust the suggested location directly, verify it first, or reject it?"
+    }
+  },
+  "meta": {
+    "command": "python3 reproducibility/developer_study.py",
+    "fix_quality_max_score": 3,
+    "generated_by": "reproducibility/developer_study.py",
+    "inputs": [
+      "evaluation/localization_effort.json",
+      "reproducibility/localization_marker_only_n30.json",
+      "docs/user_study/protocol.md"
+    ],
+    "no_human_subjects_results": true,
+    "planned_participants": 24,
+    "proxy_disclaimer": "Localization time is the existing lines-inspected proxy expressed as a fixed seconds-per-line calibration. Fix quality and trust calibration are preregistered scoring instruments and task keys, not measured participant outcomes.",
+    "seconds_per_line": 6.0,
+    "status": "registered controlled-study task packet plus deterministic proxy/scoring artifact; no human-subjects outcomes executed"
+  },
+  "registration": {
+    "contains_research_questions": {
+      "RQ1": true,
+      "RQ2": true,
+      "RQ3": true
+    },
+    "participant_task_packet_json": "docs/user_study/task_packet.json",
+    "participant_task_packet_md": "docs/user_study/task_packet.md",
+    "protocol_document": "docs/user_study/protocol.md",
+    "protocol_sha256": "9f9c49780b178e55997b86bc8919dbd135e91b761d02025397a87c2cac706285",
+    "registered_constructs": [
+      "localization_time_proxy",
+      "fix_quality",
+      "trust_calibration"
+    ]
+  },
+  "summary": {
+    "localization_effect_is_linear_rescale": true,
+    "median_assisted_lines_proxy": 2.0,
+    "median_assisted_seconds_proxy": 12.0,
+    "median_unaided_lines_proxy": 7.5,
+    "median_unaided_seconds_proxy": 45.0,
+    "misleading_task_ids": [
+      "rb_pf_001_diffusers_longcat_ffmult",
+      "rb_pf_003_peft_lora_moe_swap"
+    ],
+    "n_expected_helpful_tg_advice": 12,
+    "n_expected_misleading_tg_advice": 2,
+    "n_tasks": 14,
+    "n_tasks_with_bug_marker": 14,
+    "n_tasks_with_real_repro": 14,
+    "n_tasks_with_upstream_reference": 14
+  },
+  "tasks": [
+    {
+      "corpus": "real_bugs_upstream",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 28,
+      "id": "rb_003_gptneox_odd_heads",
+      "localization_time_proxy": {
+        "assisted_lines": 5.0,
+        "assisted_seconds": 30.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 8.0,
+        "unaided_seconds": 48.0
+      },
+      "marker_line": 27,
+      "marker_text": "# BUG: 3 * (hidden_size // num_heads) != 3 * hidden_size when not divisible",
+      "preferred_fix_reference": "https://github.com/huggingface/transformers/issues/23081",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_003_gptneox_odd_heads.py",
+      "source_sha256": "b500f7fff97ea1a143f9740c3e21c92e66fd1160f5b358b48c4519ec3197f1ad",
+      "tg_distance_lines": 4,
+      "tg_reported_line": 32,
+      "trust_calibration": {
+        "expected_response": "trust_after_local_confirmation",
+        "scoring_key": "calibrated_trust",
+        "tg_advice_expected_helpful": true
+      },
+      "upstream_references": [
+        "https://github.com/huggingface/transformers/issues/23081"
+      ]
+    },
+    {
+      "corpus": "real_bugs_upstream",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 21,
+      "id": "rb_004_convbert_head_ratio",
+      "localization_time_proxy": {
+        "assisted_lines": 2.0,
+        "assisted_seconds": 12.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 6.0,
+        "unaided_seconds": 36.0
+      },
+      "marker_line": 20,
+      "marker_text": "# BUG (pre-fix): hard-coded denominator 2 instead of self.head_ratio.",
+      "preferred_fix_reference": "https://github.com/huggingface/transformers/issues/21523",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_004_convbert_head_ratio.py",
+      "source_sha256": "af33a4b4d52f7e02667e1c1efaf29df6a6ed893c6c8a48ae96be1f99916bf645",
+      "tg_distance_lines": 1,
+      "tg_reported_line": 22,
+      "trust_calibration": {
+        "expected_response": "trust_after_local_confirmation",
+        "scoring_key": "calibrated_trust",
+        "tg_advice_expected_helpful": true
+      },
+      "upstream_references": [
+        "https://github.com/huggingface/transformers/issues/21523"
+      ]
+    },
+    {
+      "corpus": "real_bugs_upstream",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 20,
+      "id": "rb_005_longformer_global_attn",
+      "localization_time_proxy": {
+        "assisted_lines": 1.0,
+        "assisted_seconds": 6.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 7.5,
+        "unaided_seconds": 45.0
+      },
+      "marker_line": 19,
+      "marker_text": "# BUG (pre-fix): swapped seq_len and max_num_global slots.",
+      "preferred_fix_reference": "https://github.com/huggingface/transformers/issues/5646",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_005_longformer_global_attn.py",
+      "source_sha256": "519a2000993e59117bc78ef3fe533dfadd87e027463778abe2bb61dde2693f89",
+      "tg_distance_lines": 0,
+      "tg_reported_line": 20,
+      "trust_calibration": {
+        "expected_response": "trust_after_local_confirmation",
+        "scoring_key": "calibrated_trust",
+        "tg_advice_expected_helpful": true
+      },
+      "upstream_references": [
+        "https://github.com/huggingface/transformers/issues/5646"
+      ]
+    },
+    {
+      "corpus": "real_bugs_upstream",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 22,
+      "id": "rb_006_longt5_tp_attention",
+      "localization_time_proxy": {
+        "assisted_lines": 1.0,
+        "assisted_seconds": 6.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 7.0,
+        "unaided_seconds": 42.0
+      },
+      "marker_line": 21,
+      "marker_text": "# BUG: per-head reshape uses GLOBAL num_heads * d_kv layout.",
+      "preferred_fix_reference": "https://github.com/huggingface/transformers/pull/45109",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_006_longt5_tp_attention.py",
+      "source_sha256": "fbe086bb53a927b9dcf50303e49bf3361517cf10ff83c0703291197ce89a1152",
+      "tg_distance_lines": 0,
+      "tg_reported_line": 22,
+      "trust_calibration": {
+        "expected_response": "trust_after_local_confirmation",
+        "scoring_key": "calibrated_trust",
+        "tg_advice_expected_helpful": true
+      },
+      "upstream_references": [
+        "https://github.com/huggingface/transformers/pull/45109"
+      ]
+    },
+    {
+      "corpus": "real_bugs_upstream",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 20,
+      "id": "rb_007_gptneox_gqa_reshape",
+      "localization_time_proxy": {
+        "assisted_lines": 2.0,
+        "assisted_seconds": 12.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 6.0,
+        "unaided_seconds": 36.0
+      },
+      "marker_line": 19,
+      "marker_text": "# BUG (pre-#1315): silent int() truncation of fractional head dim.",
+      "preferred_fix_reference": "https://github.com/EleutherAI/gpt-neox/pull/1315",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_007_gptneox_gqa_reshape.py",
+      "source_sha256": "01be6724aef325899237fe9e8fa925d8173fdb3f4571480cb129094c301e70dd",
+      "tg_distance_lines": 1,
+      "tg_reported_line": 21,
+      "trust_calibration": {
+        "expected_response": "trust_after_local_confirmation",
+        "scoring_key": "calibrated_trust",
+        "tg_advice_expected_helpful": true
+      },
+      "upstream_references": [
+        "https://github.com/EleutherAI/gpt-neox/issues/1314",
+        "https://github.com/EleutherAI/gpt-neox/pull/1315"
+      ]
+    },
+    {
+      "corpus": "real_bugs_upstream",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 26,
+      "id": "rb_008_diffusers_unet1d_fourier",
+      "localization_time_proxy": {
+        "assisted_lines": 2.0,
+        "assisted_seconds": 12.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 9.5,
+        "unaided_seconds": 57.0
+      },
+      "marker_line": 25,
+      "marker_text": "# BUG: hard-coded embedding_size=8 -> 2*8=16 NOT timestep_input_dim",
+      "preferred_fix_reference": "https://github.com/huggingface/diffusers/pull/12111",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_008_diffusers_unet1d_fourier.py",
+      "source_sha256": "d8e6295f83d06110a64d118ec3f76120cd9268d7916be0cbb6e018a397b6826e",
+      "tg_distance_lines": 1,
+      "tg_reported_line": 27,
+      "trust_calibration": {
+        "expected_response": "trust_after_local_confirmation",
+        "scoring_key": "calibrated_trust",
+        "tg_advice_expected_helpful": true
+      },
+      "upstream_references": [
+        "https://github.com/huggingface/diffusers/issues/12110",
+        "https://github.com/huggingface/diffusers/pull/12111"
+      ]
+    },
+    {
+      "corpus": "real_bugs_upstream",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 23,
+      "id": "rb_009_peft_prefix_tuning",
+      "localization_time_proxy": {
+        "assisted_lines": 1.0,
+        "assisted_seconds": 6.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 10.0,
+        "unaided_seconds": 60.0
+      },
+      "marker_line": 22,
+      "marker_text": "# BUG (pre-fix): trailing prod = num_layers*2 * num_heads * head_dim",
+      "preferred_fix_reference": "https://github.com/huggingface/peft/issues/385",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_009_peft_prefix_tuning.py",
+      "source_sha256": "b42cee4b857caef2019c09482d8897ffca95af07ea45031ce86159cc37c24a60",
+      "tg_distance_lines": 0,
+      "tg_reported_line": 23,
+      "trust_calibration": {
+        "expected_response": "trust_after_local_confirmation",
+        "scoring_key": "calibrated_trust",
+        "tg_advice_expected_helpful": true
+      },
+      "upstream_references": [
+        "https://github.com/huggingface/peft/issues/385"
+      ]
+    },
+    {
+      "corpus": "real_bugs_upstream",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 24,
+      "id": "rb_010_peft_dora_conv_groups",
+      "localization_time_proxy": {
+        "assisted_lines": 1.0,
+        "assisted_seconds": 6.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 7.0,
+        "unaided_seconds": 42.0
+      },
+      "marker_line": 23,
+      "marker_text": "# BUG (pre-fix): view target multiplies in_channels (NOT in_channels // groups).",
+      "preferred_fix_reference": "https://github.com/huggingface/peft/issues/2549",
+      "repro_path": "experiments_v5/v8/real_bugs_upstream/rb_010_peft_dora_conv_groups.py",
+      "source_sha256": "9d939ca723e8734261fa9e15edbb29ecbc76fc825ff78e143bb8958dc74a520e",
+      "tg_distance_lines": 0,
+      "tg_reported_line": 24,
+      "trust_calibration": {
+        "expected_response": "trust_after_local_confirmation",
+        "scoring_key": "calibrated_trust",
+        "tg_advice_expected_helpful": true
+      },
+      "upstream_references": [
+        "https://github.com/huggingface/peft/issues/2549"
+      ]
+    },
+    {
+      "corpus": "real_bugs_postfreeze",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 31,
+      "id": "rb_pf_001_diffusers_longcat_ffmult",
+      "localization_time_proxy": {
+        "assisted_lines": 9.0,
+        "assisted_seconds": 54.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 6.0,
+        "unaided_seconds": 36.0
+      },
+      "marker_line": 28,
+      "marker_text": "# BUG (pre-#13494): ff_mult is the hardcoded 4.0; checkpoint",
+      "preferred_fix_reference": "https://github.com/huggingface/diffusers/pull/13494",
+      "repro_path": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_001_diffusers_longcat_ffmult.py",
+      "source_sha256": "7b0c56aef5f99febd8acb3be0016ad0a2164b38f59e9c2b17fddc101cf1e02fb",
+      "tg_distance_lines": 8,
+      "tg_reported_line": 39,
+      "trust_calibration": {
+        "expected_response": "verify_and_do_not_follow_blindly",
+        "scoring_key": "calibrated_skepticism",
+        "tg_advice_expected_helpful": false
+      },
+      "upstream_references": [
+        "https://github.com/huggingface/diffusers/pull/13494"
+      ]
+    },
+    {
+      "corpus": "real_bugs_postfreeze",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 38,
+      "id": "rb_pf_003_peft_lora_moe_swap",
+      "localization_time_proxy": {
+        "assisted_lines": 11.0,
+        "assisted_seconds": 66.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 7.5,
+        "unaided_seconds": 45.0
+      },
+      "marker_line": 34,
+      "marker_text": "# BUG (pre-#3165): LoRA A and B were initialised with swapped",
+      "preferred_fix_reference": "https://github.com/huggingface/peft/pull/3165",
+      "repro_path": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_003_peft_lora_moe_swap.py",
+      "source_sha256": "ca10f5db4215df87e14d6203fb3e33c76628ec419a0666ca4d6ca06a995386ff",
+      "tg_distance_lines": 10,
+      "tg_reported_line": 48,
+      "trust_calibration": {
+        "expected_response": "verify_and_do_not_follow_blindly",
+        "scoring_key": "calibrated_skepticism",
+        "tg_advice_expected_helpful": false
+      },
+      "upstream_references": [
+        "https://github.com/huggingface/peft/pull/3165"
+      ]
+    },
+    {
+      "corpus": "real_bugs_postfreeze",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 40,
+      "id": "rb_pf_004_routerparallel_topk",
+      "localization_time_proxy": {
+        "assisted_lines": 4.0,
+        "assisted_seconds": 24.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 7.0,
+        "unaided_seconds": 42.0
+      },
+      "marker_line": 37,
+      "marker_text": "# BUG (pre-#45473): scores reshaped to num_experts instead of",
+      "preferred_fix_reference": "https://github.com/huggingface/transformers/pull/45473",
+      "repro_path": "experiments_v5/v8/real_bugs_postfreeze/rb_pf_004_routerparallel_topk.py",
+      "source_sha256": "64bfa519f2d2f3c5d5aadb9af41a09bdfaba040bba058e48ffdf55b74eb20a2e",
+      "tg_distance_lines": 3,
+      "tg_reported_line": 43,
+      "trust_calibration": {
+        "expected_response": "trust_after_local_confirmation",
+        "scoring_key": "calibrated_trust",
+        "tg_advice_expected_helpful": true
+      },
+      "upstream_references": [
+        "https://github.com/huggingface/transformers/pull/45473"
+      ]
+    },
+    {
+      "corpus": "real_bugs_unfiltered",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 39,
+      "id": "rb_uf_008_wan_vae_decoder",
+      "localization_time_proxy": {
+        "assisted_lines": 8.0,
+        "assisted_seconds": 48.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 8.5,
+        "unaided_seconds": 51.0
+      },
+      "marker_line": 36,
+      "marker_text": "# BUG (pre-#13520): upsample factor 2 in (t,h,w) -- but the",
+      "preferred_fix_reference": "https://github.com/huggingface/diffusers/pull/13520",
+      "repro_path": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_008_wan_vae_decoder.py",
+      "source_sha256": "5cc6d1cb5a1f0f5f6620228906e0664ad5595723eb1b5b145c8975c95eec775e",
+      "tg_distance_lines": 7,
+      "tg_reported_line": 46,
+      "trust_calibration": {
+        "expected_response": "trust_after_local_confirmation",
+        "scoring_key": "calibrated_trust",
+        "tg_advice_expected_helpful": true
+      },
+      "upstream_references": [
+        "https://github.com/huggingface/diffusers/pull/13520"
+      ]
+    },
+    {
+      "corpus": "real_bugs_unfiltered",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 31,
+      "id": "rb_uf_010_phi5_dtype",
+      "localization_time_proxy": {
+        "assisted_lines": 6.0,
+        "assisted_seconds": 36.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 7.5,
+        "unaided_seconds": 45.0
+      },
+      "marker_line": 30,
+      "marker_text": "# BUG (pre-#45611): attn_scale is fp32 but multiplied into bf16 q.",
+      "preferred_fix_reference": "https://github.com/huggingface/transformers/pull/45611",
+      "repro_path": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_010_phi5_dtype.py",
+      "source_sha256": "767c7036e4c3ece3748fb3db6f566c248aa2ac2b272f0bb664953f73d190b4da",
+      "tg_distance_lines": 5,
+      "tg_reported_line": 36,
+      "trust_calibration": {
+        "expected_response": "trust_after_local_confirmation",
+        "scoring_key": "calibrated_trust",
+        "tg_advice_expected_helpful": true
+      },
+      "upstream_references": [
+        "https://github.com/huggingface/transformers/pull/45611"
+      ]
+    },
+    {
+      "corpus": "real_bugs_unfiltered",
+      "fix_quality_rubric": {
+        "criteria": [
+          "the submitted patch addresses the marked root-cause line",
+          "the module executes for its declared INPUT_SHAPES",
+          "the patch preserves the module's public forward signature"
+        ],
+        "gold_evidence": "source # BUG marker plus upstream issue/PR reference; runtime execution belongs to the human-study environment, not this deterministic CI artifact",
+        "max_score": 3
+      },
+      "gt_line": 42,
+      "id": "rb_uf_012_hunyuan_vae_nan_branch",
+      "localization_time_proxy": {
+        "assisted_lines": 2.0,
+        "assisted_seconds": 12.0,
+        "note": "Seconds are a preregistered linear rescaling of the lines-inspected proxy, not observed human timing.",
+        "seconds_per_line": 6.0,
+        "unaided_lines": 9.0,
+        "unaided_seconds": 54.0
+      },
+      "marker_line": 38,
+      "marker_text": "# BUG (pre-#13561): tile_size hard-coded; H % tile_size",
+      "preferred_fix_reference": "https://github.com/huggingface/diffusers/pull/13561",
+      "repro_path": "experiments_v5/v8/real_bugs_unfiltered/rb_uf_012_hunyuan_vae_nan_branch.py",
+      "source_sha256": "cd2fb6d7dfbc1a4f1955aac232d0fd96f3e936cc4908452584cbfaad1fca7cab",
+      "tg_distance_lines": 1,
+      "tg_reported_line": 43,
+      "trust_calibration": {
+        "expected_response": "trust_after_local_confirmation",
+        "scoring_key": "calibrated_trust",
+        "tg_advice_expected_helpful": true
+      },
+      "upstream_references": [
+        "https://github.com/huggingface/diffusers/pull/13561"
+      ]
+    }
+  ]
+}

@@ -34,6 +34,8 @@ def _has_markdown_table(path: Path) -> bool:
 
 
 def _generator_for(stem: str) -> str | None:
+    if stem == "task_packet":
+        return "reproducibility/developer_study.py"
     # Artifacts follow reproducibility/<stem>.{json,md} <- reproducibility/<stem>.py
     cand = REPO / "reproducibility" / f"{stem}.py"
     if cand.exists():

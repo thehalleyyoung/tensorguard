@@ -208,6 +208,39 @@
       "title": "Pre-specified evaluation protocol"
     },
     {
+      "category": "Methodology",
+      "headline": "14 real-bug developer-study tasks: 12 helpful and 2 deliberately misleading localizations for trust calibration",
+      "id": "developer_study",
+      "metrics": [
+        {
+          "label": "tasks",
+          "value": "14"
+        },
+        {
+          "label": "real repros with markers",
+          "value": "14"
+        },
+        {
+          "label": "upstream references",
+          "value": "14"
+        },
+        {
+          "label": "helpful TG localizations",
+          "value": "12"
+        },
+        {
+          "label": "misleading TG localizations",
+          "value": "2"
+        },
+        {
+          "label": "human outcomes claimed",
+          "value": "False"
+        }
+      ],
+      "source_artifact": "developer_study.json",
+      "title": "Controlled developer-study task packet"
+    },
+    {
       "category": "Ablations",
       "headline": "300 labeled bugs: every verification domain is necessary (leave-one-out recall drops to zero on its own bugs), domains are orthogonal, phase is diagnostic-only",
       "id": "domain_ablation",
@@ -242,7 +275,7 @@
     },
     {
       "category": "Robustness",
-      "headline": "verdict stability across torch 2.1 to 2.9: stable (True), static (no torch execution)",
+      "headline": "Step 257 stability across Python, PyTorch, torchvision, CPU/MPS, and Linux/macOS: stable (True), static (no target framework execution)",
       "id": "cross_version",
       "metrics": [
         {
@@ -258,12 +291,20 @@
           "value": "True"
         },
         {
+          "label": "stable across torchvision 0.16 to 0.24",
+          "value": "True"
+        },
+        {
+          "label": "backend verdicts match",
+          "value": "True"
+        },
+        {
           "label": "baseline verdict sha256",
           "value": "e35a57fa51015bb1..."
         }
       ],
       "source_artifact": "cross_version_stability.json",
-      "title": "Cross-version verdict stability (torch 2.1 to 2.9)"
+      "title": "Cross-version verdict stability (Step 257)"
     }
   ],
   "categories": [
@@ -273,7 +314,7 @@
     "Robustness",
     "Soundness at scale"
   ],
-  "n_cards": 9,
+  "n_cards": 10,
   "schema": 1,
   "subtitle": "Regenerated from committed, byte-deterministic reproducibility artifacts. No server, no network.",
   "title": "TensorGuard \u2014 evidence dashboard"

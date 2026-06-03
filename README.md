@@ -637,7 +637,7 @@ significantly after correction, yet the gap over PyTea is not yet significant at
 this sample size — exactly the kind of result a reviewer should be able to
 trust.
 
-### Does the localizer help developers? (effort proxy + pre-registered study)
+### Does the localizer help developers? (proxy + controlled-study packet)
 
 A core product claim is that TensorGuard does not only say *which* module is
 unsafe but points at the offending line, so developers fix bugs faster. We treat
@@ -660,7 +660,16 @@ d, Hedges' g, bootstrap CI) live in `src/statistical_rigor.py` and are unit
 tested against textbook values in `tests/test_localization_effort.py`. Because
 this is a proxy and not a human trial, the full randomized controlled trial is
 pre-registered and powered from this effect in
-[`docs/user_study/protocol.md`](docs/user_study/protocol.md).
+[`docs/user_study/protocol.md`](docs/user_study/protocol.md). Step 259 now also
+ships a deterministic controlled-study packet:
+
+```bash
+PYTHONPATH=. python3 reproducibility/developer_study.py   # writes developer_study + task_packet artifacts
+```
+
+It freezes the real-bug task battery, participant packet, fix-quality rubric, and
+trust-calibration scoring keys while explicitly recording that no human outcomes
+are claimed yet.
 
 ### Backend-agnostic soundness: Z3 vs cvc5 + decidability
 

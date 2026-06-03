@@ -191,6 +191,41 @@ def _x_protocol():
     return headline, metrics
 
 
+def _x_developer_study():
+    d = _load("developer_study.json")
+    s = d["summary"]
+    headline = (
+        f"{s['n_tasks']} real-bug developer-study tasks: "
+        f"{s['n_expected_helpful_tg_advice']} helpful and "
+        f"{s['n_expected_misleading_tg_advice']} deliberately misleading "
+        "localizations for trust calibration"
+    )
+    metrics = [
+        {"label": "tasks", "value": str(s["n_tasks"])},
+        {
+            "label": "real repros with markers",
+            "value": str(s["n_tasks_with_bug_marker"]),
+        },
+        {
+            "label": "upstream references",
+            "value": str(s["n_tasks_with_upstream_reference"]),
+        },
+        {
+            "label": "helpful TG localizations",
+            "value": str(s["n_expected_helpful_tg_advice"]),
+        },
+        {
+            "label": "misleading TG localizations",
+            "value": str(s["n_expected_misleading_tg_advice"]),
+        },
+        {
+            "label": "human outcomes claimed",
+            "value": str(not d["meta"]["no_human_subjects_results"]),
+        },
+    ]
+    return headline, metrics
+
+
 def _x_time_to_detect():
     d = _load("time_to_detect.json")
     s = d["static"]
@@ -334,6 +369,13 @@ REGISTRY = [
         "Methodology",
         _x_protocol,
         "evaluation_protocol.json",
+    ),
+    (
+        "developer_study",
+        "Controlled developer-study task packet",
+        "Methodology",
+        _x_developer_study,
+        "developer_study.json",
     ),
     (
         "domain_ablation",
