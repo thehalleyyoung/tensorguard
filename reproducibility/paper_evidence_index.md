@@ -1,6 +1,6 @@
 # Paper-evidence index (Step 125)
 
-`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **56** evidence items (39 render a table); every generator script is present: **False**.
+`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **58** evidence items (41 render a table); every generator script is present: **False**.
 
 | stem | generator | table? | json | md |
 | --- | --- | --- | --- | --- |
@@ -8,6 +8,7 @@
 | SOUNDNESS_CONTRACT | `src/SOUNDNESS_CONTRACT.py` | False | - | y |
 | VERIFIABLE_FRAGMENT | `src/VERIFIABLE_FRAGMENT.py` | True | - | y |
 | artifact_badges | `reproducibility/artifact_badges.py` | True | y | y |
+| artifact_index | `reproducibility/artifact_index.py` | True | y | y |
 | baseline_head_to_head | `reproducibility/baseline_head_to_head.py` | True | y | y |
 | blind_manifest | `(missing)` | False | y | - |
 | blind_split_eval | `reproducibility/blind_split_eval.py` | True | y | y |
@@ -44,6 +45,7 @@
 | real_benchmarks_audit | `(missing)` | False | y | - |
 | real_model_operator_coverage | `evaluation/real_model_operator_coverage.py` | False | y | y |
 | reduced_product_ablation | `reproducibility/reduced_product_ablation.py` | True | y | y |
+| reviewer_commands | `reproducibility/reviewer_commands.py` | True | y | y |
 | scaling_study | `reproducibility/scaling_study.py` | True | y | y |
 | significance | `evaluation/significance.py` | True | y | y |
 | silent_bug_benchmark | `reproducibility/silent_bug_benchmark.py` | True | y | y |

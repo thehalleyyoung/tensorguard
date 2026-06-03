@@ -991,10 +991,14 @@ indices.  For artifact review, \texttt{scripts/reproduce\_main\_results.sh} is a
 single reviewer-facing entrypoint to the authoritative byte-checking pipeline,
 while \texttt{scripts/check\_main\_results.sh} verifies and previews the command
 catalogue.  The generated \texttt{reproducibility/reviewer\_commands.json} and
-\texttt{.md} manifest lists 13 main result groups, checks that every command
+\texttt{.md} manifest lists 14 main result groups, checks that every command
 resolves to a real Makefile target or Python script, and checks that every
-claimed output exists.  Tests pin committed JSON artifacts against freshly
-generated outputs.
+claimed output exists.  The companion
+\texttt{reproducibility/artifact\_index.json} and \texttt{.md} files form a
+tamper-evident ledger for generated outputs: every non-index result, generated
+corpus file, and volatile regenerated artifact records byte size and SHA-256,
+and an aggregate root digest changes if any indexed path, size, or content hash
+changes.  Tests pin committed JSON artifacts against freshly generated outputs.
 The benchmark corpus has content hashes, datasheets, citation metadata, and
 loader checks; the mined-bug expansion carries a deterministic corpus hash plus
 explicit no-third-party-code redistribution metadata; the labeling-agreement
@@ -1365,9 +1369,11 @@ Version-qualified stability across Python, PyTorch, torchvision, CUDA-less CPU,
 MPS, and Linux/macOS, with blocked-import source-only proofs and deterministic
 artifact regeneration. \\
 \hline
+\texttt{tests/test\_artifact\_index.py},
 \texttt{tests/test\_paper\_evidence\_index.py},
 \texttt{tests/test\_paper\_capsule\_wiring.py} &
-Paper/artifact wiring so claims can be tied to scripts and committed evidence. \\
+Paper/artifact wiring so claims can be tied to scripts, committed evidence, and
+tamper-evident SHA-256 generated-output hashes. \\
 \hline
 \end{longtable}
 

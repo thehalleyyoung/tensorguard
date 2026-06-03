@@ -107,6 +107,12 @@ RESULTS: List[Dict[str, object]] = [
         "command": "make paper-evidence",
         "outputs": ["reproducibility/paper_evidence_index.json", "reproducibility/paper_evidence_index.md"],
     },
+    {
+        "id": "artifact_index",
+        "claim": "tamper-evident SHA-256 ledger of generated artifacts",
+        "command": "make artifact-index",
+        "outputs": ["reproducibility/artifact_index.json", "reproducibility/artifact_index.md"],
+    },
 ]
 
 

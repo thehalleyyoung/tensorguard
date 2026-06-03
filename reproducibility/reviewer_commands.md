@@ -6,7 +6,7 @@ Two shell entrypoints expose the paper's main evidence without requiring a revie
 - check-only wrapper: `bash scripts/check_main_results.sh`
 - command preview: `python reproducibility/reviewer_commands.py --dry-run`
 
-The authoritative full command is `python reproducibility/reproduce_all.py --check`. The manifest covers **13** main result groups; commands resolve: **True**; outputs present: **True**.
+The authoritative full command is `python reproducibility/reproduce_all.py --check`. The manifest covers **14** main result groups; commands resolve: **True**; outputs present: **True**.
 
 | result | claim | command | outputs present |
 | --- | --- | --- | --- |
@@ -23,6 +23,7 @@ The authoritative full command is `python reproducibility/reproduce_all.py --che
 | deployment_gallery | real-model deployment/export gallery and gates | `make deployment-gallery` | True (evaluation/deployment_gallery.json, evaluation/deployment_gallery.md) |
 | pareto_curves | hardware-normalized cost/latency Pareto curves | `make pareto-curves` | True (evaluation/pareto_curves.json, evaluation/pareto_curves.md) |
 | paper_evidence | single paper-evidence index of every regenerable table/figure | `make paper-evidence` | True (reproducibility/paper_evidence_index.json, reproducibility/paper_evidence_index.md) |
+| artifact_index | tamper-evident SHA-256 ledger of generated artifacts | `make artifact-index` | True (reproducibility/artifact_index.json, reproducibility/artifact_index.md) |
 
 ## Wrapper scripts
 
