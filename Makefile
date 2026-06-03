@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs soundness-appendix corpus headline audit precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs soundness-appendix corpus headline audit precision-recall stratified-precision-recall sound-fp hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -26,6 +26,7 @@ help:
 	@echo "  corpus           Regenerate only the frozen benchmark corpus + its audit artifact"
 	@echo "  headline         Regenerate only the headline 60-bug Refuted-Proof figure"
 	@echo "  precision-recall Regenerate the precision/recall confusion matrices vs baselines (needs node for PyTea)"
+	@echo "  stratified-precision-recall Stratify committed precision/recall by family/source with CIs"
 	@echo "  sound-fp         Regenerate the sound-mode false-positive hunt over clean, executing models"
 	@echo "  hard-recall      Regenerate the latent-bug recall comparison vs the strongest dynamic baseline"
 	@echo "  diff-fuzz        Regenerate the differential fuzz false-positive hunt over random valid models"
@@ -78,6 +79,9 @@ headline:
 
 precision-recall:
 	$(PYTHON) evaluation/precision_recall.py
+
+stratified-precision-recall:
+	$(PYTHON) evaluation/stratified_precision_recall.py
 
 sound-fp:
 	$(PYTHON) evaluation/sound_mode_fp.py

@@ -1493,6 +1493,21 @@ every mined candidate as a theorem; it is to create a large, auditable pool that
 can be stratified, manually labeled, filtered into blind splits, and reused by
 future tools.
 
+\subsection{Stratified precision and recall}
+
+The precision/recall artifact is now disaggregated before it is quoted.  A
+deterministic post-processor consumes the frozen per-model predictions and
+reports TP/FP/TN/FN by operator family, framework, bug class, model family, and
+source.  Each slice receives Wilson confidence intervals for precision, recall,
+false-positive rate, accuracy, and coverage, plus denominator gates that mark
+sparse slices as exploratory instead of paper-facing claims.  This is deliberately
+more conservative than a leaderboard table: the current executable corpus is
+small enough that most operator-family and model-family slices are underpowered,
+and the framework axis is honestly degenerate because all scored programs are
+PyTorch modules.  The mined GitHub corpus contributes only positive-only
+sample-size coverage for those same axes; it is not used to inflate measured
+precision or recall.
+
 \subsection{Clean-model protocol}
 
 False positives are more damaging than missed bugs for a CI gate.  Clean-model

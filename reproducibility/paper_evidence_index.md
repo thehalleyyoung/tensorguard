@@ -1,6 +1,6 @@
 # Paper-evidence index (Step 125)
 
-`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **45** evidence items (30 render a table); every generator script is present: **False**.
+`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **48** evidence items (31 render a table); every generator script is present: **False**.
 
 | stem | generator | table? | json | md |
 | --- | --- | --- | --- | --- |
@@ -20,6 +20,7 @@
 | cross_python_determinism | `reproducibility/cross_python_determinism.py` | True | y | y |
 | cross_version_stability | `reproducibility/cross_version_stability.py` | True | y | y |
 | data | `(missing)` | False | y | - |
+| deployment_gallery | `evaluation/deployment_gallery.py` | False | y | y |
 | differential_dispatcher | `reproducibility/differential_dispatcher.py` | True | y | y |
 | domain_ablation | `reproducibility/domain_ablation.py` | True | y | y |
 | effect_sizes | `reproducibility/effect_sizes.py` | True | y | y |
@@ -36,12 +37,14 @@
 | paper_evidence_index | `reproducibility/paper_evidence_index.py` | True | y | y |
 | quant_export_safety | `reproducibility/quant_export_safety.py` | True | y | y |
 | real_benchmarks_audit | `(missing)` | False | y | - |
+| real_model_operator_coverage | `evaluation/real_model_operator_coverage.py` | False | y | y |
 | reduced_product_ablation | `reproducibility/reduced_product_ablation.py` | True | y | y |
 | scaling_study | `reproducibility/scaling_study.py` | True | y | y |
 | significance | `evaluation/significance.py` | True | y | y |
 | smt_backend_comparison | `reproducibility/smt_backend_comparison.py` | True | y | y |
 | soundness_boundary | `reproducibility/soundness_boundary.py` | False | y | y |
 | statistical_power | `reproducibility/statistical_power.py` | True | y | y |
+| stratified_precision_recall | `evaluation/stratified_precision_recall.py` | True | y | y |
 | stub_autogen_coverage | `reproducibility/stub_autogen_coverage.py` | True | y | y |
 | tensor_parallel_sharding | `reproducibility/tensor_parallel_sharding.py` | False | y | y |
 | threats_to_validity | `reproducibility/threats_to_validity.py` | False | y | y |

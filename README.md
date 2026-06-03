@@ -604,6 +604,13 @@ execution, concrete inputs, or GPU required. The committed matrices live in
 `evaluation/confusion_matrices.json` and `evaluation/confusion_matrices.md`
 and are pinned by `tests/test_precision_recall.py`.
 
+`evaluation/stratified_precision_recall.py` then slices the same committed
+predictions by operator family, framework, bug class, model family, and source,
+attaching Wilson confidence intervals plus publication gates so sparse or
+degenerate slices are explicitly marked exploratory. The Step-249 mined corpus
+is used only for positive-only sample-size coverage, not over-claimed as scored
+precision/recall.
+
 ### Statistical significance of the comparison
 
 Point estimates are not enough for a paper: `evaluation/significance.py`
