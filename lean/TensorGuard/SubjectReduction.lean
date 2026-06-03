@@ -273,6 +273,126 @@ theorem program_outputs_have_positive_shapes {env env' : Env} {program : Program
     ∀ s, s ∈ env' → PosShape s :=
   whole_module_subject_reduction hEnv hWT hExec
 
+/-! ## Path-sensitive conditionals
+
+TensorGuard's sound mode treats tensor-value branch conditions as unsupported:
+they must abstain rather than silently producing a safe verdict.  The supported
+conditional fragment below is deliberately path-sensitive and conservative: both
+branches are checked from the same incoming environment, their output
+environments must agree exactly at the join, and only then can the joined
+environment feed downstream straight-line code.
+-/
+
+inductive BranchCond
+  | supported
+  | unsupported
+  deriving Repr, DecidableEq
+
+def envJoin (thenEnv elseEnv : Env) : Option Env :=
+  if thenEnv = elseEnv then some thenEnv else none
+
+theorem envJoin_preserves_wf {thenEnv elseEnv joined : Env}
+    (hThen : EnvWF thenEnv)
+    (hJoin : envJoin thenEnv elseEnv = some joined) :
+    EnvWF joined := by
+  unfold envJoin at hJoin
+  by_cases hEq : thenEnv = elseEnv
+  · simp [hEq] at hJoin
+    subst elseEnv
+    cases hJoin
+    exact hThen
+  · simp [hEq] at hJoin
+
+def condExec (env : Env) (cond : BranchCond)
+    (thenBranch elseBranch : Program) : Option Env :=
+  match cond with
+  | .unsupported => none
+  | .supported =>
+      match exec env thenBranch, exec env elseBranch with
+      | some thenEnv, some elseEnv => envJoin thenEnv elseEnv
+      | _, _ => none
+
+theorem condExec_some_iff_supported_join {env env' : Env}
+    {cond : BranchCond} {thenBranch elseBranch : Program} :
+    condExec env cond thenBranch elseBranch = some env' ↔
+      cond = BranchCond.supported ∧
+      ∃ thenEnv elseEnv,
+        exec env thenBranch = some thenEnv ∧
+        exec env elseBranch = some elseEnv ∧
+        envJoin thenEnv elseEnv = some env' := by
+  constructor
+  · intro hSome
+    cases cond with
+    | unsupported =>
+        simp [condExec] at hSome
+    | supported =>
+        refine ⟨rfl, ?_⟩
+        unfold condExec at hSome
+        cases hThen : exec env thenBranch with
+        | none =>
+            simp [hThen] at hSome
+        | some thenEnv =>
+            cases hElse : exec env elseBranch with
+            | none =>
+                simp [hThen, hElse] at hSome
+            | some elseEnv =>
+                have hJoin : envJoin thenEnv elseEnv = some env' := by
+                  simpa [condExec, hThen, hElse] using hSome
+                exact ⟨thenEnv, elseEnv, rfl, rfl, hJoin⟩
+  · intro h
+    rcases h with ⟨hCond, thenEnv, elseEnv, hThen, hElse, hJoin⟩
+    cases hCond
+    simp [condExec, hThen, hElse, hJoin]
+
+theorem sound_safe_implies_supported_branch {env env' : Env}
+    {cond : BranchCond} {thenBranch elseBranch : Program}
+    (hSome : condExec env cond thenBranch elseBranch = some env') :
+    cond = BranchCond.supported :=
+  (condExec_some_iff_supported_join.mp hSome).1
+
+theorem unsupported_branch_cannot_silently_safe {env env' : Env}
+    {thenBranch elseBranch : Program} :
+    condExec env BranchCond.unsupported thenBranch elseBranch ≠ some env' := by
+  intro hSome
+  have hSupported := sound_safe_implies_supported_branch hSome
+  cases hSupported
+
+theorem supported_conditional_subject_reduction {env env' : Env}
+    {thenBranch elseBranch : Program}
+    (hEnv : EnvWF env)
+    (hThenWT : ProgramWT env thenBranch)
+    (hElseWT : ProgramWT env elseBranch)
+    (hExec : condExec env BranchCond.supported thenBranch elseBranch = some env') :
+    EnvWF env' := by
+  have hChar := condExec_some_iff_supported_join.mp hExec
+  rcases hChar with ⟨_hCond, thenEnv, elseEnv, hThenExec, hElseExec, hJoin⟩
+  have hThenEnv : EnvWF thenEnv :=
+    exec_subject_reduction hEnv hThenWT hThenExec
+  have _hElseEnv : EnvWF elseEnv :=
+    exec_subject_reduction hEnv hElseWT hElseExec
+  exact envJoin_preserves_wf hThenEnv hJoin
+
+def condThenExec (env : Env) (cond : BranchCond)
+    (thenBranch elseBranch tail : Program) : Option Env :=
+  match condExec env cond thenBranch elseBranch with
+  | some joinedEnv => exec joinedEnv tail
+  | none => none
+
+theorem conditional_then_program_subject_reduction {env joinedEnv env' : Env}
+    {thenBranch elseBranch tail : Program}
+    (hEnv : EnvWF env)
+    (hThenWT : ProgramWT env thenBranch)
+    (hElseWT : ProgramWT env elseBranch)
+    (hTailWT : ProgramWT joinedEnv tail)
+    (hCond : condExec env BranchCond.supported thenBranch elseBranch = some joinedEnv)
+    (hExec : condThenExec env BranchCond.supported thenBranch elseBranch tail = some env') :
+    EnvWF env' := by
+  have hJoined : EnvWF joinedEnv :=
+    supported_conditional_subject_reduction hEnv hThenWT hElseWT hCond
+  unfold condThenExec at hExec
+  simp [hCond] at hExec
+  exact exec_subject_reduction hJoined hTailWT hExec
+
 /-! ## Current non-heuristic registry surface
 
 The list is intentionally just the current registry surface, not a per-op shape
@@ -465,6 +585,47 @@ def attentionProgram : Program := [
 theorem attention_exec_shape :
     exec [[2, 4, 5, 8], [2, 4, 7, 8], [2, 4, 7, 9]] attentionProgram =
       some [[2, 4, 5, 8], [2, 4, 7, 8], [2, 4, 7, 9], [2, 4, 5, 9], [2, 4, 5, 16]] := by
+  decide
+
+/-! ## Concrete theorem-shaped conditional modules -/
+
+def branchThenProgram : Program := [
+  ⟨.linear [2] 8 16, [0]⟩,
+  ⟨.pointwise "torch.relu" [2, 16], [1]⟩
+]
+
+def branchElseProgram : Program := [
+  ⟨.linear [2] 8 16, [0]⟩,
+  ⟨.layerNorm [2] [16], [1]⟩
+]
+
+def branchTailProgram : Program := [
+  ⟨.linear [2] 16 4, [2]⟩
+]
+
+theorem conditional_join_exec_shape :
+    condExec [[2, 8]] BranchCond.supported branchThenProgram branchElseProgram =
+      some [[2, 8], [2, 16], [2, 16]] := by
+  decide
+
+theorem conditional_tail_exec_shape :
+    condThenExec [[2, 8]] BranchCond.supported
+      branchThenProgram branchElseProgram branchTailProgram =
+      some [[2, 8], [2, 16], [2, 16], [2, 4]] := by
+  decide
+
+def branchElseDivergentProgram : Program := [
+  ⟨.linear [2] 8 12, [0]⟩
+]
+
+theorem divergent_branch_join_rejected :
+    condExec [[2, 8]] BranchCond.supported
+      branchThenProgram branchElseDivergentProgram = none := by
+  decide
+
+theorem unsupported_branch_abstains_example :
+    condExec [[2, 8]] BranchCond.unsupported
+      branchThenProgram branchElseProgram = none := by
   decide
 
 end SubjectReduction

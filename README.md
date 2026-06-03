@@ -129,11 +129,12 @@ runtime errors in ML codebases before any code runs.
   insertion/grid-sampler rank and positive-size contracts),
   each
   replayed op-by-op on real tensors and cross-checked against torch *and* the
-  verifier's own propagators. Whole-module straight-line composition is now
-  Lean-checked too (`lean/TensorGuard/SubjectReduction.lean`): local
-  complete/sound transfer certificates compose across an entire module, with
-  theorem-shaped MLP, CNN-head, indexing, and SDPA programs cross-checked against
-  real PyTorch. Every audited public theorem is
+  verifier's own propagators. Whole-module composition is now Lean-checked too
+  (`lean/TensorGuard/SubjectReduction.lean`): local complete/sound transfer
+  certificates compose across straight-line modules and supported conditional
+  joins, while unsupported tensor-value branch points cannot silently produce a
+  safe environment. Theorem-shaped MLP, CNN-head, indexing, SDPA, and branch
+  programs are cross-checked against real PyTorch. Every audited public theorem is
   machine-audited **sorry-free**, on only the trusted kernel axioms.
 - **Per-domain verification** — beyond shape, the device and gradient
   domains each refute real bugs that the base shape view misses (a cuda

@@ -178,6 +178,22 @@ import TensorGuard
 #print axioms TensorGuard.SubjectReduction.indexing_exec_shape
 #print axioms TensorGuard.SubjectReduction.attention_exec_shape
 
+-- Path-sensitive conditional subject reduction (Step 239): supported branch
+-- points check both paths and require equal joined output environments before
+-- downstream code can run; unsupported branch points cannot produce a SAFE
+-- environment, so sound mode conservatively abstains instead of silently
+-- verifying tensor-value control flow.
+#print axioms TensorGuard.SubjectReduction.envJoin_preserves_wf
+#print axioms TensorGuard.SubjectReduction.condExec_some_iff_supported_join
+#print axioms TensorGuard.SubjectReduction.sound_safe_implies_supported_branch
+#print axioms TensorGuard.SubjectReduction.unsupported_branch_cannot_silently_safe
+#print axioms TensorGuard.SubjectReduction.supported_conditional_subject_reduction
+#print axioms TensorGuard.SubjectReduction.conditional_then_program_subject_reduction
+#print axioms TensorGuard.SubjectReduction.conditional_join_exec_shape
+#print axioms TensorGuard.SubjectReduction.conditional_tail_exec_shape
+#print axioms TensorGuard.SubjectReduction.divergent_branch_join_rejected
+#print axioms TensorGuard.SubjectReduction.unsupported_branch_abstains_example
+
 -- Cross-domain (shape × device) encoding faithfulness (Step 136): a transfer op
 -- preserves shape exactly (device free); a non-transfer op preserves device
 -- exactly (shape free), so the solver flags a cross-domain violation iff the

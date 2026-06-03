@@ -682,17 +682,26 @@ divisibility failures, and unusable dense tails.
 The Lean audit checks theorem statements for sorry-free status under the
 trusted kernel axioms used by the environment.
 
-The newest formal layer lifts those local facts to whole straight-line modules.
+The newest formal layer lifts those local facts to whole modules.
 \texttt{TensorGuard.SubjectReduction} defines a small environment-based tensor
 language whose statements append outputs from primitive proof-backed families
 or from explicit proof-carrying local transfer certificates.  It proves
 \texttt{step\_subject\_reduction}, \texttt{exec\_subject\_reduction}, and
 \texttt{whole\_module\_subject\_reduction}: if every local complete/sound
-transfer succeeds, every intermediate and final tensor in the entire
-straight-line module remains well-formed.  The registry surface is synchronized
-with the current 136 non-heuristic operator-confidence entries, while complex
-operators still rely on their local conformance tests rather than being
-over-claimed in the composition proof.
+transfer succeeds, every intermediate and final tensor in the straight-line
+fragment remains well-formed.  The same artifact now models supported
+conditionals with path-sensitive joins: both branches must execute from the same
+incoming environment and agree on the joined output environment before
+downstream code can run.  The abstention theorem is intentionally non-vacuous:
+any branch point that produces a safe environment is characterized as a
+supported, successfully joined conditional, so unsupported tensor-value branch
+conditions cannot silently certify a module.  Conformance tests connect that
+abstract theorem to the shipped API by showing \texttt{self.training} branches
+are not static fragment violations, while a tensor-value branch whose two real
+PyTorch paths both have shape \((2,8)\) still yields \unknown{} in sound mode.
+The registry surface is synchronized with the current 136 non-heuristic
+operator-confidence entries, while complex operators still rely on their local
+conformance tests rather than being over-claimed in the composition proof.
 
 The formalization is intentionally scoped.  It does not claim to prove all of
 PyTorch.  Instead, it proves the algebraic cores that the implementation relies
@@ -858,10 +867,11 @@ leaderboard that makes tensor-verifier progress measurable.
 both principled and practical.  The repository combines a refinement-type view
 of tensors, a multi-domain abstract state, Z3-backed checks, CEGAR refinement,
 soundness modes, precise operator transfer functions, real frontends, formal
-artifacts, and an unusually broad reproducibility harness.  The latest SDPA proof work illustrates the project's standard: match PyTorch's
-exact edge-case semantics, propagate precision to downstream model checks,
-abstain on symbolic or value-dependent uncertainty, and pin the behavior with
-Lean plus live-library tests.
+artifacts, and an unusually broad reproducibility harness.  The latest
+subject-reduction and SDPA proof work illustrates the project's standard: match
+PyTorch's exact edge-case semantics, compose local certificates through real
+module structure, abstain on symbolic or value-dependent uncertainty, and pin
+the behavior with Lean plus live-library tests.
 
 The result is a verifier that catches high-value architecture, device, dtype,
 phase, gradient, export, and deployment bugs before expensive training or
@@ -978,8 +988,9 @@ CLI, JSON, JUnit, SARIF, GitHub annotations, GitHub Action, pre-commit, pytest
 plugin, nox/tox, watch mode, Jupyter, decorators, and framework hooks. \\
 \hline
 Formal artifacts &
-Lean proof files, axiom audits, SMT encoding faithfulness checks, generated
-einops conformance bridges, and proof certificate infrastructure. \\
+Lean proof files, axiom audits, conditional/straight-line subject reduction,
+SMT encoding faithfulness checks, generated conformance bridges, and proof
+certificate infrastructure. \\
 \hline
 Reproducibility &
 Frozen corpora, generated dashboards, numeric claim audits, benchmark scripts,
