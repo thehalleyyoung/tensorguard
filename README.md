@@ -235,7 +235,8 @@ runtime errors in ML codebases before any code runs.
 - **Launch-ready evidence** — public launch materials combine real demos,
   reproducibility ledgers, upstream RFCs, and the compatibility/support promise
   into an auditable campaign, including a fresh-dry-run-backed terminal GIF
-  (`docs/launch/quickstart_terminal_demo.gif`).
+  (`docs/launch/quickstart_terminal_demo.gif`) and a real-LSP-backed editor
+  diagnostics GIF (`docs/launch/editor_lsp_demo.gif`).
 - **Sub-second analysis** — typical models verified in < 1 second
 
 ---
@@ -2369,7 +2370,8 @@ autofix — clearing the moment the code becomes correct. The bundled VS Code
 extension, Neovim Lua client, and structurally validated JetBrains LSP plugin
 template are thin transports over it, not re-implementations. `tensorguard
 verify --lsp FILE` also emits the same payloads as one-shot JSON. See
-`src/lsp_server.py`, `src/lsp_provider.py`, `editors/`, and
+the generated demo `docs/launch/editor_lsp_demo.gif`, `src/lsp_server.py`,
+`src/lsp_provider.py`, `editors/`, and
 `tests/test_lsp_server.py` / `tests/test_editor_lsp_clients.py`.
 
 ### Jupyter / notebook integration

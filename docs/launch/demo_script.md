@@ -12,6 +12,8 @@ matching PyTorch kernel would fail.
 For the shareable terminal capture, use
 `docs/launch/quickstart_terminal_demo.gif`; it is generated from
 `reproducibility/launch_dry_run.json`, not hand-edited.
+For the editor capture, use `docs/launch/editor_lsp_demo.gif`; it is generated
+from a real `verify_architecture` result rendered through `src.lsp_provider`.
 
 ## Evidence tour
 
@@ -20,6 +22,8 @@ For the shareable terminal capture, use
 - Open `reproducibility/artifact_index.md` to show the generated artifact hash ledger.
 - Open `reproducibility/release_readiness.md` to show the launch gate.
 - Open `reproducibility/launch_dry_run.md` to show the fresh-venv demo proof.
+- Open `reproducibility/editor_lsp_demo_gif.md` to show the LSP squiggle,
+  hover, and quick-fix payload behind the editor GIF.
 
 ## Upstream close
 

@@ -185,14 +185,19 @@ materializes a generated model-gallery bug and proves the same fresh install
 reports \unsafe{} before the matching eager PyTorch kernel would fail.  The
 shareable terminal capture is generated from that dry-run JSON into
 \texttt{docs/launch/quickstart\_terminal\_demo.gif}, so the GIF cannot drift from
-the committed fresh-machine evidence.
+the committed fresh-machine evidence.  A companion editor capture,
+\texttt{docs/launch/editor\_lsp\_demo.gif}, is generated from a real
+\texttt{verify\_architecture} result rendered through the shared LSP provider,
+so the squiggle, hover, and quick-fix it shows are backed by the same payload an
+editor client receives.
 
 The editor surface is likewise centralized.  A real JSON-RPC language server
 over stdio analyzes unsaved buffers and publishes diagnostics, hover shapes, and
 quick-fix code actions from the shared \texttt{lsp\_provider}.  VS Code,
 Neovim, and the JetBrains plugin template launch that same
 \texttt{src.lsp\_server} process, keeping editor support as transport glue
-rather than a second verifier.
+rather than a second verifier; the generated editor GIF is a compact visual
+proof of that boundary.
 
 Extension is split into two trust levels.  Untrusted community contributions use
 declarative JSON stubs with mandatory provenance and executed conformance cases;

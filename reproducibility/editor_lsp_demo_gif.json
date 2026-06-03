@@ -1,0 +1,36 @@
+{
+  "bug_count": 4,
+  "gif": {
+    "bytes": 33760,
+    "duration_seconds": 5.1,
+    "frame_count": 6,
+    "height": 360,
+    "path": "docs/launch/editor_lsp_demo.gif",
+    "sha256": "7f06bf38fd21ab45dc219f3e18b44d17190ffde49d244bf56cd41356c98487cb",
+    "width": 640
+  },
+  "lsp": {
+    "code_action_count": 1,
+    "diagnostic_count": 1,
+    "diagnostic_line_1indexed": 10,
+    "diagnostic_message": "Layer fc2 (line 10) expects input dimension 30, but receives (batch, 20) from h",
+    "hover_contents": "h : (batch, 20)",
+    "hover_count": 1,
+    "hover_line_1indexed": 9,
+    "quickfix_title": "tensorguard: set in_features=20 on fc2"
+  },
+  "schema": "tensorguard.editor_lsp_demo_gif/v1",
+  "source": "inline demo nn.Module verified by src.api.verify_architecture",
+  "source_sha256": "e1ac3c2d92020f7a9db2b36811f35b2920ed9ce3eca138ba465df52076d91074",
+  "step": 291,
+  "transcript": [
+    "OPEN DEMO.PY IN VS CODE",
+    "L10: INLINE SHAPE SQUIGGLE",
+    "FC2 EXPECTS 30 BUT GETS BATCH,20",
+    "L9: HOVER H : (BATCH,20)",
+    "QUICK FIX: SET IN_FEATURES=20",
+    "SOURCE: REAL LSP PROVIDER REPORT"
+  ],
+  "uri": "file:///demo.py",
+  "verdict": "UNSAFE"
+}
