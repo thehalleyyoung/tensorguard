@@ -75,7 +75,9 @@ runtime errors in ML codebases before any code runs.
   Dynamo/export graph-break attribution, CUDA graph capture
   eligibility (dynamic allocation, data-dependent shapes, unsupported ops, and
   static-input replay contracts), plus TorchServe/FastAPI request→preprocess→model→response
-  schema gates that reject bad preprocessing layouts before forward execution
+  schema gates that reject bad preprocessing layouts before forward execution and
+  a real-model deployment gallery spanning ResNet, ViT, Llama-style, diffusion,
+  recommender, and speech blocks before and after export
   (`verify_gguf_export_contract`, `verify_checkpoint_state_dict`,
   `verify_lora_adapter_compatibility`, `verify_optimizer_state`,
   `verify_cuda_graph_capture_eligibility`, `verify_serving_schema`).

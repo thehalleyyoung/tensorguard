@@ -1045,7 +1045,8 @@ Gradient and training-loop contracts beyond forward shape checking. \\
 \texttt{tests/test\_cuda\_graph\_capture.py},
 \texttt{tests/test\_quant\_export\_checks.py},
 \texttt{tests/test\_quantization\_verify.py},
-\texttt{tests/test\_deployment\_budgets.py} &
+\texttt{tests/test\_deployment\_budgets.py},
+\texttt{tests/test\_deployment\_gallery.py} &
 Deployment-facing gates for export, \texttt{torch.export.Dim} ranges and
 relations, ONNX opset-version availability and dynamic-shape support, AOT
 package input/layout/dtype/device/lowering contracts, and source/eager/FX
@@ -1400,7 +1401,10 @@ and \texttt{torch.dynamo} post-compile checks when the interpreter supports
 rather than false passes.  Its committed artifact stores deterministic
 latency/memory budgets plus non-dominated per-backend Pareto curves, while the
 live gate measures wall-clock time and verifier-stage memory on real
-\texttt{nn.Module}s.
+\texttt{nn.Module}s.  A companion deployment gallery stresses architectural
+diversity instead of cost: compact ResNet, ViT, Llama-style, diffusion U-Net,
+recommender, and speech blocks execute eagerly, then pass both the FX pre-export
+gate and the \texttt{torch.export} post-capture gate in supported environments.
 
 \begin{longtable}{|p{0.25\linewidth}|p{0.31\linewidth}|p{0.33\linewidth}|}
 \hline
@@ -1436,6 +1440,10 @@ confidence tables remain in sync with code. \\
 \hline
 Deployment budget gate & Release-host regressions in export/compile checks &
 Pre/post export and compile gates stay within latency and memory budgets. \\
+\hline
+Deployment gallery & Architecture-specific export blind spots &
+Representative ResNet, ViT, Llama-style, diffusion, recommender, and speech
+blocks pass the same pre/post export gates. \\
 \hline
 Dashboard regeneration & Stale paper claims & Committed result artifacts match
 freshly regenerated outputs. \\
@@ -1512,6 +1520,13 @@ budget: FX runs before export and compile, \texttt{torch.export} runs after
 export graph capture, and Dynamo runs after compile capture on supported
 interpreters.  The manifest records per-backend latency/memory Pareto curves, and
 the live gate fails if any supported row is unsafe or over budget.
+\texttt{evaluation/deployment\_gallery.py} complements that budget gate with a
+model-family gallery: ResNet, ViT, Llama-style, diffusion U-Net, recommender, and
+speech modules are instantiated as real PyTorch code, executed to confirm their
+deployment input/output contract, then verified before and after export.  The
+committed manifest records the model families, input specs, operator surfaces,
+and gate matrix; the live gate proves the gallery still passes on the current
+torch stack.
 For model serving, \texttt{src/serving\_schema.py} splits a pure
 \texttt{verify\_serving\_schema} checker from guarded wrappers for
 FastAPI-style callables and TorchServe-style handlers.  The pure gate validates

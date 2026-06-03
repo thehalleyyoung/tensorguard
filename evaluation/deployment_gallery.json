@@ -1,0 +1,309 @@
+{
+  "families": [
+    "Diffusion U-Net",
+    "Llama-style block",
+    "Recommender",
+    "ResNet",
+    "Speech",
+    "ViT"
+  ],
+  "gate_rows": [
+    {
+      "backend": "torch.export",
+      "description": "Verify the graph captured by torch.export when the backend is available.",
+      "family": "Diffusion U-Net",
+      "gate": "src.export_extractor.verify_module_export",
+      "model": "diffusion_unet_skip",
+      "phase": "after_export",
+      "required": false
+    },
+    {
+      "backend": "fx",
+      "description": "Verify the live nn.Module before handing it to an exporter.",
+      "family": "Diffusion U-Net",
+      "gate": "src.fx_extractor.verify_module(backend='fx')",
+      "model": "diffusion_unet_skip",
+      "phase": "before_export",
+      "required": true
+    },
+    {
+      "backend": "torch.export",
+      "description": "Verify the graph captured by torch.export when the backend is available.",
+      "family": "Llama-style block",
+      "gate": "src.export_extractor.verify_module_export",
+      "model": "llama_style_mlp_block",
+      "phase": "after_export",
+      "required": false
+    },
+    {
+      "backend": "fx",
+      "description": "Verify the live nn.Module before handing it to an exporter.",
+      "family": "Llama-style block",
+      "gate": "src.fx_extractor.verify_module(backend='fx')",
+      "model": "llama_style_mlp_block",
+      "phase": "before_export",
+      "required": true
+    },
+    {
+      "backend": "torch.export",
+      "description": "Verify the graph captured by torch.export when the backend is available.",
+      "family": "Recommender",
+      "gate": "src.export_extractor.verify_module_export",
+      "model": "recommender_two_tower",
+      "phase": "after_export",
+      "required": false
+    },
+    {
+      "backend": "fx",
+      "description": "Verify the live nn.Module before handing it to an exporter.",
+      "family": "Recommender",
+      "gate": "src.fx_extractor.verify_module(backend='fx')",
+      "model": "recommender_two_tower",
+      "phase": "before_export",
+      "required": true
+    },
+    {
+      "backend": "torch.export",
+      "description": "Verify the graph captured by torch.export when the backend is available.",
+      "family": "ResNet",
+      "gate": "src.export_extractor.verify_module_export",
+      "model": "resnet_residual_stage",
+      "phase": "after_export",
+      "required": false
+    },
+    {
+      "backend": "fx",
+      "description": "Verify the live nn.Module before handing it to an exporter.",
+      "family": "ResNet",
+      "gate": "src.fx_extractor.verify_module(backend='fx')",
+      "model": "resnet_residual_stage",
+      "phase": "before_export",
+      "required": true
+    },
+    {
+      "backend": "torch.export",
+      "description": "Verify the graph captured by torch.export when the backend is available.",
+      "family": "Speech",
+      "gate": "src.export_extractor.verify_module_export",
+      "model": "speech_conv_gru_encoder",
+      "phase": "after_export",
+      "required": false
+    },
+    {
+      "backend": "fx",
+      "description": "Verify the live nn.Module before handing it to an exporter.",
+      "family": "Speech",
+      "gate": "src.fx_extractor.verify_module(backend='fx')",
+      "model": "speech_conv_gru_encoder",
+      "phase": "before_export",
+      "required": true
+    },
+    {
+      "backend": "torch.export",
+      "description": "Verify the graph captured by torch.export when the backend is available.",
+      "family": "ViT",
+      "gate": "src.export_extractor.verify_module_export",
+      "model": "vit_patch_mixer",
+      "phase": "after_export",
+      "required": false
+    },
+    {
+      "backend": "fx",
+      "description": "Verify the live nn.Module before handing it to an exporter.",
+      "family": "ViT",
+      "gate": "src.fx_extractor.verify_module(backend='fx')",
+      "model": "vit_patch_mixer",
+      "phase": "before_export",
+      "required": true
+    }
+  ],
+  "meta": {
+    "command": "PYTHONPATH=. python3 evaluation/deployment_gallery.py",
+    "gate_command": "PYTHONPATH=. python3 evaluation/deployment_gallery.py --gate",
+    "generated_by": "evaluation/deployment_gallery.py",
+    "note": "Deterministic real-model deployment gallery. The live gate executes each nn.Module, verifies the pre-export FX graph, and verifies the post-export torch.export graph when that backend is available."
+  },
+  "models": [
+    {
+      "deployment_note": "Covers the canonical residual image deployment path.",
+      "description": "Residual Conv-BN-ReLU image stage with projection skip and classifier head.",
+      "expected_output_shape": [
+        1,
+        5
+      ],
+      "family": "ResNet",
+      "input_dtypes": {},
+      "input_shapes": {
+        "x": [
+          1,
+          3,
+          32,
+          32
+        ]
+      },
+      "model": "resnet_residual_stage",
+      "operator_surface": [
+        "AdaptiveAvgPool2d",
+        "BatchNorm2d",
+        "Conv2d",
+        "Linear",
+        "ResidualAdd",
+        "flatten",
+        "relu"
+      ],
+      "parameter_count": 917
+    },
+    {
+      "deployment_note": "Exercises patchification and token mixing without external torchvision weights.",
+      "description": "Patch-embedding classifier with token-axis transpose, LayerNorm, GELU, and pooling.",
+      "expected_output_shape": [
+        1,
+        3
+      ],
+      "family": "ViT",
+      "input_dtypes": {},
+      "input_shapes": {
+        "x": [
+          1,
+          3,
+          32,
+          32
+        ]
+      },
+      "model": "vit_patch_mixer",
+      "operator_surface": [
+        "Conv2d",
+        "LayerNorm",
+        "Linear",
+        "flatten",
+        "gelu",
+        "mean",
+        "transpose"
+      ],
+      "parameter_count": 1139
+    },
+    {
+      "deployment_note": "Uses integer token IDs for both eager execution and export capture.",
+      "description": "Token embedding, normalization, SwiGLU-style gated MLP, and sequence pooling.",
+      "expected_output_shape": [
+        2,
+        16
+      ],
+      "family": "Llama-style block",
+      "input_dtypes": {
+        "tokens": "long"
+      },
+      "input_shapes": {
+        "tokens": [
+          2,
+          8
+        ]
+      },
+      "model": "llama_style_mlp_block",
+      "operator_surface": [
+        "Embedding",
+        "LayerNorm",
+        "Linear",
+        "mean",
+        "mul",
+        "silu"
+      ],
+      "parameter_count": 2672
+    },
+    {
+      "deployment_note": "Input size is divisible by the downsample factor so skip tensors realign exactly.",
+      "description": "Tiny encoder/decoder U-Net with strided downsample, transpose-conv upsample, and skip concat.",
+      "expected_output_shape": [
+        1,
+        4,
+        16,
+        16
+      ],
+      "family": "Diffusion U-Net",
+      "input_dtypes": {},
+      "input_shapes": {
+        "x": [
+          1,
+          4,
+          16,
+          16
+        ]
+      },
+      "model": "diffusion_unet_skip",
+      "operator_surface": [
+        "Conv2d",
+        "ConvTranspose2d",
+        "cat",
+        "relu"
+      ],
+      "parameter_count": 4372
+    },
+    {
+      "deployment_note": "Export examples materialize long ID tensors so the embedding contract is real.",
+      "description": "Two sparse embedding towers joined with dense features and an MLP scorer.",
+      "expected_output_shape": [
+        4,
+        1
+      ],
+      "family": "Recommender",
+      "input_dtypes": {
+        "item_ids": "long",
+        "user_ids": "long"
+      },
+      "input_shapes": {
+        "dense": [
+          4,
+          3
+        ],
+        "item_ids": [
+          4,
+          3
+        ],
+        "user_ids": [
+          4,
+          3
+        ]
+      },
+      "model": "recommender_two_tower",
+      "operator_surface": [
+        "Embedding",
+        "Linear",
+        "cat",
+        "mean",
+        "relu"
+      ],
+      "parameter_count": 2737
+    },
+    {
+      "deployment_note": "Represents speech encoders with time-axis subsampling and recurrent state contracts.",
+      "description": "Log-mel style Conv1d subsampler feeding a batch-first GRU and classifier.",
+      "expected_output_shape": [
+        2,
+        12
+      ],
+      "family": "Speech",
+      "input_dtypes": {},
+      "input_shapes": {
+        "x": [
+          2,
+          80,
+          32
+        ]
+      },
+      "model": "speech_conv_gru_encoder",
+      "operator_surface": [
+        "Conv1d",
+        "GRU",
+        "Linear",
+        "mean",
+        "relu",
+        "transpose"
+      ],
+      "parameter_count": 10316
+    }
+  ],
+  "reproducible_artifacts": [
+    "evaluation/deployment_gallery.json",
+    "evaluation/deployment_gallery.md"
+  ]
+}
