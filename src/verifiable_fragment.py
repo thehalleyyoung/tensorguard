@@ -263,7 +263,9 @@ SUPPORTED_TENSOR_METHODS: Set[str] = {
 }
 
 SUPPORTED_TORCH_FUNCTIONS: Set[str] = {
-    "torch.cat", "torch.stack", "torch.matmul", "torch.mm", "torch.bmm",
+    "torch.cat", "torch.stack", "torch.hstack", "torch.vstack",
+    "torch.dstack", "torch.column_stack", "torch.row_stack",
+    "torch.matmul", "torch.mm", "torch.bmm",
     "torch.flatten", "torch.relu", "torch.sigmoid", "torch.tanh",
     "torch.softmax", "torch.dropout", "torch.where",
     "torch.chunk", "torch.split", "torch.einsum",

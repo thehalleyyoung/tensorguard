@@ -294,7 +294,7 @@ class OpKind(Enum):
     INTERPOLATE = auto()      # F.interpolate
     SUBSCRIPT = auto()        # x[:, -1, :]  (tensor indexing/slicing)
     RETURN = auto()           # return statement
-    STACK = auto()            # torch.stack([a, b], dim=...)
+    STACK = auto()            # torch.stack / hstack / vstack / dstack family
     WHERE = auto()            # torch.where(cond, a, b)
     CHUNK = auto()            # torch.chunk / x.chunk
     SPLIT = auto()            # torch.split / x.split
@@ -2574,6 +2574,11 @@ _FUNCTIONAL_OPS: Dict[str, OpKind] = {
     "log_softmax": OpKind.SOFTMAX,
     "cat": OpKind.CAT,
     "stack": OpKind.STACK,
+    "hstack": OpKind.STACK,
+    "vstack": OpKind.STACK,
+    "dstack": OpKind.STACK,
+    "column_stack": OpKind.STACK,
+    "row_stack": OpKind.STACK,
     "where": OpKind.WHERE,
     "chunk": OpKind.CHUNK,
     "split": OpKind.SPLIT,
@@ -4949,8 +4954,12 @@ class _ForwardExtractor(ast.NodeVisitor):
             # Functional ops
             if short in _FUNCTIONAL_OPS:
                 op = _FUNCTIONAL_OPS[short]
-                # For cat/stack, first arg is a list of tensors
-                if op in (OpKind.CAT, OpKind.STACK) and node.args and isinstance(node.args[0], ast.List):
+                # For cat/stack-family calls, first arg is a list/tuple of tensors.
+                if (
+                    op in (OpKind.CAT, OpKind.STACK)
+                    and node.args
+                    and isinstance(node.args[0], (ast.List, ast.Tuple))
+                ):
                     inputs = [self._resolve_arg(elt) for elt in node.args[0].elts]
                 elif op in (OpKind.CHUNK, OpKind.SPLIT):
                     inputs = [self._resolve_arg(node.args[0])] if node.args else []
@@ -4971,6 +4980,16 @@ class _ForwardExtractor(ast.NodeVisitor):
                 for kw in node.keywords:
                     if kw.arg:
                         params_dict[kw.arg] = _const_value(kw.value)
+
+                if op == OpKind.STACK:
+                    params_dict["stack_kind"] = short
+                    if len(node.args) >= 2:
+                        params_dict["dim"] = _const_value(
+                            node.args[1], self._scalar_attrs)
+                    for kw in node.keywords:
+                        if kw.arg == "dim":
+                            params_dict["dim"] = _const_value(
+                                kw.value, self._scalar_attrs)
 
                 if op == OpKind.INTERPOLATE:
                     params_dict["__interpolate_args_observed__"] = True
@@ -8615,6 +8634,151 @@ _LAYER_PROPAGATORS = {
 }
 
 
+def _same_dim_when_decidable(a: ShapeDim, b: ShapeDim) -> bool:
+    """Return False only when two static dimensions are known to differ."""
+    if not a.is_symbolic and not b.is_symbolic:
+        return a.value == b.value
+    return True
+
+
+def _promote_stack_family_shape(
+    shape: TensorShape,
+    kind: str,
+) -> TensorShape:
+    """Apply PyTorch's rank promotions for stack aliases."""
+    dims = shape.dims
+    if kind == "hstack":
+        if shape.ndim == 0:
+            return TensorShape((ShapeDim(1),))
+        return shape
+    if kind in ("vstack", "row_stack"):
+        if shape.ndim == 0:
+            return TensorShape((ShapeDim(1), ShapeDim(1)))
+        if shape.ndim == 1:
+            return TensorShape((ShapeDim(1), dims[0]))
+        return shape
+    if kind == "dstack":
+        if shape.ndim == 0:
+            return TensorShape((ShapeDim(1), ShapeDim(1), ShapeDim(1)))
+        if shape.ndim == 1:
+            return TensorShape((ShapeDim(1), dims[0], ShapeDim(1)))
+        if shape.ndim == 2:
+            return TensorShape((dims[0], dims[1], ShapeDim(1)))
+        return shape
+    if kind == "column_stack":
+        if shape.ndim == 0:
+            return TensorShape((ShapeDim(1), ShapeDim(1)))
+        if shape.ndim == 1:
+            return TensorShape((dims[0], ShapeDim(1)))
+        return shape
+    return shape
+
+
+def _concat_shapes_for_stack_family(
+    shapes: List[TensorShape],
+    kind: str,
+    output_name: str,
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    """Shape rule for hstack/vstack/dstack/column_stack/row_stack."""
+    promoted = [_promote_stack_family_shape(s, kind) for s in shapes]
+    first = promoted[0]
+    for i, s in enumerate(promoted[1:], 1):
+        if s.ndim != first.ndim:
+            return None, (
+                f"{kind}: tensors have different ndim "
+                f"({first.ndim} vs {s.ndim})"
+            )
+
+    if kind == "hstack":
+        cat_dim = 0 if first.ndim <= 1 else 1
+    elif kind in ("vstack", "row_stack"):
+        cat_dim = 0
+    else:
+        cat_dim = 2 if kind == "dstack" else 1
+
+    if first.ndim == 0 or cat_dim >= first.ndim:
+        return None, f"{kind}: dim {cat_dim} out of range for {first.ndim}D tensor"
+
+    for i, s in enumerate(promoted[1:], 1):
+        for dim in range(first.ndim):
+            if dim == cat_dim:
+                continue
+            if not _same_dim_when_decidable(first.dims[dim], s.dims[dim]):
+                return None, (
+                    f"{kind}: dimension {dim} mismatch: "
+                    f"{first.dims[dim].value} vs {s.dims[dim].value} "
+                    f"(cat along dim={cat_dim})"
+                )
+
+    out_dims = list(first.dims)
+    total = out_dims[cat_dim]
+    if total.is_symbolic:
+        out_dims[cat_dim] = ShapeDim(f"_{kind}_{output_name}")
+    else:
+        cat_sum = total.value
+        all_concrete = True
+        for s in promoted[1:]:
+            d = s.dims[cat_dim]
+            if d.is_symbolic:
+                all_concrete = False
+                break
+            cat_sum += d.value
+        out_dims[cat_dim] = (
+            ShapeDim(cat_sum)
+            if all_concrete else ShapeDim(f"_{kind}_{output_name}")
+        )
+    return TensorShape(tuple(out_dims)), None
+
+
+def _compute_stack_family_shape(
+    shapes: List[TensorShape],
+    params: Dict[str, Any],
+    output_name: str,
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    """Exact static shape rule for torch.stack and its stack aliases."""
+    kind = params.get("stack_kind", "stack")
+    if kind == "row_stack":
+        # PyTorch reports row_stack empty-input errors as vstack; keep all other
+        # diagnostics under the public alias used in source.
+        public_kind = "row_stack"
+    else:
+        public_kind = kind
+
+    if not shapes:
+        err_kind = "vstack" if kind == "row_stack" else public_kind
+        return None, f"{err_kind} expects a non-empty TensorList"
+
+    if kind in ("hstack", "vstack", "dstack", "column_stack", "row_stack"):
+        return _concat_shapes_for_stack_family(shapes, public_kind, output_name)
+
+    first = shapes[0]
+    for i, s in enumerate(shapes[1:], 1):
+        if s.ndim != first.ndim:
+            return None, (
+                f"stack: tensors have different ndim ({first.ndim} vs {s.ndim})"
+            )
+        for dim, (d_first, d_other) in enumerate(zip(first.dims, s.dims)):
+            if not _same_dim_when_decidable(d_first, d_other):
+                return None, (
+                    f"stack: dimension {dim} mismatch: "
+                    f"{d_first.value} vs {d_other.value}"
+                )
+
+    stack_dim = params.get("dim", 0)
+    if not isinstance(stack_dim, int) or isinstance(stack_dim, bool):
+        return TensorShape(
+            tuple(ShapeDim(f"_stack_{output_name}_{i}") for i in range(first.ndim + 1))
+        ), None
+    norm_dim = stack_dim + first.ndim + 1 if stack_dim < 0 else stack_dim
+    if norm_dim < 0 or norm_dim > first.ndim:
+        return None, (
+            f"stack: dim {stack_dim} out of range for {first.ndim}D tensors"
+        )
+    out_dims = list(first.dims)
+    out_dims.insert(norm_dim, ShapeDim(len(shapes)))
+    return TensorShape(tuple(out_dims)), None
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # 7b. Symbolic state for Z3-backed constraint verification
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -9913,7 +10077,9 @@ class ConstraintVerifier:
             return []
         cs: list = []
         # Binary ops: all inputs on the same device
-        if step.op in (OpKind.MATMUL, OpKind.ADD, OpKind.CAT, OpKind.MULTIPLY):
+        if step.op in (
+            OpKind.MATMUL, OpKind.ADD, OpKind.CAT, OpKind.STACK, OpKind.MULTIPLY
+        ):
             devs = [k.device_vars[i]
                      for i in step.inputs if i in k.device_vars]
             for i in range(1, len(devs)):
@@ -12257,28 +12423,20 @@ class ConstraintVerifier:
         step: ComputationStep,
         violations: List[SafetyViolation],
     ) -> None:
-        """torch.stack adds a new dim; all inputs must have the same shape."""
+        """torch.stack / hstack / vstack / dstack / column_stack shape rules."""
         shapes = [state.shape_env.get(i) for i in step.inputs]
-        if not all(s is not None for s in shapes) or not shapes:
+        if not all(s is not None for s in shapes):
             return
-        first = shapes[0]
-        for i, s in enumerate(shapes[1:], 1):
-            if s.ndim != first.ndim:
-                violations.append(SafetyViolation(
-                    kind="shape_incompatible", step_index=-1, step=step,
-                    message=(
-                        f"stack: tensors have different ndim "
-                        f"({first.ndim} vs {s.ndim})"
-                    ),
-                ))
-                return
-        stack_dim = step.params.get("dim", 0)
-        if stack_dim < 0:
-            stack_dim = first.ndim + 1 + stack_dim
-        out_dims = list(first.dims)
-        n_tensors = len(shapes)
-        out_dims.insert(stack_dim, ShapeDim(n_tensors))
-        state.shape_env[step.output] = TensorShape(tuple(out_dims))
+        out_shape, err = _compute_stack_family_shape(
+            shapes, step.params or {}, step.output)
+        if err:
+            violations.append(SafetyViolation(
+                kind="shape_incompatible", step_index=-1, step=step,
+                message=err,
+            ))
+            return
+        if out_shape is not None:
+            state.shape_env[step.output] = out_shape
 
     def _apply_chunk_split(
         self,
@@ -13629,18 +13787,12 @@ class SymbolicShapePropagator:
                     env[step.output] = TensorShape(tuple(new_dims))
 
         elif step.op == OpKind.STACK:
-            # torch.stack: adds a new dimension
-            if step.inputs:
-                shapes = [env.get(inp) for inp in step.inputs]
-                shapes = [s for s in shapes if s is not None]
-                if shapes:
-                    dim = step.params.get("dim", 0)
-                    base = shapes[0]
-                    if dim < 0:
-                        dim = base.ndim + 1 + dim
-                    new_dims = list(base.dims)
-                    new_dims.insert(dim, ShapeDim(len(shapes)))
-                    env[step.output] = TensorShape(tuple(new_dims))
+            shapes = [env.get(inp) for inp in step.inputs]
+            if all(s is not None for s in shapes):
+                out_shape, _ = _compute_stack_family_shape(
+                    shapes, step.params or {}, step.output)
+                if out_shape is not None:
+                    env[step.output] = out_shape
 
         elif step.op == OpKind.EXPAND:
             inp = step.inputs[0] if step.inputs else None

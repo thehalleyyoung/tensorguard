@@ -193,7 +193,7 @@ The repository includes transfer functions and tests for a wide range of
 PyTorch constructs.  The core structural set covers matrix multiplication,
 batched matrix multiplication, linear layers, convolution and transpose
 convolution families, pooling, flatten, reshape/view with product reasoning,
-broadcasting, reductions, cat/stack, PyTorch-faithful padding,
+broadcasting, reductions, cat/stack-family aliases, PyTorch-faithful padding,
 interpolation/upsampling, transpose/permute, squeeze/unsqueeze,
 fold/unfold image-column transforms,
 embedding, dtype casts, device moves, and stochastic tensor factories whose
@@ -207,6 +207,12 @@ multi-head attention, scaled dot-product attention, exact RNN/LSTM/GRU
 output and returned-state contracts, LoRA adapter compatibility, training-loop
 checks, quantization/export safety, distributed sharding, tensor parallel
 attention variants, and deployment schemas.
+
+Recent stack-family work follows the same standard.  \texttt{torch.stack},
+\texttt{hstack}, \texttt{vstack}, \texttt{dstack},
+\texttt{column\_stack}, and \texttt{row\_stack} are modeled with PyTorch's
+singleton and rank-promotion corner cases, then checked by tests that run the
+real operators and compare both output shapes and static error parity.
 
 \subsection{Exact Index-Value Operators}
 
@@ -671,7 +677,7 @@ Inference from constructors, layer definitions, tensor factories, asserts,
 shape aliases, and dataflow without requiring user type annotations. \\
 \hline
 Shape algebra &
-Matmul, reshape/view, flatten, broadcasting, cat, stack, chunk, split,
+Matmul, reshape/view, flatten, broadcasting, cat, stack-family aliases, chunk, split,
 padding, transpose, permute, squeeze, unsqueeze, reductions, indexing,
 convolution, pooling, fold/unfold, embedding, and attention rules. \\
 \hline
@@ -743,6 +749,12 @@ hash manifests, datasheets, artifact badges, Docker/conda/source modes. \\
 \begin{longtable}{|p{0.30\linewidth}|p{0.61\linewidth}|}
 \hline
 \textbf{Artifact} & \textbf{Role in the evaluation story} \\
+\hline
+\texttt{tests/test\_stack\_family.py} &
+Live PyTorch conformance for \texttt{torch.stack}, \texttt{hstack},
+\texttt{vstack}, \texttt{dstack}, \texttt{column\_stack}, and
+\texttt{row\_stack}: singleton TensorLists, negative dims, scalar/1D/2D/3D
+rank promotions, source/FX extraction, and static error parity. \\
 \hline
 \texttt{tests/test\_split\_chunk\_precise.py} &
 Live PyTorch cross-checks and verifier regressions for exact chunk/split
@@ -931,9 +943,13 @@ Lean cat rule, live PyTorch cat tests, analyzer and model-checker cat
 regressions. \\
 \hline
 Stack &
-All inputs must have equal rank and equal dimensions; output inserts a new
-axis of length equal to the number of tensors. &
-Stack tests and downstream shape propagation tests. \\
+Base \texttt{stack} requires equal ranks and static-equal concrete dimensions,
+then inserts a new axis; \texttt{hstack}/\texttt{vstack}/\texttt{dstack}/
+\texttt{column\_stack}/\texttt{row\_stack} apply PyTorch's exact scalar,
+1D, 2D, and 3D rank promotions before concatenating along the library-defined
+axis. &
+Live PyTorch differential tests in \texttt{tests/test\_stack\_family.py},
+including source and FX extraction plus runtime-error parity. \\
 \hline
 Chunk/split &
 Exact PyTorch partition sizes for concrete axes; concrete unpack-count errors;

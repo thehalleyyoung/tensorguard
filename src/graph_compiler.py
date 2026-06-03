@@ -359,6 +359,9 @@ def _init_universal_registry():
         name="index_select", doc="Index select along axis"))
 
     # Advanced tensor ops
+    for op in ["stack", "hstack", "vstack", "dstack", "column_stack", "row_stack"]:
+        register_transfer(f"torch.{op}", TransferFunction(
+            name=op, doc=f"Stack-family shape transfer: {op}"))
     register_transfer("torch.einsum", TransferFunction(
         name="einsum", doc="Einstein summation"))
     register_transfer("torch.tensordot", TransferFunction(

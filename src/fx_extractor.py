@@ -466,6 +466,10 @@ def _function_to_op(fn) -> Optional[OpKind]:
         torch.argmax: OpKind.ARG_REDUCE,
         torch.argmin: OpKind.ARG_REDUCE,
     }
+    for alias in ("hstack", "vstack", "dstack", "column_stack", "row_stack"):
+        alias_fn = getattr(torch, alias, None)
+        if alias_fn is not None:
+            fn_map[alias_fn] = OpKind.STACK
     # Also handle torch.nn.functional
     import torch.nn.functional as F
     fn_map.update({
@@ -1197,6 +1201,16 @@ def _extract_function_params(
             params["dim"] = node.kwargs["dim"]
         else:
             params["dim"] = 0
+    elif op_kind == OpKind.STACK:
+        target_name = getattr(node.target, "__name__", "")
+        params["stack_kind"] = target_name if target_name else "stack"
+        if target_name == "stack":
+            if len(node.args) > 1 and isinstance(node.args[1], int):
+                params["dim"] = node.args[1]
+            elif "dim" in node.kwargs:
+                params["dim"] = node.kwargs["dim"]
+            else:
+                params["dim"] = 0
     elif op_kind == OpKind.RESHAPE:
         # shape argument(s): torch.reshape(x, shape) — ``shape`` may be a
         # single tuple/list or (rarely) varargs.  Capture the full dim spec
@@ -2092,6 +2106,11 @@ _METHOD_OP_MAP: Dict[str, OpKind] = {
 _TORCH_FUNC_MAP: Dict[str, OpKind] = {
     "cat": OpKind.CAT,
     "stack": OpKind.STACK,
+    "hstack": OpKind.STACK,
+    "vstack": OpKind.STACK,
+    "dstack": OpKind.STACK,
+    "column_stack": OpKind.STACK,
+    "row_stack": OpKind.STACK,
     "where": OpKind.WHERE,
     "masked_select": OpKind.MASKED_SELECT,
     "nonzero": OpKind.NONZERO,

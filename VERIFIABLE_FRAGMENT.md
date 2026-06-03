@@ -59,14 +59,15 @@ permute, relu, repeat, reshape, select, shape, sigmoid, size, softmax,
 split, squeeze, sum, tanh, to, transpose, unsqueeze, view
 ```
 
-### torch.* functions (23)
+### torch.* functions (28)
 
 ```
-torch.add, torch.arange, torch.bmm, torch.cat, torch.chunk, torch.dropout,
-torch.einsum, torch.flatten, torch.linspace, torch.matmul, torch.mm,
-torch.mul, torch.ones, torch.ones_like, torch.relu, torch.sigmoid,
-torch.softmax, torch.split, torch.stack, torch.tanh, torch.where,
-torch.zeros, torch.zeros_like
+torch.add, torch.arange, torch.bmm, torch.cat, torch.chunk,
+torch.column_stack, torch.dropout, torch.dstack, torch.einsum,
+torch.flatten, torch.hstack, torch.linspace, torch.matmul, torch.mm,
+torch.mul, torch.ones, torch.ones_like, torch.relu, torch.row_stack,
+torch.sigmoid, torch.softmax, torch.split, torch.stack, torch.tanh,
+torch.vstack, torch.where, torch.zeros, torch.zeros_like
 ```
 
 ### torch.nn.functional (F.*) functions (21)

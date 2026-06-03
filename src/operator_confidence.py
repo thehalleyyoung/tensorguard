@@ -84,6 +84,7 @@ _REDUCTIONS = frozenset({
 # Output shape is an exact function of shapes (and static integer args).
 _STRUCTURAL_EXACT = frozenset({
     "gather", "scatter", "index_select", "sort", "argsort", "topk",
+    "stack", "hstack", "vstack", "dstack", "column_stack", "row_stack",
     # Sampling ops whose output shape is a static argument / equals the input.
     "bernoulli", "poisson", "cdist",
 })

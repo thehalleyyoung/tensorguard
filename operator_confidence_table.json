@@ -3,10 +3,10 @@
   "default_tag": "heuristic",
   "summary": {
     "complete": 75,
-    "sound": 36,
+    "sound": 42,
     "heuristic": 6
   },
-  "total": 117,
+  "total": 123,
   "operators": [
     {
       "operator": "F.celu",
@@ -189,6 +189,11 @@
       "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
     },
     {
+      "operator": "torch.column_stack",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
       "operator": "torch.cos",
       "confidence": "complete",
       "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
@@ -202,6 +207,11 @@
       "operator": "torch.cross",
       "confidence": "sound",
       "rationale": "Matmul-family op with an exact, well-defined contraction rule that is enforced soundly (full completeness not claimed for every broadcasting / zero-dim edge case)."
+    },
+    {
+      "operator": "torch.dstack",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
     },
     {
       "operator": "torch.einsum",
@@ -307,6 +317,11 @@
       "operator": "torch.hardswish",
       "confidence": "complete",
       "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
+    },
+    {
+      "operator": "torch.hstack",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
     },
     {
       "operator": "torch.index_select",
@@ -479,6 +494,11 @@
       "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
     },
     {
+      "operator": "torch.row_stack",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
       "operator": "torch.rrelu",
       "confidence": "complete",
       "rationale": "Pointwise activation: output shape is identical to the input, so the transfer is exact (sound and complete)."
@@ -549,6 +569,11 @@
       "rationale": "Elementwise unary op: shape-preserving, so the transfer is exact (sound and complete)."
     },
     {
+      "operator": "torch.stack",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
+    },
+    {
       "operator": "torch.std",
       "confidence": "sound",
       "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
@@ -592,6 +617,11 @@
       "operator": "torch.var",
       "confidence": "sound",
       "rationale": "Reduction with an exact dim/keepdim shape rule enforced soundly (full completeness not claimed for every keepdim edge case)."
+    },
+    {
+      "operator": "torch.vstack",
+      "confidence": "sound",
+      "rationale": "Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly."
     }
   ]
 }
