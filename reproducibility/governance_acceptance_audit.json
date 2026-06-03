@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "submission_classes": [
+    {
+      "automated_gates": 2,
+      "gates": [
+        {
+          "checklist": "Implement `SmtSolver`/`check_sat` semantics without changing the predicate IR.",
+          "commands": {},
+          "evidence": {
+            "src/smt/solver.py": true
+          },
+          "kind": "automated",
+          "name": "Shared backend interface",
+          "symbols": {
+            "src.smt.solver:SmtSolver": true
+          }
+        },
+        {
+          "checklist": "Run the Z3/cvc5 concordance harness and keep every VC verdict identical.",
+          "commands": {
+            "python -m pytest tests/test_smt_backend_comparison.py -q": true,
+            "python reproducibility/smt_backend_comparison.py --check": true
+          },
+          "evidence": {
+            "reproducibility/smt_backend_comparison.py": true,
+            "tests/test_smt_backend_comparison.py": true
+          },
+          "kind": "automated",
+          "name": "Cross-backend concordance",
+          "symbols": {}
+        },
+        {
+          "checklist": "Confirm no new trust boundary, network access, or model-code execution path is introduced.",
+          "commands": {},
+          "evidence": {
+            "GOVERNANCE.md": true,
+            "MAINTAINERS.md": true,
+            "SECURITY.md": true
+          },
+          "kind": "maintainer-judgment",
+          "name": "Security and governance review",
+          "symbols": {}
+        }
+      ],
+      "key": "verifier_backends",
+      "maintainer_judgment_gates": 1,
+      "required_files": {
+        "docs/decidability/smt_backends.md": true,
+        "reproducibility/smt_backend_comparison.py": true,
+        "src/smt/cvc5_backend.py": true,
+        "src/smt/solver.py": true,
+        "tests/test_smt_backend_comparison.py": true
+      },
+      "scope": "Alternative solver backends or verifier-backend experiments must implement the shared SMT interface and prove concordance on the decidable VC fragments TensorGuard emits.",
+      "title": "Verifier / SMT backend submissions"
+    },
+    {
+      "automated_gates": 3,
+      "gates": [
+        {
+          "checklist": "Reject code-bearing fields, require provenance, and run every manifest conformance case.",
+          "commands": {
+            "python -m pytest tests/test_stub_governance.py -q": true,
+            "python -m src.stub_governance_cli --check community_stubs/": true
+          },
+          "evidence": {
+            ".github/workflows/stub-registry.yml": true,
+            "community_stubs/README.md": true,
+            "src/stub_governance.py": true
+          },
+          "kind": "automated",
+          "name": "Declarative stub manifest validation",
+          "symbols": {
+            "src.stub_governance:validate_manifest": true
+          }
+        },
+        {
+          "checklist": "Validate ABI major version, provenance, security review attestations, and transfer conformance cases.",
+          "commands": {
+            "python -m pytest tests/test_operator_plugin_abi.py -q": true
+          },
+          "evidence": {
+            "docs/plugins/operator_plugin_abi.md": true,
+            "src/operator_plugin_abi.py": true,
+            "tests/test_operator_plugin_abi.py": true
+          },
+          "kind": "automated",
+          "name": "Executable plugin ABI validation",
+          "symbols": {
+            "src.operator_plugin_abi:validate_operator_theory": true
+          }
+        },
+        {
+          "checklist": "Certify stubs/plugins against real `verify_architecture` verdicts in requested soundness modes.",
+          "commands": {
+            "python -m pytest tests/test_third_party_conformance.py -q": true
+          },
+          "evidence": {
+            "docs/plugins/third_party_conformance.md": true,
+            "src/third_party_conformance.py": true,
+            "tests/test_third_party_conformance.py": true
+          },
+          "kind": "automated",
+          "name": "Real verifier conformance",
+          "symbols": {
+            "src.third_party_conformance:certify_plugin_contracts": true,
+            "src.third_party_conformance:certify_stub_manifests": true
+          }
+        }
+      ],
+      "key": "stubs_and_plugins",
+      "maintainer_judgment_gates": 0,
+      "required_files": {
+        ".github/workflows/stub-registry.yml": true,
+        "community_stubs/README.md": true,
+        "docs/plugins/operator_plugin_abi.md": true,
+        "docs/plugins/third_party_conformance.md": true,
+        "src/operator_plugin_abi.py": true,
+        "src/stub_governance.py": true,
+        "src/third_party_conformance.py": true
+      },
+      "scope": "Declarative community stubs are accepted only through the safe manifest path; executable operator plugins require explicit trust, ABI validation, security attestations, and conformance scenarios.",
+      "title": "Community stubs and operator plugins"
+    },
+    {
+      "automated_gates": 2,
+      "gates": [
+        {
+          "checklist": "Rebuild and load the corpus so clean cases execute, buggy cases fail as labeled, and hashes match.",
+          "commands": {
+            "python -m pytest tests/test_real_benchmarks.py -q": true,
+            "python -m real_benchmarks.build_manifest": true,
+            "python -m real_benchmarks.load": true
+          },
+          "evidence": {
+            "real_benchmarks/build_manifest.py": true,
+            "real_benchmarks/load.py": true,
+            "tests/test_real_benchmarks.py": true
+          },
+          "kind": "automated",
+          "name": "Runtime ground truth and hash freeze",
+          "symbols": {}
+        },
+        {
+          "checklist": "Require source/provenance/license metadata and reject copied third-party code in generated corpora.",
+          "commands": {
+            "python -m pytest tests/test_corpus_provenance.py -q": true,
+            "python reproducibility/corpus_provenance_audit.py --check": true
+          },
+          "evidence": {
+            "corpus_extended/provenance.py": true,
+            "reproducibility/corpus_provenance_audit.py": true,
+            "tests/test_corpus_provenance.py": true
+          },
+          "kind": "automated",
+          "name": "Redistribution provenance audit",
+          "symbols": {}
+        },
+        {
+          "checklist": "Check whether the case belongs in dev, blind, or natural-distribution splits before tuning on it.",
+          "commands": {},
+          "evidence": {
+            "GOVERNANCE.md": true,
+            "corpus_extended/PRE_REGISTRATION.md": true,
+            "reproducibility/blind_split_eval.py": true
+          },
+          "kind": "maintainer-judgment",
+          "name": "Anti-overfitting review",
+          "symbols": {}
+        }
+      ],
+      "key": "corpora",
+      "maintainer_judgment_gates": 1,
+      "required_files": {
+        "corpus_extended/provenance.py": true,
+        "real_benchmarks/build_manifest.py": true,
+        "real_benchmarks/corpus_def.py": true,
+        "real_benchmarks/load.py": true,
+        "real_benchmarks/manifest.json": true,
+        "reproducibility/corpus_provenance_audit.py": true
+      },
+      "scope": "New cases must be minimal, provenance-bearing, redistributable, runtime-validated against real PyTorch, and frozen by content hash.",
+      "title": "Corpus and benchmark-case submissions"
+    },
+    {
+      "automated_gates": 2,
+      "gates": [
+        {
+          "checklist": "Validate case ids, uppercase verdict tokens, SSH signatures, and absence of self-reported metrics.",
+          "commands": {
+            "python reproducibility/validate_entry.py": true
+          },
+          "evidence": {
+            ".github/workflows/leaderboard.yml": true,
+            "benchmarks/leaderboard_entries/allowed_signers": true,
+            "reproducibility/validate_entry.py": true
+          },
+          "kind": "automated",
+          "name": "Signed raw verdicts only",
+          "symbols": {
+            "reproducibility.validate_entry:validate_entry": true
+          }
+        },
+        {
+          "checklist": "Regenerate and byte-check the leaderboard from raw verdicts.",
+          "commands": {
+            "python reproducibility/leaderboard.py": true,
+            "python reproducibility/leaderboard.py --check": true
+          },
+          "evidence": {
+            "docs/leaderboard/CONTRIBUTING.md": true,
+            "reproducibility/leaderboard.py": true
+          },
+          "kind": "automated",
+          "name": "Recomputed deterministic leaderboard",
+          "symbols": {}
+        },
+        {
+          "checklist": "Review benchmark-specific tuning, abstention policy, and monthly refresh-window eligibility.",
+          "commands": {},
+          "evidence": {
+            ".github/ISSUE_TEMPLATE/leaderboard_submission.md": true,
+            "MAINTAINERS.md": true,
+            "docs/leaderboard/CONTRIBUTING.md": true
+          },
+          "kind": "maintainer-judgment",
+          "name": "Anti-overfitting disclosure",
+          "symbols": {}
+        }
+      ],
+      "key": "benchmark_submissions",
+      "maintainer_judgment_gates": 1,
+      "required_files": {
+        ".github/ISSUE_TEMPLATE/leaderboard_submission.md": true,
+        ".github/workflows/leaderboard.yml": true,
+        "benchmarks/leaderboard_entries/allowed_signers": true,
+        "docs/leaderboard/CONTRIBUTING.md": true,
+        "reproducibility/leaderboard.py": true,
+        "reproducibility/validate_entry.py": true
+      },
+      "scope": "External tool results are accepted as signed raw per-case verdicts; TensorGuard recomputes all metrics and rejects self-reported scores.",
+      "title": "Leaderboard and benchmark-result submissions"
+    }
+  ],
+  "summary": {
+    "all_references_resolve": true,
+    "automated_gate_count": 9,
+    "class_count": 4,
+    "gate_count": 12,
+    "maintainer_judgment_gate_count": 3,
+    "missing_commands": [],
+    "missing_paths": [],
+    "missing_symbols": []
+  }
+}

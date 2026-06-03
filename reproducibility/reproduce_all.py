@@ -159,6 +159,9 @@ GENERATED_DETERMINISTIC = [
     "reproducibility/artifact_package.md",
     "reproducibility/camera_ready_paper.json",
     "reproducibility/camera_ready_paper.md",
+    "docs/governance/third_party_acceptance.md",
+    "reproducibility/governance_acceptance_audit.json",
+    "reproducibility/governance_acceptance_audit.md",
     "docs/artifact/PACKAGING.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
@@ -334,6 +337,8 @@ STEPS = [
      [PY, "reproducibility/paper_evidence_index.py"], None),
     ("camera-ready paper: generated claim ledger and page gate",
      [PY, "reproducibility/camera_ready_paper.py"], None),
+    ("governance: third-party acceptance policy + review-gate audit",
+     [PY, "reproducibility/governance_acceptance.py"], None),
     ("reviewer commands: one-command scripts for every main table/figure",
      [PY, "reproducibility/reviewer_commands.py"], None),
     ("artifact index: SHA-256 ledger for generated artifacts",
