@@ -191,6 +191,14 @@ from src.serving_schema import (  # noqa: F401  (re-export)
     guarded_torchserve_handler,
     verify_serving_schema,
 )
+from src.cuda_graph_capture import (  # noqa: F401  (re-export)
+    CudaGraphCaptureEligibilityResult,
+    CudaGraphCaptureIssue,
+    CudaGraphInputSignature,
+    TensorGuardCudaGraphCaptureError,
+    guarded_cuda_graph_capture,
+    verify_cuda_graph_capture_eligibility,
+)
 
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
 from src import api as api  # noqa: F401
@@ -326,6 +334,12 @@ __all__ = [
     "guarded_model_serving_call",
     "guarded_torchserve_handler",
     "verify_serving_schema",
+    "CudaGraphCaptureEligibilityResult",
+    "CudaGraphCaptureIssue",
+    "CudaGraphInputSignature",
+    "TensorGuardCudaGraphCaptureError",
+    "guarded_cuda_graph_capture",
+    "verify_cuda_graph_capture_eligibility",
     "TensorGuardViolation",
     "TensorGuardAOTPackageError",
     "AOTPackageIssue",

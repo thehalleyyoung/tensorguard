@@ -133,6 +133,14 @@ from .serving_schema import (
     guarded_torchserve_handler,
     verify_serving_schema,
 )
+from .cuda_graph_capture import (
+    CudaGraphCaptureEligibilityResult,
+    CudaGraphCaptureIssue,
+    CudaGraphInputSignature,
+    TensorGuardCudaGraphCaptureError,
+    guarded_cuda_graph_capture,
+    verify_cuda_graph_capture_eligibility,
+)
 
 __all__ = [
     "analyze",
@@ -244,5 +252,11 @@ __all__ = [
     "guarded_model_serving_call",
     "guarded_torchserve_handler",
     "verify_serving_schema",
+    "CudaGraphCaptureEligibilityResult",
+    "CudaGraphCaptureIssue",
+    "CudaGraphInputSignature",
+    "TensorGuardCudaGraphCaptureError",
+    "guarded_cuda_graph_capture",
+    "verify_cuda_graph_capture_eligibility",
     "__version__",
 ]

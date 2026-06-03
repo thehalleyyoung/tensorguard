@@ -63,6 +63,14 @@ from src.serving_schema import (
     guarded_torchserve_handler,
     verify_serving_schema,
 )
+from src.cuda_graph_capture import (
+    CudaGraphCaptureEligibilityResult,
+    CudaGraphCaptureIssue,
+    CudaGraphInputSignature,
+    TensorGuardCudaGraphCaptureError,
+    guarded_cuda_graph_capture,
+    verify_cuda_graph_capture_eligibility,
+)
 
 __all__ = [
     "AOTPackageGateResult",
@@ -82,6 +90,7 @@ __all__ = [
     "TensorGuardONNXExportError",
     "TensorGuardONNXShapeInferenceError",
     "TensorGuardServingSchemaError",
+    "TensorGuardCudaGraphCaptureError",
     "TensorGuardViolation",
     "guarded_aot_package",
     "guarded_compile",
@@ -92,6 +101,7 @@ __all__ = [
     "guarded_onnx_export",
     "guarded_fastapi_endpoint",
     "guarded_torchserve_handler",
+    "guarded_cuda_graph_capture",
     "make_tensorguard_backend",
     "verify_onnx_export_contract",
     "verify_aot_package_contract",
@@ -102,6 +112,7 @@ __all__ = [
     "verify_lora_model",
     "verify_optimizer_state",
     "verify_serving_schema",
+    "verify_cuda_graph_capture_eligibility",
     "verify_module",
     "OptimizerStateIssue",
     "OptimizerStateShard",
@@ -114,4 +125,7 @@ __all__ = [
     "ServingSchemaGateResult",
     "ServingSchemaIssue",
     "ServingTensorSpec",
+    "CudaGraphCaptureEligibilityResult",
+    "CudaGraphCaptureIssue",
+    "CudaGraphInputSignature",
 ]

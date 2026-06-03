@@ -70,12 +70,13 @@ runtime errors in ML codebases before any code runs.
   compatibility (missing/unexpected keys, tied weights, tensor-parallel shards,
   dtype drift), full LoRA/PEFT adapter compatibility (rank, `target_modules`,
   merged state, and quantized bases), and optimizer-state compatibility for
-  AdamW, Adafactor, fused AdamW, sharded resume buffers, plus TorchServe/FastAPI
-  request→preprocess→model→response schema gates that reject bad preprocessing
-  layouts before forward execution
+  AdamW, Adafactor, fused AdamW, sharded resume buffers, CUDA graph capture
+  eligibility (dynamic allocation, data-dependent shapes, unsupported ops, and
+  static-input replay contracts), plus TorchServe/FastAPI request→preprocess→model→response
+  schema gates that reject bad preprocessing layouts before forward execution
   (`verify_gguf_export_contract`, `verify_checkpoint_state_dict`,
   `verify_lora_adapter_compatibility`, `verify_optimizer_state`,
-  `verify_serving_schema`).
+  `verify_cuda_graph_capture_eligibility`, `verify_serving_schema`).
 - **5-theory product domain** — jointly reasons over
   **Shape × Device × Phase × Stride × Permutation** for each tensor
 - **Zero annotations required** — shapes are inferred from constructors,

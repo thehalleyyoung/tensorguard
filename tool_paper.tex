@@ -41,7 +41,7 @@ operator transfer functions for everyday PyTorch programs, frontends for real
 \texttt{nn.Module} code, integration hooks for CLIs, GitHub Actions, SARIF,
 watch mode, Jupyter, decorators, framework adapters, deployment gates, ONNX
 shape-inference round trips, model-checkpoint schema gates,
-optimizer-state resume gates, and artifact scripts that regenerate
+optimizer-state resume gates, CUDA graph capture diagnostics, and artifact scripts that regenerate
 precision/recall, latency, ablation, coverage, conformance, fuzzing, mutation,
 and benchmark evidence.  This paper describes
 the system as shipped in the repository, with emphasis on the engineering and
@@ -147,7 +147,8 @@ for export and compile pipelines.  The repository also includes integration
 points for guarded \texttt{torch.compile}, AOTInductor packaging, ONNX export,
 GGUF/llama.cpp-oriented checks, model checkpoint load preflights,
 optimizer-state load/resume preflights,
-framework hooks, and deployment request/response schemas.  The ONNX path validates structural checker and opset contracts, then
+CUDA graph capture eligibility diagnostics, framework hooks, and deployment
+request/response schemas.  The ONNX path validates structural checker and opset contracts, then
 round-trips output shapes predicted from captured \texttt{torch.export} metadata
 against \texttt{onnx.shape\_inference} wherever both sides infer concrete
 dimensions.  These paths are important because many production tensor bugs
@@ -229,7 +230,7 @@ LoRA adapter compatibility, training-loop checks, quantization/export safety,
 mixed-precision/autocast dtype-divergence gates, FSDP/FSDP2/DTensor sharding,
 explicit pipeline-stage boundary contracts, tensor-parallel sharding checks,
 model \texttt{state\_dict} schema compatibility, optimizer-state checkpoint
-compatibility, and TorchServe/FastAPI serving schemas.
+compatibility, CUDA graph capture eligibility, and TorchServe/FastAPI serving schemas.
 
 Recent stack-family work follows the same standard.  \texttt{torch.stack},
 \texttt{hstack}, \texttt{vstack}, \texttt{dstack},
@@ -717,14 +718,15 @@ preprocessing transforms whose tensor shapes feed the model. \\
 \texttt{src/gguf\_export.py}, \texttt{src/checkpoint\_verify.py},
 \texttt{src/optimizer\_state\_verify.py},
 \texttt{src/distributed\_verification.py}, \texttt{src/tensor\_parallel\_checks.py},
-\texttt{src/lora\_verification.py} &
+\texttt{src/lora\_verification.py}, \texttt{src/cuda\_graph\_capture.py} &
 Deployment, mixed-precision, distributed training, and adapter-compatibility
 gates, including GGUF/llama.cpp checkpoint preflight checks, model
 \texttt{state\_dict} schema checks, AdamW/Adafactor optimizer-state resume
 checks, and FSDP2/DTensor
 rank-local shard contracts checked against PyTorch's own placement splitter,
 explicit pipeline activation-boundary contracts, and MQA/GQA tensor-parallel
-attention contracts. \\
+attention contracts, plus CUDA graph capture diagnostics for dynamic allocation,
+data-dependent shapes, unsupported operations, and static input replay. \\
 \hline
 \texttt{src/reporters.py}, \texttt{src/sarif\_codescan.py},
 \texttt{src/github\_action.py} &
@@ -899,7 +901,10 @@ rank, target-module matching, merge state, and quantized bases; optimizer-state 
 AdamW, Adafactor, fused AdamW, and sharded resume buffers before
 \texttt{load\_state\_dict}; serving-schema gates check request fields,
 preprocessing tensor layouts, model outputs, and response payloads before a
-TorchServe/FastAPI wrapper turns a bad batch into an opaque inference failure. \\
+TorchServe/FastAPI wrapper turns a bad batch into an opaque inference failure;
+CUDA graph gates check allocation-free captured regions, value-independent
+output shapes, unsupported host-synchronizing operations, and replay-stable
+input shape/dtype/device/stride contracts before capture. \\
 \hline
 Distributed and adapters &
 DDP/FSDP/FSDP2/DTensor/per-parameter, explicit pipeline-boundary, and
@@ -1020,6 +1025,7 @@ Gradient and training-loop contracts beyond forward shape checking. \\
 \texttt{tests/test\_checkpoint\_verify.py},
 \texttt{tests/test\_optimizer\_state\_verify.py},
 \texttt{tests/test\_serving\_schema.py},
+\texttt{tests/test\_cuda\_graph\_capture.py},
 \texttt{tests/test\_quant\_export\_checks.py},
 \texttt{tests/test\_quantization\_verify.py} &
 Deployment-facing gates for export, \texttt{torch.export.Dim} ranges and
@@ -1032,7 +1038,10 @@ dtype drift, plus real optimizer state\_dict compatibility for AdamW, Adafactor,
 fused AdamW, lazy state, sharded resume buffers, and load-time shape rejection;
 FastAPI/TorchServe-style serving pipelines whose request, preprocessing-output,
 model-output, and response contracts are checked against real PyTorch modules,
-including an NHWC-vs-NCHW preprocessing bug rejected before \texttt{forward}. \\
+including an NHWC-vs-NCHW preprocessing bug rejected before \texttt{forward},
+and CUDA graph eligibility checks that run real modules while flagging dynamic
+allocation, data-dependent shape operators, unsupported host synchronization,
+and replay input shape/stride drift. \\
 \hline
 \texttt{tests/test\_distributed\_verification.py},
 \texttt{tests/test\_tensor\_parallel\_checks.py} &
@@ -1253,7 +1262,7 @@ vmap verification tests plus \texttt{tests/test\_func\_autodiff\_verify.py}
 live dispatcher checks. \\
 \hline
 Export gates &
-Export, ONNX, AOTInductor, GGUF, serving, quantization, and mixed-precision paths check static
+Export, ONNX, AOTInductor, GGUF, CUDA graph, serving, quantization, and mixed-precision paths check static
 preconditions before invoking downstream compilers; dynamic
 \texttt{torch.export.Dim} ranges are reconciled with TensorGuard input-shape
 symbols before tracing; ONNX exports check exporter opset bounds, lowered ATen
@@ -1269,8 +1278,10 @@ initialization, sharded-state coverage, and checkpoint resume compatibility
 before \texttt{optimizer.load\_state\_dict}; serving gates validate captured
 request fields, preprocessed tensor shapes/dtypes/devices, model-output
 contracts, and postprocessed response payloads before invoking or returning from
-FastAPI/TorchServe-style wrappers. &
-ONNX, AOT, GGUF, serving-schema, quantization, mixed-precision, and guarded compile/export
+FastAPI/TorchServe-style wrappers; the CUDA graph gate flags fresh allocation,
+data-dependent extents, unsupported capture-time host operations, and replay
+shape/dtype/device/stride drift. &
+ONNX, AOT, GGUF, CUDA graph, serving-schema, quantization, mixed-precision, and guarded compile/export
 tests. \\
 \hline
 Distributed and adapter gates &
@@ -1466,6 +1477,15 @@ stops on request or preprocessing-output violations before model invocation.
 The regression tests run real \texttt{nn.Module}s and prove that an
 NHWC image batch is rejected against an NCHW \texttt{Conv2d} schema while the
 model's \texttt{forward} counter remains zero.
+For CUDA graph capture, \texttt{src/cuda\_graph\_capture.py} separates the
+capture eligibility proof from the capture body.  It records static input
+signatures, checks replay shape/dtype/device/stride and optional storage-address
+reuse, scans the reachable \texttt{forward} helper closure for tensor factories,
+data-dependent shape producers such as \texttt{nonzero} and mask indexing, and
+host-synchronizing operations such as \texttt{item()}, then cross-checks the
+\texttt{torch.fx} graph against the same denylist.  The guarded helper refuses to
+invoke capture on violations, and the tests prove this on real \texttt{nn.Module}
+forwards while remaining runnable on CPU-only CI.
 For GGUF/llama.cpp, the gate reads the checkpoint tensors and metadata directly:
 it validates architecture-prefixed metadata, q/k/v or packed-qkv projections,
 rotary-pair dimensions, vocabulary and output projections, and per-quantization
@@ -1581,7 +1601,7 @@ factored Adafactor layout, or shard coverage for the target parameter. & Report
 the parameter, state key, expected buffer contract, and whether the problem blocks
 checkpoint loading or is only a lazy/master-state warning. \\
 \hline
-Export/serving precondition & ONNX, AOT, quantization, serving, or accelerator-specific
+Export/serving precondition & ONNX, AOT, quantization, serving, CUDA graph, or accelerator-specific
 constraints are violated. & Report the backend-specific contract and the nearest
 portable replacement if known. \\
 \hline
