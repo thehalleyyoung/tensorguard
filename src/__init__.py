@@ -154,6 +154,14 @@ from .graph_break_attribution import (
     GraphBreakAttributionReport,
     classify_graph_break_failure,
 )
+from .signed_certificate import (
+    CertificateDriftContext,
+    SignedCertificateVerification,
+    build_certificate_drift_context,
+    dumps_signed_certificate,
+    sign_safety_certificate,
+    verify_signed_certificate,
+)
 
 __all__ = [
     "analyze",
@@ -280,5 +288,11 @@ __all__ = [
     "GraphBreakAttribution",
     "GraphBreakAttributionReport",
     "classify_graph_break_failure",
+    "CertificateDriftContext",
+    "SignedCertificateVerification",
+    "build_certificate_drift_context",
+    "dumps_signed_certificate",
+    "sign_safety_certificate",
+    "verify_signed_certificate",
     "__version__",
 ]

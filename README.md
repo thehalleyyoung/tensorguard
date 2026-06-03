@@ -1865,7 +1865,9 @@ integer. The emitted `SafetyCertificate` records the symbols it proved over in
 the model is safe for *every* batch and sequence length, not merely one sampled
 size. Through the public API, `verify_architecture(..., produce_certificates=True)`
 now returns that top-level certificate plus a replay status for the embedded
-proof-certificate DAG. Symbol identity is enforced across inputs: two tensors
+proof-certificate DAG, and `sign_safety_certificate` emits a compact
+HMAC-SHA256 artifact that CI can authenticate and structurally replay without
+re-running Z3. Symbol identity is enforced across inputs: two tensors
 annotated with the same name `B` are reasoned about as equal (an element-wise
 combination is proven safe), whereas distinct symbols `B` and `C` cannot be
 assumed equal, so an operation requiring them to match is soundly rejected.

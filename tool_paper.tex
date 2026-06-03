@@ -131,7 +131,12 @@ annotations, coverage artifacts, dashboards, and certificates.  In certificate
 mode the public API now returns the assembled \texttt{SafetyCertificate}, the
 merged proof-certificate DAG, and a replay status computed after
 \texttt{verify\_architecture} has produced its top-level result, so certificate
-validity is visible at the same boundary as the user-facing verdict.
+validity is visible at the same boundary as the user-facing verdict.  Safe
+certificates can also be emitted as deterministic, HMAC-SHA256 signed JSON
+artifacts whose payload binds source, analysis configuration, dependency, and
+soundness-contract fingerprints.  CI can authenticate those artifacts and replay
+the embedded proof DAG with either the public replay helper or a standalone
+standard-library checker, without re-running Z3.
 
 \subsection{Frontends}
 
@@ -1019,6 +1024,16 @@ CUDA graph gates check allocation-free captured regions, value-independent
 output shapes, unsupported host-synchronizing operations, and replay-stable
 input shape/dtype/device/stride contracts before capture. \\
 \hline
+Certificates and replay &
+Top-level \texttt{SafetyCertificate}s bind SAFE verdicts to proof-DAG replay
+data; signed artifacts add canonical payload hashes, HMAC-SHA256 authentication,
+and source/config/dependency/soundness drift fingerprints.
+\texttt{tests/test\_api\_certificate\_replay.py},
+\texttt{tests/test\_signed\_certificate.py}, and
+\texttt{tests/test\_certificate\_checker.py} replay real
+\texttt{verify\_architecture} certificates and cross-check the standalone
+checker without solver imports. \\
+\hline
 Distributed and adapters &
 DDP/FSDP/FSDP2/DTensor/per-parameter, explicit pipeline-boundary, and
 tensor-parallel checks, plus
@@ -1569,6 +1584,10 @@ Deployment gallery & Architecture-specific export blind spots &
 Representative ResNet, ViT, Llama-style, diffusion, recommender, and speech
 blocks pass the same pre/post export gates. \\
 \hline
+Signed certificate replay & Stale or unauthenticated CI safety claims &
+MAC-verified certificates structurally replay and invalidate on source, config,
+dependency, or soundness-contract drift without solver work. \\
+\hline
 Dashboard regeneration & Stale paper claims & Committed result artifacts match
 freshly regenerated outputs. \\
 \hline
@@ -1600,7 +1619,11 @@ scanning.  Baseline/suppression support lets a legacy repository adopt the tool
 incrementally: existing issues can be acknowledged while new regressions fail
 the build.  Domain flags make ablation and staged rollout practical; for
 example, a team may initially enforce shape and dtype while logging phase
-diagnostics.
+diagnostics.  For high-assurance release gates, the same SAFE result can be
+packaged as a signed certificate: the build signs a canonical payload containing
+the top-level safety claim, proof replay data, and drift fingerprints; later CI
+jobs authenticate it with a shared secret and re-check the proof structure and
+current fingerprints without paying the solver cost again.
 
 \subsection{Notebook exploration}
 
@@ -1702,9 +1725,12 @@ rather than converted into a false proof.
 
 A reviewer can start from the soundness contract, run the new tests for any
 claimed operator family, inspect the evidence index, regenerate dashboards, and
-audit Lean files.  This is a different posture from a one-off prototype: the
-paper claims are connected to code paths, tests, and artifacts, and unsupported
-regions are part of the documented result.
+audit Lean files.  They can also inspect the signed-certificate checker as a
+small trusted component: it imports only the Python standard library, verifies
+the canonical MAC and drift hashes, and independently replays the proof-DAG
+shape that the main TensorGuard replay path accepts.  This is a different
+posture from a one-off prototype: the paper claims are connected to code paths,
+tests, and artifacts, and unsupported regions are part of the documented result.
 
 \clearpage
 
