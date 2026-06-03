@@ -38,11 +38,18 @@ from .linalg_verify import (
 )
 from .named_tensor_verify import verify_align_to, verify_named_tensor_source, verify_refine_names
 from .sparse_verify import (
+    verify_sparse_addmm,
     verify_sparse_bsc,
     verify_sparse_bsr,
+    verify_sparse_coalesce,
     verify_sparse_coo,
     verify_sparse_csc,
     verify_sparse_csr,
+    verify_sparse_layout_conversion,
+    verify_sparse_mm,
+    verify_sparse_sampled_addmm,
+    verify_sparse_softmax,
+    verify_sparse_to_dense,
 )
 from .grid_sample_verify import verify_affine_grid, verify_grid_sample
 from .loss_verify import LossVerdict, verify_loss
@@ -94,6 +101,13 @@ __all__ = [
     "verify_sparse_csc",
     "verify_sparse_bsr",
     "verify_sparse_bsc",
+    "verify_sparse_mm",
+    "verify_sparse_addmm",
+    "verify_sparse_sampled_addmm",
+    "verify_sparse_softmax",
+    "verify_sparse_coalesce",
+    "verify_sparse_to_dense",
+    "verify_sparse_layout_conversion",
     "verify_grid_sample",
     "verify_affine_grid",
     "LossVerdict",

@@ -70,7 +70,7 @@ modeled with refinement information such as
 The verifier propagates these facts through constructors, module calls,
 functional operators, reshapes, broadcasts, indexing, attention blocks,
 recurrent modules, normalization layers, torchvision v2 image transforms,
-sparse layouts, distributed wrappers, and deployment
+sparse layouts and sparse-dense kernels, distributed wrappers, and deployment
 gates.  At each operation it asks whether the preconditions of the transfer
 function are entailed by the current abstract state.  Concrete contradictions
 become high-confidence bugs.  Unknown or out-of-fragment regions become
@@ -204,7 +204,8 @@ shapes are seed-independent.  Extended coverage includes einsum parsing,
 advanced indexing, gather/scatter, index select, masked select,
 \texttt{take\_along\_dim}, \texttt{argsort}, \texttt{sort}/\texttt{topk}/
 \texttt{kthvalue}, arg reductions, sparse COO/CSR/CSC/BSR/BSC layout invariants,
-FFT/complex view contracts, exact \texttt{torch.linalg} contracts for
+sparse-dense \texttt{mm}/\texttt{addmm}, CSR \texttt{sampled\_addmm},
+sparse softmax/coalesce, layout conversions, FFT/complex view contracts, exact \texttt{torch.linalg} contracts for
 \texttt{solve}, inverse, Cholesky, SVD, eigendecomposition, and QR, named tensor
 alignment, vmap/functorch batch dimensions, \texttt{torch.func} autodiff
 wrappers (\texttt{grad}, \texttt{jacrev}, \texttt{jacfwd}, \texttt{jvp}, and
@@ -251,6 +252,16 @@ claiming a false proof for data-dependent repeat vectors.
 broadcast shape, while source-level \texttt{torch.broadcast\_shapes} is carried
 as a shape value that can feed \texttt{expand}.  Focused source and FX tests
 compare these contracts against live PyTorch successes and exceptions.
+
+Sparse tensors are checked beyond construction.  \tg{} verifies sparse-dense
+\texttt{torch.sparse.mm} and \texttt{addmm} for COO/CSR/CSC matrices, exact
+one-way \texttt{addmm} input broadcasting, CSR \texttt{sampled\_addmm} including
+batched dense operands, COO-only sparse softmax and coalescing,
+\texttt{to\_dense}, and \texttt{to\_sparse\_\{coo,csr,csc,bsr,bsc\}}
+conversions with blocked-layout divisibility.  The parity tests compare every
+successful output to live PyTorch via dense shape equality and keep unsupported
+BSR/BSC sparse matrix kernels as explicit non-passes rather than build-dependent
+silent approvals.
 
 \subsection{Exact Index-Value Operators}
 
@@ -551,7 +562,8 @@ small, independently checkable claims.  \tg{}'s benchmark suite exercises real
 failure modes: wrong \texttt{Linear} feature counts after flattening, malformed
 convolution channels, bad Q/K/V dimensions, attention mask errors, invalid
 reshape products, device mismatches between buffers and inputs, dtype
-divergences, gradient detach bugs, invalid sparse compressed layouts, named
+divergences, gradient detach bugs, invalid sparse compressed layouts and
+sparse-dense kernels, named
 tensor alignment failures, incompatible loss targets, incompatible distribution
 batch/event shapes, export
 contracts, quantization observer placement, and distributed sharding mistakes.
@@ -561,7 +573,8 @@ if it matches the runtime library.  The repository therefore includes tests
 that construct real tensors, run the corresponding PyTorch operator, and compare
 the resulting shape or runtime exception to \tg{}'s predicted contract.  This
 pattern appears for cat, einsum, reshape, broadcasting, convolution, attention,
-recurrent modules, fold/unfold, padding, grid sampling, sparse layouts, complex
+recurrent modules, fold/unfold, padding, grid sampling, sparse layouts and
+sparse operators, complex
 FFT views, named tensors, distributions, vmap, loss functions, chunk/split
 partitioning, and index-value operators.  When PyTorch's
 edge-case behavior is surprising, as with \texttt{take\_along\_dim(dim=None)}
@@ -649,7 +662,8 @@ compiler or exporter failures. \\
 Attention-family contracts for q/k/v, masks, head counts, and output shapes. \\
 \hline
 \texttt{src/sparse\_verify.py}, \texttt{src/complex\_verify.py} &
-Sparse layout and complex/FFT shape-dtype contracts. \\
+Sparse layout, sparse-dense operator, conversion, and complex/FFT shape-dtype
+contracts. \\
 \hline
 \texttt{src/distributions\_verify.py}, \texttt{src/named\_tensor\_verify.py},
 \texttt{src/vmap\_verify.py}, \texttt{src/func\_autodiff\_verify.py},
@@ -793,8 +807,9 @@ SDPA and MHA contracts, q/k/v dimensions, kdim/vdim, masks, key padding masks,
 batch-first layout, and grouped head variants. \\
 \hline
 Sparse tensors &
-COO/CSR/CSC/BSR/BSC shape and blocksize invariants, with sparse operation
-extensions in progress. \\
+COO/CSR/CSC/BSR/BSC shape and blocksize invariants, sparse-dense
+\texttt{mm}/\texttt{addmm}, CSR \texttt{sampled\_addmm}, sparse softmax,
+coalesce, \texttt{to\_dense}, and layout conversions. \\
 \hline
 Torchvision v2 transforms &
 Source-level tensor contracts for resize, crops, padding, normalization,

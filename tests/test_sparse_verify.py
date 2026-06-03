@@ -7,11 +7,18 @@ import pytest
 torch = pytest.importorskip("torch")
 
 from src.sparse_verify import (  # noqa: E402
+    verify_sparse_addmm,
     verify_sparse_bsc,
     verify_sparse_bsr,
+    verify_sparse_coalesce,
     verify_sparse_coo,
     verify_sparse_csc,
     verify_sparse_csr,
+    verify_sparse_layout_conversion,
+    verify_sparse_mm,
+    verify_sparse_sampled_addmm,
+    verify_sparse_softmax,
+    verify_sparse_to_dense,
 )
 
 
@@ -29,6 +36,12 @@ def _sparse_call(fn, *args, **kwargs):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         return fn(*args, **kwargs)
+
+
+def _spec(verdict):
+    assert verdict.ok
+    assert verdict.spec is not None
+    return verdict.spec
 
 
 def test_coo_layout_contract_matches_real_torch_constructor():
@@ -227,6 +240,161 @@ def test_compressed_dense_tail_mismatch_is_reported_as_unusable_layout():
             tensor.to_dense()
 
 
+def test_sparse_mm_and_addmm_match_live_sparse_dense_kernels():
+    indices = _long((2, 3), [[0, 1, 1], [1, 0, 2]])
+    values = torch.tensor([2.0, 3.0, 4.0])
+    coo = torch.sparse_coo_tensor(indices, values, (2, 3))
+    csr = _sparse_call(coo.to_sparse_csr)
+    csc = _sparse_call(coo.to_sparse_csc)
+    rhs = torch.arange(12.0).reshape(3, 4)
+
+    specs = [
+        (_spec(verify_sparse_coo((2, 3), (3,), (2, 3))), coo),
+        (_spec(verify_sparse_csr((3,), (3,), (3,), (2, 3))), csr),
+        (_spec(verify_sparse_csc((4,), (3,), (3,), (2, 3))), csc),
+    ]
+    for spec, tensor in specs:
+        actual = _sparse_call(torch.sparse.mm, tensor, rhs)
+        verdict = verify_sparse_mm(spec, rhs.shape)
+        assert verdict.ok
+        assert verdict.spec.layout == "dense"
+        assert verdict.spec.shape == tuple(actual.shape)
+        assert verdict.spec.shape == tuple(actual.to_dense().shape if actual.layout != torch.strided else actual.shape)
+
+    addmm = _sparse_call(torch.sparse.addmm, torch.ones(2, 1), coo, rhs)
+    addmm_verdict = verify_sparse_addmm((2, 1), specs[0][0], rhs.shape)
+    assert addmm_verdict.spec.shape == tuple(addmm.shape)
+    assert verify_sparse_addmm((4,), specs[0][0], rhs.shape).ok
+    assert verify_sparse_addmm((), specs[0][0], rhs.shape).ok
+    assert verify_sparse_addmm((3, 4), specs[0][0], rhs.shape).error_kind == "broadcast"
+
+    assert verify_sparse_mm(specs[0][0], (4, 5)).error_kind == "inner_dim"
+    with pytest.raises(RuntimeError, match="Expected dim 0 size"):
+        torch.sparse.mm(coo, torch.ones(4, 5))
+
+    bsr = _sparse_call(torch.ones(4, 6).to_sparse_bsr, (2, 3))
+    bsr_spec = _spec(verify_sparse_bsr((3,), (2,), (2, 2, 3), (4, 6)))
+    assert verify_sparse_mm(bsr_spec, (6, 5)).error_kind == "layout"
+    with pytest.raises(RuntimeError, match="SparseBsr|not implemented"):
+        torch.sparse.mm(bsr, torch.ones(6, 5))
+
+
+def test_sampled_addmm_matches_live_csr_batch_rules():
+    csr = _sparse_call(
+        torch.sparse_csr_tensor,
+        _long((3,), [0, 1, 2]),
+        _long((2,), [0, 2]),
+        _values((2,)),
+        size=(2, 3),
+        check_invariants=True,
+    )
+    csr_spec = _spec(verify_sparse_csr((3,), (2,), (2,), (2, 3)))
+
+    actual = _sparse_call(torch.sparse.sampled_addmm, csr, torch.ones(2, 5), torch.ones(5, 3))
+    verdict = verify_sparse_sampled_addmm(csr_spec, (2, 5), (5, 3))
+    assert verdict.ok
+    assert verdict.spec.layout == "csr"
+    assert verdict.spec.shape == tuple(actual.shape)
+    assert verdict.spec.shape == tuple(actual.to_dense().shape)
+
+    batched_from_unbatched = _sparse_call(
+        torch.sparse.sampled_addmm,
+        csr,
+        torch.ones(2, 2, 5),
+        torch.ones(2, 5, 3),
+    )
+    batched_verdict = verify_sparse_sampled_addmm(csr_spec, (2, 2, 5), (2, 5, 3))
+    assert batched_verdict.ok
+    assert batched_verdict.spec.batch_shape == (2,)
+    assert batched_verdict.spec.shape == tuple(batched_from_unbatched.to_dense().shape)
+
+    b_crow = _long((2, 3), [[0, 1, 2], [0, 0, 2]])
+    b_col = _long((2, 2), [[0, 1], [0, 2]])
+    b_val = _values((2, 2))
+    batched_csr = _sparse_call(
+        torch.sparse_csr_tensor,
+        b_crow,
+        b_col,
+        b_val,
+        size=(2, 2, 3),
+        check_invariants=True,
+    )
+    batched_csr_spec = _spec(verify_sparse_csr((2, 3), (2, 2), (2, 2), (2, 2, 3)))
+    actual_batched = _sparse_call(
+        torch.sparse.sampled_addmm,
+        batched_csr,
+        torch.ones(2, 2, 5),
+        torch.ones(2, 5, 3),
+    )
+    assert verify_sparse_sampled_addmm(batched_csr_spec, (2, 2, 5), (2, 5, 3)).spec.shape == tuple(
+        actual_batched.to_dense().shape
+    )
+
+    coo_spec = _spec(verify_sparse_coo((2, 2), (2,), (2, 3)))
+    assert verify_sparse_sampled_addmm(coo_spec, (2, 5), (5, 3)).error_kind == "layout"
+    with pytest.raises((RuntimeError, NotImplementedError), match="sampled_addmm|SparseCPU"):
+        torch.sparse.sampled_addmm(csr.to_sparse_coo(), torch.ones(2, 5), torch.ones(5, 3))
+
+    assert verify_sparse_sampled_addmm(csr_spec, (2, 5), (4, 3)).error_kind == "inner_dim"
+    assert verify_sparse_sampled_addmm(csr_spec, (1, 2, 5), (2, 5, 3)).error_kind == "batch_shape"
+    assert verify_sparse_sampled_addmm(csr_spec, (2, 5), (5, 4)).error_kind == "output_shape"
+
+
+def test_sparse_softmax_coalesce_and_conversions_have_to_dense_shape_parity():
+    indices = _long((2, 3), [[0, 1, 1], [1, 0, 2]])
+    values = torch.tensor([2.0, 3.0, 4.0])
+    coo = torch.sparse_coo_tensor(indices, values, (2, 3))
+    coo_spec = _spec(verify_sparse_coo((2, 3), (3,), (2, 3)))
+    csr = _sparse_call(coo.to_sparse_csr)
+    csr_spec = _spec(verify_sparse_csr((3,), (3,), (3,), (2, 3)))
+
+    softmax = _sparse_call(torch.sparse.softmax, coo, dim=-1)
+    softmax_verdict = verify_sparse_softmax(coo_spec, -1)
+    assert softmax_verdict.ok
+    assert softmax_verdict.spec.layout == "coo"
+    assert softmax_verdict.spec.shape == tuple(softmax.to_dense().shape)
+    assert verify_sparse_softmax(coo_spec, 2).error_kind == "dim"
+    assert verify_sparse_softmax(csr_spec, 1).error_kind == "layout"
+    with pytest.raises((RuntimeError, NotImplementedError), match="SparseCsr|sparse_softmax"):
+        torch.sparse.softmax(csr, dim=1)
+
+    coalesced = _sparse_call(coo.coalesce)
+    coalesce_verdict = verify_sparse_coalesce(coo_spec)
+    assert coalesce_verdict.ok
+    assert coalesce_verdict.spec.shape == tuple(coalesced.to_dense().shape)
+    assert verify_sparse_coalesce(csr_spec).error_kind == "layout"
+    with pytest.raises(RuntimeError, match="coalesce expected sparse coordinate"):
+        csr.coalesce()
+
+    for spec, tensor in ((coo_spec, coo), (csr_spec, csr)):
+        dense = tensor.to_dense()
+        verdict = verify_sparse_to_dense(spec)
+        assert verdict.ok
+        assert verdict.spec.layout == "dense"
+        assert verdict.spec.shape == tuple(dense.shape)
+
+    dense = torch.ones(4, 6)
+    conversion_cases = [
+        ("coo", None, dense.to_sparse_coo()),
+        ("csr", None, _sparse_call(dense.to_sparse_csr)),
+        ("csc", None, _sparse_call(dense.to_sparse_csc)),
+        ("bsr", (2, 3), _sparse_call(dense.to_sparse_bsr, (2, 3))),
+        ("bsc", (2, 3), _sparse_call(dense.to_sparse_bsc, (2, 3))),
+    ]
+    for layout, blocksize, tensor in conversion_cases:
+        verdict = verify_sparse_layout_conversion(dense.shape, layout, blocksize=blocksize)
+        assert verdict.ok
+        assert verdict.spec.layout == layout
+        assert verdict.spec.shape == tuple(tensor.to_dense().shape)
+
+    assert verify_sparse_layout_conversion((5, 6), "bsr", blocksize=(2, 3)).error_kind == "block_divisibility"
+    with pytest.raises(RuntimeError, match="must be divisible"):
+        torch.ones(5, 6).to_sparse_bsr((2, 3))
+    assert verify_sparse_layout_conversion((3,), "csr").error_kind == "rank"
+    with pytest.raises((RuntimeError, IndexError)):
+        torch.ones(3).to_sparse_csr()
+
+
 def test_symbolic_sparse_dims_abstain_from_arithmetic_without_false_positive():
     coo = verify_sparse_coo((2, "NNZ"), ("NNZ", "C"), (8, 9, "C"))
     assert coo.ok
@@ -251,3 +419,7 @@ def test_public_package_exports_sparse_verifiers():
     assert src.verify_sparse_csr is verify_sparse_csr
     assert tensorguard.verify_sparse_bsr is verify_sparse_bsr
     assert tensorguard.verify_sparse_bsc is verify_sparse_bsc
+    assert src.verify_sparse_mm is verify_sparse_mm
+    assert src.verify_sparse_sampled_addmm is verify_sparse_sampled_addmm
+    assert tensorguard.verify_sparse_addmm is verify_sparse_addmm
+    assert tensorguard.verify_sparse_layout_conversion is verify_sparse_layout_conversion

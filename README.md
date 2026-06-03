@@ -37,14 +37,15 @@ runtime errors in ML codebases before any code runs.
   `torch.vmap` plus `torch.func` grad/jacrev/jacfwd/jvp/vjp shape transfers,
   PyTorch loss target/reduction/dtype contracts (`CrossEntropyLoss`, `NLLLoss`,
   `MSELoss`, `BCEWithLogitsLoss`, `KLDivLoss`), and
-  `torch.sparse` COO/CSR/CSC/BSR/BSC layout + blocksize invariants are
-  verified by shape-only models that are **differentially checked** against real
+  `torch.sparse` COO/CSR/CSC/BSR/BSC layout + blocksize invariants, sparse-dense
+  `mm`/`addmm`, CSR `sampled_addmm`, sparse softmax/coalesce, and layout
+  conversions are verified by shape-only models that are **differentially checked** against real
   `einops` / `torch`; non-divisible patch embeds, head-dim-mismatched
   attention, unusable probabilistic batch/event contracts, invalid
   named-axis refinements/reorderings, unsupported complex FFT dtypes, and
   impossible vmap batch/out-dim contracts, invalid linalg square, broadcast, and
   output-tuple contracts, unusable sparse compressed
-  layouts, invalid sampler grids, and broken MHA key/value/mask contracts are
+  layouts, invalid sparse matrix kernels/conversions, invalid sampler grids, and broken MHA key/value/mask contracts are
   caught before kernels raise, while
   symbolic dims are never refuted
   (`verify_einops`, `verify_einops_source`, `verify_distribution`,
@@ -53,6 +54,9 @@ runtime errors in ML codebases before any code runs.
   `verify_vmap`, `verify_func_autodiff`, `verify_loss`, `verify_linalg`, `verify_sparse_coo`,
   `verify_sparse_csr`,
   `verify_sparse_csc`, `verify_sparse_bsr`, `verify_sparse_bsc`,
+  `verify_sparse_mm`, `verify_sparse_addmm`, `verify_sparse_sampled_addmm`,
+  `verify_sparse_softmax`, `verify_sparse_coalesce`, `verify_sparse_to_dense`,
+  `verify_sparse_layout_conversion`,
   `verify_grid_sample`, `verify_affine_grid`,
   `verify_torchvision_v2_transform`,
   `verify_multihead_attention`)

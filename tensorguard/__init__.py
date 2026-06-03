@@ -73,11 +73,18 @@ from src.named_tensor_verify import (  # noqa: F401  (re-export)
     verify_refine_names,
 )
 from src.sparse_verify import (  # noqa: F401  (re-export)
+    verify_sparse_addmm,
     verify_sparse_bsc,
     verify_sparse_bsr,
+    verify_sparse_coalesce,
     verify_sparse_coo,
     verify_sparse_csc,
     verify_sparse_csr,
+    verify_sparse_layout_conversion,
+    verify_sparse_mm,
+    verify_sparse_sampled_addmm,
+    verify_sparse_softmax,
+    verify_sparse_to_dense,
 )
 from src.grid_sample_verify import (  # noqa: F401  (re-export)
     verify_affine_grid,
@@ -147,6 +154,13 @@ __all__ = [
     "verify_sparse_csc",
     "verify_sparse_bsr",
     "verify_sparse_bsc",
+    "verify_sparse_mm",
+    "verify_sparse_addmm",
+    "verify_sparse_sampled_addmm",
+    "verify_sparse_softmax",
+    "verify_sparse_coalesce",
+    "verify_sparse_to_dense",
+    "verify_sparse_layout_conversion",
     "verify_grid_sample",
     "verify_affine_grid",
     "LossVerdict",

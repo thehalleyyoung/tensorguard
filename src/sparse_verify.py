@@ -22,12 +22,19 @@ Shape = Tuple[Dim, ...]
 __all__ = [
     "SparseLayoutSpec",
     "SparseVerdict",
+    "verify_sparse_addmm",
     "verify_sparse_bsc",
     "verify_sparse_bsr",
+    "verify_sparse_coalesce",
     "verify_sparse_compressed",
     "verify_sparse_coo",
     "verify_sparse_csc",
     "verify_sparse_csr",
+    "verify_sparse_layout_conversion",
+    "verify_sparse_mm",
+    "verify_sparse_sampled_addmm",
+    "verify_sparse_softmax",
+    "verify_sparse_to_dense",
 ]
 
 
@@ -142,6 +149,136 @@ def _canonical_layout(layout: str) -> Optional[str]:
         "bsc": "bsc",
     }
     return aliases.get(normalized)
+
+
+def _dense_spec(shape: Shape) -> SparseLayoutSpec:
+    return SparseLayoutSpec(
+        layout="dense",
+        shape=shape,
+        sparse_shape=(),
+        dense_shape=shape,
+    )
+
+
+def _sparse_like_spec(source: SparseLayoutSpec, shape: Optional[Shape] = None) -> SparseLayoutSpec:
+    out_shape = source.shape if shape is None else shape
+    if source.layout == "coo" and shape is None:
+        return SparseLayoutSpec(
+            layout=source.layout,
+            shape=source.shape,
+            sparse_shape=source.sparse_shape,
+            dense_shape=source.dense_shape,
+            batch_shape=source.batch_shape,
+            nnz=source.nnz,
+            sparse_dim=source.sparse_dim,
+            blocksize=source.blocksize,
+        )
+    if source.layout in {"csr", "csc", "bsr", "bsc"} and len(out_shape) >= 2:
+        return SparseLayoutSpec(
+            layout=source.layout,
+            shape=out_shape,
+            sparse_shape=out_shape[-2:],
+            dense_shape=(),
+            batch_shape=out_shape[:-2],
+            nnz=source.nnz,
+            blocksize=source.blocksize,
+        )
+    return SparseLayoutSpec(
+        layout=source.layout,
+        shape=out_shape,
+        sparse_shape=out_shape,
+        dense_shape=source.dense_shape,
+        batch_shape=source.batch_shape,
+        nnz=source.nnz,
+        sparse_dim=source.sparse_dim,
+        blocksize=source.blocksize,
+    )
+
+
+def _compare_shape_with_unknown(
+    left: Shape,
+    right: Shape,
+    *,
+    kind: str,
+    left_name: str,
+    right_name: str,
+) -> Tuple[Optional[SparseVerdict], bool]:
+    if len(left) != len(right):
+        return (
+            _fail(
+                kind,
+                f"{left_name} rank {len(left)} does not match {right_name} rank {len(right)}",
+            ),
+            False,
+        )
+    symbolic = False
+    for index, (a, b) in enumerate(zip(left, right)):
+        if _known_mismatch(a, b):
+            return (
+                _fail(
+                    kind,
+                    f"{left_name}[{index}]={a} does not match {right_name}[{index}]={b}",
+                ),
+                False,
+            )
+        if a != b and (not _is_int_dim(a) or not _is_int_dim(b)):
+            symbolic = True
+    return None, symbolic
+
+
+def _compare_dim_with_unknown(
+    left: Dim,
+    right: Dim,
+    *,
+    kind: str,
+    left_name: str,
+    right_name: str,
+) -> Tuple[Optional[SparseVerdict], bool]:
+    if _known_mismatch(left, right):
+        return _fail(kind, f"{left_name}={left} does not match {right_name}={right}"), False
+    if left != right and (not _is_int_dim(left) or not _is_int_dim(right)):
+        return None, True
+    return None, False
+
+
+def _broadcastable_to(source: Shape, target: Shape) -> Tuple[Optional[SparseVerdict], bool]:
+    if len(source) > len(target):
+        return (
+            _fail(
+                "broadcast",
+                f"input rank {len(source)} cannot broadcast to target rank {len(target)}",
+            ),
+            False,
+        )
+    symbolic = False
+    offset = len(target) - len(source)
+    for axis, dim in enumerate(source):
+        target_dim = target[offset + axis]
+        if _is_int_dim(dim):
+            if dim == 1:
+                continue
+            if _is_int_dim(target_dim):
+                if dim != target_dim:
+                    return (
+                        _fail(
+                            "broadcast",
+                            f"input dim {dim} cannot broadcast to target dim {target_dim} at axis {axis}",
+                        ),
+                        False,
+                    )
+            elif dim != target_dim:
+                symbolic = True
+            continue
+        if dim != target_dim:
+            symbolic = True
+    return None, symbolic
+
+
+def _normalize_dim(dim: int, rank: int) -> Optional[int]:
+    normalized = dim + rank if dim < 0 else dim
+    if normalized < 0 or normalized >= rank:
+        return None
+    return normalized
 
 
 def verify_sparse_coo(
@@ -488,3 +625,260 @@ def verify_sparse_bsc(
     """Verify ``torch.sparse_bsc_tensor`` layout metadata."""
 
     return verify_sparse_compressed("bsc", ccol_indices_shape, row_indices_shape, values_shape, size)
+
+
+def verify_sparse_mm(mat1: SparseLayoutSpec, mat2_shape: Sequence[Dim]) -> SparseVerdict:
+    """Verify sparse-dense ``torch.sparse.mm(mat1, mat2)`` shape rules.
+
+    The supported success path mirrors CPU PyTorch 2-D sparse-dense kernels for
+    COO/CSR/CSC inputs. Block compressed BSR/BSC kernels are deliberately not
+    accepted here because the tested PyTorch CPU build raises before producing a
+    dense result.
+    """
+
+    mat2 = _shape(mat2_shape)
+    err = _check_all_nonnegative(("mat1", mat1.shape), ("mat2", mat2))
+    if err is not None:
+        return err
+    if mat1.layout not in {"coo", "csr", "csc"}:
+        return _fail(
+            "layout",
+            f"torch.sparse.mm shape parity is modeled for COO/CSR/CSC, got {mat1.layout!r}",
+        )
+    if len(mat1.shape) != 2 or len(mat2) != 2:
+        return _fail("rank", "torch.sparse.mm requires a rank-2 sparse matrix and a rank-2 dense matrix")
+
+    err, symbolic = _compare_dim_with_unknown(
+        mat1.shape[1],
+        mat2[0],
+        kind="inner_dim",
+        left_name="sparse columns",
+        right_name="dense rows",
+    )
+    if err is not None:
+        return err
+    output = (mat1.shape[0], mat2[1])
+    unknown = "symbolic sparse mm inner dimension: equality not fully checked" if symbolic else None
+    return _ok(_dense_spec(output), unknown)
+
+
+def verify_sparse_addmm(
+    input_shape: Sequence[Dim],
+    mat1: SparseLayoutSpec,
+    mat2_shape: Sequence[Dim],
+) -> SparseVerdict:
+    """Verify ``torch.sparse.addmm(input, mat1, mat2)`` shape rules."""
+
+    input_ = _shape(input_shape)
+    err = _check_all_nonnegative(("input", input_))
+    if err is not None:
+        return err
+    mm = verify_sparse_mm(mat1, mat2_shape)
+    if not mm.ok or mm.spec is None:
+        return mm
+
+    err, symbolic_broadcast = _broadcastable_to(input_, mm.spec.shape)
+    if err is not None:
+        return err
+    unknown = mm.unknown_reason
+    if symbolic_broadcast:
+        suffix = "symbolic addmm input broadcast: equality not fully checked"
+        unknown = f"{unknown}; {suffix}" if unknown else suffix
+    return _ok(mm.spec, unknown)
+
+
+def verify_sparse_sampled_addmm(
+    input_spec: SparseLayoutSpec,
+    mat1_shape: Sequence[Dim],
+    mat2_shape: Sequence[Dim],
+) -> SparseVerdict:
+    """Verify ``torch.sparse.sampled_addmm(input, mat1, mat2)`` shape rules.
+
+    PyTorch requires a CSR sparse mask. Dense batch dimensions must match each
+    other exactly. A rank-2 CSR mask may be reused across dense batches; batched
+    CSR masks must have the same batch shape as the dense operands.
+    """
+
+    mat1 = _shape(mat1_shape)
+    mat2 = _shape(mat2_shape)
+    err = _check_all_nonnegative(("input", input_spec.shape), ("mat1", mat1), ("mat2", mat2))
+    if err is not None:
+        return err
+    if input_spec.layout != "csr":
+        return _fail("layout", f"torch.sparse.sampled_addmm requires a CSR sparse input, got {input_spec.layout!r}")
+    if len(input_spec.shape) < 2 or len(mat1) < 2 or len(mat2) < 2:
+        return _fail("rank", "sampled_addmm requires matrix-shaped input, mat1, and mat2 operands")
+
+    dense_batch = mat1[:-2]
+    err, symbolic = _compare_shape_with_unknown(
+        dense_batch,
+        mat2[:-2],
+        kind="batch_shape",
+        left_name="mat1 batch",
+        right_name="mat2 batch",
+    )
+    if err is not None:
+        return err
+
+    input_batch = input_spec.shape[:-2]
+    if input_batch:
+        err, batch_symbolic = _compare_shape_with_unknown(
+            input_batch,
+            dense_batch,
+            kind="batch_shape",
+            left_name="sparse input batch",
+            right_name="dense batch",
+        )
+        if err is not None:
+            return err
+        symbolic = symbolic or batch_symbolic
+
+    checks = (
+        (
+            mat1[-1],
+            mat2[-2],
+            "inner_dim",
+            "mat1 columns",
+            "mat2 rows",
+        ),
+        (
+            input_spec.shape[-2],
+            mat1[-2],
+            "output_shape",
+            "sparse input rows",
+            "mat1 rows",
+        ),
+        (
+            input_spec.shape[-1],
+            mat2[-1],
+            "output_shape",
+            "sparse input columns",
+            "mat2 columns",
+        ),
+    )
+    for left, right, kind, left_name, right_name in checks:
+        err, dim_symbolic = _compare_dim_with_unknown(
+            left,
+            right,
+            kind=kind,
+            left_name=left_name,
+            right_name=right_name,
+        )
+        if err is not None:
+            return err
+        symbolic = symbolic or dim_symbolic
+
+    output_shape = (dense_batch + input_spec.shape[-2:]) if not input_batch else input_spec.shape
+    unknown = "symbolic sampled_addmm dimension: equality not fully checked" if symbolic else None
+    return _ok(_sparse_like_spec(input_spec, output_shape), unknown)
+
+
+def verify_sparse_softmax(input_spec: SparseLayoutSpec, dim: int) -> SparseVerdict:
+    """Verify ``torch.sparse.softmax(input, dim)`` shape/layout rules."""
+
+    if input_spec.layout != "coo":
+        return _fail("layout", f"torch.sparse.softmax requires a COO sparse tensor, got {input_spec.layout!r}")
+    if not input_spec.shape:
+        return _fail("rank", "torch.sparse.softmax requires at least one dimension")
+    if _normalize_dim(dim, len(input_spec.shape)) is None:
+        return _fail("dim", f"dim {dim} is out of range for rank {len(input_spec.shape)}")
+    return _ok(_sparse_like_spec(input_spec))
+
+
+def verify_sparse_coalesce(input_spec: SparseLayoutSpec) -> SparseVerdict:
+    """Verify ``Tensor.coalesce()`` shape/layout rules for sparse COO tensors."""
+
+    if input_spec.layout != "coo":
+        return _fail("layout", f"coalesce requires a COO sparse tensor, got {input_spec.layout!r}")
+    return _ok(_sparse_like_spec(input_spec))
+
+
+def verify_sparse_to_dense(input_spec: SparseLayoutSpec) -> SparseVerdict:
+    """Verify ``Tensor.to_dense()`` shape preservation for sparse tensors."""
+
+    if input_spec.layout not in {"coo", "csr", "csc", "bsr", "bsc"}:
+        return _fail("layout", f"to_dense requires a sparse tensor, got {input_spec.layout!r}")
+    return _ok(_dense_spec(input_spec.shape))
+
+
+def verify_sparse_layout_conversion(
+    input_shape: Union[Sequence[Dim], SparseLayoutSpec],
+    target_layout: str,
+    blocksize: Optional[Tuple[Dim, Dim]] = None,
+) -> SparseVerdict:
+    """Verify ``to_sparse_*`` layout-conversion shape contracts.
+
+    The conversion preserves the dense shape. COO accepts any rank. Compressed
+    layouts require at least matrix rank; blocked layouts additionally require a
+    positive blocksize that divides the two sparse matrix axes when known.
+    """
+
+    shape = input_shape.shape if isinstance(input_shape, SparseLayoutSpec) else _shape(input_shape)
+    err = _check_nonnegative(shape, "input")
+    if err is not None:
+        return err
+    target = _canonical_layout(target_layout)
+    normalized_target = str(target_layout).replace("torch.", "").replace("sparse_", "").lower()
+    if target is None and normalized_target == "coo":
+        target = "coo"
+    if target is None:
+        return _fail("layout", f"unsupported sparse conversion target {target_layout!r}")
+
+    if target == "coo":
+        return _ok(
+            SparseLayoutSpec(
+                layout="coo",
+                shape=shape,
+                sparse_shape=shape,
+                dense_shape=(),
+                sparse_dim=len(shape),
+            )
+        )
+
+    if len(shape) < 2:
+        return _fail("rank", f"to_sparse_{target} requires rank >= 2, got rank {len(shape)}")
+
+    batch_shape = shape[:-2]
+    sparse_shape = shape[-2:]
+    symbolic = False
+    resolved_blocksize: Optional[Tuple[Dim, Dim]] = None
+    if target in {"bsr", "bsc"}:
+        if blocksize is None:
+            return _fail("blocksize", f"to_sparse_{target} requires a blocksize")
+        if len(blocksize) != 2:
+            return _fail("blocksize", "blocksize must contain exactly two dimensions")
+        rows, cols = blocksize
+        for label, value in (("row", rows), ("column", cols)):
+            if _is_int_dim(value):
+                if value <= 0:
+                    return _fail("blocksize", f"{label} block size must be positive, got {value}")
+            else:
+                symbolic = True
+        for label, extent, block in (
+            ("row", sparse_shape[0], rows),
+            ("column", sparse_shape[1], cols),
+        ):
+            if _is_int_dim(extent) and _is_int_dim(block):
+                if extent % block != 0:
+                    return _fail(
+                        "block_divisibility",
+                        f"{label} dimension {extent} is not divisible by block size {block}",
+                    )
+            elif extent != block:
+                symbolic = True
+        resolved_blocksize = (rows, cols)
+    elif blocksize is not None:
+        return _fail("blocksize", f"to_sparse_{target} does not accept a blocksize")
+
+    unknown = "symbolic sparse layout conversion: divisibility not fully checked" if symbolic else None
+    return _ok(
+        SparseLayoutSpec(
+            layout=target,
+            shape=shape,
+            sparse_shape=sparse_shape,
+            dense_shape=(),
+            batch_shape=batch_shape,
+            blocksize=resolved_blocksize,
+        ),
+        unknown,
+    )
