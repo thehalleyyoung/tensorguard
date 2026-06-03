@@ -346,6 +346,7 @@ tensorguard verify FILE [options]
 | `tensorguard model-hub-badge model.py -s x=batch,10 --model-id org/model` | Emit a TensorGuard-verified badge, signed certificate bundle, and copy-paste model-card snippet |
 | `tensorguard ci-check [PATHS...] --sarif-output out.sarif` | CI mode with SARIF output |
 | `tensorguard sarif-trends v1=old.sarif v2=new.sarif --markdown trend.md` | Track Code Scanning open/closed/recurrent alert deltas |
+| `tensorguard usage-metrics results.json --format markdown` | Summarize analyzed files, verdicts, abstentions, and unsupported ops locally; no telemetry, no source, hashed paths |
 | `tensorguard watch [PATHS...]` | Watch and re-verify on changes |
 | `tensorguard adoption-recipes` | Print one-line setup commands for CI, pre-commit, pytest, nox/tox, Makefiles, editors, and Jupyter |
 | `tensorguard playground --output tensorguard_playground` | Generate a self-contained local playground: editable examples, precomputed TensorGuard verdicts, no upload/import/execution |

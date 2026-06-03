@@ -528,7 +528,10 @@ model-hub release path can also emit a \texttt{TensorGuard-verified} badge:
 \texttt{tensorguard model-hub-badge} verifies the real \texttt{nn.Module} in
 sound mode, signs the replayed safety certificate, writes a manifest plus SVG badge,
 and produces a copy-paste model-card snippet anchored by source and payload
-SHA-256 hashes.  The
+SHA-256 hashes.  For teams that want adoption visibility without phoning home,
+\texttt{tensorguard usage-metrics} locally summarizes JSON reports into hashed
+file counts, verdict/abstention totals, bug categories, and unsupported-op
+hotspots; it reads no source and performs no network I/O.  The
 packaging story includes reproducible wheels, a pinned Z3 range, pipx usage,
 Docker, conda-forge metadata, and a documented security policy for untrusted
 model files.

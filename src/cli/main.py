@@ -3922,6 +3922,47 @@ class SarifTrendsCommand:
         return 0
 
 
+# ── UsageMetricsCommand ──────────────────────────────────────────────────────
+
+
+class UsageMetricsCommand:
+    """Summarize TensorGuard JSON reports locally without telemetry."""
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("reports", nargs="+", help="TensorGuard JSON report(s)")
+        parser.add_argument(
+            "--format",
+            choices=("json", "markdown"),
+            default="json",
+            help="Output format (default: json)",
+        )
+        parser.add_argument(
+            "--top",
+            type=int,
+            default=10,
+            help="Number of unsupported operators to include",
+        )
+        parser.add_argument("-o", "--output", help="Write summary to this file")
+
+    def execute(self, args: argparse.Namespace) -> int:
+        from src.local_usage_metrics import summarize_files
+
+        try:
+            summary = summarize_files(getattr(args, "reports", []), limit=args.top)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            sys.stderr.write(f"Could not summarize local usage metrics: {exc}\n")
+            return 2
+        if args.format == "markdown":
+            rendered = summary.to_markdown()
+        else:
+            rendered = json.dumps(summary.to_json_dict(), indent=2, sort_keys=True) + "\n"
+        if args.output:
+            pathlib.Path(args.output).write_text(rendered, encoding="utf-8")
+        else:
+            sys.stdout.write(rendered)
+        return 0
+
+
 # ---------------------------------------------------------------------------
 # ReftypeCliApp — main application
 # ---------------------------------------------------------------------------
@@ -3949,6 +3990,7 @@ class ReftypeCliApp:
         "playground": lambda: PlaygroundCommand(),
         "adoption-recipes": lambda: AdoptionRecipesCommand(),
         "sarif-trends": lambda: SarifTrendsCommand(),
+        "usage-metrics": lambda: UsageMetricsCommand(),
     }
 
     def __init__(self) -> None:
@@ -4010,6 +4052,7 @@ class ReftypeCliApp:
             "playground": "Generate a no-upload local static TensorGuard playground",
             "adoption-recipes": "Print one-line setup recipes for CI, hooks, editors, and notebooks",
             "sarif-trends": "Build a Code Scanning trend dashboard from SARIF snapshots",
+            "usage-metrics": "Summarize local JSON reports without telemetry or source code",
         }
         return helps.get(name, "")
 
