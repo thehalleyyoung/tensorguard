@@ -228,7 +228,10 @@ runtime errors in ML codebases before any code runs.
   certificates, while a 25-case copyable **model gallery** (`examples/model_gallery.md`) onboards new users
   with paired clean paths, caught bugs, minimal `tensorguard verify` configs,
   and a monthly public certification queue
-  (`reproducibility/model_zoo_certification.md`).
+  (`reproducibility/model_zoo_certification.md`). Contributors get the same
+  generated path: good-first operator issues, test templates, stub guides, and
+  Lean examples are derived from the live proof/confidence registries
+  (`docs/contributing/operator_onboarding.md`).
 - **Sub-second analysis** — typical models verified in < 1 second
 
 ---

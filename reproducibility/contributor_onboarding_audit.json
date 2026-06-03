@@ -1,0 +1,109 @@
+{
+  "cited_paths": {
+    "community_stubs/README.md": true,
+    "docs/contributing/operator_template.py": true,
+    "docs/plugins/operator_plugin_abi.md": true,
+    "docs/plugins/third_party_conformance.md": true,
+    "lean/TensorGuard/BroadcastChain.lean": true,
+    "lean/TensorGuard/Extended.lean": true,
+    "lean/TensorGuard/MatmulSound.lean": true,
+    "lean/TensorGuard/SoundnessV5.lean": true,
+    "operator_confidence_table.json": true,
+    "proof_footprint_manifest.json": true,
+    "src/operator_plugin_abi.py": true,
+    "src/proof_footprint.py": true,
+    "tests/test_complex_verify.py": true,
+    "tests/test_graph_compiler.py": true,
+    "tests/test_index_value_ops_precise.py": true,
+    "tests/test_operator_confidence.py": true,
+    "tests/test_proof_footprint.py": true
+  },
+  "good_first_operators": {
+    "beginner_count": 12,
+    "heuristic_count": 3,
+    "issue_count": 12,
+    "tested_only_count": 9
+  },
+  "lean_examples": [
+    {
+      "module": "TensorGuard.Extended",
+      "operator": "F.relu",
+      "path": "lean/TensorGuard/Extended.lean",
+      "role": "relu(input) has exactly the input shape",
+      "short_theorem": "relu_shape_preserving",
+      "theorem": "TensorGuard.relu_shape_preserving",
+      "theorem_resolves": true
+    },
+    {
+      "module": "TensorGuard.MatmulSound",
+      "operator": "torch.bmm",
+      "path": "lean/TensorGuard/MatmulSound.lean",
+      "role": "batched matrix multiplication contracts matching inner dimensions per batch",
+      "short_theorem": "matmul_contraction_sound",
+      "theorem": "TensorGuard.MatmulSound.matmul_contraction_sound",
+      "theorem_resolves": true
+    },
+    {
+      "module": "TensorGuard.BroadcastChain",
+      "operator": "torch.broadcast_shapes",
+      "path": "lean/TensorGuard/BroadcastChain.lean",
+      "role": "broadcast each aligned dimension by equality-or-one, folding across operands",
+      "short_theorem": "bcDim_none_iff",
+      "theorem": "TensorGuard.BroadcastChain.bcDim_none_iff",
+      "theorem_resolves": true
+    },
+    {
+      "module": "TensorGuard.BroadcastChain",
+      "operator": "torch.broadcast_tensors",
+      "path": "lean/TensorGuard/BroadcastChain.lean",
+      "role": "broadcast each tensor shape by the same equality-or-one dimension rule",
+      "short_theorem": "bcDim_none_iff",
+      "theorem": "TensorGuard.BroadcastChain.bcDim_none_iff",
+      "theorem_resolves": true
+    },
+    {
+      "module": "TensorGuard.SoundnessV5",
+      "operator": "torch.clamp",
+      "path": "lean/TensorGuard/SoundnessV5.lean",
+      "role": "clamp(input, ...) has exactly the input shape",
+      "short_theorem": "applyOp_sound_clamp",
+      "theorem": "TensorGuard.V5.applyOp_sound_clamp",
+      "theorem_resolves": true
+    },
+    {
+      "module": "TensorGuard.SoundnessV5",
+      "operator": "torch.gather",
+      "path": "lean/TensorGuard/SoundnessV5.lean",
+      "role": "gather(input, index, dim) returns the index shape",
+      "short_theorem": "applyOp_sound_gather",
+      "theorem": "TensorGuard.V5.applyOp_sound_gather",
+      "theorem_resolves": true
+    },
+    {
+      "module": "TensorGuard.SoundnessV5",
+      "operator": "torch.index_select",
+      "path": "lean/TensorGuard/SoundnessV5.lean",
+      "role": "index_select replaces the selected axis by the static index length",
+      "short_theorem": "applyOp_sound_index_select",
+      "theorem": "TensorGuard.V5.applyOp_sound_index_select",
+      "theorem_resolves": true
+    },
+    {
+      "module": "TensorGuard.MatmulSound",
+      "operator": "torch.matmul",
+      "path": "lean/TensorGuard/MatmulSound.lean",
+      "role": "(..., m, k) x (..., k, n) contracts to (..., m, n)",
+      "short_theorem": "applyOpExt_sound_matmul",
+      "theorem": "TensorGuard.MatmulSound.applyOpExt_sound_matmul",
+      "theorem_resolves": true
+    }
+  ],
+  "schema": "tensorguard.contributor_onboarding_audit/v1",
+  "summary": {
+    "all_cited_paths_exist": true,
+    "issue_count": 12,
+    "lean_example_count": 8,
+    "lean_examples_resolve": true,
+    "output_count": 8
+  }
+}

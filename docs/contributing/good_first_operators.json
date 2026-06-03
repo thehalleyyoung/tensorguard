@@ -1,0 +1,294 @@
+{
+  "issues": [
+    {
+      "acceptance_tests": [
+        "docs/contributing/operator_template.py",
+        "tests/test_operator_confidence.py",
+        "tests/test_proof_footprint.py"
+      ],
+      "body": "### Goal\nImprove TensorGuard's transfer-function evidence for `torch.einsum`.\n\n- Current confidence: `heuristic`\n- Current proof footprint: `heuristic`\n- Rationale: Output shape depends on runtime values or is approximated generically; best-effort, neither sound nor complete in general.\n- Starting evidence: `src/proof_footprint.py`, `tests/test_operator_confidence.py`\n\n### Acceptance checklist\n1. Add or tighten a transfer/conformance case for the operator using `docs/contributing/operator_template.py`.\n2. Run the operator-specific pytest you added, plus `tests/test_operator_confidence.py` and `tests/test_proof_footprint.py`.\n3. If the proof status changes, regenerate `operator_confidence_table.json` / `proof_footprint_manifest.json` and explain why.\n4. Do not execute untrusted model code; use declarative stubs or isolated plugin contracts for third-party layers.",
+      "confidence": "heuristic",
+      "difficulty": "beginner",
+      "evidence": [
+        "src/proof_footprint.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "labels": [
+        "good first issue",
+        "operator-coverage",
+        "tensorguard",
+        "operator:torch-einsum"
+      ],
+      "operator": "torch.einsum",
+      "proof_status": "heuristic",
+      "title": "Good first operator: upgrade `torch.einsum` transfer evidence"
+    },
+    {
+      "acceptance_tests": [
+        "docs/contributing/operator_template.py",
+        "tests/test_operator_confidence.py",
+        "tests/test_proof_footprint.py"
+      ],
+      "body": "### Goal\nImprove TensorGuard's transfer-function evidence for `torch.multinomial`.\n\n- Current confidence: `heuristic`\n- Current proof footprint: `heuristic`\n- Rationale: Output shape depends on runtime values or is approximated generically; best-effort, neither sound nor complete in general.\n- Starting evidence: `src/proof_footprint.py`, `tests/test_operator_confidence.py`\n\n### Acceptance checklist\n1. Add or tighten a transfer/conformance case for the operator using `docs/contributing/operator_template.py`.\n2. Run the operator-specific pytest you added, plus `tests/test_operator_confidence.py` and `tests/test_proof_footprint.py`.\n3. If the proof status changes, regenerate `operator_confidence_table.json` / `proof_footprint_manifest.json` and explain why.\n4. Do not execute untrusted model code; use declarative stubs or isolated plugin contracts for third-party layers.",
+      "confidence": "heuristic",
+      "difficulty": "beginner",
+      "evidence": [
+        "src/proof_footprint.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "labels": [
+        "good first issue",
+        "operator-coverage",
+        "tensorguard",
+        "operator:torch-multinomial"
+      ],
+      "operator": "torch.multinomial",
+      "proof_status": "heuristic",
+      "title": "Good first operator: upgrade `torch.multinomial` transfer evidence"
+    },
+    {
+      "acceptance_tests": [
+        "docs/contributing/operator_template.py",
+        "tests/test_operator_confidence.py",
+        "tests/test_proof_footprint.py"
+      ],
+      "body": "### Goal\nImprove TensorGuard's transfer-function evidence for `torch.unique`.\n\n- Current confidence: `heuristic`\n- Current proof footprint: `heuristic`\n- Rationale: Output shape depends on runtime values or is approximated generically; best-effort, neither sound nor complete in general.\n- Starting evidence: `src/proof_footprint.py`, `tests/test_operator_confidence.py`\n\n### Acceptance checklist\n1. Add or tighten a transfer/conformance case for the operator using `docs/contributing/operator_template.py`.\n2. Run the operator-specific pytest you added, plus `tests/test_operator_confidence.py` and `tests/test_proof_footprint.py`.\n3. If the proof status changes, regenerate `operator_confidence_table.json` / `proof_footprint_manifest.json` and explain why.\n4. Do not execute untrusted model code; use declarative stubs or isolated plugin contracts for third-party layers.",
+      "confidence": "heuristic",
+      "difficulty": "beginner",
+      "evidence": [
+        "src/proof_footprint.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "labels": [
+        "good first issue",
+        "operator-coverage",
+        "tensorguard",
+        "operator:torch-unique"
+      ],
+      "operator": "torch.unique",
+      "proof_status": "heuristic",
+      "title": "Good first operator: upgrade `torch.unique` transfer evidence"
+    },
+    {
+      "acceptance_tests": [
+        "docs/contributing/operator_template.py",
+        "tests/test_operator_confidence.py",
+        "tests/test_proof_footprint.py"
+      ],
+      "body": "### Goal\nImprove TensorGuard's transfer-function evidence for `torch.argsort`.\n\n- Current confidence: `sound`\n- Current proof footprint: `tested_only_rule`\n- Rationale: Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly.\n- Starting evidence: `tests/test_graph_compiler.py`, `tests/test_index_value_ops_precise.py`\n\n### Acceptance checklist\n1. Add or tighten a transfer/conformance case for the operator using `docs/contributing/operator_template.py`.\n2. Run the operator-specific pytest you added, plus `tests/test_operator_confidence.py` and `tests/test_proof_footprint.py`.\n3. If the proof status changes, regenerate `operator_confidence_table.json` / `proof_footprint_manifest.json` and explain why.\n4. Do not execute untrusted model code; use declarative stubs or isolated plugin contracts for third-party layers.",
+      "confidence": "sound",
+      "difficulty": "beginner",
+      "evidence": [
+        "tests/test_graph_compiler.py",
+        "tests/test_index_value_ops_precise.py"
+      ],
+      "labels": [
+        "good first issue",
+        "operator-coverage",
+        "tensorguard",
+        "operator:torch-argsort"
+      ],
+      "operator": "torch.argsort",
+      "proof_status": "tested_only_rule",
+      "title": "Good first operator: upgrade `torch.argsort` transfer evidence"
+    },
+    {
+      "acceptance_tests": [
+        "docs/contributing/operator_template.py",
+        "tests/test_operator_confidence.py",
+        "tests/test_proof_footprint.py"
+      ],
+      "body": "### Goal\nImprove TensorGuard's transfer-function evidence for `torch.bernoulli`.\n\n- Current confidence: `sound`\n- Current proof footprint: `tested_only_rule`\n- Rationale: Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly.\n- Starting evidence: `tests/test_graph_compiler.py`, `tests/test_operator_confidence.py`\n\n### Acceptance checklist\n1. Add or tighten a transfer/conformance case for the operator using `docs/contributing/operator_template.py`.\n2. Run the operator-specific pytest you added, plus `tests/test_operator_confidence.py` and `tests/test_proof_footprint.py`.\n3. If the proof status changes, regenerate `operator_confidence_table.json` / `proof_footprint_manifest.json` and explain why.\n4. Do not execute untrusted model code; use declarative stubs or isolated plugin contracts for third-party layers.",
+      "confidence": "sound",
+      "difficulty": "beginner",
+      "evidence": [
+        "tests/test_graph_compiler.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "labels": [
+        "good first issue",
+        "operator-coverage",
+        "tensorguard",
+        "operator:torch-bernoulli"
+      ],
+      "operator": "torch.bernoulli",
+      "proof_status": "tested_only_rule",
+      "title": "Good first operator: upgrade `torch.bernoulli` transfer evidence"
+    },
+    {
+      "acceptance_tests": [
+        "docs/contributing/operator_template.py",
+        "tests/test_operator_confidence.py",
+        "tests/test_proof_footprint.py"
+      ],
+      "body": "### Goal\nImprove TensorGuard's transfer-function evidence for `torch.cdist`.\n\n- Current confidence: `sound`\n- Current proof footprint: `tested_only_rule`\n- Rationale: Structural op whose output shape is an exact function of the input shapes and static integer arguments; enforced soundly.\n- Starting evidence: `tests/test_graph_compiler.py`, `tests/test_operator_confidence.py`\n\n### Acceptance checklist\n1. Add or tighten a transfer/conformance case for the operator using `docs/contributing/operator_template.py`.\n2. Run the operator-specific pytest you added, plus `tests/test_operator_confidence.py` and `tests/test_proof_footprint.py`.\n3. If the proof status changes, regenerate `operator_confidence_table.json` / `proof_footprint_manifest.json` and explain why.\n4. Do not execute untrusted model code; use declarative stubs or isolated plugin contracts for third-party layers.",
+      "confidence": "sound",
+      "difficulty": "beginner",
+      "evidence": [
+        "tests/test_graph_compiler.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "labels": [
+        "good first issue",
+        "operator-coverage",
+        "tensorguard",
+        "operator:torch-cdist"
+      ],
+      "operator": "torch.cdist",
+      "proof_status": "tested_only_rule",
+      "title": "Good first operator: upgrade `torch.cdist` transfer evidence"
+    },
+    {
+      "acceptance_tests": [
+        "docs/contributing/operator_template.py",
+        "tests/test_operator_confidence.py",
+        "tests/test_proof_footprint.py"
+      ],
+      "body": "### Goal\nImprove TensorGuard's transfer-function evidence for `torch.fft.fft`.\n\n- Current confidence: `sound`\n- Current proof footprint: `tested_only_rule`\n- Rationale: FFT family: exact, well-defined output-shape rule (e.g. rfft maps the last dim n -> n//2 + 1) enforced soundly.\n- Starting evidence: `tests/test_complex_verify.py`, `tests/test_operator_confidence.py`\n\n### Acceptance checklist\n1. Add or tighten a transfer/conformance case for the operator using `docs/contributing/operator_template.py`.\n2. Run the operator-specific pytest you added, plus `tests/test_operator_confidence.py` and `tests/test_proof_footprint.py`.\n3. If the proof status changes, regenerate `operator_confidence_table.json` / `proof_footprint_manifest.json` and explain why.\n4. Do not execute untrusted model code; use declarative stubs or isolated plugin contracts for third-party layers.",
+      "confidence": "sound",
+      "difficulty": "beginner",
+      "evidence": [
+        "tests/test_complex_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "labels": [
+        "good first issue",
+        "operator-coverage",
+        "tensorguard",
+        "operator:torch-fft-fft"
+      ],
+      "operator": "torch.fft.fft",
+      "proof_status": "tested_only_rule",
+      "title": "Good first operator: upgrade `torch.fft.fft` transfer evidence"
+    },
+    {
+      "acceptance_tests": [
+        "docs/contributing/operator_template.py",
+        "tests/test_operator_confidence.py",
+        "tests/test_proof_footprint.py"
+      ],
+      "body": "### Goal\nImprove TensorGuard's transfer-function evidence for `torch.fft.fft2`.\n\n- Current confidence: `sound`\n- Current proof footprint: `tested_only_rule`\n- Rationale: FFT family: exact, well-defined output-shape rule (e.g. rfft maps the last dim n -> n//2 + 1) enforced soundly.\n- Starting evidence: `tests/test_complex_verify.py`, `tests/test_operator_confidence.py`\n\n### Acceptance checklist\n1. Add or tighten a transfer/conformance case for the operator using `docs/contributing/operator_template.py`.\n2. Run the operator-specific pytest you added, plus `tests/test_operator_confidence.py` and `tests/test_proof_footprint.py`.\n3. If the proof status changes, regenerate `operator_confidence_table.json` / `proof_footprint_manifest.json` and explain why.\n4. Do not execute untrusted model code; use declarative stubs or isolated plugin contracts for third-party layers.",
+      "confidence": "sound",
+      "difficulty": "beginner",
+      "evidence": [
+        "tests/test_complex_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "labels": [
+        "good first issue",
+        "operator-coverage",
+        "tensorguard",
+        "operator:torch-fft-fft2"
+      ],
+      "operator": "torch.fft.fft2",
+      "proof_status": "tested_only_rule",
+      "title": "Good first operator: upgrade `torch.fft.fft2` transfer evidence"
+    },
+    {
+      "acceptance_tests": [
+        "docs/contributing/operator_template.py",
+        "tests/test_operator_confidence.py",
+        "tests/test_proof_footprint.py"
+      ],
+      "body": "### Goal\nImprove TensorGuard's transfer-function evidence for `torch.fft.ifft`.\n\n- Current confidence: `sound`\n- Current proof footprint: `tested_only_rule`\n- Rationale: FFT family: exact, well-defined output-shape rule (e.g. rfft maps the last dim n -> n//2 + 1) enforced soundly.\n- Starting evidence: `tests/test_complex_verify.py`, `tests/test_operator_confidence.py`\n\n### Acceptance checklist\n1. Add or tighten a transfer/conformance case for the operator using `docs/contributing/operator_template.py`.\n2. Run the operator-specific pytest you added, plus `tests/test_operator_confidence.py` and `tests/test_proof_footprint.py`.\n3. If the proof status changes, regenerate `operator_confidence_table.json` / `proof_footprint_manifest.json` and explain why.\n4. Do not execute untrusted model code; use declarative stubs or isolated plugin contracts for third-party layers.",
+      "confidence": "sound",
+      "difficulty": "beginner",
+      "evidence": [
+        "tests/test_complex_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "labels": [
+        "good first issue",
+        "operator-coverage",
+        "tensorguard",
+        "operator:torch-fft-ifft"
+      ],
+      "operator": "torch.fft.ifft",
+      "proof_status": "tested_only_rule",
+      "title": "Good first operator: upgrade `torch.fft.ifft` transfer evidence"
+    },
+    {
+      "acceptance_tests": [
+        "docs/contributing/operator_template.py",
+        "tests/test_operator_confidence.py",
+        "tests/test_proof_footprint.py"
+      ],
+      "body": "### Goal\nImprove TensorGuard's transfer-function evidence for `torch.fft.ifft2`.\n\n- Current confidence: `sound`\n- Current proof footprint: `tested_only_rule`\n- Rationale: FFT family: exact, well-defined output-shape rule (e.g. rfft maps the last dim n -> n//2 + 1) enforced soundly.\n- Starting evidence: `tests/test_complex_verify.py`, `tests/test_operator_confidence.py`\n\n### Acceptance checklist\n1. Add or tighten a transfer/conformance case for the operator using `docs/contributing/operator_template.py`.\n2. Run the operator-specific pytest you added, plus `tests/test_operator_confidence.py` and `tests/test_proof_footprint.py`.\n3. If the proof status changes, regenerate `operator_confidence_table.json` / `proof_footprint_manifest.json` and explain why.\n4. Do not execute untrusted model code; use declarative stubs or isolated plugin contracts for third-party layers.",
+      "confidence": "sound",
+      "difficulty": "beginner",
+      "evidence": [
+        "tests/test_complex_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "labels": [
+        "good first issue",
+        "operator-coverage",
+        "tensorguard",
+        "operator:torch-fft-ifft2"
+      ],
+      "operator": "torch.fft.ifft2",
+      "proof_status": "tested_only_rule",
+      "title": "Good first operator: upgrade `torch.fft.ifft2` transfer evidence"
+    },
+    {
+      "acceptance_tests": [
+        "docs/contributing/operator_template.py",
+        "tests/test_operator_confidence.py",
+        "tests/test_proof_footprint.py"
+      ],
+      "body": "### Goal\nImprove TensorGuard's transfer-function evidence for `torch.fft.irfft`.\n\n- Current confidence: `sound`\n- Current proof footprint: `tested_only_rule`\n- Rationale: FFT family: exact, well-defined output-shape rule (e.g. rfft maps the last dim n -> n//2 + 1) enforced soundly.\n- Starting evidence: `tests/test_complex_verify.py`, `tests/test_operator_confidence.py`\n\n### Acceptance checklist\n1. Add or tighten a transfer/conformance case for the operator using `docs/contributing/operator_template.py`.\n2. Run the operator-specific pytest you added, plus `tests/test_operator_confidence.py` and `tests/test_proof_footprint.py`.\n3. If the proof status changes, regenerate `operator_confidence_table.json` / `proof_footprint_manifest.json` and explain why.\n4. Do not execute untrusted model code; use declarative stubs or isolated plugin contracts for third-party layers.",
+      "confidence": "sound",
+      "difficulty": "beginner",
+      "evidence": [
+        "tests/test_complex_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "labels": [
+        "good first issue",
+        "operator-coverage",
+        "tensorguard",
+        "operator:torch-fft-irfft"
+      ],
+      "operator": "torch.fft.irfft",
+      "proof_status": "tested_only_rule",
+      "title": "Good first operator: upgrade `torch.fft.irfft` transfer evidence"
+    },
+    {
+      "acceptance_tests": [
+        "docs/contributing/operator_template.py",
+        "tests/test_operator_confidence.py",
+        "tests/test_proof_footprint.py"
+      ],
+      "body": "### Goal\nImprove TensorGuard's transfer-function evidence for `torch.fft.rfft`.\n\n- Current confidence: `sound`\n- Current proof footprint: `tested_only_rule`\n- Rationale: FFT family: exact, well-defined output-shape rule (e.g. rfft maps the last dim n -> n//2 + 1) enforced soundly.\n- Starting evidence: `tests/test_complex_verify.py`, `tests/test_operator_confidence.py`\n\n### Acceptance checklist\n1. Add or tighten a transfer/conformance case for the operator using `docs/contributing/operator_template.py`.\n2. Run the operator-specific pytest you added, plus `tests/test_operator_confidence.py` and `tests/test_proof_footprint.py`.\n3. If the proof status changes, regenerate `operator_confidence_table.json` / `proof_footprint_manifest.json` and explain why.\n4. Do not execute untrusted model code; use declarative stubs or isolated plugin contracts for third-party layers.",
+      "confidence": "sound",
+      "difficulty": "beginner",
+      "evidence": [
+        "tests/test_complex_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "labels": [
+        "good first issue",
+        "operator-coverage",
+        "tensorguard",
+        "operator:torch-fft-rfft"
+      ],
+      "operator": "torch.fft.rfft",
+      "proof_status": "tested_only_rule",
+      "title": "Good first operator: upgrade `torch.fft.rfft` transfer evidence"
+    }
+  ],
+  "schema": "tensorguard.good_first_operators/v1",
+  "source_of_truth": [
+    "operator_confidence_table.json",
+    "proof_footprint_manifest.json",
+    "community_stubs/README.md",
+    "docs/plugins/operator_plugin_abi.md",
+    "lean/"
+  ],
+  "summary": {
+    "beginner_count": 12,
+    "heuristic_count": 3,
+    "issue_count": 12,
+    "tested_only_count": 9
+  }
+}
