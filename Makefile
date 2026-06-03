@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs soundness-appendix corpus headline audit evaluation-protocol developer-study silent-bug-benchmark statistical-meta-analysis negative-controls artifact-package camera-ready-paper playground adoption-recipes sarif-trends precision-recall stratified-precision-recall head-to-head-step252 stagewise-ablation pr-history-survival labeling-agreement pareto-curves pareto-curves-gate cross-version-stability natural-distribution-study sound-fp false-unknowns hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence artifact-index reviewer-commands test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs soundness-appendix corpus headline audit evaluation-protocol developer-study silent-bug-benchmark statistical-meta-analysis negative-controls artifact-package camera-ready-paper playground adoption-recipes third-party-conformance sarif-trends precision-recall stratified-precision-recall head-to-head-step252 stagewise-ablation pr-history-survival labeling-agreement pareto-curves pareto-curves-gate cross-version-stability natural-distribution-study sound-fp false-unknowns hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence artifact-index reviewer-commands test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -63,6 +63,7 @@ help:
 	@echo "  camera-ready-paper Regenerate Step 268 paper claim ledger and validate tool_paper"
 	@echo "  playground       Generate the no-upload local static playground"
 	@echo "  adoption-recipes Print one-line setup recipes for CI, pre-commit, pytest, nox/tox, Makefiles"
+	@echo "  third-party-conformance Run stub/plugin certification-suite tests"
 	@echo "  sarif-trends     Regenerate Code Scanning open/closed/recurrence trend dashboard"
 	@echo "  audit            Run the numeric-claim audit over committed artifacts"
 	@echo "  paper-evidence   Regenerate every table/figure + the single paper-evidence index"
@@ -275,6 +276,9 @@ playground:
 
 adoption-recipes:
 	$(PYTHON) -m src.cli.main adoption-recipes --check
+
+third-party-conformance:
+	$(PYTHON) -m pytest tests/test_third_party_conformance.py -q
 
 sarif-trends:
 	$(PYTHON) evaluation/sarif_trends.py

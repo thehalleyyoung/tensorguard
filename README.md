@@ -216,7 +216,10 @@ runtime errors in ML codebases before any code runs.
   community stub registry** (declarative, no executable code) and a trusted,
   explicitly imported **operator-plugin ABI** with versioned contracts, security
   review attestations, and executed conformance cases
-  (`community_stubs/`, `src/stub_governance.py`, `src/operator_plugin_abi.py`).
+  (`community_stubs/`, `src/stub_governance.py`, `src/operator_plugin_abi.py`);
+  library authors can now certify those stubs/plugins against TensorGuard's real
+  `sound`/`balanced`/`heuristic` verifier modes with
+  `src.third_party_conformance`.
   Seven-track executable **Colab tutorials** (`examples/tutorials/`) cover
   shapes, attention, export, distributed, quantization, stubs, and formal
   certificates, while a 25-case copyable **model gallery** (`examples/model_gallery.md`) onboards new users

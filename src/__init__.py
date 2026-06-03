@@ -179,6 +179,14 @@ from .operator_plugin_abi import (
     validate_operator_theories,
     validate_operator_theory,
 )
+from .third_party_conformance import (
+    ThirdPartyConformanceReport,
+    ThirdPartyConformanceScenario,
+    ThirdPartyScenarioResult,
+    assert_conformance_passed,
+    certify_plugin_contracts,
+    certify_stub_manifests,
+)
 
 __all__ = [
     "analyze",
@@ -324,5 +332,11 @@ __all__ = [
     "is_abi_compatible",
     "validate_operator_theories",
     "validate_operator_theory",
+    "ThirdPartyConformanceReport",
+    "ThirdPartyConformanceScenario",
+    "ThirdPartyScenarioResult",
+    "assert_conformance_passed",
+    "certify_plugin_contracts",
+    "certify_stub_manifests",
     "__version__",
 ]

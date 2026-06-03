@@ -172,7 +172,13 @@ the package, validate the contracts, and install only the passing transfers.  A
 focused regression test installs a third-party last-dimension theory, verifies a
 real \texttt{nn.Module} through it, rejects future-major ABI versions, failed
 security attestations, conformance drift, and crashing transfers, and confirms the
-no-autoload policy is documented.
+no-autoload policy is documented.  The newer
+\texttt{src.third\_party\_conformance} layer turns this into a library-facing
+certification suite: authors can install their stub or plugin in an isolated
+registry snapshot, run real \texttt{verify\_architecture} scenarios, and assert
+the expected \safe{}/\unsafe{}/\unknown{} outcome under \texttt{sound},
+\texttt{balanced}, and \texttt{heuristic} modes before claiming TensorGuard
+compatibility.
 
 \subsection{Frontends}
 
@@ -1057,6 +1063,12 @@ data-dependent shapes, unsupported operations, and static input replay. \\
 \texttt{src/reporters.py}, \texttt{src/sarif\_codescan.py},
 \texttt{src/github\_action.py} &
 Machine-readable and platform-native reporting. \\
+\hline
+\texttt{src.operator\_plugin\_abi.py}, \texttt{src.stub\_governance.py},
+\texttt{src.third\_party\_conformance.py} &
+Governed extension surfaces: declarative community stubs, trusted executable
+operator theories, security/provenance review, transfer conformance cases, and
+real verifier-mode certification suites for third-party libraries. \\
 \hline
 \texttt{lean/TensorGuard/*.lean} &
 Machine-checked statements for selected transfer rules, mode boundaries,
