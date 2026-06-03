@@ -367,7 +367,7 @@ from src.integrations.accelerate_hook import prepare_verified
 from src.integrations.hf_hook import guarded_from_pretrained
 
 compiled = guarded_compile(model, input_shapes={"x": ("b", 10)})   # torch.compile
-guarded_onnx_export(model, (x,), "model.onnx")                     # torch.onnx.export (+ checker)
+guarded_onnx_export(model, (x,), "model.onnx")                     # ONNX checker + opset gates
 guarded_aot_package(model, (x,), package_path="m.pt2", dynamic_shapes=ds)  # AOT layout/dtype/device/Dim/lowering gates
 model = prepare_verified(accelerator, model, opt, loader)          # accelerate.prepare
 model = guarded_from_pretrained(AutoModel, "org/ckpt")            # HF from_pretrained
@@ -2359,8 +2359,8 @@ same bug surfaces as an opaque guard failure or a deep inductor traceback).
 `torch.compile(model)`; `make_tensorguard_backend(model)` is a `torch.compile`
 backend that gates verification inside the pipeline; `verify_exported_program`
 and `guarded_aot_package` do the same before `torch.export.export` and
-AOTInductor packaging; `guarded_onnx_export` adds an `onnx.checker` post-export
-assertion. See `src/torch_integration.py`.
+AOTInductor packaging; `guarded_onnx_export` adds ONNX opset availability and
+`onnx.checker` gates. See `src/torch_integration.py`.
 
 ### Framework hooks (Lightning, HF Trainer, `from_pretrained`)
 

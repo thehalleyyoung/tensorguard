@@ -80,6 +80,19 @@ class TensorGuardAOTPackageError(ValueError):
         )
 
 
+class TensorGuardONNXExportError(ValueError):
+    """Raised when an ONNX export contract is rejected before exporting."""
+
+    def __init__(self, issues: Sequence["ONNXExportIssue"]):
+        self.issues = tuple(issues)
+        details = "; ".join(issue.message for issue in self.issues[:3])
+        more = "" if len(self.issues) <= 3 else f" (+{len(self.issues) - 3} more)"
+        super().__init__(
+            f"TensorGuard rejected ONNX export with "
+            f"{len(self.issues)} issue(s): {details}{more}"
+        )
+
+
 @dataclass(frozen=True)
 class AOTPackageIssue:
     """A precise pre-package contract violation for AOTInductor artifacts."""
@@ -100,9 +113,124 @@ class AOTPackageGateResult:
     dynamic_guard_count: int = 0
 
 
+@dataclass(frozen=True)
+class ONNXExportIssue:
+    """A precise pre-export contract violation for ONNX artifacts."""
+
+    category: str
+    message: str
+    op_name: Optional[str] = None
+    onnx_op: Optional[str] = None
+    min_opset: Optional[int] = None
+    requested_opset: Optional[int] = None
+    input_name: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class ONNXLoweredOp:
+    """A lowered PyTorch op and the ONNX opset at which this gate admits it."""
+
+    torch_op: str
+    onnx_op: Optional[str]
+    min_opset: Optional[int]
+    dynamic_min_opset: Optional[int] = None
+
+
+@dataclass(frozen=True)
+class ONNXExportGateResult:
+    """Result of TensorGuard's ONNX export availability gate."""
+
+    ok: bool
+    issues: Tuple[ONNXExportIssue, ...]
+    opset_version: int
+    checked_ops: Tuple[ONNXLoweredOp, ...] = ()
+    unknown_ops: Tuple[str, ...] = ()
+    dynamic_shape_axes: int = 0
+    graph_capture_error: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class _ONNXOpRule:
+    onnx_op: str
+    min_opset: int
+    dynamic_min_opset: Optional[int] = None
+
+
 _DimRange = Tuple[Optional[int], Optional[int]]
 _DynamicKey = Tuple[str, _DimRange]
 _AxisDynamic = Tuple[str, _DimRange, str, int, bool]
+
+_ONNX_FALLBACK_DEFAULT_OPSET = 20
+_ONNX_FALLBACK_MIN_OPSET = 7
+_ONNX_FALLBACK_MAX_OPSET = 23
+_ONNX_FALLBACK_TORCHSCRIPT_MAX_OPSET = 20
+
+_ONNX_ATEN_RULES: Dict[str, _ONNXOpRule] = {
+    # Minima are for the PyTorch exporter lowering, not necessarily the native
+    # fused ONNX op's first schema version.  The legacy exporter decomposes some
+    # high-level ATen ops into older ONNX primitives.
+    "abs": _ONNXOpRule("Abs", 7),
+    "acos": _ONNXOpRule("Acos", 7),
+    "add": _ONNXOpRule("Add", 7),
+    "addmm": _ONNXOpRule("Gemm", 7),
+    "adaptive_avg_pool2d": _ONNXOpRule("AveragePool/GlobalAveragePool", 7),
+    "avg_pool2d": _ONNXOpRule("AveragePool", 7),
+    "batch_norm": _ONNXOpRule("BatchNormalization", 7),
+    "bmm": _ONNXOpRule("MatMul", 9),
+    "cat": _ONNXOpRule("Concat", 7),
+    "clone": _ONNXOpRule("Identity", 7),
+    "convolution": _ONNXOpRule("Conv", 7),
+    "cos": _ONNXOpRule("Cos", 7),
+    "div": _ONNXOpRule("Div", 7),
+    "einsum": _ONNXOpRule("Einsum", 12),
+    "elu": _ONNXOpRule("Elu", 7),
+    "exp": _ONNXOpRule("Exp", 7),
+    "flatten": _ONNXOpRule("Flatten/Reshape", 7),
+    "gelu": _ONNXOpRule("Erf/Mul/Add decomposition", 7),
+    "grid_sampler": _ONNXOpRule("GridSample", 16),
+    "hardtanh": _ONNXOpRule("Clip", 7),
+    "layer_norm": _ONNXOpRule("ReduceMean/Sub/Pow decomposition", 7),
+    "linear": _ONNXOpRule("Gemm", 7),
+    "log": _ONNXOpRule("Log", 7),
+    "matmul": _ONNXOpRule("MatMul", 9),
+    "max_pool2d": _ONNXOpRule("MaxPool", 7),
+    "mean": _ONNXOpRule("ReduceMean", 7),
+    "mm": _ONNXOpRule("MatMul", 9),
+    "mul": _ONNXOpRule("Mul", 7),
+    "native_batch_norm": _ONNXOpRule("BatchNormalization", 7),
+    "native_layer_norm": _ONNXOpRule("ReduceMean/Sub/Pow decomposition", 7),
+    "neg": _ONNXOpRule("Neg", 7),
+    "permute": _ONNXOpRule("Transpose", 7),
+    "relu": _ONNXOpRule("Relu", 7),
+    "reshape": _ONNXOpRule("Reshape", 7),
+    "rsqrt": _ONNXOpRule("Sqrt/Reciprocal decomposition", 7),
+    "scaled_dot_product_attention": _ONNXOpRule(
+        "MatMul/Softmax decomposition", 14, dynamic_min_opset=14
+    ),
+    "sigmoid": _ONNXOpRule("Sigmoid", 7),
+    "sin": _ONNXOpRule("Sin", 7),
+    "slice": _ONNXOpRule("Slice", 10, dynamic_min_opset=10),
+    "softmax": _ONNXOpRule("Softmax", 7),
+    "sqrt": _ONNXOpRule("Sqrt", 7),
+    "sub": _ONNXOpRule("Sub", 7),
+    "sum": _ONNXOpRule("ReduceSum", 7),
+    "t": _ONNXOpRule("Transpose", 7),
+    "tanh": _ONNXOpRule("Tanh", 7),
+    "transpose": _ONNXOpRule("Transpose", 7),
+    "tril": _ONNXOpRule("Trilu", 14),
+    "triu": _ONNXOpRule("Trilu", 14),
+    "unsqueeze": _ONNXOpRule("Unsqueeze", 7),
+    "view": _ONNXOpRule("Reshape", 7),
+}
+
+_ONNX_UNSUPPORTED_ATEN_BASES = frozenset({
+    "fft_fft",
+    "fft_ifft",
+    "fft_irfft",
+    "fft_rfft",
+    "linalg_eig",
+    "linalg_eigh",
+})
 
 _AOT_UNSUPPORTED_LOWERING_BASES = frozenset({
     # Tuple-valued/data-dependent ATen ops that are not admitted by the stable
@@ -549,6 +677,365 @@ def _aot_unsupported_lowering_issues(
     return issues, tuple(checked_ops)
 
 
+def verify_onnx_export_contract(
+    model: Any,
+    example_args: Tuple,
+    *,
+    input_shapes: Optional[Dict[str, Tuple]] = None,
+    dynamic_shapes: Any = None,
+    dynamic_axes: Any = None,
+    opset_version: Optional[int] = None,
+    dynamo: bool = False,
+    exported_program: Any = None,
+    allow_unknown_ops: bool = True,
+) -> ONNXExportGateResult:
+    """Validate ONNX-export preconditions without invoking ``torch.onnx.export``.
+
+    The gate checks the requested opset against PyTorch's exporter bounds,
+    validates ONNX-specific dynamic-shape limitations, and, when a real
+    ``torch.export`` graph can be captured, maps lowered ATen operators to the
+    minimum ONNX opset the active exporter lowering admits.  If graph capture
+    itself fails, the result records ``graph_capture_error`` and leaves the
+    export unblocked; this avoids making the legacy ONNX path stricter than the
+    real exporter.
+    """
+    args = example_args if isinstance(example_args, tuple) else (example_args,)
+    resolved_opset = _resolve_onnx_opset(opset_version)
+    issues: List[ONNXExportIssue] = []
+    issues.extend(_onnx_opset_range_issues(resolved_opset, dynamo))
+
+    inferred_input_shapes = input_shapes is None
+    dynamic_contract_invalid = False
+    if input_shapes is None:
+        input_shapes = _infer_shapes_from_args(model, args)
+    if dynamic_shapes is not None:
+        try:
+            input_shapes = _validate_export_dynamic_shapes(
+                model,
+                args,
+                input_shapes,
+                dynamic_shapes,
+                inferred_input_shapes=inferred_input_shapes,
+            )
+        except TensorGuardDynamicShapeError as exc:
+            issues.append(
+                ONNXExportIssue(
+                    category="dynamic_shape_export",
+                    message=str(exc).splitlines()[0],
+                    requested_opset=resolved_opset,
+                )
+            )
+            dynamic_contract_invalid = True
+
+    dynamic_issues, dynamic_axes_count = _onnx_dynamic_shape_issues(
+        model, args, dynamic_shapes, dynamic_axes, dynamo, resolved_opset
+    )
+    issues.extend(dynamic_issues)
+
+    checked_ops: Tuple[ONNXLoweredOp, ...] = ()
+    unknown_ops: Tuple[str, ...] = ()
+    graph_capture_error: Optional[str] = None
+    captured_program = exported_program
+    if captured_program is None:
+        captured_program, graph_capture_error = _capture_onnx_gate_program(
+            model,
+            args,
+            dynamic_shapes=(
+                dynamic_shapes
+                if dynamo and not dynamic_issues and not dynamic_contract_invalid
+                else None
+            ),
+        )
+    if captured_program is not None:
+        op_issues, checked_ops, unknown_ops = _onnx_opset_availability_issues(
+            captured_program,
+            resolved_opset,
+            has_dynamic_shapes=dynamic_axes_count > 0,
+            allow_unknown_ops=allow_unknown_ops,
+        )
+        issues.extend(op_issues)
+
+    return ONNXExportGateResult(
+        ok=not issues,
+        issues=tuple(issues),
+        opset_version=resolved_opset,
+        checked_ops=checked_ops,
+        unknown_ops=unknown_ops,
+        dynamic_shape_axes=dynamic_axes_count,
+        graph_capture_error=graph_capture_error,
+    )
+
+
+def _handle_onnx_gate_result(
+    result: ONNXExportGateResult,
+    on_violation: str,
+) -> None:
+    if result.ok or on_violation == "ignore":
+        return
+    error = TensorGuardONNXExportError(result.issues)
+    if on_violation == "raise":
+        raise error
+    if on_violation == "warn":
+        warnings.warn(str(error), stacklevel=2)
+
+
+def _onnx_exporter_constants() -> Tuple[int, int, int, int]:
+    try:
+        import torch.onnx._constants as constants
+
+        return (
+            int(getattr(constants, "ONNX_DEFAULT_OPSET")),
+            int(getattr(constants, "ONNX_MIN_OPSET")),
+            int(getattr(constants, "ONNX_MAX_OPSET")),
+            int(getattr(constants, "ONNX_TORCHSCRIPT_EXPORTER_MAX_OPSET")),
+        )
+    except Exception:  # pragma: no cover - defensive for old torch builds
+        return (
+            _ONNX_FALLBACK_DEFAULT_OPSET,
+            _ONNX_FALLBACK_MIN_OPSET,
+            _ONNX_FALLBACK_MAX_OPSET,
+            _ONNX_FALLBACK_TORCHSCRIPT_MAX_OPSET,
+        )
+
+
+def _resolve_onnx_opset(opset_version: Optional[int]) -> int:
+    default, _minimum, _maximum, _torchscript_max = _onnx_exporter_constants()
+    if opset_version is None:
+        return default
+    return int(opset_version)
+
+
+def _onnx_opset_range_issues(
+    opset_version: int,
+    dynamo: bool,
+) -> List[ONNXExportIssue]:
+    _default, minimum, maximum, torchscript_max = _onnx_exporter_constants()
+    issues: List[ONNXExportIssue] = []
+    if opset_version < minimum or opset_version > maximum:
+        issues.append(
+            ONNXExportIssue(
+                category="opset_range",
+                requested_opset=opset_version,
+                message=(
+                    f"ONNX opset {opset_version} is outside PyTorch's supported "
+                    f"range [{minimum}, {maximum}]"
+                ),
+            )
+        )
+    if not dynamo and opset_version > torchscript_max:
+        issues.append(
+            ONNXExportIssue(
+                category="opset_range",
+                requested_opset=opset_version,
+                message=(
+                    f"ONNX opset {opset_version} requires the Dynamo exporter; "
+                    f"the legacy dynamo=False exporter supports at most opset "
+                    f"{torchscript_max}"
+                ),
+            )
+        )
+    return issues
+
+
+def _onnx_dynamic_shape_issues(
+    model: Any,
+    args: Tuple[Any, ...],
+    dynamic_shapes: Any,
+    dynamic_axes: Any,
+    dynamo: bool,
+    opset_version: int,
+) -> Tuple[List[ONNXExportIssue], int]:
+    issues: List[ONNXExportIssue] = []
+    dynamic_axis_count = _count_dynamic_axes(dynamic_axes)
+    if dynamic_shapes is None:
+        return issues, dynamic_axis_count
+
+    dim_axes = list(_iter_export_dim_axes(model, args, dynamic_shapes))
+    dynamic_axis_count += len(dim_axes)
+    if not dynamo:
+        issues.append(
+            ONNXExportIssue(
+                category="dynamic_shape_export",
+                requested_opset=opset_version,
+                message=(
+                    "torch.onnx.export(dynamic_shapes=...) is supported only "
+                    "with dynamo=True; use dynamic_axes for the legacy "
+                    "dynamo=False exporter"
+                ),
+            )
+        )
+        return issues, dynamic_axis_count
+
+    for input_name, axis, dim in dim_axes:
+        display, _root, _factor, is_derived = _dim_relation(dim)
+        if is_derived:
+            issues.append(
+                ONNXExportIssue(
+                    category="dynamic_shape_export",
+                    input_name=input_name,
+                    requested_opset=opset_version,
+                    message=(
+                        f"ONNX dynamic dimensions cannot preserve derived "
+                        f"torch.export.Dim relation {display!r} on "
+                        f"{input_name}[{axis}]; export via torch.export/AOT or "
+                        "use an independent ONNX dynamic axis"
+                    ),
+                )
+            )
+    return issues, dynamic_axis_count
+
+
+def _count_dynamic_axes(dynamic_axes: Any) -> int:
+    if dynamic_axes is None:
+        return 0
+    if isinstance(dynamic_axes, dict):
+        total = 0
+        for spec in dynamic_axes.values():
+            if isinstance(spec, dict):
+                total += len(spec)
+            elif isinstance(spec, (tuple, list, set)):
+                total += len(spec)
+            else:
+                total += 1
+        return total
+    if isinstance(dynamic_axes, (tuple, list, set)):
+        return len(dynamic_axes)
+    return 1
+
+
+def _iter_export_dim_axes(model: Any, args: Tuple[Any, ...], dynamic_shapes: Any):
+    names = _forward_param_names(model, args)
+    for index, name in enumerate(names):
+        spec = _dynamic_spec_for_input(dynamic_shapes, name, index)
+        for axis, dim in _iter_axis_specs(spec):
+            if _is_export_dim(dim):
+                yield name, axis, dim
+
+
+def _capture_onnx_gate_program(
+    model: Any,
+    args: Tuple[Any, ...],
+    *,
+    dynamic_shapes: Any = None,
+) -> Tuple[Any, Optional[str]]:
+    try:
+        import torch
+    except Exception as exc:  # pragma: no cover
+        return None, f"{type(exc).__name__}: {str(exc).splitlines()[0]}"
+
+    exported_program_type = getattr(getattr(torch, "export", None), "ExportedProgram", None)
+    if exported_program_type is not None and isinstance(model, exported_program_type):
+        return model, None
+    export_mod = getattr(torch, "export", None)
+    export_fn = getattr(export_mod, "export", None)
+    if export_fn is None:
+        return None, "torch.export.export is unavailable"
+    kwargs: Dict[str, Any] = {}
+    if dynamic_shapes is not None:
+        kwargs["dynamic_shapes"] = dynamic_shapes
+    try:
+        return export_fn(model, args, **kwargs), None
+    except Exception as exc:
+        return None, f"{type(exc).__name__}: {str(exc).splitlines()[0]}"
+
+
+def _onnx_op_display_name(target: Any) -> str:
+    text = str(target)
+    if text.startswith("aten."):
+        return text
+    return _aot_op_display_name(target)
+
+
+def _onnx_opset_availability_issues(
+    exported_program: Any,
+    opset_version: int,
+    *,
+    has_dynamic_shapes: bool,
+    allow_unknown_ops: bool,
+) -> Tuple[List[ONNXExportIssue], Tuple[ONNXLoweredOp, ...], Tuple[str, ...]]:
+    graph_module = getattr(exported_program, "graph_module", None)
+    graph = getattr(graph_module, "graph", None)
+    if graph is None:
+        return [], (), ()
+    issues: List[ONNXExportIssue] = []
+    checked_ops: List[ONNXLoweredOp] = []
+    unknown_ops: List[str] = []
+    seen: Set[str] = set()
+
+    for node in graph.nodes:
+        if getattr(node, "op", None) != "call_function":
+            continue
+        target = getattr(node, "target", None)
+        base = _aot_op_base_name(target)
+        display = _onnx_op_display_name(target)
+        if base in {"getitem"}:
+            continue
+        if base in _ONNX_UNSUPPORTED_ATEN_BASES:
+            if display not in seen:
+                seen.add(display)
+                issues.append(
+                    ONNXExportIssue(
+                        category="unsupported_op",
+                        op_name=display,
+                        requested_opset=opset_version,
+                        message=(
+                            f"{display} has no admitted ONNX lowering in "
+                            "TensorGuard's export gate"
+                        ),
+                    )
+                )
+            checked_ops.append(ONNXLoweredOp(display, None, None))
+            continue
+
+        rule = _ONNX_ATEN_RULES.get(base)
+        if rule is None:
+            if display not in unknown_ops:
+                unknown_ops.append(display)
+            if not allow_unknown_ops and display not in seen:
+                seen.add(display)
+                issues.append(
+                    ONNXExportIssue(
+                        category="unknown_op",
+                        op_name=display,
+                        requested_opset=opset_version,
+                        message=(
+                            f"{display} is not in TensorGuard's ONNX opset "
+                            "availability table"
+                        ),
+                    )
+                )
+            continue
+
+        min_opset = rule.min_opset
+        if has_dynamic_shapes and rule.dynamic_min_opset is not None:
+            min_opset = max(min_opset, rule.dynamic_min_opset)
+        checked_ops.append(
+            ONNXLoweredOp(
+                torch_op=display,
+                onnx_op=rule.onnx_op,
+                min_opset=rule.min_opset,
+                dynamic_min_opset=rule.dynamic_min_opset,
+            )
+        )
+        if opset_version < min_opset and display not in seen:
+            seen.add(display)
+            issues.append(
+                ONNXExportIssue(
+                    category="opset_version",
+                    op_name=display,
+                    onnx_op=rule.onnx_op,
+                    min_opset=min_opset,
+                    requested_opset=opset_version,
+                    message=(
+                        f"{display} lowers to ONNX {rule.onnx_op}, which "
+                        f"requires opset >= {min_opset}; requested opset "
+                        f"{opset_version}"
+                    ),
+                )
+            )
+    return issues, tuple(checked_ops), tuple(unknown_ops)
+
+
 def verify_exported_program(
     model: Any,
     example_args: Tuple,
@@ -981,6 +1468,8 @@ def guarded_onnx_export(
     on_violation: str = "raise",
     soundness_mode: str = "balanced",
     check_model: bool = True,
+    check_opset: bool = True,
+    allow_unknown_opset_ops: bool = True,
     **export_kwargs: Any,
 ):
     """Verify *model* as a pre-pass, then ``torch.onnx.export`` it.
@@ -1007,14 +1496,45 @@ def guarded_onnx_export(
     structurally invalid graph fails loudly at export time rather than at load
     time in a downstream runtime.  The check runs for both ``BytesIO``/file-like
     and path sinks; it is skipped only when ``onnx`` is not importable.
+
+    When ``check_opset=True`` (default) TensorGuard also runs a pre-export ONNX
+    availability gate: requested opsets are checked against PyTorch's exporter
+    bounds, ``dynamic_shapes`` is rejected on the legacy exporter before tracing,
+    ONNX-inexpressible derived ``torch.export.Dim`` relations are rejected, and
+    captured lowered ATen ops are mapped to their minimum supported ONNX opset.
     """
+    args_tuple = args if isinstance(args, tuple) else (args,)
+    inferred_input_shapes = input_shapes is None
     if input_shapes is None:
         input_shapes = _infer_shapes_from_args(model, args)
+    dynamic_shapes = export_kwargs.get("dynamic_shapes")
+    if dynamic_shapes is not None:
+        input_shapes = _validate_export_dynamic_shapes(
+            model,
+            args_tuple,
+            input_shapes,
+            dynamic_shapes,
+            inferred_input_shapes=inferred_input_shapes,
+        )
     _check(model, input_shapes, on_violation, soundness_mode)
 
     import torch
 
     export_kwargs.setdefault("dynamo", False)
+    if check_opset:
+        _handle_onnx_gate_result(
+            verify_onnx_export_contract(
+                model,
+                args_tuple,
+                input_shapes=input_shapes,
+                dynamic_shapes=dynamic_shapes,
+                dynamic_axes=export_kwargs.get("dynamic_axes"),
+                opset_version=export_kwargs.get("opset_version"),
+                dynamo=bool(export_kwargs.get("dynamo")),
+                allow_unknown_ops=allow_unknown_opset_ops,
+            ),
+            on_violation,
+        )
     result = torch.onnx.export(model, args, f, **export_kwargs)
     if check_model:
         _post_export_check(f)
