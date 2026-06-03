@@ -1,0 +1,1909 @@
+{
+  "schema": "tensorguard.proof_footprint/v1",
+  "registry": "src.graph_compiler._UNIVERSAL_TRANSFER_REGISTRY",
+  "default_status": "heuristic",
+  "summary": {
+    "lean_theorem": 16,
+    "pen_and_paper_rule": 102,
+    "tested_only_rule": 18,
+    "heuristic": 3
+  },
+  "total": 139,
+  "operators": [
+    {
+      "operator": "F.celu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.elu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.gelu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.hardshrink",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.hardsigmoid",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.hardswish",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.leaky_relu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.logsigmoid",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.mish",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.prelu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.relu",
+      "proof_status": "lean_theorem",
+      "confidence": "complete",
+      "rule": "relu(input) has exactly the input shape",
+      "lean_modules": [
+        "TensorGuard.Extended"
+      ],
+      "lean_theorems": [
+        "TensorGuard.relu_shape_preserving"
+      ],
+      "evidence": [
+        "lean/TensorGuard/Extended.lean",
+        "tests/test_lean_conformance.py"
+      ],
+      "rationale": "The ReLU identity shape rule is stated and proved directly in Lean."
+    },
+    {
+      "operator": "F.rrelu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.selu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.sigmoid",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.silu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.softplus",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.softshrink",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.softsign",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.tanh",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "F.tanhshrink",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.abs",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.acos",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.all",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "single-axis reduction removes or retains the reduced axis depending on keepdim",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_rank_transfer.py"
+      ],
+      "rationale": "The reduction rule is statically specified; non-allowlisted reductions rely on the paper rule."
+    },
+    {
+      "operator": "torch.amax",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "single-axis reduction removes or retains the reduced axis depending on keepdim",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_rank_transfer.py"
+      ],
+      "rationale": "The reduction rule is statically specified; non-allowlisted reductions rely on the paper rule."
+    },
+    {
+      "operator": "torch.amin",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "single-axis reduction removes or retains the reduced axis depending on keepdim",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_rank_transfer.py"
+      ],
+      "rationale": "The reduction rule is statically specified; non-allowlisted reductions rely on the paper rule."
+    },
+    {
+      "operator": "torch.any",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "single-axis reduction removes or retains the reduced axis depending on keepdim",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_rank_transfer.py"
+      ],
+      "rationale": "The reduction rule is statically specified; non-allowlisted reductions rely on the paper rule."
+    },
+    {
+      "operator": "torch.argsort",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "sort/topk/argsort preserve or statically set selected output axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_graph_compiler.py",
+        "tests/test_index_value_ops_precise.py"
+      ],
+      "rationale": "Index-value operators are validated by tests but do not yet have per-op Lean theorems."
+    },
+    {
+      "operator": "torch.asin",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.atan",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.bernoulli",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "stochastic samplers return statically known tensor shapes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_graph_compiler.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "Stochastic shape contracts are registry-tested but not mechanized per operator."
+    },
+    {
+      "operator": "torch.bmm",
+      "proof_status": "lean_theorem",
+      "confidence": "sound",
+      "rule": "batched matrix multiplication contracts matching inner dimensions per batch",
+      "lean_modules": [
+        "TensorGuard.MatmulSound",
+        "TensorGuard.SmtEncoding"
+      ],
+      "lean_theorems": [
+        "TensorGuard.MatmulSound.matmul_contraction_sound",
+        "TensorGuard.SmtEncoding.dtype_smt_matches_dtMatmulBug"
+      ],
+      "evidence": [
+        "lean/TensorGuard/MatmulSound.lean",
+        "tests/test_smt_dtype_faithful.py"
+      ],
+      "rationale": "The batched matrix-multiply rule uses the same Lean contraction law."
+    },
+    {
+      "operator": "torch.broadcast_shapes",
+      "proof_status": "lean_theorem",
+      "confidence": "sound",
+      "rule": "broadcast each aligned dimension by equality-or-one, folding across operands",
+      "lean_modules": [
+        "TensorGuard.BroadcastChain",
+        "TensorGuard.SmtEncoding"
+      ],
+      "lean_theorems": [
+        "TensorGuard.BroadcastChain.bcDim_none_iff",
+        "TensorGuard.BroadcastChain.bcRun_append",
+        "TensorGuard.SmtEncoding.broadcast_smt_sat_iff_bcDim_some"
+      ],
+      "evidence": [
+        "lean/TensorGuard/BroadcastChain.lean",
+        "tests/test_broadcast_dim_chain.py"
+      ],
+      "rationale": "Lean proves the broadcast-dimension chain and SMT formula faithfulness."
+    },
+    {
+      "operator": "torch.broadcast_tensors",
+      "proof_status": "lean_theorem",
+      "confidence": "sound",
+      "rule": "broadcast each tensor shape by the same equality-or-one dimension rule",
+      "lean_modules": [
+        "TensorGuard.BroadcastChain",
+        "TensorGuard.SmtEncoding"
+      ],
+      "lean_theorems": [
+        "TensorGuard.BroadcastChain.bcDim_none_iff",
+        "TensorGuard.BroadcastChain.bcRun_append",
+        "TensorGuard.SmtEncoding.broadcast_smt_sat_iff_bcDim_some"
+      ],
+      "evidence": [
+        "lean/TensorGuard/BroadcastChain.lean",
+        "tests/test_broadcast_dim_chain.py"
+      ],
+      "rationale": "Lean proves the broadcast-dimension chain and SMT formula faithfulness."
+    },
+    {
+      "operator": "torch.cdist",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "cdist returns pairwise-distance matrix shapes from the two input point axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_graph_compiler.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "cdist is covered by registry/contract tests, without a per-op Lean theorem."
+    },
+    {
+      "operator": "torch.ceil",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.celu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.clamp",
+      "proof_status": "lean_theorem",
+      "confidence": "complete",
+      "rule": "clamp(input, ...) has exactly the input shape",
+      "lean_modules": [
+        "TensorGuard.SoundnessV5"
+      ],
+      "lean_theorems": [
+        "TensorGuard.V5.applyOp_sound_clamp"
+      ],
+      "evidence": [
+        "lean/TensorGuard/SoundnessV5.lean",
+        "tests/test_device_dtype_transfer.py"
+      ],
+      "rationale": "Lean proves the V5 clamp transfer is shape-preserving."
+    },
+    {
+      "operator": "torch.clip",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.column_stack",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "stack-family operators combine equal-shaped tensors along statically determined axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_stack_family.py"
+      ],
+      "rationale": "Stack-family variants are specified by static axis rules; only torch.stack is Lean-backed."
+    },
+    {
+      "operator": "torch.cos",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.cosh",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.cross",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "linear/tensor contraction rule determined by ranks, broadcast prefixes, and static axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The operator has a static contraction rule; only matmul/mm/bmm are tied to Lean theorems."
+    },
+    {
+      "operator": "torch.dstack",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "stack-family operators combine equal-shaped tensors along statically determined axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_stack_family.py"
+      ],
+      "rationale": "Stack-family variants are specified by static axis rules; only torch.stack is Lean-backed."
+    },
+    {
+      "operator": "torch.einsum",
+      "proof_status": "heuristic",
+      "confidence": "heuristic",
+      "rule": "no proof rule claimed for data-dependent or approximated output shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/operator_confidence.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "Output shape depends on runtime values or is approximated generically; best-effort, neither sound nor complete in general."
+    },
+    {
+      "operator": "torch.elu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.eq",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.equal",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.erf",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.erfc",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.exp",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.fft.fft",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "FFT contracts preserve transformed ranks and real/complex endpoint sizes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_complex_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "FFT contracts are differential-tested against torch, without per-op Lean theorems."
+    },
+    {
+      "operator": "torch.fft.fft2",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "FFT contracts preserve transformed ranks and real/complex endpoint sizes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_complex_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "FFT contracts are differential-tested against torch, without per-op Lean theorems."
+    },
+    {
+      "operator": "torch.fft.ifft",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "FFT contracts preserve transformed ranks and real/complex endpoint sizes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_complex_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "FFT contracts are differential-tested against torch, without per-op Lean theorems."
+    },
+    {
+      "operator": "torch.fft.ifft2",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "FFT contracts preserve transformed ranks and real/complex endpoint sizes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_complex_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "FFT contracts are differential-tested against torch, without per-op Lean theorems."
+    },
+    {
+      "operator": "torch.fft.irfft",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "FFT contracts preserve transformed ranks and real/complex endpoint sizes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_complex_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "FFT contracts are differential-tested against torch, without per-op Lean theorems."
+    },
+    {
+      "operator": "torch.fft.rfft",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "FFT contracts preserve transformed ranks and real/complex endpoint sizes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_complex_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "FFT contracts are differential-tested against torch, without per-op Lean theorems."
+    },
+    {
+      "operator": "torch.flip",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "structural dimension transform with output shape determined by input shape and static args",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_structural_transfers.py"
+      ],
+      "rationale": "The rule is a finite dimension rewrite; only allowlisted structural ops claim Lean."
+    },
+    {
+      "operator": "torch.floor",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.gather",
+      "proof_status": "lean_theorem",
+      "confidence": "sound",
+      "rule": "gather(input, index, dim) returns the index shape",
+      "lean_modules": [
+        "TensorGuard.SoundnessV5",
+        "TensorGuard.V5OperatorRules"
+      ],
+      "lean_theorems": [
+        "TensorGuard.V5.applyOp_sound_gather",
+        "TensorGuard.V5.gather_eq"
+      ],
+      "evidence": [
+        "lean/TensorGuard/SoundnessV5.lean",
+        "tests/test_gather_scatter_index_bounds.py",
+        "tests/test_indexing_gather_precise.py"
+      ],
+      "rationale": "Lean proves the successful gather transfer returns exactly the index shape."
+    },
+    {
+      "operator": "torch.ge",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.gelu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.gt",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.hardshrink",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.hardsigmoid",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.hardswish",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.hstack",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "stack-family operators combine equal-shaped tensors along statically determined axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_stack_family.py"
+      ],
+      "rationale": "Stack-family variants are specified by static axis rules; only torch.stack is Lean-backed."
+    },
+    {
+      "operator": "torch.index_select",
+      "proof_status": "lean_theorem",
+      "confidence": "sound",
+      "rule": "index_select replaces the selected axis by the static index length",
+      "lean_modules": [
+        "TensorGuard.SoundnessV5"
+      ],
+      "lean_theorems": [
+        "TensorGuard.V5.applyOp_sound_index_select"
+      ],
+      "evidence": [
+        "lean/TensorGuard/SoundnessV5.lean",
+        "tests/test_indexing_gather_precise.py"
+      ],
+      "rationale": "Lean proves successful index_select transfers are guarded by the modeled rule."
+    },
+    {
+      "operator": "torch.isfinite",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.isinf",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.isnan",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.kron",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "linear/tensor contraction rule determined by ranks, broadcast prefixes, and static axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The operator has a static contraction rule; only matmul/mm/bmm are tied to Lean theorems."
+    },
+    {
+      "operator": "torch.le",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.leaky_relu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.linalg.cholesky",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "linear-algebra contracts enforce square/broadcast/multi-output shapes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_linalg_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "torch.linalg contracts are checked against live torch, without per-op Lean theorems."
+    },
+    {
+      "operator": "torch.linalg.eig",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "linear-algebra contracts enforce square/broadcast/multi-output shapes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_linalg_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "torch.linalg contracts are checked against live torch, without per-op Lean theorems."
+    },
+    {
+      "operator": "torch.linalg.inv",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "linear-algebra contracts enforce square/broadcast/multi-output shapes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_linalg_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "torch.linalg contracts are checked against live torch, without per-op Lean theorems."
+    },
+    {
+      "operator": "torch.linalg.qr",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "linear-algebra contracts enforce square/broadcast/multi-output shapes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_linalg_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "torch.linalg contracts are checked against live torch, without per-op Lean theorems."
+    },
+    {
+      "operator": "torch.linalg.solve",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "linear-algebra contracts enforce square/broadcast/multi-output shapes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_linalg_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "torch.linalg contracts are checked against live torch, without per-op Lean theorems."
+    },
+    {
+      "operator": "torch.linalg.svd",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "linear-algebra contracts enforce square/broadcast/multi-output shapes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_linalg_verify.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "torch.linalg contracts are checked against live torch, without per-op Lean theorems."
+    },
+    {
+      "operator": "torch.log",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.log10",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.log2",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.logsigmoid",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.logsumexp",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "single-axis reduction removes or retains the reduced axis depending on keepdim",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_rank_transfer.py"
+      ],
+      "rationale": "The reduction rule is statically specified; non-allowlisted reductions rely on the paper rule."
+    },
+    {
+      "operator": "torch.lt",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.matmul",
+      "proof_status": "lean_theorem",
+      "confidence": "sound",
+      "rule": "(..., m, k) x (..., k, n) contracts to (..., m, n)",
+      "lean_modules": [
+        "TensorGuard.MatmulSound"
+      ],
+      "lean_theorems": [
+        "TensorGuard.MatmulSound.applyOpExt_sound_matmul",
+        "TensorGuard.MatmulSound.matmul_contraction_sound"
+      ],
+      "evidence": [
+        "lean/TensorGuard/MatmulSound.lean",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "Lean proves the matmul guard and the two-input contraction theorem."
+    },
+    {
+      "operator": "torch.max",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "single-axis reduction removes or retains the reduced axis depending on keepdim",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_rank_transfer.py"
+      ],
+      "rationale": "The reduction rule is statically specified; non-allowlisted reductions rely on the paper rule."
+    },
+    {
+      "operator": "torch.mean",
+      "proof_status": "lean_theorem",
+      "confidence": "sound",
+      "rule": "mean(dim, keepdim) follows the reduction rank-transfer rule",
+      "lean_modules": [
+        "TensorGuard.AssumeGuaranteeExtended",
+        "TensorGuard.RankTransfer"
+      ],
+      "lean_theorems": [
+        "TensorGuard.applyOpExt_sound_mean_reduce",
+        "TensorGuard.RankTransfer.rankRun_le"
+      ],
+      "evidence": [
+        "lean/TensorGuard/RankTransfer.lean",
+        "tests/test_rank_transfer.py"
+      ],
+      "rationale": "Lean proves the mean-reduce guard and the shared rank-transfer bound."
+    },
+    {
+      "operator": "torch.min",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "single-axis reduction removes or retains the reduced axis depending on keepdim",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_rank_transfer.py"
+      ],
+      "rationale": "The reduction rule is statically specified; non-allowlisted reductions rely on the paper rule."
+    },
+    {
+      "operator": "torch.mish",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.mm",
+      "proof_status": "lean_theorem",
+      "confidence": "sound",
+      "rule": "2-D matrix multiplication contracts matching inner dimensions",
+      "lean_modules": [
+        "TensorGuard.MatmulSound",
+        "TensorGuard.SmtEncoding"
+      ],
+      "lean_theorems": [
+        "TensorGuard.MatmulSound.matmul_contraction_sound",
+        "TensorGuard.SmtEncoding.dtype_smt_matches_dtMatmulBug"
+      ],
+      "evidence": [
+        "lean/TensorGuard/MatmulSound.lean",
+        "tests/test_smt_dtype_faithful.py"
+      ],
+      "rationale": "The 2-D matrix-multiply rule is covered by the Lean contraction lemma."
+    },
+    {
+      "operator": "torch.moveaxis",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "structural dimension transform with output shape determined by input shape and static args",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_structural_transfers.py"
+      ],
+      "rationale": "The rule is a finite dimension rewrite; only allowlisted structural ops claim Lean."
+    },
+    {
+      "operator": "torch.movedim",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "structural dimension transform with output shape determined by input shape and static args",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_structural_transfers.py"
+      ],
+      "rationale": "The rule is a finite dimension rewrite; only allowlisted structural ops claim Lean."
+    },
+    {
+      "operator": "torch.multinomial",
+      "proof_status": "heuristic",
+      "confidence": "heuristic",
+      "rule": "no proof rule claimed for data-dependent or approximated output shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/operator_confidence.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "Output shape depends on runtime values or is approximated generically; best-effort, neither sound nor complete in general."
+    },
+    {
+      "operator": "torch.mv",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "linear/tensor contraction rule determined by ranks, broadcast prefixes, and static axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The operator has a static contraction rule; only matmul/mm/bmm are tied to Lean theorems."
+    },
+    {
+      "operator": "torch.nan_to_num",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.ne",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.neg",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.norm",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "single-axis reduction removes or retains the reduced axis depending on keepdim",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_rank_transfer.py"
+      ],
+      "rationale": "The reduction rule is statically specified; non-allowlisted reductions rely on the paper rule."
+    },
+    {
+      "operator": "torch.outer",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "linear/tensor contraction rule determined by ranks, broadcast prefixes, and static axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The operator has a static contraction rule; only matmul/mm/bmm are tied to Lean theorems."
+    },
+    {
+      "operator": "torch.poisson",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "stochastic samplers return statically known tensor shapes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_graph_compiler.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "Stochastic shape contracts are registry-tested but not mechanized per operator."
+    },
+    {
+      "operator": "torch.prelu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.prod",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "single-axis reduction removes or retains the reduced axis depending on keepdim",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_rank_transfer.py"
+      ],
+      "rationale": "The reduction rule is statically specified; non-allowlisted reductions rely on the paper rule."
+    },
+    {
+      "operator": "torch.relu",
+      "proof_status": "lean_theorem",
+      "confidence": "complete",
+      "rule": "relu(input) has exactly the input shape",
+      "lean_modules": [
+        "TensorGuard.Extended"
+      ],
+      "lean_theorems": [
+        "TensorGuard.relu_shape_preserving"
+      ],
+      "evidence": [
+        "lean/TensorGuard/Extended.lean",
+        "tests/test_lean_conformance.py"
+      ],
+      "rationale": "The ReLU identity shape rule is stated and proved directly in Lean."
+    },
+    {
+      "operator": "torch.repeat_interleave",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "structural dimension transform with output shape determined by input shape and static args",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_structural_transfers.py"
+      ],
+      "rationale": "The rule is a finite dimension rewrite; only allowlisted structural ops claim Lean."
+    },
+    {
+      "operator": "torch.roll",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "structural dimension transform with output shape determined by input shape and static args",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_structural_transfers.py"
+      ],
+      "rationale": "The rule is a finite dimension rewrite; only allowlisted structural ops claim Lean."
+    },
+    {
+      "operator": "torch.rot90",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "structural dimension transform with output shape determined by input shape and static args",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_structural_transfers.py"
+      ],
+      "rationale": "The rule is a finite dimension rewrite; only allowlisted structural ops claim Lean."
+    },
+    {
+      "operator": "torch.round",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.row_stack",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "stack-family operators combine equal-shaped tensors along statically determined axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_stack_family.py"
+      ],
+      "rationale": "Stack-family variants are specified by static axis rules; only torch.stack is Lean-backed."
+    },
+    {
+      "operator": "torch.rrelu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.rsqrt",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.scatter",
+      "proof_status": "lean_theorem",
+      "confidence": "sound",
+      "rule": "scatter(input, index, src, dim) preserves the input shape",
+      "lean_modules": [
+        "TensorGuard.SoundnessV5",
+        "TensorGuard.V5OperatorRules"
+      ],
+      "lean_theorems": [
+        "TensorGuard.V5.applyOp_sound_scatter",
+        "TensorGuard.V5.scatter_eq"
+      ],
+      "evidence": [
+        "lean/TensorGuard/SoundnessV5.lean",
+        "tests/test_gather_scatter_index_bounds.py",
+        "tests/test_indexing_gather_precise.py"
+      ],
+      "rationale": "Lean proves the successful scatter transfer returns exactly the input shape."
+    },
+    {
+      "operator": "torch.selu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.sigmoid",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.sign",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.silu",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.sin",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.sinh",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.softplus",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.softshrink",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.softsign",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.sort",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "sort/topk/argsort preserve or statically set selected output axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_graph_compiler.py",
+        "tests/test_index_value_ops_precise.py"
+      ],
+      "rationale": "Index-value operators are validated by tests but do not yet have per-op Lean theorems."
+    },
+    {
+      "operator": "torch.sqrt",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.squeeze",
+      "proof_status": "lean_theorem",
+      "confidence": "sound",
+      "rule": "squeeze(dim) removes a selected unit dimension when the guard succeeds",
+      "lean_modules": [
+        "TensorGuard.SoundnessV5"
+      ],
+      "lean_theorems": [
+        "TensorGuard.V5.applyOp_sound_squeeze"
+      ],
+      "evidence": [
+        "lean/TensorGuard/SoundnessV5.lean",
+        "tests/test_structural_transfers.py"
+      ],
+      "rationale": "Lean proves successful squeeze transfers are witnessed by the modeled rule."
+    },
+    {
+      "operator": "torch.stack",
+      "proof_status": "lean_theorem",
+      "confidence": "sound",
+      "rule": "stack equal-shaped tensors by inserting a new axis",
+      "lean_modules": [
+        "TensorGuard.SoundnessV5",
+        "TensorGuard.V5OperatorRules"
+      ],
+      "lean_theorems": [
+        "TensorGuard.V5.applyOp_sound_stack",
+        "TensorGuard.V5.stackOp_iface"
+      ],
+      "evidence": [
+        "lean/TensorGuard/SoundnessV5.lean",
+        "tests/test_stack_family.py"
+      ],
+      "rationale": "Lean pins the stack guard and the Python tests replay stack-family cases."
+    },
+    {
+      "operator": "torch.std",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "single-axis reduction removes or retains the reduced axis depending on keepdim",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_rank_transfer.py"
+      ],
+      "rationale": "The reduction rule is statically specified; non-allowlisted reductions rely on the paper rule."
+    },
+    {
+      "operator": "torch.sum",
+      "proof_status": "lean_theorem",
+      "confidence": "sound",
+      "rule": "sum(dim, keepdim) follows the reduction rank-transfer rule",
+      "lean_modules": [
+        "TensorGuard.AssumeGuaranteeExtended",
+        "TensorGuard.RankTransfer"
+      ],
+      "lean_theorems": [
+        "TensorGuard.applyOpExt_sound_sum_reduce",
+        "TensorGuard.RankTransfer.rankRun_le",
+        "TensorGuard.RankTransfer.rankRun_eq_sub_countDrop"
+      ],
+      "evidence": [
+        "lean/TensorGuard/RankTransfer.lean",
+        "tests/test_rank_transfer.py"
+      ],
+      "rationale": "Lean proves the sum-reduce guard and the reduction rank-transfer laws."
+    },
+    {
+      "operator": "torch.swapaxes",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "structural dimension transform with output shape determined by input shape and static args",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_structural_transfers.py"
+      ],
+      "rationale": "The rule is a finite dimension rewrite; only allowlisted structural ops claim Lean."
+    },
+    {
+      "operator": "torch.swapdims",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "structural dimension transform with output shape determined by input shape and static args",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_structural_transfers.py"
+      ],
+      "rationale": "The rule is a finite dimension rewrite; only allowlisted structural ops claim Lean."
+    },
+    {
+      "operator": "torch.tan",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.tanh",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.tanhshrink",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "complete",
+      "rule": "shape-preserving pointwise/comparison transfer: output shape equals input shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The rule is an elementary shape identity; only explicit allowlisted ops claim Lean."
+    },
+    {
+      "operator": "torch.tensordot",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "linear/tensor contraction rule determined by ranks, broadcast prefixes, and static axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_graph_compiler.py"
+      ],
+      "rationale": "The operator has a static contraction rule; only matmul/mm/bmm are tied to Lean theorems."
+    },
+    {
+      "operator": "torch.tile",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "structural dimension transform with output shape determined by input shape and static args",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_structural_transfers.py"
+      ],
+      "rationale": "The rule is a finite dimension rewrite; only allowlisted structural ops claim Lean."
+    },
+    {
+      "operator": "torch.topk",
+      "proof_status": "tested_only_rule",
+      "confidence": "sound",
+      "rule": "sort/topk/argsort preserve or statically set selected output axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "tests/test_graph_compiler.py",
+        "tests/test_index_value_ops_precise.py"
+      ],
+      "rationale": "Index-value operators are validated by tests but do not yet have per-op Lean theorems."
+    },
+    {
+      "operator": "torch.unique",
+      "proof_status": "heuristic",
+      "confidence": "heuristic",
+      "rule": "no proof rule claimed for data-dependent or approximated output shape",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/operator_confidence.py",
+        "tests/test_operator_confidence.py"
+      ],
+      "rationale": "Output shape depends on runtime values or is approximated generically; best-effort, neither sound nor complete in general."
+    },
+    {
+      "operator": "torch.unsqueeze",
+      "proof_status": "lean_theorem",
+      "confidence": "sound",
+      "rule": "unsqueeze(dim) inserts one size-1 dimension when the guard succeeds",
+      "lean_modules": [
+        "TensorGuard.SoundnessV5"
+      ],
+      "lean_theorems": [
+        "TensorGuard.V5.applyOp_sound_unsqueeze"
+      ],
+      "evidence": [
+        "lean/TensorGuard/SoundnessV5.lean",
+        "tests/test_structural_transfers.py"
+      ],
+      "rationale": "Lean proves successful unsqueeze transfers increase rank by one."
+    },
+    {
+      "operator": "torch.var",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "single-axis reduction removes or retains the reduced axis depending on keepdim",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_rank_transfer.py"
+      ],
+      "rationale": "The reduction rule is statically specified; non-allowlisted reductions rely on the paper rule."
+    },
+    {
+      "operator": "torch.vstack",
+      "proof_status": "pen_and_paper_rule",
+      "confidence": "sound",
+      "rule": "stack-family operators combine equal-shaped tensors along statically determined axes",
+      "lean_modules": [],
+      "lean_theorems": [],
+      "evidence": [
+        "src/graph_compiler.py",
+        "tests/test_stack_family.py"
+      ],
+      "rationale": "Stack-family variants are specified by static axis rules; only torch.stack is Lean-backed."
+    }
+  ]
+}

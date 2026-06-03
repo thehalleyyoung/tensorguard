@@ -161,7 +161,10 @@ runtime errors in ML codebases before any code runs.
   inference (unknown ops default to `heuristic`).
   Inspect the table with `tensorguard operator-confidence [--json]` (machine-readable
   table committed to `operator_confidence_table.json`, source of truth
-  `src/operator_confidence.py`, pinned by `tests/test_operator_confidence.py`).
+  `src/operator_confidence.py`, pinned by `tests/test_operator_confidence.py`);
+  `proof_footprint_manifest.json` goes one level deeper by mapping every
+  supported operator to Lean theorem, pen-and-paper rule, tested-only rule, or
+  heuristic evidence (`src/proof_footprint.py`, `tests/test_proof_footprint.py`).
 - **Soundness modes** — `tensorguard verify --soundness-mode {sound,balanced,heuristic}`
   selects a three-valued verdict (`SAFE`/`UNKNOWN`/`UNSAFE`). `sound` is the
   contract you can rely on: it reports `SAFE` only when the module is fully
@@ -491,7 +494,8 @@ make reproduce-check    # also assert byte-identical regeneration (no git diff)
 
 `make reproduce` regenerates, from source and in dependency order, the
 generated spec docs/tables (`SOUNDNESS_CONTRACT.md`,
-`VERIFIABLE_FRAGMENT.md`, `operator_confidence_table.json`), the frozen
+`VERIFIABLE_FRAGMENT.md`, `operator_confidence_table.json`,
+`proof_footprint_manifest.json`), the frozen
 benchmark corpus and its audit artifact (`real_benchmarks/`), and the
 headline 60-bug Refuted-Proof figure — then runs the numeric-claim audit,
 which recomputes every `x/y` ratio and `%` token in `README.md` from the

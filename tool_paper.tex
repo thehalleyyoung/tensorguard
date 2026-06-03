@@ -200,6 +200,15 @@ symbolic cases.  Heuristic rules are used when output rank or size depends on
 runtime values, or when the rule intentionally approximates a large behavior
 surface.
 
+The trust label is now itself auditable.  The generated
+\texttt{proof\_footprint\_manifest.json} maps every one of the 139 live
+registered transfer functions to an evidence tier: explicit Lean theorem,
+pen-and-paper rule, tested-only rule, or heuristic.  In the current artifact the
+manifest records 16 Lean-backed operator rows, 102 pen-and-paper static rules,
+18 tested-only library contracts, and 3 honest heuristics.  Lean rows name the
+imported module and theorem declaration; broad families are deliberately not
+promoted to Lean status unless that per-operator evidence exists.
+
 The repository includes transfer functions and tests for a wide range of
 PyTorch constructs.  The core structural set covers matrix multiplication,
 batched matrix multiplication, linear layers, convolution and transpose
@@ -558,11 +567,13 @@ and injected bugs. \\
 \hline
 Operator coverage &
 \texttt{operator\_confidence\_table.json},
+\texttt{proof\_footprint\_manifest.json},
 \texttt{tests/test\_operator\_coverage.py},
 \texttt{tests/test\_operator\_coverage\_gate.py},
 \texttt{tests/test\_real\_model\_operator\_coverage.py}.  Tracks supported
-operators, confidence tags, release gates, and frequency-weighted real-model
-coverage over torchvision, timm, and HuggingFace traces. \\
+operators, confidence tags, evidence tiers, release gates, and
+frequency-weighted real-model coverage over torchvision, timm, and HuggingFace
+traces. \\
 \hline
 Latency and scaling &
 \texttt{tests/test\_cost\_benchmarks.py},
@@ -690,7 +701,13 @@ corresponding Lean transfer guard accepts.  The companion parity tests instantia
 those theorem shapes as real Z3 formulas and compare them against \tg{} helpers
 and live PyTorch behavior.
 The Lean audit checks theorem statements for sorry-free status under the
-trusted kernel axioms used by the environment.
+trusted kernel axioms used by the environment.  The proof-footprint manifest
+then gives users a per-operator index into this trust story: \texttt{matmul},
+\texttt{mm}, \texttt{bmm}, \texttt{gather}, \texttt{scatter},
+\texttt{stack}, \texttt{squeeze}/\texttt{unsqueeze}, selected reductions, and
+broadcast helpers point at concrete Lean declarations, while linalg and FFT
+contracts remain correctly labeled as tested-only until they receive their own
+per-operator proofs.
 
 The newest formal layer lifts those local facts to whole modules.
 \texttt{TensorGuard.SubjectReduction} defines a small environment-based tensor
@@ -825,9 +842,10 @@ harness and reproducibility scripts update headline results, numeric claim
 audits, benchmark deltas, scaling curves, CEGAR measurements, and paper evidence
 indices.  Tests pin committed JSON artifacts against freshly generated outputs.
 The benchmark corpus has content hashes, datasheets, citation metadata, and
-loader checks.  The operator confidence table is generated from code.  The
-dashboard is regenerated from committed results.  The public docs explain what
-the verifier can and cannot prove.
+loader checks.  The operator confidence table and proof-footprint manifest are
+generated from code and pinned against committed JSON.  The dashboard is
+regenerated from committed results.  The public docs explain what the verifier
+can and cannot prove.
 
 Reproducibility is paired with hygiene.  Third-party source trees are
 quarantined or removed unless license-compatible.  The security policy and
@@ -1004,8 +1022,9 @@ plugin, nox/tox, watch mode, Jupyter, decorators, and framework hooks. \\
 Formal artifacts &
 Lean proof files, axiom audits, serialized CEGAR predicate replay,
 conditional/straight-line subject reduction, SMT encoding faithfulness checks,
-including broadcast/divisibility/partition/dtype-promotion Z3 parity, generated conformance bridges, and proof
-certificate infrastructure. \\
+including broadcast/divisibility/partition/dtype-promotion Z3 parity,
+proof-footprint manifest rows for every registered operator, generated
+conformance bridges, and proof certificate infrastructure. \\
 \hline
 Reproducibility &
 Frozen corpora, generated dashboards, numeric claim audits, benchmark scripts,
