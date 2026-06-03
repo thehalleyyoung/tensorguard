@@ -617,8 +617,10 @@ category-level scope made explicit and structural CI-cost proxies reported. \\
 \hline
 Precision/recall &
 \texttt{tests/test\_precision\_recall.py},
-\texttt{tests/test\_hard\_recall.py}, \texttt{experiments/}.  Tracks caught
-bugs, clean-model behavior, and high-confidence safety. \\
+\texttt{tests/test\_hard\_recall.py},
+\texttt{tests/test\_false\_unknowns.py}, \texttt{experiments/}.  Tracks caught
+bugs, clean-model behavior, high-confidence safety, and whether strict sound
+mode over-abstains on executable ground-truthed cases. \\
 \hline
 False-positive stress &
 \texttt{tests/test\_fp\_stress.py}, \texttt{tests/test\_sound\_mode\_fp.py}.
@@ -781,6 +783,16 @@ abstentions, zero false alarms, and a Wilson 95\% upper bound of 2.16\% on the
 false-positive rate for this clean natural sample.  The artifact also records
 abstention-cause buckets; in this run all buckets are empty, so the result is
 not hiding an opaque long tail behind a mean.
+
+The false-\unknown{} benchmark makes that abstention claim sharper for the
+strict soundness boundary.  \texttt{evaluation/false\_unknowns.py} runs
+\texttt{sound} mode on 86 executable, ground-truthed cases that \tg{} should
+decide: eight frozen real clean benchmarks, seventy-two generated clean models
+admitted only after eager PyTorch execution, and six phase/path latent bugs whose
+hidden faults are confirmed by the hard-recall validators.  The result is
+86/86 decided, zero false \unknown{} verdicts, and zero misclassifications, with
+counts broken down by kind and family so any future abstention regression has an
+immediate prioritization table.
 
 Latency and scalability scripts ensure the verifier remains useful.  Solver
 queries are cached or avoided when a transfer can be decided syntactically.

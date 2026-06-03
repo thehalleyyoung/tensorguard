@@ -1363,6 +1363,23 @@ in the committed artifact, documenting exactly which static-analysis gap is
 responsible. Artifacts live in `evaluation/hard_recall.json` and
 `evaluation/hard_recall.md` and are pinned by `tests/test_hard_recall.py`.
 
+### False-UNKNOWN rate in sound mode
+
+Soundness is only useful if it does not become blanket abstention.
+`evaluation/false_unknowns.py` measures strict `sound` mode on executable,
+ground-truthed cases TensorGuard should decide: the real clean benchmarks, the
+seeded validated-clean generator corpus, and the phase/path latent bugs whose
+faults are confirmed by the hard-recall validators.
+
+```bash
+PYTHONPATH=. python3 evaluation/false_unknowns.py     # or: make false-unknowns
+```
+
+Across eighty-six eligible models TensorGuard decides every case with **zero
+false UNKNOWNs** and zero misclassifications. The artifacts live in
+`evaluation/false_unknowns.json` and `evaluation/false_unknowns.md` and are
+pinned by `tests/test_false_unknowns.py`.
+
 ### Differential fuzzing for false positives
 
 `evaluation/diff_fuzz.py` is a *random-architecture* false-positive hunt. A
@@ -2665,6 +2682,7 @@ unreachability there, never soundness).
 | Paired significance tests (McNemar + Holm + bootstrap)         | `evaluation/significance.py`                            |
 | Sound-mode false-positive hunt (clean executing models)        | `evaluation/sound_mode_fp.py`                           |
 | Latent-bug recall vs the strongest dynamic baseline            | `evaluation/hard_recall.py`                             |
+| False-UNKNOWN rate in sound mode                               | `evaluation/false_unknowns.py`                          |
 | Differential fuzz false-positive hunt (random valid models)    | `evaluation/diff_fuzz.py`                               |
 | Negative-fuzz false-negative hunt (injected faults)            | `evaluation/neg_fuzz.py`                                |
 | Minimal-reproducer shrinker (delta-debug disagreements)        | `evaluation/minimize.py`                                |
