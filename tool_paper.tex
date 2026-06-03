@@ -266,6 +266,18 @@ source-level tuple unpacking.  Static \texttt{k} errors are refuted before
 runtime.  The tests run real PyTorch tensors and compare both successful shapes
 and runtime exceptions.
 
+The same principle now covers the gather/scatter family.  \texttt{gather},
+\texttt{scatter}/\texttt{scatter\_add}, and \texttt{index\_select} distinguish
+three cases that ordinary shape tools conflate: shape-invalid index tensors,
+shape-valid but value-invalid index tensors, and value-dependent indices whose
+contents are unknown statically.  Stable FX-visible index buffers carry
+deterministic integer min/max ranges, so the verifier can report a separate
+high-confidence \texttt{index\_bounds} bug when a real index is negative or
+exceeds \texttt{input.size(dim)}.  Random FX-folded constants are deliberately not
+trusted for value bounds, and PyTorch's real dtype rule is followed exactly:
+these operators accept \texttt{int32} or \texttt{int64} indices, while floating or
+other integer widths are dtype errors.
+
 \subsection{Padding as a Library-Exact Boundary Rule}
 
 Padding looks simple until the exact PyTorch boundary conditions matter.  The
@@ -681,10 +693,11 @@ leaderboard that makes tensor-verifier progress measurable.
 both principled and practical.  The repository combines a refinement-type view
 of tensors, a multi-domain abstract state, Z3-backed checks, CEGAR refinement,
 soundness modes, precise operator transfer functions, real frontends, formal
-artifacts, and an unusually broad reproducibility harness.  The latest padding
-work illustrates the project's standard: match PyTorch's exact edge-case
-semantics, propagate precision to downstream model checks, abstain on symbolic
-uncertainty, and pin the behavior with live-library tests.
+artifacts, and an unusually broad reproducibility harness.  The latest
+gather/scatter and padding work illustrates the project's standard: match
+PyTorch's exact edge-case semantics, propagate precision to downstream model
+checks, abstain on symbolic or value-dependent uncertainty, and pin the behavior
+with live-library tests.
 
 The result is a verifier that catches high-value architecture, device, dtype,
 phase, gradient, export, and deployment bugs before expensive training or
@@ -799,10 +812,12 @@ Equation parser and output-shape tests for einsum, including repeated-label
 diagonals, ellipsis placement, ASCII output ordering, registry-transfer parity,
 and Z3 output-position constraints. \\
 \hline
-\texttt{tests/test\_index\_value\_ops\_precise.py} &
+\texttt{tests/test\_index\_value\_ops\_precise.py},
+\texttt{tests/test\_gather\_scatter\_index\_bounds.py} &
 Live PyTorch conformance for \texttt{take\_along\_dim}, \texttt{argsort},
 \texttt{sort}, \texttt{topk}, \texttt{kthvalue}, \texttt{argmax}, and
-\texttt{argmin}, including tuple index dtypes and static error cases. \\
+\texttt{argmin}, plus gather/scatter/index-select index dtype and static
+value-bound errors. \\
 \hline
 \texttt{tests/test\_reshape\_precise.py},
 \texttt{tests/test\_reshape\_divisibility\_opt.py} &
@@ -1007,8 +1022,10 @@ Gather and \texttt{take\_along\_dim} return index-derived shapes
 (\texttt{dim=None} flattens); index-select replaces the selected dimension;
 scatter preserves the input shape; narrow replaces a dimension with a known
 length; sort/topk/kthvalue preserve value dtypes while producing \texttt{int64}
-indices. &
-Indexing/gather tests, index-value precise tests, and extended operator tests. \\
+indices; stable gather/scatter/index-select index buffers check dtype and
+static bounds while value-dependent indices abstain. &
+Indexing/gather tests, index-value precise tests, gather/scatter bounds tests,
+and extended operator tests. \\
 \hline
 Masked and value-dependent ops &
 Masked select, nonzero, one-argument where, and boolean masks check static mask

@@ -50,7 +50,10 @@ from src.model_checker import (
     Confidence,
     TensorShape,
     ShapeDim,
+    TensorValueRange,
     _TENSOR_FACTORY_FNS,
+    _canon_dtype,
+    _is_int_dtype,
 )
 
 
@@ -755,6 +758,11 @@ def fx_trace_to_graph(
     step_idx = 0
     node_to_tensor: Dict[str, str] = {}  # fx node name → tensor name
     tuple_output_info: Dict[str, Dict[str, Any]] = {}
+    stable_tensor_targets = {
+        name for name, _ in traced.named_buffers(recurse=True)
+    } | {
+        name for name, _ in traced.named_parameters(recurse=True)
+    }
 
     for node in traced.graph.nodes:
         if node.op == "placeholder":
@@ -779,6 +787,9 @@ def fx_trace_to_graph(
                     graph.const_shapes[tname] = TensorShape(
                         tuple(ShapeDim(int(d)) for d in obj.shape)
                     )
+                    dt = _canon_dtype(obj.dtype)
+                    if dt is not None:
+                        graph.const_dtypes[tname] = dt
                     dev_type = obj.device.type
                     if dev_type == "cuda":
                         idx = obj.device.index or 0
@@ -787,6 +798,28 @@ def fx_trace_to_graph(
                         )
                     else:
                         graph.const_devices[tname] = Device.CPU
+                    target_name = str(node.target)
+                    is_generated_constant = any(
+                        part.startswith("_tensor_constant")
+                        or part.startswith("_constant")
+                        for part in target_name.split(".")
+                    )
+                    if (
+                        target_name in stable_tensor_targets
+                        and not is_generated_constant
+                        and dt is not None
+                        and _is_int_dtype(dt)
+                        and obj.numel() > 0
+                        and obj.numel() <= 1_000_000
+                    ):
+                        try:
+                            vals = obj.detach().cpu()
+                            graph.const_value_ranges[tname] = TensorValueRange(
+                                int(vals.min().item()),
+                                int(vals.max().item()),
+                            )
+                        except Exception:
+                            pass
             except Exception:
                 pass
 

@@ -259,7 +259,8 @@ SUPPORTED_TENSOR_METHODS: Set[str] = {
     "mean", "sum", "expand", "repeat", "tile", "repeat_interleave",
     "chunk", "split", "softmax", "relu", "sigmoid", "tanh",
     "size", "shape", "dim", "numel",
-    "clone", "narrow", "select",
+    "clone", "gather", "index_select", "scatter", "scatter_", "scatter_add",
+    "scatter_add_", "narrow", "select",
     "add", "mul", "matmul", "bmm", "mm",
     "add_", "mul_",  # in-place on intermediates is OK
 }
@@ -275,6 +276,7 @@ SUPPORTED_TORCH_FUNCTIONS: Set[str] = {
     "torch.flatten", "torch.relu", "torch.sigmoid", "torch.tanh",
     "torch.softmax", "torch.dropout", "torch.where",
     "torch.chunk", "torch.split", "torch.einsum",
+    "torch.gather", "torch.index_select", "torch.scatter", "torch.scatter_add",
     "torch.add", "torch.mul",
     "torch.zeros", "torch.ones", "torch.zeros_like", "torch.ones_like",
     "torch.arange", "torch.linspace",

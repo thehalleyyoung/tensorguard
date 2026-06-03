@@ -416,6 +416,19 @@ class ComputationStep:
         )
 
 
+@dataclass(frozen=True)
+class TensorValueRange:
+    """Known inclusive integer value range for a tensor.
+
+    Absence from ``ModelState.value_ranges`` means "value-dependent / unknown".
+    The verifier only uses this for checks whose PyTorch failure depends on
+    tensor values, such as gather/scatter index bounds.
+    """
+
+    min_value: int
+    max_value: int
+
+
 @dataclass
 class ComputationGraph:
     """The extracted computation graph of an nn.Module.
@@ -443,6 +456,8 @@ class ComputationGraph:
     # Seed-independent: the constant's value is random but its shape is fixed.
     const_shapes: Dict[str, "TensorShape"] = field(default_factory=dict)
     const_devices: Dict[str, "Device"] = field(default_factory=dict)
+    const_dtypes: Dict[str, str] = field(default_factory=dict)
+    const_value_ranges: Dict[str, TensorValueRange] = field(default_factory=dict)
     dynamic_features: Dict[str, Any] = field(default_factory=dict)
     # Step 43 — graceful degradation: forward statements that could not be
     # analyzed and were isolated (their outputs treated as fully symbolic).
@@ -496,12 +511,14 @@ class ModelState:
       • gradient_status:  which tensors require grad
       • dtype_env:        element dtype of each tensor (only *known* dtypes are
                           recorded; absence means "unknown" → checks abstain)
+      • value_ranges:     known integer min/max for deterministic tensors only
     """
     shape_env: Dict[str, TensorShape] = field(default_factory=dict)
     device_map: Dict[str, Device] = field(default_factory=dict)
     phase: Phase = Phase.TRAIN
     gradient_status: Dict[str, bool] = field(default_factory=dict)
     dtype_env: Dict[str, str] = field(default_factory=dict)
+    value_ranges: Dict[str, TensorValueRange] = field(default_factory=dict)
 
     def copy(self) -> "ModelState":
         return ModelState(
@@ -510,6 +527,7 @@ class ModelState:
             phase=self.phase,
             gradient_status=dict(self.gradient_status),
             dtype_env=dict(self.dtype_env),
+            value_ranges=dict(self.value_ranges),
         )
 
 
@@ -8996,6 +9014,7 @@ _FLOAT_DTYPES = frozenset(
     {"float16", "bfloat16", "float32", "float64", "complex64", "complex128"}
 )
 _INT_DTYPES = frozenset({"int8", "int16", "int32", "int64", "uint8"})
+_GATHER_SCATTER_INDEX_DTYPES = frozenset({"int32", "int64"})
 
 # Dtypes that are *not* floating-point and are therefore invalid as the input to
 # a layer that requires a floating input (matmul/conv against float parameters,
@@ -10289,6 +10308,10 @@ class ConstraintVerifier:
             state.device_map[cname] = self.graph.const_devices.get(
                 cname, Device.CPU
             )
+        for cname, cdtype in self.graph.const_dtypes.items():
+            state.dtype_env[cname] = cdtype
+        for cname, vrange in self.graph.const_value_ranges.items():
+            state.value_ranges[cname] = vrange
         return state
 
     # ------------------------------------------------------------------
@@ -12245,7 +12268,11 @@ class ConstraintVerifier:
             OpKind.SORT, OpKind.TOPK, OpKind.KTHVALUE, OpKind.ARG_REDUCE,
         ):
             self._apply_indexing(
-                new_state.shape_env, step, violations, new_state.dtype_env
+                new_state.shape_env,
+                step,
+                violations,
+                new_state.dtype_env,
+                new_state.value_ranges,
             )
         elif step.op == OpKind.SDPA:
             self._apply_sdpa(new_state.shape_env, step, violations)
@@ -12259,6 +12286,21 @@ class ConstraintVerifier:
                             state.device_map[inp]
                         )
                         break
+
+        # ---- Propagate deterministic integer ranges through unary transfers
+        # that preserve tensor values.  Indexing operations intentionally do not
+        # inherit the index operand's range: their outputs are data values.
+        if (
+            step.output not in new_state.value_ranges
+            and step.inputs
+            and step.op in (
+                OpKind.ACTIVATION, OpKind.CONTIGUOUS, OpKind.DETACH,
+                OpKind.TO_DEVICE, OpKind.DTYPE_CAST,
+            )
+        ):
+            vrange = state.value_ranges.get(step.inputs[0])
+            if vrange is not None:
+                new_state.value_ranges[step.output] = vrange
 
         # ---- Propagate gradient status -----------------------------------
         if step.output not in new_state.gradient_status:
@@ -12499,6 +12541,32 @@ class ConstraintVerifier:
                 new_state.dtype_env[out] = da
             elif db is not None:
                 new_state.dtype_env[out] = db
+            return
+
+        if step.op in (
+            OpKind.GATHER, OpKind.INDEX_SELECT, OpKind.SCATTER,
+        ) and len(step.inputs) >= 2:
+            inp, idx = step.inputs[0], step.inputs[1]
+            inp_dt, idx_dt = known(inp), known(idx)
+            if (
+                self.check_dtypes
+                and idx_dt is not None
+                and idx_dt not in _GATHER_SCATTER_INDEX_DTYPES
+            ):
+                opname = step.op.name.lower()
+                violations.append(SafetyViolation(
+                    kind="dtype_error",
+                    step_index=-1,
+                    step=step,
+                    message=(
+                        f"{opname}: index dtype '{idx_dt}' is invalid; "
+                        "torch requires int32 or int64 index tensors"
+                    ),
+                    tensor_a=idx,
+                    confidence=Confidence.HIGH,
+                ))
+            if inp_dt is not None:
+                new_state.dtype_env[out] = inp_dt
             return
 
         if step.op == OpKind.TAKE_ALONG_DIM and len(step.inputs) >= 2:
@@ -13076,6 +13144,7 @@ class ConstraintVerifier:
         step: ComputationStep,
         violations: Optional[List[SafetyViolation]],
         dtype_env: Optional[Dict[str, str]] = None,
+        value_ranges: Optional[Dict[str, TensorValueRange]] = None,
     ) -> None:
         """Shape effects of indexing / gather / scatter / masked ops.
 
@@ -13114,6 +13183,36 @@ class ConstraintVerifier:
         idx_name = step.inputs[1] if len(step.inputs) > 1 else None
         idx_shape = shape_env.get(idx_name) if idx_name else None
 
+        def _index_bounds_error(op_name: str) -> Optional[str]:
+            if (
+                idx_name is None
+                or value_ranges is None
+                or norm_dim is None
+                or not (0 <= norm_dim < ndim)
+            ):
+                return None
+            if dtype_env is not None:
+                idx_dt = dtype_env.get(idx_name)
+                if (
+                    idx_dt is not None
+                    and idx_dt not in _GATHER_SCATTER_INDEX_DTYPES
+                ):
+                    return None
+            dim_size = inp_shape.dims[norm_dim]
+            if dim_size.is_symbolic or not isinstance(dim_size.value, int):
+                return None
+            vrange = value_ranges.get(idx_name)
+            if vrange is None:
+                return None
+            if vrange.min_value < 0 or vrange.max_value >= dim_size.value:
+                return (
+                    f"{op_name}: index values "
+                    f"[{vrange.min_value}, {vrange.max_value}] are out of "
+                    f"bounds for input size {dim_size.value} at dim {norm_dim}; "
+                    f"valid range is [0, {dim_size.value - 1}]"
+                )
+            return None
+
         if step.op == OpKind.GATHER:
             # output.shape == index.shape; require equal rank (no broadcast);
             # for d != dim, index.size(d) <= input.size(d).
@@ -13150,6 +13249,15 @@ class ConstraintVerifier:
                                     shape_a=inp_shape, shape_b=idx_shape,
                                 ))
                             break
+                    err = _index_bounds_error("gather")
+                    if err is not None and violations is not None:
+                        violations.append(SafetyViolation(
+                            kind="index_bounds", step_index=-1, step=step,
+                            message=err,
+                            tensor_a=inp_name, tensor_b=idx_name,
+                            shape_a=inp_shape, shape_b=idx_shape,
+                            confidence=Confidence.HIGH,
+                        ))
                 shape_env[step.output] = idx_shape
             else:
                 shape_env[step.output] = inp_shape
@@ -13285,6 +13393,16 @@ class ConstraintVerifier:
                     new_dims[norm_dim] = idx_shape.dims[0]
                 else:
                     new_dims[norm_dim] = ShapeDim(f"_idxsel{step.output}")
+                if idx_shape is not None and idx_shape.ndim == 1:
+                    err = _index_bounds_error("index_select")
+                    if err is not None and violations is not None:
+                        violations.append(SafetyViolation(
+                            kind="index_bounds", step_index=-1, step=step,
+                            message=err,
+                            tensor_a=inp_name, tensor_b=idx_name,
+                            shape_a=inp_shape, shape_b=idx_shape,
+                            confidence=Confidence.HIGH,
+                        ))
             shape_env[step.output] = TensorShape(tuple(new_dims))
 
         elif step.op == OpKind.SCATTER:
@@ -13301,6 +13419,16 @@ class ConstraintVerifier:
                     tensor_a=inp_name, tensor_b=idx_name,
                     shape_a=inp_shape, shape_b=idx_shape,
                 ))
+            if idx_shape is not None and idx_shape.ndim == ndim:
+                err = _index_bounds_error("scatter")
+                if err is not None and violations is not None:
+                    violations.append(SafetyViolation(
+                        kind="index_bounds", step_index=-1, step=step,
+                        message=err,
+                        tensor_a=inp_name, tensor_b=idx_name,
+                        shape_a=inp_shape, shape_b=idx_shape,
+                        confidence=Confidence.HIGH,
+                    ))
             shape_env[step.output] = inp_shape
 
         elif step.op == OpKind.MASKED_FILL:

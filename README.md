@@ -20,7 +20,8 @@ runtime errors in ML codebases before any code runs.
   `cat`/`stack-family`/`chunk`/`split`, `pad`, `interpolate`/`Upsample`, `view`,
   `reshape`, `squeeze`/`unsqueeze`, `movedim`/`swapaxes`, `roll`/`rot90`/`flip`,
   `transpose`, `permute`, precise `repeat_interleave`/`tile`/broadcasting,
-  `einsum`, `take_along_dim`,
+  `einsum`, `gather`/`scatter` integer-index and static bounds checks,
+  `take_along_dim`,
   `topk`/`sort`, `fold`/`unfold`, `bmm`,
   RNN/LSTM/GRU state contracts, attention patterns, and more
 - **High-value library contracts checked against the real libraries** —
