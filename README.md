@@ -339,6 +339,7 @@ tensorguard verify FILE [options]
 
 | Command | Description |
 |---------|-------------|
+| `tensorguard explain model.py -s x=batch,10 -o explain.html` | Generate a self-contained HTML bug report with an inference-chain graph, counterexample, proof-footprint badges, and fixes |
 | `tensorguard ci-check [PATHS...] --sarif-output out.sarif` | CI mode with SARIF output |
 | `tensorguard sarif-trends v1=old.sarif v2=new.sarif --markdown trend.md` | Track Code Scanning open/closed/recurrent alert deltas |
 | `tensorguard watch [PATHS...]` | Watch and re-verify on changes |
@@ -2290,7 +2291,10 @@ tensor first acquired the shape that made the final op illegal. For a model
 whose first layer maps ten features to twenty and whose second layer mistakenly
 expects thirty, the chain shows the twenty-wide tensor being produced and then
 rejected one line later. The explainer is also available as structured JSON via
-`--format json --explain`. See `tests/test_inference_chain_explain.py`.
+`--format json --explain`, and as a self-contained HTML report via
+`tensorguard explain model.py -o explain.html`, adding an SVG chain graph,
+counterexample witness, proof-footprint badges, and mechanical fixes. See
+`tests/test_inference_chain_explain.py` and `tests/test_explain_html.py`.
 
 ### Mechanical autofixes (`--fix`)
 

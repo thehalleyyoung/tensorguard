@@ -3594,6 +3594,103 @@ class VerifyCommand:
         return 0
 
 
+# ── ExplainCommand ─────────────────────────────────────────────────────────
+
+
+class ExplainCommand:
+    """Generate a self-contained HTML explanation report for one nn.Module file."""
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("file", help="Python file containing nn.Module class")
+        parser.add_argument(
+            "--input-shape", "-s", action="append", default=[],
+            help="Input shape as name=dim1,dim2,... (e.g., x=batch,3,224,224).",
+        )
+        parser.add_argument("-o", "--output", help="Write HTML report to this path")
+        parser.add_argument("--no-infer", action="store_true", help="Disable automatic input-shape inference")
+        parser.add_argument("--no-device-check", action="store_true", help="Disable device consistency checking")
+        parser.add_argument("--no-phase-check", action="store_true", help="Disable train/eval phase checking")
+        parser.add_argument("--no-grad-check", action="store_true", help="Disable gradient-flow checking")
+        parser.add_argument("--cegar-iterations", type=int, default=10, help="Max CEGAR refinement iterations")
+        parser.add_argument("--high-confidence", action="store_true", help="Only report high-confidence bugs")
+        parser.add_argument(
+            "--soundness-mode", choices=["sound", "balanced", "heuristic"],
+            default=None,
+            help="Verdict strictness; sound mode exits 2 on UNKNOWN.",
+        )
+        parser.add_argument("--config", default=None, help="Path to tensorguard.toml")
+        parser.add_argument("--no-config", action="store_true", help="Ignore TensorGuard config files")
+
+    @staticmethod
+    def _parse_input_shapes_strict(specs: Sequence[str]) -> Optional[Dict[str, tuple]]:
+        input_shapes: Dict[str, tuple] = {}
+        for spec in specs:
+            if "=" not in spec:
+                sys.stderr.write(f"Invalid shape spec: {spec} (use name=d1,d2,...)\n")
+                return None
+            name, dims_str = spec.split("=", 1)
+            dims = []
+            for d in dims_str.split(","):
+                d = d.strip()
+                try:
+                    dims.append(int(d))
+                except ValueError:
+                    dims.append(d)
+            input_shapes[name] = tuple(dims)
+        return input_shapes
+
+    def execute(self, args: argparse.Namespace) -> int:
+        filepath = pathlib.Path(args.file)
+        if not filepath.exists():
+            sys.stderr.write(f"File not found: {args.file}\n")
+            return 1
+        try:
+            source = filepath.read_text(encoding="utf-8")
+        except Exception as exc:
+            sys.stderr.write(f"Cannot read file: {exc}\n")
+            return 1
+
+        input_shapes = self._parse_input_shapes_strict(getattr(args, "input_shape", []) or [])
+        if input_shapes is None:
+            return 1
+
+        verify_cmd = VerifyCommand()
+        cfg = verify_cmd._resolve_config(args, str(filepath))
+        from src.tg_config import filter_result, is_ignored_file
+        if is_ignored_file(cfg, str(filepath)):
+            sys.stderr.write(f"{filepath} is ignored by TensorGuard config; no report generated.\n")
+            return 0
+
+        try:
+            from src.api import verify_architecture
+            result = verify_architecture(
+                source,
+                input_shapes=input_shapes,
+                filename=str(filepath),
+                **verify_cmd._effective_verify_kwargs(args, cfg),
+            )
+            result = filter_result(cfg, result)
+        except RuntimeError as exc:
+            sys.stderr.write(f"Error: {exc}\n")
+            return 1
+
+        from src.inference_chain import format_explain_html, write_explain_html
+        title = f"TensorGuard explain: {filepath.name}"
+        output_path = getattr(args, "output", None)
+        if output_path:
+            written = write_explain_html(output_path, result, source=source, title=title)
+            sys.stdout.write(f"TensorGuard explain report written to {written}\n")
+        else:
+            sys.stdout.write(format_explain_html(result, source=source, title=title))
+
+        verdict = getattr(result, "verdict", "SAFE" if not result.bugs else "UNSAFE")
+        if result.bugs:
+            return 1
+        if verdict == "UNKNOWN" and getattr(result, "soundness_mode", "balanced") == "sound":
+            return 2
+        return 0
+
+
 # ── PlaygroundCommand ──────────────────────────────────────────────────────
 
 
@@ -3724,6 +3821,7 @@ class ReftypeCliApp:
         "analyze": lambda: AnalyzeCommand(),
         "analyze-package": lambda: PackageAnalyzeCommand(),
         "verify": lambda: VerifyCommand(),
+        "explain": lambda: ExplainCommand(),
         "watch": lambda: WatchCommand(),
         "ci-check": lambda: CiCheckCommand(),
         "init": lambda: InitCommand(),
@@ -3783,6 +3881,7 @@ class ReftypeCliApp:
             "analyze": "Analyse files/directories for refinement type bugs",
             "analyze-package": "Analyse an entire Python package/directory with summary",
             "verify": "Verify nn.Module architecture via constraint-based verification",
+            "explain": "Generate an HTML inference-chain explanation report",
             "watch": "Watch files for changes and re-analyse incrementally",
             "ci-check": "Run analysis in CI mode with exit codes",
             "init": "Initialise .reftype.toml configuration",

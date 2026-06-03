@@ -498,7 +498,11 @@ supports zero-flag verification on common \texttt{nn.Module} files, high-
 confidence CI gating, domain flags such as \texttt{--no-device-check}, and
 soundness modes.  Diagnostics are source-mapped and explain why an operation is
 unsafe, not just that Z3 found a model.  The \texttt{--explain} path reconstructs
-the inference chain from inputs through transformations to the failing step.
+the inference chain from inputs through transformations to the failing step, and
+\texttt{tensorguard explain} turns that evidence into a self-contained HTML
+report with an SVG chain graph, the concrete counterexample witness,
+proof-footprint badges for the operators in the chain, and any mechanical repair
+available for the failure.
 The \texttt{--fix} path suggests mechanical repairs for supported errors such
 as wrong \texttt{Linear.in\_features} or convolution channel counts.
 
