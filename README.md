@@ -1863,10 +1863,13 @@ verified parametrically as genuine symbols rather than concretized to a guessed
 integer. The emitted `SafetyCertificate` records the symbols it proved over in
 `symbolic_bindings` (e.g. `{"B": "B", "S": "S"}`), so a green certificate means
 the model is safe for *every* batch and sequence length, not merely one sampled
-size. Symbol identity is enforced across inputs: two tensors annotated with the
-same name `B` are reasoned about as equal (an element-wise combination is
-proven safe), whereas distinct symbols `B` and `C` cannot be assumed equal, so
-an operation requiring them to match is soundly rejected. Symbol-independent
+size. Through the public API, `verify_architecture(..., produce_certificates=True)`
+now returns that top-level certificate plus a replay status for the embedded
+proof-certificate DAG. Symbol identity is enforced across inputs: two tensors
+annotated with the same name `B` are reasoned about as equal (an element-wise
+combination is proven safe), whereas distinct symbols `B` and `C` cannot be
+assumed equal, so an operation requiring them to match is soundly rejected.
+Symbol-independent
 bugs (a wrong `Linear` in-features, a residual reshape that breaks the sequence
 axis) are still caught under symbolic dimensions, and every case is anchored to
 eager torch across several concrete instantiations. See

@@ -170,6 +170,9 @@ class ProofCertificate:
                 "rewrite",
                 "def-intro",
                 "commutativity",
+                # Z3 can emit unit-resolution nodes whose proof children were
+                # compressed into formula arguments in the Python proof AST.
+                "unit-resolution",
                 "th-lemma",
                 "iff-true",
                 "iff-false",

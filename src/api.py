@@ -75,6 +75,23 @@ class Bug:
 
 
 @dataclass
+class CertificateReplayResult:
+    """Replay status for a top-level ``SafetyCertificate``.
+
+    The replay is intentionally independent of the original verifier run: it
+    checks the returned certificate object and every embedded proof certificate
+    after ``verify_architecture`` has already produced its public result.
+    """
+
+    ok: bool
+    checked: bool
+    reason: str = ""
+    proof_steps: int = 0
+    verification_conditions: int = 0
+    certificate_hash: Optional[str] = None
+
+
+@dataclass
 class AnalysisResult:
     bugs: List[Bug] = field(default_factory=list)
     guards_harvested: int = 0
@@ -105,6 +122,14 @@ class AnalysisResult:
     # the small sound set of repairable bugs (wrong nn.Linear in_features /
     # nn.Conv*d in_channels).  Printed by `tensorguard verify --fix`.
     autofixes: List[Any] = field(default_factory=list)
+    # Step 245 — proof-carrying certificate replay exposed at the public API
+    # boundary. ``safety_certificate`` is the verifier's top-level witness,
+    # ``proof_certificate`` is the merged per-obligation proof replay when
+    # certificate mode is requested, and ``certificate_replay`` records whether
+    # the public result could independently replay the returned object.
+    safety_certificate: Optional[Any] = None
+    proof_certificate: Optional[Any] = None
+    certificate_replay: Optional[CertificateReplayResult] = None
 
     @property
     def status(self) -> str:
@@ -816,6 +841,101 @@ def _minimal_conflict(preds: List["ShapePredicate"]) -> List["ShapePredicate"]:
     return []
 
 
+def _replay_safety_certificate(certificate: Any) -> CertificateReplayResult:
+    """Replay-check a public ``SafetyCertificate`` returned by verify_model.
+
+    This sits above the internal solver checks: ``verify_architecture`` calls it
+    on the fully assembled certificate after the verifier returns, so a public
+    API consumer can inspect whether the top-level artifact is structurally
+    replayable without reaching into ``ConstraintVerifier`` internals.
+    """
+    if certificate is None:
+        return CertificateReplayResult(
+            ok=False,
+            checked=False,
+            reason="no SafetyCertificate returned",
+        )
+
+    try:
+        cert_dict = certificate.to_dict()
+    except Exception as exc:
+        return CertificateReplayResult(
+            ok=False,
+            checked=True,
+            reason=f"SafetyCertificate serialization failed: {exc}",
+        )
+
+    required = ("model_name", "properties", "k", "checked_steps")
+    missing = [key for key in required if key not in cert_dict]
+    if missing:
+        return CertificateReplayResult(
+            ok=False,
+            checked=True,
+            reason="SafetyCertificate missing fields: " + ", ".join(missing),
+        )
+    if not cert_dict.get("properties"):
+        return CertificateReplayResult(
+            ok=False,
+            checked=True,
+            reason="SafetyCertificate proves no properties",
+        )
+    if cert_dict.get("checked_steps", 0) < 0:
+        return CertificateReplayResult(
+            ok=False,
+            checked=True,
+            reason="SafetyCertificate has a negative checked_steps count",
+        )
+
+    proof = getattr(certificate, "proof_certificate", None)
+    cert_hash = cert_dict.get("certificate_hash")
+    if proof is None:
+        return CertificateReplayResult(
+            ok=True,
+            checked=True,
+            reason="SafetyCertificate structure replayed; no embedded proof certificate",
+            certificate_hash=cert_hash,
+        )
+
+    try:
+        proof_ok = bool(proof.verify_locally())
+    except Exception as exc:
+        return CertificateReplayResult(
+            ok=False,
+            checked=True,
+            reason=f"ProofCertificate replay raised: {exc}",
+            certificate_hash=cert_hash,
+        )
+    if not proof_ok:
+        return CertificateReplayResult(
+            ok=False,
+            checked=True,
+            reason="embedded ProofCertificate failed local replay",
+            certificate_hash=cert_hash,
+        )
+
+    stats = {}
+    try:
+        stats = proof.summary_stats()
+    except Exception:
+        stats = {}
+    vc_count = int(stats.get(
+        "verification_condition_count",
+        len(getattr(proof, "verification_conditions", []) or []),
+    ))
+    proof_steps = int(stats.get(
+        "step_count",
+        len(getattr(proof, "steps", []) or []),
+    ))
+    return CertificateReplayResult(
+        ok=True,
+        checked=True,
+        reason="SafetyCertificate and embedded ProofCertificate replayed",
+        proof_steps=proof_steps,
+        verification_conditions=vc_count,
+        certificate_hash=cert_hash,
+    )
+
+
 def verify_architecture(
     source: str,
     input_shapes: Optional[Dict[str, tuple]] = None,
@@ -829,6 +949,7 @@ def verify_architecture(
     hooks: Optional[List] = None,
     soundness_mode: str = "balanced",
     infer_inputs: bool = True,
+    produce_certificates: bool = False,
 ) -> AnalysisResult:
     """Verify an nn.Module architecture via constraint-based verification.
 
@@ -866,6 +987,9 @@ def verify_architecture(
             heuristic-tagged operators); otherwise the verdict is ``UNKNOWN``.
             ``balanced`` abstains (``UNKNOWN``) only on opaque layers;
             ``heuristic`` tolerates abstention (``SAFE``).
+        produce_certificates: When True, request proof-carrying per-obligation
+            replay certificates from the verifier and replay the assembled
+            top-level ``SafetyCertificate`` on the returned ``AnalysisResult``.
 
     Returns:
         AnalysisResult. If verification succeeds, bugs list is empty.
@@ -905,7 +1029,10 @@ def verify_architecture(
         check_gradients=check_gradients,
         infer_inputs=infer_inputs,
         max_loop_unrolls=max_loop_unrolls,
+        produce_certificates=produce_certificates,
     )
+    result.safety_certificate = getattr(vr, "certificate", None)
+    result.proof_certificate = getattr(vr, "proof_certificate", None)
     result.inferred_input_shapes = dict(getattr(vr, "inferred_input_shapes", {}) or {})
     result.inferred_input_sources = dict(getattr(vr, "inferred_input_sources", {}) or {})
     vr_unknown_reasons = list(getattr(vr, "unknown_reasons", []) or [])
@@ -1340,6 +1467,27 @@ def verify_architecture(
             )
     except Exception:
         result.autofixes = []
+
+    # Step 245 — replay the *final public* SAFE certificate. Later API stages
+    # can add bugs (CEGAR, out-of-fragment guards) or turn the verdict UNKNOWN;
+    # in those cases the internal model-checker certificate is not a top-level
+    # proof of the public result and is deliberately not exposed as one.
+    if result.verdict == "SAFE":
+        if result.safety_certificate is not None:
+            result.certificate_replay = _replay_safety_certificate(
+                result.safety_certificate
+            )
+        elif produce_certificates:
+            result.certificate_replay = _replay_safety_certificate(None)
+    else:
+        result.safety_certificate = None
+        result.proof_certificate = None
+        if produce_certificates:
+            result.certificate_replay = CertificateReplayResult(
+                ok=False,
+                checked=False,
+                reason=f"top-level verdict {result.verdict} has no SafetyCertificate",
+            )
 
     # Notify hooks: verification finished
     for hook in hooks:

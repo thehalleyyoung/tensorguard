@@ -127,7 +127,11 @@ it returns a verdict: \safe{}, \unsafe{}, or \unknown{}.  Third, it can emit
 developer-facing diagnostics, including source snippets, inferred-vs-expected
 shapes, explanations, and autofix suggestions for mechanical cases.  Fourth,
 it can emit machine-readable reporters: JSON, JUnit XML, SARIF 2.1.0, GitHub
-annotations, coverage artifacts, dashboards, and certificates.
+annotations, coverage artifacts, dashboards, and certificates.  In certificate
+mode the public API now returns the assembled \texttt{SafetyCertificate}, the
+merged proof-certificate DAG, and a replay status computed after
+\texttt{verify\_architecture} has produced its top-level result, so certificate
+validity is visible at the same boundary as the user-facing verdict.
 
 \subsection{Frontends}
 
@@ -778,7 +782,8 @@ reporters, SARIF, baselines, dashboards, proof certificates, and API stability.
 \hline
 \texttt{src/api.py} &
 Public \texttt{analyze}, \texttt{verify\_architecture}, and \texttt{verify\_module}
-entry points with soundness modes and domain flags. \\
+entry points with soundness modes, domain flags, and top-level
+\texttt{SafetyCertificate} replay for proof-carrying safe verdicts. \\
 \hline
 \texttt{src/model\_checker.py} &
 AST graph extraction, symbolic state propagation, Z3 safety checks, device,
@@ -847,8 +852,9 @@ The benchmark corpus has content hashes, datasheets, citation metadata, and
 loader checks.  The operator confidence table and proof-footprint manifest are
 generated from one source of truth and pinned against committed JSON: the
 confidence table is mechanically projected from proof-footprint rows.  The dashboard is
-regenerated from committed results.  The public docs explain what the verifier
-can and cannot prove.
+regenerated from committed results.  Proof-carrying certificates are replayed
+through the public API boundary, not only inside solver helpers.  The public docs
+explain what the verifier can and cannot prove.
 
 Reproducibility is paired with hygiene.  Third-party source trees are
 quarantined or removed unless license-compatible.  The security policy and
