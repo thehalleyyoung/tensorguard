@@ -27,6 +27,7 @@ import torch
 import torch.nn as nn
 
 from src.torch_integration import (
+    TensorGuardDynamicShapeError,
     TensorGuardViolation,
     guarded_aot_package,
     verify_exported_program,
@@ -102,6 +103,136 @@ def test_invalid_on_violation_is_rejected():
     # A typo must not silently degrade the gate to "ignore".
     with pytest.raises(ValueError):
         verify_exported_program(CleanNet(), (torch.randn(2, 10),), on_violation="rasie")
+
+
+class Identity2D(nn.Module):
+    def forward(self, x):
+        return x.relu()
+
+
+def _has_range(ep, lower, upper):
+    return any(
+        int(getattr(vr, "lower")) == lower and int(getattr(vr, "upper")) == upper
+        for vr in ep.range_constraints.values()
+    )
+
+
+def test_export_dynamic_dim_range_is_validated_and_passed_to_export():
+    b = torch.export.Dim("b", min=2, max=8)
+    ep = verify_exported_program(
+        CleanNet(),
+        (torch.randn(3, 10),),
+        input_shapes={"x": ("batch", 10)},
+        dynamic_shapes={"x": {0: b}},
+    )
+    assert isinstance(ep, torch.export.ExportedProgram)
+    assert _has_range(ep, 2, 8)
+
+
+def test_inferred_shapes_adopt_declared_dynamic_axes():
+    n = torch.export.Dim("n", min=4, max=16)
+    ep = verify_exported_program(
+        Identity2D(),
+        (torch.randn(2, 10),),
+        dynamic_shapes={"x": {1: n}},
+    )
+    assert isinstance(ep, torch.export.ExportedProgram)
+    assert _has_range(ep, 4, 16)
+
+
+def test_dynamic_dim_range_mismatch_fails_before_export(monkeypatch):
+    traced = {"n": 0}
+
+    def _spy(*args, **kwargs):
+        traced["n"] += 1
+        raise AssertionError("torch.export.export should not be reached")
+
+    monkeypatch.setattr(torch.export, "export", _spy)
+    b = torch.export.Dim("b", min=2, max=8)
+    with pytest.raises(TensorGuardDynamicShapeError, match="min/max"):
+        verify_exported_program(
+            CleanNet(),
+            (torch.randn(1, 10),),
+            input_shapes={"x": ("batch", 10)},
+            dynamic_shapes={"x": {0: b}},
+        )
+    assert traced["n"] == 0
+
+
+def test_dynamic_dim_cannot_widen_explicit_concrete_tg_axis(monkeypatch):
+    traced = {"n": 0}
+
+    def _spy(*args, **kwargs):
+        traced["n"] += 1
+        raise AssertionError("torch.export.export should not be reached")
+
+    monkeypatch.setattr(torch.export, "export", _spy)
+    b = torch.export.Dim("b", min=2, max=8)
+    with pytest.raises(TensorGuardDynamicShapeError, match="min/max"):
+        verify_exported_program(
+            CleanNet(),
+            (torch.randn(4, 10),),
+            input_shapes={"x": (4, 10)},
+            dynamic_shapes={"x": {0: b}},
+        )
+    assert traced["n"] == 0
+
+
+class PairNet(nn.Module):
+    def forward(self, x, y):
+        return x + y
+
+
+def test_repeated_tg_symbol_requires_same_export_dim(monkeypatch):
+    traced = {"n": 0}
+
+    def _spy(*args, **kwargs):
+        traced["n"] += 1
+        raise AssertionError("torch.export.export should not be reached")
+
+    monkeypatch.setattr(torch.export, "export", _spy)
+    bx = torch.export.Dim("bx", min=2, max=8)
+    by = torch.export.Dim("by", min=2, max=8)
+    with pytest.raises(TensorGuardDynamicShapeError, match="equality"):
+        verify_exported_program(
+            PairNet(),
+            (torch.randn(3, 10), torch.randn(3, 10)),
+            input_shapes={"x": ("batch", 10), "y": ("batch", 10)},
+            dynamic_shapes={"x": {0: bx}, "y": {0: by}},
+        )
+    assert traced["n"] == 0
+
+
+def test_derived_dynamic_dim_must_match_tg_divisibility_relation(monkeypatch):
+    traced = {"n": 0}
+
+    def _spy(*args, **kwargs):
+        traced["n"] += 1
+        raise AssertionError("torch.export.export should not be reached")
+
+    monkeypatch.setattr(torch.export, "export", _spy)
+    b = torch.export.Dim("b", min=2, max=8)
+    with pytest.raises(TensorGuardDynamicShapeError, match="divisibility"):
+        verify_exported_program(
+            Identity2D(),
+            (torch.randn(3, 6),),
+            input_shapes={"x": ("b", "width")},
+            dynamic_shapes={"x": {0: b, 1: 2 * b}},
+        )
+    assert traced["n"] == 0
+
+
+def test_matching_derived_dynamic_dim_exports_with_range_constraints():
+    b = torch.export.Dim("b", min=2, max=8)
+    ep = verify_exported_program(
+        Identity2D(),
+        (torch.randn(3, 6),),
+        input_shapes={"x": ("b", "2*b")},
+        dynamic_shapes={"x": {0: b, 1: 2 * b}},
+    )
+    assert isinstance(ep, torch.export.ExportedProgram)
+    assert _has_range(ep, 2, 8)
+    assert _has_range(ep, 4, 16)
 
 
 @pytest.mark.slow

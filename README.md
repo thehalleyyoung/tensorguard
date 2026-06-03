@@ -368,7 +368,7 @@ from src.integrations.hf_hook import guarded_from_pretrained
 
 compiled = guarded_compile(model, input_shapes={"x": ("b", 10)})   # torch.compile
 guarded_onnx_export(model, (x,), "model.onnx")                     # torch.onnx.export (+ checker)
-guarded_aot_package(model, (x,), package_path="m.pt2")            # torch.export + AOTInductor
+guarded_aot_package(model, (x,), package_path="m.pt2", dynamic_shapes=ds)  # torch.export Dim ranges checked pre-trace
 model = prepare_verified(accelerator, model, opt, loader)          # accelerate.prepare
 model = guarded_from_pretrained(AutoModel, "org/ckpt")            # HF from_pretrained
 trainer = pl.Trainer(callbacks=[TensorGuardCallback()])           # Lightning fit

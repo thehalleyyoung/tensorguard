@@ -62,6 +62,15 @@ class TensorGuardViolation(RuntimeError):
         super().__init__(message)
 
 
+class TensorGuardDynamicShapeError(ValueError):
+    """Raised when a ``torch.export`` dynamic-shape contract contradicts TG."""
+
+
+_DimRange = Tuple[Optional[int], Optional[int]]
+_DynamicKey = Tuple[str, _DimRange]
+_AxisDynamic = Tuple[str, _DimRange, str, int, bool]
+
+
 def module_source(model: Any) -> Optional[str]:
     """Recover importable source for a live ``nn.Module`` instance, or None."""
     try:
@@ -209,6 +218,7 @@ def verify_exported_program(
     example_args: Tuple,
     *,
     input_shapes: Optional[Dict[str, Tuple]] = None,
+    dynamic_shapes: Any = None,
     on_violation: str = "raise",
     soundness_mode: str = "balanced",
 ):
@@ -220,15 +230,29 @@ def verify_exported_program(
     bug would surface as an opaque export error or a silently wrong graph).
     When ``input_shapes`` is omitted it is inferred from the example tensor
     ``example_args`` against the ``forward`` signature, so the shape that is
-    verified is the shape that is exported.  Returns the ``ExportedProgram``.
+    verified is the shape that is exported.  If ``dynamic_shapes`` is supplied,
+    TensorGuard validates the common ``torch.export.Dim`` forms against the same
+    input-shape contract before tracing: inconsistent ranges, repeated-symbol
+    equality mismatches, and integer-multiple derived dimensions fail as
+    :class:`TensorGuardDynamicShapeError`.  Returns the ``ExportedProgram``.
     """
+    inferred_input_shapes = input_shapes is None
+    args = example_args if isinstance(example_args, tuple) else (example_args,)
     if input_shapes is None:
-        input_shapes = _infer_shapes_from_args(model, example_args)
+        input_shapes = _infer_shapes_from_args(model, args)
+    input_shapes = _validate_export_dynamic_shapes(
+        model,
+        args,
+        input_shapes,
+        dynamic_shapes,
+        inferred_input_shapes=inferred_input_shapes,
+    )
     _check(model, input_shapes, on_violation, soundness_mode)
     import torch
 
-    args = example_args if isinstance(example_args, tuple) else (example_args,)
-    return torch.export.export(model, args)
+    if dynamic_shapes is None:
+        return torch.export.export(model, args)
+    return torch.export.export(model, args, dynamic_shapes=dynamic_shapes)
 
 
 def guarded_aot_package(
@@ -237,6 +261,7 @@ def guarded_aot_package(
     *,
     package_path: Optional[str] = None,
     input_shapes: Optional[Dict[str, Tuple]] = None,
+    dynamic_shapes: Any = None,
     on_violation: str = "raise",
     soundness_mode: str = "balanced",
     inductor_configs: Optional[Dict[str, Any]] = None,
@@ -258,6 +283,7 @@ def guarded_aot_package(
         model,
         example_args,
         input_shapes=input_shapes,
+        dynamic_shapes=dynamic_shapes,
         on_violation=on_violation,
         soundness_mode=soundness_mode,
     )
@@ -266,6 +292,280 @@ def guarded_aot_package(
     return torch._inductor.aoti_compile_and_package(
         ep, package_path=package_path, inductor_configs=inductor_configs
     )
+
+
+def _forward_param_names(model: Any, args: Tuple[Any, ...]) -> List[str]:
+    try:
+        params = list(inspect.signature(model.forward).parameters)
+    except (TypeError, ValueError):
+        return [f"arg{i}" for i in range(len(args))]
+    if len(params) < len(args):
+        params.extend(f"arg{i}" for i in range(len(params), len(args)))
+    return params
+
+
+def _is_export_dim(value: Any) -> bool:
+    return (
+        hasattr(value, "min")
+        and hasattr(value, "max")
+        and hasattr(value, "__name__")
+    )
+
+
+def _finite_bound(value: Any) -> Optional[int]:
+    if value is None:
+        return None
+    text = str(value)
+    if text in {"int_oo", "oo", "inf", "Infinity"}:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
+def _format_range(lo: Optional[int], hi: Optional[int]) -> str:
+    return f"[{lo if lo is not None else '-inf'}, {hi if hi is not None else 'inf'}]"
+
+
+def _dim_bounds(dim: Any) -> _DimRange:
+    return (
+        _finite_bound(getattr(dim, "min", None)),
+        _finite_bound(getattr(dim, "max", None)),
+    )
+
+
+def _dim_relation(dim: Any) -> Tuple[str, str, int, bool]:
+    """Return ``(display_name, root_name, integer_factor, is_derived)``."""
+    name = str(getattr(dim, "__name__", dim)).replace(" ", "")
+    root = getattr(dim, "root", None)
+    if root is None:
+        return name, name, 1, False
+    root_name = str(getattr(root, "__name__", root)).replace(" ", "")
+    escaped = re.escape(root_name)
+    for pat in (rf"^(\d+)\*{escaped}$", rf"^{escaped}\*(\d+)$"):
+        m = re.match(pat, name)
+        if m:
+            return name, root_name, int(m.group(1)), True
+    return name, root_name, 1, True
+
+
+def _dynamic_spec_for_input(dynamic_shapes: Any, name: str, index: int) -> Any:
+    if dynamic_shapes is None:
+        return None
+    if isinstance(dynamic_shapes, dict):
+        return dynamic_shapes.get(name)
+    if isinstance(dynamic_shapes, (tuple, list)) and index < len(dynamic_shapes):
+        return dynamic_shapes[index]
+    return None
+
+
+def _iter_axis_specs(spec: Any):
+    if isinstance(spec, dict):
+        for axis, dim in spec.items():
+            if isinstance(axis, int):
+                yield axis, dim
+        return
+    if isinstance(spec, (tuple, list)):
+        for axis, dim in enumerate(spec):
+            yield axis, dim
+
+
+def _parse_tg_dim(value: Any) -> Tuple[str, Any, Optional[str], int]:
+    """Parse TensorGuard's input-shape atom.
+
+    TensorGuard currently stores shape constraints as tuple atoms.  This parser
+    therefore treats ``2*b`` as a named relation that the export contract must
+    also name; it does not claim the core verifier has an affine arithmetic
+    language for input specs.
+    """
+    if isinstance(value, int) and not isinstance(value, bool):
+        return "concrete", value, None, 1
+    text = str(value).replace(" ", "")
+    if re.fullmatch(r"-?\d+", text):
+        return "concrete", int(text), None, 1
+    m = re.fullmatch(r"(\d+)\*([A-Za-z_]\w*)", text)
+    if m:
+        return "derived", text, m.group(2), int(m.group(1))
+    m = re.fullmatch(r"([A-Za-z_]\w*)\*(\d+)", text)
+    if m:
+        return "derived", f"{m.group(2)}*{m.group(1)}", m.group(1), int(m.group(2))
+    if re.fullmatch(r"[A-Za-z_]\w*", text):
+        return "symbol", text, text, 1
+    return "opaque", text, text, 1
+
+
+def _validate_export_dynamic_shapes(
+    model: Any,
+    args: Tuple[Any, ...],
+    input_shapes: Optional[Dict[str, Tuple]],
+    dynamic_shapes: Any,
+    *,
+    inferred_input_shapes: bool,
+) -> Optional[Dict[str, Tuple]]:
+    """Check common ``torch.export.Dim`` contracts before export tracing.
+
+    Unknown/nested ``dynamic_shapes`` forms are left to PyTorch's own validator;
+    recognized forms are checked early so invalid contracts cannot reach the
+    tracer or AOT packager.
+    """
+    if dynamic_shapes is None or input_shapes is None:
+        return input_shapes
+
+    names = _forward_param_names(model, args)
+    refined_shapes: Dict[str, List[Any]] = {
+        name: list(shape) for name, shape in input_shapes.items()
+    }
+    errors: List[str] = []
+    axis_dynamic: Dict[Tuple[str, int], _AxisDynamic] = {}
+    axis_examples: Dict[Tuple[str, int], int] = {}
+    root_examples: Dict[str, Tuple[int, str, int]] = {}
+
+    for index, (name, value) in enumerate(zip(names, args)):
+        shape = refined_shapes.get(name)
+        actual_shape = getattr(value, "shape", None)
+        spec = _dynamic_spec_for_input(dynamic_shapes, name, index)
+        if shape is None or actual_shape is None or spec is None:
+            continue
+        rank = len(shape)
+        actual_rank = len(actual_shape)
+        for raw_axis, dim in _iter_axis_specs(spec):
+            if not _is_export_dim(dim):
+                continue
+            axis = raw_axis if raw_axis >= 0 else rank + raw_axis
+            if axis < 0 or axis >= rank or axis >= actual_rank:
+                errors.append(
+                    f"equality: dynamic_shapes for {name}[{raw_axis}] has no "
+                    f"matching TensorGuard axis in rank-{rank} input"
+                )
+                continue
+            example_size = int(actual_shape[axis])
+            lo, hi = _dim_bounds(dim)
+            display, root, factor, is_derived = _dim_relation(dim)
+            if lo is not None and hi is not None and lo > hi:
+                errors.append(
+                    f"min/max: Dim {display!r} has invalid range {_format_range(lo, hi)}"
+                )
+            if (
+                (lo is not None and example_size < lo)
+                or (hi is not None and example_size > hi)
+            ):
+                errors.append(
+                    f"min/max: example {name}[{axis}]={example_size} is outside "
+                    f"Dim {display!r} range {_format_range(lo, hi)}"
+                )
+
+            if inferred_input_shapes:
+                refined_shapes[name][axis] = (
+                    f"{factor}*{root}" if is_derived and factor != 1 else root
+                )
+
+            kind, tg_value, tg_root, tg_factor = _parse_tg_dim(
+                refined_shapes[name][axis]
+            )
+            if kind == "concrete":
+                concrete = int(tg_value)
+                if lo != concrete or hi != concrete:
+                    errors.append(
+                        f"min/max: TensorGuard fixes {name}[{axis}]={concrete}, "
+                        f"but export Dim {display!r} allows {_format_range(lo, hi)}"
+                    )
+            elif is_derived:
+                if kind != "derived" or tg_root != root or tg_factor != factor:
+                    errors.append(
+                        f"divisibility: export declares {name}[{axis}] as "
+                        f"{display!r}, but TensorGuard input_shapes uses "
+                        f"{refined_shapes[name][axis]!r}"
+                    )
+                if factor > 1 and example_size % factor != 0:
+                    errors.append(
+                        f"divisibility: example {name}[{axis}]={example_size} is "
+                        f"not divisible by derived Dim factor {factor}"
+                    )
+            elif kind == "derived":
+                errors.append(
+                    f"divisibility: TensorGuard input_shapes uses "
+                    f"{refined_shapes[name][axis]!r}, but export Dim {display!r} "
+                    "does not encode that integer-multiple relation"
+                )
+
+            axis_examples[(name, axis)] = example_size
+            axis_dynamic[(name, axis)] = (display, (lo, hi), root, factor, is_derived)
+            if not is_derived:
+                previous = root_examples.get(root)
+                if previous is not None and previous[0] != example_size:
+                    prev_size, prev_name, prev_axis = previous
+                    errors.append(
+                        f"equality: export Dim {root!r} appears on "
+                        f"{prev_name}[{prev_axis}]={prev_size} and "
+                        f"{name}[{axis}]={example_size}"
+                    )
+                else:
+                    root_examples[root] = (example_size, name, axis)
+
+    for (name, axis), (display, _bounds, root, factor, is_derived) in axis_dynamic.items():
+        if is_derived and factor > 1 and root in root_examples:
+            expected = factor * root_examples[root][0]
+            actual = axis_examples[(name, axis)]
+            if actual != expected:
+                errors.append(
+                    f"divisibility: {name}[{axis}]={actual} should equal "
+                    f"{factor}*{root}={expected} for export Dim {display!r}"
+                )
+
+    tg_to_dyn: Dict[str, List[Optional[_DynamicKey]]] = {}
+    dyn_to_tg: Dict[_DynamicKey, List[str]] = {}
+    for index, (name, value) in enumerate(zip(names, args)):
+        shape = refined_shapes.get(name)
+        actual_shape = getattr(value, "shape", None)
+        if shape is None or actual_shape is None:
+            continue
+        for axis, tg_dim in enumerate(shape):
+            kind, tg_value, _root, _factor = _parse_tg_dim(tg_dim)
+            if kind not in {"symbol", "derived", "opaque"}:
+                continue
+            tg_key = str(tg_value)
+            dyn = axis_dynamic.get((name, axis))
+            dyn_key = None if dyn is None else (dyn[0], dyn[1])
+            tg_to_dyn.setdefault(tg_key, []).append(dyn_key)
+            if dyn_key is not None:
+                dyn_to_tg.setdefault(dyn_key, []).append(tg_key)
+
+    for tg_key, dyn_keys in tg_to_dyn.items():
+        concrete_dyns = {d for d in dyn_keys if d is not None}
+        if not concrete_dyns:
+            continue
+        if any(d is None for d in dyn_keys):
+            errors.append(
+                f"equality: TensorGuard symbol {tg_key!r} appears on multiple "
+                "axes, but export dynamic_shapes does not attach the same Dim "
+                "to every occurrence"
+            )
+        if len(concrete_dyns) > 1:
+            formatted = ", ".join(
+                f"{name}{_format_range(*bounds)}"
+                for name, bounds in sorted(concrete_dyns)
+            )
+            errors.append(
+                f"equality: TensorGuard symbol {tg_key!r} maps to inconsistent "
+                f"export Dims ({formatted})"
+            )
+
+    for dyn_key, tg_keys in dyn_to_tg.items():
+        unique_tg = set(tg_keys)
+        if len(unique_tg) > 1:
+            name, bounds = dyn_key
+            errors.append(
+                f"equality: export Dim {name!r}{_format_range(*bounds)} is shared "
+                f"by distinct TensorGuard symbols {sorted(unique_tg)}"
+            )
+
+    if errors:
+        raise TensorGuardDynamicShapeError(
+            "Invalid torch.export dynamic_shapes contract:\n- "
+            + "\n- ".join(errors)
+        )
+    return {name: tuple(shape) for name, shape in refined_shapes.items()}
 
 
 def _infer_shapes_from_args(

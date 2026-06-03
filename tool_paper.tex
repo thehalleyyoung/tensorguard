@@ -976,8 +976,8 @@ Gradient and training-loop contracts beyond forward shape checking. \\
 \texttt{tests/test\_export\_aot\_gate.py},
 \texttt{tests/test\_quant\_export\_checks.py},
 \texttt{tests/test\_quantization\_verify.py} &
-Deployment-facing gates for export, opsets, AOT packaging, and source/eager/FX
-quantization. \\
+Deployment-facing gates for export, \texttt{torch.export.Dim} ranges and
+relations, opsets, AOT packaging, and source/eager/FX quantization. \\
 \hline
 \texttt{tests/test\_distributed\_verification.py},
 \texttt{tests/test\_tensor\_parallel\_checks.py} &
@@ -1193,7 +1193,9 @@ live dispatcher checks. \\
 \hline
 Export gates &
 Export, ONNX, AOTInductor, quantization, and mixed-precision paths check static
-preconditions before invoking downstream compilers. &
+preconditions before invoking downstream compilers; dynamic
+\texttt{torch.export.Dim} ranges are reconciled with TensorGuard input-shape
+symbols before tracing. &
 ONNX, AOT, quantization, mixed-precision, and guarded compile/export tests. \\
 \hline
 Distributed and adapter gates &
@@ -1365,7 +1367,8 @@ or native annotations.
 \subsection{Deployment gate}
 
 Deployment introduces contracts that ordinary training does not: ONNX opset
-availability, AOTInductor input layouts, quantization observer calibration,
+availability, \texttt{torch.export} dynamic-shape \texttt{Dim} ranges and
+relations, AOTInductor input layouts, quantization observer calibration,
 activation qscheme placement, eager/FX quant-dequant boundaries,
 mixed-precision dtype boundaries, AMP backend allowlists, fp16 GradScaler
 requirements, TorchServe or FastAPI request schemas, GGUF or llama.cpp
