@@ -497,6 +497,7 @@ The whole CI-reproducible pipeline is wired into a single target:
 ```bash
 make reproduce          # regenerate every CI-reproducible artifact + audit
 make reproduce-check    # also assert byte-identical regeneration (no git diff)
+bash scripts/reproduce_main_results.sh  # reviewer-facing wrapper for main result evidence
 ```
 
 `make reproduce` regenerates, from source and in dependency order, the
@@ -509,7 +510,9 @@ which recomputes every `x/y` ratio and `%` token in `README.md` from the
 freshly regenerated artifacts. `make reproduce-check` additionally proves
 determinism: regenerating the byte-deterministic artifacts must produce no
 git diff. The orchestrator is `reproducibility/reproduce_all.py`, pinned by
-`tests/test_reproduce_harness.py`.
+`tests/test_reproduce_harness.py`. The reviewer wrapper is backed by
+`reproducibility/reviewer_commands.{json,md}`, a checked catalogue of the main
+tables/figures, their regeneration commands, and their committed outputs.
 
 **Honest scope.** Artifacts that need CUDA, a HuggingFace download, or a
 Lean toolchain cannot be rebuilt in a standard CI box; their committed

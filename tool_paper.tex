@@ -987,7 +987,14 @@ encoding faithfulness, and CEGAR reasoning. \\
 The artifact is designed to be regenerated.  The \texttt{make reproduce}
 harness and reproducibility scripts update headline results, numeric claim
 audits, benchmark deltas, scaling curves, CEGAR measurements, and paper evidence
-indices.  Tests pin committed JSON artifacts against freshly generated outputs.
+indices.  For artifact review, \texttt{scripts/reproduce\_main\_results.sh} is a
+single reviewer-facing entrypoint to the authoritative byte-checking pipeline,
+while \texttt{scripts/check\_main\_results.sh} verifies and previews the command
+catalogue.  The generated \texttt{reproducibility/reviewer\_commands.json} and
+\texttt{.md} manifest lists 13 main result groups, checks that every command
+resolves to a real Makefile target or Python script, and checks that every
+claimed output exists.  Tests pin committed JSON artifacts against freshly
+generated outputs.
 The benchmark corpus has content hashes, datasheets, citation metadata, and
 loader checks; the mined-bug expansion carries a deterministic corpus hash plus
 explicit no-third-party-code redistribution metadata; the labeling-agreement
@@ -1932,12 +1939,15 @@ rather than converted into a false proof.
 
 A reviewer can start from the soundness contract, run the new tests for any
 claimed operator family, inspect the evidence index, regenerate dashboards, and
-audit Lean files.  They can also inspect the signed-certificate checker as a
-small trusted component: it imports only the Python standard library, verifies
-the canonical MAC and drift hashes, and independently replays the proof-DAG
-shape that the main TensorGuard replay path accepts.  This is a different
-posture from a one-off prototype: the paper claims are connected to code paths,
-tests, and artifacts, and unsupported regions are part of the documented result.
+audit Lean files.  They can also run the reviewer command manifest in dry-run
+mode to see the exact command and output path behind each headline table or
+figure before choosing the full byte-identical reproduction command.  The signed
+certificate checker is similarly inspectable as a small trusted component: it
+imports only the Python standard library, verifies the canonical MAC and drift
+hashes, and independently replays the proof-DAG shape that the main TensorGuard
+replay path accepts.  This is a different posture from a one-off prototype: the
+paper claims are connected to code paths, tests, and artifacts, and unsupported
+regions are part of the documented result.
 
 \clearpage
 

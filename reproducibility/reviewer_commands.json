@@ -1,0 +1,246 @@
+{
+  "all_commands_resolve": true,
+  "all_outputs_present": true,
+  "authoritative_full_command": "python reproducibility/reproduce_all.py --check",
+  "entrypoints": {
+    "determinism_check": "bash scripts/check_main_results.sh",
+    "dry_run": "python reproducibility/reviewer_commands.py --dry-run",
+    "full_reproduction": "bash scripts/reproduce_main_results.sh"
+  },
+  "fast_listing_command": "python reproducibility/reviewer_commands.py --dry-run",
+  "n_commands_resolving": 13,
+  "n_main_results": 13,
+  "n_results_with_outputs": 13,
+  "results": [
+    {
+      "all_outputs_present": true,
+      "claim": "60-bug headline Refuted-Proof figure and README ratios",
+      "command": "python reproducibility/reproduce_headline_60bug.py",
+      "command_resolves": true,
+      "id": "headline_60bug",
+      "outputs": [
+        {
+          "path": "reproducibility/reproduce_headline_60bug.json",
+          "present": true
+        }
+      ]
+    },
+    {
+      "all_outputs_present": true,
+      "claim": "baseline precision/recall matrices and NA handling",
+      "command": "make precision-recall",
+      "command_resolves": true,
+      "id": "precision_recall",
+      "outputs": [
+        {
+          "path": "evaluation/confusion_matrices.json",
+          "present": true
+        },
+        {
+          "path": "evaluation/confusion_matrices.md",
+          "present": true
+        }
+      ]
+    },
+    {
+      "all_outputs_present": true,
+      "claim": "McNemar, Holm, and paired-bootstrap significance tests",
+      "command": "python evaluation/significance.py",
+      "command_resolves": true,
+      "id": "significance",
+      "outputs": [
+        {
+          "path": "evaluation/significance.json",
+          "present": true
+        },
+        {
+          "path": "evaluation/significance.md",
+          "present": true
+        }
+      ]
+    },
+    {
+      "all_outputs_present": true,
+      "claim": "0% false-positive hunt on executing clean models",
+      "command": "make sound-fp",
+      "command_resolves": true,
+      "id": "sound_mode_fp",
+      "outputs": [
+        {
+          "path": "evaluation/sound_mode_fp.json",
+          "present": true
+        },
+        {
+          "path": "evaluation/sound_mode_fp.md",
+          "present": true
+        }
+      ]
+    },
+    {
+      "all_outputs_present": true,
+      "claim": "latent-bug recall advantage over the strongest runtime baseline",
+      "command": "make hard-recall",
+      "command_resolves": true,
+      "id": "hard_recall",
+      "outputs": [
+        {
+          "path": "evaluation/hard_recall.json",
+          "present": true
+        },
+        {
+          "path": "evaluation/hard_recall.md",
+          "present": true
+        }
+      ]
+    },
+    {
+      "all_outputs_present": true,
+      "claim": "random valid-module false-positive fuzzing",
+      "command": "make diff-fuzz",
+      "command_resolves": true,
+      "id": "differential_fuzz",
+      "outputs": [
+        {
+          "path": "evaluation/diff_fuzz.json",
+          "present": true
+        },
+        {
+          "path": "evaluation/diff_fuzz.md",
+          "present": true
+        }
+      ]
+    },
+    {
+      "all_outputs_present": true,
+      "claim": "fault-injection false-negative fuzzing",
+      "command": "make neg-fuzz",
+      "command_resolves": true,
+      "id": "negative_fuzz",
+      "outputs": [
+        {
+          "path": "evaluation/neg_fuzz.json",
+          "present": true
+        },
+        {
+          "path": "evaluation/neg_fuzz.md",
+          "present": true
+        }
+      ]
+    },
+    {
+      "all_outputs_present": true,
+      "claim": "50 minimized bug reproducers and clean siblings",
+      "command": "make triage",
+      "command_resolves": true,
+      "id": "triage_regressions",
+      "outputs": [
+        {
+          "path": "evaluation/triage_regressions.json",
+          "present": true
+        },
+        {
+          "path": "evaluation/triage_regressions.md",
+          "present": true
+        }
+      ]
+    },
+    {
+      "all_outputs_present": true,
+      "claim": "public operator coverage matrix",
+      "command": "make operator-coverage",
+      "command_resolves": true,
+      "id": "operator_coverage",
+      "outputs": [
+        {
+          "path": "evaluation/operator_coverage.json",
+          "present": true
+        },
+        {
+          "path": "evaluation/operator_coverage.md",
+          "present": true
+        }
+      ]
+    },
+    {
+      "all_outputs_present": true,
+      "claim": "torchvision/timm/HuggingFace frequency-weighted operator coverage",
+      "command": "make real-model-operator-coverage",
+      "command_resolves": true,
+      "id": "real_model_operator_coverage",
+      "outputs": [
+        {
+          "path": "evaluation/real_model_operator_coverage.json",
+          "present": true
+        },
+        {
+          "path": "evaluation/real_model_operator_coverage.md",
+          "present": true
+        }
+      ]
+    },
+    {
+      "all_outputs_present": true,
+      "claim": "real-model deployment/export gallery and gates",
+      "command": "make deployment-gallery",
+      "command_resolves": true,
+      "id": "deployment_gallery",
+      "outputs": [
+        {
+          "path": "evaluation/deployment_gallery.json",
+          "present": true
+        },
+        {
+          "path": "evaluation/deployment_gallery.md",
+          "present": true
+        }
+      ]
+    },
+    {
+      "all_outputs_present": true,
+      "claim": "hardware-normalized cost/latency Pareto curves",
+      "command": "make pareto-curves",
+      "command_resolves": true,
+      "id": "pareto_curves",
+      "outputs": [
+        {
+          "path": "evaluation/pareto_curves.json",
+          "present": true
+        },
+        {
+          "path": "evaluation/pareto_curves.md",
+          "present": true
+        }
+      ]
+    },
+    {
+      "all_outputs_present": true,
+      "claim": "single paper-evidence index of every regenerable table/figure",
+      "command": "make paper-evidence",
+      "command_resolves": true,
+      "id": "paper_evidence",
+      "outputs": [
+        {
+          "path": "reproducibility/paper_evidence_index.json",
+          "present": true
+        },
+        {
+          "path": "reproducibility/paper_evidence_index.md",
+          "present": true
+        }
+      ]
+    }
+  ],
+  "scripts": [
+    {
+      "path": "scripts/reproduce_main_results.sh",
+      "present": true,
+      "sha256": "e5a0c38008249199df04cdc0ac5c2357c826d8f15bffbf17adfad9229043b928"
+    },
+    {
+      "path": "scripts/check_main_results.sh",
+      "present": true,
+      "sha256": "4b4908d34d7d8d5e4d6de8eb82762f32090cd5e421da0e95a193d1fdcac400bf"
+    }
+  ],
+  "step": 126
+}

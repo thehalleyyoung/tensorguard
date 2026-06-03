@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs soundness-appendix corpus headline audit evaluation-protocol developer-study silent-bug-benchmark precision-recall stratified-precision-recall head-to-head-step252 stagewise-ablation pr-history-survival labeling-agreement pareto-curves pareto-curves-gate cross-version-stability natural-distribution-study sound-fp false-unknowns hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs soundness-appendix corpus headline audit evaluation-protocol developer-study silent-bug-benchmark precision-recall stratified-precision-recall head-to-head-step252 stagewise-ablation pr-history-survival labeling-agreement pareto-curves pareto-curves-gate cross-version-stability natural-distribution-study sound-fp false-unknowns hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence reviewer-commands test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -59,6 +59,7 @@ help:
 	@echo "  silent-bug-benchmark Regenerate Step 261 runtime-silent bug benchmark"
 	@echo "  audit            Run the numeric-claim audit over committed artifacts"
 	@echo "  paper-evidence   Regenerate every table/figure + the single paper-evidence index"
+	@echo "  reviewer-commands Regenerate reviewer-facing one-command result scripts/manifest"
 	@echo "  test             Run the pytest suite"
 
 reproduce:
@@ -250,6 +251,11 @@ paper-evidence: reproduce-check
 	$(PYTHON) reproducibility/paper_evidence_index.py
 	$(PYTHON) reproducibility/paper_evidence_index.py --check
 	@echo "Paper evidence regenerated; index at reproducibility/paper_evidence_index.md"
+
+reviewer-commands:
+	$(PYTHON) reproducibility/reviewer_commands.py
+	$(PYTHON) reproducibility/reviewer_commands.py --check
+	$(PYTHON) reproducibility/reviewer_commands.py --dry-run
 
 test:
 	$(PYTHON) -m pytest tests -q --no-header
