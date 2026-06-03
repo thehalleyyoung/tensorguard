@@ -349,3 +349,22 @@ import TensorGuard
 #print axioms TensorGuard.Conv1d.convOut_le
 #print axioms TensorGuard.Conv1d.convOut_pos
 #print axioms TensorGuard.Conv1d.conv1d_channels
+
+-- einops decomposition and rearrange axis-bijection rules (Step 229):
+-- grouped-axis divisibility, inferred sub-axis reconstruction/product
+-- preservation, and no drop/add/duplicate named-axis rearranges.
+#print axioms TensorGuard.Einops.prod_append
+#print axioms TensorGuard.Einops.decompValid_iff
+#print axioms TensorGuard.Einops.decompValid_imp_dvd
+#print axioms TensorGuard.Einops.nondivisible_decomposition_flagged
+#print axioms TensorGuard.Einops.inferSubaxis_spec
+#print axioms TensorGuard.Einops.decomposedGroup_product
+#print axioms TensorGuard.Einops.inferSubaxis_position
+#print axioms TensorGuard.Einops.axisBijection_iff_counts
+#print axioms TensorGuard.Einops.axisBijection_refl
+#print axioms TensorGuard.Einops.axisBijection_sym
+#print axioms TensorGuard.Einops.axisBijection_trans
+#print axioms TensorGuard.Einops.adjacent_swap_axis_bijection
+#print axioms TensorGuard.Einops.dropped_axis_not_bijection
+#print axioms TensorGuard.Einops.added_axis_not_bijection
+#print axioms TensorGuard.Einops.duplicated_axis_not_bijection

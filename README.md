@@ -119,11 +119,12 @@ runtime errors in ML codebases before any code runs.
   refutation-sound, the property lifts to their reduced product, and the very Z3
   encoding the solver runs for them is **proved faithful**
   (`SmtEncoding.lean`/`CrossDomain.lean`), all cross-checked against real Z3 and
-  the live torch dispatcher on real modules — including the per-`forward` chain
+  live torch/einops oracles on real modules — including the per-`forward` chain
   transfers and per-operator shape rules (`nn.Linear`/`Conv`/pooling/`LayerNorm`/
-  `BatchNorm`/`PixelShuffle`/flatten/`cat`/`Embedding`/reshape-`-1`), each
+  `BatchNorm`/`PixelShuffle`/flatten/`cat`/`Embedding`/reshape-`-1`/einops
+  decomposition), each
   replayed op-by-op on real tensors and cross-checked against torch *and* the
-  verifier's own propagators. Every one of the library's 371 public theorems is
+  verifier's own propagators. Every one of the library's 386 public theorems is
   machine-audited **sorry-free**, on only the trusted kernel axioms.
 - **Per-domain verification** — beyond shape, the device and gradient
   domains each refute real bugs that the base shape view misses (a cuda
@@ -2534,7 +2535,7 @@ happy:
 cd lean
 for m in TensorGuard.Soundness TensorGuard.AssumeGuarantee \
          TensorGuard.AssumeGuaranteeExtended TensorGuard.Extended \
-         TensorGuard.Parity TensorGuard.V5OperatorRules; do
+         TensorGuard.Parity TensorGuard.V5OperatorRules TensorGuard.Einops; do
   lake build "$m"
 done
 lake build parity_runner
@@ -2555,7 +2556,7 @@ just a log grep: `lean/TensorGuard/AxiomAudit.lean` runs
 trusted kernel axioms `propext`, `Classical.choice`, `Quot.sound`
 and never on `sorryAx`.  `tests/test_lean_whole_pipeline_audit.py`
 makes this **total and drift-proof**: it auto-discovers and audits
-*all 371* public theorems in the library, so any new theorem hiding
+*all 386* public theorems in the library, so any new theorem hiding
 a `sorry` or an exotic axiom is caught with no list to maintain.
 
 The same kernel-checked guarantee now reaches the **reduced-product
