@@ -966,17 +966,13 @@ downstream scoring. See
 
 ### Cross-version verdict stability
 A static verifier is only trustworthy if its verdict does not silently depend on
-which PyTorch version the user happens to have installed. TensorGuard never
-imports or executes the target module's torch at analysis time, so its verdict
-is version-independent by construction. The harness
-`reproducibility/cross_version_stability.py` proves this two ways. First it
-re-scores a sample of forty-six cases with the target's torch import fully
-blocked and confirms every verdict matches the baseline byte for byte. Second it
-re-runs the verifier under simulated torch versions spanning two point one
-through two point nine and confirms all two hundred twenty-seven verdicts stay
-stable, hashing to one fixed digest. Installing the full wheel matrix needs a
-Python host of three point twelve or lower, but the blocked-import proof makes
-the verdict provably version-independent regardless. See
+the host stack. `reproducibility/cross_version_stability.py` scores all 227
+extended-corpus cases with target `torch` and `torchvision` imports blocked, then
+re-scores a deterministic sample plus source-level torchvision/CPU/MPS fixtures
+under qualified PyTorch 2.1-2.9 and torchvision 0.16-0.24 version matrices. It
+also links the Python 3.9-3.14 hash-seed determinism proof and records Linux,
+macOS, CUDA-less CPU, and MPS qualification commands without pretending every
+wheel/backend was installed on one host. See
 [`reproducibility/cross_version_stability.md`](reproducibility/cross_version_stability.md)
 and `tests/test_cross_version_stability.py`.
 

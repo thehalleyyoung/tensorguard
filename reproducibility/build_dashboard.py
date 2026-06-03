@@ -253,9 +253,10 @@ def _x_domain_ablation():
 def _x_cross_version():
     d = _load("cross_version_stability.json")
     headline = (
-        "verdict stability across torch 2.1 to 2.9: "
-        f"stable ({d['verdict_stable_across_torch_2_1_to_2_9']}), "
-        "static (no torch execution)"
+        "Step 257 stability across Python, PyTorch, torchvision, CPU/MPS, "
+        "and Linux/macOS: "
+        f"stable ({d.get('overall_step_257_stability', d['all_versions_verdict_stable'])}), "
+        "static (no target framework execution)"
     )
     metrics = [
         {"label": "cases", "value": str(d["n_cases"])},
@@ -266,6 +267,14 @@ def _x_cross_version():
         {
             "label": "static, no torch execution",
             "value": str(d["verifier_is_static_no_torch_execution"]),
+        },
+        {
+            "label": "stable across torchvision 0.16 to 0.24",
+            "value": str(d.get("verdict_stable_across_torchvision_0_16_to_0_24", "-")),
+        },
+        {
+            "label": "backend verdicts match",
+            "value": str(d.get("device_backend_verdicts_match", "-")),
         },
         {
             "label": "baseline verdict sha256",
@@ -335,7 +344,7 @@ REGISTRY = [
     ),
     (
         "cross_version",
-        "Cross-version verdict stability (torch 2.1 to 2.9)",
+        "Cross-version verdict stability (Step 257)",
         "Robustness",
         _x_cross_version,
         "cross_version_stability.json",

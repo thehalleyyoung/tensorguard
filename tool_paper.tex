@@ -954,6 +954,16 @@ regenerated from committed results.  Proof-carrying certificates are replayed
 through the public API boundary, not only inside solver helpers.  The public docs
 explain what the verifier can and cannot prove.
 
+Version stability is treated as an artifact, not a promise.  The Step-257
+matrix \texttt{reproducibility/cross\_version\_stability.py} scores all 227
+extended-corpus cases with target \texttt{torch} and \texttt{torchvision} imports
+blocked, then re-scores a deterministic sample plus non-vacuous source-level
+fixtures for \texttt{torchvision.transforms.v2}, CUDA-less CPU, and MPS under
+qualified PyTorch 2.1--2.9 and torchvision 0.16--0.24 version matrices.  It
+links the Python 3.9--3.14 hash-seed determinism proof and records Linux/macOS
+and backend full-matrix commands as environment-qualified evidence rather than
+claiming every wheel and backend was installed on one host.
+
 Reproducibility is paired with hygiene.  Third-party source trees are
 quarantined or removed unless license-compatible.  The security policy and
 threat model acknowledge that untrusted model files are parsed and should not
@@ -1294,6 +1304,11 @@ Security policy and evaluation-threat documentation. \\
 \texttt{tests/test\_docs\_getting\_started.py},
 \texttt{tests/test\_docs\_limitations.py} &
 Executable documentation checks for onboarding and limitations. \\
+\hline
+\texttt{tests/test\_cross\_version\_stability.py} &
+Version-qualified stability across Python, PyTorch, torchvision, CUDA-less CPU,
+MPS, and Linux/macOS, with blocked-import source-only proofs and deterministic
+artifact regeneration. \\
 \hline
 \texttt{tests/test\_paper\_evidence\_index.py},
 \texttt{tests/test\_paper\_capsule\_wiring.py} &
