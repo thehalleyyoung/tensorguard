@@ -118,9 +118,11 @@ runtime errors in ML codebases before any code runs.
   (`lean/TensorGuard/FragmentModes.lean`). The four non-shape transfer functions
   — device, dtype, phase and gradient — are **machine-checked too**
   (`lean/TensorGuard/DeviceDtype.lean`): each abstains on unknown operands and is
-  refutation-sound, the property lifts to their reduced product, and the very Z3
-  encoding the solver runs for them is **proved faithful**
-  (`SmtEncoding.lean`/`CrossDomain.lean`), all cross-checked against real Z3 and
+  refutation-sound, the property lifts to their reduced product, and the Z3
+  encodings the solver runs are **proved faithful** — including enum-equality
+  checks plus broadcast, reshape-divisibility, split/chunk partition, and
+  dtype-promotion constraints (`SmtEncoding.lean`/`CrossDomain.lean`) — all
+  cross-checked against real Z3 and
   live torch/einops oracles on real modules — including the per-`forward` chain
   transfers and per-operator shape rules (`nn.Linear`/`Conv`/pooling/`LayerNorm`/
   `BatchNorm`/`PixelShuffle`/flatten/`cat`/`chunk`/`split` partition

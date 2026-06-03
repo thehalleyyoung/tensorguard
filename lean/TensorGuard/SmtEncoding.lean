@@ -24,7 +24,11 @@ faithfulness holds for the actual solver calls the verifier makes.
 Pure Lean 4 core (no mathlib).
 -/
 
+import TensorGuard.BroadcastChain
+import TensorGuard.ChunkSplit
 import TensorGuard.DeviceDtype
+import TensorGuard.DtypePromoteChain
+import TensorGuard.ReshapeInfer
 
 namespace TensorGuard
 namespace SmtEncoding
@@ -144,6 +148,183 @@ theorem dtype_smt_matches_dtMatmulBug (da db : Dt)
 /-- Equal dtypes ⇒ the dtype-equality constraint is satisfiable (no spurious
     matmul dtype error). -/
 theorem dtype_same_sat (d : Dt) : Sat d d := eq_is_sat d
+
+/- ===================================================================== -/
+/- 6. Broadcast compatibility SMT formula (Step 242)                    -/
+/- ===================================================================== -/
+
+/-- One dimension of the broadcast encoding handed to Z3: with the two concrete
+    endpoints pinned, a witness output dimension must satisfy exactly one of the
+    PyTorch/NumPy compatibility branches (`a == 1`, `b == 1`, or `a == b`). -/
+def BroadcastDimFormula (a b out : Nat) : Prop :=
+  (a = 1 ∧ out = b) ∨ (b = 1 ∧ out = a) ∨ (a = b ∧ out = a)
+
+/-- Satisfiability of the one-dimensional broadcast SMT formula. -/
+def BroadcastSat (a b : Nat) : Prop :=
+  ∃ out : Nat, BroadcastDimFormula a b out
+
+/-- **Broadcast SMT faithfulness (SAT).** The disjunctive SMT formula is
+    satisfiable iff the Lean/PyTorch broadcast transfer returns some output
+    dimension. -/
+theorem broadcast_smt_sat_iff_bcDim_some (a b : Nat) :
+    BroadcastSat a b ↔ ∃ out, BroadcastChain.bcDim a b = some out := by
+  unfold BroadcastSat BroadcastDimFormula BroadcastChain.bcDim
+  by_cases ha : a = 1
+  · subst ha
+    simp
+  · by_cases hb : b = 1
+    · subst hb
+      simp [ha]
+    · by_cases hab : a = b
+      · subst hab
+        simp [ha]
+      · simp [ha, hb, hab]
+
+/-- **Broadcast SMT faithfulness (UNSAT).** The formula is unsatisfiable exactly
+    when the broadcast rule returns `none`, i.e. the endpoints are genuinely
+    incompatible. -/
+theorem broadcast_smt_unsat_iff_bcDim_none (a b : Nat) :
+    ¬ BroadcastSat a b ↔ BroadcastChain.bcDim a b = none := by
+  unfold BroadcastSat BroadcastDimFormula BroadcastChain.bcDim
+  by_cases ha : a = 1
+  · subst ha
+    simp
+  · by_cases hb : b = 1
+    · subst hb
+      simp [ha]
+    · by_cases hab : a = b
+      · subst hab
+        simp [ha]
+      · simp [ha, hb, hab]
+
+/-- Corollary tied to the existing broadcast theorem: UNSAT iff both dimensions
+    are non-unit and unequal. -/
+theorem broadcast_smt_unsat_iff_incompatible (a b : Nat) :
+    ¬ BroadcastSat a b ↔ (a ≠ 1 ∧ b ≠ 1 ∧ a ≠ b) := by
+  rw [broadcast_smt_unsat_iff_bcDim_none, BroadcastChain.bcDim_none_iff]
+
+/- ===================================================================== -/
+/- 7. Reshape divisibility SMT formula (Step 242)                        -/
+/- ===================================================================== -/
+
+/-- SMT model for `reshape(..., -1)` divisibility: the known output product is
+    positive and there exists an inferred dimension whose product reconstructs the
+    input element count. -/
+def DivisibilitySat (total : Nat) (known : List Nat) : Prop :=
+  0 < ReshapeInfer.prod known ∧
+    ∃ inferred : Nat, ReshapeInfer.prod known * inferred = total
+
+/-- **Divisibility SMT faithfulness.** The existential product constraint is
+    satisfiable iff the Lean reshape guard admits the target spec. -/
+theorem divisibility_smt_sat_iff_reshapeValid (total : Nat) (known : List Nat) :
+    DivisibilitySat total known ↔
+      ReshapeInfer.reshapeValid total known = true := by
+  rw [ReshapeInfer.reshapeValid_iff]
+  constructor
+  · rintro ⟨hpos, inferred, hmul⟩
+    exact ⟨hpos, ⟨inferred, hmul.symm⟩⟩
+  · rintro ⟨hpos, inferred, hmul⟩
+    exact ⟨hpos, ⟨inferred, hmul.symm⟩⟩
+
+/-- The reshape divisibility formula is UNSAT exactly when the Lean guard rejects
+    the spec. -/
+theorem divisibility_smt_unsat_iff_invalid (total : Nat) (known : List Nat) :
+    ¬ DivisibilitySat total known ↔
+      ReshapeInfer.reshapeValid total known = false := by
+  rw [divisibility_smt_sat_iff_reshapeValid]
+  cases ReshapeInfer.reshapeValid total known <;> simp
+
+/- ===================================================================== -/
+/- 8. Split/chunk partition SMT formula (Step 242)                       -/
+/- ===================================================================== -/
+
+/-- SMT model for concrete split/chunk reconstruction: the pinned input axis must
+    equal the sum of emitted section sizes. -/
+def PartitionSat (axisSize : Nat) (sections : List Nat) : Prop :=
+  ∃ axis recon : Nat,
+    axis = axisSize ∧ recon = ChunkSplit.sum sections ∧ axis = recon
+
+/-- **Partition SMT faithfulness.** The section-sum equality is satisfiable iff
+    the sections reconstruct the original axis. -/
+theorem partition_smt_sat_iff_sum_eq (axisSize : Nat) (sections : List Nat) :
+    PartitionSat axisSize sections ↔ ChunkSplit.sum sections = axisSize := by
+  unfold PartitionSat
+  constructor
+  · rintro ⟨axis, recon, haxis, hrecon, heq⟩
+    rw [← haxis, ← hrecon]
+    exact heq.symm
+  · intro h
+    exact ⟨axisSize, ChunkSplit.sum sections, rfl, rfl, h.symm⟩
+
+/-- The SMT section-sum formula matches the Lean `splitSectionsValid` guard for
+    any axis-factored shape. -/
+theorem partition_smt_matches_splitSectionsValid
+    (s : ChunkSplit.AxisShape) (sections : List Nat) :
+    PartitionSat s.axisSize sections ↔
+      ChunkSplit.splitSectionsValid s sections = true := by
+  rw [partition_smt_sat_iff_sum_eq, ChunkSplit.splitValid_iff]
+
+/-- UNSAT is exactly a section-sum mismatch. -/
+theorem partition_smt_unsat_iff_mismatch
+    (s : ChunkSplit.AxisShape) (sections : List Nat) :
+    ¬ PartitionSat s.axisSize sections ↔
+      ChunkSplit.splitSectionsValid s sections = false := by
+  rw [partition_smt_matches_splitSectionsValid]
+  cases ChunkSplit.splitSectionsValid s sections <;> simp
+
+/- ===================================================================== -/
+/- 9. Dtype-promotion SMT formula (Step 242)                             -/
+/- ===================================================================== -/
+
+/-- SMT model for a pairwise dtype-promotion transfer: input dtypes and the
+    claimed output dtype are pinned, while the formula enforces equality with
+    the finite promotion table. -/
+def DtypePromoteSat (a b out : Dt) : Prop :=
+  ∃ da db dout : Dt,
+    da = a ∧ db = b ∧ dout = out ∧ dout = dtPromote da db
+
+/-- **Dtype-promotion SMT faithfulness (pair).** The finite-table equality
+    formula is satisfiable iff the claimed output is exactly `dtPromote a b`. -/
+theorem dtype_promote_smt_sat_iff (a b out : Dt) :
+    DtypePromoteSat a b out ↔ out = dtPromote a b := by
+  unfold DtypePromoteSat
+  constructor
+  · rintro ⟨da, db, dout, rfl, rfl, rfl, h⟩
+    exact h
+  · intro h
+    exact ⟨a, b, out, rfl, rfl, rfl, h⟩
+
+/-- A pinned dtype-promotion formula is UNSAT exactly when the claimed output
+    differs from the promotion table. -/
+theorem dtype_promote_smt_unsat_iff_mismatch (a b out : Dt) :
+    ¬ DtypePromoteSat a b out ↔ out ≠ dtPromote a b := by
+  rw [dtype_promote_smt_sat_iff]
+
+/-- SMT model for a dtype-promotion chain: the pinned final dtype must equal the
+    `promoteRun` fold used by the abstract transfer. -/
+def DtypePromoteChainSat (acc : Dt) (xs : List Dt) (out : Dt) : Prop :=
+  ∃ promoted : Dt,
+    promoted = DtypePromoteChain.promoteRun acc xs ∧ out = promoted
+
+/-- **Dtype-promotion SMT faithfulness (chain).** The chained equality formula is
+    satisfiable iff the claimed final dtype is exactly the Lean promotion fold. -/
+theorem dtype_promote_chain_smt_sat_iff (acc : Dt) (xs : List Dt) (out : Dt) :
+    DtypePromoteChainSat acc xs out ↔
+      out = DtypePromoteChain.promoteRun acc xs := by
+  unfold DtypePromoteChainSat
+  constructor
+  · rintro ⟨promoted, hpromoted, hout⟩
+    rw [hout, hpromoted]
+  · intro h
+    exact ⟨DtypePromoteChain.promoteRun acc xs, rfl, h⟩
+
+/-- A chained dtype-promotion formula is UNSAT exactly when the claimed final
+    dtype differs from the promotion fold. -/
+theorem dtype_promote_chain_smt_unsat_iff_mismatch
+    (acc : Dt) (xs : List Dt) (out : Dt) :
+    ¬ DtypePromoteChainSat acc xs out ↔
+      out ≠ DtypePromoteChain.promoteRun acc xs := by
+  rw [dtype_promote_chain_smt_sat_iff]
 
 end SmtEncoding
 end TensorGuard

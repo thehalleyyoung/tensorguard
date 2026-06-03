@@ -130,6 +130,23 @@ import TensorGuard
 #print axioms TensorGuard.SmtEncoding.dtype_smt_matches_dtMatmulBug
 #print axioms TensorGuard.SmtEncoding.dtype_same_sat
 
+-- Shape/dtype SMT encoding faithfulness (Step 242): the formulas handed to Z3
+-- for broadcast compatibility, reshape divisibility, split/chunk partition
+-- reconstruction, and dtype promotion are satisfiable exactly when the
+-- corresponding Lean transfer guard accepts; UNSAT is exactly the modeled error.
+#print axioms TensorGuard.SmtEncoding.broadcast_smt_sat_iff_bcDim_some
+#print axioms TensorGuard.SmtEncoding.broadcast_smt_unsat_iff_bcDim_none
+#print axioms TensorGuard.SmtEncoding.broadcast_smt_unsat_iff_incompatible
+#print axioms TensorGuard.SmtEncoding.divisibility_smt_sat_iff_reshapeValid
+#print axioms TensorGuard.SmtEncoding.divisibility_smt_unsat_iff_invalid
+#print axioms TensorGuard.SmtEncoding.partition_smt_sat_iff_sum_eq
+#print axioms TensorGuard.SmtEncoding.partition_smt_matches_splitSectionsValid
+#print axioms TensorGuard.SmtEncoding.partition_smt_unsat_iff_mismatch
+#print axioms TensorGuard.SmtEncoding.dtype_promote_smt_sat_iff
+#print axioms TensorGuard.SmtEncoding.dtype_promote_smt_unsat_iff_mismatch
+#print axioms TensorGuard.SmtEncoding.dtype_promote_chain_smt_sat_iff
+#print axioms TensorGuard.SmtEncoding.dtype_promote_chain_smt_unsat_iff_mismatch
+
 -- Sparse-layout constructor invariants (Step 236): COO/CSR/CSC/BSR/BSC accepted
 -- constructor models materialize to the requested dense shape; checked examples
 -- cover batched and blocked layouts plus invariant and dense-tail rejections.

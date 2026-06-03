@@ -682,6 +682,13 @@ rejection.  The sparse-layout artifact proves accepted COO/CSR/CSC/BSR/BSC
 constructor models materialize to exactly the requested dense shape, with
 theorem-shaped rejection witnesses for bad compressed lengths, block
 divisibility failures, and unusable dense tails.
+The SMT bridge is now explicit for the solver constraints that recur across the
+implementation: \texttt{SmtEncoding} proves that broadcast compatibility
+formulas, reshape divisibility formulas, split/chunk section-sum formulas, and
+finite dtype-promotion table/chain formulas are satisfiable exactly when the
+corresponding Lean transfer guard accepts.  The companion parity tests instantiate
+those theorem shapes as real Z3 formulas and compare them against \tg{} helpers
+and live PyTorch behavior.
 The Lean audit checks theorem statements for sorry-free status under the
 trusted kernel axioms used by the environment.
 
@@ -997,7 +1004,7 @@ plugin, nox/tox, watch mode, Jupyter, decorators, and framework hooks. \\
 Formal artifacts &
 Lean proof files, axiom audits, serialized CEGAR predicate replay,
 conditional/straight-line subject reduction, SMT encoding faithfulness checks,
-generated conformance bridges, and proof
+including broadcast/divisibility/partition/dtype-promotion Z3 parity, generated conformance bridges, and proof
 certificate infrastructure. \\
 \hline
 Reproducibility &
