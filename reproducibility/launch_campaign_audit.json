@@ -1,0 +1,109 @@
+{
+  "campaign_track": "1.0-readiness",
+  "channels": [
+    {
+      "anchors": {
+        "demo": "examples/quickstart.py",
+        "evidence": "reproducibility/release_readiness.md",
+        "rfc": "docs/RFC_pytorch_companion.md",
+        "support": "docs/launch/compatibility_support_promise.md"
+      },
+      "audience": "PyTorch developers who want a fast first bug catch",
+      "call_to_action": "Run the quickstart on one local model and report the first UNKNOWN/UNSAFE result.",
+      "has_demo_evidence_rfc_support": true,
+      "key": "show-and-tell",
+      "title": "Show-and-tell launch post"
+    },
+    {
+      "anchors": {
+        "demo": "examples/model_gallery.md",
+        "evidence": "reproducibility/upstream_hook_demo.md",
+        "rfc": "docs/upstream/pytorch_proposal.md",
+        "support": "docs/launch/compatibility_support_promise.md"
+      },
+      "audience": "PyTorch maintainers, compiler users, and library authors",
+      "call_to_action": "Review the opt-in hook proposal and identify integration concerns.",
+      "has_demo_evidence_rfc_support": true,
+      "key": "pytorch-forums",
+      "title": "PyTorch forum / dev-discuss RFC thread"
+    },
+    {
+      "anchors": {
+        "demo": "examples/tutorials/README.md",
+        "evidence": "reproducibility/artifact_index.md",
+        "rfc": "docs/RFC_pytorch_companion.md",
+        "support": "docs/launch/compatibility_support_promise.md"
+      },
+      "audience": "Researchers, artifact evaluators, and skeptical adopters",
+      "call_to_action": "Run the reproducibility capsule or inspect the artifact hash ledger.",
+      "has_demo_evidence_rfc_support": true,
+      "key": "reproducibility-thread",
+      "title": "Reproducibility-first evidence thread"
+    },
+    {
+      "anchors": {
+        "demo": "docs/contributing/operator_onboarding.md",
+        "evidence": "docs/governance/third_party_acceptance.md",
+        "rfc": "docs/upstream/pytorch_proposal.md",
+        "support": "docs/launch/compatibility_support_promise.md"
+      },
+      "audience": "Maintainers of PyTorch-adjacent layers and model libraries",
+      "call_to_action": "Contribute a declarative stub, plugin conformance case, or good-first operator upgrade.",
+      "has_demo_evidence_rfc_support": true,
+      "key": "library-authors",
+      "title": "Library-author compatibility call"
+    }
+  ],
+  "cited_paths": {
+    ".github/workflows/matrix.yml": true,
+    "CHANGELOG.md": true,
+    "DEPRECATION_POLICY.md": true,
+    "SECURITY.md": true,
+    "docs/GROWTH_PLAYBOOK.md": true,
+    "docs/RFC_pytorch_companion.md": true,
+    "docs/contributing/operator_onboarding.md": true,
+    "docs/governance/third_party_acceptance.md": true,
+    "docs/launch/compatibility_support_promise.md": true,
+    "docs/upstream/pytorch_proposal.md": true,
+    "examples/model_gallery.md": true,
+    "examples/quickstart.py": true,
+    "examples/tutorials/README.md": true,
+    "pyproject.toml": true,
+    "reproducibility/artifact_index.md": true,
+    "reproducibility/release_readiness.md": true,
+    "reproducibility/upstream_hook_demo.md": true
+  },
+  "current_package_version": "0.1.0",
+  "honest_versioning": true,
+  "requires_python": ">=3.9",
+  "schema": "tensorguard.launch_campaign_audit/v1",
+  "source_counts": {
+    "all_channels_release_ready": true,
+    "channel_names": [
+      "conda",
+      "docker",
+      "pypi"
+    ],
+    "matrix_jobs": 8,
+    "model_gallery_entries": 4,
+    "nightly_jobs": 1,
+    "release_channels": 3,
+    "supported_surface_tests": 12,
+    "tutorial_notebooks": 10
+  },
+  "summary": {
+    "all_channels_have_required_anchors": true,
+    "all_cited_paths_exist": true,
+    "channel_count": 4,
+    "release_ready_gate_passes": true,
+    "support_promise_source_count": 6
+  },
+  "support_sources": {
+    "api_stability": "DEPRECATION_POLICY.md",
+    "changelog": "CHANGELOG.md",
+    "ci_matrix": ".github/workflows/matrix.yml",
+    "python": "pyproject.toml",
+    "release_readiness": "reproducibility/release_readiness.md",
+    "security": "SECURITY.md"
+  }
+}

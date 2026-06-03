@@ -232,6 +232,9 @@ runtime errors in ML codebases before any code runs.
   generated path: good-first operator issues, test templates, stub guides, and
   Lean examples are derived from the live proof/confidence registries
   (`docs/contributing/operator_onboarding.md`).
+- **Launch-ready evidence** — public launch materials combine real demos,
+  reproducibility ledgers, upstream RFCs, and the compatibility/support promise
+  into an auditable campaign (`docs/launch/one_point_zero_launch_campaign.md`).
 - **Sub-second analysis** — typical models verified in < 1 second
 
 ---
