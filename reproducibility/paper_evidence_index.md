@@ -1,6 +1,6 @@
 # Paper-evidence index (Step 125)
 
-`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **49** evidence items (32 render a table); every generator script is present: **False**.
+`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **50** evidence items (33 render a table); every generator script is present: **False**.
 
 | stem | generator | table? | json | md |
 | --- | --- | --- | --- | --- |
@@ -26,6 +26,7 @@
 | effect_sizes | `reproducibility/effect_sizes.py` | True | y | y |
 | evaluation_protocol | `reproducibility/evaluation_protocol.py` | True | y | y |
 | fp_stress_eval | `reproducibility/fp_stress_eval.py` | True | y | y |
+| head_to_head_step252 | `reproducibility/head_to_head_step252.py` | True | y | y |
 | hypothesis_module_ast | `reproducibility/hypothesis_module_ast.py` | False | y | y |
 | issue_miner_demo | `reproducibility/issue_miner_demo.py` | True | y | y |
 | leaderboard | `reproducibility/leaderboard.py` | False | y | y |

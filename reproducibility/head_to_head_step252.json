@@ -1,0 +1,1989 @@
+{
+  "command": "python3 reproducibility/head_to_head_step252.py",
+  "corpus": {
+    "case_hash": "e078320eb72d78758e2077f031d7cc23fe0d62c3c096725529f7a25a2c5393b1",
+    "entry_policy": "Each case has an explicit deterministic entrypoint. Boolean branch cases use cond=True, exposing single-path runtime-smoke limitations rather than searching both branches.",
+    "n_buggy": 10,
+    "n_cases": 20,
+    "n_clean": 10,
+    "source": "experiments.run_llm_baseline.BENCHMARKS",
+    "torch_seed": 0
+  },
+  "environment": {
+    "jaxtyping": "0.3.9",
+    "jaxtyping_typeguard_compatible": false,
+    "node": "v25.2.0",
+    "platform": "Darwin",
+    "pyright": "pyright 1.1.408",
+    "pytea_bin_sha256": "9f9069cef5e7f0c821421756a13fc10b33066e9815ec5b6aa97c05e63f25b130",
+    "python": "3.14.3",
+    "torch": "2.9.1",
+    "torchtyping": null,
+    "typeguard": "4.5.1"
+  },
+  "generated_by": "reproducibility/head_to_head_step252.py",
+  "honesty_notes": [
+    "Pyright is a Python type checker, not a tensor-shape verifier; on this corpus it can catch Optional/None bugs but not Linear/Conv/reshape/broadcast tensor-shape mismatches.",
+    "jaxtyping/torchtyping require user-authored shape annotations. The source cases are unannotated, so these runtime rows mostly collapse to executing the same deterministic entrypoint under a thin checked wrapper.",
+    "torch.export and TorchDynamo only support nn.Module entries here; function-only cases are scored NA and summarized by the module subset."
+  ],
+  "llm_artifact": {
+    "frozen": true,
+    "model": "gpt-4.1-nano",
+    "not_regenerated_by_default": "Requires an external API and code upload; this benchmark reuses the committed artifact after checking case/label alignment.",
+    "path": "experiments/llm_baseline_results.json",
+    "regeneration_command": "OPENAI_API_KEY=... python3 experiments/run_llm_baseline.py",
+    "sha256": "3dbc38de4390e75b29ad121fb688f5f38bf614d239c04b958cd2e6150448de9d"
+  },
+  "metrics": {
+    "jaxtyping_runtime": {
+      "all": {
+        "FN": 10,
+        "FP": 10,
+        "N": 20,
+        "NA": 20,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "module_subset": {
+        "FN": 3,
+        "FP": 3,
+        "N": 6,
+        "NA": 6,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "null_or_cross_domain_subset": {
+        "FN": 2,
+        "FP": 2,
+        "N": 4,
+        "NA": 4,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "shape_or_cross_domain_subset": {
+        "FN": 9,
+        "FP": 9,
+        "N": 18,
+        "NA": 18,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    },
+    "llm_gpt4_1_nano_frozen": {
+      "all": {
+        "FN": 2,
+        "FP": 1,
+        "N": 20,
+        "NA": 0,
+        "TN": 9,
+        "TP": 8,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 2,
+          "FP": 1,
+          "TN": 9,
+          "TP": 8,
+          "f1": 0.8421,
+          "precision": 0.8889,
+          "recall": 0.8
+        },
+        "f1": 0.8421,
+        "precision": 0.8889,
+        "recall": 0.8
+      },
+      "module_subset": {
+        "FN": 0,
+        "FP": 1,
+        "N": 6,
+        "NA": 0,
+        "TN": 2,
+        "TP": 3,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 1,
+          "TN": 2,
+          "TP": 3,
+          "f1": 0.8571,
+          "precision": 0.75,
+          "recall": 1.0
+        },
+        "f1": 0.8571,
+        "precision": 0.75,
+        "recall": 1.0
+      },
+      "null_or_cross_domain_subset": {
+        "FN": 0,
+        "FP": 0,
+        "N": 4,
+        "NA": 0,
+        "TN": 2,
+        "TP": 2,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 2,
+          "TP": 2,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "shape_or_cross_domain_subset": {
+        "FN": 2,
+        "FP": 1,
+        "N": 18,
+        "NA": 0,
+        "TN": 8,
+        "TP": 7,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 2,
+          "FP": 1,
+          "TN": 8,
+          "TP": 7,
+          "f1": 0.8235,
+          "precision": 0.875,
+          "recall": 0.7778
+        },
+        "f1": 0.8235,
+        "precision": 0.875,
+        "recall": 0.7778
+      }
+    },
+    "pyright": {
+      "all": {
+        "FN": 8,
+        "FP": 0,
+        "N": 20,
+        "NA": 0,
+        "TN": 10,
+        "TP": 2,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 8,
+          "FP": 0,
+          "TN": 10,
+          "TP": 2,
+          "f1": 0.3333,
+          "precision": 1.0,
+          "recall": 0.2
+        },
+        "f1": 0.3333,
+        "precision": 1.0,
+        "recall": 0.2
+      },
+      "module_subset": {
+        "FN": 3,
+        "FP": 0,
+        "N": 6,
+        "NA": 0,
+        "TN": 3,
+        "TP": 0,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 3,
+          "FP": 0,
+          "TN": 3,
+          "TP": 0,
+          "f1": 0.0,
+          "precision": null,
+          "recall": 0.0
+        },
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0
+      },
+      "null_or_cross_domain_subset": {
+        "FN": 0,
+        "FP": 0,
+        "N": 4,
+        "NA": 0,
+        "TN": 2,
+        "TP": 2,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 2,
+          "TP": 2,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "shape_or_cross_domain_subset": {
+        "FN": 8,
+        "FP": 0,
+        "N": 18,
+        "NA": 0,
+        "TN": 9,
+        "TP": 1,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 8,
+          "FP": 0,
+          "TN": 9,
+          "TP": 1,
+          "f1": 0.2,
+          "precision": 1.0,
+          "recall": 0.1111
+        },
+        "f1": 0.2,
+        "precision": 1.0,
+        "recall": 0.1111
+      }
+    },
+    "pytea": {
+      "all": {
+        "FN": 10,
+        "FP": 9,
+        "N": 20,
+        "NA": 19,
+        "TN": 1,
+        "TP": 0,
+        "coverage": 0.05,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 1,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "module_subset": {
+        "FN": 3,
+        "FP": 3,
+        "N": 6,
+        "NA": 6,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "null_or_cross_domain_subset": {
+        "FN": 2,
+        "FP": 2,
+        "N": 4,
+        "NA": 4,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "shape_or_cross_domain_subset": {
+        "FN": 9,
+        "FP": 8,
+        "N": 18,
+        "NA": 17,
+        "TN": 1,
+        "TP": 0,
+        "coverage": 0.0556,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 1,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    },
+    "runtime_forward_smoke": {
+      "all": {
+        "FN": 2,
+        "FP": 0,
+        "N": 20,
+        "NA": 0,
+        "TN": 10,
+        "TP": 8,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 2,
+          "FP": 0,
+          "TN": 10,
+          "TP": 8,
+          "f1": 0.8889,
+          "precision": 1.0,
+          "recall": 0.8
+        },
+        "f1": 0.8889,
+        "precision": 1.0,
+        "recall": 0.8
+      },
+      "module_subset": {
+        "FN": 0,
+        "FP": 0,
+        "N": 6,
+        "NA": 0,
+        "TN": 3,
+        "TP": 3,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 3,
+          "TP": 3,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "null_or_cross_domain_subset": {
+        "FN": 2,
+        "FP": 0,
+        "N": 4,
+        "NA": 0,
+        "TN": 2,
+        "TP": 0,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 2,
+          "FP": 0,
+          "TN": 2,
+          "TP": 0,
+          "f1": 0.0,
+          "precision": null,
+          "recall": 0.0
+        },
+        "f1": 0.0,
+        "precision": null,
+        "recall": 0.0
+      },
+      "shape_or_cross_domain_subset": {
+        "FN": 1,
+        "FP": 0,
+        "N": 18,
+        "NA": 0,
+        "TN": 9,
+        "TP": 8,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 1,
+          "FP": 0,
+          "TN": 9,
+          "TP": 8,
+          "f1": 0.9412,
+          "precision": 1.0,
+          "recall": 0.8889
+        },
+        "f1": 0.9412,
+        "precision": 1.0,
+        "recall": 0.8889
+      }
+    },
+    "tensorguard_unified": {
+      "all": {
+        "FN": 0,
+        "FP": 0,
+        "N": 20,
+        "NA": 0,
+        "TN": 10,
+        "TP": 10,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 10,
+          "TP": 10,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "module_subset": {
+        "FN": 0,
+        "FP": 0,
+        "N": 6,
+        "NA": 0,
+        "TN": 3,
+        "TP": 3,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 3,
+          "TP": 3,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "null_or_cross_domain_subset": {
+        "FN": 0,
+        "FP": 0,
+        "N": 4,
+        "NA": 0,
+        "TN": 2,
+        "TP": 2,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 2,
+          "TP": 2,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "shape_or_cross_domain_subset": {
+        "FN": 0,
+        "FP": 0,
+        "N": 18,
+        "NA": 0,
+        "TN": 9,
+        "TP": 9,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 9,
+          "TP": 9,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      }
+    },
+    "torch_dynamo_guards": {
+      "all": {
+        "FN": 10,
+        "FP": 10,
+        "N": 20,
+        "NA": 20,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "module_subset": {
+        "FN": 3,
+        "FP": 3,
+        "N": 6,
+        "NA": 6,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "null_or_cross_domain_subset": {
+        "FN": 2,
+        "FP": 2,
+        "N": 4,
+        "NA": 4,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "shape_or_cross_domain_subset": {
+        "FN": 9,
+        "FP": 9,
+        "N": 18,
+        "NA": 18,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    },
+    "torch_export_guards": {
+      "all": {
+        "FN": 7,
+        "FP": 7,
+        "N": 20,
+        "NA": 14,
+        "TN": 3,
+        "TP": 3,
+        "coverage": 0.3,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 3,
+          "TP": 3,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 0.3,
+        "precision": 0.3,
+        "recall": 0.3
+      },
+      "module_subset": {
+        "FN": 0,
+        "FP": 0,
+        "N": 6,
+        "NA": 0,
+        "TN": 3,
+        "TP": 3,
+        "coverage": 1.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 3,
+          "TP": 3,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "null_or_cross_domain_subset": {
+        "FN": 2,
+        "FP": 2,
+        "N": 4,
+        "NA": 4,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "shape_or_cross_domain_subset": {
+        "FN": 6,
+        "FP": 6,
+        "N": 18,
+        "NA": 12,
+        "TN": 3,
+        "TP": 3,
+        "coverage": 0.3333,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 3,
+          "TP": 3,
+          "f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "f1": 0.3333,
+        "precision": 0.3333,
+        "recall": 0.3333
+      }
+    },
+    "torchtyping_runtime": {
+      "all": {
+        "FN": 10,
+        "FP": 10,
+        "N": 20,
+        "NA": 20,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "module_subset": {
+        "FN": 3,
+        "FP": 3,
+        "N": 6,
+        "NA": 6,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "null_or_cross_domain_subset": {
+        "FN": 2,
+        "FP": 2,
+        "N": 4,
+        "NA": 4,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "shape_or_cross_domain_subset": {
+        "FN": 9,
+        "FP": 9,
+        "N": 18,
+        "NA": 18,
+        "TN": 0,
+        "TP": 0,
+        "coverage": 0.0,
+        "covered_only": {
+          "FN": 0,
+          "FP": 0,
+          "TN": 0,
+          "TP": 0,
+          "f1": null,
+          "precision": null,
+          "recall": null
+        },
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    }
+  },
+  "na_policy": "Headline metrics count NA as wrong: NA on a buggy case is FN and NA on a clean case is FP. covered_only excludes NA and reports coverage separately.",
+  "per_case": [
+    {
+      "category": "shape_matmul",
+      "entry": {
+        "args": [],
+        "class_name": null,
+        "function": "f",
+        "input_shapes": [],
+        "kind": "function",
+        "note": ""
+      },
+      "label": "buggy",
+      "name": "matmul_2d_mismatch",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=FN",
+          "pred": "clean"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "raised:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=1",
+          "pred": "buggy"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "shape_linear",
+      "entry": {
+        "args": [],
+        "class_name": "M",
+        "function": null,
+        "input_shapes": [
+          [
+            2,
+            10
+          ]
+        ],
+        "kind": "module",
+        "note": ""
+      },
+      "label": "buggy",
+      "name": "linear_chain_mismatch",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TP",
+          "pred": "buggy"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "raised:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=1",
+          "pred": "buggy"
+        },
+        "torch_dynamo_guards": {
+          "detail": "torch_dynamo_python_unsupported",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "raised:RuntimeError",
+          "pred": "buggy"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "shape_conv",
+      "entry": {
+        "args": [],
+        "class_name": "M",
+        "function": null,
+        "input_shapes": [
+          [
+            2,
+            3,
+            16,
+            16
+          ]
+        ],
+        "kind": "module",
+        "note": ""
+      },
+      "label": "buggy",
+      "name": "conv_chain_mismatch",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TP",
+          "pred": "buggy"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "raised:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=1",
+          "pred": "buggy"
+        },
+        "torch_dynamo_guards": {
+          "detail": "torch_dynamo_python_unsupported",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "raised:RuntimeError",
+          "pred": "buggy"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "null",
+      "entry": {
+        "args": [
+          "True"
+        ],
+        "class_name": null,
+        "function": "f",
+        "input_shapes": [],
+        "kind": "function",
+        "note": "single-path cond=True smoke"
+      },
+      "label": "buggy",
+      "name": "null_optional_tensor_shape",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TP",
+          "pred": "buggy"
+        },
+        "pyright": {
+          "detail": "errors=1 rules=reportOptionalMemberAccess",
+          "pred": "buggy"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "ran_clean",
+          "pred": "clean"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=1",
+          "pred": "buggy"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "shape_reshape",
+      "entry": {
+        "args": [],
+        "class_name": null,
+        "function": "f",
+        "input_shapes": [],
+        "kind": "function",
+        "note": ""
+      },
+      "label": "buggy",
+      "name": "reshape_element_mismatch",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TP",
+          "pred": "buggy"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "raised:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=1",
+          "pred": "buggy"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "shape_cat",
+      "entry": {
+        "args": [],
+        "class_name": null,
+        "function": "f",
+        "input_shapes": [],
+        "kind": "function",
+        "note": ""
+      },
+      "label": "buggy",
+      "name": "cat_dim_mismatch",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TP",
+          "pred": "buggy"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "raised:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=1",
+          "pred": "buggy"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "shape_broadcast",
+      "entry": {
+        "args": [],
+        "class_name": null,
+        "function": "f",
+        "input_shapes": [],
+        "kind": "function",
+        "note": ""
+      },
+      "label": "buggy",
+      "name": "broadcast_mismatch",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TP",
+          "pred": "buggy"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "raised:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=1",
+          "pred": "buggy"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "interprocedural",
+      "entry": {
+        "args": [],
+        "class_name": null,
+        "function": "use_tensor",
+        "input_shapes": [],
+        "kind": "function",
+        "note": ""
+      },
+      "label": "buggy",
+      "name": "interproc_matmul_mismatch",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=FN",
+          "pred": "clean"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "raised:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=1",
+          "pred": "buggy"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "shape_linear",
+      "entry": {
+        "args": [],
+        "class_name": "AE",
+        "function": null,
+        "input_shapes": [
+          [
+            2,
+            784
+          ]
+        ],
+        "kind": "module",
+        "note": ""
+      },
+      "label": "buggy",
+      "name": "autoencoder_mismatch",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TP",
+          "pred": "buggy"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "raised:RuntimeError",
+          "pred": "buggy"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=1",
+          "pred": "buggy"
+        },
+        "torch_dynamo_guards": {
+          "detail": "torch_dynamo_python_unsupported",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "raised:RuntimeError",
+          "pred": "buggy"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "cross_domain",
+      "entry": {
+        "args": [
+          "True"
+        ],
+        "class_name": null,
+        "function": "f",
+        "input_shapes": [],
+        "kind": "function",
+        "note": "single-path cond=True smoke"
+      },
+      "label": "buggy",
+      "name": "cross_null_matmul",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TP",
+          "pred": "buggy"
+        },
+        "pyright": {
+          "detail": "errors=1 rules=reportOptionalOperand",
+          "pred": "buggy"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "ran_clean",
+          "pred": "clean"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=1",
+          "pred": "buggy"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "shape_matmul",
+      "entry": {
+        "args": [],
+        "class_name": null,
+        "function": "f",
+        "input_shapes": [],
+        "kind": "function",
+        "note": ""
+      },
+      "label": "clean",
+      "name": "matmul_2d_correct",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TN",
+          "pred": "clean"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "frontend_parse_failed",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "ran_clean",
+          "pred": "clean"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=0",
+          "pred": "clean"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "shape_linear",
+      "entry": {
+        "args": [],
+        "class_name": "M",
+        "function": null,
+        "input_shapes": [
+          [
+            2,
+            10
+          ]
+        ],
+        "kind": "module",
+        "note": ""
+      },
+      "label": "clean",
+      "name": "linear_chain_correct",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TN",
+          "pred": "clean"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "ran_clean",
+          "pred": "clean"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=0",
+          "pred": "clean"
+        },
+        "torch_dynamo_guards": {
+          "detail": "torch_dynamo_python_unsupported",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "exported",
+          "pred": "clean"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "shape_conv",
+      "entry": {
+        "args": [],
+        "class_name": "M",
+        "function": null,
+        "input_shapes": [
+          [
+            2,
+            3,
+            16,
+            16
+          ]
+        ],
+        "kind": "module",
+        "note": ""
+      },
+      "label": "clean",
+      "name": "conv_chain_correct",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TN",
+          "pred": "clean"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "ran_clean",
+          "pred": "clean"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=0",
+          "pred": "clean"
+        },
+        "torch_dynamo_guards": {
+          "detail": "torch_dynamo_python_unsupported",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "exported",
+          "pred": "clean"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "null",
+      "entry": {
+        "args": [
+          "True"
+        ],
+        "class_name": null,
+        "function": "f",
+        "input_shapes": [],
+        "kind": "function",
+        "note": "single-path cond=True smoke"
+      },
+      "label": "clean",
+      "name": "null_guarded_tensor_correct",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TN",
+          "pred": "clean"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "ran_clean",
+          "pred": "clean"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=0",
+          "pred": "clean"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "shape_reshape",
+      "entry": {
+        "args": [],
+        "class_name": null,
+        "function": "f",
+        "input_shapes": [],
+        "kind": "function",
+        "note": ""
+      },
+      "label": "clean",
+      "name": "reshape_correct_flatten",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TN",
+          "pred": "clean"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "ran_clean",
+          "pred": "clean"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=0",
+          "pred": "clean"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "shape_cat",
+      "entry": {
+        "args": [],
+        "class_name": null,
+        "function": "f",
+        "input_shapes": [],
+        "kind": "function",
+        "note": ""
+      },
+      "label": "clean",
+      "name": "cat_correct_dim0",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TN",
+          "pred": "clean"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "success_path=1",
+          "pred": "clean"
+        },
+        "runtime_forward_smoke": {
+          "detail": "ran_clean",
+          "pred": "clean"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=0",
+          "pred": "clean"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "shape_broadcast",
+      "entry": {
+        "args": [],
+        "class_name": null,
+        "function": "f",
+        "input_shapes": [],
+        "kind": "function",
+        "note": ""
+      },
+      "label": "clean",
+      "name": "broadcast_correct_scalar",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TN",
+          "pred": "clean"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "ran_clean",
+          "pred": "clean"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=0",
+          "pred": "clean"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "interprocedural",
+      "entry": {
+        "args": [],
+        "class_name": null,
+        "function": "use_tensor",
+        "input_shapes": [],
+        "kind": "function",
+        "note": ""
+      },
+      "label": "clean",
+      "name": "interproc_matmul_correct",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TN",
+          "pred": "clean"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "ran_clean",
+          "pred": "clean"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=0",
+          "pred": "clean"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "shape_linear",
+      "entry": {
+        "args": [],
+        "class_name": "AE",
+        "function": null,
+        "input_shapes": [
+          [
+            2,
+            784
+          ]
+        ],
+        "kind": "module",
+        "note": ""
+      },
+      "label": "clean",
+      "name": "autoencoder_correct",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=FP",
+          "pred": "buggy"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "ran_clean",
+          "pred": "clean"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=0",
+          "pred": "clean"
+        },
+        "torch_dynamo_guards": {
+          "detail": "torch_dynamo_python_unsupported",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "exported",
+          "pred": "clean"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    },
+    {
+      "category": "cross_domain",
+      "entry": {
+        "args": [
+          "True"
+        ],
+        "class_name": null,
+        "function": "f",
+        "input_shapes": [],
+        "kind": "function",
+        "note": "single-path cond=True smoke"
+      },
+      "label": "clean",
+      "name": "cross_null_matmul_guarded",
+      "predictions": {
+        "jaxtyping_runtime": {
+          "detail": "jaxtyping_typeguard_incompatible",
+          "pred": "na"
+        },
+        "llm_gpt4_1_nano_frozen": {
+          "detail": "frozen_label=TN",
+          "pred": "clean"
+        },
+        "pyright": {
+          "detail": "errors=0",
+          "pred": "clean"
+        },
+        "pytea": {
+          "detail": "no_paths",
+          "pred": "na"
+        },
+        "runtime_forward_smoke": {
+          "detail": "ran_clean",
+          "pred": "clean"
+        },
+        "tensorguard_unified": {
+          "detail": "bugs=0",
+          "pred": "clean"
+        },
+        "torch_dynamo_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torch_export_guards": {
+          "detail": "non_module_entrypoint",
+          "pred": "na"
+        },
+        "torchtyping_runtime": {
+          "detail": "torchtyping_unavailable",
+          "pred": "na"
+        }
+      }
+    }
+  ],
+  "schema_version": "tensorguard.head-to-head-step252.v1",
+  "step": 252,
+  "tool_capabilities": {
+    "jaxtyping_runtime": {
+      "domains": [
+        "runtime_shape_annotations"
+      ],
+      "honesty_note": "The benchmark cases are not authored with jaxtyping contracts, so this row mostly measures execution with a thin checked wrapper.",
+      "live_or_frozen": "live_local_if_package_available",
+      "needs_annotations": true,
+      "needs_code_upload": false,
+      "needs_concrete_inputs": true,
+      "static_no_execution": false
+    },
+    "llm_gpt4_1_nano_frozen": {
+      "domains": [
+        "source_review"
+      ],
+      "live_or_frozen": "frozen_prior_api_run",
+      "needs_annotations": false,
+      "needs_code_upload": true,
+      "needs_concrete_inputs": false,
+      "static_no_execution": true
+    },
+    "pyright": {
+      "domains": [
+        "python_types",
+        "optional_none"
+      ],
+      "live_or_frozen": "live_local_if_cli_available",
+      "needs_annotations": false,
+      "needs_code_upload": false,
+      "needs_concrete_inputs": false,
+      "static_no_execution": true
+    },
+    "pytea": {
+      "domains": [
+        "shape"
+      ],
+      "live_or_frozen": "live_local_if_node_available",
+      "needs_annotations": false,
+      "needs_code_upload": false,
+      "needs_concrete_inputs": false,
+      "static_no_execution": true
+    },
+    "runtime_forward_smoke": {
+      "domains": [
+        "runtime_exceptions"
+      ],
+      "live_or_frozen": "live_local",
+      "needs_annotations": false,
+      "needs_code_upload": false,
+      "needs_concrete_inputs": true,
+      "static_no_execution": false
+    },
+    "tensorguard_unified": {
+      "domains": [
+        "shape",
+        "null",
+        "cross-domain"
+      ],
+      "live_or_frozen": "live_local",
+      "needs_annotations": false,
+      "needs_code_upload": false,
+      "needs_concrete_inputs": false,
+      "static_no_execution": true
+    },
+    "torch_dynamo_guards": {
+      "domains": [
+        "dynamo_guards"
+      ],
+      "live_or_frozen": "live_local_if_supported_by_torch",
+      "needs_annotations": false,
+      "needs_code_upload": false,
+      "needs_concrete_inputs": true,
+      "static_no_execution": false
+    },
+    "torch_export_guards": {
+      "domains": [
+        "export_trace_guards"
+      ],
+      "live_or_frozen": "live_local",
+      "needs_annotations": false,
+      "needs_code_upload": false,
+      "needs_concrete_inputs": true,
+      "static_no_execution": false
+    },
+    "torchtyping_runtime": {
+      "domains": [
+        "runtime_shape_annotations"
+      ],
+      "honesty_note": "Unavailable in the locked capsule unless torchtyping is installed; scored NA rather than silently dropped.",
+      "live_or_frozen": "live_local_if_package_available",
+      "needs_annotations": true,
+      "needs_code_upload": false,
+      "needs_concrete_inputs": true,
+      "static_no_execution": false
+    }
+  },
+  "tools": [
+    "tensorguard_unified",
+    "pytea",
+    "pyright",
+    "jaxtyping_runtime",
+    "torchtyping_runtime",
+    "torch_export_guards",
+    "torch_dynamo_guards",
+    "runtime_forward_smoke",
+    "llm_gpt4_1_nano_frozen"
+  ]
+}

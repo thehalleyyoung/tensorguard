@@ -545,6 +545,15 @@ dispatcher.  Baseline comparison scripts evaluate PyTea and runtime-tool
 alternatives.  Dashboards and JSON artifacts track coverage, precision/recall,
 latency, ablations, false positives, and statistical rigor.
 
+\texttt{reproducibility/head\_to\_head\_step252.py} broadens the same-case
+baseline comparison to PyTea, Pyright, jaxtyping/torchtyping availability,
+\texttt{torch.export}/Dynamo guard paths, runtime smoke tests, and a frozen
+GPT-4.1-nano bug-finder run.  On the twenty shared cases, \tg{} is 10/10 on
+bugs and 10/10 on clean programs; runtime smoke tests miss the two branch-latent
+Optional bugs under the fixed single-path input, Pyright catches exactly those
+Optional bugs but not tensor-shape mismatches, and the LLM artifact is reused
+only after hash and label alignment checks, avoiding any fresh code upload.
+
 A new protocol registry, \texttt{reproducibility/evaluation\_protocol.py},
 turns the methodology itself into a checkable artifact.  It does not score
 \tg{}; it hashes the development corpus, primary held-out blind split, external
@@ -620,8 +629,10 @@ behavior. \\
 Baselines &
 \texttt{tests/test\_baselines.py},
 \texttt{tests/test\_baseline\_head\_to\_head.py},
-\texttt{tests/test\_headtohead\_n15.py}.  Compares against PyTea, runtime
-checks, and type-oriented alternatives where applicable. \\
+\texttt{tests/test\_headtohead\_n15.py},
+\texttt{tests/test\_head\_to\_head\_step252.py}.  Compares against PyTea,
+Pyright, runtime smoke tests, export/Dynamo guards, type-oriented alternatives,
+and a frozen LLM baseline where applicable. \\
 \hline
 Ablations &
 \texttt{tests/test\_domain\_ablation.py},

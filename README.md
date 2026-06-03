@@ -1042,7 +1042,11 @@ corpus it catches all one hundred fifty-three runtime-failing models with zero
 false alarms on the seventy-four clean ones. Crucially it is the only tool here
 that is simultaneously static, input-free, and complete on the corpus. See
 [`reproducibility/baseline_head_to_head.md`](reproducibility/baseline_head_to_head.md)
-and `tests/test_baseline_head_to_head.py`.
+and `tests/test_baseline_head_to_head.py`. A broader same-case benchmark now
+adds PyTea, Pyright, jaxtyping/torchtyping availability, torch.export/Dynamo
+guards, runtime smoke tests, and a frozen GPT-4.1-nano result, with every
+abstention and tool limitation explicit
+([`reproducibility/head_to_head_step252.md`](reproducibility/head_to_head_step252.md)).
 
 ### False-positive stress test
 The single most important promise of a sound verifier is no false alarms, so it
