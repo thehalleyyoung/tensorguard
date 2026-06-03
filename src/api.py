@@ -823,6 +823,7 @@ def verify_architecture(
     check_phases: bool = True,
     check_gradients: bool = True,
     max_cegar_iterations: int = 10,
+    max_loop_unrolls: Optional[int] = None,
     filename: str = "<string>",
     high_confidence_only: bool = False,
     hooks: Optional[List] = None,
@@ -847,6 +848,9 @@ def verify_architecture(
         check_phases: Whether to check train/eval phase dependencies.
         check_gradients: Whether to verify gradient flow.
         max_cegar_iterations: Max contract discovery iterations.
+        max_loop_unrolls: Maximum number of statically-resolved loop iterations
+            (ModuleList/Sequential or literal ``range`` loops) to unroll before
+            sound mode abstains with ``UNKNOWN``.
         filename: Optional filename for error reporting.
         high_confidence_only: When True, only report HIGH-confidence
             (Z3-proven) bugs. Reduces FP rate to 0% for CI/CD gating.
@@ -900,6 +904,7 @@ def verify_architecture(
         check_phases=check_phases,
         check_gradients=check_gradients,
         infer_inputs=infer_inputs,
+        max_loop_unrolls=max_loop_unrolls,
     )
     result.inferred_input_shapes = dict(getattr(vr, "inferred_input_shapes", {}) or {})
     result.inferred_input_sources = dict(getattr(vr, "inferred_input_sources", {}) or {})
@@ -1212,6 +1217,19 @@ def verify_architecture(
     # opaque-layer check above does not catch, so they yield UNKNOWN rather
     # than a silent SAFE.
     if mode == SoundnessMode.SOUND:
+        loop_abstentions = list(
+            getattr(getattr(vr, "graph", None), "loop_abstentions", []) or []
+        )
+        if loop_abstentions:
+            result.abstained = True
+            reasons = []
+            for item in loop_abstentions:
+                reason = item.get("reason") if isinstance(item, dict) else None
+                if reason:
+                    reasons.append(str(reason))
+            result.unknown_reasons.append(
+                "loop unroll limit exceeded: " + "; ".join(reasons)
+            )
         try:
             from src.verifiable_fragment import _analyze_source
             blocking = [

@@ -393,6 +393,117 @@ theorem conditional_then_program_subject_reduction {env joinedEnv env' : Env}
   simp [hCond] at hExec
   exact exec_subject_reduction hJoined hTailWT hExec
 
+/-! ## Bounded loops and ModuleList/static-range unrolling
+
+Static ``ModuleList``/``Sequential`` loops are verified by unrolling each
+resolved element into a straight-line body.  Literal ``range`` loops use the
+same bounded-unroll machinery.  The theorem below is deliberately budget-aware:
+a successful loop proof implies that the resolved number of bodies is within the
+configured unroll limit; unsupported or over-budget loops produce ``none`` and
+therefore cannot silently yield a SAFE environment in sound mode.
+-/
+
+inductive LoopKind
+  | moduleList
+  | staticRange
+  | unsupported
+  deriving Repr, DecidableEq
+
+def execProgramList : Env → List Program → Option Env
+  | env, [] => some env
+  | env, body :: rest =>
+      match exec env body with
+      | some env' => execProgramList env' rest
+      | none => none
+
+inductive ProgramListWT : Env → List Program → Prop
+  | nil (env : Env) : ProgramListWT env []
+  | cons {env env' : Env} {body : Program} {rest : List Program} :
+      ProgramWT env body →
+      exec env body = some env' →
+      ProgramListWT env' rest →
+      ProgramListWT env (body :: rest)
+
+theorem exec_program_list_subject_reduction {env env' : Env}
+    {bodies : List Program}
+    (hEnv : EnvWF env)
+    (hWT : ProgramListWT env bodies)
+    (hExec : execProgramList env bodies = some env') :
+    EnvWF env' := by
+  induction hWT generalizing env' with
+  | nil env =>
+      simp [execProgramList] at hExec
+      cases hExec
+      exact hEnv
+  | cons hBodyWT hBodyExec _hRest ih =>
+      simp [execProgramList, hBodyExec] at hExec
+      have hEnvNext : EnvWF _ :=
+        exec_subject_reduction hEnv hBodyWT hBodyExec
+      exact ih hEnvNext hExec
+
+def boundedUnrollExec (env : Env) (kind : LoopKind)
+    (bodies : List Program) (limit : Nat) : Option Env :=
+  match kind with
+  | .unsupported => none
+  | .moduleList =>
+      if bodies.length ≤ limit then execProgramList env bodies else none
+  | .staticRange =>
+      if bodies.length ≤ limit then execProgramList env bodies else none
+
+theorem bounded_unroll_exec_some_implies_supported_and_within_limit
+    {env env' : Env} {kind : LoopKind} {bodies : List Program} {limit : Nat}
+    (hExec : boundedUnrollExec env kind bodies limit = some env') :
+    kind ≠ LoopKind.unsupported ∧
+      bodies.length ≤ limit ∧
+      execProgramList env bodies = some env' := by
+  cases kind with
+  | moduleList =>
+      by_cases hLe : bodies.length ≤ limit
+      · simp [boundedUnrollExec, hLe] at hExec
+        have hNot : LoopKind.moduleList ≠ LoopKind.unsupported := by
+          intro h
+          cases h
+        exact And.intro hNot (And.intro hLe hExec)
+      · simp [boundedUnrollExec, hLe] at hExec
+  | staticRange =>
+      by_cases hLe : bodies.length ≤ limit
+      · simp [boundedUnrollExec, hLe] at hExec
+        have hNot : LoopKind.staticRange ≠ LoopKind.unsupported := by
+          intro h
+          cases h
+        exact And.intro hNot (And.intro hLe hExec)
+      · simp [boundedUnrollExec, hLe] at hExec
+  | unsupported =>
+      simp [boundedUnrollExec] at hExec
+
+theorem modulelist_beyond_unroll_limit_abstains {env : Env}
+    {bodies : List Program} {limit : Nat}
+    (hTooMany : limit < bodies.length) :
+    boundedUnrollExec env LoopKind.moduleList bodies limit = none := by
+  simp [boundedUnrollExec, Nat.not_le_of_gt hTooMany]
+
+theorem static_range_beyond_unroll_limit_abstains {env : Env}
+    {bodies : List Program} {limit : Nat}
+    (hTooMany : limit < bodies.length) :
+    boundedUnrollExec env LoopKind.staticRange bodies limit = none := by
+  simp [boundedUnrollExec, Nat.not_le_of_gt hTooMany]
+
+theorem unsupported_loop_cannot_silently_safe {env env' : Env}
+    {bodies : List Program} {limit : Nat} :
+    boundedUnrollExec env LoopKind.unsupported bodies limit ≠ some env' := by
+  intro hSome
+  simp [boundedUnrollExec] at hSome
+
+theorem bounded_unroll_subject_reduction {env env' : Env}
+    {kind : LoopKind} {bodies : List Program} {limit : Nat}
+    (hEnv : EnvWF env)
+    (hWT : ProgramListWT env bodies)
+    (hExec : boundedUnrollExec env kind bodies limit = some env') :
+    EnvWF env' := by
+  have hChar :=
+    bounded_unroll_exec_some_implies_supported_and_within_limit hExec
+  exact exec_program_list_subject_reduction hEnv hWT hChar.2.2
+
 /-! ## Current non-heuristic registry surface
 
 The list is intentionally just the current registry surface, not a per-op shape
@@ -626,6 +737,61 @@ theorem divergent_branch_join_rejected :
 theorem unsupported_branch_abstains_example :
     condExec [[2, 8]] BranchCond.unsupported
       branchThenProgram branchElseProgram = none := by
+  decide
+
+/-! ## Concrete theorem-shaped bounded-loop modules -/
+
+def moduleListUnrollBodies : List Program := [
+  [
+    ⟨.linear [2] 8 16, [0]⟩,
+    ⟨.pointwise "torch.relu" [2, 16], [1]⟩
+  ],
+  [
+    ⟨.linear [2] 16 16, [2]⟩,
+    ⟨.pointwise "torch.relu" [2, 16], [3]⟩
+  ],
+  [
+    ⟨.linear [2] 16 4, [4]⟩
+  ]
+]
+
+theorem modulelist_unroll_exec_shape :
+    boundedUnrollExec [[2, 8]] LoopKind.moduleList
+      moduleListUnrollBodies 3 =
+      some [[2, 8], [2, 16], [2, 16], [2, 16], [2, 16], [2, 4]] := by
+  decide
+
+def staticRangeUnrollBodies : List Program := [
+  [
+    ⟨.pointwise "torch.relu" [2, 8], [0]⟩
+  ],
+  [
+    ⟨.pointwise "torch.relu" [2, 8], [1]⟩
+  ],
+  [
+    ⟨.linear [2] 8 4, [2]⟩
+  ]
+]
+
+theorem static_range_unroll_exec_shape :
+    boundedUnrollExec [[2, 8]] LoopKind.staticRange
+      staticRangeUnrollBodies 3 =
+      some [[2, 8], [2, 8], [2, 8], [2, 4]] := by
+  decide
+
+theorem modulelist_beyond_limit_rejected :
+    boundedUnrollExec [[2, 8]] LoopKind.moduleList
+      moduleListUnrollBodies 2 = none := by
+  decide
+
+theorem static_range_beyond_limit_rejected :
+    boundedUnrollExec [[2, 8]] LoopKind.staticRange
+      staticRangeUnrollBodies 2 = none := by
+  decide
+
+theorem unsupported_loop_abstains_example :
+    boundedUnrollExec [[2, 8]] LoopKind.unsupported
+      moduleListUnrollBodies 3 = none := by
   decide
 
 end SubjectReduction

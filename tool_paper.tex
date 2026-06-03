@@ -690,18 +690,22 @@ or from explicit proof-carrying local transfer certificates.  It proves
 \texttt{whole\_module\_subject\_reduction}: if every local complete/sound
 transfer succeeds, every intermediate and final tensor in the straight-line
 fragment remains well-formed.  The same artifact now models supported
-conditionals with path-sensitive joins: both branches must execute from the same
-incoming environment and agree on the joined output environment before
-downstream code can run.  The abstention theorem is intentionally non-vacuous:
-any branch point that produces a safe environment is characterized as a
-supported, successfully joined conditional, so unsupported tensor-value branch
-conditions cannot silently certify a module.  Conformance tests connect that
-abstract theorem to the shipped API by showing \texttt{self.training} branches
-are not static fragment violations, while a tensor-value branch whose two real
-PyTorch paths both have shape \((2,8)\) still yields \unknown{} in sound mode.
-The registry surface is synchronized with the current 136 non-heuristic
-operator-confidence entries, while complex operators still rely on their local
-conformance tests rather than being over-claimed in the composition proof.
+conditionals with path-sensitive joins and statically bounded loops:
+ModuleList/Sequential and literal-range loops are represented as explicit
+unrolled body lists, and a successful bounded-loop proof implies that the
+resolved body count is within the configured unroll limit.  The abstention
+theorems are intentionally non-vacuous: any branch point that produces a safe
+environment is characterized as a supported, successfully joined conditional,
+and over-budget or unsupported loops evaluate to no safe environment.  The
+shipped extractor mirrors that proof boundary by recording loop abstentions and
+turning them into \unknown{} in sound mode.  Conformance tests connect the
+abstract theorem to the API: \texttt{self.training} branches remain supported,
+joinable tensor-value branches still abstain, under-limit ModuleLists verify
+against real PyTorch, and over-limit ModuleLists are tolerated only outside the
+strict sound contract.  The registry surface is synchronized with the current
+136 non-heuristic operator-confidence entries, while complex operators still
+rely on their local conformance tests rather than being over-claimed in the
+composition proof.
 
 The formalization is intentionally scoped.  It does not claim to prove all of
 PyTorch.  Instead, it proves the algebraic cores that the implementation relies
@@ -1090,6 +1094,11 @@ Device movement and cross-device error detection. \\
 \texttt{tests/test\_grad\_flow\_transfer.py},
 \texttt{tests/test\_training\_loop\_checks.py} &
 Gradient and training-loop contracts beyond forward shape checking. \\
+\hline
+\texttt{tests/test\_subject\_reduction\_loops.py} &
+Lean-audited bounded-loop subject reduction plus real ModuleList/static-range
+unroll limits, sound-mode \unknown{} fallback, and data-dependent iteration
+guards. \\
 \hline
 \texttt{tests/test\_onnx\_export\_gate.py},
 \texttt{tests/test\_onnx\_opset\_gate.py},

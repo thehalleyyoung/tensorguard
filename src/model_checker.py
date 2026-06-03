@@ -135,6 +135,10 @@ from src.torchvision_v2_verify import (
     normalized_padding_2d,
     verify_torchvision_v2_transform,
 )
+from src.config import PerformanceConfig
+
+
+DEFAULT_MAX_LOOP_UNROLLS = PerformanceConfig().max_loop_unrolls
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -472,6 +476,10 @@ class ComputationGraph:
     # Each entry is {"line", "reason", "source"}.  Empty for fully-analyzed
     # models.
     isolated_regions: List[Dict[str, Any]] = field(default_factory=list)
+    # Step 240 — loops whose statically-resolved unroll count exceeds the
+    # configured proof/extraction budget.  Sound mode turns these into UNKNOWN
+    # instead of silently treating a partially explored loop as verified.
+    loop_abstentions: List[Dict[str, Any]] = field(default_factory=list)
 
     # Convenience ----------------------------------------------------------
 
@@ -3311,6 +3319,7 @@ class _ForwardExtractor(ast.NodeVisitor):
                  super_forward_fn: Optional["ast.FunctionDef"] = None,
                  super_forward_chain: Optional[List["ast.FunctionDef"]] = None,
                  method_map: Optional[Dict[str, "ast.FunctionDef"]] = None,
+                 max_loop_unrolls: Optional[int] = None,
                  _inlining_methods: Optional[set] = None,
                  _method_summaries: Optional[Dict[str, Any]] = None,
                  ) -> None:
@@ -3343,6 +3352,8 @@ class _ForwardExtractor(ast.NodeVisitor):
         # extraction raised are isolated here (line + reason) so the rest of the
         # model can still be verified instead of failing wholesale.
         self.isolated_regions: List[Dict[str, Any]] = []
+        self.loop_abstentions: List[Dict[str, Any]] = []
+        self.max_loop_unrolls = max_loop_unrolls
         self._tmp_counter = 0
         self._current_names: Dict[int, str] = {}  # ast node id → tensor name
         self._aliases: Dict[str, str] = {}  # variable alias tracking
@@ -4438,6 +4449,19 @@ class _ForwardExtractor(ast.NodeVisitor):
         Linear(99,4)) silently passed. Unrolling lets the shape engine catch
         the mismatch between consecutive sublayers.
         """
+        static_range_count = self._static_range_iterations(node.iter)
+        if static_range_count is not None:
+            if self._loop_exceeds_limit(static_range_count):
+                self._record_loop_abstention(
+                    kind="static_range",
+                    iterations=static_range_count,
+                    line=node.lineno,
+                    source=self._safe_unparse(node),
+                )
+                return
+            self._unroll_static_range(node, static_range_count)
+            return
+
         # Resolve the iterable to a ``self.<attr>`` ModuleList/Sequential.
         iter_node = node.iter
         attr_name: Optional[str] = None
@@ -4461,6 +4485,16 @@ class _ForwardExtractor(ast.NodeVisitor):
                                      LayerKind.SEQUENTIAL)):
             # Unrecognised iterable: best-effort single visit (legacy behaviour).
             self.generic_visit(node)
+            return
+
+        if self._loop_exceeds_limit(len(sub_layers)):
+            self._record_loop_abstention(
+                kind=ldef.kind.name.lower(),
+                iterations=len(sub_layers),
+                line=node.lineno,
+                source=self._safe_unparse(node),
+                attr_name=attr_name,
+            )
             return
 
         # Determine the loop variable bound to each sublayer.
@@ -4493,6 +4527,72 @@ class _ForwardExtractor(ast.NodeVisitor):
             self._loopvar_layers.pop(loopvar, None)
         else:
             self._loopvar_layers[loopvar] = prev_binding
+
+    def _loop_exceeds_limit(self, iterations: int) -> bool:
+        return (
+            self.max_loop_unrolls is not None
+            and iterations > self.max_loop_unrolls
+        )
+
+    def _record_loop_abstention(
+        self,
+        *,
+        kind: str,
+        iterations: int,
+        line: int,
+        source: str,
+        attr_name: Optional[str] = None,
+    ) -> None:
+        limit = self.max_loop_unrolls
+        target = f"self.{attr_name}" if attr_name else kind
+        self.loop_abstentions.append({
+            "line": line,
+            "kind": kind,
+            "target": target,
+            "iterations": iterations,
+            "limit": limit,
+            "source": source,
+            "reason": (
+                f"{target} requires {iterations} static unrolls, exceeding "
+                f"the configured max_loop_unrolls={limit}"
+            ),
+        })
+
+    @staticmethod
+    def _static_range_iterations(iter_node: ast.expr) -> Optional[int]:
+        if not (
+            isinstance(iter_node, ast.Call)
+            and isinstance(iter_node.func, ast.Name)
+            and iter_node.func.id == "range"
+            and 1 <= len(iter_node.args) <= 3
+            and not iter_node.keywords
+        ):
+            return None
+        values: List[int] = []
+        for arg in iter_node.args:
+            value = _const_value(arg)
+            if not isinstance(value, int) or isinstance(value, bool):
+                return None
+            values.append(value)
+        try:
+            return len(range(*values))
+        except ValueError:
+            return None
+
+    def _unroll_static_range(self, node: ast.For, iterations: int) -> None:
+        loopvar = node.target.id if isinstance(node.target, ast.Name) else None
+        old_scalar = self._local_scalars.get(loopvar) if loopvar else None
+        had_scalar = loopvar in self._local_scalars if loopvar else False
+        for idx in range(iterations):
+            if loopvar:
+                self._local_scalars[loopvar] = idx
+            for child in node.body:
+                self.visit(child)
+        if loopvar:
+            if had_scalar:
+                self._local_scalars[loopvar] = old_scalar
+            else:
+                self._local_scalars.pop(loopvar, None)
 
     @staticmethod
     def _classify_condition(test: ast.expr) -> str:
@@ -4774,9 +4874,11 @@ class _ForwardExtractor(ast.NodeVisitor):
         base_fwd = self._super_forward_chain[0]
         sub = _ForwardExtractor(
             self.layers,
-            super_forward_chain=self._super_forward_chain[1:])
+            super_forward_chain=self._super_forward_chain[1:],
+            max_loop_unrolls=self.max_loop_unrolls)
         sub._scalar_attrs = dict(self._scalar_attrs)
         sub.extract(base_fwd)
+        self.loop_abstentions.extend(sub.loop_abstentions)
 
         base_in = sub.input_names[0] if sub.input_names else None
         final_out = None
@@ -4841,6 +4943,7 @@ class _ForwardExtractor(ast.NodeVisitor):
             sub = _ForwardExtractor(
                 self.layers,
                 method_map=self._method_map,
+                max_loop_unrolls=self.max_loop_unrolls,
                 _inlining_methods=self._inlining_methods | {method_fn.name},
                 _method_summaries=self._method_summaries,
             )
@@ -4864,6 +4967,7 @@ class _ForwardExtractor(ast.NodeVisitor):
                 "params": param_names,
                 "output": final_out,
                 "isolated": sub.isolated_regions,
+                "loop_abstentions": sub.loop_abstentions,
             }
             self._method_summaries[method_fn.name] = summary
 
@@ -4879,6 +4983,11 @@ class _ForwardExtractor(ast.NodeVisitor):
             self.isolated_regions.append({
                 **region,
                 "reason": f"(in {method_fn.name}) " + region.get("reason", ""),
+            })
+        for loop in summary.get("loop_abstentions", []):
+            self.loop_abstentions.append({
+                **loop,
+                "reason": f"(in {method_fn.name}) " + loop.get("reason", ""),
             })
 
         tag = self._fresh(f"ipa_{method_fn.name}")
@@ -6296,6 +6405,7 @@ def _extract_submodule_graph(
     cls_node: ast.ClassDef,
     constructor_args: List[Any],
     class_map: Dict[str, ast.ClassDef],
+    max_loop_unrolls: Optional[int] = None,
 ) -> Optional[ComputationGraph]:
     """Extract a submodule's computation graph with bound constructor args.
 
@@ -6341,17 +6451,22 @@ def _extract_submodule_graph(
     if fwd_fn:
         fwd_ext = _ForwardExtractor(
             graph.layers, scalar_attrs=extractor.scalar_attrs,
-            method_map=_collect_tensor_methods(cls_node))
+            method_map=_collect_tensor_methods(cls_node),
+            max_loop_unrolls=max_loop_unrolls)
         fwd_ext.extract(fwd_fn)
         graph.steps = fwd_ext.steps
         graph.input_names = fwd_ext.input_names
         graph.output_names = fwd_ext.output_names
         graph.isolated_regions = fwd_ext.isolated_regions
+        graph.loop_abstentions = fwd_ext.loop_abstentions
 
     return graph
 
 
-def extract_computation_graph(source: str) -> ComputationGraph:
+def extract_computation_graph(
+    source: str,
+    max_loop_unrolls: Optional[int] = None,
+) -> ComputationGraph:
     """Parse Python *source* and extract the computation graph of the root
     ``nn.Module`` subclass found.
 
@@ -6464,12 +6579,14 @@ def extract_computation_graph(source: str) -> ComputationGraph:
             super_chain = super_chain[1:]
         fwd_ext = _ForwardExtractor(graph.layers, scalar_attrs=scalar_attrs,
                                     super_forward_chain=super_chain,
-                                    method_map=_collect_tensor_methods(root_cls))
+                                    method_map=_collect_tensor_methods(root_cls),
+                                    max_loop_unrolls=max_loop_unrolls)
         fwd_ext.extract(fwd_fn)
         graph.steps = fwd_ext.steps
         graph.input_names = fwd_ext.input_names
         graph.output_names = fwd_ext.output_names
         graph.isolated_regions = fwd_ext.isolated_regions
+        graph.loop_abstentions = fwd_ext.loop_abstentions
 
         # Detect dynamic patterns in forward body
         _detect_forward_dynamic_patterns(fwd_fn, graph.dynamic_features)
@@ -16453,6 +16570,7 @@ def verify_model(
     input_dtypes: Optional[Dict[str, str]] = None,
     infer_inputs: bool = True,
     time_budget_ms: Optional[float] = None,
+    max_loop_unrolls: Optional[int] = None,
 ) -> VerificationResult:
     """One-shot verification of an nn.Module defined in *source*.
 
@@ -16536,7 +16654,12 @@ def verify_model(
         )
 
     try:
-        graph = extract_computation_graph(source)
+        if max_loop_unrolls is None:
+            max_loop_unrolls = DEFAULT_MAX_LOOP_UNROLLS
+        graph = extract_computation_graph(
+            source,
+            max_loop_unrolls=max_loop_unrolls,
+        )
     except (ValueError, SyntaxError) as exc:
         return VerificationResult(
             safe=False,

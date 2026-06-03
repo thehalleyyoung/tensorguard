@@ -3315,7 +3315,7 @@ class VerifyCommand:
         cegar = getattr(args, "cegar_iterations", 10)
         if cegar == 10 and cfg.cegar_iterations:
             cegar = cfg.cegar_iterations
-        return {
+        kwargs = {
             "check_devices": cfg.check_devices and not args.no_device_check,
             "check_phases": cfg.check_phases and not args.no_phase_check,
             "check_gradients": cfg.check_gradients and not args.no_grad_check,
@@ -3324,6 +3324,9 @@ class VerifyCommand:
             "soundness_mode": soundness,
             "infer_inputs": cfg.infer_inputs and not getattr(args, "no_infer", False),
         }
+        if getattr(cfg, "max_loop_unrolls", None) is not None:
+            kwargs["max_loop_unrolls"] = cfg.max_loop_unrolls
+        return kwargs
 
     def _verify_value(self, path: str, args: argparse.Namespace):
         """Verify *path* and return the AnalysisResult (used by watch mode)."""

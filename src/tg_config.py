@@ -16,6 +16,7 @@ Schema (all keys optional)::
     infer_inputs     = true
     high_confidence  = false
     cegar_iterations = 12
+    max_loop_unrolls = 3
     ignore           = ["experiments/**", "legacy/old.py"]
     ignore_rules     = ["cegar-real-bug"]  # bug [KIND] tags, case-insensitive
 
@@ -51,6 +52,7 @@ class TGConfig:
     infer_inputs: bool = True
     high_confidence: bool = False
     cegar_iterations: Optional[int] = None
+    max_loop_unrolls: Optional[int] = None
     ignore_files: List[str] = field(default_factory=list)
     ignore_rules: List[str] = field(default_factory=list)
     source_path: Optional[str] = None  # where it was loaded from
@@ -110,6 +112,10 @@ def parse_config(data: dict, source_path: Optional[str] = None) -> TGConfig:
     ci = data.get("cegar_iterations")
     if isinstance(ci, int) and ci > 0:
         cfg.cegar_iterations = ci
+
+    loop_unrolls = data.get("max_loop_unrolls")
+    if isinstance(loop_unrolls, int) and loop_unrolls >= 0:
+        cfg.max_loop_unrolls = loop_unrolls
 
     checks = data.get("checks")
     if isinstance(checks, dict):

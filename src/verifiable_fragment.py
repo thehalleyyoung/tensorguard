@@ -469,8 +469,15 @@ class _ForwardAnalyzer(ast.NodeVisitor):
             func_str = self._call_name(node.iter)
             if func_str == "range":
                 for arg in node.iter.args:
-                    if isinstance(arg, ast.Call):
+                    if isinstance(arg, ast.Call) and not self._is_static_range_call(arg):
                         return True
+        return False
+
+    def _is_static_range_call(self, node: ast.Call) -> bool:
+        """Calls whose result is structural, not tensor-value dependent."""
+        name = self._call_name(node)
+        if name == "len":
+            return True
         return False
 
     def _call_name(self, node: ast.Call) -> Optional[str]:

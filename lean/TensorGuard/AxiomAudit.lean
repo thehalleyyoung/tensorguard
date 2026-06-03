@@ -194,6 +194,22 @@ import TensorGuard
 #print axioms TensorGuard.SubjectReduction.divergent_branch_join_rejected
 #print axioms TensorGuard.SubjectReduction.unsupported_branch_abstains_example
 
+-- Bounded-loop / ModuleList subject reduction (Step 240): statically resolved
+-- ModuleList/Sequential and literal-range loops execute only within the
+-- configured unroll limit; over-budget and unsupported loops abstain, while
+-- successful bounded unrolls preserve well-formed environments.
+#print axioms TensorGuard.SubjectReduction.exec_program_list_subject_reduction
+#print axioms TensorGuard.SubjectReduction.bounded_unroll_exec_some_implies_supported_and_within_limit
+#print axioms TensorGuard.SubjectReduction.modulelist_beyond_unroll_limit_abstains
+#print axioms TensorGuard.SubjectReduction.static_range_beyond_unroll_limit_abstains
+#print axioms TensorGuard.SubjectReduction.unsupported_loop_cannot_silently_safe
+#print axioms TensorGuard.SubjectReduction.bounded_unroll_subject_reduction
+#print axioms TensorGuard.SubjectReduction.modulelist_unroll_exec_shape
+#print axioms TensorGuard.SubjectReduction.static_range_unroll_exec_shape
+#print axioms TensorGuard.SubjectReduction.modulelist_beyond_limit_rejected
+#print axioms TensorGuard.SubjectReduction.static_range_beyond_limit_rejected
+#print axioms TensorGuard.SubjectReduction.unsupported_loop_abstains_example
+
 -- Cross-domain (shape × device) encoding faithfulness (Step 136): a transfer op
 -- preserves shape exactly (device free); a non-transfer op preserves device
 -- exactly (shape free), so the solver flags a cross-domain violation iff the
