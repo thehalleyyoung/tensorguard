@@ -340,6 +340,7 @@ tensorguard verify FILE [options]
 | Command | Description |
 |---------|-------------|
 | `tensorguard explain model.py -s x=batch,10 -o explain.html` | Generate a self-contained HTML bug report with an inference-chain graph, counterexample, proof-footprint badges, and fixes |
+| `tensorguard model-hub-badge model.py -s x=batch,10 --model-id org/model` | Emit a TensorGuard-verified badge, signed certificate bundle, and copy-paste model-card snippet |
 | `tensorguard ci-check [PATHS...] --sarif-output out.sarif` | CI mode with SARIF output |
 | `tensorguard sarif-trends v1=old.sarif v2=new.sarif --markdown trend.md` | Track Code Scanning open/closed/recurrent alert deltas |
 | `tensorguard watch [PATHS...]` | Watch and re-verify on changes |

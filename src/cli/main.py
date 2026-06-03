@@ -3691,6 +3691,119 @@ class ExplainCommand:
         return 0
 
 
+# ── ModelHubBadgeCommand ───────────────────────────────────────────────────
+
+
+class ModelHubBadgeCommand:
+    """Write a TensorGuard-verified model-hub badge certificate bundle."""
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("file", help="Python file containing nn.Module class")
+        parser.add_argument(
+            "--input-shape",
+            "-s",
+            action="append",
+            default=[],
+            help="Input shape as name=dim1,dim2,... (repeatable).",
+        )
+        parser.add_argument("--model-id", required=True, help="Model hub id, e.g. org/model")
+        parser.add_argument(
+            "-o",
+            "--output",
+            default="tensorguard_verified",
+            help="Output directory for manifest, badge SVG, certificate, and model-card snippet",
+        )
+        parser.add_argument(
+            "--secret-env",
+            default="TENSORGUARD_CERT_SECRET",
+            help="Environment variable containing the signing secret",
+        )
+        parser.add_argument(
+            "--secret",
+            default=None,
+            help="Signing secret value (prefer --secret-env outside tests).",
+        )
+        parser.add_argument(
+            "--issued-at",
+            default="1970-01-01T00:00:00+00:00",
+            help="Certificate issue timestamp; fixed by default for reproducible bundles.",
+        )
+        parser.add_argument("--issuer", default="tensorguard-model-hub")
+        parser.add_argument("--key-id", default=None)
+        parser.add_argument("--cegar-iterations", type=int, default=10)
+        parser.add_argument("--no-infer", action="store_true", help="Disable input-shape inference")
+        parser.add_argument(
+            "--include-proof",
+            action="store_true",
+            help="Embed the solver proof DAG in the signed certificate.",
+        )
+        parser.add_argument("--json", action="store_true", dest="as_json")
+
+    @staticmethod
+    def _parse_input_shapes(specs: Sequence[str]) -> Optional[Dict[str, tuple]]:
+        input_shapes: Dict[str, tuple] = {}
+        for spec in specs:
+            if "=" not in spec:
+                sys.stderr.write(f"Invalid shape spec: {spec} (use name=d1,d2,...)\n")
+                return None
+            name, dims_str = spec.split("=", 1)
+            dims = []
+            for d in dims_str.split(","):
+                d = d.strip()
+                try:
+                    dims.append(int(d))
+                except ValueError:
+                    dims.append(d)
+            input_shapes[name] = tuple(dims)
+        return input_shapes
+
+    def execute(self, args: argparse.Namespace) -> int:
+        filepath = pathlib.Path(args.file)
+        if not filepath.exists():
+            sys.stderr.write(f"File not found: {args.file}\n")
+            return 1
+        secret = getattr(args, "secret", None)
+        if secret is None:
+            secret = os.environ.get(getattr(args, "secret_env", "TENSORGUARD_CERT_SECRET"))
+        if not secret:
+            sys.stderr.write("Signing secret missing; set --secret or --secret-env.\n")
+            return 2
+        input_shapes = self._parse_input_shapes(getattr(args, "input_shape", []) or [])
+        if input_shapes is None:
+            return 1
+        try:
+            source = filepath.read_text(encoding="utf-8")
+            from src.model_hub_badge import write_model_hub_badge_bundle
+
+            bundle = write_model_hub_badge_bundle(
+                source,
+                input_shapes=input_shapes,
+                output_dir=getattr(args, "output", "tensorguard_verified"),
+                model_id=getattr(args, "model_id"),
+                secret=secret,
+                filename=str(filepath),
+                issued_at=getattr(args, "issued_at"),
+                issuer=getattr(args, "issuer"),
+                key_id=getattr(args, "key_id", None),
+                max_cegar_iterations=getattr(args, "cegar_iterations", 10),
+                infer_inputs=not getattr(args, "no_infer", False),
+                include_proof=getattr(args, "include_proof", False),
+            )
+        except (OSError, RuntimeError, ValueError) as exc:
+            sys.stderr.write(f"Could not write TensorGuard model-hub badge: {exc}\n")
+            return 1
+        if getattr(args, "as_json", False):
+            sys.stdout.write(json.dumps(bundle.to_dict(), indent=2, sort_keys=True) + "\n")
+        else:
+            sys.stdout.write(
+                "TensorGuard-verified model-hub bundle written to "
+                f"{bundle.output_dir}\n"
+            )
+            sys.stdout.write(f"Model-card snippet: {bundle.model_card_snippet_path}\n")
+            sys.stdout.write(f"Badge: {bundle.badge_markdown}\n")
+        return 0
+
+
 # ── PlaygroundCommand ──────────────────────────────────────────────────────
 
 
@@ -3832,6 +3945,7 @@ class ReftypeCliApp:
         "version": lambda: VersionCommand(),
         "config": lambda: ConfigCommand(),
         "operator-confidence": lambda: OperatorConfidenceCommand(),
+        "model-hub-badge": lambda: ModelHubBadgeCommand(),
         "playground": lambda: PlaygroundCommand(),
         "adoption-recipes": lambda: AdoptionRecipesCommand(),
         "sarif-trends": lambda: SarifTrendsCommand(),
@@ -3892,6 +4006,7 @@ class ReftypeCliApp:
             "version": "Show version information",
             "config": "Show or edit configuration",
             "operator-confidence": "Show per-operator confidence tags (sound/complete/heuristic)",
+            "model-hub-badge": "Write a TensorGuard-verified model-hub certificate bundle",
             "playground": "Generate a no-upload local static TensorGuard playground",
             "adoption-recipes": "Print one-line setup recipes for CI, hooks, editors, and notebooks",
             "sarif-trends": "Build a Code Scanning trend dashboard from SARIF snapshots",

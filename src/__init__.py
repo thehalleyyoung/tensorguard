@@ -162,6 +162,12 @@ from .signed_certificate import (
     sign_safety_certificate,
     verify_signed_certificate,
 )
+from .model_hub_badge import (
+    ModelHubBadgeBundle,
+    render_badge_svg,
+    render_model_card_snippet,
+    write_model_hub_badge_bundle,
+)
 
 __all__ = [
     "analyze",
@@ -294,5 +300,9 @@ __all__ = [
     "dumps_signed_certificate",
     "sign_safety_certificate",
     "verify_signed_certificate",
+    "ModelHubBadgeBundle",
+    "render_badge_svg",
+    "render_model_card_snippet",
+    "write_model_hub_badge_bundle",
     "__version__",
 ]
