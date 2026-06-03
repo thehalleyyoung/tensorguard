@@ -123,7 +123,8 @@ runtime errors in ML codebases before any code runs.
   transfers and per-operator shape rules (`nn.Linear`/`Conv`/pooling/`LayerNorm`/
   `BatchNorm`/`PixelShuffle`/flatten/`cat`/`chunk`/`split` partition
   reconstruction/`Embedding`/reshape-`-1`/einops decomposition/SDPA
-  broadcast-mask-GQA), each
+  broadcast-mask-GQA/named-axis refine-align uniqueness and singleton insertion),
+  each
   replayed op-by-op on real tensors and cross-checked against torch *and* the
   verifier's own propagators. Every audited public theorem is
   machine-audited **sorry-free**, on only the trusted kernel axioms.
@@ -2557,7 +2558,7 @@ just a log grep: `lean/TensorGuard/AxiomAudit.lean` runs
 trusted kernel axioms `propext`, `Classical.choice`, `Quot.sound`
 and never on `sorryAx`.  `tests/test_lean_whole_pipeline_audit.py`
 makes this **total and drift-proof**: it auto-discovers and audits
-*all 409* public theorems in the library, so any new theorem hiding
+*all public theorems* in the library, so any new theorem hiding
 a `sorry` or an exotic axiom is caught with no list to maintain.
 
 The same kernel-checked guarantee now reaches the **reduced-product

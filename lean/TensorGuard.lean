@@ -38,3 +38,4 @@ import TensorGuard.BatchNormRule
 import TensorGuard.Einops
 import TensorGuard.SDPA
 import TensorGuard.ChunkSplit
+import TensorGuard.NamedTensor

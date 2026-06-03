@@ -217,7 +217,7 @@ jagged pooled embeddings, sparse COO/CSR/CSC/BSR/BSC layout invariants,
 sparse-dense \texttt{mm}/\texttt{addmm}, CSR \texttt{sampled\_addmm},
 sparse softmax/coalesce, layout conversions, FFT/complex view contracts, exact \texttt{torch.linalg} contracts for
 \texttt{solve}, inverse, Cholesky, SVD, eigendecomposition, and QR, named tensor
-alignment, vmap/functorch batch dimensions, \texttt{torch.func} autodiff
+refinement/alignment, vmap/functorch batch dimensions, \texttt{torch.func} autodiff
 wrappers (\texttt{grad}, \texttt{jacrev}, \texttt{jacfwd}, \texttt{jvp}, and
 \texttt{vjp}), distribution batch/event/log-prob
 shapes, grid sampling, affine grids, source-level
@@ -658,8 +658,9 @@ contains Lean artifacts for several core rules and proof obligations, including
 CEGAR convergence bounds, infeasible-contract abstention, fragment modes,
 device/dtype transfer soundness, SMT encoding faithfulness, cross-domain
 composition, and operator-specific rules such as cat, chunk/split partition
-reconstruction, reshape, einops decomposition/bijection families, and SDPA
-broadcast/mask/GQA shape laws.
+reconstruction, reshape, einops decomposition/bijection families, SDPA
+broadcast/mask/GQA shape laws, and named-tensor refine/align name preservation,
+singleton insertion, and duplicate-name rejection.
 The Lean audit checks theorem statements for sorry-free status under the
 trusted kernel axioms used by the environment.
 
@@ -677,11 +678,15 @@ data-dependent control flow produce \unknown{} in strict modes.  Symbolic sizes
 are preserved instead of guessed.  This is visible in the code.  For chunk/split,
 for example, concrete dimensions produce exact per-output sizes and concrete
 unpack-count errors; symbolic split dimensions produce fresh symbolic split
-axes, preventing false claims about a final chunk size.  The new
+axes, preventing false claims about a final chunk size.  The
 \texttt{ChunkSplit} Lean artifact proves the axis reconstruction law used when
 all produced pieces are concatenated back together, while generated conformance
 tests compare uneven chunks, zero sections, and fewer-than-requested chunks
-against live PyTorch.
+against live PyTorch.  The named-tensor Lean artifact follows the same trust
+split: Lean proves the no-ellipsis core for preserving existing names, inserting
+singleton axes for fresh or anonymous targets, rejecting duplicate concrete
+names, and rejecting unnamed inputs that need an ellipsis; conformance tests
+replay those cases against real \texttt{refine\_names} and \texttt{align\_to}.
 
 \clearpage
 
@@ -899,7 +904,8 @@ Source-level tensor contracts for resize, crops, padding, normalization,
 flips/color/dtype transforms, and PIL-only abstention. \\
 \hline
 Named tensors &
-\texttt{refine\_names} and \texttt{align\_to} alignment checks. \\
+\texttt{refine\_names} and \texttt{align\_to} alignment checks, with
+Lean-backed preservation, singleton-insertion, and duplicate-name laws. \\
 \hline
 Complex and FFT &
 \texttt{view\_as\_real}, \texttt{view\_as\_complex}, FFT shape/dtype contracts. \\
@@ -1287,7 +1293,8 @@ tags. \\
 Named tensors &
 Name refinement and alignment require axis-name consistency and legal reorder
 operations. &
-Named tensor verification tests. \\
+Named tensor verification tests plus Lean conformance for preservation,
+singleton insertion, and duplicate-name rejection. \\
 \hline
 Distribution shapes &
 Batch, event, sample, and log-probability shapes must be mutually compatible. &
@@ -1374,8 +1381,8 @@ to \tg{}'s transfer function.  This protocol is especially useful for edge cases
 whose behavior is not obvious from memory: \texttt{torch.chunk} returning fewer
 than requested chunks, zero-size split sections, exact concat reconstruction of
 partitions, broadcasting of attention masks, padding tuple/rank corner cases,
-compressed sparse block constraints, and
-named-axis alignment.  The same oracle style now covers embedding-bag corner
+compressed sparse block constraints, named-axis alignment/refinement, and
+duplicate-name rejection.  The same oracle style now covers embedding-bag corner
 cases such as 1D inputs requiring offsets, 2D inputs forbidding offsets,
 \texttt{include\_last\_offset} changing bag count, and per-sample weights being
 legal only in \texttt{mode="sum"}.  It also covers torchvision v2 image

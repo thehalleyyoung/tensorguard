@@ -414,3 +414,32 @@ import TensorGuard
 #print axioms TensorGuard.ChunkSplit.chunk_zero_axis_returns_requested_empties
 #print axioms TensorGuard.ChunkSplit.split_concat_reconstruct_example
 #print axioms TensorGuard.ChunkSplit.chunk_concat_reconstruct_example
+
+-- Named-tensor refine_names / align_to rules (Step 232): existing names are
+-- preserved by refine, singleton axes are inserted by align_to for fresh or
+-- anonymous targets, duplicate concrete names are rejected, and no-ellipsis
+-- align_to rejects unnamed input axes instead of silently dropping them.
+#print axioms TensorGuard.NamedTensor.containsNamed_head
+#print axioms TensorGuard.NamedTensor.unique_named_duplicate_head
+#print axioms TensorGuard.NamedTensor.uniqueNamed_allows_repeated_anon
+#print axioms TensorGuard.NamedTensor.refine_existing_name_preserved
+#print axioms TensorGuard.NamedTensor.refine_rename_rejected
+#print axioms TensorGuard.NamedTensor.refine_demotion_rejected
+#print axioms TensorGuard.NamedTensor.refine_duplicate_requested_rejected
+#print axioms TensorGuard.NamedTensor.refine_duplicate_current_rejected
+#print axioms TensorGuard.NamedTensor.refine_shape_preserved
+#print axioms TensorGuard.NamedTensor.refine_fill_anon_example
+#print axioms TensorGuard.NamedTensor.refine_preserve_existing_example
+#print axioms TensorGuard.NamedTensor.refine_duplicate_names_rejected
+#print axioms TensorGuard.NamedTensor.existing_name_dim_preserved
+#print axioms TensorGuard.NamedTensor.fresh_name_inserts_singleton
+#print axioms TensorGuard.NamedTensor.anon_target_inserts_singleton
+#print axioms TensorGuard.NamedTensor.align_names_preserved
+#print axioms TensorGuard.NamedTensor.align_duplicate_target_rejected
+#print axioms TensorGuard.NamedTensor.align_duplicate_current_rejected
+#print axioms TensorGuard.NamedTensor.align_unnamed_input_rejected
+#print axioms TensorGuard.NamedTensor.align_permute_example
+#print axioms TensorGuard.NamedTensor.align_singleton_insert_example
+#print axioms TensorGuard.NamedTensor.align_anon_target_insert_example
+#print axioms TensorGuard.NamedTensor.align_missing_name_rejected
+#print axioms TensorGuard.NamedTensor.align_duplicate_names_rejected
