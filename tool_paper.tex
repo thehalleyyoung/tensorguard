@@ -700,9 +700,11 @@ High-value library contracts beyond ordinary dense layers, including image
 preprocessing transforms whose tensor shapes feed the model. \\
 \hline
 \texttt{src/quant\_export\_checks.py}, \texttt{src/mixed\_precision\_verify.py},
+\texttt{src/gguf\_export.py},
 \texttt{src/distributed\_verification.py}, \texttt{src/lora\_verification.py} &
 Deployment, mixed-precision, distributed training, and adapter-compatibility
-gates. \\
+gates, including GGUF/llama.cpp checkpoint preflight checks for transformer
+metadata and projection tensors. \\
 \hline
 \texttt{src/reporters.py}, \texttt{src/sarif\_codescan.py},
 \texttt{src/github\_action.py} &
@@ -867,7 +869,9 @@ Export and compile &
 Pre-pass verification for \texttt{torch.compile}, \texttt{torch.export}, ONNX,
 AOTInductor packaging, and deployment gates, including package-time layout,
 dtype, device, dynamic-guard, ONNX opset availability, lowering checks, and
-post-export ONNX shape-inference agreement. \\
+post-export ONNX shape-inference agreement.  GGUF/llama.cpp export gates check
+q/k/v packing, rotary dimensions, vocab projections, quant block divisibility,
+and metadata consistency before an external converter is invoked. \\
 \hline
 Distributed and adapters &
 DDP/FSDP/DTensor/tensor-parallel checks, optimizer-state checks, checkpoint
@@ -983,12 +987,14 @@ Gradient and training-loop contracts beyond forward shape checking. \\
 \texttt{tests/test\_onnx\_export\_gate.py},
 \texttt{tests/test\_onnx\_opset\_gate.py},
 \texttt{tests/test\_export\_aot\_gate.py},
+\texttt{tests/test\_gguf\_export\_gate.py},
 \texttt{tests/test\_quant\_export\_checks.py},
 \texttt{tests/test\_quantization\_verify.py} &
 Deployment-facing gates for export, \texttt{torch.export.Dim} ranges and
 relations, ONNX opset-version availability and dynamic-shape support, AOT
 package input/layout/dtype/device/lowering contracts, and source/eager/FX
-quantization. \\
+quantization, plus GGUF/llama.cpp checkpoint checks over real transformer
+state\_dict tensors and logical quantized descriptors. \\
 \hline
 \texttt{tests/test\_distributed\_verification.py},
 \texttt{tests/test\_tensor\_parallel\_checks.py} &
@@ -1203,15 +1209,19 @@ vmap verification tests plus \texttt{tests/test\_func\_autodiff\_verify.py}
 live dispatcher checks. \\
 \hline
 Export gates &
-Export, ONNX, AOTInductor, quantization, and mixed-precision paths check static
+Export, ONNX, AOTInductor, GGUF, quantization, and mixed-precision paths check static
 preconditions before invoking downstream compilers; dynamic
 \texttt{torch.export.Dim} ranges are reconciled with TensorGuard input-shape
 symbols before tracing; ONNX exports check exporter opset bounds, lowered ATen
 minimum opsets, and backend-specific dynamic-shape support before writing a
 proto; and AOT packages additionally reject invalid example layouts, devices,
 dtypes, missing dynamic guards, and denied ATen lowerings before the packager
-writes an artifact. &
-ONNX, AOT, quantization, mixed-precision, and guarded compile/export tests. \\
+writes an artifact.  The GGUF gate checks architecture-prefixed llama.cpp
+metadata, q/k/v and packed-qkv tensor shapes, grouped-query head consistency,
+rotary dimensions, vocab/output projection padding, and GGUF quant block sizes
+before the converter writes a checkpoint. &
+ONNX, AOT, GGUF, quantization, mixed-precision, and guarded compile/export
+tests. \\
 \hline
 Distributed and adapter gates &
 Sharding, tensor parallelism, optimizer state, checkpoints, and LoRA adapters
@@ -1392,6 +1402,10 @@ requirements, TorchServe or FastAPI request schemas, GGUF or llama.cpp
 checkpoint shapes, CUDA graph capture assumptions, and distributed shard
 boundaries.  \tg{}'s deployment modules check these contracts before the
 downstream system emits a harder-to-debug compiler, exporter, or serving error.
+For GGUF/llama.cpp, the gate reads the checkpoint tensors and metadata directly:
+it validates architecture-prefixed metadata, q/k/v or packed-qkv projections,
+rotary-pair dimensions, vocabulary and output projections, and per-quantization
+block-size divisibility without needing to run the external converter.
 
 \subsection{Research artifact review}
 

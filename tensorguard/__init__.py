@@ -55,6 +55,14 @@ from src.torch_integration import (  # noqa: F401  (re-export)
     verify_exported_program,
     verify_module,
 )
+from src.gguf_export import (  # noqa: F401  (re-export)
+    GGUFExportGateResult,
+    GGUFExportIssue,
+    GGUFTensorInfo,
+    TensorGuardGGUFExportError,
+    guarded_gguf_export,
+    verify_gguf_export_contract,
+)
 
 from src.einops_verify import verify_einops  # noqa: F401  (re-export)
 from src.einops_source import verify_einops_source  # noqa: F401  (re-export)
@@ -160,13 +168,19 @@ __all__ = [
     "make_tensorguard_backend",
     "guarded_onnx_export",
     "verify_exported_program",
+    "guarded_gguf_export",
+    "verify_gguf_export_contract",
     "verify_aot_package_contract",
     "verify_onnx_export_contract",
     "guarded_aot_package",
     "ONNXExportGateResult",
     "ONNXExportIssue",
     "ONNXLoweredOp",
+    "GGUFExportGateResult",
+    "GGUFExportIssue",
+    "GGUFTensorInfo",
     "TensorGuardONNXExportError",
+    "TensorGuardGGUFExportError",
     "verify_einops",
     "verify_einops_source",
     "verify_distribution",

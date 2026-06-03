@@ -65,7 +65,9 @@ runtime errors in ML codebases before any code runs.
   `verify_mixed_precision`, `verify_mixed_precision_fx`,
   `verify_grid_sample`, `verify_affine_grid`,
   `verify_torchvision_v2_transform`,
-  `verify_multihead_attention`)
+  `verify_multihead_attention`).  Deployment gates now also cover GGUF/llama.cpp
+  checkpoint export invariants — q/k/v packing, rotary dims, vocab projections,
+  quant blocks, and metadata consistency (`verify_gguf_export_contract`).
 - **5-theory product domain** — jointly reasons over
   **Shape × Device × Phase × Stride × Permutation** for each tensor
 - **Zero annotations required** — shapes are inferred from constructors,
