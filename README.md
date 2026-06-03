@@ -1211,6 +1211,18 @@ useless. A deterministic wall-clock companion records the same curve in seconds.
 See [`reproducibility/cegar_depth_ablation.md`](reproducibility/cegar_depth_ablation.md)
 and `tests/test_cegar_depth_ablation.py`.
 
+### Stage-wise ablation: the whole verifier stack, not just one knob
+`reproducibility/stagewise_ablation.py` stitches the ablation story together on
+live code paths: AST graph extraction catches a seeded shape bug; each
+verification domain loses its own detection when ablated while phase remains
+diagnostic-only; every registered cross-domain reduction (including truthiness)
+has a concrete refining witness; CEGAR reaches full refined-contract diagnostics
+at depth one; a third-party `FancyBlock` stub turns an opaque clean model into a
+SAFE `STUB` model while still catching bad contracts; and sound mode separates a
+Lean-backed `torch.relu` transfer from a heuristic `torch.unique` abstention. See
+[`reproducibility/stagewise_ablation.md`](reproducibility/stagewise_ablation.md)
+and `tests/test_stagewise_ablation.py`.
+
 ### Statistical power: every headline number is sample-size-justified
 A confidence interval says how precise an estimate is; a power analysis says
 whether the sample was ever large enough to *earn* the claim.

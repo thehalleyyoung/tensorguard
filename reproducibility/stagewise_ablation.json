@@ -1,0 +1,418 @@
+{
+  "abstract_domains": {
+    "diagnostic_domains": [
+      "phase"
+    ],
+    "each_verification_domain_load_bearing": true,
+    "n_cases": 5,
+    "per_domain": {
+      "device": {
+        "ablated_caught": false,
+        "ablation_kind": "runtime_flag",
+        "case_id": "device_000",
+        "delta": 1,
+        "full_bug_tags": [
+          "DEVICE-MISMATCH",
+          "DEVICE-MISMATCH"
+        ],
+        "full_caught": true,
+        "full_verdict": "UNSAFE"
+      },
+      "dtype": {
+        "ablated_caught": false,
+        "ablation_kind": "report_filter",
+        "case_id": "dtype_000",
+        "delta": 1,
+        "full_bug_tags": [
+          "DTYPE-ERROR"
+        ],
+        "full_caught": true,
+        "full_verdict": "UNSAFE"
+      },
+      "gradient": {
+        "ablated_caught": false,
+        "ablation_kind": "runtime_flag",
+        "case_id": "grad_000",
+        "delta": 1,
+        "full_bug_tags": [
+          "GRADIENT-BROKEN"
+        ],
+        "full_caught": true,
+        "full_verdict": "UNSAFE"
+      },
+      "phase": {
+        "ablated_caught": false,
+        "ablation_kind": "diagnostic_flag",
+        "case_id": "phase_000",
+        "delta": 0,
+        "full_bug_tags": [],
+        "full_caught": false,
+        "full_verdict": "SAFE"
+      },
+      "shape": {
+        "ablated_caught": false,
+        "ablation_kind": "report_filter",
+        "case_id": "shape_000",
+        "delta": 1,
+        "full_bug_tags": [
+          "SHAPE-INCOMPATIBLE",
+          "SHAPE-INCOMPATIBLE"
+        ],
+        "full_caught": true,
+        "full_verdict": "UNSAFE"
+      }
+    },
+    "phase_is_diagnostic_only": true,
+    "seed": 20240605,
+    "verification_domains": [
+      "shape",
+      "dtype",
+      "device",
+      "gradient"
+    ]
+  },
+  "cegar": {
+    "n_clean_cases": 8,
+    "n_conflict_cases": 16,
+    "per_depth": [
+      {
+        "bugs_detected": 16,
+        "clean_false_alarms": 0,
+        "depth": 0,
+        "refined_contract_diagnoses": 0,
+        "total_cegar_iterations": 0
+      },
+      {
+        "bugs_detected": 16,
+        "clean_false_alarms": 0,
+        "depth": 1,
+        "refined_contract_diagnoses": 16,
+        "total_cegar_iterations": 24
+      },
+      {
+        "bugs_detected": 16,
+        "clean_false_alarms": 0,
+        "depth": 2,
+        "refined_contract_diagnoses": 16,
+        "total_cegar_iterations": 40
+      },
+      {
+        "bugs_detected": 16,
+        "clean_false_alarms": 0,
+        "depth": 3,
+        "refined_contract_diagnoses": 16,
+        "total_cegar_iterations": 40
+      },
+      {
+        "bugs_detected": 16,
+        "clean_false_alarms": 0,
+        "depth": 4,
+        "refined_contract_diagnoses": 16,
+        "total_cegar_iterations": 40
+      },
+      {
+        "bugs_detected": 16,
+        "clean_false_alarms": 0,
+        "depth": 5,
+        "refined_contract_diagnoses": 16,
+        "total_cegar_iterations": 40
+      },
+      {
+        "bugs_detected": 16,
+        "clean_false_alarms": 0,
+        "depth": 6,
+        "refined_contract_diagnoses": 16,
+        "total_cegar_iterations": 40
+      }
+    ],
+    "precision_knee_depth": 1,
+    "precision_rises_then_plateaus": true,
+    "recall_is_depth_invariant_full": true,
+    "refined_diagnoses_at_depth_0": 0,
+    "refined_diagnoses_at_knee": 16,
+    "work_saturates_at_convergence": true,
+    "work_saturation_depth": 2,
+    "zero_false_alarms_all_depths": true
+  },
+  "cross_domain_reductions": {
+    "all_reductions_are_refinements": true,
+    "all_registered_reductions_exercised": true,
+    "default_engine_reductions": [
+      "NullityToTypeTag",
+      "NumericToNullity",
+      "TypeTagToNullity",
+      "TypeTagToNumeric"
+    ],
+    "per_reduction": {
+      "NullityToTypeTagReduction": {
+        "after": {
+          "interval": "TOP",
+          "is_bottom": false,
+          "nullity": "DEFINITELY_NOT_NULL",
+          "type_tags": [
+            "int"
+          ]
+        },
+        "after_refines_before": true,
+        "before": {
+          "interval": "TOP",
+          "is_bottom": false,
+          "nullity": "DEFINITELY_NOT_NULL",
+          "type_tags": [
+            "NoneType",
+            "int"
+          ]
+        },
+        "changed": true,
+        "changed_components": [
+          "type_tag"
+        ],
+        "default_engine_after": {
+          "interval": "TOP",
+          "is_bottom": false,
+          "nullity": "DEFINITELY_NOT_NULL",
+          "type_tags": [
+            "int"
+          ]
+        },
+        "default_engine_member": true,
+        "default_engine_refines_before": true,
+        "reduction_name": "NullityToTypeTag"
+      },
+      "NumericToNullityReduction": {
+        "after": {
+          "interval": [
+            1,
+            "inf"
+          ],
+          "is_bottom": false,
+          "nullity": "DEFINITELY_NOT_NULL",
+          "type_tags": "TOP"
+        },
+        "after_refines_before": true,
+        "before": {
+          "interval": [
+            1,
+            "inf"
+          ],
+          "is_bottom": false,
+          "nullity": "MAYBE_NULL",
+          "type_tags": "TOP"
+        },
+        "changed": true,
+        "changed_components": [
+          "nullity"
+        ],
+        "default_engine_after": {
+          "interval": [
+            1,
+            "inf"
+          ],
+          "is_bottom": false,
+          "nullity": "DEFINITELY_NOT_NULL",
+          "type_tags": "TOP"
+        },
+        "default_engine_member": true,
+        "default_engine_refines_before": true,
+        "reduction_name": "NumericToNullity"
+      },
+      "TruthinessReduction": {
+        "after": {
+          "interval": [
+            1,
+            5
+          ],
+          "is_bottom": false,
+          "nullity": "DEFINITELY_NOT_NULL",
+          "type_tags": [
+            "int"
+          ]
+        },
+        "after_refines_before": true,
+        "before": {
+          "interval": [
+            0,
+            5
+          ],
+          "is_bottom": false,
+          "nullity": "MAYBE_NULL",
+          "type_tags": [
+            "NoneType",
+            "int"
+          ]
+        },
+        "changed": true,
+        "changed_components": [
+          "interval",
+          "type_tag",
+          "nullity"
+        ],
+        "default_engine_member": false,
+        "reduction_name": "Truthiness(truthy=True)"
+      },
+      "TypeTagToNullityReduction": {
+        "after": {
+          "interval": "TOP",
+          "is_bottom": false,
+          "nullity": "DEFINITELY_NOT_NULL",
+          "type_tags": [
+            "int"
+          ]
+        },
+        "after_refines_before": true,
+        "before": {
+          "interval": "TOP",
+          "is_bottom": false,
+          "nullity": "MAYBE_NULL",
+          "type_tags": [
+            "int"
+          ]
+        },
+        "changed": true,
+        "changed_components": [
+          "nullity"
+        ],
+        "default_engine_after": {
+          "interval": "TOP",
+          "is_bottom": false,
+          "nullity": "DEFINITELY_NOT_NULL",
+          "type_tags": [
+            "int"
+          ]
+        },
+        "default_engine_member": true,
+        "default_engine_refines_before": true,
+        "reduction_name": "TypeTagToNullity"
+      },
+      "TypeTagToNumericReduction": {
+        "after": {
+          "interval": "BOTTOM",
+          "is_bottom": true,
+          "nullity": "DEFINITELY_NOT_NULL",
+          "type_tags": [
+            "str"
+          ]
+        },
+        "after_refines_before": true,
+        "before": {
+          "interval": [
+            3,
+            3
+          ],
+          "is_bottom": false,
+          "nullity": "DEFINITELY_NOT_NULL",
+          "type_tags": [
+            "str"
+          ]
+        },
+        "changed": true,
+        "changed_components": [
+          "interval"
+        ],
+        "default_engine_after": {
+          "interval": "BOTTOM",
+          "is_bottom": true,
+          "nullity": "DEFINITELY_NOT_NULL",
+          "type_tags": [
+            "str"
+          ]
+        },
+        "default_engine_member": true,
+        "default_engine_refines_before": true,
+        "reduction_name": "TypeTagToNumeric"
+      }
+    },
+    "registered_class_names": [
+      "NullityToTypeTagReduction",
+      "NumericToNullityReduction",
+      "TruthinessReduction",
+      "TypeTagToNullityReduction",
+      "TypeTagToNumericReduction"
+    ]
+  },
+  "extraction": {
+    "bug_tags": [
+      "SHAPE-INCOMPATIBLE",
+      "SHAPE-INCOMPATIBLE"
+    ],
+    "case_id": "two_linear_shape_mismatch",
+    "caught_after_extraction": true,
+    "with_extraction_inputs": [
+      "x"
+    ],
+    "with_extraction_layers": 2,
+    "with_extraction_outputs": [
+      "__ret_1"
+    ],
+    "with_extraction_steps": 3,
+    "without_extraction_analyzable_modules": 0
+  },
+  "headline_claims": {
+    "cegar_refinement_has_a_diagnosis_knee": true,
+    "every_registered_reduction_is_exercised": true,
+    "every_verification_domain_is_load_bearing": true,
+    "extraction_is_live": true,
+    "sound_mode_separates_proof_backed_from_heuristic": true,
+    "stubs_are_load_bearing": true
+  },
+  "proof_rules": {
+    "heuristic_abstains_in_sound_mode": true,
+    "heuristic_case": {
+      "abstained": true,
+      "confidence": "heuristic",
+      "operator": "torch.unique",
+      "proof_status": "heuristic",
+      "unknown_reasons": [
+        "heuristic-tagged operator(s) used: torch.unique"
+      ],
+      "verdict": "UNKNOWN"
+    },
+    "heuristic_rows": [
+      "torch.einsum",
+      "torch.multinomial",
+      "torch.unique"
+    ],
+    "heuristic_rows_all_heuristic_footprints": true,
+    "proof_backed_case": {
+      "abstained": false,
+      "confidence": "complete",
+      "operator": "torch.relu",
+      "proof_status": "lean_theorem",
+      "unknown_reasons": [],
+      "verdict": "SAFE"
+    },
+    "proof_backed_safe_without_abstention": true,
+    "proof_footprint_summary": {
+      "heuristic": 3,
+      "lean_theorem": 16,
+      "pen_and_paper_rule": 102,
+      "tested_only_rule": 18
+    }
+  },
+  "schema": "tensorguard.stagewise_ablation/v1",
+  "stage_order": [
+    "extraction",
+    "abstract_domains",
+    "cross_domain_reductions",
+    "cegar",
+    "stubs",
+    "proof_rules"
+  ],
+  "step": 253,
+  "stubs": {
+    "bad_head_caught_with_stub": true,
+    "bad_head_caught_without_stub": true,
+    "bad_input_caught_with_stub": true,
+    "bad_input_caught_without_stub": true,
+    "stub_params": {
+      "__stub_name__": "FancyBlock",
+      "in_features": 8,
+      "out_features": 16
+    },
+    "stub_stage_load_bearing": true,
+    "valid_model_safe_with_stub": true,
+    "valid_model_safe_without_stub": false,
+    "with_stub_layer_kind": "STUB",
+    "without_stub_layer_kind": "UNKNOWN"
+  }
+}

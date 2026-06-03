@@ -638,8 +638,9 @@ Ablations &
 \texttt{tests/test\_domain\_ablation.py},
 \texttt{tests/test\_reduced\_product\_ablation.py},
 \texttt{tests/test\_cegar\_depth\_ablation.py},
+\texttt{tests/test\_stagewise\_ablation.py},
 \texttt{tests/test\_verified\_reduction\_diff.py}.  Measures contribution of
-domains and refinement depth. \\
+domains, cross-domain reductions, stubs, proof policy, and refinement depth. \\
 \hline
 Dashboards &
 \texttt{tests/test\_dashboard.py}, \texttt{tests/test\_build\_dashboard.py},
@@ -702,6 +703,15 @@ and cast-related failures.  Phase information explains train/eval-sensitive
 patterns.  The reduced product is valuable because real failures often cross
 domain boundaries: a compile/export path may require a shape, dtype, device,
 and layout combination, not merely one axis of correctness.
+The newest stage-wise ablation ties these local claims into one live stack:
+source extraction builds a real graph and catches a seeded mismatch; every
+verification domain is load-bearing while phase is diagnostic-only; every
+registered reduction rule has a concrete refining witness, including the
+truthiness-triggered rule outside the default engine; CEGAR reaches full
+contract-level diagnostics at depth one without false alarms; a third-party stub
+turns an opaque clean model into a safe analyzable one while still rejecting bad
+input contracts; and strict sound mode accepts the Lean-backed \texttt{torch.relu}
+case while abstaining on heuristic \texttt{torch.unique} with an explicit reason.
 
 Latency and scalability scripts ensure the verifier remains useful.  Solver
 queries are cached or avoided when a transfer can be decided syntactically.
