@@ -47,6 +47,22 @@ from src.model_checker import (
 
 logger = logging.getLogger(__name__)
 
+
+def _literal_interpolate_size(
+    params: Dict[str, Any],
+    spatial_rank: int,
+) -> Optional[Tuple[int, ...]]:
+    size = (params or {}).get("size")
+    if isinstance(size, bool):
+        return None
+    if isinstance(size, int):
+        return tuple(size for _ in range(spatial_rank))
+    if isinstance(size, (tuple, list)) and len(size) == spatial_rank:
+        if all(isinstance(v, int) and not isinstance(v, bool) for v in size):
+            return tuple(size)
+    return None
+
+
 try:
     import z3
     HAS_Z3 = True
@@ -433,6 +449,14 @@ class ParametricVerifier(ConstraintVerifier):
                 elif layer.kind == LayerKind.UPSAMPLE:
                     for dp, dq in zip(pre_d[:2], post_d[:2]):
                         cs.append(dq == dp)
+                    size = _literal_interpolate_size(
+                        layer.params or {},
+                        max(0, len(pre_d) - 2),
+                    )
+                    if size is not None:
+                        for i, dim in enumerate(size):
+                            if len(post_d) > i + 2:
+                                cs.append(post_d[i + 2] == z3.IntVal(dim))
                 elif layer.kind == LayerKind.MULTIHEAD_ATTENTION:
                     for dp, dq in zip(pre_d, post_d):
                         cs.append(dq == dp)
@@ -512,6 +536,14 @@ class ParametricVerifier(ConstraintVerifier):
                 post_d = post.shape_vars[step.output]
                 for dp, dq in zip(pre_d[:2], post_d[:2]):
                     cs.append(dq == dp)
+                size = _literal_interpolate_size(
+                    step.params or {},
+                    max(0, len(pre_d) - 2),
+                )
+                if size is not None:
+                    for i, dim in enumerate(size):
+                        if len(post_d) > i + 2:
+                            cs.append(post_d[i + 2] == z3.IntVal(dim))
 
         elif step.op == OpKind.RESHAPE:
             dims = step.params.get("dims")

@@ -194,7 +194,8 @@ PyTorch constructs.  The core structural set covers matrix multiplication,
 batched matrix multiplication, linear layers, convolution and transpose
 convolution families, pooling, flatten, reshape/view with product reasoning,
 broadcasting, reductions, cat/stack, PyTorch-faithful padding,
-transpose/permute, squeeze/unsqueeze, fold/unfold image-column transforms,
+interpolation/upsampling, transpose/permute, squeeze/unsqueeze,
+fold/unfold image-column transforms,
 embedding, dtype casts, device moves, and stochastic tensor factories whose
 shapes are seed-independent.  Extended coverage includes einsum parsing,
 advanced indexing, gather/scatter, index select, masked select,
@@ -250,6 +251,20 @@ TensorGuard paths to agree.  This catches exactly the kind of edge case that a
 paper-only rule would likely miss: for example, \texttt{nn.ReflectionPad2d((1,2))}
 does \emph{not} mean symmetric 2D padding, and a circular pad equal to a
 dimension is legal while one larger than the dimension is not.
+
+\subsection{Interpolation and Upsampling}
+
+\texttt{F.interpolate} and \texttt{nn.Upsample} are shape-changing even though
+their parameters often look like harmless presentation choices.  \tg{} now
+models their literal \texttt{size} and \texttt{scale\_factor} contracts across
+1D/2D/3D spatial tensors: scalar sizes broadcast across all spatial axes, tuple
+sizes must match spatial rank, and scale factors use PyTorch's integer
+\(\lfloor \mathrm{input}\times\mathrm{scale}\rfloor\) output formula, including
+fractional downsampling and per-axis tuple scales.  Options such as
+\texttt{align\_corners}, \texttt{mode}, \texttt{recompute\_scale\_factor}, and
+\texttt{antialias} are captured so literal runtime-invalid combinations are
+reported, while dynamic sizes such as \texttt{x.shape[-2:]} conservatively
+produce symbolic spatial dimensions instead of false positives.
 
 \subsection{Examples of Transfer Precision}
 
@@ -754,6 +769,12 @@ constant/reflect/replicate/circular output shapes, source and FX parity,
 negative cropping, non-reinterpreted tuple lengths, 3D circular modules, and
 runtime-error parity for invalid ranks, reflect extents, and circular over-wraps. \\
 \hline
+\texttt{tests/test\_interpolate\_precise.py} &
+Live PyTorch conformance for \texttt{F.interpolate} and \texttt{nn.Upsample}:
+literal \texttt{size} vs. \texttt{scale\_factor}, fractional and tuple scales,
+rank-3/4/5 formulas, source and FX parity, dynamic-size abstention, downstream
+shape flow, and runtime-error parity for invalid modes/options. \\
+\hline
 \texttt{tests/test\_dtype\_precise.py},
 \texttt{tests/test\_dtype\_promote\_chain.py},
 \texttt{tests/test\_bool\_dtype\_soundness.py} &
@@ -845,6 +866,14 @@ constraints. Negative padding crops where PyTorch permits it. &
 Live PyTorch differential tests for functional and module forms across source
 and FX, including invalid-rank, reflect-bound, circular-wrap, and large
 replicate-padding cases. \\
+\hline
+Interpolation &
+\texttt{F.interpolate} and \texttt{nn.Upsample} preserve batch/channel axes and
+compute spatial axes from literal \texttt{size} or
+\texttt{scale\_factor}; dynamic size specs abstain soundly. &
+Live PyTorch differential tests for fractional scales, tuple scales, 1D/2D/3D
+spatial ranks, source/FX parity, invalid option combinations, and downstream
+linear-shape checking. \\
 \hline
 Reshape/view &
 Element product is preserved; \texttt{-1} is inferred when uniquely determined;

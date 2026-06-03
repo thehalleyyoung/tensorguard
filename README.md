@@ -17,8 +17,9 @@ runtime errors in ML codebases before any code runs.
 ## Key Features
 
 - **140+ operator transfer functions** — covers `matmul`, `conv2d`,
-  `cat`/`chunk`/`split`, `pad`, `view`, `reshape`, `transpose`, `permute`,
-  `einsum`, `take_along_dim`, `topk`/`sort`, `fold`/`unfold`, `bmm`,
+  `cat`/`chunk`/`split`, `pad`, `interpolate`/`Upsample`, `view`,
+  `reshape`, `transpose`, `permute`, `einsum`, `take_along_dim`,
+  `topk`/`sort`, `fold`/`unfold`, `bmm`,
   attention patterns, and more
 - **High-value library contracts checked against the real libraries** —
   `einops` (`rearrange` / `reduce` / `repeat`), SDPA,

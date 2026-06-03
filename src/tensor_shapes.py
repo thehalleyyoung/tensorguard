@@ -23,6 +23,7 @@ only checks types, not shapes), TensorGuard checks shapes *statically* with
 from __future__ import annotations
 
 import ast
+import math
 import time
 import logging
 from dataclasses import dataclass, field
@@ -1742,28 +1743,53 @@ class TensorShapeAnalyzer(ast.NodeVisitor):
             if node.args:
                 inp_shape = self._infer_shape(node.args[0])
                 if inp_shape and inp_shape.ndim >= 3:
+                    n_spatial = inp_shape.ndim - 2
                     # Determine target spatial dims from size or scale_factor
                     target_size = None
+                    scale_factor = None
                     for kw in node.keywords:
                         if kw.arg == "size":
                             if isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, int):
-                                n_spatial = inp_shape.ndim - 2
                                 target_size = [kw.value.value] * n_spatial
                             elif isinstance(kw.value, (ast.Tuple, ast.List)):
                                 target_size = [self._const_val(e) for e in kw.value.elts]
+                        elif kw.arg == "scale_factor":
+                            if isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, (int, float)):
+                                scale_factor = [float(kw.value.value)] * n_spatial
+                            elif isinstance(kw.value, (ast.Tuple, ast.List)):
+                                scale_factor = [self._const_val(e) for e in kw.value.elts]
                     if len(node.args) >= 2 and target_size is None:
                         arg1 = node.args[1]
                         if isinstance(arg1, ast.Constant) and isinstance(arg1.value, int):
-                            n_spatial = inp_shape.ndim - 2
                             target_size = [arg1.value] * n_spatial
                         elif isinstance(arg1, (ast.Tuple, ast.List)):
                             target_size = [self._const_val(e) for e in arg1.elts]
+                    if len(node.args) >= 3 and scale_factor is None:
+                        arg2 = node.args[2]
+                        if isinstance(arg2, ast.Constant) and isinstance(arg2.value, (int, float)):
+                            scale_factor = [float(arg2.value)] * n_spatial
+                        elif isinstance(arg2, (ast.Tuple, ast.List)):
+                            scale_factor = [self._const_val(e) for e in arg2.elts]
                     if target_size and all(v is not None for v in target_size):
                         # Keep batch + channel dims, replace spatial dims
                         new_dims = list(inp_shape.dims[:2])
                         new_dims.extend(ShapeDim(v) for v in target_size)
                         return TensorShape(tuple(new_dims))
-                    # scale_factor: mark spatial dims as symbolic
+                    if (
+                        scale_factor
+                        and len(scale_factor) == n_spatial
+                        and all(isinstance(v, (int, float)) for v in scale_factor)
+                    ):
+                        new_dims = list(inp_shape.dims[:2])
+                        for dim, factor in zip(inp_shape.dims[2:], scale_factor):
+                            if dim.is_symbolic:
+                                new_dims.append(ShapeDim("_interp"))
+                            else:
+                                new_dims.append(
+                                    ShapeDim(int(math.floor(dim.value * float(factor))))
+                                )
+                        return TensorShape(tuple(new_dims))
+                    # Dynamic size/scale_factor: mark spatial dims as symbolic.
                     new_dims = list(inp_shape.dims[:2])
                     new_dims.extend(ShapeDim("_interp") for _ in range(inp_shape.ndim - 2))
                     return TensorShape(tuple(new_dims))

@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import ast
 import copy
+import math
 import hashlib
 import logging
 import re
@@ -1577,9 +1578,21 @@ def _extract_layer_params(kind: LayerKind, call: ast.Call,
                         "dilation": dilation}
 
     elif kind == LayerKind.UPSAMPLE:
-        scale = kw.get("scale_factor")
         size = pos[0] if len(pos) > 0 else kw.get("size")
-        layer.params = {"scale_factor": scale, "size": size}
+        scale = pos[1] if len(pos) > 1 else kw.get("scale_factor")
+        mode = pos[2] if len(pos) > 2 else kw.get("mode", "nearest")
+        align_corners = (
+            pos[3] if len(pos) > 3 else kw.get("align_corners", None)
+        )
+        recompute_scale_factor = kw.get("recompute_scale_factor", None)
+        layer.params = {
+            "scale_factor": scale,
+            "size": size,
+            "mode": mode,
+            "align_corners": align_corners,
+            "recompute_scale_factor": recompute_scale_factor,
+            "__interpolate_args_observed__": True,
+        }
 
     elif kind in (LayerKind.TRANSFORMER_ENCODER_LAYER,
                   LayerKind.TRANSFORMER_DECODER_LAYER):
@@ -4896,6 +4909,8 @@ class _ForwardExtractor(ast.NodeVisitor):
                     inputs = [self._resolve_arg(a) for a in node.args[:2]]
                 elif op == OpKind.PAD:
                     inputs = [self._resolve_arg(node.args[0])] if node.args else []
+                elif op == OpKind.INTERPOLATE:
+                    inputs = [self._resolve_arg(node.args[0])] if node.args else []
                 elif op in (
                     OpKind.ARGSORT, OpKind.SORT, OpKind.TOPK,
                     OpKind.KTHVALUE, OpKind.ARG_REDUCE,
@@ -4907,6 +4922,60 @@ class _ForwardExtractor(ast.NodeVisitor):
                 for kw in node.keywords:
                     if kw.arg:
                         params_dict[kw.arg] = _const_value(kw.value)
+
+                if op == OpKind.INTERPOLATE:
+                    params_dict["__interpolate_args_observed__"] = True
+
+                    def _set_interp_arg(
+                        key: str,
+                        value_node: ast.expr,
+                        dynamic_key: str,
+                    ) -> None:
+                        val = _const_value(value_node, self._scalar_attrs)
+                        params_dict[key] = val
+                        if val is None and not (
+                            isinstance(value_node, ast.Constant)
+                            and value_node.value is None
+                        ):
+                            params_dict[dynamic_key] = True
+
+                    if len(node.args) >= 2:
+                        params_dict["__size_present__"] = True
+                        _set_interp_arg("size", node.args[1], "__size_dynamic__")
+                    if len(node.args) >= 3:
+                        params_dict["__scale_factor_present__"] = True
+                        _set_interp_arg(
+                            "scale_factor",
+                            node.args[2],
+                            "__scale_factor_dynamic__",
+                        )
+                    if len(node.args) >= 4:
+                        params_dict["mode"] = _const_value(node.args[3])
+                    if len(node.args) >= 5:
+                        params_dict["align_corners"] = _const_value(node.args[4])
+                    if len(node.args) >= 6:
+                        params_dict["recompute_scale_factor"] = _const_value(
+                            node.args[5])
+                    if len(node.args) >= 7:
+                        params_dict["antialias"] = _const_value(node.args[6])
+                    for kw in node.keywords:
+                        if kw.arg == "size":
+                            params_dict["__size_present__"] = True
+                            _set_interp_arg("size", kw.value, "__size_dynamic__")
+                        elif kw.arg == "scale_factor":
+                            params_dict["__scale_factor_present__"] = True
+                            _set_interp_arg(
+                                "scale_factor",
+                                kw.value,
+                                "__scale_factor_dynamic__",
+                            )
+                        elif kw.arg in (
+                            "mode",
+                            "align_corners",
+                            "recompute_scale_factor",
+                            "antialias",
+                        ):
+                            params_dict[kw.arg] = _const_value(kw.value)
 
                 if op == OpKind.CHUNK:
                     if len(node.args) >= 2:
@@ -6842,30 +6911,239 @@ def _propagate_convtranspose2d(
 def _propagate_upsample(
     input_shape: TensorShape, layer: LayerDef
 ) -> Tuple[Optional[TensorShape], Optional[str]]:
-    """Upsample / F.interpolate preserves batch and channel dims."""
-    if input_shape.ndim < 3:
-        return None, f"Upsample expects >=3D, got {input_shape.ndim}D"
-    scale = layer.params.get("scale_factor")
-    size = layer.params.get("size")
-    if input_shape.ndim == 4:
-        if size is not None:
-            if isinstance(size, int):
-                size = (size, size)
-            return TensorShape((
-                input_shape.dims[0], input_shape.dims[1],
-                ShapeDim(size[0]), ShapeDim(size[1]),
-            )), None
-        if scale is not None and not input_shape.dims[2].is_symbolic:
-            s = int(scale) if isinstance(scale, (int, float)) else 2
-            return TensorShape((
-                input_shape.dims[0], input_shape.dims[1],
-                ShapeDim(input_shape.dims[2].value * s),
-                ShapeDim(input_shape.dims[3].value * s),
-            )), None
-    # Fallback: preserve batch + channel, mark spatial as symbolic
+    """Upsample / F.interpolate output shape following PyTorch size rules."""
+    return _compute_interpolate_shape(input_shape, layer.params or {})
+
+
+def _is_literal_none(value: Any) -> bool:
+    return value is None
+
+
+def _is_number(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _literal_sequence(value: Any) -> Optional[Tuple[Any, ...]]:
+    if isinstance(value, (tuple, list)):
+        return tuple(value)
+    return None
+
+
+def _normalize_interpolate_size(
+    size: Any,
+    spatial_rank: int,
+    *,
+    explicit: bool,
+) -> Tuple[Optional[Tuple[int, ...]], Optional[str]]:
+    if size is None:
+        return None, None
+    if isinstance(size, bool):
+        return None, "interpolate size must be an int or tuple of ints, got bool"
+    if isinstance(size, int):
+        if size <= 0:
+            return None, f"interpolate size entries must be positive, got {size}"
+        return tuple(size for _ in range(spatial_rank)), None
+    seq = _literal_sequence(size)
+    if seq is None:
+        return None, None
+    if len(seq) != spatial_rank:
+        if explicit:
+            return None, (
+                "interpolate size length must match spatial rank "
+                f"{spatial_rank}, got {len(seq)}"
+            )
+        return None, None
+    out: List[int] = []
+    for dim in seq:
+        if isinstance(dim, bool) or not isinstance(dim, int):
+            return None, None
+        if dim <= 0:
+            return None, (
+                f"interpolate size entries must be positive, got {dim}"
+            )
+        out.append(dim)
+    return tuple(out), None
+
+
+def _normalize_interpolate_scale(
+    scale: Any,
+    spatial_rank: int,
+    *,
+    explicit: bool,
+) -> Tuple[Optional[Tuple[float, ...]], Optional[str]]:
+    if scale is None:
+        return None, None
+    if _is_number(scale):
+        if float(scale) <= 0.0:
+            return None, (
+                f"interpolate scale_factor entries must be positive, got {scale}"
+            )
+        return tuple(float(scale) for _ in range(spatial_rank)), None
+    seq = _literal_sequence(scale)
+    if seq is None:
+        return None, None
+    if len(seq) != spatial_rank:
+        if explicit:
+            return None, (
+                "interpolate scale_factor length must match spatial rank "
+                f"{spatial_rank}, got {len(seq)}"
+            )
+        return None, None
+    out: List[float] = []
+    for factor in seq:
+        if not _is_number(factor):
+            return None, None
+        factor_f = float(factor)
+        if factor_f <= 0.0:
+            return None, (
+                "interpolate scale_factor entries must be positive, "
+                f"got {factor}"
+            )
+        out.append(factor_f)
+    return tuple(out), None
+
+
+def _mode_spatial_rank_error(mode: str, spatial_rank: int) -> Optional[str]:
+    if mode in ("nearest", "nearest-exact", "area"):
+        return None
+    expected = {
+        "linear": 1,
+        "bilinear": 2,
+        "bicubic": 2,
+        "trilinear": 3,
+    }.get(mode)
+    if expected is None:
+        return f"interpolate mode {mode!r} is not statically supported"
+    if spatial_rank != expected:
+        return (
+            f"interpolate mode {mode!r} expects {expected} spatial dims, "
+            f"got {spatial_rank}"
+        )
+    return None
+
+
+def _interpolate_option_error(
+    params: Dict[str, Any],
+    spatial_rank: int,
+) -> Optional[str]:
+    mode = params.get("mode", "nearest")
+    if mode is None:
+        mode = "nearest"
+    if not isinstance(mode, str):
+        return None
+    mode_error = _mode_spatial_rank_error(mode, spatial_rank)
+    if mode_error:
+        return mode_error
+    align_corners = params.get("align_corners", None)
+    if align_corners is not None and mode in ("nearest", "nearest-exact", "area"):
+        return (
+            f"align_corners option can only be set for linear/bilinear/"
+            f"bicubic/trilinear modes, got mode {mode!r}"
+        )
+    antialias = params.get("antialias", False)
+    if antialias is True:
+        if mode not in ("bilinear", "bicubic") or spatial_rank != 2:
+            return (
+                "antialias=True is only supported for 4D bilinear/bicubic "
+                "interpolation"
+            )
+    return None
+
+
+def _dynamic_interpolate_shape(
+    input_shape: TensorShape,
+    output_name: str = "_up",
+) -> TensorShape:
     kept = input_shape.dims[:2]
-    spatial = tuple(ShapeDim("_up") for _ in input_shape.dims[2:])
-    return TensorShape(kept + spatial), None
+    spatial = tuple(
+        ShapeDim(f"{output_name}{i}") for i in range(input_shape.ndim - 2)
+    )
+    return TensorShape(kept + spatial)
+
+
+def _compute_interpolate_shape(
+    input_shape: TensorShape,
+    params: Dict[str, Any],
+    *,
+    output_name: str = "_up",
+) -> Tuple[Optional[TensorShape], Optional[str]]:
+    """Compute the PyTorch output shape for interpolate/upsample.
+
+    Literal invalid configurations return an error. Dynamic or uncaptured size
+    specs abstain by preserving N,C and making spatial dims fresh symbols.
+    """
+    if input_shape.ndim < 3:
+        return None, f"interpolate expects >=3D input, got {input_shape.ndim}D"
+    spatial_rank = input_shape.ndim - 2
+    size_present = bool(params.get("__size_present__", params.get("size") is not None))
+    scale_present = bool(
+        params.get("__scale_factor_present__", params.get("scale_factor") is not None)
+    )
+    args_observed = bool(params.get("__interpolate_args_observed__", False))
+    size_dynamic = bool(params.get("__size_dynamic__", False))
+    scale_dynamic = bool(params.get("__scale_factor_dynamic__", False))
+    size = params.get("size")
+    scale = params.get("scale_factor")
+    size_literal = size_present and not size_dynamic and not _is_literal_none(size)
+    scale_literal = (
+        scale_present and not scale_dynamic and not _is_literal_none(scale)
+    )
+
+    if args_observed:
+        size_none = size_present and not size_dynamic and _is_literal_none(size)
+        scale_none = (
+            scale_present and not scale_dynamic and _is_literal_none(scale)
+        )
+        no_effective_size = (not size_present) or size_none
+        no_effective_scale = (not scale_present) or scale_none
+        if no_effective_size and no_effective_scale:
+            return None, "interpolate requires either size or scale_factor"
+
+    option_error = _interpolate_option_error(params, spatial_rank)
+    if option_error:
+        return None, option_error
+
+    if size_literal and scale_literal:
+        return None, "interpolate cannot specify both size and scale_factor"
+
+    if size_dynamic or scale_dynamic:
+        return _dynamic_interpolate_shape(input_shape, output_name), None
+
+    if size_literal:
+        normalized_size, err = _normalize_interpolate_size(
+            size, spatial_rank, explicit=True,
+        )
+        if err:
+            return None, err
+        if normalized_size is None:
+            return _dynamic_interpolate_shape(input_shape, output_name), None
+        return TensorShape(
+            input_shape.dims[:2] + tuple(ShapeDim(v) for v in normalized_size)
+        ), None
+
+    if scale_literal:
+        normalized_scale, err = _normalize_interpolate_scale(
+            scale, spatial_rank, explicit=True,
+        )
+        if err:
+            return None, err
+        if normalized_scale is None:
+            return _dynamic_interpolate_shape(input_shape, output_name), None
+        out_dims: List[ShapeDim] = list(input_shape.dims[:2])
+        for dim, factor in zip(input_shape.dims[2:], normalized_scale):
+            if dim.is_symbolic:
+                out_dims.append(ShapeDim(f"{output_name}{len(out_dims) - 2}"))
+            else:
+                out_dims.append(ShapeDim(int(math.floor(dim.value * factor))))
+        for out_dim in out_dims[2:]:
+            if not out_dim.is_symbolic and out_dim.value <= 0:
+                return None, (
+                    "interpolate output spatial dims must be positive; "
+                    f"got {tuple(d.value for d in out_dims[2:] if not d.is_symbolic)}"
+                )
+        return TensorShape(tuple(out_dims)), None
+
+    return _dynamic_interpolate_shape(input_shape, output_name), None
 
 
 def _propagate_multihead_attention(
@@ -8814,6 +9092,15 @@ class ConstraintVerifier:
                     # Preserve batch and channel dims
                     for dp, dq in zip(pre_d[:2], post_d[:2]):
                         cs.append(dq == dp)
+                    fixed_size, _ = _normalize_interpolate_size(
+                        (layer.params or {}).get("size"),
+                        max(0, len(pre_d) - 2),
+                        explicit=False,
+                    )
+                    if fixed_size is not None:
+                        for i, dim in enumerate(fixed_size):
+                            if len(post_d) > i + 2:
+                                cs.append(post_d[i + 2] == z3.IntVal(dim))
                 elif layer.kind == LayerKind.MULTIHEAD_ATTENTION:
                     # MHA preserves shape; input last dim == embed_dim
                     for dp, dq in zip(pre_d, post_d):
@@ -9015,6 +9302,15 @@ class ConstraintVerifier:
                 post_d = post.shape_vars[step.output]
                 for dp, dq in zip(pre_d[:2], post_d[:2]):
                     cs.append(dq == dp)
+                fixed_size, _ = _normalize_interpolate_size(
+                    (step.params or {}).get("size"),
+                    max(0, len(pre_d) - 2),
+                    explicit=False,
+                )
+                if fixed_size is not None:
+                    for i, dim in enumerate(fixed_size):
+                        if len(post_d) > i + 2:
+                            cs.append(post_d[i + 2] == z3.IntVal(dim))
 
         elif step.op == OpKind.RESHAPE:
             dims = step.params.get("dims")
@@ -10114,15 +10410,24 @@ class ConstraintVerifier:
         elif step.op == OpKind.NEW_TENSOR:
             self._apply_new_tensor(new_state, step)
         elif step.op == OpKind.INTERPOLATE:
-            # F.interpolate preserves batch + channel dims
             if step.inputs and step.inputs[0] in state.shape_env:
                 inp_shape = state.shape_env[step.inputs[0]]
-                if inp_shape.ndim >= 3:
-                    kept = inp_shape.dims[:2]
-                    spatial = tuple(ShapeDim("_up") for _ in inp_shape.dims[2:])
-                    new_state.shape_env[step.output] = TensorShape(kept + spatial)
-                else:
-                    new_state.shape_env[step.output] = inp_shape
+                out_shape, err = _compute_interpolate_shape(
+                    inp_shape,
+                    step.params or {},
+                    output_name=f"_interp_{step.output}_",
+                )
+                if err:
+                    violations.append(SafetyViolation(
+                        kind="shape_incompatible",
+                        step_index=-1,
+                        step=step,
+                        message=err,
+                        tensor_a=step.inputs[0],
+                        shape_a=inp_shape,
+                    ))
+                elif out_shape is not None:
+                    new_state.shape_env[step.output] = out_shape
         elif step.op == OpKind.SUBSCRIPT:
             self._apply_subscript(new_state, step)
         elif step.op == OpKind.STACK:
@@ -12997,13 +13302,16 @@ class SymbolicShapePropagator:
                         env[step.output] = result
 
         elif step.op == OpKind.INTERPOLATE:
-            # F.interpolate preserves batch and channel dims
             inp = step.inputs[0] if step.inputs else None
             inp_shape = env.get(inp) if inp else None
-            if inp_shape and inp_shape.ndim >= 3:
-                kept = inp_shape.dims[:2]
-                spatial = tuple(ShapeDim("_up") for _ in inp_shape.dims[2:])
-                env[step.output] = TensorShape(kept + spatial)
+            if inp_shape:
+                out, _ = _compute_interpolate_shape(
+                    inp_shape,
+                    step.params or {},
+                    output_name=f"_interp_{step.output}_",
+                )
+                if out:
+                    env[step.output] = out
 
         elif step.op == OpKind.RESHAPE:
             inp = step.inputs[0] if step.inputs else None

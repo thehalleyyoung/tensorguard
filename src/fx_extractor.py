@@ -234,6 +234,14 @@ def _extract_layer_params(module: "nn.Module", kind: LayerKind) -> Dict[str, Any
     elif kind == LayerKind.UPSAMPLE:
         params["scale_factor"] = module.scale_factor
         params["size"] = module.size
+        params["mode"] = getattr(module, "mode", "nearest")
+        params["align_corners"] = getattr(module, "align_corners", None)
+        params["recompute_scale_factor"] = getattr(
+            module, "recompute_scale_factor", None
+        )
+        if hasattr(module, "antialias"):
+            params["antialias"] = module.antialias
+        params["__interpolate_args_observed__"] = True
     elif kind == LayerKind.FLATTEN:
         params["start_dim"] = module.start_dim
         params["end_dim"] = module.end_dim
@@ -1080,6 +1088,25 @@ def _parse_reshape_dims(shape_args: Tuple) -> Optional[Tuple]:
     return tuple(dims)
 
 
+def _literal_or_dynamic(value: Any) -> Tuple[Any, bool]:
+    """Return a literal FX argument or mark it dynamic if it depends on a node."""
+    if isinstance(value, torch.fx.Node):
+        return None, True
+    if isinstance(value, (tuple, list)):
+        items = []
+        dynamic = False
+        for item in value:
+            if isinstance(item, torch.fx.Node):
+                dynamic = True
+                items.append(None)
+            else:
+                items.append(item)
+        if dynamic:
+            return None, True
+        return tuple(items) if isinstance(value, tuple) else list(items), False
+    return value, False
+
+
 def _extract_indexing_params(
     node: "torch.fx.Node",
     op_kind: OpKind,
@@ -1193,6 +1220,54 @@ def _extract_function_params(
             params["start_dim"] = node.args[1]
         if len(node.args) > 2 and isinstance(node.args[2], int):
             params["end_dim"] = node.args[2]
+    elif op_kind == OpKind.INTERPOLATE:
+        params["__interpolate_args_observed__"] = True
+
+        def _set_arg(key: str, value: Any, dynamic_key: str) -> None:
+            literal, dynamic = _literal_or_dynamic(value)
+            params[key] = literal
+            if dynamic:
+                params[dynamic_key] = True
+
+        if len(node.args) > 1:
+            params["__size_present__"] = True
+            _set_arg("size", node.args[1], "__size_dynamic__")
+        if len(node.args) > 2:
+            params["__scale_factor_present__"] = True
+            _set_arg(
+                "scale_factor",
+                node.args[2],
+                "__scale_factor_dynamic__",
+            )
+        for pos, key in (
+            (3, "mode"),
+            (4, "align_corners"),
+            (5, "recompute_scale_factor"),
+            (6, "antialias"),
+        ):
+            if len(node.args) > pos:
+                params[key], _ = _literal_or_dynamic(node.args[pos])
+        for key in (
+            "size",
+            "scale_factor",
+            "mode",
+            "align_corners",
+            "recompute_scale_factor",
+            "antialias",
+        ):
+            if key in node.kwargs:
+                if key == "size":
+                    params["__size_present__"] = True
+                    _set_arg("size", node.kwargs[key], "__size_dynamic__")
+                elif key == "scale_factor":
+                    params["__scale_factor_present__"] = True
+                    _set_arg(
+                        "scale_factor",
+                        node.kwargs[key],
+                        "__scale_factor_dynamic__",
+                    )
+                else:
+                    params[key], _ = _literal_or_dynamic(node.kwargs[key])
     elif op_kind == OpKind.PERMUTE:
         # torch.permute(x, dims): ``dims`` is a single tuple/list, but tolerate
         # the varargs spelling torch.permute(x, 0, 2, 1) as well.
@@ -2034,6 +2109,8 @@ _F_FUNC_MAP: Dict[str, OpKind] = {
     "softmax": OpKind.SOFTMAX,
     "log_softmax": OpKind.SOFTMAX,
     "dropout": OpKind.DROPOUT,
+    "interpolate": OpKind.INTERPOLATE,
+    "upsample": OpKind.INTERPOLATE,
 }
 
 # ast BinOp operator → OpKind

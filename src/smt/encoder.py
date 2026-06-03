@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import itertools
+import math
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -1521,6 +1522,36 @@ def _conv2d_output_shape(input_shape, weight_shape, stride=(1, 1),
     return (N, C_out, H_out, W_out)
 
 
+def _interpolate_output_shape(input_shape, size=None, scale_factor=None):
+    if len(input_shape) < 3:
+        return input_shape
+    spatial_rank = len(input_shape) - 2
+    unknown = tuple(f"_interp{i}" for i in range(spatial_rank))
+    if size is not None:
+        if isinstance(size, int) and not isinstance(size, bool):
+            spatial = (size,) * spatial_rank
+        elif isinstance(size, (tuple, list)) and len(size) == spatial_rank:
+            spatial = tuple(size)
+        else:
+            spatial = unknown
+        return (*input_shape[:2], *spatial)
+    if scale_factor is not None:
+        if isinstance(scale_factor, (int, float)) and not isinstance(scale_factor, bool):
+            factors = (float(scale_factor),) * spatial_rank
+        elif isinstance(scale_factor, (tuple, list)) and len(scale_factor) == spatial_rank:
+            factors = tuple(float(f) for f in scale_factor)
+        else:
+            return (*input_shape[:2], *unknown)
+        spatial = []
+        for dim, factor in zip(input_shape[2:], factors):
+            if isinstance(dim, int) and not isinstance(dim, bool):
+                spatial.append(int(math.floor(dim * factor)))
+            else:
+                spatial.append(f"_interp{len(spatial)}")
+        return (*input_shape[:2], *spatial)
+    return (*input_shape[:2], *unknown)
+
+
 FUNCTIONAL_SHAPE_RULES = {
     # F.linear(input, weight, bias?) → (*input[:-1], weight[0])
     'F.linear': lambda input_shape, weight_shape: (
@@ -1553,10 +1584,7 @@ FUNCTIONAL_SHAPE_RULES = {
     'F.embedding': lambda input_shape, weight_shape: (
         (*input_shape, weight_shape[1])
     ),
-    # Interpolation (output spatial dims are dynamic)
-    'F.interpolate': lambda input_shape, size=None, scale_factor=None: (
-        input_shape  # placeholder — real shape depends on size/scale_factor
-    ),
+    'F.interpolate': _interpolate_output_shape,
     # Adaptive pooling
     'F.adaptive_avg_pool2d': lambda input_shape, output_size: (
         (*input_shape[:2], *output_size)
