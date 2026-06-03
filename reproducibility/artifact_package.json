@@ -1,0 +1,126 @@
+{
+  "all_modes_passed": true,
+  "check_command": "python reproducibility/artifact_package.py --check",
+  "docs": "docs/artifact/PACKAGING.md",
+  "modes": [
+    {
+      "checks": {
+        "capsule_replays_evidence": true,
+        "multi_stage_wheel_build": true,
+        "non_root_runtime": true,
+        "roadmap_excluded": true,
+        "runtime_is_wheel_only": true,
+        "tool_entrypoint": true
+      },
+      "files": {
+        ".dockerignore": "220da95523c062df1597f2c972d2ea3542e87db5c3eb71cbec431a6e34a7cb7f",
+        "Dockerfile": "1a86871f9c5b6489200d87024c6f5e5c732e5fee6869ba2ad49321cf196247bc",
+        "capsule/Dockerfile.reproduce": "3729d1530761b8c6ac1d06cba4e2a1604ba271fdc006fe9b3a0c6ad72a3949a5",
+        "capsule/Dockerfile.reproduce.dockerignore": "4470e8785ba38e62aca0fae2796d1a286b5b5d79c0e5f917015b22b27c264d57",
+        "capsule/reproduce.sh": "5fb9d06bd7c0269230f02b15ae707cfe43006c6baad38d726279f2312c4aefbf",
+        "capsule/requirements.lock.txt": "7d5d51b4a51e1134d7387b1437130bdbf46d71488a4cb1c76e80b5acc756b9cc"
+      },
+      "fresh_machine_command": "docker build -t tensorguard . && docker run --rm -v \"$PWD:/work\" tensorguard verify /work/examples/shape_bug.py -s x=1,3,32,32",
+      "freshness_barriers": [
+        "builds from python:3.12-slim",
+        "runtime stage installs only the built wheel",
+        "runs as an unprivileged user",
+        "image context excludes .git, virtualenvs, caches, and 100_STEPS.md"
+      ],
+      "full_paper_evidence_command": "docker build -f capsule/Dockerfile.reproduce -t tensorguard-capsule . && docker run --rm tensorguard-capsule",
+      "mode": "docker",
+      "passed": true
+    },
+    {
+      "checks": {
+        "entrypoints_declared": true,
+        "isolated_test_command": true,
+        "mit_license": true,
+        "noarch_python": true,
+        "python_floor_matches_pyproject": true,
+        "z3_range_matches_pyproject": true
+      },
+      "files": {
+        "LICENSE": "684648f07fa2c54188365d3437b8d9af7cf2ea0e7a6e3a45fae8edfb18753d26",
+        "conda-recipe/meta.yaml": "dd8c7ea26cf3af55ba6cc8f0b62425964a4441931a246a7abe556525809306fd",
+        "pyproject.toml": "c5d7f175a2a124ae18757e75bd30c61bd7d72e5e7d67188067f1537e3359df4d"
+      },
+      "fresh_machine_command": "python -m build --sdist && conda build conda-recipe/ --no-test && conda create -n tg-artifact tensorguard && conda run -n tg-artifact tensorguard --help",
+      "freshness_barriers": [
+        "conda-build creates an isolated host/test prefix",
+        "recipe is noarch: python",
+        "runtime dependencies mirror pyproject",
+        "recipe smoke test runs the installed console script"
+      ],
+      "full_paper_evidence_command": "conda run -n tg-artifact python reproducibility/reproduce_all.py --check",
+      "mode": "conda",
+      "passed": true
+    },
+    {
+      "checks": {
+        "docs_required_for_artifact": true,
+        "one_command_reproduction": true,
+        "pyproject_build_backend": true,
+        "real_smoke_passed": true,
+        "roadmap_not_shipped": true,
+        "tests_not_shipped_in_sdist": true
+      },
+      "files": {
+        "MANIFEST.in": "30c8dea28e894f05a0e94ce2eb98ed31cf17c7bce1a7317f8684c633b1489077",
+        "README.md": "b5dd4197a4c6b19525dcce2abbad0e8a831687a141a208f0fdcbdcf09d0adae1",
+        "capsule/reproduce.sh": "5fb9d06bd7c0269230f02b15ae707cfe43006c6baad38d726279f2312c4aefbf",
+        "examples/shape_bug.py": "6424c4db21c4231b19cce92c00aeed79bd60420bd66c84facbeabc3ae2f55399",
+        "pyproject.toml": "c5d7f175a2a124ae18757e75bd30c61bd7d72e5e7d67188067f1537e3359df4d"
+      },
+      "fresh_machine_command": "git clone https://github.com/thehalleyyoung/tensorguard && cd tensorguard && python -m venv .venv && . .venv/bin/activate && pip install -e '.[dev]' && tensorguard verify examples/shape_bug.py -s x=1,3,32,32",
+      "freshness_barriers": [
+        "starts from a fresh clone",
+        "creates a new virtual environment",
+        "installs through pyproject metadata",
+        "runs the same real bug smoke test before evidence replay"
+      ],
+      "full_paper_evidence_command": "python reproducibility/reproduce_all.py --check",
+      "mode": "source",
+      "passed": true,
+      "smoke": {
+        "bug_categories": [
+          "type_error"
+        ],
+        "example": "examples/shape_bug.py",
+        "expected_status": "UNSAFE",
+        "input_shapes": {
+          "x": [
+            1,
+            3,
+            32,
+            32
+          ]
+        },
+        "n_bugs": 4,
+        "observed_status": "UNSAFE",
+        "passed": true
+      }
+    }
+  ],
+  "n_modes": 3,
+  "purpose": "best-paper artifact package across Docker, conda, and source install modes",
+  "real_smoke": {
+    "bug_categories": [
+      "type_error"
+    ],
+    "example": "examples/shape_bug.py",
+    "expected_status": "UNSAFE",
+    "input_shapes": {
+      "x": [
+        1,
+        3,
+        32,
+        32
+      ]
+    },
+    "n_bugs": 4,
+    "observed_status": "UNSAFE",
+    "passed": true
+  },
+  "step": 267
+}

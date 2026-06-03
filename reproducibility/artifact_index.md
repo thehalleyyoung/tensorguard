@@ -2,10 +2,10 @@
 
 This is a tamper-evident ledger for every generated artifact owned by `reproducibility/reproduce_all.py`. Each non-index artifact is recorded with byte size and SHA-256; the aggregate root digest changes if any artifact path, size, or content hash changes.
 
-- artifacts indexed: **549**
-- hashed artifacts: **547**
+- artifacts indexed: **552**
+- hashed artifacts: **550**
 - missing artifacts: **0**
-- artifact root sha256: `838965c2107b99850056abd49fc4bf84529442dfcf26a039c1f3d083dd237a2f`
+- artifact root sha256: `79bc1d0a0f446d6091e75806b18d5127b2ba3b67a6d31540b1c3bfffc540a7bd`
 - check command: `python reproducibility/artifact_index.py --check`
 
 | path | category | bytes | sha256 |
@@ -427,6 +427,7 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `corpus_extended/cases/clean_norm_layernorm_64_256.py` | generated_corpus | 337 | `ba571f4b26c3c16b57f8b6b5dc79b8762060edc3925e78b51031fad3af6225fb` |
 | `corpus_extended/cases/clean_norm_layernorm_64_64.py` | generated_corpus | 334 | `4655011b0a80735e81f41d38f24185b6d43a1e79b3a3e5374f85c7de2b338f52` |
 | `corpus_extended/manifest.json` | generated_corpus | 142182 | `7f435ffc6795acfecfe2f0e527b028c7d2bb89f317fe5e9ba20e48ff28e44008` |
+| `docs/artifact/PACKAGING.md` | generated_evidence | 1868 | `102e1f64ff058072da4b310b99e68ad35289ef6fbba505fc9685cb1c51a97448` |
 | `docs/dashboard/data.json` | generated_evidence | 8657 | `e28b56a431ed5a2a1ee571c49dc2088511b062584dacfd148c6980298c685023` |
 | `docs/dashboard/index.html` | generated_evidence | 13169 | `b4dd7f7171ad69c11f3c69f0e1c48297dea6dd545a5bbf119bf48ec233fd2893` |
 | `docs/user_study/task_packet.json` | generated_evidence | 6081 | `8d3de1f6d3f900ecb46e334a763c20c83ae6520de2a025205d12f7651df5c7f4` |
@@ -471,6 +472,8 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `reproducibility/artifact_badges.md` | generated_evidence | 3499 | `1a7c4ff8cc464dcc5164ea2f41449ac1b3ddb839697bc19d2cee42e2f6d1ed57` |
 | `reproducibility/artifact_index.json` | self_index | - | `self-referential index file; checked byte-identical by --check` |
 | `reproducibility/artifact_index.md` | self_index | - | `self-referential index file; checked byte-identical by --check` |
+| `reproducibility/artifact_package.json` | generated_evidence | 5044 | `9bb9a44518db0416cfb5d821e4920f8aa7979e19ab2afc3d8cda9127bf1501bc` |
+| `reproducibility/artifact_package.md` | generated_evidence | 1868 | `102e1f64ff058072da4b310b99e68ad35289ef6fbba505fc9685cb1c51a97448` |
 | `reproducibility/baseline_head_to_head.json` | generated_evidence | 1359 | `434e000cbfc97d88896d32978c23bd905f6486b6b78a919b1f1fe3dadfdfc99f` |
 | `reproducibility/baseline_head_to_head.md` | generated_evidence | 1024 | `79bf6f2dfac377aef3e40566454975b3c6b17f6aeacbe756f5e00c1cc1a5ee0e` |
 | `reproducibility/blind_split_eval.json` | generated_evidence | 1563 | `42e4e526b8b53543b21542ddcab75ef4860f5146e9634c283289324991a16db2` |
@@ -517,8 +520,8 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `reproducibility/natural_distribution_study.json` | generated_evidence | 3121 | `88dfa0efde25505fd7d4349b4f9a4cb9e0fb9d29d4630e099f1e4e880b1f4c86` |
 | `reproducibility/natural_distribution_study.md` | generated_evidence | 1148 | `ba75dcb538f9b76c74f48184b9b49d7f0de1d5c0fa59f1e2d3e85a112d59c6cb` |
 | `reproducibility/numeric_claims_audit.json` | generated_evidence | 5817 | `e89235443781986763a6051c0dfee8a6b6967f30ff3137886dd8c7b84233d98b` |
-| `reproducibility/paper_evidence_index.json` | generated_evidence | 19716 | `e32351b56cd67d9361dccb2b758f3c486e3e2ced15b34b21d7cd3722cd27135d` |
-| `reproducibility/paper_evidence_index.md` | generated_evidence | 4945 | `4d7c2db42ed734af7b8235f09f46f8640244aff50a936accd9e8bcea17a6658b` |
+| `reproducibility/paper_evidence_index.json` | generated_evidence | 20286 | `1f09921f756f5f493427a644b4e6c671b985ffbba0e6105cf78a44b287647cdb` |
+| `reproducibility/paper_evidence_index.md` | generated_evidence | 5064 | `8eec1d50863e67d4df149a5c47a37ab85310c710ce7bdf06898d081bd27b2e25` |
 | `reproducibility/pr_history_survival.json` | generated_evidence | 11620 | `5bd45df172f86de36b5e0f4430c6394650c33784c9d1d8c727391a8366be954b` |
 | `reproducibility/pr_history_survival.md` | generated_evidence | 2448 | `77e212f219e484e180ea0320f4a1bc2f9c73552bb9d3caf28123b027e66359f8` |
 | `reproducibility/quant_export_safety.json` | generated_evidence | 1741 | `9cfa5fa0bec5e6745050fe9283c8587d0fa05d25eb29403907cb8c74c8d4f264` |

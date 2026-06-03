@@ -2488,6 +2488,11 @@ slim, non-root runtime whose entrypoint is the `tensorguard` console script, so
 install; `tests/test_docker_image.py` checks that contract and runs the real
 entrypoint command.
 
+For paper review, `reproducibility/artifact_package.py` now packages the same
+artifact three ways — Docker, conda, and source — with fresh-machine commands,
+hidden-state barriers, and a real `examples/shape_bug.py` smoke check; see
+`docs/artifact/PACKAGING.md`.
+
 ### Incremental adoption (baseline & suppression)
 
 Legacy repositories can adopt TensorGuard without a wall of failures. A

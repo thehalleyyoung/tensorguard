@@ -748,6 +748,13 @@ a Dockerfile, and \path{capsule/reproduce.sh}.  The capsule verifies the live
 interpreter, regenerates deterministic artifacts, checks byte identity, and
 reruns the numeric audit.  Badge evidence is mapped to in-tree paths for
 Available, Functional, Reusable, and Results Reproduced criteria.
+\path{reproducibility/artifact_package.py} extends this into a three-mode
+fresh-machine package manifest: Docker builds a wheel-only non-root image,
+conda renders a \texttt{noarch: python} recipe with an isolated installed
+entrypoint test, and source mode starts from a fresh clone plus virtualenv.
+All three modes name their evidence replay command, and source mode runs the
+real \path{examples/shape_bug.py} smoke test and observes \unsafe{} before any
+claim is accepted.
 
 \subsection{Dashboard and release gates}
 
@@ -768,7 +775,11 @@ and integration modules above 90\% line coverage.
 \texttt{z3-solver} dependency range, a CLI entrypoint, a pre-commit hook, and a
 pytest plugin.  The roadmap includes PyPI, conda-forge, Docker, and pipx paths;
 the repository already contains the policy and harness pieces needed to make
-those releases reproducible.
+those releases reproducible.  The Step 267 manifest ties the release paths to
+fresh-machine commands: \path{Dockerfile} and \path{capsule/Dockerfile.reproduce}
+for containerized review, \path{conda-recipe/meta.yaml} for conda-build, and a
+source checkout plus virtualenv path for reviewers who want to inspect or modify
+the code before running \path{reproducibility/reproduce_all.py --check}.
 
 \subsection{Community benchmark and stubs}
 
@@ -1032,6 +1043,10 @@ Can the evidence be reproduced? &
 \path{capsule/reproduce.sh} &
 \path{tests/test_reproduce_harness.py},
 \path{tests/test_capsule_manifest.py} \\
+Is the artifact packaged without hidden local state? &
+\path{reproducibility/artifact_package.md},
+\path{docs/artifact/PACKAGING.md} &
+\path{tests/test_artifact_package.py} \\
 \bottomrule
 \end{longtable}
 
@@ -1172,9 +1187,10 @@ Benchmarks & Public GitHub-mined bug snapshot and offline issue-miner proposal
 flow &
 \path{experiments_v5/github_bug_mining/}, \path{corpus_extended/issue_miner.py} \\
 Evidence & Numeric-claim audit, dashboard, artifact capsule, benchmark delta
-gate, and paper-evidence target &
+gate, three-mode artifact package, and paper-evidence target &
 \path{reproducibility/audit_numeric_claims.py},
-\path{docs/dashboard/index.html}, \path{scripts/benchmark_delta.py} \\
+\path{docs/dashboard/index.html}, \path{reproducibility/artifact_package.md},
+\path{scripts/benchmark_delta.py} \\
 \bottomrule
 \end{longtable}
 

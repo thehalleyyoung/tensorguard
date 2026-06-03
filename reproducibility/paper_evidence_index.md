@@ -1,14 +1,16 @@
 # Paper-evidence index (Step 125)
 
-`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **60** evidence items (43 render a table); every generator script is present: **False**.
+`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **62** evidence items (45 render a table); every generator script is present: **False**.
 
 | stem | generator | table? | json | md |
 | --- | --- | --- | --- | --- |
 | DATASHEET | `(missing)` | True | - | y |
+| PACKAGING | `(missing)` | True | - | y |
 | SOUNDNESS_CONTRACT | `src/SOUNDNESS_CONTRACT.py` | False | - | y |
 | VERIFIABLE_FRAGMENT | `src/VERIFIABLE_FRAGMENT.py` | True | - | y |
 | artifact_badges | `reproducibility/artifact_badges.py` | True | y | y |
 | artifact_index | `reproducibility/artifact_index.py` | True | y | y |
+| artifact_package | `reproducibility/artifact_package.py` | True | y | y |
 | baseline_head_to_head | `reproducibility/baseline_head_to_head.py` | True | y | y |
 | blind_manifest | `(missing)` | False | y | - |
 | blind_split_eval | `reproducibility/blind_split_eval.py` | True | y | y |

@@ -153,6 +153,9 @@ GENERATED_DETERMINISTIC = [
     "evaluation/deployment_gallery.md",
     "evaluation/pareto_curves.json",
     "evaluation/pareto_curves.md",
+    "reproducibility/artifact_package.json",
+    "reproducibility/artifact_package.md",
+    "docs/artifact/PACKAGING.md",
 ]
 # Generated corpus repro files (also byte-deterministic) are added dynamically.
 
@@ -325,6 +328,8 @@ STEPS = [
      [PY, "evaluation/deployment_gallery.py"], None),
     ("cost/latency: Step 256 hardware-normalized Pareto curves",
      [PY, "evaluation/pareto_curves.py"], None),
+    ("artifact package: Step 267 Docker/conda/source fresh-machine modes",
+     [PY, "reproducibility/artifact_package.py"], None),
     ("dashboard: rebuild the static evidence site from committed artifacts",
      [PY, "reproducibility/build_dashboard.py"], None),
     ("audit: numeric-claim audit (validates README numbers)",
