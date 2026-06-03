@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "command": "PYTHONPATH=. python3 evaluation/deployment_dashboard.py",
+    "gate_command": "PYTHONPATH=. python3 evaluation/deployment_dashboard.py --gate",
+    "generated_by": "evaluation/deployment_dashboard.py",
+    "note": "Deterministic release dashboard for deployment backend outcomes. The baseline is a reviewed ratchet over supported rows; live smoke gates are environment-qualified and report optional skips."
+  },
+  "releases": [
+    {
+      "release": "0.1.0-dev",
+      "rows": [
+        {
+          "backend": "torch.dynamo",
+          "description": "Compile-capable hosts run TensorGuard after torch.compile/Dynamo capture and compare the result against latency/memory budgets.",
+          "evidence": "deployment budget post-compile gates",
+          "gate": "evaluation.deployment_budgets --gate compile/after",
+          "key": "0.1.0-dev|compile|torch.dynamo|evaluation.deployment_budgets --gate compile/after",
+          "release": "0.1.0-dev",
+          "required": false,
+          "status": "passed",
+          "supported": true,
+          "surface": "compile"
+        },
+        {
+          "backend": "fsdp+dtensor-static",
+          "description": "Distributed verification checks that sharded parameter layouts preserve the logical tensor shapes consumed by forward.",
+          "evidence": "FSDP world-size and parameter-sharding shape smoke",
+          "gate": "src.distributed_verification.verify_distributed",
+          "key": "0.1.0-dev|distributed|fsdp+dtensor-static|src.distributed_verification.verify_distributed",
+          "release": "0.1.0-dev",
+          "required": true,
+          "status": "passed",
+          "supported": true,
+          "surface": "distributed"
+        },
+        {
+          "backend": "torch.export",
+          "description": "The deployment gallery verifies post-export graph capture for each real-model family when torch.export is available.",
+          "evidence": "real-model gallery export gates",
+          "gate": "evaluation.deployment_gallery --gate post_export_torch_export",
+          "key": "0.1.0-dev|export|torch.export|evaluation.deployment_gallery --gate post_export_torch_export",
+          "release": "0.1.0-dev",
+          "required": false,
+          "status": "passed",
+          "supported": true,
+          "surface": "export"
+        },
+        {
+          "backend": "torch.ao.quantization",
+          "description": "Prepared eager quantization modules keep calibrated observers, public float boundaries, and executable output shapes before a backend-specific conversion kernel is required.",
+          "evidence": "live calibrated QuantStub -> Linear -> DeQuantStub prepared smoke",
+          "gate": "src.quantization_verify.verify_quantization_eager",
+          "key": "0.1.0-dev|quant|torch.ao.quantization|src.quantization_verify.verify_quantization_eager",
+          "release": "0.1.0-dev",
+          "required": true,
+          "status": "passed",
+          "supported": true,
+          "surface": "quant"
+        }
+      ],
+      "summary": {
+        "release": "0.1.0-dev",
+        "supported_failed": 0,
+        "supported_passed": 4,
+        "supported_rows": 4,
+        "supported_skipped": 0,
+        "surfaces": {
+          "compile": {
+            "failed": 0,
+            "passed": 1,
+            "skipped": 0,
+            "supported": 1
+          },
+          "distributed": {
+            "failed": 0,
+            "passed": 1,
+            "skipped": 0,
+            "supported": 1
+          },
+          "export": {
+            "failed": 0,
+            "passed": 1,
+            "skipped": 0,
+            "supported": 1
+          },
+          "quant": {
+            "failed": 0,
+            "passed": 1,
+            "skipped": 0,
+            "supported": 1
+          }
+        },
+        "total_rows": 4
+      }
+    }
+  ]
+}

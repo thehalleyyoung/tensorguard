@@ -1,0 +1,45 @@
+{
+  "_doc": "Frozen deployment release ratchet for evaluation/deployment_dashboard.py. Supported backend rows must not disappear, lose support, or regress from passed to skipped/failed. New supported rows require a reviewed baseline update.",
+  "rows": {
+    "0.1.0-dev|compile|torch.dynamo|evaluation.deployment_budgets --gate compile/after": {
+      "backend": "torch.dynamo",
+      "evidence": "deployment budget post-compile gates",
+      "gate": "evaluation.deployment_budgets --gate compile/after",
+      "release": "0.1.0-dev",
+      "required": false,
+      "status": "passed",
+      "supported": true,
+      "surface": "compile"
+    },
+    "0.1.0-dev|distributed|fsdp+dtensor-static|src.distributed_verification.verify_distributed": {
+      "backend": "fsdp+dtensor-static",
+      "evidence": "FSDP world-size and parameter-sharding shape smoke",
+      "gate": "src.distributed_verification.verify_distributed",
+      "release": "0.1.0-dev",
+      "required": true,
+      "status": "passed",
+      "supported": true,
+      "surface": "distributed"
+    },
+    "0.1.0-dev|export|torch.export|evaluation.deployment_gallery --gate post_export_torch_export": {
+      "backend": "torch.export",
+      "evidence": "real-model gallery export gates",
+      "gate": "evaluation.deployment_gallery --gate post_export_torch_export",
+      "release": "0.1.0-dev",
+      "required": false,
+      "status": "passed",
+      "supported": true,
+      "surface": "export"
+    },
+    "0.1.0-dev|quant|torch.ao.quantization|src.quantization_verify.verify_quantization_eager": {
+      "backend": "torch.ao.quantization",
+      "evidence": "live calibrated QuantStub -> Linear -> DeQuantStub prepared smoke",
+      "gate": "src.quantization_verify.verify_quantization_eager",
+      "release": "0.1.0-dev",
+      "required": true,
+      "status": "passed",
+      "supported": true,
+      "surface": "quant"
+    }
+  }
+}

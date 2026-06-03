@@ -46,3 +46,18 @@ jobs:
           PYTHONPATH=. python evaluation/triage.py --check
       - name: Gate precision/recall dashboard against frozen baseline
         run: PYTHONPATH=. python evaluation/dashboard.py --check
+
+  deployment-dashboard-gate:
+    # Deployment ratchet: supported quant/export/compile/distributed release
+    # rows cannot disappear or regress without a reviewed baseline diff.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]" z3-solver
+      - name: Gate deployment dashboard against frozen baseline
+        run: |
+          PYTHONPATH=. python evaluation/deployment_dashboard.py --check
+          PYTHONPATH=. python evaluation/deployment_dashboard.py --gate

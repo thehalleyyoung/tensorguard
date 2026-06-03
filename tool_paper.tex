@@ -1046,7 +1046,8 @@ Gradient and training-loop contracts beyond forward shape checking. \\
 \texttt{tests/test\_quant\_export\_checks.py},
 \texttt{tests/test\_quantization\_verify.py},
 \texttt{tests/test\_deployment\_budgets.py},
-\texttt{tests/test\_deployment\_gallery.py} &
+\texttt{tests/test\_deployment\_gallery.py},
+\texttt{tests/test\_deployment\_dashboard.py} &
 Deployment-facing gates for export, \texttt{torch.export.Dim} ranges and
 relations, ONNX opset-version availability and dynamic-shape support, AOT
 package input/layout/dtype/device/lowering contracts, and source/eager/FX
@@ -1405,6 +1406,10 @@ live gate measures wall-clock time and verifier-stage memory on real
 diversity instead of cost: compact ResNet, ViT, Llama-style, diffusion U-Net,
 recommender, and speech blocks execute eagerly, then pass both the FX pre-export
 gate and the \texttt{torch.export} post-capture gate in supported environments.
+The deployment dashboard adds the release-management view: quantization, export,
+compile, and distributed rows are tracked per release, and supported rows are
+ratcheted so a pass cannot silently become a skip/fail or disappear from the
+supported backend set.
 
 \begin{longtable}{|p{0.25\linewidth}|p{0.31\linewidth}|p{0.33\linewidth}|}
 \hline
@@ -1527,6 +1532,10 @@ deployment input/output contract, then verified before and after export.  The
 committed manifest records the model families, input specs, operator surfaces,
 and gate matrix; the live gate proves the gallery still passes on the current
 torch stack.
+\texttt{evaluation/deployment\_dashboard.py} then aggregates the deployment
+release tab across quantization, export, compile, and distributed gates.  Its
+baseline blocks supported backend regressions while still reporting
+environment-qualified skips for optional runtime features such as Dynamo.
 For model serving, \texttt{src/serving\_schema.py} splits a pure
 \texttt{verify\_serving\_schema} checker from guarded wrappers for
 FastAPI-style callables and TorchServe-style handlers.  The pure gate validates
