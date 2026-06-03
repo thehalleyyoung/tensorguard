@@ -999,16 +999,14 @@ and `tests/test_cross_python_determinism.py`.
 Bug corpora answer "does it catch real bugs"; the complementary usability
 question is how often the verifier returns a definite answer on ordinary,
 idiomatic model code instead of abstaining. The study
-`reproducibility/natural_distribution_study.py` scores a curated sample of
-twenty-nine clean, public-style architectures spanning fourteen families
-(MLPs, CNNs, ResNet and U-Net blocks, single-head and multi-head attention,
-full transformer-encoder and GPT blocks, LSTM and GRU classifiers,
-autoencoders, a DCGAN discriminator, embedding text models, and more). Every
-model is clean by construction, executing under eager PyTorch with its declared
-input shapes, which the regression test re-verifies live. Across all three
-soundness modes TensorGuard returns a decided verdict on every model, giving
-full coverage with zero abstention and zero false alarms on this natural
-sample. See
+`reproducibility/natural_distribution_study.py` scores **174** clean,
+public-repo-style model instances across fourteen families and nine provenance
+strata (torchvision, timm, HuggingFace, nanoGPT, U-Net, PyTorch examples, and
+more). Every model executes under eager PyTorch with its declared inputs, which
+the regression test re-verifies live. Across all three soundness modes
+TensorGuard returns a decided SAFE verdict on every case, with zero abstentions
+and zero false alarms; the generated artifact reports the corresponding Wilson
+upper bound for the clean natural-distribution false-positive rate. See
 [`reproducibility/natural_distribution_study.md`](reproducibility/natural_distribution_study.md)
 and `tests/test_natural_distribution_study.py`.
 

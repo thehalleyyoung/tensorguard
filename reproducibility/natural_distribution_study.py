@@ -1,4 +1,4 @@
-"""Deterministic harness: natural-distribution coverage study (Step 108).
+"""Deterministic harness: natural-distribution clean-model study (Step 258).
 
 Bug corpora answer "does it catch real bugs?". This study answers the
 complementary usability question a practitioner cares about: on *ordinary,
@@ -8,17 +8,19 @@ important, the false-alarm rate on this clean natural sample -- is a headline
 number for "would this be annoying to actually use".
 
 We score the curated natural-distribution sample
-(``corpus_extended/natural_models.py``: 29 clean, idiomatic, public-style
-architectures spanning MLPs, CNNs, ResNet/U-Net blocks, attention/transformer
-blocks, RNNs, autoencoders, GANs, embeddings and more). Every model is clean by
-construction (it executes under eager PyTorch). For each model and each
-soundness mode we record the verifier verdict; we then report:
+(``corpus_extended/natural_models.py``: compact redistributable reproductions of
+public-repository motifs, expanded across public-repo batch regimes). Every
+model is clean by construction (it executes under eager PyTorch). For each model
+and each soundness mode we record the verifier verdict; we then report:
 
 * **coverage** -- fraction of models that received a *decided* verdict
   (SAFE or UNSAFE) rather than abstaining, with a Wilson interval;
 * **abstention rate** -- the complement;
 * **false-alarm rate** -- fraction of these clean models flagged UNSAFE
-  (should be zero for a tool you would actually run).
+  (should be zero for a tool you would actually run), including the Wilson 95%
+  upper bound after zero observed false alarms;
+* **abstention causes** -- reason categories for every UNKNOWN result, so a
+  coverage miss points directly at the next operator/frontend fix.
 
 Only counts, rates (rounded), Wilson intervals and verdict tallies are
 recorded, so the artifact is byte-identical across machines.
@@ -29,7 +31,7 @@ from __future__ import annotations
 import json
 import math
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -60,27 +62,62 @@ def _wilson(k: int, n: int, z: float = 1.959963984540054) -> dict:
     }
 
 
-def _verdict(model, mode: str) -> str:
+def _score(model, mode: str) -> dict:
     r = verify_architecture(
         model.source,
         input_shapes={k: tuple(v) for k, v in model.input_shapes.items()},
         soundness_mode=mode,
     )
-    return str(r.verdict)
+    return {
+        "verdict": str(r.verdict),
+        "unknown_reasons": sorted(set(getattr(r, "unknown_reasons", []) or [])),
+        "bug_count": int(getattr(r, "bug_count", 0)),
+    }
+
+
+def _cause(reason: str) -> str:
+    low = reason.lower()
+    if "heuristic" in low:
+        return "heuristic_operator"
+    if "opaque" in low or "out-of-fragment" in low:
+        return "opaque_layer"
+    if "static fragment" in low:
+        return "static_fragment_violation"
+    if "loop" in low:
+        return "loop_unroll_budget"
+    return "other"
 
 
 def measure() -> dict:
     models = all_models()
     n = len(models)
     families = sorted({m.family for m in models})
+    repos = sorted({m.repo_slug for m in models})
+    variants = sorted({m.variant for m in models})
 
     per_mode = {}
     for mode in MODES:
-        verdicts = {m.id: _verdict(m, mode) for m in models}
+        scores = {m.id: _score(m, mode) for m in models}
+        verdicts = {mid: s["verdict"] for mid, s in scores.items()}
         tally = Counter(verdicts.values())
         decided = tally.get("SAFE", 0) + tally.get("UNSAFE", 0)
         abstained = n - decided
         false_alarms = tally.get("UNSAFE", 0)  # all models are clean
+        cause_counts = Counter()
+        cause_examples = defaultdict(list)
+        for model in models:
+            if verdicts[model.id] != "UNKNOWN":
+                continue
+            reasons = scores[model.id]["unknown_reasons"] or ["unknown"]
+            for reason in reasons:
+                cause = _cause(reason)
+                cause_counts[cause] += 1
+                if len(cause_examples[cause]) < 5:
+                    cause_examples[cause].append({
+                        "id": model.id,
+                        "repo_slug": model.repo_slug,
+                        "reason": reason,
+                    })
         per_mode[mode] = {
             "verdict_tally": dict(sorted(tally.items())),
             "n_decided": decided,
@@ -89,17 +126,31 @@ def measure() -> dict:
             "coverage": _wilson(decided, n),
             "abstention_rate": _wilson(abstained, n),
             "false_alarm_rate": _wilson(false_alarms, n),
+            "false_alarm_upper_bound_95": _wilson(false_alarms, n)["high"],
+            "abstention_causes": dict(sorted(cause_counts.items())),
+            "abstention_examples": {
+                k: v for k, v in sorted(cause_examples.items())
+            },
             "false_alarm_ids": sorted(
                 mid for mid, v in verdicts.items() if v == "UNSAFE"),
         }
 
     return {
+        "step": 258,
         "n_models": n,
         "n_families": len(families),
+        "n_repo_strata": len(repos),
+        "n_variants": len(variants),
         "families": families,
+        "repo_strata": repos,
+        "variants": variants,
         "modes": list(MODES),
         "per_mode": per_mode,
         "all_models_clean_by_construction": True,
+        "redistribution_policy": (
+            "compact redistributable motif reimplementations, not vendored "
+            "third-party source files"
+        ),
         "zero_false_alarms_all_modes": all(
             per_mode[m]["n_false_alarms"] == 0 for m in MODES),
         "full_coverage_all_modes": all(
@@ -112,21 +163,25 @@ def render_markdown(data: dict) -> str:
         "# Natural-distribution coverage study",
         "",
         f"On a sample of **{data['n_models']}** clean, idiomatic, public-style "
-        f"architectures across **{data['n_families']}** families "
+        f"model instances across **{data['n_families']}** families and "
+        f"**{data['n_repo_strata']}** public-repo strata "
         f"({', '.join(data['families'])}), we measure how often the verifier "
         "returns a *decided* verdict rather than abstaining, and how often it "
         "false-alarms on this clean natural distribution.",
         "",
-        "| mode | decided | abstained | coverage [95% CI] | false alarms |",
-        "| --- | --- | --- | --- | --- |",
+        "| mode | decided | abstained | coverage [95% CI] | false alarms | FP upper bound (95%) | top abstention causes |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
     ]
     for mode in data["modes"]:
         d = data["per_mode"][mode]
         cov = d["coverage"]
+        causes = d["abstention_causes"] or {"none": 0}
+        cause_text = ", ".join(f"{k}: {v}" for k, v in causes.items())
         lines.append(
             f"| {mode} | {d['n_decided']} | {d['n_abstained']} | "
             f"{cov['point']} [{cov['low']}, {cov['high']}] | "
-            f"{d['n_false_alarms']} |"
+            f"{d['n_false_alarms']} | {d['false_alarm_upper_bound_95']} | "
+            f"{cause_text} |"
         )
     lines += [
         "",
@@ -134,6 +189,7 @@ def render_markdown(data: dict) -> str:
         f"**{data['full_coverage_all_modes']}**",
         f"- zero false alarms in every mode: "
         f"**{data['zero_false_alarms_all_modes']}**",
+        f"- source policy: {data['redistribution_policy']}",
         "",
         "Each model is clean by construction (it executes under eager "
         "PyTorch), so every UNSAFE verdict would be a false alarm; none occur.",

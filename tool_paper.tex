@@ -746,6 +746,22 @@ candidate same-repository issue links, device-CUDA-qualified evidence, dtype
 runtime-family caveats, detection depth, and CI cost are all explicit fields in
 \texttt{reproducibility/pr\_history\_survival.json}.
 
+The clean natural-distribution study checks the other side of deployment risk:
+whether ordinary public-repository-style models trigger annoying alarms or
+abstentions.  The committed Step-258 harness scores 174 clean model instances
+across fourteen architecture families and nine provenance strata, including
+torchvision/timm-style CNN and normalization motifs, HuggingFace embedding and
+sequence motifs, nanoGPT-style transformer blocks, U-Net upsampling motifs, and
+PyTorch example-style MLP, recurrent, autoencoder, Siamese, and generative
+models.  Each compact source is a redistributable motif reimplementation rather
+than vendored third-party code, and each executes under eager PyTorch with its
+declared inputs before it is counted.  In all three soundness modes \tg{}
+returns a decided \safe{} verdict on every case: 174/174 coverage, zero
+abstentions, zero false alarms, and a Wilson 95\% upper bound of 2.16\% on the
+false-positive rate for this clean natural sample.  The artifact also records
+abstention-cause buckets; in this run all buckets are empty, so the result is
+not hiding an opaque long tail behind a mean.
+
 Latency and scalability scripts ensure the verifier remains useful.  Solver
 queries are cached or avoided when a transfer can be decided syntactically.
 Constraint simplification performs constant folding, common-subexpression

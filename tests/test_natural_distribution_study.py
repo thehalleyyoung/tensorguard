@@ -1,4 +1,4 @@
-"""Tests for the natural-distribution coverage study (Step 108)."""
+"""Tests for the natural-distribution clean-model study (Step 258)."""
 
 from __future__ import annotations
 
@@ -43,8 +43,10 @@ def test_sample_is_diverse():
     from corpus_extended.natural_models import all_models
 
     models = all_models()
-    assert len(models) >= 25
+    assert len(models) >= 150
     assert len({m.family for m in models}) >= 10
+    assert len({m.repo_slug for m in models}) >= 8
+    assert len({m.variant for m in models}) >= 5
     assert len({m.id for m in models}) == len(models)  # unique ids
 
 
@@ -72,12 +74,15 @@ def test_all_natural_models_execute_clean():
 
 def test_full_coverage_and_zero_false_alarms():
     data = json.loads(STUDY_JSON.read_text())
+    assert data["step"] == 258
     assert data["full_coverage_all_modes"] is True
     assert data["zero_false_alarms_all_modes"] is True
     for mode, d in data["per_mode"].items():
         assert d["n_abstained"] == 0, f"{mode} abstained"
         assert d["n_false_alarms"] == 0, f"{mode} false-alarmed"
         assert d["false_alarm_ids"] == []
+        assert d["abstention_causes"] == {}
+        assert d["abstention_examples"] == {}
 
 
 def test_coverage_wilson_interval_present():
@@ -87,8 +92,18 @@ def test_coverage_wilson_interval_present():
         assert cov["point"] == 1.0
         assert 0.0 <= cov["low"] <= cov["high"] <= 1.0
         assert cov["n"] == data["n_models"]
+        assert d["false_alarm_upper_bound_95"] == d["false_alarm_rate"]["high"]
+        assert 0.0 < d["false_alarm_upper_bound_95"] < 0.03
 
 
 def test_modes_cover_all_three():
     data = json.loads(STUDY_JSON.read_text())
     assert set(data["modes"]) == {"sound", "balanced", "heuristic"}
+
+
+def test_public_repo_strata_and_source_policy_are_explicit():
+    data = json.loads(STUDY_JSON.read_text())
+    assert data["n_repo_strata"] >= 8
+    assert "pytorch/vision" in data["repo_strata"]
+    assert "huggingface/transformers" in data["repo_strata"]
+    assert "not vendored third-party source files" in data["redistribution_policy"]

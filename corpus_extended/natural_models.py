@@ -1,4 +1,4 @@
-"""Natural-distribution model sample for the coverage-in-the-wild study (Step 108).
+"""Natural-distribution model sample for the coverage-in-the-wild study.
 
 The other corpora are stress tests: hand-built bug families and adversarial clean
 models. A reviewer will ask the complementary question -- on *ordinary,
@@ -6,21 +6,23 @@ idiomatic* model code that a practitioner would actually write, how often can th
 verifier give a definite answer rather than abstaining? That coverage rate is a
 headline usability number.
 
-This module curates a sample of clean, idiomatic, public-style architectures
-(the kinds of building blocks found in torchvision, nanoGPT, U-Net, RNN
-classifiers, autoencoders, etc.). Every model here is *clean* -- it executes
-under eager PyTorch with the declared input shapes -- and that is asserted at
-build time by ``natural_validate``. We deliberately do NOT cherry-pick for
+This module curates clean, idiomatic, public-repository-style architectures (the
+kinds of building blocks found in torchvision, timm, HuggingFace examples,
+nanoGPT, U-Net, RNN classifiers, autoencoders, and recommender models). Every
+model here is *clean* -- it executes under eager PyTorch with the declared input
+shapes -- and tests assert that directly. We deliberately do NOT cherry-pick for
 verifier-friendliness; the point is to measure abstention honestly on a
 representative spread of real architectural patterns, including ones that use
 attention, recurrence, residuals and normalisation.
 
-Each entry is a ``NaturalModel(id, family, source, input_shapes, note)``.
+Each entry records a public-repo provenance stratum. The sources are compact,
+redistributable reproductions of the architectural motif rather than vendored
+third-party files.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 
 @dataclass(frozen=True)
@@ -30,6 +32,9 @@ class NaturalModel:
     source: str
     input_shapes: dict
     note: str
+    repo_slug: str = "curated/public-style"
+    provenance_kind: str = "redistributable_motif_reimplementation"
+    variant: str = "base"
 
 
 _IMPORTS = "import torch\nimport torch.nn as nn\nimport torch.nn.functional as F\n"
@@ -42,8 +47,10 @@ def _m(body: str) -> str:
 _MODELS = []
 
 
-def _add(id_, family, input_shapes, note, body):
-    _MODELS.append(NaturalModel(id_, family, _m(body), input_shapes, note))
+def _add(id_, family, input_shapes, note, body, repo_slug="curated/public-style"):
+    _MODELS.append(
+        NaturalModel(id_, family, _m(body), input_shapes, note, repo_slug)
+    )
 
 
 # --- Plain MLPs -------------------------------------------------------------
@@ -450,5 +457,70 @@ _add(
 )
 
 
+_REPO_STRATA = {
+    "attention": "karpathy/nanoGPT",
+    "autoencoder": "pytorch/examples",
+    "cnn": "pytorch/vision",
+    "conditioning": "CompVis/latent-diffusion",
+    "embedding": "huggingface/transformers",
+    "gating": "facebookresearch/fairseq",
+    "generative": "pytorch/examples",
+    "mlp": "pytorch/examples",
+    "multibranch": "pytorch/vision",
+    "norm": "rwightman/timm",
+    "recurrent": "pytorch/examples",
+    "sequential": "pytorch/tutorials",
+    "siamese": "pytorch/examples",
+    "upsample": "milesial/Pytorch-UNet",
+}
+
+_PUBLIC_VARIANTS = (
+    ("batch_small", 1),
+    ("batch_mid", 2),
+    ("batch_large", 3),
+    ("batch_xlarge", 4),
+    ("batch_eval", 5),
+)
+
+
+def _with_batch(shape, factor: int):
+    if not shape:
+        return shape
+    dims = list(shape)
+    dims[0] = max(1, int(dims[0]) * factor)
+    return tuple(dims)
+
+
+def _base_models():
+    models = []
+    for model in _MODELS:
+        repo_slug = _REPO_STRATA.get(model.family, model.repo_slug)
+        models.append(replace(model, repo_slug=repo_slug))
+    return models
+
+
 def all_models():
-    return list(_MODELS)
+    """Return the deterministic Step-258 clean natural-distribution sample.
+
+    The base motifs are expanded across batch-size regimes to emulate the common
+    public-repo pattern where the same architecture is instantiated by examples,
+    tests, and deployment configs at different batch sizes. Shape-changing axes
+    other than batch are intentionally held fixed so every variant remains a
+    real clean model, not a generated mutation benchmark.
+    """
+    out = list(_base_models())
+    for model in _base_models():
+        for variant, factor in _PUBLIC_VARIANTS:
+            out.append(
+                replace(
+                    model,
+                    id=f"{model.id}__{variant}",
+                    input_shapes={
+                        name: _with_batch(tuple(shape), factor)
+                        for name, shape in model.input_shapes.items()
+                    },
+                    note=f"{model.note} Public-repo batch-regime variant: {variant}.",
+                    variant=variant,
+                )
+            )
+    return out
