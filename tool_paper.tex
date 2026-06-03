@@ -636,6 +636,13 @@ Fuzzing and mutation &
 \texttt{tests/test\_mutation\_clean\_models.py}.  Searches for disagreements
 and injected bugs. \\
 \hline
+Runtime-silent bugs &
+\texttt{reproducibility/silent\_bug\_benchmark.py},
+\texttt{tests/test\_silent\_bug\_benchmark.py}.  Curated CPU-only benchmark of
+15 non-raising semantic failures across gradient freezes, stale buffers,
+optimizer-state drift, train/eval mode leakage, and quantization parameters,
+with independent semantic oracles and object-level gates. \\
+\hline
 Operator coverage &
 \texttt{operator\_confidence\_table.json},
 \texttt{proof\_footprint\_manifest.json},
@@ -709,6 +716,12 @@ quantized-base compatibility.  Optimizer-state checks cover AdamW and fused-Adam
 buffers, Adafactor factored \texttt{row\_var}/\texttt{col\_var} buffers, lazy
 pre-step state, and declared ZeRO-style shards before an incompatible checkpoint
 can corrupt a resumed run.
+The silent-bug benchmark extends this beyond exceptions: 15/15 curated CPU cases
+execute without raising yet are oracle-positive for gradient freezes, stale
+buffers, optimizer-state drift, train/eval mode leakage, or quantization output
+drift; the corresponding object-level gates catch all 15 while the artifact
+explicitly labels the corpus as coverage/regression evidence rather than a field
+prevalence estimate.
 
 The conformance tests are especially important.  A static rule is only useful
 if it matches the runtime library.  The repository therefore includes tests

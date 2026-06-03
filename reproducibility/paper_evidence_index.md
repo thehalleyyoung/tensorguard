@@ -1,6 +1,6 @@
 # Paper-evidence index (Step 125)
 
-`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **55** evidence items (38 render a table); every generator script is present: **False**.
+`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **56** evidence items (39 render a table); every generator script is present: **False**.
 
 | stem | generator | table? | json | md |
 | --- | --- | --- | --- | --- |
@@ -46,6 +46,7 @@
 | reduced_product_ablation | `reproducibility/reduced_product_ablation.py` | True | y | y |
 | scaling_study | `reproducibility/scaling_study.py` | True | y | y |
 | significance | `evaluation/significance.py` | True | y | y |
+| silent_bug_benchmark | `reproducibility/silent_bug_benchmark.py` | True | y | y |
 | smt_backend_comparison | `reproducibility/smt_backend_comparison.py` | True | y | y |
 | soundness_boundary | `reproducibility/soundness_boundary.py` | False | y | y |
 | stagewise_ablation | `reproducibility/stagewise_ablation.py` | True | y | y |

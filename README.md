@@ -81,7 +81,9 @@ runtime errors in ML codebases before any code runs.
   that ratchets quant/export/compile/distributed gates
   (`verify_gguf_export_contract`, `verify_checkpoint_state_dict`,
   `verify_lora_adapter_compatibility`, `verify_optimizer_state`,
-  `verify_cuda_graph_capture_eligibility`, `verify_serving_schema`).
+  `verify_cuda_graph_capture_eligibility`, `verify_serving_schema`), plus
+  runtime-silent bug gates for declared trainability, buffers, optimizer-state
+  fingerprints, mode contracts, and quantization parameters.
 - **5-theory product domain** — jointly reasons over
   **Shape × Device × Phase × Stride × Permutation** for each tensor
 - **Zero annotations required** — shapes are inferred from constructors,

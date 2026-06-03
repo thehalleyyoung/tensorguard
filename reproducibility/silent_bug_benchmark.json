@@ -1,0 +1,234 @@
+{
+  "by_family": {
+    "gradient_freeze": {
+      "gate_caught": 3,
+      "oracle_positive": 3,
+      "runtime_nonraising": 3,
+      "total": 3
+    },
+    "optimizer_state_drift": {
+      "gate_caught": 3,
+      "oracle_positive": 3,
+      "runtime_nonraising": 3,
+      "total": 3
+    },
+    "quantization_wrong_output": {
+      "gate_caught": 3,
+      "oracle_positive": 3,
+      "runtime_nonraising": 3,
+      "total": 3
+    },
+    "stale_buffer": {
+      "gate_caught": 3,
+      "oracle_positive": 3,
+      "runtime_nonraising": 3,
+      "total": 3
+    },
+    "train_eval_mode_leakage": {
+      "gate_caught": 3,
+      "oracle_positive": 3,
+      "runtime_nonraising": 3,
+      "total": 3
+    }
+  },
+  "description": "runtime-silent bug benchmark with independent semantic oracles",
+  "families": [
+    "gradient_freeze",
+    "optimizer_state_drift",
+    "quantization_wrong_output",
+    "stale_buffer",
+    "train_eval_mode_leakage"
+  ],
+  "oracle_independence": "Ground truth is observed by real forward/backward/optimizer execution and reference-output/update deltas; TensorGuard gates inspect declared runtime contracts separately.",
+  "per_case": [
+    {
+      "case_id": "gradient_freeze_mlp",
+      "family": "gradient_freeze",
+      "gate_caught": true,
+      "issue_kinds": [
+        "gradient_freeze"
+      ],
+      "notes": "fc1.weight unchanged after a training step",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 0.0
+    },
+    {
+      "case_id": "gradient_freeze_conv",
+      "family": "gradient_freeze",
+      "gate_caught": true,
+      "issue_kinds": [
+        "gradient_freeze"
+      ],
+      "notes": "stem.weight unchanged after a training step",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 0.0
+    },
+    {
+      "case_id": "gradient_freeze_embedding",
+      "family": "gradient_freeze",
+      "gate_caught": true,
+      "issue_kinds": [
+        "gradient_freeze"
+      ],
+      "notes": "emb.weight unchanged after a training step",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 0.0
+    },
+    {
+      "case_id": "stale_buffer_scale",
+      "family": "stale_buffer",
+      "gate_caught": true,
+      "issue_kinds": [
+        "stale_buffer"
+      ],
+      "notes": "forward output differs from declared-buffer reference",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 0.5
+    },
+    {
+      "case_id": "stale_buffer_bias",
+      "family": "stale_buffer",
+      "gate_caught": true,
+      "issue_kinds": [
+        "stale_buffer"
+      ],
+      "notes": "forward output differs from declared-buffer reference",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 2.0
+    },
+    {
+      "case_id": "stale_buffer_position",
+      "family": "stale_buffer",
+      "gate_caught": true,
+      "issue_kinds": [
+        "stale_buffer"
+      ],
+      "notes": "forward output differs from declared-buffer reference",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 10.0
+    },
+    {
+      "case_id": "optimizer_drift_zero_exp_avg",
+      "family": "optimizer_state_drift",
+      "gate_caught": true,
+      "issue_kinds": [
+        "optimizer_state_drift"
+      ],
+      "notes": "same-shape AdamW state corruption changes the next update without raising",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 0.001759648
+    },
+    {
+      "case_id": "optimizer_drift_scaled_exp_avg_sq",
+      "family": "optimizer_state_drift",
+      "gate_caught": true,
+      "issue_kinds": [
+        "optimizer_state_drift"
+      ],
+      "notes": "same-shape AdamW state corruption changes the next update without raising",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 0.000739276
+    },
+    {
+      "case_id": "optimizer_drift_stale_step",
+      "family": "optimizer_state_drift",
+      "gate_caught": true,
+      "issue_kinds": [
+        "optimizer_state_drift"
+      ],
+      "notes": "same-shape AdamW state corruption changes the next update without raising",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 0.002251178
+    },
+    {
+      "case_id": "mode_leak_dropout_train",
+      "family": "train_eval_mode_leakage",
+      "gate_caught": true,
+      "issue_kinds": [
+        "train_eval_mode_leakage"
+      ],
+      "notes": "declared train/eval contract changes forward semantics",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 1.0
+    },
+    {
+      "case_id": "mode_leak_batchnorm_eval",
+      "family": "train_eval_mode_leakage",
+      "gate_caught": true,
+      "issue_kinds": [
+        "train_eval_mode_leakage"
+      ],
+      "notes": "declared train/eval contract changes forward semantics",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 5.666917
+    },
+    {
+      "case_id": "mode_leak_nested_dropout",
+      "family": "train_eval_mode_leakage",
+      "gate_caught": true,
+      "issue_kinds": [
+        "train_eval_mode_leakage"
+      ],
+      "notes": "declared train/eval contract changes forward semantics",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 0.899001
+    },
+    {
+      "case_id": "quant_wrong_scale_coarse",
+      "family": "quantization_wrong_output",
+      "gate_caught": true,
+      "issue_kinds": [
+        "quantization_wrong_output"
+      ],
+      "notes": "positive qparams run but dequantized output differs from declared qparams",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 0.2
+    },
+    {
+      "case_id": "quant_wrong_zero_point",
+      "family": "quantization_wrong_output",
+      "gate_caught": true,
+      "issue_kinds": [
+        "quantization_wrong_output"
+      ],
+      "notes": "positive qparams run but dequantized output differs from declared qparams",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 0.2
+    },
+    {
+      "case_id": "quant_wrong_scale_saturation",
+      "family": "quantization_wrong_output",
+      "gate_caught": true,
+      "issue_kinds": [
+        "quantization_wrong_output"
+      ],
+      "notes": "positive qparams run but dequantized output differs from declared qparams",
+      "oracle_positive": true,
+      "runtime_nonraising": true,
+      "semantic_delta": 0.21
+    }
+  ],
+  "scope_note": "Curated CPU-only benchmark over author-constructed silent-failure families; it demonstrates coverage and regression protection, not a field prevalence estimate.",
+  "step": 261,
+  "summary": {
+    "gate_caught": 15,
+    "gate_recall": 1.0,
+    "oracle_positive": 15,
+    "runtime_nonraising": 15,
+    "total_cases": 15
+  }
+}
