@@ -37,3 +37,4 @@ import TensorGuard.Unflatten
 import TensorGuard.BatchNormRule
 import TensorGuard.Einops
 import TensorGuard.SDPA
+import TensorGuard.ChunkSplit

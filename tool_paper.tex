@@ -657,8 +657,9 @@ transfer functions.
 contains Lean artifacts for several core rules and proof obligations, including
 CEGAR convergence bounds, infeasible-contract abstention, fragment modes,
 device/dtype transfer soundness, SMT encoding faithfulness, cross-domain
-composition, and operator-specific rules such as cat, reshape, einops
-decomposition/bijection families, and SDPA broadcast/mask/GQA shape laws.
+composition, and operator-specific rules such as cat, chunk/split partition
+reconstruction, reshape, einops decomposition/bijection families, and SDPA
+broadcast/mask/GQA shape laws.
 The Lean audit checks theorem statements for sorry-free status under the
 trusted kernel axioms used by the environment.
 
@@ -676,7 +677,11 @@ data-dependent control flow produce \unknown{} in strict modes.  Symbolic sizes
 are preserved instead of guessed.  This is visible in the code.  For chunk/split,
 for example, concrete dimensions produce exact per-output sizes and concrete
 unpack-count errors; symbolic split dimensions produce fresh symbolic split
-axes, preventing false claims about a final chunk size.
+axes, preventing false claims about a final chunk size.  The new
+\texttt{ChunkSplit} Lean artifact proves the axis reconstruction law used when
+all produced pieces are concatenated back together, while generated conformance
+tests compare uneven chunks, zero sections, and fewer-than-requested chunks
+against live PyTorch.
 
 \clearpage
 
@@ -1206,8 +1211,9 @@ including source and FX extraction plus runtime-error parity. \\
 Chunk/split &
 Exact PyTorch partition sizes for concrete axes; concrete unpack-count errors;
 fresh-symbolic split axis when output count or size depends on symbols. &
-Live torch 2.9.1 cross-checks in \texttt{tests/test\_split\_chunk\_precise.py}
-and downstream Linear/cat model checks. \\
+Lean \texttt{ChunkSplit} reconstruction theorems, generated live-PyTorch
+conformance in \texttt{tests/test\_chunksplit\_lean\_conformance.py}, and
+downstream Linear/cat model checks. \\
 \hline
 Squeeze/unsqueeze &
 Squeeze removes singleton axes when statically known; unsqueeze inserts a
@@ -1366,8 +1372,9 @@ For operator semantics, PyTorch is the executable specification.  Differential
 tests generate tensors, run PyTorch, and compare the observed shape or exception
 to \tg{}'s transfer function.  This protocol is especially useful for edge cases
 whose behavior is not obvious from memory: \texttt{torch.chunk} returning fewer
-than requested chunks, zero-size split sections, broadcasting of attention
-masks, padding tuple/rank corner cases, compressed sparse block constraints, and
+than requested chunks, zero-size split sections, exact concat reconstruction of
+partitions, broadcasting of attention masks, padding tuple/rank corner cases,
+compressed sparse block constraints, and
 named-axis alignment.  The same oracle style now covers embedding-bag corner
 cases such as 1D inputs requiring offsets, 2D inputs forbidding offsets,
 \texttt{include\_last\_offset} changing bag count, and per-sample weights being

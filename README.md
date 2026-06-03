@@ -121,10 +121,11 @@ runtime errors in ML codebases before any code runs.
   (`SmtEncoding.lean`/`CrossDomain.lean`), all cross-checked against real Z3 and
   live torch/einops oracles on real modules — including the per-`forward` chain
   transfers and per-operator shape rules (`nn.Linear`/`Conv`/pooling/`LayerNorm`/
-  `BatchNorm`/`PixelShuffle`/flatten/`cat`/`Embedding`/reshape-`-1`/einops
-  decomposition/SDPA broadcast-mask-GQA), each
+  `BatchNorm`/`PixelShuffle`/flatten/`cat`/`chunk`/`split` partition
+  reconstruction/`Embedding`/reshape-`-1`/einops decomposition/SDPA
+  broadcast-mask-GQA), each
   replayed op-by-op on real tensors and cross-checked against torch *and* the
-  verifier's own propagators. Every one of the library's 409 public theorems is
+  verifier's own propagators. Every audited public theorem is
   machine-audited **sorry-free**, on only the trusted kernel axioms.
 - **Per-domain verification** — beyond shape, the device and gradient
   domains each refute real bugs that the base shape view misses (a cuda

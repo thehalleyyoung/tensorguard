@@ -389,3 +389,28 @@ import TensorGuard
 #print axioms TensorGuard.SDPA.gqa_output_rank
 #print axioms TensorGuard.SDPA.gqa_output_uses_query_heads
 #print axioms TensorGuard.SDPA.gqa_prefix_broadcast_required
+
+-- Chunk/split partition rules (Step 231): list split specifications are valid
+-- iff their sections reconstruct the axis, valid sections re-concatenate to the
+-- original shape/numel, and the PyTorch edge cases for uneven chunks, fewer
+-- returned chunks, zero axes, empty split sections and invalid section sums are
+-- machine-checked.
+#print axioms TensorGuard.ChunkSplit.sum_append
+#print axioms TensorGuard.ChunkSplit.prod_append
+#print axioms TensorGuard.ChunkSplit.splitValid_iff
+#print axioms TensorGuard.ChunkSplit.split_list_mismatch_flagged
+#print axioms TensorGuard.ChunkSplit.axisConcat_reconstruct
+#print axioms TensorGuard.ChunkSplit.splitConcat_shape
+#print axioms TensorGuard.ChunkSplit.splitConcat_numel
+#print axioms TensorGuard.ChunkSplit.split_int_uneven_example
+#print axioms TensorGuard.ChunkSplit.split_int_tail_example
+#print axioms TensorGuard.ChunkSplit.split_int_zero_axis_example
+#print axioms TensorGuard.ChunkSplit.split_list_with_empty_section_valid
+#print axioms TensorGuard.ChunkSplit.split_list_mismatch_example
+#print axioms TensorGuard.ChunkSplit.chunk_uneven_example
+#print axioms TensorGuard.ChunkSplit.chunk_many_sections_example
+#print axioms TensorGuard.ChunkSplit.chunk_fewer_than_requested_example
+#print axioms TensorGuard.ChunkSplit.chunk_fewer_than_requested_len
+#print axioms TensorGuard.ChunkSplit.chunk_zero_axis_returns_requested_empties
+#print axioms TensorGuard.ChunkSplit.split_concat_reconstruct_example
+#print axioms TensorGuard.ChunkSplit.chunk_concat_reconstruct_example
