@@ -9,14 +9,25 @@ from src.distributed_verification import (
     AdapterMergeStrategy,
     DeepSpeedConfig,
     DeepSpeedVerifier,
+    DistributedPlacement,
     DistributedVerificationResult,
+    DTensorPlacement,
+    DTensorSpec,
+    DTensorVerifier,
     FSDPConfig,
+    FSDP2Config,
+    FSDP2Verifier,
     FSDPShardingVerifier,
+    ParameterShardingSpec,
+    ParameterShardingStrategy,
+    ParameterShardingVerifier,
     ParamShardInfo,
     ShardingResult,
     WrapPolicy,
     ZeROStage,
+    verify_dtensor_specs,
     verify_distributed,
+    verify_parameter_sharding,
 )
 
 
@@ -184,6 +195,209 @@ class TestFSDPShardingVerifier:
         params = {"fc.weight": (512, 256)}
         result = verifier.verify_shard_consistency(params)
         assert result.safe
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DTensor / FSDP2 / per-parameter sharding tests
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class TestDTensorVerifier:
+    def test_unpadded_shard_local_shapes_are_rank_specific(self):
+        spec = DTensorSpec(
+            name="w",
+            global_shape=(10, 6),
+            mesh_shape=(3,),
+            placements=(DTensorPlacement.shard(0),),
+        )
+        result = DTensorVerifier().verify_specs([spec])
+        assert result.safe
+        assert result.local_shapes["w"] == {
+            (0,): (4, 6),
+            (1,): (4, 6),
+            (2,): (2, 6),
+        }
+        tiny = verify_dtensor_specs([
+            DTensorSpec(
+                name="tiny",
+                global_shape=(2, 6),
+                mesh_shape=(3,),
+                placements=(DTensorPlacement.shard(0),),
+            )
+        ])
+        assert tiny.safe
+        assert tiny.local_shapes["tiny"][(2,)] == (0, 6)
+
+    def test_negative_shard_dim_and_rank_coordinate_expected_shape(self):
+        spec = DTensorSpec(
+            name="proj.weight",
+            global_shape=(8, 5),
+            mesh_shape=(2,),
+            placements=(DTensorPlacement.shard(-1),),
+            rank_coordinate=(1,),
+            expected_local_shape=(8, 2),
+        )
+        result = verify_dtensor_specs([spec])
+        assert result.safe
+        assert result.local_shapes["proj.weight"] == {(1,): (8, 2)}
+
+    def test_invalid_dtensor_mesh_and_placements_refuted(self):
+        spec = DTensorSpec(
+            name="bad",
+            global_shape=(8, 5),
+            mesh_shape=(2, 2),
+            placements=(DTensorPlacement.shard(0),),
+        )
+        result = verify_dtensor_specs([spec])
+        assert not result.safe
+        assert any("placements length" in v for v in result.violations)
+
+    def test_expected_shape_without_rank_abstains_for_uneven_shards(self):
+        spec = DTensorSpec(
+            name="uneven",
+            global_shape=(10, 6),
+            mesh_shape=(3,),
+            placements=(DTensorPlacement.shard(0),),
+            expected_local_shape=(4, 6),
+        )
+        result = verify_dtensor_specs([spec])
+        assert result.safe
+        assert any("provide rank_coordinate" in w for w in result.warnings)
+
+    def test_partial_placement_warns_but_preserves_shape(self):
+        spec = DTensorSpec(
+            name="partial_sum",
+            global_shape=(4, 4),
+            mesh_shape=(2,),
+            placements=(DTensorPlacement.partial(),),
+        )
+        result = verify_dtensor_specs([spec])
+        assert result.safe
+        assert result.local_shapes["partial_sum"][(0,)] == (4, 4)
+        assert any("Partial placement" in w for w in result.warnings)
+
+    def test_public_placement_enum_values(self):
+        assert DTensorPlacement.replicate().kind is DistributedPlacement.REPLICATE
+        assert DTensorPlacement.shard(1).dim == 1
+
+    def test_public_package_exports_dtensor_helpers(self):
+        import tensorguard
+
+        assert tensorguard.FSDP2Config is FSDP2Config
+        assert tensorguard.DTensorSpec is DTensorSpec
+        assert tensorguard.verify_dtensor_specs is verify_dtensor_specs
+
+    def test_real_torch_shard_split_oracle_when_available(self):
+        torch = pytest.importorskip("torch")
+        placement_types = pytest.importorskip(
+            "torch.distributed.tensor.placement_types"
+        )
+        shard = placement_types.Shard(0)
+        for rows in (10, 2):
+            chunks, _ = shard._split_tensor(
+                torch.empty(rows, 6),
+                3,
+                with_padding=False,
+                contiguous=True,
+            )
+            oracle_shapes = [tuple(chunk.shape) for chunk in chunks]
+
+            spec = DTensorSpec(
+                name=f"torch_oracle_{rows}",
+                global_shape=(rows, 6),
+                mesh_shape=(3,),
+                placements=(DTensorPlacement.shard(0),),
+            )
+            result = verify_dtensor_specs([spec])
+            static_shapes = [
+                result.local_shapes[f"torch_oracle_{rows}"][(rank,)]
+                for rank in range(3)
+            ]
+            assert static_shapes == oracle_shapes
+
+
+class TestParameterShardingVerifier:
+    def test_rank_specific_expected_shape_mismatch_refuted(self):
+        spec = ParameterShardingSpec(
+            name="fc.weight",
+            shape=(10, 5),
+            strategy=ParameterShardingStrategy.SHARD,
+            world_size=3,
+            shard_dim=0,
+            rank_coordinate=(2,),
+            expected_local_shape=(4, 5),
+        )
+        result = verify_parameter_sharding([spec])
+        assert not result.safe
+        assert any("local shape at rank" in v for v in result.violations)
+
+    def test_dtensor_strategy_on_2d_mesh(self):
+        spec = ParameterShardingSpec(
+            name="mlp.weight",
+            shape=(8, 9),
+            strategy=ParameterShardingStrategy.DTENSOR,
+            world_size=6,
+            mesh_shape=(2, 3),
+            placements=(DTensorPlacement.shard(0), DTensorPlacement.shard(1)),
+            rank_coordinate=(1, 2),
+            expected_local_shape=(4, 3),
+        )
+        result = ParameterShardingVerifier().verify_specs([spec])
+        assert result.safe
+        assert result.local_shapes["mlp.weight"] == {(1, 2): (4, 3)}
+
+    def test_mesh_product_must_match_world_size(self):
+        spec = ParameterShardingSpec(
+            name="bad_mesh.weight",
+            shape=(8, 9),
+            strategy=ParameterShardingStrategy.DTENSOR,
+            world_size=8,
+            mesh_shape=(2, 3),
+            placements=(DTensorPlacement.shard(0), DTensorPlacement.shard(1)),
+        )
+        result = verify_parameter_sharding([spec])
+        assert not result.safe
+        assert any("mesh product" in v for v in result.violations)
+
+
+class TestFSDP2Verifier:
+    def test_fsdp2_default_per_parameter_shapes_from_source(self):
+        result = verify_distributed(
+            source=SIMPLE_MODEL,
+            input_shapes={"x": ("batch", 256)},
+            fsdp2_config=FSDP2Config(world_size=3),
+        )
+        assert result.fsdp2_result is not None
+        assert result.fsdp2_result.safe
+        assert result.fsdp2_result.local_shapes["fc1.weight"][(2,)] == (42, 256)
+
+    def test_fsdp2_override_invalid_expected_shape_flips_top_level(self):
+        overrides = {
+            "fc1.weight": ParameterShardingSpec(
+                name="fc1.weight",
+                strategy=ParameterShardingStrategy.FULLY_SHARD,
+                world_size=3,
+                shard_dim=0,
+                rank_coordinate=(2,),
+                expected_local_shape=(43, 256),
+            )
+        }
+        result = verify_distributed(
+            source=SIMPLE_MODEL,
+            input_shapes={"x": ("batch", 256)},
+            fsdp2_config=FSDP2Config(world_size=3, parameter_overrides=overrides),
+        )
+        assert result.fsdp2_result is not None
+        assert not result.fsdp2_result.safe
+        assert not result.safe
+        assert any("local shape at rank" in v
+                   for v in result.fsdp2_result.violations)
+
+    def test_fsdp2_mesh_product_must_equal_world_size(self):
+        verifier = FSDP2Verifier(FSDP2Config(world_size=4, mesh_shape=(3,)))
+        result = verifier.verify_sharding({"w": (8, 8)})
+        assert not result.safe
+        assert any("mesh product" in v for v in result.violations)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

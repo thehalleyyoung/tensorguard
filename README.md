@@ -728,6 +728,16 @@ actually sharded. See
 [`reproducibility/tensor_parallel_sharding.md`](reproducibility/tensor_parallel_sharding.md)
 and `tests/test_tensor_parallel_checks.py`.
 
+### FSDP2 / DTensor shard contracts
+
+`src/distributed_verification.py` now also checks PyTorch composable FSDP2 and
+DTensor-style per-parameter sharding without starting a process group. It
+computes rank-specific local shapes from `DeviceMesh` placements (`Shard`,
+`Replicate`, `Partial`), catches invalid mesh/placement/rank-coordinate
+contracts, and refuses to overclaim on uneven shards unless a concrete rank is
+provided. The shard splitter is pinned against PyTorch's own
+`torch.distributed.tensor` placement helper in `tests/test_distributed_verification.py`.
+
 ### Quantization & export safety
 
 Two of the most common ways a model that passes every float unit test still

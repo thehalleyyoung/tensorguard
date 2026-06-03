@@ -84,6 +84,19 @@ from .func_autodiff_verify import (
     verify_func_jvp,
     verify_func_vjp,
 )
+from .distributed_verification import (
+    DistributedPlacement,
+    DTensorPlacement,
+    DTensorSpec,
+    DTensorVerifier,
+    FSDP2Config,
+    FSDP2Verifier,
+    ParameterShardingSpec,
+    ParameterShardingStrategy,
+    ParameterShardingVerifier,
+    verify_dtensor_specs,
+    verify_parameter_sharding,
+)
 
 __all__ = [
     "analyze",
@@ -156,5 +169,16 @@ __all__ = [
     "verify_func_jacfwd",
     "verify_func_jvp",
     "verify_func_vjp",
+    "DistributedPlacement",
+    "DTensorPlacement",
+    "DTensorSpec",
+    "DTensorVerifier",
+    "FSDP2Config",
+    "FSDP2Verifier",
+    "ParameterShardingSpec",
+    "ParameterShardingStrategy",
+    "ParameterShardingVerifier",
+    "verify_dtensor_specs",
+    "verify_parameter_sharding",
     "__version__",
 ]

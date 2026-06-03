@@ -142,6 +142,19 @@ from src.func_autodiff_verify import (  # noqa: F401  (re-export)
     verify_func_jvp,
     verify_func_vjp,
 )
+from src.distributed_verification import (  # noqa: F401  (re-export)
+    DistributedPlacement,
+    DTensorPlacement,
+    DTensorSpec,
+    DTensorVerifier,
+    FSDP2Config,
+    FSDP2Verifier,
+    ParameterShardingSpec,
+    ParameterShardingStrategy,
+    ParameterShardingVerifier,
+    verify_dtensor_specs,
+    verify_parameter_sharding,
+)
 
 # Lazily importable submodule aliases (``import tensorguard.api`` etc.).
 from src import api as api  # noqa: F401
@@ -238,6 +251,17 @@ __all__ = [
     "verify_func_jacfwd",
     "verify_func_jvp",
     "verify_func_vjp",
+    "DistributedPlacement",
+    "DTensorPlacement",
+    "DTensorSpec",
+    "DTensorVerifier",
+    "FSDP2Config",
+    "FSDP2Verifier",
+    "ParameterShardingSpec",
+    "ParameterShardingStrategy",
+    "ParameterShardingVerifier",
+    "verify_dtensor_specs",
+    "verify_parameter_sharding",
     "TensorGuardViolation",
     "TensorGuardAOTPackageError",
     "AOTPackageIssue",

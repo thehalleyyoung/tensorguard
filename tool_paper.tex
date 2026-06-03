@@ -224,8 +224,8 @@ attention, training loss contracts for \texttt{CrossEntropyLoss},
 \texttt{NLLLoss}, \texttt{MSELoss}, \texttt{BCEWithLogitsLoss}, and
 \texttt{KLDivLoss}, exact RNN/LSTM/GRU output and returned-state contracts,
 LoRA adapter compatibility, training-loop checks, quantization/export safety,
-mixed-precision/autocast dtype-divergence gates, distributed sharding, tensor
-parallel attention variants, and deployment schemas.
+mixed-precision/autocast dtype-divergence gates, FSDP/FSDP2/DTensor sharding,
+tensor-parallel attention variants, and deployment schemas.
 
 Recent stack-family work follows the same standard.  \texttt{torch.stack},
 \texttt{hstack}, \texttt{vstack}, \texttt{dstack},
@@ -577,8 +577,8 @@ sparse-dense kernels, named
 tensor alignment failures, incompatible loss targets, incompatible distribution
 batch/event shapes, export
 contracts, quantization observer calibration/qscheme and quant/dequant placement,
-ONNX shape-inference disagreements, mixed-precision/autocast dtype drift, and
-distributed sharding mistakes.
+ONNX shape-inference disagreements, mixed-precision/autocast dtype drift,
+FSDP2/DTensor local-shard mistakes, and tensor-parallel sharding mistakes.
 
 The conformance tests are especially important.  A static rule is only useful
 if it matches the runtime library.  The repository therefore includes tests
@@ -703,8 +703,8 @@ preprocessing transforms whose tensor shapes feed the model. \\
 \texttt{src/gguf\_export.py},
 \texttt{src/distributed\_verification.py}, \texttt{src/lora\_verification.py} &
 Deployment, mixed-precision, distributed training, and adapter-compatibility
-gates, including GGUF/llama.cpp checkpoint preflight checks for transformer
-metadata and projection tensors. \\
+gates, including GGUF/llama.cpp checkpoint preflight checks and FSDP2/DTensor
+rank-local shard contracts checked against PyTorch's own placement splitter. \\
 \hline
 \texttt{src/reporters.py}, \texttt{src/sarif\_codescan.py},
 \texttt{src/github\_action.py} &
@@ -874,8 +874,8 @@ q/k/v packing, rotary dimensions, vocab projections, quant block divisibility,
 and metadata consistency before an external converter is invoked. \\
 \hline
 Distributed and adapters &
-DDP/FSDP/DTensor/tensor-parallel checks, optimizer-state checks, checkpoint
-schema checks, LoRA/PEFT adapter compatibility. \\
+DDP/FSDP/FSDP2/DTensor/per-parameter and tensor-parallel checks, plus
+optimizer-state, checkpoint-schema, and LoRA/PEFT adapter compatibility gates. \\
 \hline
 Reports and integrations &
 CLI, JSON, JUnit, SARIF, GitHub annotations, GitHub Action, pre-commit, pytest
@@ -998,7 +998,9 @@ state\_dict tensors and logical quantized descriptors. \\
 \hline
 \texttt{tests/test\_distributed\_verification.py},
 \texttt{tests/test\_tensor\_parallel\_checks.py} &
-Distributed and tensor-parallel shape/device contracts. \\
+FSDP, DeepSpeed, FSDP2, DTensor, per-parameter, and tensor-parallel
+shape/device contracts, including rank-specific shard-shape conformance against
+PyTorch's \texttt{torch.distributed.tensor} placement helper. \\
 \hline
 \texttt{tests/test\_lora\_verification.py} &
 Adapter rank and target-module compatibility checks. \\

@@ -32,6 +32,7 @@ import math
 import time
 from dataclasses import dataclass, field
 from enum import Enum, auto
+from itertools import product
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 logger = logging.getLogger(__name__)
@@ -101,6 +102,107 @@ class AdapterMergeStrategy(Enum):
     ADD = "add"               # Additive: W + α₁B₁A₁ + α₂B₂A₂
     SWITCH = "switch"         # Dynamic selection at runtime
     WEIGHTED_ADD = "weighted" # Weighted sum of adapter outputs
+
+
+ShapeDim = Union[int, str]
+Shape = Tuple[ShapeDim, ...]
+RankCoordinate = Tuple[int, ...]
+
+_MAX_LOCAL_SHAPES_TO_ENUMERATE = 256
+
+
+class DistributedPlacement(Enum):
+    """DTensor-style placement on one device-mesh axis."""
+
+    REPLICATE = "replicate"
+    SHARD = "shard"
+    PARTIAL = "partial"
+
+
+@dataclass(frozen=True)
+class DTensorPlacement:
+    """A torch.distributed.tensor placement used by the static shape checker.
+
+    ``kind=SHARD`` requires ``dim`` and follows PyTorch's unpadded
+    ``Shard(dim)`` split semantics.  ``REPLICATE`` and ``PARTIAL`` preserve
+    local tensor shape; ``PARTIAL`` additionally records a warning because a
+    pending reduction is a value-level obligation outside this shape checker.
+    """
+
+    kind: DistributedPlacement
+    dim: Optional[int] = None
+
+    @staticmethod
+    def replicate() -> "DTensorPlacement":
+        return DTensorPlacement(DistributedPlacement.REPLICATE)
+
+    @staticmethod
+    def shard(dim: int) -> "DTensorPlacement":
+        return DTensorPlacement(DistributedPlacement.SHARD, dim)
+
+    @staticmethod
+    def partial() -> "DTensorPlacement":
+        return DTensorPlacement(DistributedPlacement.PARTIAL)
+
+
+class ParameterShardingStrategy(Enum):
+    """Per-parameter distributed storage strategy."""
+
+    NO_SHARD = "no_shard"
+    REPLICATE = "replicate"
+    SHARD = "shard"
+    FULLY_SHARD = "fully_shard"
+    DTENSOR = "dtensor"
+
+
+@dataclass(frozen=True)
+class DTensorSpec:
+    """A global tensor plus a DTensor mesh/placement contract."""
+
+    name: str
+    global_shape: Shape
+    mesh_shape: Tuple[int, ...]
+    placements: Tuple[DTensorPlacement, ...]
+    rank_coordinate: Optional[RankCoordinate] = None
+    expected_local_shape: Optional[Shape] = None
+
+
+@dataclass(frozen=True)
+class ParameterShardingSpec:
+    """Per-parameter sharding contract.
+
+    ``expected_local_shape`` is checked exactly when ``rank_coordinate`` is
+    supplied.  Without a rank coordinate, the verifier checks it only when every
+    rank has the same local shape; uneven shards are reported as an abstention
+    warning rather than a false refutation.
+    """
+
+    name: str
+    shape: Optional[Shape] = None
+    strategy: ParameterShardingStrategy = ParameterShardingStrategy.FULLY_SHARD
+    world_size: int = 1
+    shard_dim: Optional[int] = 0
+    mesh_shape: Optional[Tuple[int, ...]] = None
+    placements: Tuple[DTensorPlacement, ...] = ()
+    rank_coordinate: Optional[RankCoordinate] = None
+    expected_local_shape: Optional[Shape] = None
+
+
+@dataclass
+class FSDP2Config:
+    """Configuration for PyTorch composable FSDP2/per-parameter sharding.
+
+    FSDP2 exposes original parameters and shards them with DTensor-style
+    placements instead of relying on a single monolithic ``FlatParameter``.
+    TensorGuard verifies the logical shape preservation and per-rank local
+    shard shapes implied by that contract.
+    """
+
+    world_size: int = 1
+    mesh_shape: Optional[Tuple[int, ...]] = None
+    default_shard_dim: int = 0
+    reshard_after_forward: bool = True
+    parameter_overrides: Dict[str, ParameterShardingSpec] = field(default_factory=dict)
 
 
 @dataclass
@@ -187,9 +289,9 @@ class ParamShardInfo:
     """
 
     name: str
-    original_shape: Tuple[Union[int, str], ...]
-    numel: Union[int, str]
-    shard_size: Union[int, str]
+    original_shape: Shape
+    numel: ShapeDim
+    shard_size: ShapeDim
     world_size: int
     is_flat: bool = False
 
@@ -220,6 +322,8 @@ class ShardingResult:
     z3_constraints_used: int = 0
     verification_time_ms: float = 0.0
     shard_info: List[ParamShardInfo] = field(default_factory=list)
+    warnings: List[str] = field(default_factory=list)
+    local_shapes: Dict[str, Dict[RankCoordinate, Shape]] = field(default_factory=dict)
 
     def pretty(self) -> str:
         status = "SAFE" if self.safe else "UNSAFE"
@@ -231,6 +335,8 @@ class ShardingResult:
         ]
         for v in self.violations:
             lines.append(f"  ✗ {v}")
+        for w in self.warnings:
+            lines.append(f"  ! {w}")
         return "\n".join(lines)
 
 
@@ -251,6 +357,463 @@ class AdapterComposition:
     adapters: List[Dict[str, Any]] = field(default_factory=list)
     strategy: AdapterMergeStrategy = AdapterMergeStrategy.ADD
     weights: Optional[List[float]] = None
+
+
+def _mesh_world_size(mesh_shape: Tuple[int, ...]) -> int:
+    world = 1
+    for axis_size in mesh_shape:
+        world *= axis_size
+    return world
+
+
+def _normalize_dim(dim: int, rank: int) -> Optional[int]:
+    if rank <= 0:
+        return None
+    if dim < 0:
+        dim += rank
+    if dim < 0 or dim >= rank:
+        return None
+    return dim
+
+
+def _chunk_local_extent(size: ShapeDim, chunks: int, rank_index: int) -> ShapeDim:
+    """Return PyTorch's unpadded ``Shard`` local extent for one mesh coordinate."""
+    if isinstance(size, int):
+        if chunks == 1:
+            return size
+        chunk_size = math.ceil(size / chunks) if size > 0 else 0
+        start = rank_index * chunk_size
+        if start >= size:
+            return 0
+        return min(chunk_size, size - start)
+    if chunks == 1:
+        return size
+    return f"chunk({size},{chunks},{rank_index})"
+
+
+def _shapes_definitely_differ(actual: Shape, expected: Shape) -> bool:
+    if len(actual) != len(expected):
+        return True
+    for a, e in zip(actual, expected):
+        if isinstance(a, int) and isinstance(e, int) and a != e:
+            return True
+    return False
+
+
+def _same_shape_for_all_ranks(local_shapes: Dict[RankCoordinate, Shape]) -> Optional[Shape]:
+    values = list(local_shapes.values())
+    if not values:
+        return None
+    first = values[0]
+    if all(v == first for v in values):
+        return first
+    return None
+
+
+def _coerce_strategy(
+    strategy: Union[ParameterShardingStrategy, str],
+) -> Optional[ParameterShardingStrategy]:
+    if isinstance(strategy, ParameterShardingStrategy):
+        return strategy
+    try:
+        return ParameterShardingStrategy(str(strategy))
+    except ValueError:
+        return None
+
+
+class DTensorVerifier:
+    """Verify DTensor mesh/placement shape contracts without a process group."""
+
+    def verify_specs(self, specs: List[DTensorSpec]) -> ShardingResult:
+        t0 = time.perf_counter()
+        violations: List[str] = []
+        warnings: List[str] = []
+        local_shapes: Dict[str, Dict[RankCoordinate, Shape]] = {}
+
+        for spec in specs:
+            spec_violations, spec_warnings, spec_local = self._verify_one(spec)
+            violations.extend(spec_violations)
+            warnings.extend(spec_warnings)
+            if spec_local:
+                local_shapes[spec.name] = spec_local
+
+        elapsed = (time.perf_counter() - t0) * 1000
+        return ShardingResult(
+            safe=len(violations) == 0,
+            violations=violations,
+            warnings=warnings,
+            params_checked=len(specs),
+            verification_time_ms=elapsed,
+            local_shapes=local_shapes,
+        )
+
+    def _verify_one(
+        self,
+        spec: DTensorSpec,
+    ) -> Tuple[List[str], List[str], Dict[RankCoordinate, Shape]]:
+        violations: List[str] = []
+        warnings: List[str] = []
+        local_shapes: Dict[RankCoordinate, Shape] = {}
+
+        if not spec.mesh_shape:
+            return [f"{spec.name}: mesh_shape must be non-empty"], warnings, local_shapes
+        for axis, axis_size in enumerate(spec.mesh_shape):
+            if axis_size <= 0:
+                violations.append(
+                    f"{spec.name}: mesh axis {axis} must be positive, got {axis_size}"
+                )
+        if len(spec.placements) != len(spec.mesh_shape):
+            violations.append(
+                f"{spec.name}: placements length {len(spec.placements)} must equal "
+                f"mesh rank {len(spec.mesh_shape)}"
+            )
+        if spec.rank_coordinate is not None:
+            if len(spec.rank_coordinate) != len(spec.mesh_shape):
+                violations.append(
+                    f"{spec.name}: rank_coordinate length {len(spec.rank_coordinate)} "
+                    f"must equal mesh rank {len(spec.mesh_shape)}"
+                )
+            else:
+                for axis, (coord, axis_size) in enumerate(
+                    zip(spec.rank_coordinate, spec.mesh_shape)
+                ):
+                    if coord < 0 or coord >= axis_size:
+                        violations.append(
+                            f"{spec.name}: rank_coordinate axis {axis}={coord} is "
+                            f"outside [0,{axis_size})"
+                        )
+        for dim_index, dim in enumerate(spec.global_shape):
+            if isinstance(dim, int) and dim < 0:
+                violations.append(
+                    f"{spec.name}: global_shape dimension {dim_index} is negative ({dim})"
+                )
+
+        normalized_placements: List[Tuple[DistributedPlacement, Optional[int]]] = []
+        rank = len(spec.global_shape)
+        for axis, placement in enumerate(spec.placements):
+            if placement.kind == DistributedPlacement.SHARD:
+                if placement.dim is None:
+                    violations.append(
+                        f"{spec.name}: Shard placement on mesh axis {axis} needs dim"
+                    )
+                    normalized_placements.append((placement.kind, None))
+                    continue
+                dim = _normalize_dim(placement.dim, rank)
+                if dim is None:
+                    violations.append(
+                        f"{spec.name}: Shard({placement.dim}) is invalid for rank {rank}"
+                    )
+                normalized_placements.append((placement.kind, dim))
+            elif placement.kind == DistributedPlacement.PARTIAL:
+                if placement.dim is not None:
+                    violations.append(
+                        f"{spec.name}: Partial placement must not specify dim"
+                    )
+                warnings.append(
+                    f"{spec.name}: Partial placement on mesh axis {axis} preserves "
+                    "shape but requires a later reduction before value use"
+                )
+                normalized_placements.append((placement.kind, None))
+            elif placement.kind == DistributedPlacement.REPLICATE:
+                if placement.dim is not None:
+                    violations.append(
+                        f"{spec.name}: Replicate placement must not specify dim"
+                    )
+                normalized_placements.append((placement.kind, None))
+            else:
+                violations.append(f"{spec.name}: unknown placement {placement.kind}")
+
+        if violations:
+            return violations, warnings, local_shapes
+
+        world_size = _mesh_world_size(spec.mesh_shape)
+        if spec.rank_coordinate is not None:
+            coordinates = [spec.rank_coordinate]
+        elif world_size <= _MAX_LOCAL_SHAPES_TO_ENUMERATE:
+            coordinates = list(product(*(range(axis) for axis in spec.mesh_shape)))
+        else:
+            coordinates = [tuple(0 for _ in spec.mesh_shape)]
+            warnings.append(
+                f"{spec.name}: mesh has {world_size} ranks; enumerating rank 0 only"
+            )
+
+        for coord in coordinates:
+            shape = list(spec.global_shape)
+            for axis, (kind, dim) in enumerate(normalized_placements):
+                if kind == DistributedPlacement.SHARD and dim is not None:
+                    shape[dim] = _chunk_local_extent(
+                        shape[dim], spec.mesh_shape[axis], coord[axis]
+                    )
+            local_shapes[coord] = tuple(shape)
+
+        if spec.expected_local_shape is not None:
+            if spec.rank_coordinate is not None:
+                actual = local_shapes.get(spec.rank_coordinate)
+                if actual is not None and _shapes_definitely_differ(
+                    actual, spec.expected_local_shape
+                ):
+                    violations.append(
+                        f"{spec.name}: local shape at rank {spec.rank_coordinate} "
+                        f"is {actual}, expected {spec.expected_local_shape}"
+                    )
+            else:
+                common_shape = _same_shape_for_all_ranks(local_shapes)
+                if common_shape is None:
+                    warnings.append(
+                        f"{spec.name}: expected_local_shape was not refuted because "
+                        "local shapes vary by rank; provide rank_coordinate"
+                    )
+                elif _shapes_definitely_differ(common_shape, spec.expected_local_shape):
+                    violations.append(
+                        f"{spec.name}: local shape is {common_shape}, expected "
+                        f"{spec.expected_local_shape}"
+                    )
+
+        return violations, warnings, local_shapes
+
+
+class ParameterShardingVerifier:
+    """Verify per-parameter sharding strategies by lowering to DTensor specs."""
+
+    def verify_specs(self, specs: List[ParameterShardingSpec]) -> ShardingResult:
+        t0 = time.perf_counter()
+        violations: List[str] = []
+        warnings: List[str] = []
+        local_shapes: Dict[str, Dict[RankCoordinate, Shape]] = {}
+        shard_info: List[ParamShardInfo] = []
+
+        for spec in specs:
+            spec_violations, spec_warnings, spec_local, info = self._verify_one(spec)
+            violations.extend(spec_violations)
+            warnings.extend(spec_warnings)
+            if spec_local:
+                local_shapes[spec.name] = spec_local
+            if info is not None:
+                shard_info.append(info)
+
+        elapsed = (time.perf_counter() - t0) * 1000
+        return ShardingResult(
+            safe=len(violations) == 0,
+            violations=violations,
+            warnings=warnings,
+            params_checked=len(specs),
+            verification_time_ms=elapsed,
+            shard_info=shard_info,
+            local_shapes=local_shapes,
+        )
+
+    def _verify_one(
+        self,
+        spec: ParameterShardingSpec,
+    ) -> Tuple[List[str], List[str], Dict[RankCoordinate, Shape], Optional[ParamShardInfo]]:
+        violations: List[str] = []
+        warnings: List[str] = []
+        local_shapes: Dict[RankCoordinate, Shape] = {}
+
+        strategy = _coerce_strategy(spec.strategy)
+        if strategy is None:
+            return (
+                [f"{spec.name}: unknown parameter sharding strategy {spec.strategy}"],
+                warnings,
+                local_shapes,
+                None,
+            )
+        if spec.shape is None:
+            return [f"{spec.name}: missing parameter shape"], warnings, local_shapes, None
+        if spec.world_size <= 0:
+            return (
+                [f"{spec.name}: world_size must be positive"],
+                warnings,
+                local_shapes,
+                None,
+            )
+        for dim_index, dim in enumerate(spec.shape):
+            if isinstance(dim, int) and dim < 0:
+                violations.append(
+                    f"{spec.name}: shape dimension {dim_index} is negative ({dim})"
+                )
+
+        if strategy in (
+            ParameterShardingStrategy.NO_SHARD,
+            ParameterShardingStrategy.REPLICATE,
+        ):
+            coordinate = spec.rank_coordinate or tuple(0 for _ in (spec.mesh_shape or (1,)))
+            local_shapes[coordinate] = spec.shape
+            if spec.expected_local_shape is not None and _shapes_definitely_differ(
+                spec.shape, spec.expected_local_shape
+            ):
+                violations.append(
+                    f"{spec.name}: replicated local shape is {spec.shape}, expected "
+                    f"{spec.expected_local_shape}"
+                )
+            info = ParamShardInfo(
+                name=spec.name,
+                original_shape=spec.shape,
+                numel=_numel_from_shape(spec.shape),
+                shard_size=_numel_from_shape(spec.shape),
+                world_size=spec.world_size,
+                is_flat=False,
+            )
+            return violations, warnings, local_shapes, info
+
+        mesh_shape = spec.mesh_shape or (spec.world_size,)
+        if _mesh_world_size(mesh_shape) != spec.world_size:
+            violations.append(
+                f"{spec.name}: mesh product {_mesh_world_size(mesh_shape)} must equal "
+                f"world_size {spec.world_size}"
+            )
+
+        if strategy == ParameterShardingStrategy.DTENSOR:
+            if not spec.placements:
+                violations.append(f"{spec.name}: DTENSOR strategy requires placements")
+            placements = spec.placements
+        else:
+            if spec.shard_dim is None:
+                violations.append(f"{spec.name}: sharded strategy requires shard_dim")
+                placements = ()
+            else:
+                placements = (DTensorPlacement.shard(spec.shard_dim),)
+
+        if violations:
+            return violations, warnings, local_shapes, None
+
+        dtensor = DTensorSpec(
+            name=spec.name,
+            global_shape=spec.shape,
+            mesh_shape=mesh_shape,
+            placements=placements,
+            rank_coordinate=spec.rank_coordinate,
+            expected_local_shape=spec.expected_local_shape,
+        )
+        dt_result = DTensorVerifier().verify_specs([dtensor])
+        violations.extend(dt_result.violations)
+        warnings.extend(dt_result.warnings)
+        local_shapes.update(dt_result.local_shapes.get(spec.name, {}))
+        info = ParamShardInfo(
+            name=spec.name,
+            original_shape=spec.shape,
+            numel=_numel_from_shape(spec.shape),
+            shard_size=_first_local_numel(dt_result.local_shapes.get(spec.name, {})),
+            world_size=spec.world_size,
+            is_flat=False,
+        )
+        return violations, warnings, local_shapes, info
+
+
+class FSDP2Verifier:
+    """Verify composable FSDP2 logical and per-rank parameter shape contracts."""
+
+    def __init__(self, fsdp2_config: FSDP2Config):
+        self.config = fsdp2_config
+
+    def verify_sharding(
+        self,
+        params: Dict[str, Shape],
+    ) -> ShardingResult:
+        if self.config.world_size <= 0:
+            return ShardingResult(
+                safe=False,
+                violations=["FSDP2 world_size must be positive"],
+                params_checked=0,
+            )
+
+        mesh_shape = self.config.mesh_shape or (self.config.world_size,)
+        mesh_world = _mesh_world_size(mesh_shape)
+        if mesh_world != self.config.world_size:
+            return ShardingResult(
+                safe=False,
+                violations=[
+                    f"FSDP2 mesh product {mesh_world} must equal world_size "
+                    f"{self.config.world_size}"
+                ],
+                params_checked=0,
+            )
+
+        specs: List[ParameterShardingSpec] = []
+        for name, shape in params.items():
+            override = self.config.parameter_overrides.get(name)
+            if override is not None:
+                specs.append(ParameterShardingSpec(
+                    name=name,
+                    shape=override.shape or shape,
+                    strategy=override.strategy,
+                    world_size=override.world_size or self.config.world_size,
+                    shard_dim=override.shard_dim,
+                    mesh_shape=override.mesh_shape or mesh_shape,
+                    placements=override.placements,
+                    rank_coordinate=override.rank_coordinate,
+                    expected_local_shape=override.expected_local_shape,
+                ))
+            else:
+                strategy = (
+                    ParameterShardingStrategy.NO_SHARD
+                    if self.config.world_size == 1
+                    else ParameterShardingStrategy.FULLY_SHARD
+                )
+                specs.append(ParameterShardingSpec(
+                    name=name,
+                    shape=shape,
+                    strategy=strategy,
+                    world_size=self.config.world_size,
+                    shard_dim=self.config.default_shard_dim,
+                    mesh_shape=mesh_shape,
+                ))
+
+        result = ParameterShardingVerifier().verify_specs(specs)
+        if self.config.reshard_after_forward is False:
+            result.warnings.append(
+                "FSDP2 reshard_after_forward=False preserves full parameters longer; "
+                "shape-safe but increases memory pressure"
+            )
+        return result
+
+    def verify_from_module(self, model: Any) -> ShardingResult:
+        if not HAS_TORCH:
+            return ShardingResult(
+                safe=True,
+                violations=["torch not available; skipping FSDP2 module verification"],
+            )
+
+        params: Dict[str, Shape] = {}
+        for name, param in model.named_parameters():
+            params[name] = tuple(param.shape)
+
+        return self.verify_sharding(params)
+
+
+def _numel_from_shape(shape: Shape) -> ShapeDim:
+    if not shape:
+        return 1
+    result = 1
+    symbolic: List[str] = []
+    for dim in shape:
+        if isinstance(dim, int):
+            result *= dim
+        else:
+            symbolic.append(str(dim))
+    if symbolic:
+        parts = ([str(result)] if result != 1 else []) + symbolic
+        return " * ".join(parts)
+    return result
+
+
+def _first_local_numel(local_shapes: Dict[RankCoordinate, Shape]) -> ShapeDim:
+    if not local_shapes:
+        return 0
+    first_shape = next(iter(local_shapes.values()))
+    return _numel_from_shape(first_shape)
+
+
+def verify_dtensor_specs(specs: List[DTensorSpec]) -> ShardingResult:
+    """Verify DTensor mesh/placement specs."""
+
+    return DTensorVerifier().verify_specs(specs)
+
+
+def verify_parameter_sharding(specs: List[ParameterShardingSpec]) -> ShardingResult:
+    """Verify per-parameter sharding specs."""
+
+    return ParameterShardingVerifier().verify_specs(specs)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1335,8 +1898,14 @@ class DistributedVerificationResult:
         Result from standard ``verify_model()`` pipeline.
     fsdp_result : ShardingResult or None
         FSDP sharding verification result.
+    fsdp2_result : ShardingResult or None
+        FSDP2 per-parameter sharding verification result.
     deepspeed_result : ShardingResult or None
         DeepSpeed ZeRO verification result.
+    dtensor_result : ShardingResult or None
+        DTensor mesh/placement verification result.
+    parameter_sharding_result : ShardingResult or None
+        Explicit per-parameter sharding verification result.
     adapter_result : ShardingResult or None
         Adapter composition verification result.
     verification_time_ms : float
@@ -1346,9 +1915,26 @@ class DistributedVerificationResult:
     safe: bool
     base_result: Optional[VerificationResult] = None
     fsdp_result: Optional[ShardingResult] = None
+    fsdp2_result: Optional[ShardingResult] = None
     deepspeed_result: Optional[ShardingResult] = None
+    dtensor_result: Optional[ShardingResult] = None
+    parameter_sharding_result: Optional[ShardingResult] = None
     adapter_result: Optional[ShardingResult] = None
     verification_time_ms: float = 0.0
+
+    def _append_sharding_lines(
+        self,
+        lines: List[str],
+        label: str,
+        result: Optional[ShardingResult],
+    ) -> None:
+        if result is None:
+            return
+        lines.append(f"  {label} safe: {result.safe}")
+        for v in result.violations:
+            lines.append(f"    ✗ {v}")
+        for w in result.warnings:
+            lines.append(f"    ! {w}")
 
     def pretty(self) -> str:
         status = "SAFE" if self.safe else "UNSAFE"
@@ -1358,18 +1944,14 @@ class DistributedVerificationResult:
         ]
         if self.base_result is not None:
             lines.append(f"  Base model safe:  {self.base_result.safe}")
-        if self.fsdp_result is not None:
-            lines.append(f"  FSDP safe:        {self.fsdp_result.safe}")
-            for v in self.fsdp_result.violations:
-                lines.append(f"    ✗ {v}")
-        if self.deepspeed_result is not None:
-            lines.append(f"  DeepSpeed safe:   {self.deepspeed_result.safe}")
-            for v in self.deepspeed_result.violations:
-                lines.append(f"    ✗ {v}")
-        if self.adapter_result is not None:
-            lines.append(f"  Adapters safe:    {self.adapter_result.safe}")
-            for v in self.adapter_result.violations:
-                lines.append(f"    ✗ {v}")
+        self._append_sharding_lines(lines, "FSDP       ", self.fsdp_result)
+        self._append_sharding_lines(lines, "FSDP2      ", self.fsdp2_result)
+        self._append_sharding_lines(lines, "DeepSpeed  ", self.deepspeed_result)
+        self._append_sharding_lines(lines, "DTensor    ", self.dtensor_result)
+        self._append_sharding_lines(
+            lines, "Param shard", self.parameter_sharding_result
+        )
+        self._append_sharding_lines(lines, "Adapters   ", self.adapter_result)
         return "\n".join(lines)
 
 
@@ -1450,11 +2032,14 @@ def verify_distributed(
     fsdp_config: Optional[FSDPConfig] = None,
     deepspeed_config: Optional[DeepSpeedConfig] = None,
     adapter_composition: Optional[AdapterComposition] = None,
+    fsdp2_config: Optional[FSDP2Config] = None,
+    dtensor_specs: Optional[List[DTensorSpec]] = None,
+    parameter_sharding: Optional[List[ParameterShardingSpec]] = None,
 ) -> DistributedVerificationResult:
     """Verify a model under distributed training configurations.
 
     Extends the standard ``verify_model()`` pipeline with FSDP sharding,
-    DeepSpeed ZeRO, and adapter composition checks.
+    FSDP2/DTensor sharding, DeepSpeed ZeRO, and adapter composition checks.
 
     Parameters
     ----------
@@ -1464,6 +2049,13 @@ def verify_distributed(
         Input tensor shapes for base model verification.
     fsdp_config : FSDPConfig, optional
         FSDP configuration.  If provided, runs FSDP sharding checks.
+    fsdp2_config : FSDP2Config, optional
+        Composable FSDP2 configuration. If provided, runs per-parameter
+        DTensor-style sharding checks.
+    dtensor_specs : list of DTensorSpec, optional
+        Explicit DTensor mesh/placement specs to verify.
+    parameter_sharding : list of ParameterShardingSpec, optional
+        Explicit per-parameter sharding specs to verify.
     deepspeed_config : DeepSpeedConfig, optional
         DeepSpeed configuration.  If provided, runs ZeRO stage checks.
     adapter_composition : AdapterComposition, optional
@@ -1500,13 +2092,29 @@ def verify_distributed(
         fsdp_verifier = FSDPShardingVerifier(fsdp_config)
         fsdp_result = fsdp_verifier.verify_shard_consistency(params)
 
-    # 4. DeepSpeed verification
+    # 4. FSDP2 verification
+    fsdp2_result: Optional[ShardingResult] = None
+    if fsdp2_config is not None:
+        fsdp2_verifier = FSDP2Verifier(fsdp2_config)
+        fsdp2_result = fsdp2_verifier.verify_sharding(params)
+
+    # 5. DeepSpeed verification
     ds_result: Optional[ShardingResult] = None
     if deepspeed_config is not None:
         ds_verifier = DeepSpeedVerifier(deepspeed_config)
         ds_result = ds_verifier.verify_stage(params)
 
-    # 5. Adapter composition verification
+    # 6. Explicit DTensor verification
+    dtensor_result: Optional[ShardingResult] = None
+    if dtensor_specs is not None:
+        dtensor_result = verify_dtensor_specs(dtensor_specs)
+
+    # 7. Explicit per-parameter sharding verification
+    parameter_sharding_result: Optional[ShardingResult] = None
+    if parameter_sharding is not None:
+        parameter_sharding_result = verify_parameter_sharding(parameter_sharding)
+
+    # 8. Adapter composition verification
     adapter_result: Optional[ShardingResult] = None
     if adapter_composition is not None:
         comp_verifier = AdapterCompositionVerifier(adapter_composition)
@@ -1518,7 +2126,13 @@ def verify_distributed(
         safe = False
     if fsdp_result is not None and not fsdp_result.safe:
         safe = False
+    if fsdp2_result is not None and not fsdp2_result.safe:
+        safe = False
     if ds_result is not None and not ds_result.safe:
+        safe = False
+    if dtensor_result is not None and not dtensor_result.safe:
+        safe = False
+    if parameter_sharding_result is not None and not parameter_sharding_result.safe:
         safe = False
     if adapter_result is not None and not adapter_result.safe:
         safe = False
@@ -1528,7 +2142,10 @@ def verify_distributed(
         safe=safe,
         base_result=base_result,
         fsdp_result=fsdp_result,
+        fsdp2_result=fsdp2_result,
         deepspeed_result=ds_result,
+        dtensor_result=dtensor_result,
+        parameter_sharding_result=parameter_sharding_result,
         adapter_result=adapter_result,
         verification_time_ms=elapsed,
     )
