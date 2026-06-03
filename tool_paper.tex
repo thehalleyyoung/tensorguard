@@ -148,8 +148,11 @@ extends to a twenty-five-case model gallery: each row pairs a pasteable clean
 \texttt{nn.Module}, a minimally changed buggy variant, the exact
 \texttt{tensorguard verify} input-shape command, and a test that executes the
 clean model under eager PyTorch while proving the buggy source is refuted by the
-verifier.  The tutorial surface is generated the same way: ten Colab-runnable
-notebooks are grouped into seven tracks---shapes, attention, export,
+verifier.  The gallery is now backed by a public model-zoo certification queue:
+each job has a content-addressed identifier, deterministic status badge,
+expected/observed clean and buggy verdicts, and a failure explanation if monthly
+freshness checks observe drift.  The tutorial surface is generated the same way:
+ten Colab-runnable notebooks are grouped into seven tracks---shapes, attention, export,
 distributed, quantization, community stubs, and formal certificates---and the
 CI smoke test executes the committed code cells rather than merely checking that
 the notebooks render.
@@ -746,9 +749,11 @@ domains, cross-domain reductions, stubs, proof policy, and refinement depth. \\
 Dashboards &
 \texttt{tests/test\_dashboard.py}, \texttt{tests/test\_build\_dashboard.py},
 \texttt{tests/test\_leaderboard.py},
-\texttt{tests/test\_leaderboard\_submission.py}.  Regenerates static result
+\texttt{tests/test\_leaderboard\_submission.py},
+\texttt{tests/test\_model\_zoo\_certification.py}.  Regenerates static result
 views for reviewers and contributors, including the signed public leaderboard,
-monthly freshness cadence, SSH trust anchor, and anti-overfitting intake rules. \\
+monthly freshness cadence, SSH trust anchor, anti-overfitting intake rules, and
+status-badged gallery certification jobs. \\
 \hline
 Statistical rigor &
 \texttt{tests/test\_statistical\_power.py},
@@ -1164,8 +1169,11 @@ certificates can reuse the existing safety certificate and replay infrastructure
 Community comparisons now flow through a signed public leaderboard: submissions
 are SSH-authenticated against a maintainer trust anchor, re-scored from raw
 verdicts, checked monthly for freshness, and reviewed under explicit
-anti-overfitting rules.  The next natural milestones are larger blind real-bug
-corpora, broader deployment galleries, and independently checkable certificates.
+anti-overfitting rules.  Copyable gallery models flow through a parallel
+certification queue with deterministic badges and failure explanations, so demos
+do not silently drift from the verifier.  The next natural milestones are larger
+blind real-bug corpora, broader deployment galleries, and independently
+checkable certificates.
 
 \section{Conclusion}
 

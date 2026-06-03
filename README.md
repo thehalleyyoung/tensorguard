@@ -223,7 +223,9 @@ runtime errors in ML codebases before any code runs.
   Seven-track executable **Colab tutorials** (`examples/tutorials/`) cover
   shapes, attention, export, distributed, quantization, stubs, and formal
   certificates, while a 25-case copyable **model gallery** (`examples/model_gallery.md`) onboards new users
-  with paired clean paths, caught bugs, and minimal `tensorguard verify` configs.
+  with paired clean paths, caught bugs, minimal `tensorguard verify` configs,
+  and a monthly public certification queue
+  (`reproducibility/model_zoo_certification.md`).
 - **Sub-second analysis** — typical models verified in < 1 second
 
 ---
@@ -761,6 +763,11 @@ is higher recall on ever-harder real-world bugs with no new false alarms. See
 [`reproducibility/leaderboard.md`](reproducibility/leaderboard.md),
 [`docs/leaderboard/CONTRIBUTING.md`](docs/leaderboard/CONTRIBUTING.md) and
 `tests/test_leaderboard.py`.
+
+The model gallery has its own public certification queue:
+`reproducibility/model_zoo_certification.py` reruns the clean and buggy gallery
+variants, emits deterministic status badges and failure explanations, and is
+checked monthly by `.github/workflows/model-zoo-certification.yml`.
 
 ### Beyond the architecture: training-loop hazard checks
 

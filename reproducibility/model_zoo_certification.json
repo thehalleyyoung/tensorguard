@@ -1,0 +1,694 @@
+{
+  "freshness_policy": {
+    "cadence": "monthly",
+    "check_command": "PYTHONPATH=. python reproducibility/model_zoo_certification.py --check",
+    "cron_utc": "31 8 3 * *",
+    "workflow": ".github/workflows/model-zoo-certification.yml"
+  },
+  "queue": {
+    "certified_count": 25,
+    "failed_count": 0,
+    "job_count": 25,
+    "name": "TensorGuard public model-zoo certification queue",
+    "source": "examples/model_gallery.py"
+  },
+  "rows": [
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify mlp_classifier_head.py -s x=batch,10",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "tabular",
+      "input_shapes": {
+        "x": [
+          "batch",
+          10
+        ]
+      },
+      "job_id": "tgzoo-dd21b2fd4c3ad1c1",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "mlp_classifier_head",
+      "source_sha256": "012a32ca006f5d744521b6f1dd2caf714746ce0a4b2457628188b063b5aaaed8",
+      "status": "certified",
+      "title": "MLP classifier head"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify residual_projection_head.py -s x=batch,12",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "vision",
+      "input_shapes": {
+        "x": [
+          "batch",
+          12
+        ]
+      },
+      "job_id": "tgzoo-734478269c351c1f",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "residual_projection_head",
+      "source_sha256": "d45f6c4df02bbd585d25389199c4c4c783eb9a5ad4236cfad749b8722e1bd1c1",
+      "status": "certified",
+      "title": "Residual projection head"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify transformer_ffn_block.py -s x=batch,16",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "attention",
+      "input_shapes": {
+        "x": [
+          "batch",
+          16
+        ]
+      },
+      "job_id": "tgzoo-993574558f214ef0",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "transformer_ffn_block",
+      "source_sha256": "d51e69957135bf27088878a706c80d7dfdcf3f342f16e85adec54afa5c9357fc",
+      "status": "certified",
+      "title": "Transformer feed-forward block"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify bert_pooler_head.py -s x=batch,768",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "nlp",
+      "input_shapes": {
+        "x": [
+          "batch",
+          768
+        ]
+      },
+      "job_id": "tgzoo-122b629a5d561f38",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "bert_pooler_head",
+      "source_sha256": "36d56f9f1e4937eb5e84777e8cac2e57183366bf28e25a808071b2b6f1b404c6",
+      "status": "certified",
+      "title": "BERT-style pooler head"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify vit_patch_classifier.py -s x=batch,64",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "vision",
+      "input_shapes": {
+        "x": [
+          "batch",
+          64
+        ]
+      },
+      "job_id": "tgzoo-82ebb444e8487252",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "vit_patch_classifier",
+      "source_sha256": "74a5054004c3f27fb22cde8056409bdcc035374026f9c29b9af12c421192bd22",
+      "status": "certified",
+      "title": "ViT patch classifier"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify unet_time_mlp.py -s x=batch,32",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "diffusion",
+      "input_shapes": {
+        "x": [
+          "batch",
+          32
+        ]
+      },
+      "job_id": "tgzoo-a3e5d15799dbd3b9",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "unet_time_mlp",
+      "source_sha256": "b6e73efa150ff79bab842e169c7c1459e6626047ea0a585a946efc1fcfab9116",
+      "status": "certified",
+      "title": "U-Net timestep MLP"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify gan_discriminator_head.py -s x=batch,100",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "generative",
+      "input_shapes": {
+        "x": [
+          "batch",
+          100
+        ]
+      },
+      "job_id": "tgzoo-a231509aed673014",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "gan_discriminator_head",
+      "source_sha256": "319fcbb136c299951cfb0f9e9fed48046d273c2a8499f436b34b06d6f99e9af2",
+      "status": "certified",
+      "title": "GAN discriminator head"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify vae_latent_decoder.py -s x=batch,20",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "generative",
+      "input_shapes": {
+        "x": [
+          "batch",
+          20
+        ]
+      },
+      "job_id": "tgzoo-c71e72d3b29c2658",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "vae_latent_decoder",
+      "source_sha256": "bf0ba0d15bcee89ce6d190b382d52df8bcf73f3c07062ea624f61b979b78d9d3",
+      "status": "certified",
+      "title": "VAE latent decoder stem"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify recommender_dense_tower.py -s x=batch,14",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "recommender",
+      "input_shapes": {
+        "x": [
+          "batch",
+          14
+        ]
+      },
+      "job_id": "tgzoo-8220f05f6e9ff086",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "recommender_dense_tower",
+      "source_sha256": "ec3a99ce9cc3e5dac004d35ea28c5eaab01b9a6a70114c45f8bf7637f569beec",
+      "status": "certified",
+      "title": "Recommender dense tower"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify speech_ctc_projection.py -s x=batch,80",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "speech",
+      "input_shapes": {
+        "x": [
+          "batch",
+          80
+        ]
+      },
+      "job_id": "tgzoo-95eb10a4620ec6b5",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "speech_ctc_projection",
+      "source_sha256": "d49f923465ceffe5814ca4740c90b809920134bcfc12c43a1a0e5472ea927930",
+      "status": "certified",
+      "title": "Speech CTC projection"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify rl_policy_head.py -s x=batch,17",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "reinforcement",
+      "input_shapes": {
+        "x": [
+          "batch",
+          17
+        ]
+      },
+      "job_id": "tgzoo-4c3778ffdca73251",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "rl_policy_head",
+      "source_sha256": "eade7dc402236f8cdac2cdfea8486a1206622dab73e5ac30104d253b2136f375",
+      "status": "certified",
+      "title": "RL policy head"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify q_value_estimator.py -s x=batch,22",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "reinforcement",
+      "input_shapes": {
+        "x": [
+          "batch",
+          22
+        ]
+      },
+      "job_id": "tgzoo-7313299d162bc8b2",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "q_value_estimator",
+      "source_sha256": "818cb715372b8416ea7c423806f38b4f91e7db05838215ea1006c103210c50cc",
+      "status": "certified",
+      "title": "Q-value estimator"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify metric_learning_embedder.py -s x=batch,48",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "retrieval",
+      "input_shapes": {
+        "x": [
+          "batch",
+          48
+        ]
+      },
+      "job_id": "tgzoo-3c5becbe5c712edb",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "metric_learning_embedder",
+      "source_sha256": "069f4f779673e82de187e95f30a66d6ce2ed9a76c72cc10edc092b2dc89c38ce",
+      "status": "certified",
+      "title": "Metric-learning embedder"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify siamese_projection_head.py -s x=batch,36",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "retrieval",
+      "input_shapes": {
+        "x": [
+          "batch",
+          36
+        ]
+      },
+      "job_id": "tgzoo-17be6abd11e5ead6",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "siamese_projection_head",
+      "source_sha256": "6b56198f39b0fec1acea75f838375b47d2af92d661fb09eaddda83b528e4b7d7",
+      "status": "certified",
+      "title": "Siamese projection head"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify contrastive_text_head.py -s x=batch,128",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "multimodal",
+      "input_shapes": {
+        "x": [
+          "batch",
+          128
+        ]
+      },
+      "job_id": "tgzoo-6ac9ee125c9dd39e",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "contrastive_text_head",
+      "source_sha256": "fed529bb2353c3a6c6c4d6d1d10ff6390b740647a48f37ce7743b1dcada96f3f",
+      "status": "certified",
+      "title": "Contrastive text head"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify image_caption_bridge.py -s x=batch,256",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "multimodal",
+      "input_shapes": {
+        "x": [
+          "batch",
+          256
+        ]
+      },
+      "job_id": "tgzoo-f505ed371cece4dd",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "image_caption_bridge",
+      "source_sha256": "bf10808571235f601a37dfb3506cb1d9d0e73842b83bb0522be23763e032a203",
+      "status": "certified",
+      "title": "Image-caption bridge"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify tabnet_decision_head.py -s x=batch,30",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "tabular",
+      "input_shapes": {
+        "x": [
+          "batch",
+          30
+        ]
+      },
+      "job_id": "tgzoo-7646ad9d6f4906ac",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "tabnet_decision_head",
+      "source_sha256": "388b857300c1eb3489f1886520b74d1713d7bb2913200ab413c61bb4029f5fb3",
+      "status": "certified",
+      "title": "TabNet decision head"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify graph_node_classifier.py -s x=batch,42",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "graph",
+      "input_shapes": {
+        "x": [
+          "batch",
+          42
+        ]
+      },
+      "job_id": "tgzoo-9fa3b9d65fd3f551",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "graph_node_classifier",
+      "source_sha256": "bdce4b0785d8a06133d0c1e67fc4c679dd0dd8be86efeb5aa214d4912448f36e",
+      "status": "certified",
+      "title": "Graph node classifier"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify time_series_forecaster.py -s x=batch,24",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "forecasting",
+      "input_shapes": {
+        "x": [
+          "batch",
+          24
+        ]
+      },
+      "job_id": "tgzoo-d071515b49f118d4",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "time_series_forecaster",
+      "source_sha256": "3c747e240327bbcbddb9b16c508dbd9afba751013863be6c6b3dc63dbd918c15",
+      "status": "certified",
+      "title": "Time-series forecaster"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify anomaly_detector_head.py -s x=batch,18",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "monitoring",
+      "input_shapes": {
+        "x": [
+          "batch",
+          18
+        ]
+      },
+      "job_id": "tgzoo-8b6906a73a5b804d",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "anomaly_detector_head",
+      "source_sha256": "c51db82272d13fed5329c79e192f5546c468c35eb7272c63fd85070c82691045",
+      "status": "certified",
+      "title": "Anomaly detector head"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify autofix_regression_head.py -s x=batch,11",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "tabular",
+      "input_shapes": {
+        "x": [
+          "batch",
+          11
+        ]
+      },
+      "job_id": "tgzoo-40972c9e1870f2d6",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "autofix_regression_head",
+      "source_sha256": "dd19959450f3dcdc8a70fd47921beded595914f3ac634f648802a34e2614a44a",
+      "status": "certified",
+      "title": "Regression head"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify adapter_bottleneck.py -s x=batch,40",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "fine-tuning",
+      "input_shapes": {
+        "x": [
+          "batch",
+          40
+        ]
+      },
+      "job_id": "tgzoo-fe129c929f5ecd8a",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "adapter_bottleneck",
+      "source_sha256": "22a911b4ebbce06880b889af77c5f1bbe09b0393f1065af768856b644441d8ac",
+      "status": "certified",
+      "title": "Adapter bottleneck"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify lora_merge_probe.py -s x=batch,64",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "fine-tuning",
+      "input_shapes": {
+        "x": [
+          "batch",
+          64
+        ]
+      },
+      "job_id": "tgzoo-0c512c2dceb92561",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "lora_merge_probe",
+      "source_sha256": "fa0fe39a0a7f6fce2dab3dcbced6dfe53b3822db0d7888b5c04f724afc30888b",
+      "status": "certified",
+      "title": "LoRA merge probe"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify optimizer_resume_probe.py -s x=batch,9",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "training",
+      "input_shapes": {
+        "x": [
+          "batch",
+          9
+        ]
+      },
+      "job_id": "tgzoo-9bd0dd75ac6d95fb",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "optimizer_resume_probe",
+      "source_sha256": "bc71d14f09b96da778444e1c9c6ab20e34b4c860c22023c556af132ab523c0b9",
+      "status": "certified",
+      "title": "Optimizer resume probe"
+    },
+    {
+      "badge_markdown": "![certified](https://img.shields.io/badge/model--zoo-certified-brightgreen)",
+      "buggy_bug_categories": [
+        "type_error"
+      ],
+      "buggy_bug_count": 2,
+      "clean_bug_count": 0,
+      "clean_unknown_reasons": [],
+      "copy_config": "tensorguard verify serving_schema_head.py -s x=batch,15",
+      "expected_buggy_verdict": "UNSAFE",
+      "expected_clean_verdict": "SAFE",
+      "failure_explanation": "",
+      "family": "serving",
+      "input_shapes": {
+        "x": [
+          "batch",
+          15
+        ]
+      },
+      "job_id": "tgzoo-7b8edee4f02d5311",
+      "observed_buggy_verdict": "UNSAFE",
+      "observed_clean_verdict": "SAFE",
+      "slug": "serving_schema_head",
+      "source_sha256": "130459bcd7987542842b18d04873dfefa099ff1ce6a0f6e5fbd7afa3690b5054",
+      "status": "certified",
+      "title": "Serving schema head"
+    }
+  ],
+  "schema": "tensorguard.model_zoo_certification.v1",
+  "soundness_mode": "balanced"
+}

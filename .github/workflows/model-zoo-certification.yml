@@ -1,0 +1,38 @@
+name: Model-zoo certification
+
+# Step 282 — public model-zoo certification queue. The job regenerates the
+# committed queue from real TensorGuard verification runs and fails if badges,
+# verdicts, or deterministic failure explanations drift.
+on:
+  schedule:
+    # Public certification freshness check: third day of each month at 08:31 UTC.
+    - cron: "31 8 3 * *"
+  pull_request:
+    paths:
+      - "examples/model_gallery.py"
+      - "examples/model_gallery.json"
+      - "examples/model_gallery.md"
+      - "reproducibility/model_zoo_certification.py"
+      - "reproducibility/model_zoo_certification.json"
+      - "reproducibility/model_zoo_certification.md"
+      - "tests/test_model_zoo_certification.py"
+      - ".github/workflows/model-zoo-certification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: pip install -e .
+      - name: Regenerate public model-zoo certification queue
+        run: PYTHONPATH=. python reproducibility/model_zoo_certification.py
+      - name: Assert deterministic freshness
+        run: PYTHONPATH=. python reproducibility/model_zoo_certification.py --check
