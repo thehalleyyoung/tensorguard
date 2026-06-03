@@ -2,6 +2,7 @@
   "all_ok": true,
   "cases": [
     {
+      "case_type": "mlp",
       "expect_live_match": true,
       "expect_static_ok": true,
       "live_match": true,
@@ -16,6 +17,7 @@
       "tp_size": 2
     },
     {
+      "case_type": "mlp",
       "expect_live_match": true,
       "expect_static_ok": true,
       "live_match": true,
@@ -30,6 +32,7 @@
       "tp_size": 4
     },
     {
+      "case_type": "mlp",
       "expect_live_match": false,
       "expect_static_ok": false,
       "live_match": true,
@@ -46,6 +49,7 @@
       "tp_size": 2
     },
     {
+      "case_type": "mlp",
       "expect_live_match": false,
       "expect_static_ok": false,
       "live_match": true,
@@ -62,6 +66,7 @@
       "tp_size": 2
     },
     {
+      "case_type": "mlp",
       "expect_live_match": false,
       "expect_static_ok": false,
       "live_match": true,
@@ -76,9 +81,88 @@
       "static_match": true,
       "static_ok": false,
       "tp_size": 2
+    },
+    {
+      "case_type": "attention",
+      "expect_live_match": true,
+      "expect_static_ok": true,
+      "live_match": true,
+      "live_matches_reference": true,
+      "live_ran": true,
+      "live_reason": "",
+      "name": "hf_style_gqa_sharded_kv_head_dim_independent",
+      "ok": true,
+      "static_issues": [],
+      "static_match": true,
+      "static_ok": true,
+      "tp_size": 2
+    },
+    {
+      "case_type": "attention",
+      "expect_live_match": true,
+      "expect_static_ok": true,
+      "live_match": true,
+      "live_matches_reference": true,
+      "live_ran": true,
+      "live_reason": "",
+      "name": "megatron_style_mqa_replicated_kv",
+      "ok": true,
+      "static_issues": [],
+      "static_match": true,
+      "static_ok": true,
+      "tp_size": 4
+    },
+    {
+      "case_type": "attention",
+      "expect_live_match": true,
+      "expect_static_ok": true,
+      "live_match": true,
+      "live_matches_reference": true,
+      "live_ran": true,
+      "live_reason": "",
+      "name": "real_transformers_llama_projection_shapes",
+      "ok": true,
+      "static_issues": [],
+      "static_match": true,
+      "static_ok": true,
+      "tp_size": 4
+    },
+    {
+      "case_type": "attention",
+      "expect_live_match": false,
+      "expect_static_ok": false,
+      "live_match": true,
+      "live_matches_reference": null,
+      "live_ran": null,
+      "live_reason": "structural (no runtime simulation)",
+      "name": "kv_heads_neither_shard_nor_replicate",
+      "ok": true,
+      "static_issues": [
+        "kv_head_tp_incompatible"
+      ],
+      "static_match": true,
+      "static_ok": false,
+      "tp_size": 4
+    },
+    {
+      "case_type": "attention",
+      "expect_live_match": false,
+      "expect_static_ok": false,
+      "live_match": true,
+      "live_matches_reference": null,
+      "live_ran": null,
+      "live_reason": "structural (no runtime simulation)",
+      "name": "sequence_parallel_hidden_axis_layernorm",
+      "ok": true,
+      "static_issues": [
+        "sequence_parallel_axis"
+      ],
+      "static_match": true,
+      "static_ok": false,
+      "tp_size": 4
     }
   ],
-  "n_cases": 5,
+  "n_cases": 10,
   "seed": 0,
   "tolerance": 0.0001
 }

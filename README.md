@@ -705,26 +705,26 @@ and `tests/test_training_loop_checks.py`.
 ### Tensor-parallel sharding consistency
 
 Tensor parallelism is the distributed pattern with no good static tool today:
-a column-parallel `Linear` shards its weight along the output dimension and a
-row-parallel `Linear` along the input dimension, and the two must chain with
-exactly the right `gather_output` / `input_is_parallel` flags and divisible
-dimensions, or the model silently mis-computes or crashes on N GPUs that a
-single-GPU test never exercises. `src/tensor_parallel_checks.py` models a
-Megatron-style parallel linear stack and checks shard divisibility, contracted
-dimension match, and communication-flag consistency.
+column/row-parallel linears, MQA/GQA attention heads, and sequence-parallel
+LayerNorm must all agree on shard divisibility, communication flags, KV-head
+replication, projection matrices, and normalized axes, or the model silently
+mis-computes or crashes only on N GPUs. `src/tensor_parallel_checks.py` models
+Megatron-style linear and attention stacks plus HuggingFace-style grouped-query
+attention, including explicit `head_dim` configs where
+`hidden_size != num_heads * head_dim`.
 
 `reproducibility/tensor_parallel_sharding.py` proves it against **real
-PyTorch** by hand-sharding a reference linear stack across simulated ranks:
+PyTorch** by hand-sharding reference linear and attention modules across
+simulated ranks:
 
 ```bash
 PYTHONPATH=. python3 reproducibility/tensor_parallel_sharding.py   # writes tensor_parallel_sharding.{json,md}
 ```
 
-The canonical Megatron MLP reproduces the unsharded forward exactly (up to
-floating-point tolerance) at two and four ranks, and every inconsistent config
-(gathered output fed to a parallel-input row layer, an indivisible shard, or a
-contracted-dimension mismatch) is flagged statically and also fails when
-actually sharded. See
+The deterministic artifact now covers 10 cases: canonical Megatron MLP at two
+and four ranks, HF-style GQA with independent `head_dim`, Megatron-style MQA
+with replicated KV heads, installed `transformers` `LlamaAttention` projection
+shapes, and negative KV/sequence-parallel LayerNorm cases. See
 [`reproducibility/tensor_parallel_sharding.md`](reproducibility/tensor_parallel_sharding.md)
 and `tests/test_tensor_parallel_checks.py`.
 

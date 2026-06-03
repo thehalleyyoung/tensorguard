@@ -5,12 +5,23 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO = Path(__file__).resolve().parent.parent
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
 from src.tensor_parallel_checks import (  # noqa: E402
-    verify_tensor_parallel, megatron_mlp, TPLinearSpec, TPKind, TPIssueKind,
+    verify_tensor_parallel,
+    verify_tensor_parallel_attention,
+    llama_gqa_attention,
+    megatron_attention,
+    megatron_mlp,
+    TPAttentionSpec,
+    TPKVSharding,
+    TPLinearSpec,
+    TPKind,
+    TPIssueKind,
 )
 import reproducibility.tensor_parallel_sharding as tps  # noqa: E402
 
@@ -74,6 +85,114 @@ def test_tp_size_zero_rejected():
         assert False, "expected ValueError"
     except ValueError:
         pass
+
+
+def test_hf_gqa_attention_allows_independent_head_dim():
+    spec = llama_gqa_attention(
+        hidden_size=32,
+        num_attention_heads=8,
+        num_key_value_heads=2,
+        head_dim=40,
+        sequence_parallel=True,
+    )
+    res = verify_tensor_parallel_attention(spec, 4)
+    assert res.ok, [i.message for i in res.issues]
+
+
+def test_megatron_mqa_replicated_kv_heads_is_valid():
+    spec = megatron_attention(
+        hidden_size=16,
+        num_attention_heads=8,
+        num_key_value_heads=1,
+        tp_size=4,
+        head_dim=2,
+        kv_sharding=TPKVSharding.REPLICATE,
+        sequence_parallel=True,
+    )
+    res = verify_tensor_parallel_attention(spec, 4)
+    assert res.ok, [i.message for i in res.issues]
+
+
+def test_attention_invalid_kv_partition_and_grouping_are_flagged():
+    bad_partition = verify_tensor_parallel_attention(
+        llama_gqa_attention(24, 12, 3, head_dim=2),
+        4,
+    )
+    assert TPIssueKind.KV_HEAD_TP_INCOMPATIBLE in {
+        i.kind for i in bad_partition.issues
+    }
+
+    bad_grouping = verify_tensor_parallel_attention(
+        llama_gqa_attention(24, 10, 3, head_dim=2),
+        2,
+    )
+    kinds = {i.kind for i in bad_grouping.issues}
+    assert TPIssueKind.GQA_GROUP_MISMATCH in kinds
+
+
+def test_attention_projection_shape_mismatch_is_flagged():
+    spec = TPAttentionSpec(
+        name="bad_projection",
+        hidden_size=32,
+        num_attention_heads=8,
+        num_key_value_heads=2,
+        head_dim=4,
+        q_proj_shape=(31, 32),
+        k_proj_shape=(8, 32),
+        v_proj_shape=(8, 32),
+        o_proj_shape=(32, 32),
+    )
+    res = verify_tensor_parallel_attention(spec, 4)
+    assert TPIssueKind.PROJECTION_SHAPE_MISMATCH in {i.kind for i in res.issues}
+
+
+def test_sequence_parallel_layernorm_must_not_shard_hidden_axis():
+    spec = TPAttentionSpec(
+        name="bad_sp_layernorm",
+        hidden_size=16,
+        num_attention_heads=8,
+        num_key_value_heads=1,
+        head_dim=2,
+        sequence_parallel=True,
+        activation_shape=(2, 5, 16),
+        sequence_parallel_axis=-1,
+        layer_norm_shape=(16,),
+    )
+    res = verify_tensor_parallel_attention(spec, 4)
+    assert TPIssueKind.SEQUENCE_PARALLEL_AXIS in {i.kind for i in res.issues}
+
+
+def test_real_huggingface_llama_attention_projection_shapes_when_available():
+    pytest.importorskip("transformers")
+    from transformers import LlamaConfig
+    from transformers.models.llama.modeling_llama import LlamaAttention
+
+    cfg = LlamaConfig(
+        hidden_size=32,
+        intermediate_size=64,
+        num_hidden_layers=1,
+        num_attention_heads=8,
+        num_key_value_heads=2,
+        max_position_embeddings=16,
+        vocab_size=100,
+        head_dim=40,
+    )
+    attn = LlamaAttention(cfg, layer_idx=0)
+    spec = TPAttentionSpec(
+        name="real_hf_llama_attention",
+        hidden_size=cfg.hidden_size,
+        num_attention_heads=cfg.num_attention_heads,
+        num_key_value_heads=cfg.num_key_value_heads,
+        head_dim=cfg.head_dim,
+        q_proj_shape=tuple(attn.q_proj.weight.shape),
+        k_proj_shape=tuple(attn.k_proj.weight.shape),
+        v_proj_shape=tuple(attn.v_proj.weight.shape),
+        o_proj_shape=tuple(attn.o_proj.weight.shape),
+    )
+    res = verify_tensor_parallel_attention(spec, 4)
+    assert res.ok, [i.message for i in res.issues]
+    assert tuple(attn.q_proj.weight.shape) == (320, 32)
+    assert tuple(attn.o_proj.weight.shape) == (32, 320)
 
 
 # --- reproducibility harness: static verdict vs real sharded torch ---------

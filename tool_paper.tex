@@ -702,11 +702,13 @@ preprocessing transforms whose tensor shapes feed the model. \\
 \hline
 \texttt{src/quant\_export\_checks.py}, \texttt{src/mixed\_precision\_verify.py},
 \texttt{src/gguf\_export.py},
-\texttt{src/distributed\_verification.py}, \texttt{src/lora\_verification.py} &
+\texttt{src/distributed\_verification.py}, \texttt{src/tensor\_parallel\_checks.py},
+\texttt{src/lora\_verification.py} &
 Deployment, mixed-precision, distributed training, and adapter-compatibility
 gates, including GGUF/llama.cpp checkpoint preflight checks and FSDP2/DTensor
 rank-local shard contracts checked against PyTorch's own placement splitter,
-plus explicit pipeline activation-boundary contracts. \\
+explicit pipeline activation-boundary contracts, and MQA/GQA tensor-parallel
+attention contracts. \\
 \hline
 \texttt{src/reporters.py}, \texttt{src/sarif\_codescan.py},
 \texttt{src/github\_action.py} &
@@ -838,7 +840,8 @@ collapsing to rank-only approximations. \\
 \hline
 Attention &
 SDPA and MHA contracts, q/k/v dimensions, kdim/vdim, masks, key padding masks,
-batch-first layout, and grouped head variants. \\
+batch-first layout, grouped head variants, MQA/GQA tensor-parallel partitioning,
+KV-head replication, and sequence-parallel LayerNorm safety. \\
 \hline
 Embedding bags &
 \texttt{nn.EmbeddingBag}, \texttt{F.embedding\_bag}, table dimensions, offsets,
@@ -1001,9 +1004,11 @@ state\_dict tensors and logical quantized descriptors. \\
 \hline
 \texttt{tests/test\_distributed\_verification.py},
 \texttt{tests/test\_tensor\_parallel\_checks.py} &
-FSDP, DeepSpeed, FSDP2, DTensor, per-parameter, pipeline-boundary, and tensor-parallel
-shape/device contracts, including rank-specific shard-shape conformance against
-PyTorch's \texttt{torch.distributed.tensor} placement helper. \\
+FSDP, DeepSpeed, FSDP2, DTensor, per-parameter, pipeline-boundary, and
+tensor-parallel shape/device contracts, including rank-specific shard-shape
+conformance against PyTorch's \texttt{torch.distributed.tensor} placement helper
+and MQA/GQA attention conformance against real PyTorch sharded executions plus
+installed HuggingFace \texttt{LlamaAttention} projection shapes. \\
 \hline
 \texttt{tests/test\_lora\_verification.py} &
 Adapter rank and target-module compatibility checks. \\
@@ -1170,10 +1175,12 @@ Einsum theory tests, precise einsum tests, and randomized torch differential
 batteries. \\
 \hline
 Attention &
-Q/K/V ranks, embedding dimensions, source lengths, batch layout, masks, and
-head-related contracts are checked for SDPA and MHA. &
-MHA verification tests against real PyTorch modules and functional calls;
-SDPA precise tests. \\
+Q/K/V ranks, embedding dimensions, source lengths, batch layout, masks,
+head-related contracts, MQA/GQA tensor-parallel head partitioning, KV-head
+replication, and sequence-parallel LayerNorm axes are checked. &
+MHA and SDPA tests against real PyTorch modules and functional calls, plus
+tensor-parallel attention tests over real PyTorch sharded executions and
+installed HuggingFace \texttt{LlamaAttention} projection shapes. \\
 \hline
 Normalization &
 BatchNorm, LayerNorm, GroupNorm, and InstanceNorm preserve shapes while checking
@@ -1229,11 +1236,12 @@ ONNX, AOT, GGUF, quantization, mixed-precision, and guarded compile/export
 tests. \\
 \hline
 Distributed and adapter gates &
-Sharding, explicit pipeline stage boundaries, tensor parallelism, optimizer
-state, checkpoints, and LoRA adapters have shape/dtype/rank contracts layered
-over base verification. &
+Sharding, explicit pipeline stage boundaries, tensor-parallel linears and
+MQA/GQA attention, optimizer state, checkpoints, and LoRA adapters have
+shape/dtype/rank contracts layered over base verification. &
 Distributed verification, tensor-parallel, training-loop, checkpoint, and LoRA
-tests. \\
+tests, including real PyTorch sharded attention and HuggingFace
+\texttt{LlamaAttention} projection checks. \\
 \hline
 \end{longtable}
 
