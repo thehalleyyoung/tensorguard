@@ -141,6 +141,29 @@ import TensorGuard
 #print axioms TensorGuard.SparseLayouts.bsr_bad_column_divisibility_rejected
 #print axioms TensorGuard.SparseLayouts.compressed_dense_tail_mismatch_rejected
 
+-- Recurrent hidden-state contracts (Step 237): RNN/GRU/LSTM output and h_n/c_n
+-- shape transformations preserve batch/sequence layout, select the right
+-- `batch_first` state axis, double only the output feature/state depth for
+-- bidirectional layers, and keep projected LSTM c_n on hidden_size.
+#print axioms TensorGuard.RecurrentRule.batch_first_output_preserves_layout
+#print axioms TensorGuard.RecurrentRule.time_major_output_preserves_layout
+#print axioms TensorGuard.RecurrentRule.batch_first_state_selects_dim0
+#print axioms TensorGuard.RecurrentRule.time_major_state_selects_dim1
+#print axioms TensorGuard.RecurrentRule.bidirectional_output_feature_doubles
+#print axioms TensorGuard.RecurrentRule.bidirectional_state_depth_doubles
+#print axioms TensorGuard.RecurrentRule.lstm_cell_state_uses_hidden_size_under_projection
+#print axioms TensorGuard.RecurrentRule.gru_cell_state_rejected
+#print axioms TensorGuard.RecurrentRule.rnn_cell_state_rejected
+#print axioms TensorGuard.RecurrentRule.projected_bilstm_output_shape
+#print axioms TensorGuard.RecurrentRule.projected_bilstm_h_state_shape
+#print axioms TensorGuard.RecurrentRule.projected_bilstm_c_state_shape
+#print axioms TensorGuard.RecurrentRule.time_major_bigru_output_shape
+#print axioms TensorGuard.RecurrentRule.time_major_bigru_h_state_shape
+#print axioms TensorGuard.RecurrentRule.unbatched_rnn_output_shape
+#print axioms TensorGuard.RecurrentRule.unbatched_rnn_h_state_shape
+#print axioms TensorGuard.RecurrentRule.wrong_input_size_rejected
+#print axioms TensorGuard.RecurrentRule.bad_rank_rejected
+
 -- Cross-domain (shape × device) encoding faithfulness (Step 136): a transfer op
 -- preserves shape exactly (device free); a non-transfer op preserves device
 -- exactly (shape free), so the solver flags a cross-domain violation iff the

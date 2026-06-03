@@ -214,7 +214,8 @@ advanced indexing, gather/scatter, index select, masked select,
 \texttt{take\_along\_dim}, \texttt{argsort}, \texttt{sort}/\texttt{topk}/
 \texttt{kthvalue}, arg reductions, exact \texttt{nn/F.embedding\_bag}
 contracts for offsets, per-sample weights, pooling modes, and TorchRec-style
-jagged pooled embeddings, Lean-backed sparse COO/CSR/CSC/BSR/BSC layout invariants,
+jagged pooled embeddings, Lean-backed recurrent state contracts,
+Lean-backed sparse COO/CSR/CSC/BSR/BSC layout invariants,
 sparse-dense \texttt{mm}/\texttt{addmm}, CSR \texttt{sampled\_addmm},
 sparse softmax/coalesce, layout conversions, FFT/complex view contracts, exact \texttt{torch.linalg} contracts for
 \texttt{solve}, inverse, Cholesky, SVD, eigendecomposition, and QR, named tensor
@@ -228,7 +229,7 @@ oracles, grid sampling, affine grids, source-level
 PIL-only abstention), multi-head attention, scaled dot-product
 attention, training loss contracts for \texttt{CrossEntropyLoss},
 \texttt{NLLLoss}, \texttt{MSELoss}, \texttt{BCEWithLogitsLoss}, and
-\texttt{KLDivLoss}, exact RNN/LSTM/GRU output and returned-state contracts,
+\texttt{KLDivLoss}, exact machine-checked RNN/LSTM/GRU output and returned-state contracts,
 LoRA adapter compatibility, training-loop checks, quantization/export safety,
 mixed-precision/autocast dtype-divergence gates, FSDP/FSDP2/DTensor sharding,
 explicit pipeline-stage boundary contracts, tensor-parallel sharding checks,
@@ -365,6 +366,10 @@ projected LSTMs use \texttt{proj\_size} for \texttt{output}/\texttt{h\_n} while
 the same contract machinery, so downstream \texttt{Linear}, reshape, and tuple
 unpacking checks see the exact returned tensor ranks instead of a last-dimension
 heuristic.
+The corresponding Lean artifact proves layout preservation, \texttt{batch\_first}
+state-axis selection, bidirectional output/depth doubling, LSTM-only cell-state
+availability, and the projected bidirectional LSTM asymmetry checked by the
+runtime conformance test.
 
 Packed sequences are treated as an explicit abstention boundary.  Calls such as
 \texttt{pack\_padded\_sequence} produce opaque values; recurrent layers consuming
@@ -666,7 +671,8 @@ device/dtype transfer soundness, SMT encoding faithfulness, cross-domain
 composition, and operator-specific rules such as cat, chunk/split partition
 reconstruction, reshape, contiguity/stride/storage-offset viewability with
 channels-last caveats, einops decomposition/bijection families, SDPA
-broadcast/mask/GQA shape laws, distribution batch/event/log-prob algebra,
+broadcast/mask/GQA shape laws, RNN/GRU/LSTM state-shape laws,
+distribution batch/event/log-prob algebra,
 TransformedDistribution identity/reshape event-rank rules, and named-tensor
 refine/align name preservation, singleton insertion, and duplicate-name
 rejection.  The sparse-layout artifact proves accepted COO/CSR/CSC/BSR/BSC
@@ -868,7 +874,7 @@ Shape algebra &
 Matmul, reshape/view, flatten, broadcasting, cat, stack-family aliases, chunk, split,
 padding, transpose, permute, squeeze, unsqueeze, reductions, indexing,
 convolution, pooling, fold/unfold, embedding, and attention rules, including
-Lean-checked SDPA masks and GQA heads. \\
+Lean-checked recurrent state laws, SDPA masks, and GQA heads. \\
 \hline
 Device reasoning &
 Propagation through tensor creation, module calls, \texttt{to}/\texttt{cuda}/
@@ -1144,8 +1150,8 @@ Recurrent modules &
 sequence/batch layout, account for layers and directions, distinguish LSTM
 \texttt{h\_n} from \texttt{c\_n}, support projections, and abstain on packed
 sequences. &
-Focused recurrent tests plus a live PyTorch projected bidirectional LSTM
-shape oracle and packed-sequence abstention regression. \\
+Lean axiom audits, focused recurrent tests, live PyTorch projected bidirectional
+LSTM/GRU/RNN shape oracles, and packed-sequence abstention regression. \\
 \hline
 Matrix multiplication &
 Contracting dimensions must match; batched prefixes are propagated or
