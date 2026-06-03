@@ -387,12 +387,14 @@ contracts, while phase annotations make train/eval-sensitive modules diagnostic
 instead of invisible.
 
 Attention rules are handled at multiple layers.  SDPA verifies query/key
-embedding compatibility and key/value source-length compatibility while
-preserving the output value dimension.  Multi-head attention checks packed and
-unpacked query/key/value forms, \texttt{kdim}/\texttt{vdim}, batch-first layout,
-attention masks, key-padding masks, per-head weight shapes, and valid symbolic
-cases.  Tests replay these contracts against real PyTorch modules and functional
-calls.
+embedding compatibility, ordinary leading batch/head broadcast, attention-mask
+broadcast against \((\ldots,L_q,L_k)\), and the scoped
+\texttt{enable\_gqa=True} caveat: key/value heads divide query heads on the
+\(-3\) axis and the output uses query heads plus the value embedding dimension.
+Multi-head attention checks packed and unpacked query/key/value forms,
+\texttt{kdim}/\texttt{vdim}, batch-first layout, attention masks, key-padding
+masks, per-head weight shapes, and valid symbolic cases.  Tests replay these
+contracts against real PyTorch modules and functional calls.
 
 The \texttt{einsum} rule is deliberately parser-backed rather than a rank
 heuristic.  It models explicit and implicit outputs, ASCII label ordering,
@@ -655,8 +657,8 @@ transfer functions.
 contains Lean artifacts for several core rules and proof obligations, including
 CEGAR convergence bounds, infeasible-contract abstention, fragment modes,
 device/dtype transfer soundness, SMT encoding faithfulness, cross-domain
-composition, and operator-specific rules such as cat, reshape, and einops
-decomposition/bijection families.
+composition, and operator-specific rules such as cat, reshape, einops
+decomposition/bijection families, and SDPA broadcast/mask/GQA shape laws.
 The Lean audit checks theorem statements for sorry-free status under the
 trusted kernel axioms used by the environment.
 
@@ -816,11 +818,10 @@ leaderboard that makes tensor-verifier progress measurable.
 both principled and practical.  The repository combines a refinement-type view
 of tensors, a multi-domain abstract state, Z3-backed checks, CEGAR refinement,
 soundness modes, precise operator transfer functions, real frontends, formal
-artifacts, and an unusually broad reproducibility harness.  The latest
-gather/scatter and padding work illustrates the project's standard: match
-PyTorch's exact edge-case semantics, propagate precision to downstream model
-checks, abstain on symbolic or value-dependent uncertainty, and pin the behavior
-with live-library tests.
+artifacts, and an unusually broad reproducibility harness.  The latest SDPA proof work illustrates the project's standard: match PyTorch's
+exact edge-case semantics, propagate precision to downstream model checks,
+abstain on symbolic or value-dependent uncertainty, and pin the behavior with
+Lean plus live-library tests.
 
 The result is a verifier that catches high-value architecture, device, dtype,
 phase, gradient, export, and deployment bugs before expensive training or
@@ -844,7 +845,8 @@ shape aliases, and dataflow without requiring user type annotations. \\
 Shape algebra &
 Matmul, reshape/view, flatten, broadcasting, cat, stack-family aliases, chunk, split,
 padding, transpose, permute, squeeze, unsqueeze, reductions, indexing,
-convolution, pooling, fold/unfold, embedding, and attention rules. \\
+convolution, pooling, fold/unfold, embedding, and attention rules, including
+Lean-checked SDPA masks and GQA heads. \\
 \hline
 Device reasoning &
 Propagation through tensor creation, module calls, \texttt{to}/\texttt{cuda}/
@@ -873,8 +875,9 @@ collapsing to rank-only approximations. \\
 \hline
 Attention &
 SDPA and MHA contracts, q/k/v dimensions, kdim/vdim, masks, key padding masks,
-batch-first layout, grouped head variants, MQA/GQA tensor-parallel partitioning,
-KV-head replication, and sequence-parallel LayerNorm safety. \\
+batch-first layout, grouped head variants, GQA head divisibility,
+MQA/GQA tensor-parallel partitioning, KV-head replication, and sequence-parallel
+LayerNorm safety. \\
 \hline
 Embedding bags &
 \texttt{nn.EmbeddingBag}, \texttt{F.embedding\_bag}, table dimensions, offsets,
@@ -1249,7 +1252,8 @@ Attention &
 Q/K/V ranks, embedding dimensions, source lengths, batch layout, masks,
 head-related contracts, MQA/GQA tensor-parallel head partitioning, KV-head
 replication, and sequence-parallel LayerNorm axes are checked. &
-MHA and SDPA tests against real PyTorch modules and functional calls, plus
+MHA and SDPA tests against real PyTorch modules and functional calls, including
+Lean-conformance SDPA broadcast/mask/GQA cases, plus
 tensor-parallel attention tests over real PyTorch sharded executions and
 installed HuggingFace \texttt{LlamaAttention} projection shapes. \\
 \hline

@@ -122,9 +122,9 @@ runtime errors in ML codebases before any code runs.
   live torch/einops oracles on real modules — including the per-`forward` chain
   transfers and per-operator shape rules (`nn.Linear`/`Conv`/pooling/`LayerNorm`/
   `BatchNorm`/`PixelShuffle`/flatten/`cat`/`Embedding`/reshape-`-1`/einops
-  decomposition), each
+  decomposition/SDPA broadcast-mask-GQA), each
   replayed op-by-op on real tensors and cross-checked against torch *and* the
-  verifier's own propagators. Every one of the library's 386 public theorems is
+  verifier's own propagators. Every one of the library's 409 public theorems is
   machine-audited **sorry-free**, on only the trusted kernel axioms.
 - **Per-domain verification** — beyond shape, the device and gradient
   domains each refute real bugs that the base shape view misses (a cuda
@@ -1594,14 +1594,13 @@ For `query` of shape `(*batch, L, E)`, `key` of
 Ev)` — the query shape with its last dimension replaced by the value's last
 dimension.
 
-`compute_sdpa_shape` is differential-tested against
+`compute_sdpa_shape` and `verify_sdpa` are differential-tested against
 `torch.scaled_dot_product_attention`. A violation is raised only on a provable
-concrete mismatch: the query/key embed dimension (the last dim) or the key/value
-sequence length (the second-to-last dim). Leading batch and head dimensions are
-deliberately not checked — SDPA broadcasts them and grouped-query attention
-allows unequal head counts — so grouped-query attention stays free of false
-positives. Because the output shape is exact, downstream projections are checked
-against the post-attention shape.
+concrete mismatch: query/key embed dimension, ordinary leading-dimension
+broadcast, attention-mask broadcast against `(..., L_q, L_k)`, or explicit
+`enable_gqa=True` head divisibility on the `-3` axis. Because the output shape is
+exact — including GQA's query-head count and value embedding dimension —
+downstream projections are checked against the post-attention shape.
 
 This is proven end-to-end on a from-scratch multi-head attention block (linear
 projections, head reshape/transpose, SDPA, output projection), real
@@ -2535,7 +2534,8 @@ happy:
 cd lean
 for m in TensorGuard.Soundness TensorGuard.AssumeGuarantee \
          TensorGuard.AssumeGuaranteeExtended TensorGuard.Extended \
-         TensorGuard.Parity TensorGuard.V5OperatorRules TensorGuard.Einops; do
+         TensorGuard.Parity TensorGuard.V5OperatorRules TensorGuard.Einops \
+         TensorGuard.SDPA; do
   lake build "$m"
 done
 lake build parity_runner
@@ -2556,7 +2556,7 @@ just a log grep: `lean/TensorGuard/AxiomAudit.lean` runs
 trusted kernel axioms `propext`, `Classical.choice`, `Quot.sound`
 and never on `sorryAx`.  `tests/test_lean_whole_pipeline_audit.py`
 makes this **total and drift-proof**: it auto-discovers and audits
-*all 386* public theorems in the library, so any new theorem hiding
+*all 409* public theorems in the library, so any new theorem hiding
 a `sorry` or an exotic axiom is caught with no list to maintain.
 
 The same kernel-checked guarantee now reaches the **reduced-product

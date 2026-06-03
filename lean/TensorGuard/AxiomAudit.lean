@@ -368,3 +368,24 @@ import TensorGuard
 #print axioms TensorGuard.Einops.dropped_axis_not_bijection
 #print axioms TensorGuard.Einops.added_axis_not_bijection
 #print axioms TensorGuard.Einops.duplicated_axis_not_bijection
+
+-- SDPA batch/head/mask broadcasting and scoped GQA rules (Step 230): ordinary
+-- leading-dimension broadcast, mask broadcast against score tensors, and
+-- enable_gqa head divisibility/output-shape caveat.
+#print axioms TensorGuard.SDPA.bcDim_none_iff
+#print axioms TensorGuard.SDPA.bcShape_same
+#print axioms TensorGuard.SDPA.bcShape_suffix_same
+#print axioms TensorGuard.SDPA.standard_output_shape
+#print axioms TensorGuard.SDPA.standard_output_rank
+#print axioms TensorGuard.SDPA.standard_equal_leads
+#print axioms TensorGuard.SDPA.mask_exact_valid
+#print axioms TensorGuard.SDPA.mask_trailing_valid
+#print axioms TensorGuard.SDPA.gqaHeadsValid_iff
+#print axioms TensorGuard.SDPA.gqa_key_repetition_count
+#print axioms TensorGuard.SDPA.gqa_value_repetition_count
+#print axioms TensorGuard.SDPA.gqa_nondivisible_key_flagged
+#print axioms TensorGuard.SDPA.gqa_nondivisible_value_flagged
+#print axioms TensorGuard.SDPA.gqa_output_shape
+#print axioms TensorGuard.SDPA.gqa_output_rank
+#print axioms TensorGuard.SDPA.gqa_output_uses_query_heads
+#print axioms TensorGuard.SDPA.gqa_prefix_broadcast_required

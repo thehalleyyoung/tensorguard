@@ -1,10 +1,11 @@
 """Static shape verifier for ``F.scaled_dot_product_attention`` (SDPA).
 
 SDPA is the hot path of every modern attention block, and its shape contract is
-subtle: ``query`` and ``key`` must agree on the head dimension ``E`` (the
-contracted dim), the batch/head leading dims of ``q``/``k``/``v`` must
-broadcast, and an explicit ``attn_mask`` must broadcast against the
-``(L_q, L_k)`` score matrix.  A mismatch surfaces as an opaque
+subtle: ``query`` and ``key`` must agree on the embedding dimension ``E``
+(the contracted dim), the batch/head leading dims of ``q``/``k``/``v`` must
+broadcast, grouped-query attention has a separate divisibility rule on the
+``-3`` head axis when ``enable_gqa=True``, and an explicit ``attn_mask`` must
+broadcast against the ``(L_q, L_k)`` score matrix.  A mismatch surfaces as an opaque
 ``RuntimeError`` deep inside a fused kernel — and often only for a particular
 sequence length or head count that a smoke test never exercises.
 
@@ -82,6 +83,7 @@ def verify_sdpa(
     value: Sequence[Dim],
     attn_mask: Optional[Sequence[Dim]] = None,
     is_causal: bool = False,
+    enable_gqa: bool = False,
 ) -> SDPAVerdict:
     """Verify one ``scaled_dot_product_attention`` call from operand shapes."""
     q, k, v = list(query), list(key), list(value)
@@ -114,14 +116,36 @@ def verify_sdpa(
     # (never refute a program that may run). It is surfaced as a soft warning
     # by callers that opt into backend-specific strictness.
 
-    # leading (batch + head) dims of q, k, v must broadcast
-    lead = _broadcast_shapes([q[:-2], k[:-2], v[:-2]])
+    # Leading dimensions must broadcast.  In ordinary SDPA the leading tuple
+    # includes the head axis.  With explicit GQA, PyTorch repeats key/value along
+    # the -3 head axis and requires each key/value head count to divide the query
+    # head count; that axis is therefore not broadcast.
+    if enable_gqa:
+        q_head, k_head, v_head = q[-3], k[-3], v[-3]
+        for name, h in (("key", k_head), ("value", v_head)):
+            if isinstance(q_head, int) and isinstance(h, int):
+                if h <= 0 or q_head % h != 0:
+                    return SDPAVerdict(
+                        False,
+                        error=(
+                            f"GQA head count mismatch: {name} heads={h} must "
+                            f"divide query heads={q_head}"
+                        ),
+                        error_kind="gqa_heads",
+                    )
+        q_lead = q[:-3] + [q_head]
+        k_lead = k[:-3] + [q_head]
+        v_lead = v[:-3] + [q_head]
+    else:
+        q_lead, k_lead, v_lead = q[:-2], k[:-2], v[:-2]
+
+    lead = _broadcast_shapes([q_lead, k_lead, v_lead])
     if lead is None:
         return SDPAVerdict(
             False,
             error=(
                 "query/key/value batch/head dims do not broadcast: "
-                f"{tuple(q[:-2])} vs {tuple(k[:-2])} vs {tuple(v[:-2])}"
+                f"{tuple(q_lead)} vs {tuple(k_lead)} vs {tuple(v_lead)}"
             ),
             error_kind="batch_broadcast",
         )
