@@ -1,6 +1,6 @@
 # Paper-evidence index (Step 125)
 
-`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **62** evidence items (45 render a table); every generator script is present: **False**.
+`make paper-evidence` regenerates every table and figure via `reproducibility/reproduce_all.py` and rebuilds this catalogue. **63** evidence items (46 render a table); every generator script is present: **False**.
 
 | stem | generator | table? | json | md |
 | --- | --- | --- | --- | --- |
@@ -14,6 +14,7 @@
 | baseline_head_to_head | `reproducibility/baseline_head_to_head.py` | True | y | y |
 | blind_manifest | `(missing)` | False | y | - |
 | blind_split_eval | `reproducibility/blind_split_eval.py` | True | y | y |
+| camera_ready_paper | `reproducibility/camera_ready_paper.py` | True | y | y |
 | capsule_manifest | `reproducibility/capsule_manifest.py` | True | y | y |
 | cegar_convergence | `reproducibility/cegar_convergence.py` | True | y | y |
 | cegar_depth_ablation | `reproducibility/cegar_depth_ablation.py` | True | y | y |

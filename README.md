@@ -1340,7 +1340,9 @@ A single `make paper-evidence` target regenerates every table and figure and
 rebuilds one catalogue —
 [`reproducibility/paper_evidence_index.md`](reproducibility/paper_evidence_index.md) —
 listing each regenerable artifact and the script that produces it, so the
-write-up and the evidence base can never silently diverge.
+write-up and the evidence base can never silently diverge. `make camera-ready-paper`
+adds the final paper gate: the root `tool_paper.tex` contains a generated claim
+ledger from that evidence index, and CI fails if any cited number drifts.
 
 ### Sound-mode false-positive hunt
 For a tool meant to ship inside PyTorch a single false alarm destroys trust,

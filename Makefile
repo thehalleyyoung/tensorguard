@@ -14,7 +14,7 @@
 PYTHON ?= python3
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: help reproduce reproduce-check reproduce-full docs soundness-appendix corpus headline audit evaluation-protocol developer-study silent-bug-benchmark statistical-meta-analysis negative-controls artifact-package precision-recall stratified-precision-recall head-to-head-step252 stagewise-ablation pr-history-survival labeling-agreement pareto-curves pareto-curves-gate cross-version-stability natural-distribution-study sound-fp false-unknowns hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence artifact-index reviewer-commands test clean-pyc
+.PHONY: help reproduce reproduce-check reproduce-full docs soundness-appendix corpus headline audit evaluation-protocol developer-study silent-bug-benchmark statistical-meta-analysis negative-controls artifact-package camera-ready-paper precision-recall stratified-precision-recall head-to-head-step252 stagewise-ablation pr-history-survival labeling-agreement pareto-curves pareto-curves-gate cross-version-stability natural-distribution-study sound-fp false-unknowns hard-recall diff-fuzz neg-fuzz minimize triage shape-props dashboard dashboard-check dashboard-gate operator-coverage operator-coverage-gate operator-coverage-floor fx-trace-success fx-trace-success-gate frontend-parse-sla frontend-parse-sla-gate latency-budgets latency-budgets-gate deployment-budgets deployment-budgets-gate deployment-gallery deployment-gallery-gate deployment-dashboard deployment-dashboard-gate cost-benchmarks cost-benchmarks-gate regression-bench regression-bench-check regression-bench-gate frontend-reconciliation frontend-reconciliation-gate operator-frequency real-model-operator-coverage paper-evidence artifact-index reviewer-commands test clean-pyc
 
 help:
 	@echo "TensorGuard make targets:"
@@ -60,6 +60,7 @@ help:
 	@echo "  statistical-meta-analysis Regenerate Step 265 cross-corpus robust bootstrap meta-analysis"
 	@echo "  negative-controls Regenerate Step 266 value-domain controls where runtime checks win"
 	@echo "  artifact-package Regenerate Step 267 Docker/conda/source package manifest"
+	@echo "  camera-ready-paper Regenerate Step 268 paper claim ledger and validate tool_paper"
 	@echo "  audit            Run the numeric-claim audit over committed artifacts"
 	@echo "  paper-evidence   Regenerate every table/figure + the single paper-evidence index"
 	@echo "  artifact-index   Regenerate the SHA-256 ledger for generated artifacts"
@@ -261,6 +262,10 @@ negative-controls:
 artifact-package:
 	$(PYTHON) reproducibility/artifact_package.py
 	$(PYTHON) reproducibility/artifact_package.py --check
+
+camera-ready-paper:
+	$(PYTHON) reproducibility/camera_ready_paper.py
+	$(PYTHON) reproducibility/camera_ready_paper.py --check
 
 paper-evidence: reproduce-check
 	@echo "Building the single paper-evidence index (all tables/figures)..."

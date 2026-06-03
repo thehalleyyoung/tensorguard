@@ -1,0 +1,111 @@
+{
+  "all_claim_artifacts_indexed": true,
+  "canonical_pdf": "tool_paper.pdf",
+  "canonical_tex": "tool_paper.tex",
+  "claim_source": "reproducibility/paper_evidence_index.json",
+  "claims": [
+    {
+      "id": "paper_evidence_index",
+      "source_artifacts": [
+        "reproducibility/paper_evidence_index.json"
+      ],
+      "statement": "The camera-ready paper is backed by 63 indexed evidence artifacts, including 46 rendered tables.",
+      "value": {
+        "n_evidence_items": 63,
+        "n_with_table": 46
+      }
+    },
+    {
+      "id": "extended_corpus_score",
+      "source_artifacts": [
+        "reproducibility/corpus_extended_score.json"
+      ],
+      "statement": "On the extended runtime-validated corpus, sound mode reports TP=153, FP=0, TN=74, FN=0 across 227 cases.",
+      "value": {
+        "fn": 0,
+        "fp": 0,
+        "n_total": 227,
+        "tn": 74,
+        "tp": 153
+      }
+    },
+    {
+      "id": "clean_fp_stress",
+      "source_artifacts": [
+        "reproducibility/fp_stress_eval.json"
+      ],
+      "statement": "Sound mode has 0 false alarms and 0 abstentions on 101 clean stress-test models.",
+      "value": {
+        "abstentions": 0,
+        "false_alarms": 0,
+        "n_models": 101
+      }
+    },
+    {
+      "id": "differential_dispatcher",
+      "source_artifacts": [
+        "reproducibility/differential_dispatcher.json"
+      ],
+      "statement": "Dispatcher differential testing checks 2000 generated modules with 0 false alarms and 0 soundness violations.",
+      "value": {
+        "false_alarms": 0,
+        "n_modules": 2000,
+        "soundness_violations": 0
+      }
+    },
+    {
+      "id": "mutation_kill_rate",
+      "source_artifacts": [
+        "reproducibility/mutation_clean_models.json"
+      ],
+      "statement": "Mutation testing kills 756 of 756 runtime-proven mutants in sound mode, with 0 survivors.",
+      "value": {
+        "n_killed": 756,
+        "n_mutants": 756,
+        "n_survived": 0
+      }
+    },
+    {
+      "id": "stratified_meta_analysis",
+      "source_artifacts": [
+        "reproducibility/statistical_meta_analysis.json"
+      ],
+      "statement": "The meta-analysis keeps 8 distributions separate, uses 5000 suite-level bootstrap resamples, and forbids naive global pooling: True.",
+      "value": {
+        "bootstrap_resamples": 5000,
+        "n_distributions": 8,
+        "naive_pooling_forbidden": true
+      }
+    },
+    {
+      "id": "negative_controls",
+      "source_artifacts": [
+        "evaluation/negative_controls.json"
+      ],
+      "statement": "Negative controls include 6 value-domain cases where TensorGuard catches 0 and the explicit finite-output runtime checker catches 6.",
+      "value": {
+        "n_cases": 6,
+        "runtime_finite_output_check_caught": 6,
+        "tensorguard_caught": 0
+      }
+    },
+    {
+      "id": "fresh_machine_package",
+      "source_artifacts": [
+        "reproducibility/artifact_package.json"
+      ],
+      "statement": "The artifact package validates 3 fresh-machine modes (Docker, conda, and source), all passed: True.",
+      "value": {
+        "all_modes_passed": true,
+        "n_modes": 3
+      }
+    }
+  ],
+  "missing_from_evidence_index": [],
+  "n_claims": 8,
+  "page_bounds": {
+    "exclusive_max": 40,
+    "exclusive_min": 20
+  },
+  "step": 268
+}

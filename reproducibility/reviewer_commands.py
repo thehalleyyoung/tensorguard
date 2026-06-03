@@ -113,6 +113,12 @@ RESULTS: List[Dict[str, object]] = [
         "command": "make artifact-index",
         "outputs": ["reproducibility/artifact_index.json", "reproducibility/artifact_index.md"],
     },
+    {
+        "id": "camera_ready_paper",
+        "claim": "camera-ready paper claim ledger generated from indexed evidence",
+        "command": "make camera-ready-paper",
+        "outputs": ["reproducibility/camera_ready_paper.json", "reproducibility/camera_ready_paper.md", "tool_paper.pdf"],
+    },
 ]
 
 

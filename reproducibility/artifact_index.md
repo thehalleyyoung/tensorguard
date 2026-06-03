@@ -2,10 +2,10 @@
 
 This is a tamper-evident ledger for every generated artifact owned by `reproducibility/reproduce_all.py`. Each non-index artifact is recorded with byte size and SHA-256; the aggregate root digest changes if any artifact path, size, or content hash changes.
 
-- artifacts indexed: **552**
-- hashed artifacts: **550**
+- artifacts indexed: **554**
+- hashed artifacts: **552**
 - missing artifacts: **0**
-- artifact root sha256: `79bc1d0a0f446d6091e75806b18d5127b2ba3b67a6d31540b1c3bfffc540a7bd`
+- artifact root sha256: `38dc7fc8382948bd00f42a00fbdd6837daa45632734c7ff6d860667007e4dcdb`
 - check command: `python reproducibility/artifact_index.py --check`
 
 | path | category | bytes | sha256 |
@@ -472,12 +472,14 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `reproducibility/artifact_badges.md` | generated_evidence | 3499 | `1a7c4ff8cc464dcc5164ea2f41449ac1b3ddb839697bc19d2cee42e2f6d1ed57` |
 | `reproducibility/artifact_index.json` | self_index | - | `self-referential index file; checked byte-identical by --check` |
 | `reproducibility/artifact_index.md` | self_index | - | `self-referential index file; checked byte-identical by --check` |
-| `reproducibility/artifact_package.json` | generated_evidence | 5044 | `9bb9a44518db0416cfb5d821e4920f8aa7979e19ab2afc3d8cda9127bf1501bc` |
+| `reproducibility/artifact_package.json` | generated_evidence | 5044 | `ed58769300aaf60ded3f7fe62fc5579675f334a18457d47647fe21edcb479d14` |
 | `reproducibility/artifact_package.md` | generated_evidence | 1868 | `102e1f64ff058072da4b310b99e68ad35289ef6fbba505fc9685cb1c51a97448` |
 | `reproducibility/baseline_head_to_head.json` | generated_evidence | 1359 | `434e000cbfc97d88896d32978c23bd905f6486b6b78a919b1f1fe3dadfdfc99f` |
 | `reproducibility/baseline_head_to_head.md` | generated_evidence | 1024 | `79bf6f2dfac377aef3e40566454975b3c6b17f6aeacbe756f5e00c1cc1a5ee0e` |
 | `reproducibility/blind_split_eval.json` | generated_evidence | 1563 | `42e4e526b8b53543b21542ddcab75ef4860f5146e9634c283289324991a16db2` |
 | `reproducibility/blind_split_eval.md` | generated_evidence | 1350 | `397aefc53e15c69a72fbce10df91061e281227a98834507365567612317ac8a6` |
+| `reproducibility/camera_ready_paper.json` | generated_evidence | 3317 | `04827349745bdea6c841b8a24f5c1e7aa6785d580dc84e9dc7a1a18d15e968b1` |
+| `reproducibility/camera_ready_paper.md` | generated_evidence | 3327 | `4567e94e45b61958dd3770139eb114ba1de55cc49c9179abd79e96bcbb325231` |
 | `reproducibility/capsule_manifest.json` | generated_evidence | 1077 | `268db56771d30c9d41c0041a53ad763c4082392e0a267562214b5442afe26cd9` |
 | `reproducibility/capsule_manifest.md` | generated_evidence | 989 | `c76b580dd27a68c4560679aa528058af1826b7e45e99104589b80a4a7a670c44` |
 | `reproducibility/cegar_convergence.json` | generated_evidence | 8758 | `e7ebea6e5cce0b4b43fe59d7c5d28901afd9547cf3a6dd5b7d048cd3c0ca65b9` |
@@ -520,8 +522,8 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `reproducibility/natural_distribution_study.json` | generated_evidence | 3121 | `88dfa0efde25505fd7d4349b4f9a4cb9e0fb9d29d4630e099f1e4e880b1f4c86` |
 | `reproducibility/natural_distribution_study.md` | generated_evidence | 1148 | `ba75dcb538f9b76c74f48184b9b49d7f0de1d5c0fa59f1e2d3e85a112d59c6cb` |
 | `reproducibility/numeric_claims_audit.json` | generated_evidence | 5817 | `e89235443781986763a6051c0dfee8a6b6967f30ff3137886dd8c7b84233d98b` |
-| `reproducibility/paper_evidence_index.json` | generated_evidence | 20286 | `1f09921f756f5f493427a644b4e6c671b985ffbba0e6105cf78a44b287647cdb` |
-| `reproducibility/paper_evidence_index.md` | generated_evidence | 5064 | `8eec1d50863e67d4df149a5c47a37ab85310c710ce7bdf06898d081bd27b2e25` |
+| `reproducibility/paper_evidence_index.json` | generated_evidence | 20620 | `e549e7a730f6b3e61c03206ef7ec4796bc2f83f5b72aff5893fb41db8af58da3` |
+| `reproducibility/paper_evidence_index.md` | generated_evidence | 5144 | `ed109b64235e7728cf7f657caf765a34e09bbf67d664da29add00ced0956475f` |
 | `reproducibility/pr_history_survival.json` | generated_evidence | 11620 | `5bd45df172f86de36b5e0f4430c6394650c33784c9d1d8c727391a8366be954b` |
 | `reproducibility/pr_history_survival.md` | generated_evidence | 2448 | `77e212f219e484e180ea0320f4a1bc2f9c73552bb9d3caf28123b027e66359f8` |
 | `reproducibility/quant_export_safety.json` | generated_evidence | 1741 | `9cfa5fa0bec5e6745050fe9283c8587d0fa05d25eb29403907cb8c74c8d4f264` |
@@ -530,8 +532,8 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `reproducibility/reduced_product_ablation.json` | generated_evidence | 3007 | `dcf474b03ff2e84f68f5c2e754665907972bd9b769de73fbacbe2cf1e341faf0` |
 | `reproducibility/reduced_product_ablation.md` | generated_evidence | 1630 | `36fef257e739915b38904c4a35d771219ea3eb388f732646ceb21b17e8cbdace` |
 | `reproducibility/reproduce_headline_60bug.json` | generated_evidence | 18293 | `f551cde8ce4698ceb46c60b67753c43d9e6d16990171dfa964a46a88102341a9` |
-| `reproducibility/reviewer_commands.json` | generated_evidence | 7136 | `b40f272ab9c49f70dabfbf055b274fcd8be0feb6425a37f9560667c932b70511` |
-| `reproducibility/reviewer_commands.md` | generated_evidence | 3346 | `45a1bb9031baecca0b929c1800202649be7e1bd474b11a2e7f8c5d454a9aba5c` |
+| `reproducibility/reviewer_commands.json` | generated_evidence | 7699 | `5d46137fbd4e91eaf20a20b431a4f432d829611fe18085679e109860ae63769e` |
+| `reproducibility/reviewer_commands.md` | generated_evidence | 3567 | `e3879797c4b8eef47ce19600477e2e32cbe58abff9ed4e97f3c095a833b0c46e` |
 | `reproducibility/scaling_study.json` | generated_evidence | 2118 | `78ceda295d705cd02bcfdb8977e79a8fd1b72e744c4fbd3e3e116254196166eb` |
 | `reproducibility/scaling_study.md` | generated_evidence | 1158 | `e7e1138a30ab0318dcaa21e7b2c4f1afa607c1a14f53122df2e05d636dec8877` |
 | `reproducibility/scaling_walltime.json` | generated_evidence | 612 | `91cbcb33f8b7f0df473b86dfcfd04e1d152da4d421cbe523b3054658f2b41d42` |
@@ -561,4 +563,4 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `reproducibility/upstream_hook_demo.md` | generated_evidence | 978 | `3655a0c1289d751754083218388b68da90d37b8bb5978ce7a1c6c046669a6573` |
 | `reproducibility/verified_reduction_diff.json` | generated_evidence | 5545 | `993368cbf21b84708508eee4e938ee9c7bf4809dae789a33aea9e483d4b974c6` |
 | `reproducibility/verified_reduction_diff.md` | generated_evidence | 2439 | `778b2aeb56c738925d3c57cc5ebb84b7d30bd9434ce8a951c3a29afa86629e7c` |
-| `tool_paper.pdf` | generated_pdf | 291864 | `24ca276770094b7e52c04a5301eb33a80ff44088d74960e8dca3c921d06e4349` |
+| `tool_paper.pdf` | generated_pdf | 293848 | `d21905c9add6d0a2ed2f324780e6dd806167019095bb380d90301d69b10bbfd4` |
