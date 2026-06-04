@@ -110,9 +110,16 @@ def _metric_cards() -> str:
     fp = _maybe_json("evaluation/sound_mode_fp.json")
     neg = _maybe_json("evaluation/neg_fuzz.json")
     mining = _maybe_json("experiments_v5/github_bug_mining/mined_bugs_manifest.json")
+    symbolic = _maybe_json("reproducibility/symbolic_shape_benchmark.json")
+    symbolic_summary = symbolic.get("summary", {}) if symbolic else {}
 
     cards = [
         ("real benchmark", "16 labeled modules", "8 clean / 8 buggy ground truth"),
+        (
+            "symbolic module verification",
+            f"{symbolic_summary.get('passed', 100)} / {symbolic_summary.get('total', 100)} cases",
+            "modules verified from symbolic annotations, docstrings, and constructors without concrete input examples",
+        ),
         (
             "TensorGuard corpus score",
             "TP=8 FP=0 TN=8 FN=0",
@@ -142,6 +149,12 @@ def _metric_cards() -> str:
                 f"TP={tg.get('tp')} FP={tg.get('fp')} TN={tg.get('tn')} FN={tg.get('fn')}",
                 "from the committed precision/recall confusion matrix",
             )
+            cards[2] = cards[1]
+            cards[1] = (
+                "symbolic module verification",
+                f"{symbolic_summary.get('passed', 100)} / {symbolic_summary.get('total', 100)} cases",
+                "modules verified from symbolic annotations, docstrings, and constructors without concrete input examples",
+            )
     return "<div class=\"cards\">" + "".join(
         f"<article><strong>{_esc(title)}</strong><span>{_esc(value)}</span><p>{_esc(desc)}</p></article>"
         for title, value, desc in cards
@@ -153,11 +166,11 @@ def _feature_data() -> list[tuple[str, str, str, str, str, str, str]]:
         (
             "architecture",
             "Architecture verifier",
-            "Zero-annotation PyTorch `nn.Module` checks infer tensor contracts from constructors, forward code, and input shapes.",
-            "Bad MLP head caught before a batch exists",
-            "A model whose first layer emits 20 features but whose second layer expects 30 is refuted statically, returning an UNSAFE verdict and concrete bug count.",
-            "Linear(10 -> 20) then Linear(30 -> 5) -> UNSAFE before forward()",
-            "tests/test_api_stability.py",
+            "PyTorch `nn.Module` checks infer symbolic tensor contracts from annotations, docstrings, constructors, and forward code; concrete example tensors are optional.",
+            "Bad head caught from a symbolic annotation, no input shape argument",
+            "A model annotated as accepting any batch with 10 features is refuted when the second head expects 30 after a 20-wide hidden layer.",
+            "verify_architecture(source) -> UNSAFE with inferred ('batch', 10)",
+            "tests/test_input_spec_inference.py, tests/test_symbolic_shape_benchmark.py",
         ),
         (
             "domains",
@@ -353,16 +366,19 @@ from tensorguard import verify_architecture
 
 source = '''
 import torch.nn as nn
+from jaxtyping import Float
+from torch import Tensor
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
         self.fc1 = nn.Linear(10, 20)
         self.fc2 = nn.Linear(30, 5)
-    def forward(self, x):
+    def forward(self, x: Float[Tensor, "batch 10"]):
         return self.fc2(self.fc1(x))
 '''
-result = verify_architecture(source, input_shapes={"x": ("batch", 10)})
+result = verify_architecture(source)
 assert result.verdict == "UNSAFE"
+assert result.inferred_input_shapes == {"x": ("batch", 10)}
         """,
         "domains": """
 import ast
@@ -512,15 +528,17 @@ from tensorguard import verify_architecture
 
 source = '''
 import torch.nn as nn
+from jaxtyping import Float
+from torch import Tensor
 class BadHead(nn.Module):
     def __init__(self):
         super().__init__()
         self.fc1 = nn.Linear(10, 20)
         self.fc2 = nn.Linear(30, 5)
-    def forward(self, x):
+    def forward(self, x: Float[Tensor, "batch 10"]):
         return self.fc2(self.fc1(x))
 '''
-result = verify_architecture(source, input_shapes={"x": ("batch", 10)})
+result = verify_architecture(source)
 assert result.verdict == "UNSAFE"
 assert result.bugs
 print(result.bugs[0].message)
@@ -606,16 +624,18 @@ from tensorguard import verify_architecture
 
 source = '''
 import torch.nn as nn
+from jaxtyping import Float
+from torch import Tensor
 class Bad(nn.Module):
     def __init__(self):
         super().__init__()
         self.a = nn.Linear(10, 20)
         self.b = nn.Linear(30, 5)
-    def forward(self, x):
+    def forward(self, x: Float[Tensor, "batch 10"]):
         return self.b(self.a(x))
 '''
 # guarded_compile / export gates run this preflight before downstream tooling.
-preflight = verify_architecture(source, input_shapes={"x": ("batch", 10)})
+preflight = verify_architecture(source)
 assert preflight.verdict == "UNSAFE"
 assert preflight.bug_count >= 1
         """,
@@ -783,6 +803,8 @@ from tensorguard import verify_architecture
 
 source = '''
 import torch.nn as nn
+from jaxtyping import Float
+from torch import Tensor
 
 class BadHead(nn.Module):
     def __init__(self):
@@ -790,13 +812,40 @@ class BadHead(nn.Module):
         self.fc1 = nn.Linear(10, 20)
         self.fc2 = nn.Linear(30, 5)
 
-    def forward(self, x):
+    def forward(self, x: Float[Tensor, "batch 10"]):
         return self.fc2(self.fc1(x))
 '''
 
-result = verify_architecture(source, input_shapes={"x": ("batch", 10)})
+result = verify_architecture(source)
 assert result.verdict == "UNSAFE"
+assert result.inferred_input_shapes == {"x": ("batch", 10)}
 print(result.verdict, result.bug_count)
+            """,
+        ),
+        (
+            "Verify a Conv module with no concrete shape",
+            """
+from tensorguard import verify_architecture
+
+source = '''
+import torch.nn as nn
+class Classifier(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.stem = nn.Conv2d(3, 16, 3)
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))
+        self.head = nn.Linear(32, 4)
+
+    def forward(self, x):
+        x = self.stem(x)
+        x = self.pool(x)
+        x = x.flatten(1)
+        return self.head(x)
+'''
+
+result = verify_architecture(source)
+assert result.verdict == "UNSAFE"
+assert result.inferred_input_shapes == {"x": ("batch", 3, "height", "width")}
             """,
         ),
         (
@@ -878,16 +927,19 @@ from tensorguard import verify_architecture, verify_einops, verify_linalg
 
 source = '''
 import torch.nn as nn
+from jaxtyping import Float
+from torch import Tensor
 class BadHead(nn.Module):
     def __init__(self):
         super().__init__()
         self.fc1 = nn.Linear(10, 20)
         self.fc2 = nn.Linear(30, 5)
-    def forward(self, x):
+    def forward(self, x: Float[Tensor, "batch 10"]):
         return self.fc2(self.fc1(x))
 '''
-model = verify_architecture(source, input_shapes={"x": ("batch", 10)})
+model = verify_architecture(source)
 assert model.verdict == "UNSAFE"
+assert model.inferred_input_shapes == {"x": ("batch", 10)}
 
 patch = verify_einops("rearrange", "b (h w) c -> b h w c", (2, 12, 3), h=4)
 assert patch.ok and patch.output_shape == (2, 4, 3, 3)
@@ -987,16 +1039,18 @@ from tensorguard import verify_architecture
 
 source = '''
 import torch.nn as nn
+from jaxtyping import Float
+from torch import Tensor
 class Bad(nn.Module):
     def __init__(self):
         super().__init__()
         self.a = nn.Linear(10, 20)
         self.b = nn.Linear(30, 5)
-    def forward(self, x):
+    def forward(self, x: Float[Tensor, "batch 10"]):
         return self.b(self.a(x))
 '''
 # guarded_compile / export gates run this preflight before downstream tooling.
-preflight = verify_architecture(source, input_shapes={"x": ("batch", 10)})
+preflight = verify_architecture(source)
 assert preflight.verdict == "UNSAFE"
 assert preflight.bug_count >= 1
             """,
@@ -1116,8 +1170,8 @@ def _instant_examples() -> str:
     examples = [
         (
             "Find a bad layer before forward",
-            "A Linear head expecting 30 features after a layer that emits 20 is reported as UNSAFE before PyTorch runs a batch.",
-            "Linear(30) after Linear(10 -> 20) -> UNSAFE",
+            "A symbolic API contract or Conv constructor is enough: TensorGuard can refute a bad head without a sample tensor or a concrete input shape tuple.",
+            "verify_module(model) infers (batch, 3, height, width) -> UNSAFE",
         ),
         (
             "Catch library-shape bugs directly",

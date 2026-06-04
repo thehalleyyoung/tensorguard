@@ -2,10 +2,10 @@
 
 This is a tamper-evident ledger for every generated artifact owned by `reproducibility/reproduce_all.py`. Each non-index artifact is recorded with byte size and SHA-256; the aggregate root digest changes if any artifact path, size, or content hash changes.
 
-- artifacts indexed: **592**
-- hashed artifacts: **590**
+- artifacts indexed: **594**
+- hashed artifacts: **592**
 - missing artifacts: **0**
-- artifact root sha256: `8c968465e98e09a24d07501932518cbf107ebfc721952d3af433be9c70f4fb3a`
+- artifact root sha256: `6a2e4247ab62c6d143b8d286d52b8d0c8e235a56b1675ce15dac4fff628931f3`
 - check command: `python reproducibility/artifact_index.py --check`
 
 | path | category | bytes | sha256 |
@@ -443,10 +443,10 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `docs/launch/one_point_zero_launch_campaign.md` | generated_evidence | 2267 | `4a5959de82560e72890e9f3dbcadd45f88f2cae342e9fa9b467577592f2ea79f` |
 | `docs/launch/quickstart_terminal_demo.gif` | generated_artifact | 28495 | `7815142fae9024e3a1e98518e745949a2086e1f817c89971f3c9cda571a4c628` |
 | `docs/launch/social_copy.md` | generated_evidence | 675 | `fe0ea4883722e95e0c7f6d3f5b57c45f12c3b12d4c12ec7020d72edd203e2d14` |
-| `docs/site/concepts/evidence.html` | generated_evidence | 8198 | `ae8d9ff72ac1f78078ef9a551dbb315af48a509bfbe832c04f7bb4213a476e5e` |
+| `docs/site/concepts/evidence.html` | generated_evidence | 8401 | `b306a6a13db8e89319304cf7f40a91979b954ea92b9f5ed0cb7607511cc0fc38` |
 | `docs/site/concepts/soundness.html` | generated_evidence | 9653 | `b91f41c99ce3dc7a138e9c4575f5f83498ac40bb707da03a49cb0a5ce0bd20b3` |
 | `docs/site/concepts/verifiable-fragment.html` | generated_evidence | 9697 | `a64897701f39c1781448f0e1d6ecdc0dd6c88627198d2a0d5fa60a9034f6e2f6` |
-| `docs/site/index.html` | generated_evidence | 55257 | `ddc4e03e96dd28ba1c430b18e26a318c482a86631d363e4ea364077ef5d20012` |
+| `docs/site/index.html` | generated_evidence | 56769 | `533bbf038e7016ef77b1846c2531b866d9888c05b61e208b2edee08cc4da600e` |
 | `docs/site/migration/pytea.html` | generated_evidence | 7384 | `93f78a8f8e8ab1a6dfe88bdf007ce50b8825b3dce821d09f4cd1ba46a3427c02` |
 | `docs/site/migration/runtime-assertions.html` | generated_evidence | 7539 | `891070fd502ede07a6af90ea044bcfbb7963ce77495b99d538b5af5929849501` |
 | `docs/site/operators/index.html` | generated_evidence | 17026 | `8d108e3cecc0962e476e0cab0a7c9abd215603c62a1105632d5c6cc9af8f9e3c` |
@@ -587,6 +587,8 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `reproducibility/statistical_power.md` | generated_evidence | 1833 | `782de03c142bcb8a6c65faf146944969875b8ee8cd0eb692c7e595a482e639a0` |
 | `reproducibility/stub_autogen_coverage.json` | generated_evidence | 7371 | `1cedcea5b69442aa6f3f55ba5b0522e713ab9ade118dc7b2e0dc921ffe5e5b13` |
 | `reproducibility/stub_autogen_coverage.md` | generated_evidence | 2863 | `3618cae9e4ed1719d49ecd93ee94ad73ea69d8007a606a5cafa1c2320e904707` |
+| `reproducibility/symbolic_shape_benchmark.json` | generated_evidence | 28732 | `516454e8fa39a9302e79a266aa6b053bc8f7b45e8f9ab5d9f3cf2000c2a26d3b` |
+| `reproducibility/symbolic_shape_benchmark.md` | generated_evidence | 590 | `3e0db886dce5912c6193d4e9e70e21777ebff9851a1830537743747542751e0c` |
 | `reproducibility/tensor_parallel_sharding.json` | generated_evidence | 4376 | `b9796647312919b0d2c8faef13196025d9d5d3c4ce14ebb8538211aa2ab5b65a` |
 | `reproducibility/tensor_parallel_sharding.md` | generated_evidence | 2380 | `4f0e246878f819c879a745577410e6d6273c7cadf3293e681fd202a68f2d0998` |
 | `reproducibility/terminal_demo_gif.json` | generated_evidence | 933 | `a1588eb25cfc05bd433e4f6b64f27cd264bf85aa7ea8664e0d0345b6ec213962` |

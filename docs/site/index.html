@@ -76,7 +76,7 @@
               <a class="button" href="#features">20-feature showcase</a>
             </div>
             <h2>Immediate proof points</h2>
-            <div class="instant-examples"><article><strong>Find a bad layer before forward</strong><p>A Linear head expecting 30 features after a layer that emits 20 is reported as UNSAFE before PyTorch runs a batch.</p><span>Linear(30) after Linear(10 -&gt; 20) -&gt; UNSAFE</span></article><article><strong>Catch library-shape bugs directly</strong><p>Einops divisibility, linalg RHS rules, sparse layout rank, and attention head/embed contracts can be checked as plain Python API calls.</p><span>linalg.solve((4,4), (3,2)) -&gt; rhs_dim</span></article><article><strong>Block unsafe deployment edges</strong><p>Serving payloads, checkpoint schemas, optimizer resumes, compile/export, AOT, ONNX, and GGUF gates fail before mutating or exporting a model.</p><span>NHWC image at NCHW FastAPI boundary -&gt; shape_mismatch</span></article></div>
+            <div class="instant-examples"><article><strong>Find a bad layer before forward</strong><p>A symbolic API contract or Conv constructor is enough: TensorGuard can refute a bad head without a sample tensor or a concrete input shape tuple.</p><span>verify_module(model) infers (batch, 3, height, width) -&gt; UNSAFE</span></article><article><strong>Catch library-shape bugs directly</strong><p>Einops divisibility, linalg RHS rules, sparse layout rank, and attention head/embed contracts can be checked as plain Python API calls.</p><span>linalg.solve((4,4), (3,2)) -&gt; rhs_dim</span></article><article><strong>Block unsafe deployment edges</strong><p>Serving payloads, checkpoint schemas, optimizer resumes, compile/export, AOT, ONNX, and GGUF gates fail before mutating or exporting a model.</p><span>NHWC image at NCHW FastAPI boundary -&gt; shape_mismatch</span></article></div>
             <h2 id="use-it">Coolest verified ways to use TensorGuard</h2>
             <p>These are the adoption paths backed by code in this repository and covered by targeted tests before being promoted here.</p>
             <div class="use-cases"><a class="feature-card" href="#usecase-vscode"><article class="use-case"><strong>VS Code while you type</strong><p>Inline squiggles, hover shapes, and quick-fixes from the TensorGuard LSP client in editors/vscode; backed by the LSP server/client tests.</p><code>Open editors/vscode in Extension Development Host</code><span>Open checked code example</span></article></a><a class="feature-card" href="#usecase-python-api"><article class="use-case"><strong>Python API gates</strong><p>Call `verify_architecture`, `verify_module`, `verify_einops`, `verify_linalg`, sparse, attention, serving, checkpoint, and optimizer helpers directly.</p><code>from tensorguard import verify_architecture</code><span>Open checked code example</span></article></a><a class="feature-card" href="#usecase-pytest"><article class="use-case"><strong>pytest as a model test</strong><p>Use the pytest plugin to verify modules your tests exercise, so architecture regressions fail beside unit tests.</p><code>pytest --tensorguard</code><span>Open checked code example</span></article></a><a class="feature-card" href="#usecase-precommit"><article class="use-case"><strong>pre-commit before review</strong><p>Run TensorGuard on changed model files before bad tensor contracts ever reach CI.</p><code>tensorguard-precommit path/to/model.py</code><span>Open checked code example</span></article></a><a class="feature-card" href="https://github.com/thehalleyyoung/tensorguard/blob/main/examples/tutorials/11_jupyter_magic.ipynb"><article class="use-case"><strong>Jupyter and notebooks</strong><p>Load the IPython extension or open the checked tutorial notebook where `%%tensorguard` catches a broken model cell inline.</p><code>`%%tensorguard` checked notebook</code><span>Open working notebook</span></article></a><a class="feature-card" href="#usecase-compile-export"><article class="use-case"><strong>torch.compile and export</strong><p>Wrap compile, ONNX export, AOT packages, and exported-program checks with TensorGuard preflight gates.</p><code>guarded_compile(model, input_shapes={...})</code><span>Open checked code example</span></article></a><a class="feature-card" href="#usecase-serving"><article class="use-case"><strong>Serving boundaries</strong><p>Validate FastAPI/TorchServe request, preprocessing, model-output, and response schemas before unsafe calls cross boundaries.</p><code>verify_serving_schema(...)</code><span>Open checked code example</span></article></a><a class="feature-card" href="#usecase-resume-deploy"><article class="use-case"><strong>Resume and deploy</strong><p>Check checkpoints, LoRA adapters, optimizer state, GGUF export, CUDA graph capture, distributed specs, and precision gates.</p><code>verify_checkpoint_state_dict(model, state)</code><span>Open checked code example</span></article></a></div>
@@ -94,16 +94,19 @@ npm test
 
 source = &#x27;&#x27;&#x27;
 import torch.nn as nn
+from jaxtyping import Float
+from torch import Tensor
 class BadHead(nn.Module):
     def __init__(self):
         super().__init__()
         self.fc1 = nn.Linear(10, 20)
         self.fc2 = nn.Linear(30, 5)
-    def forward(self, x):
+    def forward(self, x: Float[Tensor, &quot;batch 10&quot;]):
         return self.fc2(self.fc1(x))
 &#x27;&#x27;&#x27;
-model = verify_architecture(source, input_shapes={&quot;x&quot;: (&quot;batch&quot;, 10)})
+model = verify_architecture(source)
 assert model.verdict == &quot;UNSAFE&quot;
+assert model.inferred_input_shapes == {&quot;x&quot;: (&quot;batch&quot;, 10)}
 
 patch = verify_einops(&quot;rearrange&quot;, &quot;b (h w) c -&gt; b h w c&quot;, (2, 12, 3), h=4)
 assert patch.ok and patch.output_shape == (2, 4, 3, 3)
@@ -159,16 +162,18 @@ assert outcome.checked and not outcome.safe and outcome.bug_count &gt;= 1
 
 source = &#x27;&#x27;&#x27;
 import torch.nn as nn
+from jaxtyping import Float
+from torch import Tensor
 class Bad(nn.Module):
     def __init__(self):
         super().__init__()
         self.a = nn.Linear(10, 20)
         self.b = nn.Linear(30, 5)
-    def forward(self, x):
+    def forward(self, x: Float[Tensor, &quot;batch 10&quot;]):
         return self.b(self.a(x))
 &#x27;&#x27;&#x27;
 # guarded_compile / export gates run this preflight before downstream tooling.
-preflight = verify_architecture(source, input_shapes={&quot;x&quot;: (&quot;batch&quot;, 10)})
+preflight = verify_architecture(source)
 assert preflight.verdict == &quot;UNSAFE&quot;
 assert preflight.bug_count &gt;= 1</code></pre></div><div class="example-result"><span>Expected result</span><code>Bad model rejected by TensorGuard before compile/export machinery is trusted.</code></div></section><section class="verified-example" id="usecase-serving"><div><strong>Serving boundaries</strong><h3>verify_serving_schema(...)</h3><p>Validate FastAPI/TorchServe request, preprocessing, model-output, and response schemas before unsafe calls cross boundaries.</p><pre><code>import torch
 from tensorguard import ServingTensorSpec, verify_serving_schema
@@ -219,6 +224,8 @@ assert amp.issues</code></pre></div><div class="example-result"><span>Expected r
 
 source = &#x27;&#x27;&#x27;
 import torch.nn as nn
+from jaxtyping import Float
+from torch import Tensor
 
 class BadHead(nn.Module):
     def __init__(self):
@@ -226,13 +233,34 @@ class BadHead(nn.Module):
         self.fc1 = nn.Linear(10, 20)
         self.fc2 = nn.Linear(30, 5)
 
-    def forward(self, x):
+    def forward(self, x: Float[Tensor, &quot;batch 10&quot;]):
         return self.fc2(self.fc1(x))
 &#x27;&#x27;&#x27;
 
-result = verify_architecture(source, input_shapes={&quot;x&quot;: (&quot;batch&quot;, 10)})
+result = verify_architecture(source)
 assert result.verdict == &quot;UNSAFE&quot;
-print(result.verdict, result.bug_count)</code></pre></section><section class="example"><h3>Check library contracts directly</h3><pre><code>from tensorguard import verify_einops, verify_linalg
+assert result.inferred_input_shapes == {&quot;x&quot;: (&quot;batch&quot;, 10)}
+print(result.verdict, result.bug_count)</code></pre></section><section class="example"><h3>Verify a Conv module with no concrete shape</h3><pre><code>from tensorguard import verify_architecture
+
+source = &#x27;&#x27;&#x27;
+import torch.nn as nn
+class Classifier(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.stem = nn.Conv2d(3, 16, 3)
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))
+        self.head = nn.Linear(32, 4)
+
+    def forward(self, x):
+        x = self.stem(x)
+        x = self.pool(x)
+        x = x.flatten(1)
+        return self.head(x)
+&#x27;&#x27;&#x27;
+
+result = verify_architecture(source)
+assert result.verdict == &quot;UNSAFE&quot;
+assert result.inferred_input_shapes == {&quot;x&quot;: (&quot;batch&quot;, 3, &quot;height&quot;, &quot;width&quot;)}</code></pre></section><section class="example"><h3>Check library contracts directly</h3><pre><code>from tensorguard import verify_einops, verify_linalg
 
 patch = verify_einops(
     &quot;rearrange&quot;, &quot;b (h w) c -&gt; b h w c&quot;, (2, 12, 3), h=4
@@ -264,23 +292,26 @@ schema = verify_serving_schema(
 assert schema.ok</code></pre></section></div>
             <h2 id="features">The 20 most impressive things TensorGuard can do now</h2>
             <p>Grouped from the current README and public package exports, this list focuses on the highest-value capabilities instead of enumerating every helper individually.</p>
-            <div class="feature-grid"><a class="feature-card" href="#example-architecture"><article class="feature"><strong>1. Architecture verifier</strong><p>Zero-annotation PyTorch `nn.Module` checks infer tensor contracts from constructors, forward code, and input shapes.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-domains"><article class="feature"><strong>2. Five-domain reasoning</strong><p>Shape, device, phase, stride, and permutation facts are propagated together instead of as isolated lint rules.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-operators"><article class="feature"><strong>3. Broad operator model</strong><p>Linear, convolution, pooling, matmul, broadcasting, reshape/view, cat/stack/split/chunk, gather/scatter, fold/unfold, RNNs, and more are covered by registered transfer functions.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-soundness"><article class="feature"><strong>4. Soundness modes</strong><p>`sound`, `balanced`, and `heuristic` modes expose SAFE/UNSAFE/UNKNOWN instead of silently proving outside the supported fragment.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-lean"><article class="feature"><strong>5. Machine-checked core</strong><p>Lean-backed theorem files cover CEGAR bounds, fragment modes, cross-domain transfers, SMT encodings, and subject-reduction-style composition claims.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-cegar"><article class="feature"><strong>6. CEGAR contracts</strong><p>Counterexample-guided predicate discovery finds implicit shape requirements and can promote inconsistent refined contracts to real bugs.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-diagnostics"><article class="feature"><strong>7. Developer diagnostics</strong><p>Source-mapped diagnostics, inference chains, proof-footprint badges, explain reports, and mechanical autofix suggestions turn failures into repairs.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-einops"><article class="feature"><strong>8. Einops verification</strong><p>`verify_einops` and `verify_einops_source` check rearrange, reduce, and repeat patterns, including divisibility and axis bookkeeping.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-attention"><article class="feature"><strong>9. Attention contracts</strong><p>Multihead attention, SDPA-style mask/batch/head constraints, packed or separate q/k/v projections, and weight-output shapes are modeled.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-linalg-fft"><article class="feature"><strong>10. Linear algebra and FFT</strong><p>`torch.linalg` solve/inv/cholesky/SVD/eig/QR, complex view conversions, and FFT shape/dtype contracts are exposed as Python checks.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-sparse"><article class="feature"><strong>11. Sparse tensor gates</strong><p>COO, CSR, CSC, BSR, BSC, sparse-dense mm/addmm, sampled_addmm, softmax, coalesce, dense conversion, and layout conversion contracts are checked.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-loss-probability"><article class="feature"><strong>12. Losses and probability</strong><p>Loss target/reduction/dtype rules and distribution batch/event/log-prob shapes catch mismatches before training.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-func"><article class="feature"><strong>13. Names, vmap, and autodiff</strong><p>Named-tensor refine/align checks plus `torch.vmap` and `torch.func` grad, jacrev, jacfwd, jvp, and vjp shape transfers cover modern functional PyTorch.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-graph"><article class="feature"><strong>14. FX and graph extraction</strong><p>AST, FX, Dynamo/export, graph-break attribution, and verifiable-fragment analysis make unsupported code explicit.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-compile-export"><article class="feature"><strong>15. Compile and export gates</strong><p>`guarded_compile`, ONNX export, AOT packaging, GGUF export, CUDA graph capture, and compile-guard parity run verification before downstream tooling fails opaquely.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-checkpoint"><article class="feature"><strong>16. Checkpoint lifecycle</strong><p>State-dict schema checks cover missing/unexpected keys, dtype drift, tied weights, tensor-parallel shards, LoRA/PEFT adapters, and optimizer resume state.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-serving"><article class="feature"><strong>17. Serving schemas</strong><p>FastAPI, TorchServe, and generic request-to-preprocess-to-model-to-response gates reject bad layouts before a serving call crosses an unsafe boundary.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-distributed-precision"><article class="feature"><strong>18. Distributed and precision</strong><p>DTensor, FSDP2, pipeline boundaries, quantization placement, and mixed-precision/autocast gates cover deployment-time model transformations.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-extensible"><article class="feature"><strong>19. Extensible frontends</strong><p>A Flax/JAX frontend, governed declarative stubs, and a versioned operator-plugin ABI let new frameworks and operators extend the core safely.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-evidence"><article class="feature"><strong>20. Evidence and integrations</strong><p>SARIF, CI, pytest, pre-commit, dashboards, frozen benchmarks, mined-bug corpora, reproducibility ledgers, tutorials, and model galleries make adoption auditable.</p><span>Open verified example</span></article></a></div>
+            <div class="feature-grid"><a class="feature-card" href="#example-architecture"><article class="feature"><strong>1. Architecture verifier</strong><p>PyTorch `nn.Module` checks infer symbolic tensor contracts from annotations, docstrings, constructors, and forward code; concrete example tensors are optional.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-domains"><article class="feature"><strong>2. Five-domain reasoning</strong><p>Shape, device, phase, stride, and permutation facts are propagated together instead of as isolated lint rules.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-operators"><article class="feature"><strong>3. Broad operator model</strong><p>Linear, convolution, pooling, matmul, broadcasting, reshape/view, cat/stack/split/chunk, gather/scatter, fold/unfold, RNNs, and more are covered by registered transfer functions.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-soundness"><article class="feature"><strong>4. Soundness modes</strong><p>`sound`, `balanced`, and `heuristic` modes expose SAFE/UNSAFE/UNKNOWN instead of silently proving outside the supported fragment.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-lean"><article class="feature"><strong>5. Machine-checked core</strong><p>Lean-backed theorem files cover CEGAR bounds, fragment modes, cross-domain transfers, SMT encodings, and subject-reduction-style composition claims.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-cegar"><article class="feature"><strong>6. CEGAR contracts</strong><p>Counterexample-guided predicate discovery finds implicit shape requirements and can promote inconsistent refined contracts to real bugs.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-diagnostics"><article class="feature"><strong>7. Developer diagnostics</strong><p>Source-mapped diagnostics, inference chains, proof-footprint badges, explain reports, and mechanical autofix suggestions turn failures into repairs.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-einops"><article class="feature"><strong>8. Einops verification</strong><p>`verify_einops` and `verify_einops_source` check rearrange, reduce, and repeat patterns, including divisibility and axis bookkeeping.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-attention"><article class="feature"><strong>9. Attention contracts</strong><p>Multihead attention, SDPA-style mask/batch/head constraints, packed or separate q/k/v projections, and weight-output shapes are modeled.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-linalg-fft"><article class="feature"><strong>10. Linear algebra and FFT</strong><p>`torch.linalg` solve/inv/cholesky/SVD/eig/QR, complex view conversions, and FFT shape/dtype contracts are exposed as Python checks.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-sparse"><article class="feature"><strong>11. Sparse tensor gates</strong><p>COO, CSR, CSC, BSR, BSC, sparse-dense mm/addmm, sampled_addmm, softmax, coalesce, dense conversion, and layout conversion contracts are checked.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-loss-probability"><article class="feature"><strong>12. Losses and probability</strong><p>Loss target/reduction/dtype rules and distribution batch/event/log-prob shapes catch mismatches before training.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-func"><article class="feature"><strong>13. Names, vmap, and autodiff</strong><p>Named-tensor refine/align checks plus `torch.vmap` and `torch.func` grad, jacrev, jacfwd, jvp, and vjp shape transfers cover modern functional PyTorch.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-graph"><article class="feature"><strong>14. FX and graph extraction</strong><p>AST, FX, Dynamo/export, graph-break attribution, and verifiable-fragment analysis make unsupported code explicit.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-compile-export"><article class="feature"><strong>15. Compile and export gates</strong><p>`guarded_compile`, ONNX export, AOT packaging, GGUF export, CUDA graph capture, and compile-guard parity run verification before downstream tooling fails opaquely.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-checkpoint"><article class="feature"><strong>16. Checkpoint lifecycle</strong><p>State-dict schema checks cover missing/unexpected keys, dtype drift, tied weights, tensor-parallel shards, LoRA/PEFT adapters, and optimizer resume state.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-serving"><article class="feature"><strong>17. Serving schemas</strong><p>FastAPI, TorchServe, and generic request-to-preprocess-to-model-to-response gates reject bad layouts before a serving call crosses an unsafe boundary.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-distributed-precision"><article class="feature"><strong>18. Distributed and precision</strong><p>DTensor, FSDP2, pipeline boundaries, quantization placement, and mixed-precision/autocast gates cover deployment-time model transformations.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-extensible"><article class="feature"><strong>19. Extensible frontends</strong><p>A Flax/JAX frontend, governed declarative stubs, and a versioned operator-plugin ABI let new frameworks and operators extend the core safely.</p><span>Open verified example</span></article></a><a class="feature-card" href="#example-evidence"><article class="feature"><strong>20. Evidence and integrations</strong><p>SARIF, CI, pytest, pre-commit, dashboards, frozen benchmarks, mined-bug corpora, reproducibility ledgers, tutorials, and model galleries make adoption auditable.</p><span>Open verified example</span></article></a></div>
             <h2>Extensive working examples behind every feature</h2>
             <p>Each card above jumps to concrete code or configuration that exercises the capability directly.</p>
-            <div class="verified-examples"><section class="verified-example" id="example-architecture"><div><strong>Architecture verifier</strong><h3>Bad MLP head caught before a batch exists</h3><p>A model whose first layer emits 20 features but whose second layer expects 30 is refuted statically, returning an UNSAFE verdict and concrete bug count.</p><pre><code>from tensorguard import verify_architecture
+            <div class="verified-examples"><section class="verified-example" id="example-architecture"><div><strong>Architecture verifier</strong><h3>Bad head caught from a symbolic annotation, no input shape argument</h3><p>A model annotated as accepting any batch with 10 features is refuted when the second head expects 30 after a 20-wide hidden layer.</p><pre><code>from tensorguard import verify_architecture
 
 source = &#x27;&#x27;&#x27;
 import torch.nn as nn
+from jaxtyping import Float
+from torch import Tensor
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
         self.fc1 = nn.Linear(10, 20)
         self.fc2 = nn.Linear(30, 5)
-    def forward(self, x):
+    def forward(self, x: Float[Tensor, &quot;batch 10&quot;]):
         return self.fc2(self.fc1(x))
 &#x27;&#x27;&#x27;
-result = verify_architecture(source, input_shapes={&quot;x&quot;: (&quot;batch&quot;, 10)})
-assert result.verdict == &quot;UNSAFE&quot;</code></pre></div><div class="example-result"><span>Expected result</span><code>Linear(10 -&gt; 20) then Linear(30 -&gt; 5) -&gt; UNSAFE before forward()</code></div></section><section class="verified-example" id="example-domains"><div><strong>Five-domain reasoning</strong><h3>Device and gradient bugs that shape-only tools miss</h3><p>The curated domain-contribution corpus shows separate wins from device and gradient reasoning, including silent detach-style failures.</p><pre><code>import ast
+result = verify_architecture(source)
+assert result.verdict == &quot;UNSAFE&quot;
+assert result.inferred_input_shapes == {&quot;x&quot;: (&quot;batch&quot;, 10)}</code></pre></div><div class="example-result"><span>Expected result</span><code>verify_architecture(source) -&gt; UNSAFE with inferred (&#x27;batch&#x27;, 10)</code></div></section><section class="verified-example" id="example-domains"><div><strong>Five-domain reasoning</strong><h3>Device and gradient bugs that shape-only tools miss</h3><p>The curated domain-contribution corpus shows separate wins from device and gradient reasoning, including silent detach-style failures.</p><pre><code>import ast
 import re
 from pathlib import Path
 from tensorguard import verify_architecture
@@ -412,15 +443,17 @@ assert any(b.category == BugCategory.CEGAR_REFINED_CONTRACT for b in result.bugs
 
 source = &#x27;&#x27;&#x27;
 import torch.nn as nn
+from jaxtyping import Float
+from torch import Tensor
 class BadHead(nn.Module):
     def __init__(self):
         super().__init__()
         self.fc1 = nn.Linear(10, 20)
         self.fc2 = nn.Linear(30, 5)
-    def forward(self, x):
+    def forward(self, x: Float[Tensor, &quot;batch 10&quot;]):
         return self.fc2(self.fc1(x))
 &#x27;&#x27;&#x27;
-result = verify_architecture(source, input_shapes={&quot;x&quot;: (&quot;batch&quot;, 10)})
+result = verify_architecture(source)
 assert result.verdict == &quot;UNSAFE&quot;
 assert result.bugs
 print(result.bugs[0].message)</code></pre></div><div class="example-result"><span>Expected result</span><code>wrong Linear in_features -&gt; source-mapped error + repair hint</code></div></section><section class="verified-example" id="example-einops"><div><strong>Einops verification</strong><h3>Patch unflattening gets checked before einops runs</h3><p>TensorGuard reproduces einops&#x27; shape contract, so non-divisible patch decompositions fail as static API verdicts.</p><pre><code>from tensorguard import verify_einops
@@ -482,16 +515,18 @@ assert report.attributions[0].minimal_change</code></pre></div><div class="examp
 
 source = &#x27;&#x27;&#x27;
 import torch.nn as nn
+from jaxtyping import Float
+from torch import Tensor
 class Bad(nn.Module):
     def __init__(self):
         super().__init__()
         self.a = nn.Linear(10, 20)
         self.b = nn.Linear(30, 5)
-    def forward(self, x):
+    def forward(self, x: Float[Tensor, &quot;batch 10&quot;]):
         return self.b(self.a(x))
 &#x27;&#x27;&#x27;
 # guarded_compile / export gates run this preflight before downstream tooling.
-preflight = verify_architecture(source, input_shapes={&quot;x&quot;: (&quot;batch&quot;, 10)})
+preflight = verify_architecture(source)
 assert preflight.verdict == &quot;UNSAFE&quot;
 assert preflight.bug_count &gt;= 1</code></pre></div><div class="example-result"><span>Expected result</span><code>bad module -&gt; TensorGuardViolation before torch.compile or ONNX export</code></div></section><section class="verified-example" id="example-checkpoint"><div><strong>Checkpoint lifecycle</strong><h3>Bad resume state rejected before model mutation</h3><p>Checkpoint, LoRA adapter, and optimizer-state gates expose schema drift, dtype changes, missing shards, tied-weight hazards, and incompatible resume buffers.</p><pre><code>from tensorguard import verify_checkpoint_state_dict
 import torch
@@ -618,7 +653,7 @@ paths = {page[&quot;path&quot;] for page in site_manifest[&quot;pages&quot;]}
 assert {&quot;index.html&quot;, &quot;operators/index.html&quot;, &quot;proof-footprint/index.html&quot;} &lt;= paths
 assert Path(&quot;examples/tutorials/11_jupyter_magic.ipynb&quot;).exists()</code></pre></div><div class="example-result"><span>Expected result</span><code>pytest plugin + pre-commit + docs site + artifact ledger -&gt; checked adoption path</code></div></section></div>
             <h2>Evidence-backed, generated, and CI-ready</h2>
-            <div class="cards"><article><strong>real benchmark</strong><span>16 labeled modules</span><p>8 clean / 8 buggy ground truth</p></article><article><strong>TensorGuard corpus score</strong><span>TP=8 FP=0 TN=8 FN=0</span><p>from the committed precision/recall confusion matrix</p></article><article><strong>sound-mode clean hunt</strong><span>80 clean models</span><p>zero false positives and non-vacuous SAFE coverage</p></article><article><strong>negative fuzzing</strong><span>281 genuine injected faults</span><p>all observed to fail in eager PyTorch before verifier scoring</p></article><article><strong>mined public bugs</strong><span>2704 GitHub records</span><p>frozen signature-labeled shape/device bug snapshot</p></article></div>
+            <div class="cards"><article><strong>real benchmark</strong><span>16 labeled modules</span><p>8 clean / 8 buggy ground truth</p></article><article><strong>symbolic module verification</strong><span>100 / 100 cases</span><p>modules verified from symbolic annotations, docstrings, and constructors without concrete input examples</p></article><article><strong>TensorGuard corpus score</strong><span>TP=8 FP=0 TN=8 FN=0</span><p>from the committed precision/recall confusion matrix</p></article><article><strong>sound-mode clean hunt</strong><span>80 clean models</span><p>zero false positives and non-vacuous SAFE coverage</p></article><article><strong>negative fuzzing</strong><span>281 genuine injected faults</span><p>all observed to fail in eager PyTorch before verifier scoring</p></article><article><strong>mined public bugs</strong><span>2704 GitHub records</span><p>frozen signature-labeled shape/device bug snapshot</p></article></div>
             <h2>Deep docs</h2>
             <div class="cards">
               <article><strong>Concepts</strong><span>soundness first</span><p>Learn the SAFE/UNSAFE/UNKNOWN contract and the supported fragment.</p></article>

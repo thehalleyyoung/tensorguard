@@ -69,6 +69,17 @@ def test_operator_and_proof_pages_surface_real_counts():
     assert "complete" in op_text
 
 
+def test_homepage_surfaces_symbolic_shape_examples():
+    text = (SITE / "index.html").read_text(encoding="utf-8")
+    assert "symbolic module verification" in text
+    assert "100 / 100 cases" in text
+    assert "verify_architecture(source)" in text
+    assert "inferred_input_shapes" in text
+    assert "Float[Tensor, &quot;batch 10&quot;]" in text
+    assert "verify_module(model) infers (batch, 3, height, width)" in text
+    assert "input_shapes={&quot;x&quot;: (&quot;batch&quot;, 10)}" not in text
+
+
 def test_make_and_pages_workflow_are_wired():
     makefile = (REPO / "Makefile").read_text(encoding="utf-8")
     workflow = (REPO / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")

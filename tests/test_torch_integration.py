@@ -35,6 +35,43 @@ class GoodNet(nn.Module):
         return self.fc2(self.fc1(x))
 
 
+class SymbolicConvGood(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.stem = nn.Conv2d(3, 16, 3)
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))
+        self.head = nn.Linear(16, 5)
+
+    def forward(self, x):
+        x = self.stem(x)
+        x = self.pool(x)
+        x = x.flatten(1)
+        return self.head(x)
+
+
+class SymbolicConvBad(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.stem = nn.Conv2d(3, 16, 3)
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))
+        self.head = nn.Linear(32, 5)
+
+    def forward(self, x):
+        x = self.stem(x)
+        x = self.pool(x)
+        x = x.flatten(1)
+        return self.head(x)
+
+
+class LinearFirstAmbiguous(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc = nn.Linear(16, 4)
+
+    def forward(self, x):
+        return self.fc(x)
+
+
 def test_module_source_recovered():
     src = module_source(GoodNet())
     assert src is not None
@@ -52,6 +89,29 @@ def test_verify_module_flags_real_bug():
 def test_verify_module_good_is_not_unsafe():
     res = verify_module(GoodNet(), input_shapes={"x": ("batch", 10)})
     assert res is not None
+    assert not str(res.verdict).upper().endswith("UNSAFE")
+
+
+def test_verify_module_infers_symbolic_conv_shape_without_input_shapes():
+    res = verify_module(SymbolicConvGood())
+    assert res is not None
+    assert not str(res.verdict).upper().endswith("UNSAFE")
+    assert res.inferred_input_shapes.get("x") == ("batch", 3, "height", "width")
+    assert res.inferred_input_sources.get("x") == "layer:conv2d"
+
+
+def test_verify_module_uses_symbolic_shape_to_catch_downstream_bug():
+    res = verify_module(SymbolicConvBad())
+    assert res is not None
+    assert str(res.verdict).upper().endswith("UNSAFE")
+    assert res.inferred_input_shapes.get("x") == ("batch", 3, "height", "width")
+    assert any("expects" in (b.message or "").lower() for b in res.bugs)
+
+
+def test_verify_module_abstains_on_rank_polymorphic_linear_first():
+    res = verify_module(LinearFirstAmbiguous())
+    assert res is not None
+    assert res.inferred_input_shapes == {}
     assert not str(res.verdict).upper().endswith("UNSAFE")
 
 

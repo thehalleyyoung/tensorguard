@@ -268,6 +268,10 @@ developer-study:
 silent-bug-benchmark:
 	$(PYTHON) reproducibility/silent_bug_benchmark.py
 
+symbolic-shape-benchmark:
+	$(PYTHON) reproducibility/symbolic_shape_benchmark.py
+	$(PYTHON) reproducibility/symbolic_shape_benchmark.py --check
+
 statistical-meta-analysis:
 	$(PYTHON) reproducibility/statistical_meta_analysis.py
 	$(PYTHON) reproducibility/statistical_meta_analysis.py --check
