@@ -365,17 +365,85 @@ result = verify_architecture(source, input_shapes={"x": ("batch", 10)})
 assert result.verdict == "UNSAFE"
         """,
         "domains": """
-# Domain tests cover bugs shape-only checks miss:
-# - device mismatch: CPU tensor + CUDA buffer
-# - gradient bug: a detach() severs trainability
-# TensorGuard refutes those through non-shape domains.
+import ast
+import re
+from pathlib import Path
+from tensorguard import verify_architecture
+
+repo = Path.cwd()
+manifest = __import__("json").loads(
+    (repo / "experiments_v5/domain_corpus_manifest.json").read_text()
+)
+
+def corpus_case(case_id):
+    entry = next(e for e in manifest["entries"] if e["id"] == case_id)
+    source = (repo / entry["repro_file"]).read_text()
+    match = re.search(r"^INPUT_SHAPES\\s*=\\s*(\\{.*?\\})", source, re.M | re.S)
+    shapes = ast.literal_eval(match.group(1)) if match else {}
+    return source, shapes
+
+device_source, device_shapes = corpus_case("device_01")
+shape_only = verify_architecture(
+    device_source,
+    input_shapes=device_shapes,
+    check_devices=False,
+    check_gradients=False,
+    max_cegar_iterations=0,
+)
+with_devices = verify_architecture(
+    device_source,
+    input_shapes=device_shapes,
+    check_devices=True,
+    check_gradients=False,
+    max_cegar_iterations=0,
+)
+assert shape_only.bug_count == 0
+assert with_devices.bug_count >= 1
+assert any("device" in bug.message.lower() for bug in with_devices.bugs)
+
+grad_source, grad_shapes = corpus_case("grad_01")
+shape_only = verify_architecture(
+    grad_source,
+    input_shapes=grad_shapes,
+    check_devices=False,
+    check_gradients=False,
+    max_cegar_iterations=0,
+)
+with_gradients = verify_architecture(
+    grad_source,
+    input_shapes=grad_shapes,
+    check_devices=False,
+    check_gradients=True,
+    max_cegar_iterations=0,
+)
+assert shape_only.bug_count == 0
+assert with_gradients.bug_count >= 1
+assert any("gradient" in bug.message.lower() or "detach" in bug.message.lower()
+           for bug in with_gradients.bugs)
         """,
         "operators": """
-from tensorguard import quick_check
+from src.operator_confidence import confidence_table, tag_for
+from src.proof_footprint import ProofStatus, proof_footprint_table, summary_for
 
-# Operator transfers are confidence-tagged and surfaced in:
-# operator_confidence_table.json
-# tensorguard operator-confidence --json
+rows = confidence_table()
+by_confidence = {name: 0 for name in ("complete", "sound", "heuristic")}
+for row in rows:
+    by_confidence[row["confidence"]] += 1
+
+assert len(rows) > 100
+assert by_confidence["complete"] > 0
+assert by_confidence["sound"] > 0
+assert by_confidence["heuristic"] > 0
+
+assert tag_for("torch.relu").value == "complete"
+assert tag_for("torch.linalg.solve").value == "sound"
+
+footprints = proof_footprint_table()
+summary = summary_for(footprints)
+assert summary[ProofStatus.LEAN_THEOREM.value] > 0
+assert any(row["operator"] == "torch.stack"
+           and row["proof_status"] == "lean_theorem"
+           for row in footprints)
         """,
         "soundness": """
 from tensorguard import verify_architecture
@@ -400,9 +468,25 @@ assert result.verdict == "UNKNOWN"
 assert result.unknown_reasons
         """,
         "lean": """
-# The proof-footprint table ties operators to evidence:
-# Lean theorem, pen-and-paper rule, tested-only rule, or heuristic.
-# See docs/site/proof-footprint/index.html
+from pathlib import Path
+from src.proof_footprint import ProofStatus, proof_footprint_table, summary_for
+
+rows = proof_footprint_table()
+summary = summary_for(rows)
+assert summary[ProofStatus.LEAN_THEOREM.value] >= 1
+assert summary[ProofStatus.PEN_AND_PAPER_RULE.value] >= 1
+assert summary[ProofStatus.TESTED_ONLY_RULE.value] >= 1
+
+lean_rows = [row for row in rows if row["proof_status"] == "lean_theorem"]
+assert lean_rows
+for row in lean_rows[:10]:
+    for evidence in row["evidence"]:
+        assert Path(evidence).exists(), (row["operator"], evidence)
+
+stack = next(row for row in rows if row["operator"] == "torch.stack")
+assert stack["proof_status"] == "lean_theorem"
+assert "TensorGuard.V5.applyOp_sound_stack" in stack["lean_theorems"]
+assert "stack" in stack["rule"]
         """,
         "cegar": """
 from tensorguard import BugCategory, verify_architecture
@@ -582,17 +666,96 @@ bad_amp = verify_mixed_precision(
 assert not bad_amp.ok
         """,
         "extensible": """
-from tensorguard import verify_module
+from src.model_checker import verify_model
+from src.operator_plugin_abi import (
+    ConformanceCase,
+    OperatorTheoryContract,
+    PluginProvenance,
+    SecurityReview,
+    install_operator_theories,
+)
+from src.shape_stub_registry import clear_user_stubs, get_shape_stub
+from src.stub_governance import load_community_stubs, validate_directory
+from src.tensor_shapes import ShapeDim, TensorShape
 
-# Flax/JAX frontend, governed stubs, and operator plugins are conformance-tested.
-# Public extension points refuse unreviewed executable stub code.
+reports = validate_directory("community_stubs")
+assert reports and all(report.ok for report in reports)
+loaded = load_community_stubs("community_stubs")
+assert {"Linear8bitLt", "T5LayerNorm"} <= set(loaded)
+stub = get_shape_stub("Linear8bitLt")
+params = stub.bind_params((768, 3072), {})
+out, err = stub.transfer(TensorShape((ShapeDim("batch"), ShapeDim(768))), params)
+assert err is None and out.dims[-1].value == 3072
+_, err = stub.transfer(TensorShape((ShapeDim("batch"), ShapeDim(512))), params)
+assert err and "768" in err
+clear_user_stubs()
+
+def triple_last_dim(inp, params):
+    last = inp.dims[-1]
+    return TensorShape(inp.dims[:-1] + (ShapeDim(last.value * 3),)), None
+
+contract = OperatorTheoryContract(
+    class_name="TripleLastDim",
+    transfer=triple_last_dim,
+    conformance=(ConformanceCase(input_shape=("batch", 4),
+                                 expected_output=("batch", 12)),),
+    provenance=PluginProvenance(
+        package="acme-tensor-layers",
+        version="0.4.0",
+        source_url="https://example.com/acme",
+        license="MIT",
+        author="Acme",
+    ),
+    security_review=SecurityReview(
+        reviewed_by="tg-maintainer",
+        reviewed_on="2026-06-03",
+        no_import_side_effects=True,
+        no_network=True,
+        no_filesystem_writes=True,
+        deterministic=True,
+        no_model_execution=True,
+    ),
+    summary="Maps the last dim to three times its input size.",
+)
+assert install_operator_theories([contract])[0].ok
+source = '''
+import torch.nn as nn
+from acme import TripleLastDim
+class Net(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.triple = TripleLastDim()
+        self.head = nn.Linear(12, 2)
+    def forward(self, x):
+        return self.head(self.triple(x))
+'''
+assert verify_model(source, input_shapes={"x": (5, 4)}).safe is True
+assert verify_model(source.replace("Linear(12, 2)", "Linear(11, 2)"),
+                    input_shapes={"x": (5, 4)}).safe is False
+clear_user_stubs()
         """,
         "evidence": """
-# Adoption surfaces are tested and reproducible:
-# pytest --tensorguard
-# tensorguard-precommit path/to/model.py
-# python reproducibility/docs_site.py --check
-# python reproducibility/artifact_index.py --check
+import hashlib
+import json
+from pathlib import Path
+
+site = Path("docs/site/index.html")
+artifact_index = json.loads(Path("reproducibility/artifact_index.json").read_text())
+site_manifest = json.loads(Path("docs/site/site_manifest.json").read_text())
+
+assert site.exists()
+assert "Open working notebook" in site.read_text()
+
+indexed = {entry["path"]: entry for entry in artifact_index["artifacts"]}
+assert indexed["docs/site/index.html"]["sha256"] == hashlib.sha256(
+    site.read_bytes()
+).hexdigest()
+assert artifact_index["all_hashed_artifacts_present"] is True
+assert artifact_index["n_hashed_artifacts"] >= 1
+
+paths = {page["path"] for page in site_manifest["pages"]}
+assert {"index.html", "operators/index.html", "proof-footprint/index.html"} <= paths
+assert Path("examples/tutorials/11_jupyter_magic.ipynb").exists()
         """,
     }
     return snippets[slug]
@@ -604,8 +767,7 @@ def _verified_feature_examples() -> str:
             f"<section class=\"verified-example\" id=\"example-{_esc(slug)}\">"
             f"<div><strong>{_esc(title)}</strong><h3>{_esc(example_title)}</h3>"
             f"<p>{_esc(example_desc)}</p>{_code(_feature_code(slug))}</div>"
-            f"<div class=\"example-result\"><span>Expected result</span><code>{_esc(outcome)}</code>"
-            f"<small>Pre-checked with: {_esc(tests)}</small></div>"
+            f"<div class=\"example-result\"><span>Expected result</span><code>{_esc(outcome)}</code></div>"
             f"</section>"
         )
         for slug, title, _desc, example_title, example_desc, outcome, tests in _feature_data()
@@ -941,7 +1103,7 @@ def _use_case_examples() -> str:
             f"<div><strong>{_esc(title)}</strong><h3>{_esc(command)}</h3>"
             f"<p>{_esc(desc)}</p>{_code(code)}{notebook_action}"
             f"</div><div class=\"example-result\"><span>Expected result</span>"
-            f"<code>{_esc(expected)}</code><small>Pre-checked with: {_esc(tests)}</small>"
+            f"<code>{_esc(expected)}</code>"
             f"</div></section>"
         )
 
@@ -1131,8 +1293,8 @@ def build_pages() -> list[Page]:
             <h2 id="features">The 20 most impressive things TensorGuard can do now</h2>
             <p>Grouped from the current README and public package exports, this list focuses on the highest-value capabilities instead of enumerating every helper individually.</p>
             {_feature_showcase()}
-            <h2>Pre-checked examples behind every feature</h2>
-            <p>Each card above jumps to a concrete scenario that was validated against the repository's tests or by direct snippet execution before this page was published.</p>
+            <h2>Extensive working examples behind every feature</h2>
+            <p>Each card above jumps to concrete code or configuration that exercises the capability directly.</p>
             {_verified_feature_examples()}
             <h2>Evidence-backed, generated, and CI-ready</h2>
             {_metric_cards()}
