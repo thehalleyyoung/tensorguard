@@ -127,93 +127,215 @@ def _metric_cards() -> str:
     ) + "</div>"
 
 
-def _feature_showcase() -> str:
-    features = [
+def _feature_data() -> list[tuple[str, str, str, str, str, str, str]]:
+    return [
         (
+            "architecture",
             "Architecture verifier",
             "Zero-annotation PyTorch `nn.Module` checks infer tensor contracts from constructors, forward code, and input shapes.",
+            "Bad MLP head caught before a batch exists",
+            "A model whose first layer emits 20 features but whose second layer expects 30 is refuted statically, returning an UNSAFE verdict and concrete bug count.",
+            "Linear(10 -> 20) then Linear(30 -> 5) -> UNSAFE before forward()",
+            "tests/test_api_stability.py",
         ),
         (
+            "domains",
             "Five-domain reasoning",
             "Shape, device, phase, stride, and permutation facts are propagated together instead of as isolated lint rules.",
+            "Device and gradient bugs that shape-only tools miss",
+            "The curated domain-contribution corpus shows separate wins from device and gradient reasoning, including silent detach-style failures.",
+            "CPU tensor + CUDA buffer, or detached gradient flow -> refuted outside pure shape checking",
+            "tests/test_domain_contribution.py",
         ),
         (
+            "operators",
             "Broad operator model",
             "Linear, convolution, pooling, matmul, broadcasting, reshape/view, cat/stack/split/chunk, gather/scatter, fold/unfold, RNNs, and more are covered by registered transfer functions.",
+            "Operator confidence table, not a hand-wavy list",
+            "Every registered transfer is tagged complete, sound, or heuristic and rendered into the generated operator reference.",
+            "operator_confidence_table.json -> complete/sound/heuristic coverage summary",
+            "tests/test_operator_confidence.py",
         ),
         (
+            "soundness",
             "Soundness modes",
             "`sound`, `balanced`, and `heuristic` modes expose SAFE/UNSAFE/UNKNOWN instead of silently proving outside the supported fragment.",
+            "Unsupported code becomes UNKNOWN, not a fake pass",
+            "Sound mode keeps real bug reports but refuses to certify modules once they leave the verifiable fragment.",
+            "opaque or out-of-fragment construct -> UNKNOWN in sound mode",
+            "tests/test_soundness_mode.py",
         ),
         (
+            "lean",
             "Machine-checked core",
             "Lean-backed theorem files cover CEGAR bounds, fragment modes, cross-domain transfers, SMT encodings, and subject-reduction-style composition claims.",
+            "Proof footprint pinned to audited theorem files",
+            "The proof-footprint page maps operators and core claims to Lean theorem evidence, pen-and-paper rules, tested-only rules, or heuristics.",
+            "Lean-backed rows stay allowlisted and auditable instead of promoted by family name",
+            "tests/test_lean_soundness.py",
         ),
         (
+            "cegar",
             "CEGAR contracts",
             "Counterexample-guided predicate discovery finds implicit shape requirements and can promote inconsistent refined contracts to real bugs.",
+            "Conflicting inferred contracts become a real bug",
+            "When refinement discovers mutually impossible requirements, TensorGuard reports a cegar_refined_contract issue instead of burying it as metadata.",
+            "x must be both 768-wide and 512-wide -> cegar_refined_contract",
+            "tests/test_cegar_refined_contract.py",
         ),
         (
+            "diagnostics",
             "Developer diagnostics",
             "Source-mapped diagnostics, inference chains, proof-footprint badges, explain reports, and mechanical autofix suggestions turn failures into repairs.",
+            "From failing layer to actionable source line",
+            "Diagnostics reconstruct the offending operation, inferred-vs-expected shape, nearby source snippet, related locations, and safe autofix suggestions where available.",
+            "wrong Linear in_features -> source-mapped error + repair hint",
+            "tests/test_source_mapped_errors.py",
         ),
         (
+            "einops",
             "Einops verification",
             "`verify_einops` and `verify_einops_source` check rearrange, reduce, and repeat patterns, including divisibility and axis bookkeeping.",
+            "Patch unflattening gets checked before einops runs",
+            "TensorGuard reproduces einops' shape contract, so non-divisible patch decompositions fail as static API verdicts.",
+            "rearrange b (h w) c with length 14 and h=4 -> non_divisible",
+            "tests/test_einops_verify.py",
         ),
         (
+            "attention",
             "Attention contracts",
             "Multihead attention, SDPA-style mask/batch/head constraints, packed or separate q/k/v projections, and weight-output shapes are modeled.",
+            "Attention head dimensions are checked up front",
+            "Query/key/value rank, batch layout, packed vs separate projection dims, masks, head divisibility, and returned attention-weight shapes are verified.",
+            "query embed dim 63 for embed_dim 64 -> query_embed_dim",
+            "tests/test_mha_verify.py",
         ),
         (
+            "linalg-fft",
             "Linear algebra and FFT",
             "`torch.linalg` solve/inv/cholesky/SVD/eig/QR, complex view conversions, and FFT shape/dtype contracts are exposed as Python checks.",
+            "Matrix API shape contracts without allocating tensors",
+            "Linear solve RHS rules, square-matrix requirements, SVD tuple shapes, complex view layout, and FFT dtype/shape constraints are checked directly.",
+            "solve((4,4), (3,2)) -> rhs_dim; SVD returns U/S/Vh shapes",
+            "tests/test_linalg_verify.py, tests/test_complex_verify.py",
         ),
         (
+            "sparse",
             "Sparse tensor gates",
             "COO, CSR, CSC, BSR, BSC, sparse-dense mm/addmm, sampled_addmm, softmax, coalesce, dense conversion, and layout conversion contracts are checked.",
+            "Sparse metadata is validated before construction fails later",
+            "COO/CSR/CSC/BSR/BSC shape metadata, block sizes, nnz relationships, and sparse matrix kernels are modeled as explicit verdicts.",
+            "COO indices sparse_dim=3 for size rank 2 -> size_rank",
+            "tests/test_sparse_verify.py",
         ),
         (
+            "loss-probability",
             "Losses and probability",
             "Loss target/reduction/dtype rules and distribution batch/event/log-prob shapes catch mismatches before training.",
+            "Training criteria and probabilistic shapes checked together",
+            "Loss functions reject invalid targets, reductions, and dtype contracts; distribution helpers validate batch/event/log-prob shape expectations.",
+            "bad CrossEntropy target contract or log_prob event shape -> unsafe verdict",
+            "tests/test_loss_verify.py, tests/test_distributions_verify.py",
         ),
         (
+            "func",
             "Names, vmap, and autodiff",
             "Named-tensor refine/align checks plus `torch.vmap` and `torch.func` grad, jacrev, jacfwd, jvp, and vjp shape transfers cover modern functional PyTorch.",
+            "Functional PyTorch transforms get shape transfers",
+            "Named-axis refinement, align_to singleton insertion, vmap batch dimensions, and torch.func autodiff output shapes are modeled by public helpers.",
+            "invalid align_to name order, impossible vmap dim, or jacrev shape -> checked verdict",
+            "tests/test_named_tensor_verify.py, tests/test_vmap_verify.py, tests/test_func_autodiff_verify.py",
         ),
         (
+            "graph",
             "FX and graph extraction",
             "AST, FX, Dynamo/export, graph-break attribution, and verifiable-fragment analysis make unsupported code explicit.",
+            "Graph extraction fails loudly when proof would be dishonest",
+            "Dynamo/export integrations and graph-break attribution explain where analysis left the supported fragment instead of hiding unsupported behavior.",
+            "unsupported graph break -> attributed reason rather than silent SAFE",
+            "tests/test_graph_break_attribution.py, tests/test_dynamo_gap_analysis.py, tests/test_torch_integration.py",
         ),
         (
+            "compile-export",
             "Compile and export gates",
             "`guarded_compile`, ONNX export, AOT packaging, GGUF export, CUDA graph capture, and compile-guard parity run verification before downstream tooling fails opaquely.",
+            "Compile/export only after TensorGuard preflight",
+            "The same model check runs before torch.compile, ONNX export, AOT packaging, exported-program checks, and deployment-specific export gates.",
+            "bad module -> TensorGuardViolation before torch.compile or ONNX export",
+            "tests/test_torch_integration.py, tests/test_onnx_export_gate.py, tests/test_export_aot_gate.py",
         ),
         (
+            "checkpoint",
             "Checkpoint lifecycle",
             "State-dict schema checks cover missing/unexpected keys, dtype drift, tied weights, tensor-parallel shards, LoRA/PEFT adapters, and optimizer resume state.",
+            "Bad resume state rejected before model mutation",
+            "Checkpoint, LoRA adapter, and optimizer-state gates expose schema drift, dtype changes, missing shards, tied-weight hazards, and incompatible resume buffers.",
+            "checkpoint key/dtype drift, bad LoRA rank, or optimizer shape mismatch -> issue list",
+            "tests/test_checkpoint_verify.py, tests/test_lora_verification.py, tests/test_optimizer_state_verify.py",
         ),
         (
+            "serving",
             "Serving schemas",
             "FastAPI, TorchServe, and generic request-to-preprocess-to-model-to-response gates reject bad layouts before a serving call crosses an unsafe boundary.",
+            "Serving requests blocked before the model is invoked",
+            "Request, preprocessing output, model output, and response payloads are validated stage-by-stage with shape, dtype, device, and symbolic-batch bindings.",
+            "NHWC image where NCHW is required -> shape_mismatch with model_invoked=False",
+            "tests/test_serving_schema.py",
         ),
         (
+            "distributed-precision",
             "Distributed and precision",
             "DTensor, FSDP2, pipeline boundaries, quantization placement, and mixed-precision/autocast gates cover deployment-time model transformations.",
+            "Distributed placement and precision gates before launch",
+            "DTensor/FSDP2/pipeline specs, quantization placement, and mixed-precision/autocast constraints get checked as deployment contracts.",
+            "bad pipeline boundary, quantized placement, or autocast dtype path -> structured issue",
+            "tests/test_distributed_verification.py, tests/test_mixed_precision_verify.py, tests/test_quantization_verify.py",
         ),
         (
+            "extensible",
             "Extensible frontends",
             "A Flax/JAX frontend, governed declarative stubs, and a versioned operator-plugin ABI let new frameworks and operators extend the core safely.",
+            "Extensions are governed, declarative, and testable",
+            "A Flax frontend lowers supported modules into shared checks, community stubs avoid executable code, and operator plugins carry versioned conformance contracts.",
+            "Flax Linear/LayerNorm path or reviewed stub/plugin -> conformance-gated extension",
+            "tests/test_flax_frontend.py, tests/test_stub_governance.py, tests/test_operator_plugin_abi.py",
         ),
         (
+            "evidence",
             "Evidence and integrations",
             "SARIF, CI, pytest, pre-commit, dashboards, frozen benchmarks, mined-bug corpora, reproducibility ledgers, tutorials, and model galleries make adoption auditable.",
+            "Adoption surfaces are tested like product code",
+            "The docs site, pytest plugin, pre-commit hook, public API surface, and generated artifact ledger are all covered by tests or byte-identical reproduction checks.",
+            "pytest plugin + pre-commit + docs site + artifact ledger -> checked adoption path",
+            "tests/test_docs_site.py, tests/test_precommit.py, tests/test_pytest_plugin.py",
         ),
     ]
+
+
+def _feature_showcase() -> str:
+    features = _feature_data()
     assert len(features) == 20
     return "<div class=\"feature-grid\">" + "".join(
-        f"<article class=\"feature\"><strong>{idx}. {_esc(title)}</strong><p>{_esc(desc)}</p></article>"
-        for idx, (title, desc) in enumerate(features, start=1)
+        (
+            f"<a class=\"feature-card\" href=\"#example-{_esc(slug)}\">"
+            f"<article class=\"feature\"><strong>{idx}. {_esc(title)}</strong>"
+            f"<p>{_esc(desc)}</p><span>Open verified example</span></article></a>"
+        )
+        for idx, (slug, title, desc, *_rest) in enumerate(features, start=1)
+    ) + "</div>"
+
+
+def _verified_feature_examples() -> str:
+    return "<div class=\"verified-examples\">" + "".join(
+        (
+            f"<section class=\"verified-example\" id=\"example-{_esc(slug)}\">"
+            f"<div><strong>{_esc(title)}</strong><h3>{_esc(example_title)}</h3>"
+            f"<p>{_esc(example_desc)}</p></div>"
+            f"<div class=\"example-result\"><span>Expected result</span><code>{_esc(outcome)}</code>"
+            f"<small>Pre-checked with: {_esc(tests)}</small></div>"
+            f"</section>"
+        )
+        for slug, title, _desc, example_title, example_desc, outcome, tests in _feature_data()
     ) + "</div>"
 
 
@@ -294,8 +416,8 @@ def _use_case_showcase() -> str:
     use_cases = [
         (
             "VS Code while you type",
-            "Inline squiggles, hover shapes, and quick-fixes from the TensorGuard LSP client in `editors/vscode`; backed by the LSP server/client tests.",
-            "Open `editors/vscode` in Extension Development Host",
+            "Inline squiggles, hover shapes, and quick-fixes from the TensorGuard LSP client in editors/vscode; backed by the LSP server/client tests.",
+            "Open editors/vscode in Extension Development Host",
         ),
         (
             "Python API gates",
@@ -342,6 +464,33 @@ def _use_case_showcase() -> str:
     ) + "</div>"
 
 
+def _instant_examples() -> str:
+    examples = [
+        (
+            "Find a bad layer before forward",
+            "A Linear head expecting 30 features after a layer that emits 20 is reported as UNSAFE before PyTorch runs a batch.",
+            "Linear(30) after Linear(10 -> 20) -> UNSAFE",
+        ),
+        (
+            "Catch library-shape bugs directly",
+            "Einops divisibility, linalg RHS rules, sparse layout rank, and attention head/embed contracts can be checked as plain Python API calls.",
+            "linalg.solve((4,4), (3,2)) -> rhs_dim",
+        ),
+        (
+            "Block unsafe deployment edges",
+            "Serving payloads, checkpoint schemas, optimizer resumes, compile/export, AOT, ONNX, and GGUF gates fail before mutating or exporting a model.",
+            "NHWC image at NCHW FastAPI boundary -> shape_mismatch",
+        ),
+    ]
+    return "<div class=\"instant-examples\">" + "".join(
+        (
+            f"<article><strong>{_esc(title)}</strong><p>{_esc(desc)}</p>"
+            f"<span>{_esc(code)}</span></article>"
+        )
+        for title, desc, code in examples
+    ) + "</div>"
+
+
 def _layout(page: Page, pages: Sequence[Page]) -> str:
     nav = "".join(
         f'<a href="{_esc(_rel(page.path, p.path))}">{_esc(p.title)}</a>'
@@ -354,11 +503,11 @@ def _layout(page: Page, pages: Sequence[Page]) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{_esc(page.title)} - TensorGuard</title>
   <style>
-    :root {{ color-scheme: dark; --bg:#0d1117; --panel:#161b22; --panel2:#0f1724; --muted:#8b949e; --text:#e6edf3; --accent:#7ee787; --accent2:#79c0ff; --line:#30363d; }}
+    :root {{ color-scheme: dark; --bg:#0d1117; --panel:#161b22; --panel2:#0f1724; --muted:#8b949e; --text:#e6edf3; --accent:#7ee787; --accent2:#79c0ff; --warm:#ffa657; --line:#30363d; }}
     * {{ box-sizing: border-box; }}
-    body {{ margin:0; background:radial-gradient(circle at top left,#13233a 0,#0d1117 34rem); color:var(--text); font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }}
+    body {{ margin:0; background:radial-gradient(circle at top left,#19385d 0,#0d1117 34rem),linear-gradient(180deg,#0d1117 0,#06090f 100%); color:var(--text); font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }}
     header, main, footer {{ max-width:1120px; margin:0 auto; padding:28px; }}
-    header {{ padding-top:42px; }}
+    header {{ padding-top:64px; padding-bottom:16px; }}
     nav {{ position:sticky; top:0; z-index:2; background:#0d1117f2; border-bottom:1px solid var(--line); padding:12px 28px; display:flex; gap:18px; overflow-x:auto; }}
     nav a {{ color:var(--muted); white-space:nowrap; }}
     a {{ color:var(--accent2); text-decoration:none; }}
@@ -367,30 +516,46 @@ def _layout(page: Page, pages: Sequence[Page]) -> str:
     h2 {{ margin-top:40px; border-top:1px solid var(--line); padding-top:28px; }}
     h3 {{ margin-top:28px; }}
     .lede {{ color:#c9d1d9; font-size:1.25rem; max-width:880px; }}
-    .pill {{ display:inline-block; border:1px solid var(--line); border-radius:999px; padding:2px 10px; color:var(--accent); font-size:.86rem; margin-bottom:18px; }}
-    .cards {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin:22px 0; }}
-    .hero-actions {{ display:flex; flex-wrap:wrap; gap:12px; margin:26px 0 4px; }}
+    .pill {{ display:inline-block; border:1px solid #2f6f46; background:#102819; border-radius:999px; padding:4px 12px; color:var(--accent); font-size:.86rem; margin-bottom:18px; }}
+    .cards {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr)); gap:14px; margin:22px 0; }}
+    .hero-actions {{ display:flex; flex-wrap:wrap; gap:12px; margin:26px 0 8px; }}
     .button {{ display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:999px; padding:10px 15px; background:var(--panel); color:var(--text); font-weight:700; }}
     .button.primary {{ background:var(--accent); border-color:var(--accent); color:#0d1117; }}
-    .hero-grid, .examples {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px; margin:22px 0; }}
-    .use-cases {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); gap:14px; margin:28px 0; }}
-    .feature-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(245px,1fr)); gap:14px; margin:22px 0; }}
-    article, .callout, .example {{ background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--line); border-radius:14px; padding:18px; }}
+    .hero-grid, .examples, .instant-examples {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr)); gap:18px; margin:22px 0; }}
+    .use-cases {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(255px,100%),1fr)); gap:14px; margin:28px 0; }}
+    .feature-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(245px,100%),1fr)); gap:14px; margin:22px 0; }}
+    .verified-examples {{ display:grid; gap:16px; margin:24px 0; }}
+    article, .callout, .example {{ min-width:0; background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--line); border-radius:16px; padding:18px; box-shadow:0 12px 30px #00000024; overflow:hidden; overflow-wrap:anywhere; }}
     article strong {{ display:block; color:var(--accent); text-transform:uppercase; font-size:.78rem; letter-spacing:.08em; }}
     article span {{ display:block; font-size:1.45rem; font-weight:700; margin:.2rem 0; }}
     article p, .muted {{ color:var(--muted); margin:.2rem 0 0; }}
+    .instant-examples article strong {{ color:var(--text); text-transform:none; letter-spacing:0; font-size:1.05rem; }}
+    .instant-examples article span {{ color:var(--warm); font-size:.96rem; line-height:1.45; margin-top:12px; overflow-wrap:anywhere; }}
     .use-case {{ min-height:178px; }}
     .use-case strong {{ color:var(--accent); font-size:1rem; letter-spacing:0; text-transform:none; }}
-    .use-case code {{ display:block; margin-top:12px; color:#ffa657; white-space:normal; }}
+    .use-case code {{ display:block; margin-top:12px; color:var(--warm); white-space:normal; overflow-wrap:anywhere; }}
+    .feature-card {{ color:inherit; text-decoration:none; display:block; }}
+    .feature-card:hover {{ text-decoration:none; transform:translateY(-2px); transition:transform .12s ease; }}
     .feature strong {{ color:var(--accent2); text-transform:none; letter-spacing:0; font-size:.98rem; }}
     .feature p {{ margin-top:.55rem; }}
+    .feature span {{ color:var(--warm); font-size:.85rem; margin-top:12px; }}
+    .verified-example {{ scroll-margin-top:76px; display:grid; grid-template-columns:minmax(0,1.6fr) minmax(260px,.9fr); gap:16px; align-items:stretch; background:linear-gradient(135deg,#111d2d,#0d1117); border:1px solid var(--line); border-radius:18px; padding:20px; box-shadow:0 16px 40px #0000002e; }}
+    .verified-example strong {{ color:var(--accent2); text-transform:uppercase; letter-spacing:.08em; font-size:.78rem; }}
+    .verified-example h3 {{ margin:.3rem 0 .4rem; font-size:1.4rem; line-height:1.18; }}
+    .verified-example p {{ color:#c9d1d9; margin:0; }}
+    .example-result {{ background:#010409; border:1px solid var(--line); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:10px; }}
+    .example-result span {{ color:var(--accent); font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }}
+    .example-result code {{ color:var(--warm); white-space:normal; overflow-wrap:anywhere; }}
+    .example-result small {{ color:var(--muted); line-height:1.45; }}
+    @media (max-width:760px) {{ .verified-example {{ grid-template-columns:1fr; }} }}
     table {{ width:100%; border-collapse:collapse; margin:18px 0; font-size:.94rem; }}
     th, td {{ border-bottom:1px solid var(--line); padding:9px 10px; text-align:left; vertical-align:top; }}
     th {{ color:var(--muted); }}
-    pre {{ overflow:auto; background:#010409; border:1px solid var(--line); border-radius:12px; padding:16px; }}
+    pre {{ overflow:auto; max-width:100%; background:#010409; border:1px solid var(--line); border-radius:12px; padding:16px; white-space:pre-wrap; overflow-wrap:anywhere; }}
     code {{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }}
     ul {{ padding-left:1.4rem; }}
-    footer {{ color:var(--muted); border-top:1px solid var(--line); }}
+    footer {{ color:var(--muted); border-top:1px solid var(--line); display:flex; flex-wrap:wrap; gap:10px 18px; justify-content:space-between; }}
+    footer strong {{ color:var(--text); }}
   </style>
 </head>
 <body>
@@ -403,7 +568,7 @@ def _layout(page: Page, pages: Sequence[Page]) -> str:
 <main>
 {page.body}
 </main>
-<footer>Generated by <code>reproducibility/docs_site.py</code>. Every headline link resolves inside this repository.</footer>
+<footer><span><strong>TensorGuard</strong> — static verification for PyTorch model reliability.</span><span><a href="https://github.com/thehalleyyoung/tensorguard">GitHub</a> · MIT licensed · Python 3.9+</span></footer>
 </body>
 </html>
 """)
@@ -457,6 +622,8 @@ def build_pages() -> list[Page]:
               <a class="button" href="#python-api">Python API examples</a>
               <a class="button" href="#features">20-feature showcase</a>
             </div>
+            <h2>Immediate proof points</h2>
+            {_instant_examples()}
             <h2 id="use-it">Coolest verified ways to use TensorGuard</h2>
             <p>These are the adoption paths backed by code in this repository and covered by targeted tests before being promoted here.</p>
             {_use_case_showcase()}
@@ -475,6 +642,9 @@ def build_pages() -> list[Page]:
             <h2 id="features">The 20 most impressive things TensorGuard can do now</h2>
             <p>Grouped from the current README and public package exports, this list focuses on the highest-value capabilities instead of enumerating every helper individually.</p>
             {_feature_showcase()}
+            <h2>Pre-checked examples behind every feature</h2>
+            <p>Each card above jumps to a concrete scenario that was validated against the repository's tests or by direct snippet execution before this page was published.</p>
+            {_verified_feature_examples()}
             <h2>Evidence-backed, generated, and CI-ready</h2>
             {_metric_cards()}
             <h2>Deep docs</h2>
