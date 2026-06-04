@@ -3,27 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TensorGuard documentation - TensorGuard</title>
+  <title>TensorGuard - TensorGuard</title>
   <style>
-    :root { color-scheme: dark; --bg:#0d1117; --panel:#161b22; --muted:#8b949e; --text:#e6edf3; --accent:#7ee787; --line:#30363d; }
+    :root { color-scheme: dark; --bg:#0d1117; --panel:#161b22; --panel2:#0f1724; --muted:#8b949e; --text:#e6edf3; --accent:#7ee787; --accent2:#79c0ff; --line:#30363d; }
     * { box-sizing: border-box; }
-    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    body { margin:0; background:radial-gradient(circle at top left,#13233a 0,#0d1117 34rem); color:var(--text); font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
     header, main, footer { max-width:1120px; margin:0 auto; padding:28px; }
     header { padding-top:42px; }
     nav { position:sticky; top:0; z-index:2; background:#0d1117f2; border-bottom:1px solid var(--line); padding:12px 28px; display:flex; gap:18px; overflow-x:auto; }
     nav a { color:var(--muted); white-space:nowrap; }
-    a { color:#79c0ff; text-decoration:none; }
+    a { color:var(--accent2); text-decoration:none; }
     a:hover { text-decoration:underline; }
-    h1 { font-size:3rem; line-height:1.05; margin:0 0 12px; letter-spacing:-0.04em; }
+    h1 { font-size:clamp(2.7rem,7vw,5.8rem); line-height:.95; margin:0 0 18px; letter-spacing:-0.06em; max-width:980px; }
     h2 { margin-top:40px; border-top:1px solid var(--line); padding-top:28px; }
     h3 { margin-top:28px; }
-    .lede { color:var(--muted); font-size:1.16rem; max-width:850px; }
+    .lede { color:#c9d1d9; font-size:1.25rem; max-width:880px; }
     .pill { display:inline-block; border:1px solid var(--line); border-radius:999px; padding:2px 10px; color:var(--accent); font-size:.86rem; margin-bottom:18px; }
     .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin:22px 0; }
-    article, .callout { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; }
+    .hero-actions { display:flex; flex-wrap:wrap; gap:12px; margin:26px 0 4px; }
+    .button { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:999px; padding:10px 15px; background:var(--panel); color:var(--text); font-weight:700; }
+    .button.primary { background:var(--accent); border-color:var(--accent); color:#0d1117; }
+    .hero-grid, .examples { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px; margin:22px 0; }
+    .feature-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(245px,1fr)); gap:14px; margin:22px 0; }
+    article, .callout, .example { background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--line); border-radius:14px; padding:18px; }
     article strong { display:block; color:var(--accent); text-transform:uppercase; font-size:.78rem; letter-spacing:.08em; }
     article span { display:block; font-size:1.45rem; font-weight:700; margin:.2rem 0; }
     article p, .muted { color:var(--muted); margin:.2rem 0 0; }
+    .feature strong { color:var(--accent2); text-transform:none; letter-spacing:0; font-size:.98rem; }
+    .feature p { margin-top:.55rem; }
     table { width:100%; border-collapse:collapse; margin:18px 0; font-size:.94rem; }
     th, td { border-bottom:1px solid var(--line); padding:9px 10px; text-align:left; vertical-align:top; }
     th { color:var(--muted); }
@@ -34,16 +41,83 @@
   </style>
 </head>
 <body>
-<nav><a href="index.html">TensorGuard documentation</a><a href="concepts/soundness.html">Soundness modes</a><a href="concepts/verifiable-fragment.html">Verifiable fragment</a><a href="concepts/evidence.html">Evidence model</a><a href="operators/index.html">Operator reference</a><a href="proof-footprint/index.html">Proof footprint</a><a href="migration/runtime-assertions.html">Migrate from runtime assertions</a><a href="migration/pytea.html">Migrate from PyTea-style shape checks</a></nav>
+<nav><a href="index.html">TensorGuard</a><a href="concepts/soundness.html">Soundness modes</a><a href="concepts/verifiable-fragment.html">Verifiable fragment</a><a href="concepts/evidence.html">Evidence model</a><a href="operators/index.html">Operator reference</a><a href="proof-footprint/index.html">Proof footprint</a><a href="migration/runtime-assertions.html">Migrate from runtime assertions</a><a href="migration/pytea.html">Migrate from PyTea-style shape checks</a></nav>
 <header>
   <span class="pill">overview</span>
-  <h1>TensorGuard documentation</h1>
-  <p class="lede">A generated, repository-backed guide to the verifier, its evidence, and its adoption path.</p>
+  <h1>TensorGuard</h1>
+  <p class="lede">Static verification for PyTorch models and tensor APIs: catch shape, device, phase, dtype, gradient, sparse, attention, export, checkpoint, and serving bugs before a forward pass.</p>
 </header>
 <main>
 
+            <div class="hero-actions">
+              <a class="button primary" href="#install">Install from GitHub</a>
+              <a class="button" href="#python-api">Python API examples</a>
+              <a class="button" href="#features">20-feature showcase</a>
+            </div>
+            <div class="hero-grid">
+              <article><strong>public URL</strong><span>thehalleyyoung.github.io/tensorguard/</span><p>This generated site is the GitHub Pages artifact uploaded from <code>docs/site</code>.</p></article>
+              <article><strong>verdict contract</strong><span>SAFE / UNSAFE / UNKNOWN</span><p>Sound mode proves only inside the published verifiable fragment and abstains honestly outside it.</p></article>
+              <article><strong>Python surface</strong><span>139 operators</span><p>Public helpers cover core modules plus library, export, deployment, checkpoint, and serving gates.</p></article>
+            </div>
+            <h2 id="install">Install from GitHub</h2>
+            <p>Install directly from the source repository:</p>
+            <pre><code>python -m pip install &quot;git+https://github.com/thehalleyyoung/tensorguard.git&quot;</code></pre>
+            <p class="muted">The install command above was dry-run in a clean virtual environment.</p>
+            <h2 id="python-api">Python API, not just a CLI</h2>
+            <p>These examples use the public <code>tensorguard</code> package surface and are kept CPU-only so they are easy to copy into a notebook, test, or CI gate.</p>
+            <div class="examples"><section class="example"><h3>Verify a model before it runs</h3><pre><code>from tensorguard import verify_architecture
+
+source = &#x27;&#x27;&#x27;
+import torch.nn as nn
+
+class BadHead(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(10, 20)
+        self.fc2 = nn.Linear(30, 5)
+
+    def forward(self, x):
+        return self.fc2(self.fc1(x))
+&#x27;&#x27;&#x27;
+
+result = verify_architecture(source, input_shapes={&quot;x&quot;: (&quot;batch&quot;, 10)})
+assert result.verdict == &quot;UNSAFE&quot;
+print(result.verdict, result.bug_count)</code></pre></section><section class="example"><h3>Check library contracts directly</h3><pre><code>from tensorguard import verify_einops, verify_linalg
+
+patch = verify_einops(
+    &quot;rearrange&quot;, &quot;b (h w) c -&gt; b h w c&quot;, (2, 12, 3), h=4
+)
+assert patch.ok and patch.output_shape == (2, 4, 3, 3)
+
+bad_solve = verify_linalg(&quot;solve&quot;, (4, 4), (3, 2))
+assert not bad_solve.ok and bad_solve.error_kind == &quot;rhs_dim&quot;</code></pre></section><section class="example"><h3>Gate attention, sparse layouts, and serving</h3><pre><code>import torch
+from tensorguard import verify_multihead_attention, verify_sparse_coo
+from tensorguard.torch import ServingTensorSpec, verify_serving_schema
+
+mha = verify_multihead_attention(
+    (8, 2, 64), (8, 2, 64), (8, 2, 64), embed_dim=64, num_heads=8
+)
+assert mha.ok and mha.output_shape == (8, 2, 64)
+
+coo = verify_sparse_coo((2, 5), (5,), (10, 20))
+assert coo.ok and coo.spec.layout == &quot;coo&quot;
+
+schema = verify_serving_schema(
+    inputs={&quot;image&quot;: torch.zeros(4, 3, 224, 224)},
+    input_specs=[
+        ServingTensorSpec(
+            &quot;image&quot;, shape=(&quot;B&quot;, 3, 224, 224), dtype=&quot;torch.float32&quot;, device=&quot;cpu&quot;
+        )
+    ],
+    framework=&quot;FastAPI&quot;,
+)
+assert schema.ok</code></pre></section></div>
+            <h2 id="features">The 20 most impressive things TensorGuard can do now</h2>
+            <p>Grouped from the current README and public package exports, this list focuses on the highest-value capabilities instead of enumerating every helper individually.</p>
+            <div class="feature-grid"><article class="feature"><strong>1. Architecture verifier</strong><p>Zero-annotation PyTorch `nn.Module` checks infer tensor contracts from constructors, forward code, and input shapes.</p></article><article class="feature"><strong>2. Five-domain reasoning</strong><p>Shape, device, phase, stride, and permutation facts are propagated together instead of as isolated lint rules.</p></article><article class="feature"><strong>3. Broad operator model</strong><p>Linear, convolution, pooling, matmul, broadcasting, reshape/view, cat/stack/split/chunk, gather/scatter, fold/unfold, RNNs, and more are covered by registered transfer functions.</p></article><article class="feature"><strong>4. Soundness modes</strong><p>`sound`, `balanced`, and `heuristic` modes expose SAFE/UNSAFE/UNKNOWN instead of silently proving outside the supported fragment.</p></article><article class="feature"><strong>5. Machine-checked core</strong><p>Lean-backed theorem files cover CEGAR bounds, fragment modes, cross-domain transfers, SMT encodings, and subject-reduction-style composition claims.</p></article><article class="feature"><strong>6. CEGAR contracts</strong><p>Counterexample-guided predicate discovery finds implicit shape requirements and can promote inconsistent refined contracts to real bugs.</p></article><article class="feature"><strong>7. Developer diagnostics</strong><p>Source-mapped diagnostics, inference chains, proof-footprint badges, explain reports, and mechanical autofix suggestions turn failures into repairs.</p></article><article class="feature"><strong>8. Einops verification</strong><p>`verify_einops` and `verify_einops_source` check rearrange, reduce, and repeat patterns, including divisibility and axis bookkeeping.</p></article><article class="feature"><strong>9. Attention contracts</strong><p>Multihead attention, SDPA-style mask/batch/head constraints, packed or separate q/k/v projections, and weight-output shapes are modeled.</p></article><article class="feature"><strong>10. Linear algebra and FFT</strong><p>`torch.linalg` solve/inv/cholesky/SVD/eig/QR, complex view conversions, and FFT shape/dtype contracts are exposed as Python checks.</p></article><article class="feature"><strong>11. Sparse tensor gates</strong><p>COO, CSR, CSC, BSR, BSC, sparse-dense mm/addmm, sampled_addmm, softmax, coalesce, dense conversion, and layout conversion contracts are checked.</p></article><article class="feature"><strong>12. Losses and probability</strong><p>Loss target/reduction/dtype rules and distribution batch/event/log-prob shapes catch mismatches before training.</p></article><article class="feature"><strong>13. Names, vmap, and autodiff</strong><p>Named-tensor refine/align checks plus `torch.vmap` and `torch.func` grad, jacrev, jacfwd, jvp, and vjp shape transfers cover modern functional PyTorch.</p></article><article class="feature"><strong>14. FX and graph extraction</strong><p>AST, FX, Dynamo/export, graph-break attribution, and verifiable-fragment analysis make unsupported code explicit.</p></article><article class="feature"><strong>15. Compile and export gates</strong><p>`guarded_compile`, ONNX export, AOT packaging, GGUF export, CUDA graph capture, and compile-guard parity run verification before downstream tooling fails opaquely.</p></article><article class="feature"><strong>16. Checkpoint lifecycle</strong><p>State-dict schema checks cover missing/unexpected keys, dtype drift, tied weights, tensor-parallel shards, LoRA/PEFT adapters, and optimizer resume state.</p></article><article class="feature"><strong>17. Serving schemas</strong><p>FastAPI, TorchServe, and generic request-to-preprocess-to-model-to-response gates reject bad layouts before a serving call crosses an unsafe boundary.</p></article><article class="feature"><strong>18. Distributed and precision</strong><p>DTensor, FSDP2, pipeline boundaries, quantization placement, and mixed-precision/autocast gates cover deployment-time model transformations.</p></article><article class="feature"><strong>19. Extensible frontends</strong><p>A Flax/JAX frontend, governed declarative stubs, and a versioned operator-plugin ABI let new frameworks and operators extend the core safely.</p></article><article class="feature"><strong>20. Evidence and integrations</strong><p>SARIF, CI, pytest, pre-commit, dashboards, frozen benchmarks, mined-bug corpora, reproducibility ledgers, tutorials, and model galleries make adoption auditable.</p></article></div>
+            <h2>Evidence-backed, generated, and CI-ready</h2>
             <div class="cards"><article><strong>real benchmark</strong><span>16 labeled modules</span><p>8 clean / 8 buggy ground truth</p></article><article><strong>TensorGuard corpus score</strong><span>TP=8 FP=0 TN=8 FN=0</span><p>from the committed precision/recall confusion matrix</p></article><article><strong>sound-mode clean hunt</strong><span>80 clean models</span><p>zero false positives and non-vacuous SAFE coverage</p></article><article><strong>negative fuzzing</strong><span>281 genuine injected faults</span><p>all observed to fail in eager PyTorch before verifier scoring</p></article><article><strong>mined public bugs</strong><span>2704 GitHub records</span><p>frozen signature-labeled shape/device bug snapshot</p></article></div>
-            <h2>Start here</h2>
+            <h2>Deep docs</h2>
             <div class="cards">
               <article><strong>Concepts</strong><span>soundness first</span><p>Learn the SAFE/UNSAFE/UNKNOWN contract and the supported fragment.</p></article>
               <article><strong>Reference</strong><span>139 operators</span><p>Browse confidence tags and proof-footprint tiers generated from real registry data.</p></article>

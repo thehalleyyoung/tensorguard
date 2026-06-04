@@ -5,7 +5,7 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 - artifacts indexed: **592**
 - hashed artifacts: **590**
 - missing artifacts: **0**
-- artifact root sha256: `5b464dee8305a3e29bb6e2896e3cb9ddc40a815e30745bfa8d8e1696220a50a3`
+- artifact root sha256: `d666d74004e75d6dcfd0d3aaac9b139dc8c5d9830a7fc73344ae48d5dee6e488`
 - check command: `python reproducibility/artifact_index.py --check`
 
 | path | category | bytes | sha256 |
@@ -443,15 +443,15 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `docs/launch/one_point_zero_launch_campaign.md` | generated_evidence | 2267 | `4a5959de82560e72890e9f3dbcadd45f88f2cae342e9fa9b467577592f2ea79f` |
 | `docs/launch/quickstart_terminal_demo.gif` | generated_artifact | 28495 | `7815142fae9024e3a1e98518e745949a2086e1f817c89971f3c9cda571a4c628` |
 | `docs/launch/social_copy.md` | generated_evidence | 675 | `fe0ea4883722e95e0c7f6d3f5b57c45f12c3b12d4c12ec7020d72edd203e2d14` |
-| `docs/site/concepts/evidence.html` | generated_evidence | 4742 | `4e7d686c8a467b7ab7a3d86ea304a6d202ccdcfd1ce75ccacf90c2f041ca4292` |
-| `docs/site/concepts/soundness.html` | generated_evidence | 6730 | `0bc041c3eae864363b607f58a7b5192d4e799bce87ee87b1a428268583d0d5d6` |
-| `docs/site/concepts/verifiable-fragment.html` | generated_evidence | 6238 | `c222f416f557a999ecad898629e83d6e21b8916161680560dbf439893d4ad1bd` |
-| `docs/site/index.html` | generated_evidence | 5398 | `7b6d3ea174d7b7cff4e4e6a4089bed96a20ce697dd6c2690a447adb86428173e` |
-| `docs/site/migration/pytea.html` | generated_evidence | 3925 | `2ea50eff337d2c577604b66817ed4324bb70414358cf239e5ee93c427ce46943` |
-| `docs/site/migration/runtime-assertions.html` | generated_evidence | 4080 | `f389a675495cca2280c4e1d60ddcdf2c1c93e661d266ab6b706cd50992b8a277` |
-| `docs/site/operators/index.html` | generated_evidence | 13567 | `4ccdcddde19d4a4ce29ff5f0ad82aa99803c0fa2a929a7209471ae7091eedbb7` |
-| `docs/site/proof-footprint/index.html` | generated_evidence | 16983 | `96d131f26af280ff86e189668991a5ed0c13a30e4525a08e92e7257e4b9ea6b9` |
-| `docs/site/site_manifest.json` | generated_evidence | 2763 | `bebd04944a5b89c0a99645a8254e464e858133b12930d8bd76af1bd39ed49efe` |
+| `docs/site/concepts/evidence.html` | generated_evidence | 5647 | `87081135f9faf5133330ff2080d6d60d0198925ab1aaf621b0041e982b975b60` |
+| `docs/site/concepts/soundness.html` | generated_evidence | 7698 | `ec958886bc172e9d297e7052c3feff3f3809483785ae0ee574aba18569cc26c7` |
+| `docs/site/concepts/verifiable-fragment.html` | generated_evidence | 7146 | `7eabf40fa488dcfd526f16c233e3c27acb2b6d152e7777caee841507504bc7d8` |
+| `docs/site/index.html` | generated_evidence | 14668 | `ef382ddee400a12a77973bfd1812db9b99552e1fd9d7a0c97e69933c12e92986` |
+| `docs/site/migration/pytea.html` | generated_evidence | 4833 | `a13376db88099c31a6939b0dfe38d410adb60cb81ebfa07875a3e0531c4765e7` |
+| `docs/site/migration/runtime-assertions.html` | generated_evidence | 4988 | `b61d3d06462576702f95771010670b25cb3490148710857939ea01a7c3ccf6dc` |
+| `docs/site/operators/index.html` | generated_evidence | 14475 | `24fca474dc3c63c21c69f8366bce3ee88cb89a5b0b614d34c5d3a58749e0492d` |
+| `docs/site/proof-footprint/index.html` | generated_evidence | 17891 | `0456ca3010b82501c7ca0e0d894238d0051dd071de686ece96d0fba0e8b3e72a` |
+| `docs/site/site_manifest.json` | generated_evidence | 2838 | `7aba22af1ea0542f491b54cf67d7e0aaa8fde333f9dbaff51cb8ca06a78cd42c` |
 | `docs/user_study/task_packet.json` | generated_evidence | 6081 | `8d3de1f6d3f900ecb46e334a763c20c83ae6520de2a025205d12f7651df5c7f4` |
 | `docs/user_study/task_packet.md` | generated_evidence | 3597 | `7adbc8b6e5a074ed05991e96aa4ff5349599f65df07c67d8c5121990223e4a7b` |
 | `evaluation/deployment_gallery.json` | generated_evidence | 8662 | `dc5ea902b916bc2185147c8bd0a2f1e56d60306a0ae30ec7aea571ec0a379469` |
