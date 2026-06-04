@@ -16,7 +16,7 @@ Every asset below leads with that sentence and a 10-second copy-pasteable demo
 
 ## 1. First-run experience (week 1)
 
-- **`pip install tensorguard` works and the README's first code block runs as-is.**
+- **GitHub-source install works and the README's first code block runs as-is.**
   Backed by `tests/test_api_stability.py` + the public import surface.
 - **Five Colab notebooks**, one per integration
   ([`examples/tutorials/`](../examples/tutorials/)) — each has an "Open in Colab"
@@ -87,7 +87,7 @@ Five blog posts, each anchored on an existing artifact:
 | Metric | Target (6 months) |
 | --- | --- |
 | GitHub stars | 1000 |
-| PyPI weekly downloads | 5k |
+| GitHub-source installs / clones | 5k |
 | External leaderboard submissions | ≥3 tools |
 | Community stub manifests merged | ≥25 |
 | Notebooks run / Colab opens | tracked via badge referrer |

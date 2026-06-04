@@ -11,7 +11,8 @@ editor only renders results.
 
 ## Requirements
 
-- A Python interpreter with TensorGuard importable (`pip install tensorguard`),
+- A Python interpreter with TensorGuard importable
+  (`python -m pip install "git+https://github.com/thehalleyyoung/tensorguard.git"`),
   reachable as `python` or via the `tensorguard.pythonPath` setting.
 
 ## How it works

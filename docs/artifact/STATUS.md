@@ -41,7 +41,7 @@ badges:
   exact regeneration command.
 
 ### Reusable
-- `pip install tensorguard` exposes a typed public API
+- Installing from GitHub exposes a typed public API
   (`verify_architecture`, `py.typed`); see `README.md`.
 - The Lean soundness proofs build sorry-free and are axiom-audited
   (`lean/TensorGuard/AxiomAudit.lean`, `tests/test_lean_soundness.py`).

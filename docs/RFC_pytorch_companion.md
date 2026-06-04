@@ -106,7 +106,7 @@ This is the crux of an incubation request, so we state it concretely:
 
 ## Adoption plan
 
-1. Incubate under `pytorch-labs`; keep the standalone PyPI package.
+1. Incubate under `pytorch-labs`; keep the standalone source-installable package.
 2. Land a documented `torch.compile`/`export` pre-pass integration.
 3. Publish the labeled bug benchmark as a citable community asset.
 4. Revisit deeper integration (shared symbolic-shape layer) once the API is
