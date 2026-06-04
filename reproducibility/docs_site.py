@@ -290,6 +290,58 @@ assert schema.ok
     ) + "</div>"
 
 
+def _use_case_showcase() -> str:
+    use_cases = [
+        (
+            "VS Code while you type",
+            "Inline squiggles, hover shapes, and quick-fixes from the TensorGuard LSP client in `editors/vscode`; backed by the LSP server/client tests.",
+            "Open `editors/vscode` in Extension Development Host",
+        ),
+        (
+            "Python API gates",
+            "Call `verify_architecture`, `verify_module`, `verify_einops`, `verify_linalg`, sparse, attention, serving, checkpoint, and optimizer helpers directly.",
+            "from tensorguard import verify_architecture",
+        ),
+        (
+            "pytest as a model test",
+            "Use the pytest plugin to verify modules your tests exercise, so architecture regressions fail beside unit tests.",
+            "pytest --tensorguard",
+        ),
+        (
+            "pre-commit before review",
+            "Run TensorGuard on changed model files before bad tensor contracts ever reach CI.",
+            "tensorguard-precommit path/to/model.py",
+        ),
+        (
+            "Jupyter and notebooks",
+            "Load a notebook extension or use `%%tensorguard` cell magic to check model snippets where experiments happen.",
+            "%load_ext src.jupyter_integration",
+        ),
+        (
+            "torch.compile and export",
+            "Wrap compile, ONNX export, AOT packages, and exported-program checks with TensorGuard preflight gates.",
+            "guarded_compile(model, input_shapes={...})",
+        ),
+        (
+            "Serving boundaries",
+            "Validate FastAPI/TorchServe request, preprocessing, model-output, and response schemas before unsafe calls cross boundaries.",
+            "verify_serving_schema(...)",
+        ),
+        (
+            "Resume and deploy",
+            "Check checkpoints, LoRA adapters, optimizer state, GGUF export, CUDA graph capture, distributed specs, and precision gates.",
+            "verify_checkpoint_state_dict(model, state)",
+        ),
+    ]
+    return "<div class=\"use-cases\">" + "".join(
+        (
+            f"<article class=\"use-case\"><strong>{_esc(title)}</strong>"
+            f"<p>{_esc(desc)}</p><code>{_esc(command)}</code></article>"
+        )
+        for title, desc, command in use_cases
+    ) + "</div>"
+
+
 def _layout(page: Page, pages: Sequence[Page]) -> str:
     nav = "".join(
         f'<a href="{_esc(_rel(page.path, p.path))}">{_esc(p.title)}</a>'
@@ -321,11 +373,15 @@ def _layout(page: Page, pages: Sequence[Page]) -> str:
     .button {{ display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:999px; padding:10px 15px; background:var(--panel); color:var(--text); font-weight:700; }}
     .button.primary {{ background:var(--accent); border-color:var(--accent); color:#0d1117; }}
     .hero-grid, .examples {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px; margin:22px 0; }}
+    .use-cases {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); gap:14px; margin:28px 0; }}
     .feature-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(245px,1fr)); gap:14px; margin:22px 0; }}
     article, .callout, .example {{ background:linear-gradient(180deg,var(--panel),var(--panel2)); border:1px solid var(--line); border-radius:14px; padding:18px; }}
     article strong {{ display:block; color:var(--accent); text-transform:uppercase; font-size:.78rem; letter-spacing:.08em; }}
     article span {{ display:block; font-size:1.45rem; font-weight:700; margin:.2rem 0; }}
     article p, .muted {{ color:var(--muted); margin:.2rem 0 0; }}
+    .use-case {{ min-height:178px; }}
+    .use-case strong {{ color:var(--accent); font-size:1rem; letter-spacing:0; text-transform:none; }}
+    .use-case code {{ display:block; margin-top:12px; color:#ffa657; white-space:normal; }}
     .feature strong {{ color:var(--accent2); text-transform:none; letter-spacing:0; font-size:.98rem; }}
     .feature p {{ margin-top:.55rem; }}
     table {{ width:100%; border-collapse:collapse; margin:18px 0; font-size:.94rem; }}
@@ -397,9 +453,13 @@ def build_pages() -> list[Page]:
             f"""
             <div class="hero-actions">
               <a class="button primary" href="#install">Install from GitHub</a>
+              <a class="button" href="#use-it">Use it everywhere</a>
               <a class="button" href="#python-api">Python API examples</a>
               <a class="button" href="#features">20-feature showcase</a>
             </div>
+            <h2 id="use-it">Coolest verified ways to use TensorGuard</h2>
+            <p>These are the adoption paths backed by code in this repository and covered by targeted tests before being promoted here.</p>
+            {_use_case_showcase()}
             <div class="hero-grid">
               <article><strong>public URL</strong><span>thehalleyyoung.github.io/tensorguard/</span><p>This generated site is the GitHub Pages artifact uploaded from <code>docs/site</code>.</p></article>
               <article><strong>verdict contract</strong><span>SAFE / UNSAFE / UNKNOWN</span><p>Sound mode proves only inside the published verifiable fragment and abstains honestly outside it.</p></article>
