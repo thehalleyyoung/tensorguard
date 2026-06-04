@@ -5,7 +5,7 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 - artifacts indexed: **592**
 - hashed artifacts: **590**
 - missing artifacts: **0**
-- artifact root sha256: `2658662e94dc5a44ec4cee9eb0cc6210ed99ecb8565db190e59721a07abd6465`
+- artifact root sha256: `a7ef8120f9813a6e9b2a55ca84a284576a4b54ea202bb66155b1a824dd6f15b6`
 - check command: `python reproducibility/artifact_index.py --check`
 
 | path | category | bytes | sha256 |
@@ -444,9 +444,9 @@ This is a tamper-evident ledger for every generated artifact owned by `reproduci
 | `docs/launch/quickstart_terminal_demo.gif` | generated_artifact | 28495 | `7815142fae9024e3a1e98518e745949a2086e1f817c89971f3c9cda571a4c628` |
 | `docs/launch/social_copy.md` | generated_evidence | 675 | `fe0ea4883722e95e0c7f6d3f5b57c45f12c3b12d4c12ec7020d72edd203e2d14` |
 | `docs/site/concepts/evidence.html` | generated_evidence | 8198 | `ae8d9ff72ac1f78078ef9a551dbb315af48a509bfbe832c04f7bb4213a476e5e` |
-| `docs/site/concepts/soundness.html` | generated_evidence | 10249 | `9fcea2ed1cbc7125a44b464018f3226b38c684bc2f39780bb3c0a6e45d7a1fb9` |
+| `docs/site/concepts/soundness.html` | generated_evidence | 9653 | `b91f41c99ce3dc7a138e9c4575f5f83498ac40bb707da03a49cb0a5ce0bd20b3` |
 | `docs/site/concepts/verifiable-fragment.html` | generated_evidence | 9697 | `a64897701f39c1781448f0e1d6ecdc0dd6c88627198d2a0d5fa60a9034f6e2f6` |
-| `docs/site/index.html` | generated_evidence | 33681 | `588b95ed91e2f56b7a90c886d371b076bdfa0fdd1c285821c198331c1155a490` |
+| `docs/site/index.html` | generated_evidence | 51448 | `5a26f80cbfc7650d69a111eed8aa11f2535bd910ed6bce3c4bbb48a0ad9db4f3` |
 | `docs/site/migration/pytea.html` | generated_evidence | 7384 | `93f78a8f8e8ab1a6dfe88bdf007ce50b8825b3dce821d09f4cd1ba46a3427c02` |
 | `docs/site/migration/runtime-assertions.html` | generated_evidence | 7539 | `891070fd502ede07a6af90ea044bcfbb7963ce77495b99d538b5af5929849501` |
 | `docs/site/operators/index.html` | generated_evidence | 17026 | `8d108e3cecc0962e476e0cab0a7c9abd215603c62a1105632d5c6cc9af8f9e3c` |

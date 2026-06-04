@@ -75,7 +75,7 @@ COLAB_BADGE = (
     "main/examples/tutorials/{name})"
 )
 
-INSTALL = "%pip install -q tensorguard  # on Colab; locally: pip install -e ."
+INSTALL = '%pip install -q "git+https://github.com/thehalleyyoung/tensorguard.git"'
 
 TUTORIAL_TRACKS: Dict[str, List[str]] = {
     "shapes": ["01_quickstart.ipynb"],
@@ -85,6 +85,7 @@ TUTORIAL_TRACKS: Dict[str, List[str]] = {
     "quantization": ["08_quantization.ipynb"],
     "stubs": ["09_community_stubs.ipynb"],
     "formal_certificates": ["10_formal_certificates.ipynb"],
+    "notebooks": ["11_jupyter_magic.ipynb"],
 }
 
 
@@ -416,6 +417,55 @@ _DEFS: Dict[str, dict] = {
               "print('unsafe verdict:', unsafe.verdict)\n"
               "assert unsafe.verdict == 'UNSAFE'\n"
               "assert unsafe.safety_certificate is None"),
+        ],
+    ),
+    "11_jupyter_magic.ipynb": dict(
+        title="Use `%%tensorguard` inside a notebook",
+        intro="Load the TensorGuard IPython extension and verify a model cell in "
+              "place. The magic checks the cell source before executing it, so a "
+              "notebook experiment can surface tensor-contract bugs exactly where "
+              "the model is written.",
+        cells=[
+            ("code",
+             "%load_ext src.jupyter_integration"),
+            ("md",
+             "The next cell defines a broken attention-style block: the projection "
+             "from 16 hidden units is followed by a head that incorrectly expects "
+             "12. `%%tensorguard` checks the cell with a symbolic batch shape before "
+             "the class is left behind in the notebook namespace."),
+            ("code",
+             "%%tensorguard x=batch,8\n"
+             "import torch\n"
+             "import torch.nn as nn\n\n"
+             "class NotebookBlock(nn.Module):\n"
+             "    def __init__(self):\n"
+             "        super().__init__()\n"
+             "        self.embed = nn.Linear(8, 16)\n"
+             "        self.head = nn.Linear(12, 4)\n\n"
+             "    def forward(self, x):\n"
+             "        return self.head(torch.relu(self.embed(x)))"),
+            ("md",
+             "The pure helper is asserted below so CI proves the same model cell "
+             "really produces a TensorGuard finding when the notebook is executed."),
+            ("code",
+             "from src.jupyter_integration import check_cell, format_cell_report\n\n"
+             "cell = '''\n"
+             "import torch\n"
+             "import torch.nn as nn\n"
+             "class NotebookBlock(nn.Module):\n"
+             "    def __init__(self):\n"
+             "        super().__init__()\n"
+             "        self.embed = nn.Linear(8, 16)\n"
+             "        self.head = nn.Linear(12, 4)\n"
+             "    def forward(self, x):\n"
+             "        return self.head(torch.relu(self.embed(x)))\n"
+             "'''\n"
+             "outcome = check_cell(cell, input_shapes={'x': ('batch', 8)})\n"
+             "print(format_cell_report(outcome))\n"
+             "assert outcome.checked\n"
+             "assert not outcome.safe\n"
+             "assert outcome.bug_count >= 1\n"
+             "assert 'NotebookBlock' in outcome.headline"),
         ],
     ),
 }

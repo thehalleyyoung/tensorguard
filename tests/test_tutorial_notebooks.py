@@ -38,6 +38,7 @@ _REQUIRED_TRACKS = {
     "quantization",
     "stubs",
     "formal_certificates",
+    "notebooks",
 }
 
 
@@ -59,6 +60,7 @@ def test_there_are_tutorial_notebooks():
         "08_quantization.ipynb",
         "09_community_stubs.ipynb",
         "10_formal_certificates.ipynb",
+        "11_jupyter_magic.ipynb",
     } <= names
 
 

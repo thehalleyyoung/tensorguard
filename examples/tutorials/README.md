@@ -1,7 +1,8 @@
 # TensorGuard tutorials (Colab-runnable)
 
-Ten small, self-contained notebooks grouped into seven tracks — shapes,
-attention, export, distributed, quantization, stubs, and formal certificates.
+Eleven small, self-contained notebooks grouped into eight tracks — shapes,
+attention, export, distributed, quantization, stubs, formal certificates, and
+notebook magic.
 Each runs end-to-end on a free Colab CPU runtime in seconds against the *real*
 libraries, and each is executed in CI (`tests/test_tutorial_notebooks.py`) so
 they never bit-rot.
@@ -18,6 +19,7 @@ they never bit-rot.
 | [`08_quantization.ipynb`](08_quantization.ipynb) | Gate quantization calibration and autocast policy |
 | [`09_community_stubs.ipynb`](09_community_stubs.ipynb) | Validate/load governed community stubs and enforce their contracts |
 | [`10_formal_certificates.ipynb`](10_formal_certificates.ipynb) | Produce and replay formal safety certificates |
+| [`11_jupyter_magic.ipynb`](11_jupyter_magic.ipynb) | Use `%load_ext` and `%%tensorguard` to check model cells inline |
 
 The notebooks are generated from a single source of truth,
 [`build_notebooks.py`](build_notebooks.py); a diff of that file is the diff of

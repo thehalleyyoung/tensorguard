@@ -73,25 +73,7 @@
   (R) Refutation soundness: every reported shape/device/gradient Refuted-Proof is Z3-discharged and corresponds to a real conflict that makes M unrunnable / mistrained (no false alarm).
   (V) Verification soundness (modeled scope): if M is reported SAFE for an enabled domain, then over the SOUND operator transfer functions and the modeled bug classes, no violating execution exists. This guarantee does NOT extend to UNDER_APPROXIMATED operators/bug-classes, nor to modules outside V_TG (see SKIPPED + KNOWN_UNSOUNDNESS).</p></div>
             <h2>Modes</h2>
-            <table><thead><tr><th>mode</th><th>contract</th></tr></thead><tbody><tr><td>sound</td><td>Verification strictness mode (Step 7).
-
-    Controls how a verdict is rendered when the verifier cannot fully prove a
-    module is in-fragment. Does NOT change which bugs are reported (recall /
-    precision are governed separately by ``high_confidence_only``); it only
-    governs whether a non-refuted module is reported ``SAFE`` or ``UNKNOWN``.
-    </td></tr><tr><td>balanced</td><td>Verification strictness mode (Step 7).
-
-    Controls how a verdict is rendered when the verifier cannot fully prove a
-    module is in-fragment. Does NOT change which bugs are reported (recall /
-    precision are governed separately by ``high_confidence_only``); it only
-    governs whether a non-refuted module is reported ``SAFE`` or ``UNKNOWN``.
-    </td></tr><tr><td>heuristic</td><td>Verification strictness mode (Step 7).
-
-    Controls how a verdict is rendered when the verifier cannot fully prove a
-    module is in-fragment. Does NOT change which bugs are reported (recall /
-    precision are governed separately by ``high_confidence_only``); it only
-    governs whether a non-refuted module is reported ``SAFE`` or ``UNKNOWN``.
-    </td></tr></tbody></table>
+            <table><thead><tr><th>mode</th><th>contract</th></tr></thead><tbody><tr><td>sound</td><td>Strictest merge-gate mode: reports SAFE only when the module is fully inside the verifiable fragment; unsupported or heuristic-only regions become UNKNOWN instead of silently passing.</td></tr><tr><td>balanced</td><td>Default mode: preserves bug reports and downgrades a non-refuted module to UNKNOWN when the verifier hits an opaque layer it cannot model.</td></tr><tr><td>heuristic</td><td>Most permissive mode: best-effort analysis reports SAFE for non-refuted modules even when parts of the model were outside the proven fragment.</td></tr></tbody></table>
             <h2>Domain clauses</h2>
             <table><thead><tr><th>construct</th><th>class</th><th>direction</th><th>evidence</th></tr></thead><tbody><tr><td>Shape domain (refutation)</td><td>sound</td><td>refutation (no false alarm)</td><td>src/model_checker.py:_encode_shape_safety + _z3_check_safety</td></tr><tr><td>Shape domain (verification, in-fragment, shapes given)</td><td>sound</td><td>verification (never miss-pass)</td><td>src/model_checker.py ConstraintVerifier.verify</td></tr><tr><td>Device domain (requires check_devices)</td><td>sound</td><td>refutation (no false alarm)</td><td>experiments_v5/run_domain_contribution.py; tests/test_domain_contribution.py</td></tr><tr><td>Gradient domain (requires check_gradients)</td><td>sound</td><td>refutation (no false alarm)</td><td>src/model_checker.py:_encode_gradient_safety; tests/test_domain_contribution.py</td></tr><tr><td>Phase domain (train/eval)</td><td>over_approximated</td><td>verification (never miss-pass)</td><td>experiments_v5/domain_corpus/phase_01_batchnorm_dropout.py; tests/test_domain_contribution.py::test_phase_domain_is_diagnostic_only</td></tr></tbody></table>
             <h2>Operational rule</h2>

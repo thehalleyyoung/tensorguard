@@ -84,6 +84,27 @@ def _operator_summaries() -> tuple[dict[str, int], dict[str, int], list[dict[str
     return conf, summary_for(proof_rows), proof_rows
 
 
+def _soundness_mode_rows() -> list[tuple[str, str]]:
+    return [
+        (
+            SoundnessMode.SOUND.value,
+            "Strictest merge-gate mode: reports SAFE only when the module is fully "
+            "inside the verifiable fragment; unsupported or heuristic-only regions "
+            "become UNKNOWN instead of silently passing.",
+        ),
+        (
+            SoundnessMode.BALANCED.value,
+            "Default mode: preserves bug reports and downgrades a non-refuted "
+            "module to UNKNOWN when the verifier hits an opaque layer it cannot model.",
+        ),
+        (
+            SoundnessMode.HEURISTIC.value,
+            "Most permissive mode: best-effort analysis reports SAFE for non-refuted "
+            "modules even when parts of the model were outside the proven fragment.",
+        ),
+    ]
+
+
 def _metric_cards() -> str:
     precision = _maybe_json("evaluation/confusion_matrices.json")
     fp = _maybe_json("evaluation/sound_mode_fp.json")
@@ -325,12 +346,264 @@ def _feature_showcase() -> str:
     ) + "</div>"
 
 
+def _feature_code(slug: str) -> str:
+    snippets = {
+        "architecture": """
+from tensorguard import verify_architecture
+
+source = '''
+import torch.nn as nn
+class Net(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(10, 20)
+        self.fc2 = nn.Linear(30, 5)
+    def forward(self, x):
+        return self.fc2(self.fc1(x))
+'''
+result = verify_architecture(source, input_shapes={"x": ("batch", 10)})
+assert result.verdict == "UNSAFE"
+        """,
+        "domains": """
+# Domain tests cover bugs shape-only checks miss:
+# - device mismatch: CPU tensor + CUDA buffer
+# - gradient bug: a detach() severs trainability
+# TensorGuard refutes those through non-shape domains.
+        """,
+        "operators": """
+from tensorguard import quick_check
+
+# Operator transfers are confidence-tagged and surfaced in:
+# operator_confidence_table.json
+# tensorguard operator-confidence --json
+        """,
+        "soundness": """
+from tensorguard import verify_architecture
+
+source = '''
+import torch, torch.nn as nn
+class Weird(nn.Module):
+    def forward(self, x):
+        return x
+class M(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc = nn.Linear(8, 8)
+        self.weird = Weird()
+    def forward(self, x):
+        return self.weird(self.fc(x))
+'''
+result = verify_architecture(
+    source, input_shapes={"x": (4, 8)}, soundness_mode="sound"
+)
+assert result.verdict == "UNKNOWN"
+assert result.unknown_reasons
+        """,
+        "lean": """
+# The proof-footprint table ties operators to evidence:
+# Lean theorem, pen-and-paper rule, tested-only rule, or heuristic.
+# See docs/site/proof-footprint/index.html
+        """,
+        "cegar": """
+from tensorguard import BugCategory, verify_architecture
+
+source = '''
+import torch
+import torch.nn as nn
+class M(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.a = nn.Linear(768, 10)
+        self.b = nn.Linear(512, 10)
+    def forward(self, x):
+        return self.a(x) + self.b(x)
+'''
+result = verify_architecture(
+    source, input_shapes={"x": ("b", "f")}, max_cegar_iterations=10
+)
+assert any(b.category == BugCategory.CEGAR_REFINED_CONTRACT for b in result.bugs)
+        """,
+        "diagnostics": """
+from tensorguard import verify_architecture
+
+source = '''
+import torch.nn as nn
+class BadHead(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(10, 20)
+        self.fc2 = nn.Linear(30, 5)
+    def forward(self, x):
+        return self.fc2(self.fc1(x))
+'''
+result = verify_architecture(source, input_shapes={"x": ("batch", 10)})
+assert result.verdict == "UNSAFE"
+assert result.bugs
+print(result.bugs[0].message)
+        """,
+        "einops": """
+from tensorguard import verify_einops
+
+bad = verify_einops("rearrange", "b (h w) c -> b h w c", (2, 14, 3), h=4)
+assert not bad.ok
+assert bad.error_kind == "non_divisible"
+        """,
+        "attention": """
+from tensorguard import verify_multihead_attention
+
+bad = verify_multihead_attention(
+    (8, 2, 63), (8, 2, 64), (8, 2, 64), embed_dim=64, num_heads=8
+)
+assert not bad.ok
+assert bad.error_kind == "query_embed_dim"
+        """,
+        "linalg-fft": """
+from tensorguard import verify_linalg, verify_fft
+
+bad = verify_linalg("solve", (4, 4), (3, 2))
+assert not bad.ok and bad.error_kind == "rhs_dim"
+
+fft = verify_fft("fft", (2, 64), dtype="complex64")
+assert fft.ok and fft.output_shape == (2, 64)
+        """,
+        "sparse": """
+from tensorguard import verify_sparse_coo
+
+bad = verify_sparse_coo((3, 5), (5,), (10, 20))
+assert not bad.ok
+assert bad.error_kind == "size_rank"
+        """,
+        "loss-probability": """
+from tensorguard import verify_distribution, verify_log_prob, verify_loss
+
+loss = verify_loss(
+    "cross_entropy", (8, 10), (8,), target_dtype="int64"
+)
+assert loss.ok and loss.output_shape == ()
+
+normal = verify_distribution("Normal", loc=(8, 1), scale=(1, 4))
+assert normal.ok and normal.spec.batch_shape == (8, 4)
+logp = verify_log_prob(normal, (3, 8, 4))
+assert logp.ok and logp.output_shape == (3, 8, 4)
+        """,
+        "func": """
+from tensorguard import verify_align_to, verify_vmap, verify_func_jacrev
+
+bad_names = verify_align_to(
+    (2, 3), ("batch", "channel"), ("channel", "missing")
+)
+assert not bad_names.ok and bad_names.error_kind == "missing_name"
+
+vmap = verify_vmap([(4, 10)], (10,), in_dims=0, out_dims=0)
+assert vmap.ok and vmap.output_shapes == (4, 10)
+
+jac = verify_func_jacrev([(8, 4)], (8, 2))
+assert jac.ok and jac.output_shapes == (8, 2, 8, 4)
+        """,
+        "graph": """
+from tensorguard import classify_graph_break_failure
+
+source = '''
+import torch, torch.nn as nn
+class M(nn.Module):
+    def forward(self, x):
+        if x.sum() > 0:
+            return x.relu()
+        return x
+'''
+report = classify_graph_break_failure(
+    source, "data-dependent control flow", backend="torch.compile"
+)
+assert report.has_attribution
+assert report.attributions[0].minimal_change
+        """,
+        "compile-export": """
+from tensorguard import verify_architecture
+
+source = '''
+import torch.nn as nn
+class Bad(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.a = nn.Linear(10, 20)
+        self.b = nn.Linear(30, 5)
+    def forward(self, x):
+        return self.b(self.a(x))
+'''
+# guarded_compile / export gates run this preflight before downstream tooling.
+preflight = verify_architecture(source, input_shapes={"x": ("batch", 10)})
+assert preflight.verdict == "UNSAFE"
+assert preflight.bug_count >= 1
+        """,
+        "checkpoint": """
+from tensorguard import verify_checkpoint_state_dict
+import torch
+import torch.nn as nn
+
+model = nn.Linear(4, 3)
+checkpoint = {"weight": torch.zeros(2, 4), "bias": torch.zeros(3)}
+result = verify_checkpoint_state_dict(model, checkpoint, check_dtype=True)
+assert not result.ok
+assert result.issues[0].category == "shape_mismatch"
+print(result.issues[0].message)
+        """,
+        "serving": """
+import torch
+from tensorguard.torch import ServingTensorSpec, verify_serving_schema
+
+bad = verify_serving_schema(
+    inputs={"image": torch.zeros(4, 224, 224, 3)},
+    input_specs=[ServingTensorSpec("image", shape=("B", 3, 224, 224))],
+    framework="FastAPI",
+)
+assert not bad.ok
+assert bad.issues[0].category == "shape_mismatch"
+assert not bad.model_invoked
+        """,
+        "distributed-precision": """
+import torch
+import torch.nn as nn
+from tensorguard import (
+    DTensorPlacement,
+    DTensorSpec,
+    verify_dtensor_specs,
+    verify_mixed_precision,
+)
+
+bad_dist = verify_dtensor_specs([
+    DTensorSpec(name="w", global_shape=(8, 5), mesh_shape=(2, 2),
+                placements=(DTensorPlacement.shard(0),))
+])
+assert not bad_dist.safe
+
+bad_amp = verify_mixed_precision(
+    nn.Linear(4, 3).eval(), backend="cpu", autocast_dtype=torch.float32
+)
+assert not bad_amp.ok
+        """,
+        "extensible": """
+from tensorguard import verify_module
+
+# Flax/JAX frontend, governed stubs, and operator plugins are conformance-tested.
+# Public extension points refuse unreviewed executable stub code.
+        """,
+        "evidence": """
+# Adoption surfaces are tested and reproducible:
+# pytest --tensorguard
+# tensorguard-precommit path/to/model.py
+# python reproducibility/docs_site.py --check
+# python reproducibility/artifact_index.py --check
+        """,
+    }
+    return snippets[slug]
+
+
 def _verified_feature_examples() -> str:
     return "<div class=\"verified-examples\">" + "".join(
         (
             f"<section class=\"verified-example\" id=\"example-{_esc(slug)}\">"
             f"<div><strong>{_esc(title)}</strong><h3>{_esc(example_title)}</h3>"
-            f"<p>{_esc(example_desc)}</p></div>"
+            f"<p>{_esc(example_desc)}</p>{_code(_feature_code(slug))}</div>"
             f"<div class=\"example-result\"><span>Expected result</span><code>{_esc(outcome)}</code>"
             f"<small>Pre-checked with: {_esc(tests)}</small></div>"
             f"</section>"
@@ -412,55 +685,268 @@ assert schema.ok
     ) + "</div>"
 
 
-def _use_case_showcase() -> str:
-    use_cases = [
+def _use_case_data() -> list[tuple[str, str, str, str, str, str, str]]:
+    return [
         (
+            "vscode",
             "VS Code while you type",
             "Inline squiggles, hover shapes, and quick-fixes from the TensorGuard LSP client in editors/vscode; backed by the LSP server/client tests.",
             "Open editors/vscode in Extension Development Host",
+            """
+# Local extension workflow checked by tests/test_editor_lsp_clients.py:
+cd editors/vscode
+npm install
+npm test
+
+# In VS Code:
+# 1. File -> Open Folder... -> editors/vscode
+# 2. Run and Debug -> Launch Extension
+# 3. The extension starts: python -m src.lsp_server
+            """,
+            "Extension Development Host launches the local client and speaks to the TensorGuard LSP server.",
+            "tests/test_lsp_server.py, tests/test_editor_lsp_clients.py",
         ),
         (
+            "python-api",
             "Python API gates",
             "Call `verify_architecture`, `verify_module`, `verify_einops`, `verify_linalg`, sparse, attention, serving, checkpoint, and optimizer helpers directly.",
             "from tensorguard import verify_architecture",
+            """
+from tensorguard import verify_architecture, verify_einops, verify_linalg
+
+source = '''
+import torch.nn as nn
+class BadHead(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(10, 20)
+        self.fc2 = nn.Linear(30, 5)
+    def forward(self, x):
+        return self.fc2(self.fc1(x))
+'''
+model = verify_architecture(source, input_shapes={"x": ("batch", 10)})
+assert model.verdict == "UNSAFE"
+
+patch = verify_einops("rearrange", "b (h w) c -> b h w c", (2, 12, 3), h=4)
+assert patch.ok and patch.output_shape == (2, 4, 3, 3)
+
+bad_solve = verify_linalg("solve", (4, 4), (3, 2))
+assert not bad_solve.ok and bad_solve.error_kind == "rhs_dim"
+            """,
+            "One Python process catches an architecture bug and checks einops/linalg contracts.",
+            "direct snippet execution, tests/test_api_stability.py",
         ),
         (
+            "pytest",
             "pytest as a model test",
             "Use the pytest plugin to verify modules your tests exercise, so architecture regressions fail beside unit tests.",
             "pytest --tensorguard",
+            """
+# tests/test_model_shapes.py
+from tensorguard import verify_architecture
+
+def test_classifier_shape_contract():
+    source = '''
+import torch.nn as nn
+class Classifier(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.net = nn.Sequential(nn.Linear(32, 16), nn.ReLU(), nn.Linear(16, 4))
+    def forward(self, x):
+        return self.net(x)
+'''
+    result = verify_architecture(source, input_shapes={"x": ("batch", 32)})
+    assert result.verdict == "SAFE"
+
+# The repository plugin path is checked with:
+# pytest --tensorguard
+            """,
+            "A pytest assertion or the plugin gate fails the test suite on tensor-contract regressions.",
+            "tests/test_pytest_plugin.py",
         ),
         (
+            "precommit",
             "pre-commit before review",
             "Run TensorGuard on changed model files before bad tensor contracts ever reach CI.",
             "tensorguard-precommit path/to/model.py",
+            """
+# .pre-commit-config.yaml
+repos:
+  - repo: local
+    hooks:
+      - id: tensorguard
+        name: TensorGuard model verifier
+        entry: tensorguard-precommit
+        language: system
+        files: "\\.py$"
+
+# Run it before review:
+pre-commit run tensorguard --all-files
+            """,
+            "The hook invokes TensorGuard and blocks a commit when a changed model is unsafe.",
+            "tests/test_precommit.py",
         ),
         (
+            "jupyter",
             "Jupyter and notebooks",
-            "Load a notebook extension or use `%%tensorguard` cell magic to check model snippets where experiments happen.",
-            "%load_ext src.jupyter_integration",
+            "Load the IPython extension or open the checked tutorial notebook where `%%tensorguard` catches a broken model cell inline.",
+            "`%%tensorguard` checked notebook",
+            """
+from src.jupyter_integration import check_cell, format_cell_report
+
+cell = '''
+import torch
+import torch.nn as nn
+class NotebookBlock(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.embed = nn.Linear(8, 16)
+        self.head = nn.Linear(12, 4)
+    def forward(self, x):
+        return self.head(torch.relu(self.embed(x)))
+'''
+outcome = check_cell(cell, input_shapes={"x": ("batch", 8)})
+print(format_cell_report(outcome))
+assert outcome.checked and not outcome.safe and outcome.bug_count >= 1
+
+# Notebook version:
+# examples/tutorials/11_jupyter_magic.ipynb uses %load_ext + %%tensorguard.
+            """,
+            "The executed notebook and the pure helper both report the broken model cell.",
+            "examples/tutorials/11_jupyter_magic.ipynb, tests/test_tutorial_notebooks.py",
         ),
         (
+            "compile-export",
             "torch.compile and export",
             "Wrap compile, ONNX export, AOT packages, and exported-program checks with TensorGuard preflight gates.",
             "guarded_compile(model, input_shapes={...})",
+            """
+from tensorguard import verify_architecture
+
+source = '''
+import torch.nn as nn
+class Bad(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.a = nn.Linear(10, 20)
+        self.b = nn.Linear(30, 5)
+    def forward(self, x):
+        return self.b(self.a(x))
+'''
+# guarded_compile / export gates run this preflight before downstream tooling.
+preflight = verify_architecture(source, input_shapes={"x": ("batch", 10)})
+assert preflight.verdict == "UNSAFE"
+assert preflight.bug_count >= 1
+            """,
+            "Bad model rejected by TensorGuard before compile/export machinery is trusted.",
+            "tests/test_torch_integration.py, tests/test_onnx_export_gate.py",
         ),
         (
+            "serving",
             "Serving boundaries",
             "Validate FastAPI/TorchServe request, preprocessing, model-output, and response schemas before unsafe calls cross boundaries.",
             "verify_serving_schema(...)",
+            """
+import torch
+from tensorguard import ServingTensorSpec, verify_serving_schema
+
+bad_request = verify_serving_schema(
+    inputs={"image": torch.zeros(4, 224, 224, 3)},  # NHWC
+    input_specs=[
+        ServingTensorSpec(
+            "image", shape=("B", 3, 224, 224), dtype="torch.float32", device="cpu"
+        )
+    ],
+    framework="FastAPI",
+)
+assert not bad_request.ok
+assert bad_request.issues[0].category == "shape_mismatch"
+assert not bad_request.model_invoked
+
+good_request = verify_serving_schema(
+    inputs={"image": torch.zeros(4, 3, 224, 224)},  # NCHW
+    input_specs=[ServingTensorSpec("image", shape=("B", 3, 224, 224))],
+    framework="FastAPI",
+)
+assert good_request.ok
+            """,
+            "NHWC payload is blocked before model invocation; NCHW payload passes.",
+            "direct snippet execution, tests/test_serving_schema.py",
         ),
         (
+            "resume-deploy",
             "Resume and deploy",
             "Check checkpoints, LoRA adapters, optimizer state, GGUF export, CUDA graph capture, distributed specs, and precision gates.",
             "verify_checkpoint_state_dict(model, state)",
+            """
+import torch
+import torch.nn as nn
+from tensorguard import verify_checkpoint_state_dict, verify_mixed_precision
+
+model = nn.Linear(4, 3).eval()
+checkpoint = {"weight": torch.zeros(2, 4), "bias": torch.zeros(3)}
+ckpt = verify_checkpoint_state_dict(model, checkpoint, check_dtype=True)
+assert not ckpt.ok
+assert ckpt.issues[0].category == "shape_mismatch"
+
+amp = verify_mixed_precision(model, backend="cpu", autocast_dtype=torch.float32)
+assert not amp.ok
+assert amp.issues
+            """,
+            "Bad checkpoint schema and unsupported autocast path are rejected before resume/deploy.",
+            "tests/test_checkpoint_verify.py, tests/test_mixed_precision_verify.py",
         ),
     ]
-    return "<div class=\"use-cases\">" + "".join(
-        (
-            f"<article class=\"use-case\"><strong>{_esc(title)}</strong>"
-            f"<p>{_esc(desc)}</p><code>{_esc(command)}</code></article>"
+
+
+def _use_case_showcase() -> str:
+    use_cases = _use_case_data()
+    notebook_link = (
+        "https://github.com/thehalleyyoung/tensorguard/blob/main/"
+        "examples/tutorials/11_jupyter_magic.ipynb"
+    )
+
+    def render_card(item: tuple[str, ...]) -> str:
+        slug, title, desc, command, *_rest = item
+        href = notebook_link if slug == "jupyter" else f"#usecase-{slug}"
+        label = "Open working notebook" if slug == "jupyter" else "Open checked code example"
+        action = f"<code>{_esc(command)}</code>"
+        return (
+            f'<a class="feature-card" href="{_esc(href)}">'
+            f'<article class="use-case"><strong>{_esc(title)}</strong>'
+            f"<p>{_esc(desc)}</p>{action}<span>{_esc(label)}</span></article></a>"
         )
-        for title, desc, command in use_cases
+
+    return "<div class=\"use-cases\">" + "".join(
+        render_card(item) for item in use_cases
+    ) + "</div>"
+
+
+def _use_case_examples() -> str:
+    notebook_link = (
+        "https://github.com/thehalleyyoung/tensorguard/blob/main/"
+        "examples/tutorials/11_jupyter_magic.ipynb"
+    )
+
+    def render_example(item: tuple[str, str, str, str, str, str, str]) -> str:
+        slug, title, desc, command, code, expected, tests = item
+        notebook_action = ""
+        if slug == "jupyter":
+            notebook_action = (
+                f'<p><a class="button" href="{_esc(notebook_link)}">'
+                "Open the checked %%tensorguard notebook</a></p>"
+            )
+        return (
+            f'<section class="verified-example" id="usecase-{_esc(slug)}">'
+            f"<div><strong>{_esc(title)}</strong><h3>{_esc(command)}</h3>"
+            f"<p>{_esc(desc)}</p>{_code(code)}{notebook_action}"
+            f"</div><div class=\"example-result\"><span>Expected result</span>"
+            f"<code>{_esc(expected)}</code><small>Pre-checked with: {_esc(tests)}</small>"
+            f"</div></section>"
+        )
+
+    return "<div class=\"verified-examples\">" + "".join(
+        render_example(item) for item in _use_case_data()
     ) + "</div>"
 
 
@@ -627,6 +1113,9 @@ def build_pages() -> list[Page]:
             <h2 id="use-it">Coolest verified ways to use TensorGuard</h2>
             <p>These are the adoption paths backed by code in this repository and covered by targeted tests before being promoted here.</p>
             {_use_case_showcase()}
+            <h2>Checked examples for every use path</h2>
+            <p>Every card above jumps to concrete code, notebook, CLI, or configuration that was validated before publication.</p>
+            {_use_case_examples()}
             <div class="hero-grid">
               <article><strong>public URL</strong><span>thehalleyyoung.github.io/tensorguard/</span><p>This generated site is the GitHub Pages artifact uploaded from <code>docs/site</code>.</p></article>
               <article><strong>verdict contract</strong><span>SAFE / UNSAFE / UNKNOWN</span><p>Sound mode proves only inside the published verifiable fragment and abstains honestly outside it.</p></article>
@@ -671,7 +1160,7 @@ def build_pages() -> list[Page]:
             f"""
             <div class="callout"><strong>Guarantee.</strong><p>{_esc(SOUNDNESS_GUARANTEE)}</p></div>
             <h2>Modes</h2>
-            {_table(['mode', 'contract'], [(m.value, m.__doc__ or '') for m in SoundnessMode])}
+            {_table(['mode', 'contract'], _soundness_mode_rows())}
             <h2>Domain clauses</h2>
             {_table(['construct', 'class', 'direction', 'evidence'], [(c.construct, c.soundness_class.value, c.direction, c.evidence) for c in DOMAIN_CLAUSES])}
             <h2>Operational rule</h2>
