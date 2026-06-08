@@ -338,5 +338,27 @@ __all__ = [
     "assert_conformance_passed",
     "certify_plugin_contracts",
     "certify_stub_manifests",
+    # --- Data-plane analysis (src/dataplane) — lazily resolved -------------
+    "analyze_data_plane",
+    "analyze_data_plane_file",
+    "analyze_data_plane_tree",
     "__version__",
 ]
+
+
+# The data-plane subsystem (refinement-type / non-interference analysis of the
+# *data* layer) is heavy (pulls z3 + the structural certifier), so it is exposed
+# lazily: ``from tensorguard import analyze_data_plane`` works without paying the
+# import cost unless the data-plane entry points are actually reached.
+_DATA_PLANE_EXPORTS = frozenset({
+    "analyze_data_plane",
+    "analyze_data_plane_file",
+    "analyze_data_plane_tree",
+})
+
+
+def __getattr__(name: str):  # PEP 562 lazy attribute resolution
+    if name in _DATA_PLANE_EXPORTS:
+        from . import dataplane as _dp
+        return getattr(_dp, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

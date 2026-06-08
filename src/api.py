@@ -52,6 +52,18 @@ class BugCategory(Enum):
     # predicates: no input shape can satisfy every requirement the forward
     # pass imposes on a parameter, so the module can never run successfully.
     CEGAR_REFINED_CONTRACT = "cegar_refined_contract"
+    # --- Data-plane categories (src/dataplane) -------------------------------
+    # These are *not* shape/dtype bugs; they are data-contract / non-interference
+    # violations found by the refinement-type data-plane engine.  See
+    # ``src/dataplane`` and its NORTH_STAR.md.  A program can be perfectly
+    # shape-correct and still exhibit any of these.
+    DATA_VALUE_DOMAIN = "data_value_domain"            # loss vs input value domain
+    DATA_LEAKAGE = "data_leakage"                      # fit-before-split non-interference
+    DATA_TEMPORAL_LEAKAGE = "data_temporal_leakage"    # feature reads a future row
+    DATA_GROUP_LEAKAGE = "data_group_leakage"          # group straddles train/test
+    DATA_JOIN_CARDINALITY = "data_join_cardinality"    # merge fan-out before split
+    DATA_SAMPLING_DETERMINISM = "data_sampling_determinism"  # nondeterministic loader
+    DATA_SPLIT_CONTRACT = "data_split_contract"        # overlapping/ill-formed split
 
 
 @dataclass

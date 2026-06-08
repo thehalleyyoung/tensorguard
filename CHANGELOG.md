@@ -10,6 +10,38 @@ enforced by `tests/test_api_stability.py`.
 ## [Unreleased]
 
 ### Added
+- **Data plane (merged from DataRefine).** TensorGuard now analyzes the
+  deep-learning *data* layer — *which numbers reach the model and what they mean*
+  — alongside its native model-plane (shape/dtype) verification. New self-contained
+  subpackage `src/dataplane/` (an 18-module closure; no new dependency — `z3-solver`
+  is already core) built around an **abstract-interpretation engine**: a refinement
+  product lattice (value-domain × information-flow × split-origin × role ×
+  provenance) with operator transfer functions that infers a typed contract for
+  every data value and emits z3-discharged obligations at sinks across **seven bug
+  axes**. New public entry points (lazily imported): `analyze_data_plane`,
+  `analyze_data_plane_file`, `analyze_data_plane_tree`, plus seven additive
+  `BugCategory` members (`DATA_VALUE_DOMAIN`, `DATA_LEAKAGE`,
+  `DATA_TEMPORAL_LEAKAGE`, `DATA_GROUP_LEAKAGE`, `DATA_JOIN_CARDINALITY`,
+  `DATA_SAMPLING_DETERMINISM`, `DATA_SPLIT_CONTRACT`). Data-plane findings lower
+  into first-class `Bug` objects, so one run can surface a shape mismatch *and* a
+  data-leakage violation side by side.
+  - **New axes (5):** loss applied outside its required value domain (e.g. `BCELoss`
+    on logits), temporal lookahead (`shift(-k)`, centered `rolling`), group leakage
+    (a group straddling the train/test split), join-cardinality fan-out before a
+    split, and overlapping/ill-formed split contracts. These are outside any prior
+    analyzer's vocabulary.
+  - **Generalises the earlier `src/interface_layer/torch_data_misuse.py`
+    (PromptABI) slice:** its worker-RNG-duplication and fit-before-split-leakage
+    checks are re-expressed here as obligations over the refinement lattice (so they
+    compose with the five new axes and export as proof packets). `torch_data_misuse`
+    remains the home of its unique drop-last-on-eval check and the `scan-torch-data`
+    CLI; prefer `analyze_data_plane` for the unified seven-axis sweep.
+  - **Kept separate by design:** the data-plane structural SMT certifier
+    (`src/dataplane/certification`, `smt_backend`) is distinct from `src/smt` because
+    the two encode different theories (shape/broadcast algebra vs. value domains, set
+    disjointness, index causality, cardinality) — each the cheapest sound mechanism
+    for its own question.
+
 - **Interface layer (merged from PromptABI).** TensorGuard now verifies the
   *discrete text/token interface* of LLM apps alongside its tensor plane. New
   subpackage `src/interface_layer/` (a self-contained 15-module closure; no new

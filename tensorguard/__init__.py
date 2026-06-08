@@ -217,6 +217,22 @@ from src.graph_break_attribution import (  # noqa: F401  (re-export)
 from src import api as api  # noqa: F401
 from . import torch as torch  # noqa: F401
 
+# Data-plane analysis entry points (refinement-type / non-interference analysis
+# of the deep-learning *data* layer).  Lazily resolved through ``src.__getattr__``
+# so the heavy data-plane subsystem is only imported when actually used.
+_DATA_PLANE_EXPORTS = frozenset({
+    "analyze_data_plane",
+    "analyze_data_plane_file",
+    "analyze_data_plane_tree",
+})
+
+
+def __getattr__(name: str):  # PEP 562 lazy attribute resolution
+    if name in _DATA_PLANE_EXPORTS:
+        import src
+        return getattr(src, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 __all__ = [
     "analyze",
     "analyze_file",
@@ -368,5 +384,8 @@ __all__ = [
     "AOTPackageGateResult",
     "api",
     "torch",
+    "analyze_data_plane",
+    "analyze_data_plane_file",
+    "analyze_data_plane_tree",
     "__version__",
 ]
