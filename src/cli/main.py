@@ -3968,6 +3968,144 @@ class UsageMetricsCommand:
 # ---------------------------------------------------------------------------
 
 
+class ScanTorchDataCommand:
+    """Scan PyTorch data-pipeline source for silent data-misuse bugs."""
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("path", help="a .py file or directory tree to scan")
+        parser.add_argument("--format", choices=("text", "json"), default="text")
+        parser.add_argument("--fail-on-finding", action="store_true")
+
+    def execute(self, args: argparse.Namespace) -> int:
+        from src.interface_layer import (
+            analyze_torch_data_tree,
+            render_torch_data_report_json,
+            render_torch_data_report_text,
+        )
+
+        try:
+            reports = analyze_torch_data_tree(args.path)
+        except OSError as exc:
+            sys.stderr.write(f"tensorguard: cannot read source: {exc}\n")
+            return 2
+        count = sum(len(r.findings) for r in reports)
+        if args.format == "json":
+            sys.stdout.write(render_torch_data_report_json(reports) + "\n")
+        else:
+            sys.stdout.write(render_torch_data_report_text(reports) + "\n")
+        return 1 if (getattr(args, "fail_on_finding", False) and count) else 0
+
+
+class ProveSurfaceBanCommand:
+    """Prove whether an id-level ban prevents a forbidden surface string."""
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("target", help="the forbidden surface string")
+        parser.add_argument("tokenizer_json", help="path to a HF tokenizer.json")
+        parser.add_argument("--suppress-id", action="append", type=int, default=[], metavar="ID")
+        parser.add_argument("--suppress-substring-tokens", action="store_true")
+        parser.add_argument("--bad-word-ids", action="append", default=[], metavar="ID,ID,...")
+        parser.add_argument("--format", choices=("text", "json"), default="text")
+        parser.add_argument("--fail-on-bypass", action="store_true")
+
+    def execute(self, args: argparse.Namespace) -> int:
+        from src.interface_layer import (
+            BanSoundnessStatus,
+            load_id_surfaces_from_tokenizer_json,
+            naive_substring_suppression,
+            prove_surface_ban,
+            render_surface_ban_report_json,
+            render_surface_ban_report_text,
+        )
+
+        try:
+            id_surfaces = load_id_surfaces_from_tokenizer_json(args.tokenizer_json)
+            suppressed = list(args.suppress_id)
+            if args.suppress_substring_tokens:
+                suppressed.extend(naive_substring_suppression(id_surfaces, args.target))
+            bad_words = [
+                [int(x) for x in raw.split(",") if x.strip() != ""]
+                for raw in args.bad_word_ids
+            ]
+            report = prove_surface_ban(
+                id_surfaces, args.target, suppressed_ids=suppressed, bad_word_id_seqs=bad_words
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            sys.stderr.write(f"tensorguard: cannot analyze surface ban: {exc}\n")
+            return 2
+        if args.format == "json":
+            sys.stdout.write(render_surface_ban_report_json(report) + "\n")
+        else:
+            sys.stdout.write(render_surface_ban_report_text(report) + "\n")
+        bypassable = report.status is BanSoundnessStatus.BYPASS_FOUND
+        return 1 if (getattr(args, "fail_on_bypass", False) and bypassable) else 0
+
+
+class ProveStreamingStopCommand:
+    """Prove whether a server can truncate output exactly at a stop string."""
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("stop", help="the stop string")
+        parser.add_argument("tokenizer_json", help="path to a HF tokenizer.json")
+        parser.add_argument("--format", choices=("text", "json"), default="text")
+        parser.add_argument("--fail-on-hazard", action="store_true")
+
+    def execute(self, args: argparse.Namespace) -> int:
+        from src.interface_layer import (
+            StopSoundnessStatus,
+            load_id_surfaces_from_tokenizer_json,
+            prove_streaming_stop,
+            render_streaming_stop_report_json,
+            render_streaming_stop_report_text,
+        )
+
+        try:
+            id_surfaces = load_id_surfaces_from_tokenizer_json(args.tokenizer_json)
+            report = prove_streaming_stop(id_surfaces, args.stop)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            sys.stderr.write(f"tensorguard: cannot analyze streaming stop: {exc}\n")
+            return 2
+        if args.format == "json":
+            sys.stdout.write(render_streaming_stop_report_json(report) + "\n")
+        else:
+            sys.stdout.write(render_streaming_stop_report_text(report) + "\n")
+        hazardous = report.status is StopSoundnessStatus.HAZARDS_FOUND
+        return 1 if (getattr(args, "fail_on_hazard", False) and hazardous) else 0
+
+
+class ProveDecodingFeasibilityCommand:
+    """Prove whether a guided-decoding grammar admits a tokenization."""
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("regex", help="the guided_regex grammar (a regular expression)")
+        parser.add_argument("tokenizer_json", help="path to a HF tokenizer.json")
+        parser.add_argument("--format", choices=("text", "json"), default="text")
+        parser.add_argument("--fail-on-infeasible", action="store_true")
+
+    def execute(self, args: argparse.Namespace) -> int:
+        from src.interface_layer import (
+            load_vocab_surfaces_from_tokenizer_json,
+            prove_decoding_feasibility,
+            regex_to_dfa,
+            render_decoding_feasibility_report_json,
+            render_decoding_feasibility_report_text,
+        )
+
+        try:
+            vocab = load_vocab_surfaces_from_tokenizer_json(args.tokenizer_json)
+            dfa = regex_to_dfa(args.regex, extra_alphabet=set("".join(vocab)), name=args.regex)
+            report = prove_decoding_feasibility(dfa, vocab, grammar_name=args.regex)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            sys.stderr.write(f"tensorguard: cannot analyze decoding feasibility: {exc}\n")
+            return 2
+        if args.format == "json":
+            sys.stdout.write(render_decoding_feasibility_report_json(report) + "\n")
+        else:
+            sys.stdout.write(render_decoding_feasibility_report_text(report) + "\n")
+        infeasible = not getattr(report, "feasible", True)
+        return 1 if (getattr(args, "fail_on_infeasible", False) and infeasible) else 0
+
+
 class ReftypeCliApp:
     """Main CLI application class that wires subcommands to argparse."""
 
@@ -3991,6 +4129,10 @@ class ReftypeCliApp:
         "adoption-recipes": lambda: AdoptionRecipesCommand(),
         "sarif-trends": lambda: SarifTrendsCommand(),
         "usage-metrics": lambda: UsageMetricsCommand(),
+        "scan-torch-data": lambda: ScanTorchDataCommand(),
+        "prove-surface-ban": lambda: ProveSurfaceBanCommand(),
+        "prove-streaming-stop": lambda: ProveStreamingStopCommand(),
+        "prove-decoding-feasibility": lambda: ProveDecodingFeasibilityCommand(),
     }
 
     def __init__(self) -> None:
@@ -4053,6 +4195,10 @@ class ReftypeCliApp:
             "adoption-recipes": "Print one-line setup recipes for CI, hooks, editors, and notebooks",
             "sarif-trends": "Build a Code Scanning trend dashboard from SARIF snapshots",
             "usage-metrics": "Summarize local JSON reports without telemetry or source code",
+            "scan-torch-data": "Scan PyTorch data-pipeline source for silent data-misuse bugs (worker-RNG, drop_last-on-eval, fit-before-split leakage)",
+            "prove-surface-ban": "Prove whether an id-level bad_words/suppress_tokens ban prevents a forbidden surface string",
+            "prove-streaming-stop": "Prove whether a server can truncate output exactly at a stop string (overshoot / split-stop)",
+            "prove-decoding-feasibility": "Prove whether a guided-decoding grammar admits a tokenization under a vocabulary",
         }
         return helps.get(name, "")
 

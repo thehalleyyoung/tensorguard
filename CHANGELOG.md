@@ -10,6 +10,22 @@ enforced by `tests/test_api_stability.py`.
 ## [Unreleased]
 
 ### Added
+- **Interface layer (merged from PromptABI).** TensorGuard now verifies the
+  *discrete text/token interface* of LLM apps alongside its tensor plane. New
+  subpackage `src/interface_layer/` (a self-contained 15-module closure; no new
+  dependency — `z3-solver` is already core) with four new CLI provers:
+  `scan-torch-data` (silent PyTorch data-pipeline bugs: worker-RNG duplication,
+  `drop_last` on eval loaders, fit-before-split leakage — complements
+  `training_loop_checks`), `prove-surface-ban` (does an id-level
+  `bad_words`/`suppress_tokens` ban prevent a forbidden surface? product-automaton,
+  unbounded), `prove-streaming-stop` (can a server truncate exactly at a stop
+  string? overshoot/split-stop, unbounded), and `prove-decoding-feasibility`
+  (does a guided-decoding grammar admit a tokenization? greatest-fixpoint +
+  bounded SMT). The template/tokenizer forgery analyzers
+  (`smt_tokenizer_forgery`, `role_separator_forgery`, `control_token_injection`,
+  `normalization_confusables`) are available as a library. Redundant areas
+  (shape/loss/training-numeric/axis-role checks) were deliberately not duplicated;
+  see `docs/MERGE_PROMPTABI.md`. Tests: `tests/interface_layer/` (39).
 - **Importable top-level package.** `import tensorguard` now resolves to a real
   public surface that re-exports the stability-guaranteed API
   (`verify_architecture`, `analyze`, `AnalysisResult`, …) and the integration
