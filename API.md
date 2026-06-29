@@ -540,3 +540,359 @@ reftype verify model.py -s x=batch,784 --high-confidence --format json
 | `--high-confidence` | Only report Z3-proven bugs (0% FP for CI/CD gating) |
 
 **Exit codes:** `0` = safe, `1` = unsafe or error.
+
+---
+
+## Symbolic-Execution Engine (`src.symexec`)
+
+A self-contained, **torch-free** abstract-interpretation / symbolic-execution
+engine that finds shape, rank, device and control-flow defects in PyTorch code
+by interpreting it over an abstract domain — no model instantiation, no tensors
+allocated. It is **sound by abstention**: anywhere a value leaves the modeled
+fragment the engine returns `Top` and emits *no* report, so every finding is a
+Z3-proved or concretely-forced runtime failure (zero false positives by
+construction).
+
+### `analyze_source()` / `analyze_file()`
+
+```python
+from src.symexec import analyze_source, analyze_file, SymConfig
+
+result = analyze_source(open("model.py").read(), filename="model.py")
+for bug in result.bugs:
+    print(bug.kind.value, bug.line, bug.message, bug.confidence)
+
+result = analyze_file("model.py")              # convenience wrapper over a path
+```
+
+```python
+def analyze_source(
+    source: str,
+    filename: str = "<unknown>",
+    budget_ms: Optional[float] = None,   # coarse per-file wall-clock guard
+    config: Optional[SymConfig] = None,  # soundness mode (Step 86)
+) -> SymResult: ...
+
+def analyze_file(path: str, config: Optional[SymConfig] = None) -> SymResult: ...
+```
+
+`budget_ms` is defence-in-depth for pathologically large *files*: the engine's
+per-construct iteration caps (`ITERATION_CAPS`) already bound the cost of any
+single unit deterministically. Exceeding the budget stops analysis at a
+top-level unit boundary (lost coverage, never a false report) and records a
+`RESOURCE_BUDGET` abstention.
+
+### `SymResult`
+
+The result object returned by every analysis entry point.
+
+| Member | Description |
+|--------|-------------|
+| `bugs` | `List[SymBug]` — the findings, canonically ordered by `(line, col, kind, message)`. |
+| `functions_analyzed` | Count of top-level functions analysed. |
+| `ran_main` | Whether the shipped `if __name__ == "__main__":` harness ran. |
+| `abstentions` | `AbstainLedger` — structured coverage of *where/why* the engine declined to reason. |
+| `coverage` | `CoverageMeter` — how much of the program was interpreted with non-`Top` values. |
+| `fingerprint()` | Deterministic SHA-256 digest over the finding set + abstain profile (a reproducibility receipt). |
+| `footprint()` | Full `ProofFootprint` (digest + bug/abstain counts + coverage profile). |
+| `explain(filename)` | Full `--explain` provenance view (source→…→sink derivation + counterexample / certificate / minimal conditions). |
+| `to_dict(filename)` | Stable JSON object (confidence, provenance, fingerprint, abstain coverage). |
+| `to_sarif(filename)` | Complete SARIF 2.1.0 log for GitHub Code Scanning. |
+| `to_lsp_diagnostics(uri)` | LSP `Diagnostic[]` for inline editor squiggles. |
+| `to_github_annotations(filename)` | GitHub Actions `::error file=…::` annotation commands. |
+| `certificates(filename)` | `List[BugCertificate]` — one replayable proof-carrying certificate per report (Step 94). |
+| `replay(filename)` | `List[ReplayResult]` — independently re-derive each report's verdict from its certificate (Step 95). |
+
+### `SymBug`
+
+A single finding (`src.symexec.bugs`). Frozen dataclass with: `kind`
+(`SymBugKind` enum), `message`, `line`, `col`, `function`, `severity`,
+`confidence` (calibrated, `< 1.0`), `fix_suggestion`, `evidence`.
+`bug.to_api_bug(filename)` converts to the public `src.api.Bug` type.
+
+Bug kinds (`SymBugKind`): `matmul_dim_mismatch`, `broadcast_mismatch`,
+`layer_dim_mismatch`, `reshape_size_mismatch`, `cat_shape_mismatch`,
+`einsum_dim_mismatch`, `einops_pattern_mismatch`, `axis_out_of_range`,
+`tensor_index_oob`, `rank_index_error`, `negative_dimension`,
+`channel_axis_mismatch`, `division_by_zero`, `none_propagation`,
+`unpack_arity_mismatch`, `return_arity_contract`, `axis_name_construction`,
+`device_mismatch` (two operands on statically-known and different device types,
+e.g. `cpu` vs `cuda` — a forced `RuntimeError`; abstains on any unknown device
+and normalises `cuda`==`cuda:0`), `item_on_nonscalar` (`tensor.item()` when the
+element count is statically known and not 1 — a forced `RuntimeError`; abstains
+on any unknown/symbolic dim), `inplace_on_leaf` (an in-place op `add_`/`mul_`/…
+applied to a leaf tensor that requires grad — a forced `RuntimeError`; abstains
+unless both `requires_grad` and leaf-status are positively known, and never
+flags the permitted `requires_grad_`/`detach_`), `bool_on_nonscalar`
+(`if t:`/`while t:`/`not t` on a tensor whose element count is statically known
+and not 1 — a forced `RuntimeError`; abstains on any unknown/symbolic dim),
+`backward_on_nonscalar` (`tensor.backward()` with no `gradient=` argument on a
+non-scalar tensor whose `requires_grad` is positively known — a forced
+`RuntimeError`; abstains unless `requires_grad` is True and the element count is
+known and not 1, and never flags calls that pass an explicit gradient),
+`numpy_on_grad` (`tensor.numpy()` on a tensor whose `requires_grad` is positively
+known — a forced `RuntimeError`; `.detach().numpy()` is never flagged),
+`requires_grad_non_float` (a tensor constructor setting `requires_grad=True` on a
+known integer/bool dtype — a forced `RuntimeError`; abstains on any unknown
+dtype).
+
+**Intent (heuristic-only) findings.** Beyond the forced-failure kinds above,
+`heuristic` mode surfaces patterns that do not crash but are almost certainly
+bugs. These are **suppressed in `sound`/`balanced`** so the zero-false-positive
+guarantee of those modes is preserved, and carry `severity="warning"`:
+`discarded_tensor_result` (a bare statement like `x.cuda()` / `x.to(...)` /
+`x.reshape(...)` whose new-tensor result is discarded — a silent no-op the author
+likely meant to assign back), `direct_forward_call` (`module.forward(x)` called
+directly instead of `module(x)`, which bypasses `nn.Module.__call__` and its
+registered hooks), `tensor_data_access` (accessing `tensor.data`, which bypasses
+autograd tracking — prefer `.detach()`), `missing_super_init` (an `nn.Module`
+subclass whose `__init__` never calls `super().__init__()`, so parameter and
+submodule registration silently breaks), `tensor_copy_construct`
+(`torch.tensor(existing_tensor)`, which copy-constructs and detaches silently —
+emits a UserWarning at runtime; prefer `sourceTensor.clone().detach()`).
+
+### Soundness modes — `SymConfig` (Step 86)
+
+Reporting policy. The three named modes have **nesting** report sets:
+`sound ⊆ balanced ⊆ heuristic`.
+
+```python
+from src.symexec import SymConfig, analyze_source
+
+analyze_source(src, config=SymConfig.sound())       # max precision (subset)
+analyze_source(src, config=SymConfig.balanced())    # default == historic behaviour
+analyze_source(src, config=SymConfig.heuristic())   # max recall (superset)
+analyze_source(src, config=SymConfig.for_mode("sound", min_confidence=0.9))
+```
+
+| Mode | `min_confidence` | `require_feasibility` | `enable_heuristics` | Meaning |
+|------|------------------|------------------------|----------------------|---------|
+| `balanced` *(default)* | `0.0` | `False` | `False` | Byte-identical to the historic engine; every proven finding, nothing filtered. |
+| `sound` | `0.85` | `True` | `False` | Keep a path-conditioned report only when Z3 *positively confirms* feasibility; drop weak-prior findings. A strict subset. |
+| `heuristic` | `0.0` | `False` | `True` | Surface clearly-labelled, low-confidence *suspicions* where balanced abstains (may be false positives). A superset. |
+
+`SymConfig(mode, min_confidence, require_feasibility, enable_heuristics, budget_ms)`
+is a frozen dataclass; `.with_overrides(**knobs)` returns a revalidated copy.
+The default (`DEFAULT_CONFIG`) is `balanced` and preserves every reproducibility
+fingerprint.
+
+### Whole-package analysis (`src.symexec.package`)
+
+```python
+from src.symexec import analyze_package
+
+pkg = analyze_package("my_project/", config=SymConfig.balanced())
+for path, bug in pkg.all_bugs():
+    print(path, bug.line, bug.message)
+graph = pkg.call_graph()   # cross-file module:symbol -> [module:symbol] edges
+```
+
+Resolves cross-file imports so a shape mismatch that only manifests when one
+module *uses* another (e.g. an `Encoder` imported into `model.py`) is caught.
+`analyze_package(root, *, budget_ms=None, config=None) -> PackageResult`.
+
+### Incremental analysis (`src.symexec.incremental`)
+
+```python
+from src.symexec import IncrementalCache, analyze_package_incremental
+
+cache = IncrementalCache()
+pkg, stats = analyze_package_incremental("proj/", cache)   # cold: all analysed
+# ... edit one file ...
+pkg, stats = analyze_package_incremental("proj/", cache)   # warm: reuses unchanged
+print(stats.reused, stats.reanalyzed)
+```
+
+The atomic unit is the **file**, but invalidation is symbol-dependency-aware: a
+file is recomputed only when its own source *or* a directly-imported project
+symbol changed. Output is byte-identical to a fresh `analyze_package`.
+`analyze_source_incremental(source, filename, cache) -> (SymResult, reused)` for
+single files.
+
+### Parallel driver (`src.symexec.parallel`)
+
+```python
+from src.symexec import analyze_package_parallel
+
+pkg = analyze_package_parallel("proj/", workers=8, backend="process")
+```
+
+`backend` is `"process"` (default — real parallelism), `"thread"`, or
+`"serial"`. Output is byte-identical to serial `analyze_package` (each module is
+analysed independently; the merge is order-independent). The process backend
+transparently falls back to serial if a pool cannot be created.
+
+### Calibration telemetry (`src.symexec.telemetry`) — opt-in
+
+```python
+from src.symexec import TelemetrySink, analyze_source
+
+sink = TelemetrySink().enable()                 # opt-in; disabled by default
+sink.record_result(analyze_source(src), outcome=True)   # label confirmed/FP
+report = sink.report()
+print(report.summary())                          # ECE, Brier, per-kind precision
+for s in report.suggestions:                     # advisory prior adjustments
+    print(s.kind, s.delta)
+```
+
+`CalibrationRecord`s carry **no source content** (kind + confidence + evidence
+flags only). Telemetry is side-effect-free: enabling it never changes which bugs
+report or any fingerprint, and prior-adjustment suggestions are advisory (never
+auto-applied). Records serialize via `records_to_jsonl` / `records_from_jsonl`
+(the caller owns any file I/O).
+
+### Third-party stubs (`src.symexec.stubs`)
+
+A declarative, report-free registry (`STUB_REGISTRY`) of return-shape summaries
+for common pure library calls (`torch.relu`, `torch.nn.functional.*`,
+`numpy.zeros`, …) so the engine can keep reasoning through them instead of
+abstaining. Stubs only encode shape transforms that hold for *every* runtime
+input and never emit bugs themselves.
+
+### Editor integrations (`src.symexec.notebook`, `src.symexec.integrations`)
+
+```python
+from src.symexec import analyze_notebook, to_publish_diagnostics, analyze_file
+
+# Jupyter: analyse a .ipynb (path / JSON string / dict); findings map to cells.
+nb = analyze_notebook("analysis.ipynb")
+nb                                   # rich HTML table inline in a notebook
+for f in nb.findings:
+    print(f.cell_index, f.cell_line, f.bug.message)
+
+# VS Code / any LSP client: a publishDiagnostics JSON-RPC notification.
+note = to_publish_diagnostics(analyze_file("model.py"), "file:///abs/model.py")
+```
+
+`analyze_notebook(nb, filename="<notebook>", *, budget_ms=None, config=None) ->
+NotebookResult` concatenates code cells into one virtual module (IPython
+`%magic`/`!shell` lines blanked in place to preserve line numbers) and attributes
+each finding to `(cell_index, cell_line)`. `NotebookResult` exposes `findings`
+(`CellFinding[]`), `by_cell()`, `summary()`, and `to_html()` / `_repr_html_()`.
+Inside a kernel, `%load_ext src.symexec.notebook` registers a `%%tensorguard`
+cell magic.
+
+`to_publish_diagnostics(result, uri) -> dict` wraps `to_lsp_diagnostics` in a
+complete `textDocument/publishDiagnostics` notification; an empty diagnostics
+list (clean result) clears prior markers.
+
+### Proof-carrying certificates & replay (`src.symexec.certificate`, `src.symexec.replay`)
+
+```python
+from src.symexec import analyze_source, dumps_certificates, replay_text
+
+result = analyze_source(src, filename="demo.py")
+certs = result.certificates("demo.py")    # one BugCertificate per report
+proof = dumps_certificates(certs)          # deterministic JSON proof artifact
+
+for r in replay_text(proof):               # independent re-derivation, no engine
+    print(r.status, r.detail)              # "verified" | "refuted" | "unchecked"
+```
+
+Each `BugCertificate` names the violated runtime `predicate` (from the fixed
+`PRECONDITIONS` vocabulary, which mirrors the Lean `Ok` predicates:
+`dims_equal`, `broadcast_compat`, `numel_match`, `index_in_range`,
+`arity_match`, `divisor_nonzero`, `dim_nonneg`, `feature_match`) and the concrete
+witness `operands` on which it is violated (`None` for a *claim-only*
+certificate). `replay(cert)` / `replay_all` / `replay_text(json)` re-evaluate the
+precondition on the witness **without re-running the analysis**: `verified` (the
+precondition is violated ⇒ the forced failure is re-derived), `refuted` (the
+precondition holds ⇒ a tampered/invalid certificate), or `unchecked` (claim-only
+— nothing numeric to re-derive). This is the executable dual of the machine-
+checked Lean `refute`/`witness` lemmas. Certificates are *diagnostic*: they
+neither change which bugs report nor perturb the proof fingerprint.
+
+### Runnable reproducers (`src.symexec.repro`)
+
+```python
+from src.symexec import analyze_source, confirm
+
+result = analyze_source(src, filename="model.py")
+for rep in result.repros():                 # one ReproScript per covered report
+    print(rep.script)                       # a minimal, self-contained program
+    print(confirm(rep).confirmed)           # True: it raises the predicted error
+```
+
+`generate_repro(bug)` / `result.repros()` synthesise, per bug kind, a **minimal
+runnable program** that constructs concrete tensors matching the witness in the
+(fingerprinted, stable) report message and invokes the offending op, so it
+deterministically raises the predicted `RuntimeError` / `IndexError` /
+`ZeroDivisionError`. `confirm(rep) -> ReproResult` executes it in an isolated
+namespace and checks the predicted exception is actually raised — an empirical
+soundness layer beyond the proof fingerprint and the Lean proofs. Covered kinds:
+matmul, broadcast, reshape, axis-OOB, list/tensor index-OOB, div-by-zero,
+nn.Linear, cat, einsum, negative-dim. `confirm` needs torch; generation does not.
+Reproducers are *diagnostic* — they never change which bugs report or the
+fingerprint.
+
+### Verified auto-repair (`src.symexec.autofix`)
+
+```python
+from src.symexec import repair
+
+for fix in repair(source, filename="model.py"):   # only re-verified fixes
+    assert fix.verified
+    print(fix.strategy, fix.description)
+    print(fix.diff)                                # a git-apply-able unified diff
+```
+
+`repair(source) -> List[VerifiedFix]` analyses the source, proposes a minimal,
+canonical edit per report (`propose_fix`), then **re-runs the engine on the
+patched source** (`verify_fix`) and returns a fix only when the targeted bug is
+gone *and* no new bug kind appears — so every returned fix is **machine-verified,
+not guessed**. Edits are line-local (line numbers preserved) and ship with a
+unified diff. Current strategies: `reshape-flatten` (mismatched
+`reshape`/`view` target → `-1`) and `negdim-abs` (negative constructor dim →
+non-negative); unmatched kinds yield nothing rather than a risky rewrite. Pass
+`verified_only=False` to also see rejected candidates with the reason. Repair
+edits user source only — it never affects analysis of the original program or the
+fingerprint.
+
+### Inferred shape contracts → jaxtyping `.pyi` stubs (`src.symexec.contracts`)
+
+```python
+from src.symexec import contracts_to_pyi, infer_contracts
+
+print(contracts_to_pyi(source))         # a ready-to-ship .pyi stub
+contracts = infer_contracts(source)     # structured FunctionContract objects
+```
+
+TensorGuard already *consumes* jaxtyping/torchtyping annotations to seed an
+analysis; `contracts` closes the loop and **produces** them. For every top-level
+function and each `forward`/`__call__` method it runs the engine with
+annotation-seeded parameters and reads off the **input** abstraction (echoed from
+the annotation) and the analysis-**derived** output abstraction, rendering both
+as jaxtyping annotations (`Float[Tensor, "b 7"]`) in a `.pyi` stub. The contract
+is *inferential/advisory*: a dimension gets a concrete size or a shared symbolic
+name only when the analysis tracked it (e.g. a batch dim carried through a
+`Linear` whose output feature is computed), otherwise it degrades honestly to an
+anonymous axis or a bare `Tensor`. `infer_contracts` returns structured
+`FunctionContract`/`ParamContract`/`TensorSpec` objects; `to_pyi` renders a list
+of them. The module is torch-free, pure, and never emits a diagnostic, so it
+does not affect analysis of the original program or the fingerprint.
+
+### "Why is this safe?" — positive safety reports (`src.symexec.safety`)
+
+```python
+from src.symexec.engine import analyze_source
+
+result = analyze_source(source, filename="model.py")
+print(result.safety(filename="model.py"))     # a positive safety report
+```
+
+Every other surface answers *"why is this a bug?"*; a *sound* analyser can also
+answer the dual question only sound tools can — *"what did you prove is safe?"*
+`result.safety()` (module `src.symexec.safety`: `safety_report`,
+`render_safety_report`, `explain_safety`) re-presents facts the analysis already
+computed: the **verdict** (whether any sound forced-failure bug was provable),
+the **covered fragment** (the coverage profile — how much of the file was
+reasoned about with known, non-⊤ values), the **guarantee** (the
+relative-completeness clauses from `completeness_contract.COMPLETE_FOR` — bug
+kinds whose *absence of a report on the covered fragment is a positive
+guarantee*), and the **boundary** (the abstain ledger marking exactly where that
+guarantee stops). The claim is honestly scoped: it covers the complete-for kinds
+on the covered fragment, and abstentions name every place that scope ends.
+Heuristic/intent warnings never bear on the verdict. `SafetyReport.to_dict()`
+gives a JSON-ready snapshot. The module is pure and read-only — it never runs the
+engine, mutates a result, or emits a diagnostic, so it cannot affect the
+fingerprint.

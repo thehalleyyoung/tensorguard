@@ -1,0 +1,39 @@
+{
+  "checked_finite": true,
+  "contract_checked": false,
+  "file_sha256": "1d6c347f0cd9d647a2a553f614d30d34b6befcfd56a77e6eaf9705c781127421",
+  "filename": "storage_overlap.safetensors",
+  "findings": [
+    {
+      "detail": "storage overlaps the previous tensor at byte 4 (cursor 8)",
+      "kind": "storage_overlap",
+      "name": "b"
+    }
+  ],
+  "format": "safetensors",
+  "num_tensors": 2,
+  "proven_safe": false,
+  "structural_fingerprint": "c300d8bbb57d520c2a5032826afd031c24532aae535eb38aac4e299bf7e92baa",
+  "tensors": [
+    {
+      "begin": 0,
+      "dtype": "U8",
+      "end": 8,
+      "name": "a",
+      "shape": [
+        8
+      ]
+    },
+    {
+      "begin": 4,
+      "dtype": "U8",
+      "end": 12,
+      "name": "b",
+      "shape": [
+        8
+      ]
+    }
+  ],
+  "total_tensor_bytes": 16,
+  "version": 1
+}

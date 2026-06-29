@@ -98,6 +98,23 @@ enforced by `tests/test_api_stability.py`.
 - **Proposed-upstream shim.** `src.upstream_hook.install()` grafts the proposed
   `torch.nn.utils.verify_module` / `attach_verifier` / `torch.nn.verifiable`
   surface onto the real namespace with no core changes (idempotent, reversible).
+- **Symbolic-execution engine (`src.symexec`).** A torch-free abstract
+  interpreter / symbolic executor that analyses plain Python source for tensor
+  shape/axis/broadcast/reshape/matmul/einsum bugs without importing torch,
+  abstaining outside its modeled fragment and emitting Z3-backed,
+  reproducible-fingerprint findings. Stability-guaranteed surface (see
+  `DEPRECATION_POLICY.md`, pinned by `tests/test_symexec_stability.py`):
+  `analyze_source`, `analyze_file`, `analyze_package`; result types `SymResult`,
+  `SymBug`, `SymBugKind` (additive), `PackageResult`; config `SymConfig` /
+  `DEFAULT_CONFIG` with the `"sound"`/`"balanced"`/`"heuristic"` `MODES`
+  (`"balanced"` default). Surrounding tooling (telemetry, mutation/fuzz/coverage,
+  incremental & parallel drivers, Jupyter/VS Code/SARIF/GitHub integrations,
+  proof-carrying bug certificates (`certify`/`BugCertificate`), the independent
+  certificate-replay checker (`replay`), runnable reproducers
+  (`generate_repro`/`confirm`) and verified auto-repair (`repair`)) ships
+  as **preview** surface. Proof fingerprints are explicitly *not* a SemVer
+  surface — sound modeling extensions may change them, diagnostic-only changes may
+  not.
 
 ## [0.1.0]
 

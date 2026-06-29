@@ -314,6 +314,38 @@ class Interval:
             return False
         return other.lo <= self.lo and self.hi <= other.hi
 
+    def widen(self, other: "Interval") -> "Interval":
+        """Standard interval widening ``self ▽ other``.
+
+        Stable bounds are kept; an unstable (moving-outward) bound is pushed to
+        the corresponding infinity so an ascending Kleene chain stabilises in
+        one step (guaranteeing loop-fixpoint termination).  Sound: the result
+        always over-approximates ``join``.
+        """
+        if self.is_bottom:
+            return other
+        if other.is_bottom:
+            return self
+        lo = self.lo if self.lo <= other.lo else Bound.neg_inf()
+        hi = self.hi if other.hi <= self.hi else Bound.pos_inf()
+        return Interval(lo=lo, hi=hi)
+
+    def narrow(self, other: "Interval") -> "Interval":
+        """Standard interval narrowing ``self ▵ other``.
+
+        Recovers precision lost to widening: an *infinite* bound of ``self`` is
+        replaced by the (tighter, finite) bound from ``other``; finite bounds are
+        kept untouched.  Only ever tightens, so a descending narrowing chain
+        stabilises in finitely many steps.  Sound provided ``other`` already
+        over-approximates the concrete (callers pass ``F(self) ⊑ self``)."""
+        if self.is_bottom:
+            return self
+        if other.is_bottom:
+            return other
+        lo = other.lo if self.lo.is_neg_inf else self.lo
+        hi = other.hi if self.hi.is_pos_inf else self.hi
+        return Interval(lo=lo, hi=hi)
+
     # -- arithmetic ----------------------------------------------------------
 
     def __add__(self, other: "Interval") -> "Interval":

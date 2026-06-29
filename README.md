@@ -1,2790 +1,366 @@
-# TensorGuard — Static Shape/Device/Phase Verifier for PyTorch Models
+# TensorGuard
 
-![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue?logo=python&logoColor=white)
-![License MIT](https://img.shields.io/badge/license-MIT-green)
-![Z3 SMT Solver](https://img.shields.io/badge/Z3-SMT%20solver-orange?logo=microsoft)
-![PyTorch](https://img.shields.io/badge/PyTorch-compatible-EE4C2C?logo=pytorch&logoColor=white)
+**Catch the bugs that waste your GPU hours — before you launch the run.**
 
-**TensorGuard** statically verifies PyTorch `nn.Module` architectures for
-shape mismatches, device inconsistencies, and train/eval phase errors —
-**with zero annotations**. It encodes tensor shapes as refinement type
-predicates (`{v: Tensor | shape(v) == (batch, C, H, W)}`) and uses Z3 to
-prove compatibility at every operation site, catching the #1 class of
-runtime errors in ML codebases before any code runs.
+TensorGuard is a **static analyzer for PyTorch**. It reads your model and training
+code and finds the shape mismatches, device errors, broken checkpoints, and silent
+training-killers that normally only surface *after* you've waited in the queue,
+allocated 8 GPUs, and loaded the dataset.
 
----
+```python
+import tensorguard as tg
 
-## Key Features
+bugs = tg.verify_architecture(open("model.py").read(), input_shapes={"x": (1, 784)}).bugs
+for b in bugs:
+    print(b.message)
+# [SHAPE-INCOMPATIBLE] Linear expects last dim=128, got 256
+```
 
-- **140+ operator transfer functions** — covers `matmul`, `conv2d`,
-  `cat`/`stack-family`/`chunk`/`split`, `pad`, `interpolate`/`Upsample`, `view`,
-  `reshape`, `squeeze`/`unsqueeze`, `movedim`/`swapaxes`, `roll`/`rot90`/`flip`,
-  `transpose`, `permute`, precise `repeat_interleave`/`tile`/broadcasting,
-  `einsum`, `gather`/`scatter` integer-index and static bounds checks,
-  `take_along_dim`,
-  `topk`/`sort`, `fold`/`unfold`, `bmm`,
-  Lean-backed RNN/LSTM/GRU state contracts, attention patterns, and more, with
-  frequency-weighted real-model coverage tracked across torchvision, timm, and
-  HuggingFace traces
-- **High-value library contracts checked against the real libraries** —
-  `einops` (`rearrange` / `reduce` / `repeat`), SDPA,
-  `nn.MultiheadAttention` packed/unpacked q/k/v + masks,
-  `torch.linalg` solve/inv/cholesky/SVD/eig/QR contracts,
-  `grid_sample` / `affine_grid`, source-level
-  `torchvision.transforms.v2` tensor transforms (`Resize` / crops / `Pad` /
-  `Normalize` / flips, with PIL-only paths abstaining), and
-  `nn/F.embedding_bag` plus TorchRec-style jagged pooled embeddings
-  (offsets, per-sample weights, pooling modes, and ragged abstention),
-  Lean-backed `torch.distributions` batch/event/log-prob shapes, plus PyTorch
-  named-tensor `refine_names` / `align_to` alignment, complex
-  `view_as_real` / `view_as_complex` / `torch.fft` shape-dtype contracts,
-  `torch.vmap` plus `torch.func` grad/jacrev/jacfwd/jvp/vjp shape transfers,
-  PyTorch loss target/reduction/dtype contracts (`CrossEntropyLoss`, `NLLLoss`,
-  `MSELoss`, `BCEWithLogitsLoss`, `KLDivLoss`), and
-  Lean-backed `torch.sparse` COO/CSR/CSC/BSR/BSC layout + blocksize invariants, sparse-dense
-  `mm`/`addmm`, CSR `sampled_addmm`, sparse softmax/coalesce, and layout
-  conversions, quantization placement, and mixed-precision/autocast dtype gates
-  are verified by shape-only models that are **differentially checked** against real
-  `einops` / `torch`; non-divisible patch embeds, head-dim-mismatched
-  attention, unusable probabilistic batch/event contracts, invalid
-  named-axis refinements/reorderings, unsupported complex FFT dtypes, and
-  impossible vmap batch/out-dim contracts, invalid linalg square, broadcast, and
-  output-tuple contracts, unusable sparse compressed
-  layouts, invalid sparse matrix kernels/conversions, invalid sampler grids, and broken MHA key/value/mask contracts are
-  caught before kernels raise, while
-  symbolic dims are never refuted
-  (`verify_einops`, `verify_einops_source`, `verify_distribution`,
-  `verify_log_prob`, `verify_refine_names`, `verify_align_to`,
-  `verify_view_as_real`, `verify_view_as_complex`, `verify_fft`,
-  `verify_vmap`, `verify_func_autodiff`, `verify_loss`, `verify_linalg`, `verify_sparse_coo`,
-  `verify_sparse_csr`,
-  `verify_sparse_csc`, `verify_sparse_bsr`, `verify_sparse_bsc`,
-  `verify_sparse_mm`, `verify_sparse_addmm`, `verify_sparse_sampled_addmm`,
-  `verify_sparse_softmax`, `verify_sparse_coalesce`, `verify_sparse_to_dense`,
-  `verify_sparse_layout_conversion`,
-  `verify_mixed_precision`, `verify_mixed_precision_fx`,
-  `verify_grid_sample`, `verify_affine_grid`,
-  `verify_torchvision_v2_transform`,
-  `verify_multihead_attention`).  Deployment/resume gates now also cover
-  GGUF/llama.cpp checkpoint export invariants, model `state_dict` schema
-  compatibility (missing/unexpected keys, tied weights, tensor-parallel shards,
-  dtype drift), full LoRA/PEFT adapter compatibility (rank, `target_modules`,
-  merged state, and quantized bases), and optimizer-state compatibility for
-  AdamW, Adafactor, fused AdamW, sharded resume buffers, `torch.compile`
-  guard-set parity against TensorGuard symbolic constraints, source-mapped
-  Dynamo/export graph-break attribution, CUDA graph capture
-  eligibility (dynamic allocation, data-dependent shapes, unsupported ops, and
-  static-input replay contracts), plus TorchServe/FastAPI request→preprocess→model→response
-  schema gates that reject bad preprocessing layouts before forward execution,
-  a real-model deployment gallery spanning ResNet, ViT, Llama-style, diffusion,
-  recommender, and speech blocks before and after export, and release gates
-  that ratchet quant/export/compile/distributed backends plus source/conda/Docker
-  publish readiness and fresh-venv launch-demo execution
-  (`verify_gguf_export_contract`, `verify_checkpoint_state_dict`,
-  `verify_lora_adapter_compatibility`, `verify_optimizer_state`,
-  `verify_cuda_graph_capture_eligibility`, `verify_serving_schema`), plus
-  runtime-silent bug gates for declared trainability, buffers, optimizer-state
-  fingerprints, mode contracts, and quantization parameters.
-- **5-theory product domain** — jointly reasons over
-  **Shape × Device × Phase × Stride × Permutation** for each tensor
-- **Zero annotations required** — shapes are inferred from constructors,
-  `torch.randn`, `nn.Linear(in, out)`, reshapes, and data flow
-- **Train/eval phase tagging** — every tensor is annotated with the
-  phase context in which it is produced, so `BatchNorm` / `Dropout`
-  misuse patterns can be detected from the resulting trace (the
-  `--no-phase-check` flag post-filters phase bugs; see *Known
-  limitations*).
-- **Device tracking** — catches silent CPU ↔ CUDA mismatches before they
-  become runtime errors
-- **CEGAR predicate discovery** — a counterexample-guided refinement
-  loop discovers shape predicates automatically and stores them as
-  `cegar_predicates` metadata on the verifier result, available for
-  downstream consumers (no manual specification needed).  In addition,
-  when the predicates discovered across refinement rounds are *jointly
-  unsatisfiable* the conflict is promoted to a real
-  `Bug(category=cegar_refined_contract)`, so `--cegar-iterations N` can
-  change the reported bug set.  See *Known limitations* below.  The loop's
-  convergence is not just asserted — running the real loop on the frozen corpus
-  shows it terminates in one or two iterations on every model, always within the
-  tight `iterations <= 1 + |discovered_predicates|` bound and one to two orders
-  of magnitude under the naive predicate-universe bound
-  ([`docs/cegar/convergence.md`](docs/cegar/convergence.md),
-  regenerated by `reproducibility/cegar_convergence.py`). That tight bound and
-  the loop's termination are now **machine-checked in Lean**
-  (`lean/TensorGuard/CegarBound.lean`), and the once-known SAFE-on-infeasible
-  unsoundness gap is **closed with a Lean-checked fix** that abstains instead of
-  reporting safe (`lean/TensorGuard/CegarInfeasible.lean`), now tied to the
-  versioned Python predicate-record replay format
-  (`lean/TensorGuard/CegarPredicateSerialization.lean`). The mode-dependent
-  fragment boundary itself (gap U1) is likewise Lean-backed: `sound` mode is
-  proved sound while the permissive modes' recall trade-off is made precise
-  (`lean/TensorGuard/FragmentModes.lean`). The four non-shape transfer functions
-  — device, dtype, phase and gradient — are **machine-checked too**
-  (`lean/TensorGuard/DeviceDtype.lean`): each abstains on unknown operands and is
-  refutation-sound, the property lifts to their reduced product, and the Z3
-  encodings the solver runs are **proved faithful** — including enum-equality
-  checks plus broadcast, reshape-divisibility, split/chunk partition, and
-  dtype-promotion constraints (`SmtEncoding.lean`/`CrossDomain.lean`) — all
-  cross-checked against real Z3 and
-  live torch/einops oracles on real modules — including the per-`forward` chain
-  transfers and per-operator shape rules (`nn.Linear`/`Conv`/pooling/`LayerNorm`/
-  `BatchNorm`/`PixelShuffle`/flatten/`cat`/`chunk`/`split` partition
-  reconstruction/`Embedding`/reshape-`-1`/stride viewability and
-  channels-last caveats/einops decomposition/RNN-state batch-first and
-  bidirectional laws/SDPA
-  broadcast-mask-GQA/named-axis refine-align uniqueness and singleton
-  insertion/grid-sampler rank and positive-size contracts),
-  each
-  replayed op-by-op on real tensors and cross-checked against torch *and* the
-  verifier's own propagators. Whole-module composition is now Lean-checked too
-  (`lean/TensorGuard/SubjectReduction.lean`): local complete/sound transfer
-  certificates compose across straight-line modules, supported conditional
-  joins, and bounded ModuleList/static-range unrolls; unsupported or over-budget
-  branch/loop points cannot silently produce a safe environment. Theorem-shaped
-  MLP, CNN-head, indexing, SDPA, branch, and loop programs are cross-checked
-  against real PyTorch. Every audited public theorem is machine-audited
-  **sorry-free**, on only the trusted kernel axioms.
-- **Per-domain verification** — beyond shape, the device and gradient
-  domains each refute real bugs that the base shape view misses (a cuda
-  buffer added to a cpu input; a `.detach()` that severs gradient flow).
-  The phase domain is **diagnostic-only** (it registers train/eval
-  well-formedness but does not refute).  This is demonstrated end-to-end
-  by `experiments_v5/run_domain_contribution.py` over the curated corpus
-  in `experiments_v5/domain_corpus/` (results committed to
-  `experiments_v5/domain_contribution.json`), and pinned by
-  `tests/test_domain_contribution.py`.
-- **Z3-backed** — all shape constraints are discharged by the Z3 SMT solver
-  for soundness (0% false positives in `--high-confidence` mode).  The precise
-  guarantee — exactly which programs are never miss-passed, and which
-  constructs are over-/under-approximated or skipped — is published in
-  [`SOUNDNESS_CONTRACT.md`](SOUNDNESS_CONTRACT.md) (generated from
-  `src/soundness_contract.py`, including the currently-known unsoundness gaps).
-- **Per-operator confidence** — every registered operator transfer function is
-  tagged `complete`, `sound`, or `heuristic` so you know how much to trust each
-  inference (unknown ops default to `heuristic`).
-  Inspect the table with `tensorguard operator-confidence [--json]`; its
-  committed `operator_confidence_table.json` is now a projection of
-  `proof_footprint_manifest.json`, which maps every supported operator to Lean
-  theorem, pen-and-paper rule, tested-only rule, or heuristic evidence
-  (`src/proof_footprint.py`, `tests/test_operator_confidence.py`,
-  `tests/test_proof_footprint.py`).
-- **Soundness modes** — `tensorguard verify --soundness-mode {sound,balanced,heuristic}`
-  selects a three-valued verdict (`SAFE`/`UNKNOWN`/`UNSAFE`). `sound` is the
-  contract you can rely on: it reports `SAFE` only when the module is fully
-  inside the verifiable fragment (no opaque layers, no data-dependent control
-  flow, no heuristic-tagged operators), otherwise `UNKNOWN` (CLI exit 2) — never
-  a silent pass. The mode never changes which bugs are reported. Source of truth
-  `src/soundness_contract.py`, pinned by `tests/test_soundness_mode.py`.
-- **Formal verifiable fragment** — the exact grammar of `nn.Module`/`forward`
-  constructs TensorGuard can analyze, the full supported-construct tables, the
-  out-of-fragment taxonomy, and the "unsupported → `UNKNOWN`, never a silent
-  pass" fallback policy are published in
-  [`VERIFIABLE_FRAGMENT.md`](VERIFIABLE_FRAGMENT.md) (generated from
-  `src/verifiable_fragment.py`; the instance-free `analyze_source()` exposes the
-  statically-checkable fallback). The reviewer-facing
-  [`formal_soundness_appendix.pdf`](formal_soundness_appendix.pdf) is generated
-  from that grammar, live Lean theorem statements, and the proof-footprint table.
-  Pinned by `tests/test_verifiable_fragment_spec.py` and
-  `tests/test_formal_soundness_appendix.py`.
-- **Frozen ground-truth benchmark corpus** — [`real_benchmarks/`](real_benchmarks/)
-  holds 16 self-contained PyTorch `nn.Module`s (8 clean / 8 buggy) across the
-  shape, device, phase, and gradient domains, each content-addressed by SHA-256
-  in `manifest.json` so the corpus cannot silently drift. Labels are proven
-  against real code (6/8 buggy raise a real eager `RuntimeError`, one is
-  CUDA-only, one is a *silent* gradient-detach bug TG catches statically).
-  Run `python -m real_benchmarks.load` to re-verify integrity and that 16/16
-  TensorGuard verdicts match the frozen labels; pinned by
-  `tests/test_real_benchmarks.py`. The corpus is published as a standalone,
-  citable contribution: a generated [*Datasheets for Datasets*](real_benchmarks/DATASHEET.md)
-  datasheet (built from the manifest so its counts can never drift) and a
-  repository-root [`CITATION.cff`](CITATION.cff) make it directly citable.
-- **GitHub-mined bug dataset** — [`experiments_v5/github_bug_mining/`](experiments_v5/github_bug_mining/)
-  freezes 2,704 real PyTorch shape/device issue/PR records by verbatim runtime
-  signature, then [`experiments_v5/provenance_bug_corpus/`](experiments_v5/provenance_bug_corpus/)
-  enriches them with license status, PR/candidate commit links, signature
-  families, and repo-authored minimized reproducers for all eight error
-  categories; a dual-pass metadata audit publishes the labeling rubric,
-  ambiguity taxonomy, adjudication log, and kappa metrics without overclaiming an
-  external human study. Pinned by `tests/test_github_bug_mining.py`,
-  `tests/test_provenance_bug_corpus.py`, and `tests/test_labeling_agreement.py`.
-- **SARIF 2.1.0 + trend dashboards** — integrates with GitHub Code Scanning /
-  Advanced Security and tracks open/closed/recurrent alerts across releases
-- **Beyond PyTorch** — the same Z3-backed verifier core analyzes a **second
-  framework**: a Flax/JAX (`nnx.Sequential`) frontend lowers Linear/LayerNorm/
-  BatchNorm/Dropout to the shared IR and refutes real shape bugs, abstaining
-  soundly on layouts it can't prove (`src/flax_extractor.py`,
-  `tests/test_flax_frontend.py`). Coverage extends safely via a **governed
-  community stub registry** (declarative, no executable code) and a trusted,
-  explicitly imported **operator-plugin ABI** with versioned contracts, security
-  review attestations, and executed conformance cases
-  (`community_stubs/`, `src/stub_governance.py`, `src/operator_plugin_abi.py`);
-  library authors can now certify those stubs/plugins against TensorGuard's real
-  `sound`/`balanced`/`heuristic` verifier modes with
-  `src.third_party_conformance`, and third-party backends, stubs, corpora, and
-  benchmark entries now share a generated maintainer acceptance checklist
-  (`docs/governance/third_party_acceptance.md`).
-  Seven-track executable **Colab tutorials** (`examples/tutorials/`) cover
-  shapes, attention, export, distributed, quantization, stubs, and formal
-  certificates, while a 25-case copyable **model gallery** (`examples/model_gallery.md`) onboards new users
-  with paired clean paths, caught bugs, minimal `tensorguard verify` configs,
-  and a monthly public certification queue
-  (`reproducibility/model_zoo_certification.md`). Contributors get the same
-  generated path: good-first operator issues, test templates, stub guides, and
-  Lean examples are derived from the live proof/confidence registries
-  (`docs/contributing/operator_onboarding.md`).
-- **Launch-ready evidence** — public launch materials combine real demos,
-  reproducibility ledgers, upstream RFCs, and the compatibility/support promise
-  into an auditable campaign, including a fresh-dry-run-backed terminal GIF
-  (`docs/launch/quickstart_terminal_demo.gif`) and a real-LSP-backed editor
-  diagnostics GIF (`docs/launch/editor_lsp_demo.gif`).
-- **Sub-second analysis** — typical models verified in < 1 second
+No training run. No GPU. **No `import torch` required** — TensorGuard analyzes your
+source code symbolically, so it runs in milliseconds in CI on a machine that has
+never had PyTorch installed.
+
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue?logo=python&logoColor=white)](#install)
+[![License MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Soundness: Lean-verified](https://img.shields.io/badge/soundness-Lean--verified-orange)](#why-you-can-trust-it)
+[![Zero false positives](https://img.shields.io/badge/sound%20mode-zero%20false%20positives-brightgreen)](#three-modes-you-choose-the-tradeoff)
 
 ---
 
-## Known limitations of the shipped CLI
+## Why TensorGuard
 
-These are deliberately surfaced here so downstream users do not over-read
-the feature list above.
-
-* **`--no-phase-check`, `--no-device-check`, `--no-grad-check` gate the
-  solver, not just the verdict.** The corresponding `check_phases`,
-  `check_devices`, `check_gradients` keyword arguments to
-  `src.api.verify_architecture` and `src.api.verify_module` (and the
-  matching CLI flags) are threaded into the `ConstraintVerifier`: when a
-  domain is disabled, its per-step safety encoder
-  (`_encode_device_safety` / `_encode_phase_safety` /
-  `_encode_gradient_safety`) returns **no constraints**, and the device /
-  phase theory-solver checks are skipped, so the disabled domain incurs
-  **no solver work and produces no cross-domain witnesses** (Step 2 of
-  `100_STEPS.md`).  A post-hoc verdict filter is retained as a defensive
-  safety net, but it is no longer the mechanism.  See
-  `tests/test_solver_domain_gating.py`, which proves the disabled-domain
-  encoders emit zero constraints while the enabled ones do.
-  Three committed real-source examples in `examples/check_flag_demo/`
-  demonstrate that toggling each flag flips the overall verdict
-  between `REFUTED` and `VERIFIED` on un-instantiated class source;
-  the verdict matrix is regenerated by
-  `python3 experiments_v5/run_check_flag_demo.py` and committed under
-  `reproducibility/check_flag_demo.json`.
-* **`--cegar-iterations N` controls how many refinement rounds run.**
-  Discovered predicates are stored as metadata, **and** unsatisfiable
-  refined contracts are now promoted to real
-  `Bug(category=cegar_refined_contract)` entries (Step 1 of
-  `100_STEPS.md`).  When the predicates CEGAR proposes for a forward
-  parameter across iterations are jointly unsatisfiable — e.g. an input
-  that must be both `shape[-1] == 768` and `shape[-1] == 512` — the
-  module can never run, and the conflict is surfaced as a sound,
-  Z3-discharged bug.  Because these predicates only exist once refinement
-  runs, the reported bug set now varies with `N` (with `N = 0` the
-  contract-level conflict is not surfaced).  See
-  `tests/test_cegar_refined_contract.py`.
+| | |
+|---|---|
+| ⚡ **Fast & torch-free** | Pure static analysis. Runs in CI in milliseconds — no model instantiation, no GPU, no `torch` install. |
+| 🎯 **Zero false positives** | In `sound` mode every reported bug is a *real* bug. When TensorGuard isn't sure, it **abstains** instead of guessing. |
+| 🔍 **Zero annotations** | Shapes are inferred from `nn.Linear(in, out)`, `torch.randn`, reshapes, and dataflow. You write nothing extra. |
+| 🧠 **It explains itself** | Every finding comes with the input→op→shape→failure chain, a fix suggestion, and (optionally) a replayable proof certificate. |
+| 📐 **Lean-verified core** | The soundness of the engine is backed by **80+ machine-checked Lean proofs**. |
+| 🔌 **Plugs into your workflow** | CLI, GitHub Action, SARIF code-scanning, LSP (VS Code / Neovim / JetBrains), pre-commit, and Jupyter magic. |
 
 ---
 
-## Installation
+## Install
 
 ```bash
-git clone https://github.com/thehalleyyoung/tensorguard.git
-cd tensorguard
-pip install -e .
+pip install tensorguard
 ```
 
-The only required dependency is `z3-solver>=4.12` (installed automatically).
+That's it — the only hard dependency is the Z3 SMT solver (pulled in automatically).
+PyTorch is **not** required to run TensorGuard.
+
+```bash
+# from source
+git clone <repo> && cd tensorguard && pip install -e .
+```
 
 ---
 
-## Quickstart
+## 60-second tour
 
-> New here? The [**5-minute Getting Started guide**](GETTING_STARTED.md) walks
-> from install to your first caught bug to a clean verdict, and every code block
-> in it is executed by the test suite. For an honest map of what falls outside
-> the verifiable fragment, see [**What TensorGuard can't do yet**](LIMITATIONS.md).
-> The generated docs site in [`docs/site/`](docs/site/) adds concept chapters,
-> operator/proof references, and migration guides from the same audited sources.
+### 1. Verify a model architecture
 
-Write a model with a shape bug:
+```bash
+tensorguard verify model.py -s x=1,784
+```
+
+```
+✗ model.py: 1 verification issue (97ms)
+  ERROR: Layer fc2 (line 8) expects input dimension 128, but receives (1, 256)
+    --> line 8, col 8
+    |         return self.fc2(self.fc1(x))
+    |         ^
+    note: Layer fc2 defined here with in_features=128 (line 6)
+    fix: change fc2 to accept (1, 256)
+```
+
+Add `--fix` to get a concrete one-line patch, or `--fix --write` to apply it:
+
+```bash
+tensorguard verify model.py -s x=1,784 --fix --write
+#   - self.fc2 = nn.Linear(128, 10)
+#   + self.fc2 = nn.Linear(256, 10)
+```
+
+### 2. Scan a whole project
+
+```bash
+tensorguard analyze src/ --format sarif -o results.sarif   # GitHub code-scanning ready
+tensorguard analyze-package my_project/                    # directory summary
+```
+
+### 3. Use it from Python
 
 ```python
-# model.py
-import torch
-import torch.nn as nn
+import tensorguard as tg
 
-class BadModel(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv = nn.Conv2d(3, 16, kernel_size=3)
-        self.fc = nn.Linear(16 * 5 * 5, 10)   # wrong: should be 16 * 222 * 222
+# whole-file analysis
+result = tg.analyze_file("model.py")
+print(result.bug_count, "issues")
 
-    def forward(self, x):          # x: (batch, 3, 224, 224)
-        x = self.conv(x)          # → (batch, 16, 222, 222)
-        x = x.view(x.size(0), -1) # → (batch, 16*222*222)
-        return self.fc(x)          # ERROR: expects 16*5*5 = 400, got 788544
-```
-
-Run TensorGuard:
-
-```
-$ tensorguard verify model.py -s x=batch,3,224,224
-
-  ✗ model.py: 1 verification errors (243ms)
-
-  L15: Shape mismatch at nn.Linear: input has 788544 features,
-       expected 400                                  (shape-error)
-```
-
-Verify a correct model:
-
-```
-$ tensorguard verify model.py -s x=batch,3,224,224
-  ✓ model.py: Architecture verified safe (768ms)
-```
-
----
-
-## CLI Reference
-
-```
-tensorguard verify FILE [options]
-```
-
-| Flag | Description | Default |
-|------|-------------|---------|
-| `FILE` | Python file containing `nn.Module` class(es) | — |
-| `-s`, `--input-shape` | `name=dim1,dim2,...` (repeatable) | auto-inferred |
-| `--no-device-check` | Skip device consistency checks | off |
-| `--no-phase-check` | Skip train/eval phase checks | off |
-| `--cegar-iterations` | Max CEGAR refinement iterations | `10` |
-| `-f`, `--format` | `text`, `json`, `sarif` | `text` |
-| `--high-confidence` | Only report Z3-proven bugs (0% FP) | off |
-
-### Additional Commands
-
-| Command | Description |
-|---------|-------------|
-| `tensorguard explain model.py -s x=batch,10 -o explain.html` | Generate a self-contained HTML bug report with an inference-chain graph, counterexample, proof-footprint badges, and fixes |
-| `tensorguard model-hub-badge model.py -s x=batch,10 --model-id org/model` | Emit a TensorGuard-verified badge, signed certificate bundle, and copy-paste model-card snippet |
-| `tensorguard ci-check [PATHS...] --sarif-output out.sarif` | CI mode with SARIF output |
-| `tensorguard sarif-trends v1=old.sarif v2=new.sarif --markdown trend.md` | Track Code Scanning open/closed/recurrent alert deltas |
-| `tensorguard usage-metrics results.json --format markdown` | Summarize analyzed files, verdicts, abstentions, and unsupported ops locally; no telemetry, no source, hashed paths |
-| `tensorguard watch [PATHS...]` | Watch and re-verify on changes |
-| `tensorguard adoption-recipes` | Print one-line setup commands for CI, pre-commit, pytest, nox/tox, Makefiles, editors, and Jupyter |
-| `tensorguard playground --output tensorguard_playground` | Generate a self-contained local playground: editable examples, precomputed TensorGuard verdicts, no upload/import/execution |
-| `tensorguard version` | Show version info |
-
-### Exit Codes
-
-| Code | Meaning |
-|------|---------|
-| `0` | Verification succeeded — no shape/device/phase errors |
-| `1` | Errors found or analysis error (invalid input, file not found) |
-
----
-
-## What TensorGuard Catches
-
-| Error Class | Example |
-|-------------|---------|
-| **Shape mismatch** | `nn.Linear` input dimension ≠ declared `in_features` |
-| **Matmul incompatibility** | `torch.matmul(A, B)` where inner dimensions differ |
-| **Bad reshape/view** | `x.view(batch, -1)` where total elements don't divide evenly |
-| **Conv output → Linear input** | Feature map flattened size ≠ `nn.Linear` input |
-| **Cat dimension mismatch** | `torch.cat([a, b], dim=1)` with different sizes on other dims |
-| **Device mismatch** | `cpu_tensor + cuda_tensor` |
-| **Phase error** | `model.eval()` then calling layers that behave differently in eval |
-| **Stride/permutation error** | Contiguity assumptions violated after `transpose`/`permute` |
-
----
-
-## How It Works
-
-1. **AST Parse** — extract `nn.Module` class, `__init__`, and `forward` method
-2. **Shape Predicate Harvesting** — infer shapes from `nn.Linear(in, out)`,
-   `nn.Conv2d(...)`, `torch.randn(...)`, input shape flags, and reshape calls
-3. **5-Theory Product Domain Propagation** — propagate
-   **(Shape × Device × Phase × Stride × Permutation)** through every
-   operation using 142 transfer functions
-4. **Z3 Constraint Solving** — at each operation site, generate and discharge
-   shape compatibility constraints via Z3
-5. **CEGAR Refinement** — if the initial abstraction is too coarse, discover
-   new predicates from counterexamples and re-check
-6. **Report** — emit shape/device/phase errors with concrete dimension values
-   and fix suggestions
-
----
-
-## Python API
-
-```python
-from src.api import verify_module
-
-# Verify a file
-result = verify_module("model.py", input_shapes={"x": ("batch", 3, 224, 224)})
-print(f"Status: {result.status}")       # "SAFE" or "UNSAFE"
-print(f"Bugs: {len(result.bugs)}")
-print(f"Duration: {result.duration_ms:.0f}ms")
-
+# architecture verification with a known input
+result = tg.verify_architecture(src, input_shapes={"x": (1, 3, 224, 224)})
 for bug in result.bugs:
-    print(f"  {bug.location.line}: {bug.message}")
-```
-
-**One-line gates for the whole PyTorch lifecycle** — verification runs *before*
-the model is compiled, exported, or wrapped, so a shape/device/phase bug is one
-clear `TensorGuardViolation` instead of an opaque downstream failure:
-
-```python
-from tensorguard.torch import (
-    guarded_compile, guarded_onnx_export, guarded_aot_package,
-    verify_compile_guard_interactions,
-)
-from src.framework_hooks import TensorGuardCallback, TensorGuardTrainerCallback
-from src.integrations.production_adapters import (
-    accelerate_prepare_verified, hf_train_verified, keras_fit_verified,
-    lightning_fit_verified, ray_train_verified,
-)
-from src.integrations.hf_hook import guarded_from_pretrained
-
-compiled = guarded_compile(model, input_shapes={"x": ("b", 10)})   # torch.compile
-guard_audit = verify_compile_guard_interactions(model, (x,), input_shapes={"x": ("b", 10)})
-guarded_onnx_export(model, (x,), "model.onnx")                     # ONNX checker + opset + shape-inference round trip
-guarded_aot_package(model, (x,), package_path="m.pt2", dynamic_shapes=ds)  # AOT layout/dtype/device/Dim/lowering gates
-model = accelerate_prepare_verified(accelerator, model, opt, loader)  # accelerate.prepare
-model = guarded_from_pretrained(AutoModel, "org/ckpt")            # HF from_pretrained
-trainer = pl.Trainer(callbacks=[TensorGuardCallback()])           # Lightning hook
-lightning_fit_verified(trainer, lit_model, input_shapes={"x": ("b", 10)})
-hf_train_verified(hf_trainer, input_shapes={"x": ("b", 10)})
-keras_fit_verified(keras_model, input_shapes={"x": ("b", 10)})
-ray_train_verified(ray_trainer, input_shapes={"x": ("b", 10)})
+    print(bug.category, bug.location.line, bug.message)
 ```
 
 ---
 
-## CI / CD Integration
+## What it catches
+
+### 🔺 Shape & dimension bugs
+
+Mismatched layers, bad matmuls, impossible reshapes, broadcast errors, out-of-range
+axes, `cat`/`stack` mismatches, negative/zero dimensions, and more — across **140+
+operator transfer functions** (`matmul`, `conv2d`, `view`/`reshape`, `einsum`,
+`permute`, `gather`/`scatter`, `repeat_interleave`, `fold`/`unfold`, attention
+patterns, RNN/LSTM/GRU state contracts…).
+
+```python
+from src.symexec import analyze_source
+
+src = '''
+import torch
+def f():
+    a = torch.randn(3, 4)
+    b = torch.randn(5, 6)
+    return a @ b          # 4 vs 5
+'''
+print(analyze_source(src).bugs[0].message)
+# matmul contracted-dim mismatch: (3, 4) @ (5, 6) (4 vs 5); RuntimeError at runtime
+```
+
+### 🖥️ Device & dtype bugs
+
+Silent CPU ↔ CUDA mismatches and dtype/autocast violations caught before the kernel
+raises. TensorGuard jointly reasons over a **5-theory product domain**:
+**Shape × Device × Phase × Stride × Permutation**.
+
+### 🧪 "Why isn't it training?" — intent checks
+
+Some bugs never raise an exception; your script runs to completion and the model just
+silently fails to learn. TensorGuard's intent detectors catch the classic
+training-loop mistakes:
+
+```python
+from src.symexec import analyze_source, SymConfig
+
+src = '''
+def train(model, loader, optimizer):
+    for x, y in loader:
+        loss = ((model(x) - y) ** 2).mean()
+        loss.backward()
+        optimizer.step()        # forgot optimizer.zero_grad()
+'''
+bug = analyze_source(src, config=SymConfig.heuristic()).bugs[0]
+print(bug.kind.value)   # missing_zero_grad
+```
+
+| Detector | Fires when… | Consequence |
+|---|---|---|
+| `missing_zero_grad` | `.backward()` + `step()` but no `zero_grad()` | gradients accumulate across iterations |
+| `step_without_backward` | `zero_grad()`/`step()` but no `.backward()` | no gradients computed; model never learns |
+| `backward_without_step` | `.backward()` but no `step()` | gradients computed, never applied |
+| `backward_no_grad` | `.backward()` on a detached tensor (`loss.detach().backward()`) | raises *"does not require grad"*; no gradients flow |
+
+Plus footgun checks: calling `module.forward(x)` instead of `module(x)`, missing
+`super().__init__()`, `.data` autograd bypass, discarded out-of-place transforms,
+`.backward()` on a non-scalar, `.numpy()` on a grad tensor, and more.
+
+### 📦 "Will my checkpoint load?" — the weights layer
+
+TensorGuard derives the exact `state_dict` shape contract **from your model code**, so
+you can certify a checkpoint matches a model *without loading either*.
+
+```python
+from src.symexec.model_contract import derive_model_contract
+
+contract = derive_model_contract(open("model.py").read(), "Net()")
+print(contract.params)
+# {'fc1.bias': (256,), 'fc1.weight': (256, 784),
+#  'fc2.bias': (10,),  'fc2.weight': (10, 256)}
+```
+
+Deployment- and resume-time gates cover the things that break *after* training:
+
+- **Checkpoint `state_dict` compatibility** — missing/unexpected keys, tied weights,
+  tensor-parallel shards, dtype drift (`verify_checkpoint_state_dict`)
+- **LoRA / PEFT adapters** — rank, `target_modules`, merged state, quantized bases
+  (`verify_lora_adapter_compatibility`)
+- **Optimizer state** — AdamW / Adafactor / fused / sharded resume (`verify_optimizer_state`)
+- **Export & serving** — GGUF/llama.cpp (`verify_gguf_export_contract`), ONNX
+  (`verify_onnx_export_contract`), `torch.compile` guard parity, CUDA-graph capture
+  eligibility (`verify_cuda_graph_capture_eligibility`), and TorchServe/FastAPI
+  request→model schema gates (`verify_serving_schema`)
+
+### 📚 Real-library contracts (differentially tested against the real thing)
+
+`einops` (`rearrange`/`reduce`/`repeat`), `nn.MultiheadAttention` & SDPA,
+`torch.linalg` (solve/inv/cholesky/SVD/eig/QR), `grid_sample`/`affine_grid`,
+`torchvision.transforms.v2`, `embedding_bag` & TorchRec jagged embeddings,
+`torch.distributions` shapes, named tensors, complex/FFT, `vmap` & `torch.func`
+autodiff transforms, loss target/reduction contracts, and `torch.sparse` layouts —
+each verified by shape-only models **differentially checked against real `torch`/`einops`**.
+
+```python
+import tensorguard as tg
+
+tg.verify_einops(...)               # non-divisible patch embeds caught
+tg.verify_multihead_attention(...)  # broken q/k/v/mask contracts caught
+tg.verify_linalg_solve(...)         # non-square / broadcast errors caught
+# ...and verify_fft, verify_vmap, verify_loss, verify_embedding_bag, verify_sparse_*, etc.
+```
+
+---
+
+## Three modes — you choose the tradeoff
+
+```
+sound  ⊆  balanced  ⊆  heuristic
+```
+
+| Mode | Use it for | Guarantee |
+|---|---|---|
+| **`sound`** | CI gates, pre-merge checks | **Zero false positives.** Every finding is real; abstains when unsure. |
+| **`balanced`** *(default)* | day-to-day development | Sound shape reasoning; abstains at unmodeled boundaries. |
+| **`heuristic`** | exploratory "what might be wrong here?" triage | Surfaces low-confidence suspicions and intent checks. *May over-warn.* |
+
+```python
+from src.symexec import analyze_source, SymConfig
+
+analyze_source(src, config=SymConfig.sound())                    # only certainties
+analyze_source(src, config=SymConfig.heuristic(min_confidence=0.6))  # max recall
+```
+
+```bash
+tensorguard verify model.py --soundness-mode sound
+```
+
+---
+
+## Drop it into your workflow
+
+**GitHub Action** — findings appear natively in the PR "Files changed" tab and the
+Security → Code scanning view:
 
 ```yaml
 # .github/workflows/tensorguard.yml
-name: TensorGuard Shape Check
-on: [push, pull_request]
-jobs:
-  verify:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
-      - run: pip install -e .
-      - run: tensorguard ci-check models/ --sarif-output results.sarif
-      - uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with: { sarif_file: results.sarif }
-```
-
----
-
-## Configuration
-
-TensorGuard reads configuration from `.reftype.toml` or `[tool.reftype]`
-in `pyproject.toml`:
-
-```toml
-[reftype]
-include = ["models/**/*.py"]
-exclude = ["tests/**"]
-
-[reftype.cegar]
-max_iterations = 10
-```
-
----
-
-## FAQ
-
-**Q: Z3 install fails.**
-A: Ensure Python 3.9+ and pip ≥ 21.0. On Apple Silicon:
-`pip install --no-cache-dir z3-solver>=4.12`.
-
-**Q: False positive on complex `view()`/`reshape()`.**
-A: TensorGuard is conservative with dynamic reshapes. Use `--high-confidence`
-to suppress heuristic findings.
-
-**Q: How fast is it?**
-A: Typical single-model verification completes in < 1 second. The
-`ci-check` and `analyze` commands support `--timeout` and `--workers` for
-large codebases.
-
----
-
-## License
-
-MIT — see [LICENSE](LICENSE) for details.
-
----
-
-## Reproducing the NeurIPS evaluation
-
-The released benchmark artefacts and reproducibility scripts live
-under `experiments_v5/` and `reproducibility/`.
-
-### One command: `make reproduce`
-
-The whole CI-reproducible pipeline is wired into a single target:
-
-```bash
-make reproduce          # regenerate every CI-reproducible artifact + audit
-make reproduce-check    # also assert byte-identical regeneration (no git diff)
-bash scripts/reproduce_main_results.sh  # reviewer-facing wrapper for main result evidence
-```
-
-`make reproduce` regenerates, from source and in dependency order, the
-generated spec docs/tables (`SOUNDNESS_CONTRACT.md`,
-`VERIFIABLE_FRAGMENT.md`, `operator_confidence_table.json`,
-`formal_soundness_appendix.tex`, `proof_footprint_manifest.json`), the frozen
-benchmark corpus and its audit artifact (`real_benchmarks/`), and the
-headline 60-bug Refuted-Proof figure — then runs the numeric-claim audit,
-which recomputes every `x/y` ratio and `%` token in `README.md` from the
-freshly regenerated artifacts. `make reproduce-check` additionally proves
-determinism: regenerating the byte-deterministic artifacts must produce no
-git diff. The orchestrator is `reproducibility/reproduce_all.py`, pinned by
-`tests/test_reproduce_harness.py`. The reviewer wrapper is backed by
-`reproducibility/reviewer_commands.{json,md}`, a checked catalogue of the main
-tables/figures, their regeneration commands, and their committed outputs. The
-generated outputs are also sealed by `reproducibility/artifact_index.{json,md}`,
-a SHA-256 ledger whose aggregate root changes if any indexed artifact is
-tampered with. `make paper-results-freshness` reruns the paper-facing artifact
-checks and gates the resulting dashboards with benchmark-delta semantics.
-
-**Honest scope.** Artifacts that need CUDA, a HuggingFace download, or a
-Lean toolchain cannot be rebuilt in a standard CI box; their committed
-copies are validated by the numeric audit (reported as `QUALIFIED_ENV`,
-with the regeneration command recorded) rather than regenerated in place.
-`make reproduce-full` regenerates those too in an environment that has the
-required toolchains.
-
-### Artifact-Evaluation package
-
-For artifact evaluators we ship a self-contained submission package under
-[`docs/artifact/`](docs/artifact/): an artifact appendix
-([`README.md`](docs/artifact/README.md)) with a claim-by-claim map from each
-paper number to the exact command that regenerates it and the committed file it
-checks, plus the standard [`STATUS.md`](docs/artifact/STATUS.md) (we apply for
-**Available**, **Functional** and **Reusable**),
-[`INSTALL.md`](docs/artifact/INSTALL.md) (container and source paths) and
-[`REQUIREMENTS.md`](docs/artifact/REQUIREMENTS.md). The functional path needs no
-GPU and never executes the analysed code; the paired significance tests are part
-of the deterministic `reproduce_all.py` pipeline, and the whole package is
-pinned by `tests/test_artifact_evaluation.py`.
-
-
-
-The paper headline "**Refuted-Proof on 53/60** historical bugs" and
-the related "raw refute count = 56/60" reported by the per-feature
-ablation are emitted by **a single command**:
-
-```bash
-PYTHONPATH=. python3 reproducibility/reproduce_headline_60bug.py
-```
-
-This runs the full 60-bug historical corpus end-to-end against the
-current `main` branch verifier and prints **both** numbers, with the
-per-item verdict pair written to
-`reproducibility/reproduce_headline_60bug.json`.  The two numbers
-correspond to two clearly-labelled regimes (free-symbolic vs
-per-bug `INPUT_SHAPES` lifted), see
-`reproducibility/reproduce_headline_60bug.md` for the full
-explanation.
-
-### Numeric-claim audit (every headline number is backed)
-
-Every headline numeric claim in `README.md`, `neurips.tex`, and
-`workshop_fmai.tex` is registered in a single audit harness and checked
-against the committed regeneration artifacts under `reproducibility/`:
-
-```bash
-PYTHONPATH=. python3 reproducibility/audit_numeric_claims.py
-```
-
-For each claim the harness (a) confirms the number is still literally
-present in the prose at its cited source, and (b) recomputes it from the
-backing artifact(s) — supporting ratios, percentages, and p-values with
-tolerance. It classifies each claim as `VERIFIED`, `MISMATCH`,
-`QUALIFIED_REGIME` (regime-specific — e.g. the fragment-fair Pytea
-score vs. the stricter 2024-catalogue score, both legitimate),
-`QUALIFIED_ENV` (requires Lean/HF/CUDA, regeneration command recorded
-rather than asserted here), `ORPHAN`, or `SOURCE_MISSING`. A scanner also
-fails the audit if any `x/y` ratio or `%` token appears in `README.md`
-without a registry claim (script-catalogue rows that name their own
-regeneration script in-row are exempt). Results are written to
-`reproducibility/numeric_claims_audit.json` and pinned by
-`tests/test_numeric_claims_audit.py`.
-
-**Honest scope.** This audits the committed artifacts (the outputs of the
-last committed regeneration run) and the prose that cites them; it is not
-a from-scratch regeneration in this process (several artifacts need CUDA,
-HuggingFace downloads, or a Lean toolchain). Pass `--regenerate` to
-additionally invoke each artifact's recorded `meta.command` where the
-environment supports it.
-
-### Precision/recall vs baselines
-
-`evaluation/precision_recall.py` scores five detectors on the frozen,
-balanced, executable ground-truth corpus in `real_benchmarks/` (clean and
-buggy PyTorch modules spanning the shape, device, phase and gradient
-domains) and emits per-method confusion matrices with precision, recall and
-F1:
-
-```bash
-PYTHONPATH=. python3 evaluation/precision_recall.py     # or: make precision-recall
-```
-
-The baselines are real, not strawmen: a forward-only runtime smoke test, a
-stronger runtime baseline that also runs a backward pass and inspects every
-parameter's gradient, the published academic static shape analyser
-[PyTea](https://github.com/ropas/pytea) (built from source and run live on an
-auto-generated entry wrapper), and a no-op floor that always predicts clean.
-On pure shape bugs every real analyser ties with zero false positives; the
-forward-only runtime baseline misses the *silent* gradient-severing bug
-(it raises no exception), and PyTea — shape-only by construction — misses
-both the device and gradient bugs. TensorGuard is the only detector that is
-simultaneously static, sound, and correct across all four domains, with no
-execution, concrete inputs, or GPU required. The committed matrices live in
-`evaluation/confusion_matrices.json` and `evaluation/confusion_matrices.md`
-and are pinned by `tests/test_precision_recall.py`.
-
-`evaluation/stratified_precision_recall.py` then slices the same committed
-predictions by operator family, framework, bug class, model family, and source,
-attaching Wilson confidence intervals plus publication gates so sparse or
-degenerate slices are explicitly marked exploratory. The Step-249 mined corpus
-is used only for positive-only sample-size coverage, not over-claimed as scored
-precision/recall.
-
-### Statistical significance of the comparison
-
-Point estimates are not enough for a paper: `evaluation/significance.py`
-consumes the per-item predictions in `confusion_matrices.json` and tests
-whether TensorGuard's advantage over each baseline is distinguishable from
-noise on this corpus, using the right machinery for paired classifiers:
-
-```bash
-PYTHONPATH=. python3 evaluation/significance.py     # writes significance.{json,md}
-```
-
-Each `tensorguard` vs. baseline pair is scored with an exact two-sided
-**McNemar** test (it conditions on the discordant items — one method right, the
-other wrong), the family of comparisons is **Holm–Bonferroni** corrected, and
-the accuracy gap gets a paired percentile **bootstrap** confidence interval
-(items resampled jointly to preserve the pairing). The implementation lives in
-`src/statistical_rigor.py` (`mcnemar_exact_test`, `paired_bootstrap_accuracy_diff`)
-and is checked against closed-form binomial tails in `tests/test_significance.py`.
-The report is deliberately honest about the small corpus: TensorGuard never
-loses a discordant pair to any baseline, beats the trivial no-op floor
-significantly after correction, yet the gap over PyTea is not yet significant at
-this sample size — exactly the kind of result a reviewer should be able to
-trust.
-
-### Does the localizer help developers? (proxy + controlled-study packet)
-
-A core product claim is that TensorGuard does not only say *which* module is
-unsafe but points at the offending line, so developers fix bugs faster. We treat
-that claim with the same rigor. `evaluation/localization_effort.py` computes the
-**lines-inspected** proxy used in the fault-localization literature on every
-refuted real bug that carries an author-placed `# BUG` marker: assisted effort is
-`dist + 1` lines (scan outward from TensorGuard's reported line), unaided effort
-is the expected linear scan over the module's executable lines.
-
-```bash
-PYTHONPATH=. python3 evaluation/localization_effort.py   # writes localization_effort.{json,md}
-```
-
-On the frozen corpus the median developer inspects two lines with TensorGuard
-versus seven and a half unaided, a roughly three times median reduction whose
-bootstrap interval excludes parity, and a large Cliff's delta whose interval
-excludes zero. The report stays honest: it keeps and shows the two bugs where
-TensorGuard's line misleads. The effect-size estimators (Cliff's delta, Cohen's
-d, Hedges' g, bootstrap CI) live in `src/statistical_rigor.py` and are unit
-tested against textbook values in `tests/test_localization_effort.py`. Because
-this is a proxy and not a human trial, the full randomized controlled trial is
-pre-registered and powered from this effect in
-[`docs/user_study/protocol.md`](docs/user_study/protocol.md). Step 259 now also
-ships a deterministic controlled-study packet:
-
-```bash
-PYTHONPATH=. python3 reproducibility/developer_study.py   # writes developer_study + task_packet artifacts
-```
-
-It freezes the real-bug task battery, participant packet, fix-quality rubric, and
-trust-calibration scoring keys while explicitly recording that no human outcomes
-are claimed yet.
-
-### Backend-agnostic soundness: Z3 vs cvc5 + decidability
-
-Soundness must not hinge on which SMT solver runs. Every verification condition
-is built in a shared predicate IR and can be discharged by either the Z3 or the
-cvc5 backend. `reproducibility/smt_backend_comparison.py` runs a curated suite of
-shape, device, phase and reshape VCs through **both** solvers and tags each with
-its decidability fragment (`src/decidability.py`): the linear shape, device and
-phase patterns are QF_LIA plus finite domains and decidable in P, while
-reshape/flatten total-size is the NP-hard but still decidable NIA fragment.
-
-```bash
-PYTHONPATH=. python3 reproducibility/smt_backend_comparison.py   # writes smt_backend_comparison.{json,md}
-```
-
-Across the suite both solvers return the intended verdict on every VC and are in
-full concordance — identical SAT and UNSAT answers — including on the NP-hard
-reshape fragment, so the result is not an artifact of Z3's propagators. Z3 stays
-the default for its `UserPropagator` interface; cvc5 serves as an independent
-oracle. See [`docs/decidability/smt_backends.md`](docs/decidability/smt_backends.md)
-and `tests/test_smt_backend_comparison.py`.
-
-### The unsound/incomplete boundary, validated against real code
-
-A static verifier is only trustworthy if it states precisely where it stops
-guaranteeing. TensorGuard's contract lives in
-[`SOUNDNESS_CONTRACT.md`](SOUNDNESS_CONTRACT.md) (generated from
-`src/soundness_contract.py`), and `reproducibility/soundness_boundary.py`
-proves the contract's empirical half by running the live verifier across the
-boundary in all three soundness modes:
-
-```bash
-PYTHONPATH=. python3 reproducibility/soundness_boundary.py   # writes soundness_boundary.{json,md}
-```
-
-The four probes confirm the documented behaviour exactly: an in-fragment shape
-bug is refuted in every mode (no false alarm), an in-fragment clean module is
-SAFE in every mode, and an out-of-fragment construct (data-dependent control
-flow, or a tensor coerced to a Python scalar) abstains with UNKNOWN in `sound`
-mode while the permissive `balanced` and `heuristic` modes report SAFE — the
-recall trade-off surfaced as known gap U1, not hidden. See
-[`reproducibility/soundness_boundary.md`](reproducibility/soundness_boundary.md)
-and `tests/test_soundness_boundary.py`.
-
-### Open benchmark leaderboard
-
-To let the community drive recall up, `reproducibility/leaderboard.py` scores
-tools on the frozen, content-addressed `real_benchmarks/` corpus (sixteen real
-`nn.Module` cases, eight clean and eight buggy, each pinned by sha256 so the
-benchmark cannot drift):
-
-```bash
-PYTHONPATH=. python3 reproducibility/leaderboard.py   # writes leaderboard.{json,md}
-```
-
-TensorGuard is the reference entry and scores perfect recall and precision on
-the frozen corpus. Community tools submit SSH-signed per-case verdict files;
-CI verifies the signer, **recomputes** every metric from raw verdicts, and runs
-a monthly freshness check, so the public board has a real trust anchor without
-trusting self-reported numbers. Precision must stay at one — the open challenge
-is higher recall on ever-harder real-world bugs with no new false alarms. See
-[`reproducibility/leaderboard.md`](reproducibility/leaderboard.md),
-[`docs/leaderboard/CONTRIBUTING.md`](docs/leaderboard/CONTRIBUTING.md) and
-`tests/test_leaderboard.py`.
-
-The model gallery has its own public certification queue:
-`reproducibility/model_zoo_certification.py` reruns the clean and buggy gallery
-variants, emits deterministic status badges and failure explanations, and is
-checked monthly by `.github/workflows/model-zoo-certification.yml`.
-
-### Beyond the architecture: training-loop hazard checks
-
-Phase 10 extends TensorGuard past the `nn.Module` forward pass to the training
-loop around it, where bugs are silent: a detached loss trains nothing, a
-missing `zero_grad()` accumulates gradients across steps, an optimizer that is
-never stepped never learns. `src/training_loop_checks.py` adds an AST-based
-analyzer for a curated set of these hazards (gradient-flow break, missing
-`zero_grad`, missing `optimizer.step`, `zero_grad` ordered after `backward`,
-and an fp16 autocast with no `GradScaler`), each tagged sound or heuristic.
-
-`reproducibility/training_loop_hazards.py` proves the analyzer against **real
-PyTorch execution**: for every case it runs the equivalent seeded loop and
-confirms the static verdict matches the runtime symptom (does `backward` raise,
-do parameters change, do gradients accumulate):
-
-```bash
-PYTHONPATH=. python3 reproducibility/training_loop_hazards.py   # writes training_loop_hazards.{json,md}
-```
-
-Across the six cases the static verdict matches real runtime behaviour every
-time — clean loops stay silent and train, each buggy loop raises exactly the
-expected hazard and exhibits the matching failure. See
-[`reproducibility/training_loop_hazards.md`](reproducibility/training_loop_hazards.md)
-and `tests/test_training_loop_checks.py`.
-
-### Tensor-parallel sharding consistency
-
-Tensor parallelism is the distributed pattern with no good static tool today:
-column/row-parallel linears, MQA/GQA attention heads, and sequence-parallel
-LayerNorm must all agree on shard divisibility, communication flags, KV-head
-replication, projection matrices, and normalized axes, or the model silently
-mis-computes or crashes only on N GPUs. `src/tensor_parallel_checks.py` models
-Megatron-style linear and attention stacks plus HuggingFace-style grouped-query
-attention, including explicit `head_dim` configs where
-`hidden_size != num_heads * head_dim`.
-
-`reproducibility/tensor_parallel_sharding.py` proves it against **real
-PyTorch** by hand-sharding reference linear and attention modules across
-simulated ranks:
-
-```bash
-PYTHONPATH=. python3 reproducibility/tensor_parallel_sharding.py   # writes tensor_parallel_sharding.{json,md}
-```
-
-The deterministic artifact now covers 10 cases: canonical Megatron MLP at two
-and four ranks, HF-style GQA with independent `head_dim`, Megatron-style MQA
-with replicated KV heads, installed `transformers` `LlamaAttention` projection
-shapes, and negative KV/sequence-parallel LayerNorm cases. See
-[`reproducibility/tensor_parallel_sharding.md`](reproducibility/tensor_parallel_sharding.md)
-and `tests/test_tensor_parallel_checks.py`.
-
-### Distributed shard and pipeline contracts
-
-`src/distributed_verification.py` now also checks PyTorch composable FSDP2 and
-DTensor-style per-parameter sharding without starting a process group. It
-computes rank-specific local shapes from `DeviceMesh` placements (`Shard`,
-`Replicate`, `Partial`), catches invalid mesh/placement/rank-coordinate
-contracts, and refuses to overclaim on uneven shards unless a concrete rank is
-provided. The shard splitter is pinned against PyTorch's own
-`torch.distributed.tensor` placement helper in `tests/test_distributed_verification.py`.
-
-The same gate verifies explicit pipeline-parallel stage-boundary contracts:
-per-microbatch activation shapes, consumer input expectations, checkpoint
-recompute boundaries, and concrete inter-stage dtype/device requirements are
-checked before a split graph reaches a pipeline runtime
-(`PipelineBoundarySpec`, `verify_pipeline_boundaries`).
-
-### Quantization & export safety
-
-Two of the most common ways a model that passes every float unit test still
-fails in production are **quantization placement** and **export tracing**.
-`src/quant_export_checks.py` adds an instance-free analyzer for both, while
-`src/quantization_verify.py` checks real prepared/converted eager modules and FX
-graphs for observer calibration, activation qscheme placement, and missing
-`Quantize` / `DeQuantize` boundaries. `reproducibility/quant_export_safety.py`
-cross-checks source-level verdicts against live PyTorch:
-
-```bash
-PYTHONPATH=. python3 reproducibility/quant_export_safety.py   # writes quant_export_safety.{json,md}
-```
-
-On the quantization side, performing tensor-tensor arithmetic (`a + b`) inside a
-quantized module instead of routing it through `FloatFunctional` has no
-quantized `aten::add` kernel and raises `NotImplementedError` at runtime; the
-analyzer flags exactly that, plus asymmetric `QuantStub` / `DeQuantStub`
-boundaries. The instance-level gate also catches uncalibrated observers,
-per-channel activation observers, converted quantized modules fed by float
-inputs, and FX graphs that leak quantized tensors at public outputs. On the
-export side it reuses the verifiable-fragment grammar as the
-single source of truth and surfaces the subset of out-of-fragment constructs
-(data-dependent control flow, data-dependent iteration, tensor-to-scalar
-`.item()`) that make `torch.export` tracing fail with a data-dependent guard
-error. Every export case is consistent with live `torch.export`, and the
-quantized-add hazard matches the live runtime exception. See
-[`reproducibility/quant_export_safety.md`](reproducibility/quant_export_safety.md)
-and `tests/test_quant_export_checks.py`; eager/FX quantization placement is
-pinned by `tests/test_quantization_verify.py`.
-
-### Auto-generated operator coverage
-
-Coverage is the perennial bottleneck for any static tool: PyTorch ships
-hundreds of layers and the ecosystem adds thousands more, and hand-writing a
-shape transfer for each does not scale. `src/stub_autogen.py` derives shape
-stubs **directly from the real `torch.nn` constructor signatures** and known
-shape contracts, so coverage grows from one curated list instead of one
-hand-written transfer per layer:
-
-```bash
-PYTHONPATH=. python3 reproducibility/stub_autogen_coverage.py   # writes stub_autogen_coverage.{json,md}
-```
-
-Autogeneration is **sound by abstention**: a stub is emitted only when the
-layer's shape contract is exactly known (last-dim-linear or shape-preserving),
-and layers whose output depends on stride/padding/attention internals
-(`Conv2d`, `MaxPool2d`, `MultiheadAttention`) are classified `UNSUPPORTED` and
-left opaque rather than guessed. Across the curated targets every generated stub
-is validated against the layer's live forward output shape, and a previously
-unseen third-party `MyProjection(in_features, out_features)` is auto-covered
-from its signature alone — its predicted shape matches the real forward. See
-[`reproducibility/stub_autogen_coverage.md`](reproducibility/stub_autogen_coverage.md)
-and `tests/test_stub_autogen.py`.
-
-### Upstream: an opt-in verification hook for `nn.Module`
-
-The end-goal is for static verification to be a one-line opt-in inside PyTorch
-itself, so entire classes of runtime errors disappear from the ecosystem.
-[`docs/upstream/pytorch_proposal.md`](docs/upstream/pytorch_proposal.md) is a
-draft RFC for exactly that, and `src/upstream_hook.py` is a **working reference
-implementation** built on stock `register_forward_pre_hook` — no core changes
-required for the prototype:
-
-```python
-from src.upstream_hook import attach_verifier
-attach_verifier(model, input_shapes={"x": (2, 8)})   # opt-in, non-breaking
-model(x)   # verified once on first forward; precise error if unsafe, transparent if safe
-```
-
-It exposes three layers — instance verification, an attached pre-hook, and a
-`@verifiable` class decorator — each verifying a live module with **zero changes
-to model code** (the source is extracted automatically). Verdicts are
-three-valued and abstention-aware, so a default-on policy never blocks on
-`UNKNOWN`. `reproducibility/upstream_hook_demo.py` proves it against **real
-PyTorch**: a buggy chained-`Linear` module whose real `forward` raises is
-rejected at the boundary with a one-line diagnostic *before* the kernel runs,
-while a clean module is proven `SAFE`, runs transparently, and returns the
-expected shape — static rejection holding if and only if the real runtime fails.
-See
-[`reproducibility/upstream_hook_demo.md`](reproducibility/upstream_hook_demo.md)
-and `tests/test_upstream_hook.py`.
-
-### Extended benchmark corpus (scale evidence)
-
-The frozen 16-case real-bug corpus is great for provenance but too small to
-report rates with confidence. `corpus_extended/` adds a **parameterized,
-content-addressed corpus of two hundred twenty-seven cases** (one hundred
-fifty-three buggy, seventy-four clean) spanning nine shape-error families
-(chained-`Linear` in/out mismatches, `Conv2d` channel mismatches, flatten→FC
-head mismatches, `matmul` inner-dim mismatches, `cat`/`add` shape mismatches,
-plus clean MLP, conv and normalized-MLP families). Every case label is **ground
-truth by construction**: `corpus_extended/build.py` instantiates each generated
-module and runs a real `forward` with the recorded input shapes, requiring that
-buggy cases raise with the expected error substring and clean cases run cleanly,
-then content-hashes each into a frozen manifest. `reproducibility/corpus_extended_score.py`
-scores the real verifier over **every** case (no cherry-picking) in both
-`balanced` and `sound` modes and reports recall, precision, specificity and
-per-family recall, each with a **Wilson score ninety-five percent confidence
-interval**. On this corpus TensorGuard catches all one hundred fifty-three
-runtime-failing cases with zero false positives on the seventy-four clean
-modules in both modes. See
-[`reproducibility/corpus_extended_score.md`](reproducibility/corpus_extended_score.md)
-and `tests/test_corpus_extended.py`.
-
-### Redistributable by construction (provenance & license)
-
-Because every extended-corpus case is **synthetically generated** rather than
-copied from any repository, the dataset is redistributable with no licensing
-encumbrance. `corpus_extended/provenance.py` attaches a structured provenance
-record to each case (origin, generator family, inspiration reference, authors,
-license, SPDX), and `reproducibility/corpus_provenance_audit.py` proves the whole
-corpus is clean to redistribute: every case has a complete provenance record, is
-marked synthetic and redistributable, and contains no copyright, SPDX or license
-markers in its source; public PyTorch issue URLs are recorded only as
-*inspiration references* (no code is copied from them); and the dataset is
-released under the repository's MIT license. See
-[`reproducibility/corpus_provenance_audit.md`](reproducibility/corpus_provenance_audit.md)
-and `tests/test_corpus_provenance.py`.
-
-### Offline issue miner (human-in-the-loop corpus growth)
-
-`corpus_extended/issue_miner.py` shows an auditable, **fully offline** path for
-growing the corpus from issue reports. It runs over frozen local fixtures
-(`corpus_extended/issue_fixtures/*.json`) so it is replayable in CI with no
-network access, and it never trusts an issue's claim: it extracts the fenced
-`python` block, requires an `nn.Module` named `M`, **replays the forward against
-real PyTorch**, and only proposes a buggy candidate when the module actually
-raises with the reported error substring. Feature requests, code-free reports and
-unreproducible claims are rejected with a reason. A corroborated candidate stays
-`proposed` until a human adds its id to an allowlist
-(`issue_fixtures/accepted.json`), so nothing enters the corpus without both a
-reproduced failure and explicit human acceptance. See
-[`reproducibility/issue_miner_demo.md`](reproducibility/issue_miner_demo.md) and
-`tests/test_issue_miner.py`.
-
-### Stratified per-class evaluation
-
-A strong average can hide a weak bug class, so
-`reproducibility/corpus_stratified.py` stratifies the extended corpus **by
-class** and reports per-bug-class recall and per-clean-class specificity, each
-with a Wilson 95 percent confidence interval, plus macro-averages (each class
-weighted equally) and the honest *worst-class* recall lower bound. On this corpus
-every buggy class is fully caught and every clean class is free of false
-positives in both modes, with a macro recall and macro specificity of one. See
-[`reproducibility/corpus_stratified.md`](reproducibility/corpus_stratified.md)
-and `tests/test_corpus_stratified.py`.
-
-### Held-out blind split (pre-registered, no overfitting)
-
-To rule out overfitting the verifier to its development corpus,
-`corpus_extended/blind_split.py` freezes a **held-out blind split** of one
-hundred eighty-six cases generated from parameter grids **disjoint** from the dev
-corpus (every blind case id is provably absent from the dev set). The hypotheses
-are pre-registered in
-[`corpus_extended/PRE_REGISTRATION.md`](corpus_extended/PRE_REGISTRATION.md) —
-which names the frozen manifest's SHA-256 — *before* the verifier is scored on
-the split. `reproducibility/blind_split_eval.py` then scores TensorGuard exactly
-once and checks the registration: zero false positives on clean blind modules,
-recall above the registered floor, and an overfitting gap within the registered
-bound. On the blind split TensorGuard catches all one hundred thirty-eight
-runtime-failing cases with zero false positives on the forty-eight clean modules
-and a zero overfitting gap in both modes. The broader evaluation protocol is now
-hash-registered in
-[`reproducibility/evaluation_protocol.md`](reproducibility/evaluation_protocol.md),
-freezing split roles, tuning locks, metric formulas, and analysis scripts before
-downstream scoring. See
-[`reproducibility/blind_split_eval.md`](reproducibility/blind_split_eval.md) and
-`tests/test_blind_split.py`.
-
-### Cross-version verdict stability
-A static verifier is only trustworthy if its verdict does not silently depend on
-the host stack. `reproducibility/cross_version_stability.py` scores all 227
-extended-corpus cases with target `torch` and `torchvision` imports blocked, then
-re-scores a deterministic sample plus source-level torchvision/CPU/MPS fixtures
-under qualified PyTorch 2.1-2.9 and torchvision 0.16-0.24 version matrices. It
-also links the Python 3.9-3.14 hash-seed determinism proof and records Linux,
-macOS, CUDA-less CPU, and MPS qualification commands without pretending every
-wheel/backend was installed on one host. See
-[`reproducibility/cross_version_stability.md`](reproducibility/cross_version_stability.md)
-and `tests/test_cross_version_stability.py`.
-
-### Cross-Python determinism
-A byte-identical regeneration claim is only meaningful if the determinism is
-intrinsic rather than an accident of one interpreter build. The dominant source
-of cross-Python and cross-run nondeterminism in pure-Python code is hash
-randomization, which perturbs dictionary and set iteration order through the
-`PYTHONHASHSEED` environment variable. The harness
-`reproducibility/cross_python_determinism.py` scores a deterministic corpus
-slice in fresh subprocesses under five fixed hash seeds plus three genuinely
-randomized runs, and confirms every subprocess returns one identical
-verdict-set digest. Because hash-seed independence is exactly what makes a
-pure-Python pipeline portable across interpreters, this is machine-checkable
-evidence the verdict is fixed by the input alone. The supported interpreter
-matrix spans CPython three point nine through three point fourteen; the full
-multi-interpreter install is reported as environment-qualified with its CI
-matrix command, while the hash-randomization invariance proven here is the
-mechanism that makes the matrix pass. See
-[`reproducibility/cross_python_determinism.md`](reproducibility/cross_python_determinism.md)
-and `tests/test_cross_python_determinism.py`.
-
-### Natural-distribution coverage
-Bug corpora answer "does it catch real bugs"; the complementary usability
-question is how often the verifier returns a definite answer on ordinary,
-idiomatic model code instead of abstaining. The study
-`reproducibility/natural_distribution_study.py` scores **174** clean,
-public-repo-style model instances across fourteen families and nine provenance
-strata (torchvision, timm, HuggingFace, nanoGPT, U-Net, PyTorch examples, and
-more). Every model executes under eager PyTorch with its declared inputs, which
-the regression test re-verifies live. Across all three soundness modes
-TensorGuard returns a decided SAFE verdict on every case, with zero abstentions
-and zero false alarms; the generated artifact reports the corresponding Wilson
-upper bound for the clean natural-distribution false-positive rate. See
-[`reproducibility/natural_distribution_study.md`](reproducibility/natural_distribution_study.md)
-and `tests/test_natural_distribution_study.py`.
-
-### Scaling with model size
-A static verifier is only useful if it scales gracefully on large models. The
-study `reproducibility/scaling_study.py` sweeps feed-forward depth from one to
-sixty-four stacked layers and records the verifier's deterministic
-structural-work metric, fitting an ordinary least-squares line of analysis work
-against depth. The fit is exact: analysis work is linear in model size with a
-coefficient of determination above zero point nine nine nine, every size is
-decided with no abstention or blow-up, and CEGAR refinement stays bounded as the
-model grows. A separate machine-dependent companion records wall-clock per size
-with a log-log regression exponent below three, confirming polynomial rather
-than exponential scaling; the regression test re-asserts this live. See
-[`reproducibility/scaling_study.md`](reproducibility/scaling_study.md) and
-`tests/test_scaling_study.py`. A companion Pareto study now joins model size,
-operator coverage, CEGAR budget, abstention, and hardware-normalized latency
-ratios without committing raw machine timings
-([`evaluation/pareto_curves.md`](evaluation/pareto_curves.md)).
-
-### Head-to-head against baselines
-The sharpest reviewer question is "why not just use an existing tool?". The
-study `reproducibility/baseline_head_to_head.py` answers it on the same corpus,
-comparing TensorGuard against the realistic off-the-shelf options on a
-deterministic stratified subset covering every bug family. The standard static
-type checker mypy catches none of the shape bugs, because it does not model
-tensor shapes. PyTorch's own torch.export tracing does catch every bug in the
-subset, but only by instantiating the model, building concrete example inputs,
-and executing a trace; it is a dynamic baseline. TensorGuard reaches the same
-verdicts on every subset bug with zero false alarms, and on the full extended
-corpus it catches all one hundred fifty-three runtime-failing models with zero
-false alarms on the seventy-four clean ones. Crucially it is the only tool here
-that is simultaneously static, input-free, and complete on the corpus. See
-[`reproducibility/baseline_head_to_head.md`](reproducibility/baseline_head_to_head.md)
-and `tests/test_baseline_head_to_head.py`. A broader same-case benchmark now
-adds PyTea, Pyright, jaxtyping/torchtyping availability, torch.export/Dynamo
-guards, runtime smoke tests, and a frozen GPT-4.1-nano result, with every
-abstention and tool limitation explicit
-([`reproducibility/head_to_head_step252.md`](reproducibility/head_to_head_step252.md)).
-
-### False-positive stress test
-The single most important promise of a sound verifier is no false alarms, so it
-deserves a dedicated adversarial-for-clean corpus. The study
-`reproducibility/fp_stress_eval.py` scores
-`corpus_extended/fp_stress.py`, a generated corpus of one hundred one clean
-models across ten parametric families, each swept over a grid of widths, depths,
-kernel sizes and channel counts and built around the tricky-but-valid shape,
-broadcast, reshape, concat and normalisation patterns most likely to trip a
-shape checker. Every model executes under eager PyTorch, which the regression
-test re-verifies live. A false alarm is an UNSAFE verdict on such a clean model;
-abstention is reported separately as coverage. TensorGuard raises zero false
-alarms across all one hundred one models in every soundness mode, with a Wilson
-upper bound below four percent. See
-[`reproducibility/fp_stress_eval.md`](reproducibility/fp_stress_eval.md) and
-`tests/test_fp_stress.py`.
-
-### Mutation testing: do injected bugs get caught?
-Zero false alarms is only half the story; the dual question is *sensitivity*.
-`reproducibility/mutation_clean_models.py` runs a classical mutation-testing
-protocol over the clean stress and natural corpora: it applies five local
-mutation operators (`corpus_extended/model_mutators.py` — bump a Linear or Conv
-in/out width by one, or cast the forward input to an integer dtype), keeps only
-mutants that *genuinely* raise under eager PyTorch, minimizes every admitted
-mutant while preserving its exception signature, and measures how many the
-verifier kills with an UNSAFE verdict. Across 756 genuine-bug mutants drawn from
-275 validated-clean parents, sound mode kills every one — a kill rate of one
-with a Wilson lower bound above 99% — and never once reports a genuine bug SAFE.
-The minimizer shrinks 716 mutants and removes 2,990 logical lines while proving
-every minimized reproducer is 1-line-minimal under failure-preserving deletion.
-Building this harness surfaced and fixed three real soundness gaps: a shape mismatch hidden
-inside an `nn.Sequential` had been silently abstained to SAFE; source-level
-dtype casts such as `x.long()` were not parsed; and an integer tensor fed into a
-floating layer (Linear, Conv, recurrent, attention/transformer or
-normalisation), including inside a Sequential, went unflagged. See
-[`reproducibility/mutation_clean_models.md`](reproducibility/mutation_clean_models.md),
-`tests/test_mutation_clean_models.py` and
-`tests/test_sequential_soundness_fixes.py`.
-
-### Differential testing against the live torch dispatcher
-The strongest possible oracle for a static verifier is the framework it reasons
-about. `reproducibility/differential_dispatcher.py` generates two thousand random
-PyTorch modules across five architectural families (Linear MLPs, Conv stacks,
-Conv into flatten into Linear, reshape pipelines and concatenation branches),
-choosing each dimension so that adjacent-layer boundaries are compatible or not
-purely by chance. Every module is judged twice: by a real eager-PyTorch forward
-pass, which either runs cleanly or raises, and by TensorGuard's sound-mode
-verdict. The two judgements are crossed into an agreement matrix whose two
-load-bearing cells must stay empty: a soundness violation would be a module
-proved SAFE that torch nonetheless rejects, and a false alarm would be a clean
-module rejected as UNSAFE. On all two thousand modules TensorGuard agrees with
-the live dispatcher exactly: zero soundness violations, zero false alarms and not
-a single abstention, so every one of the two thousand verdicts is both decided
-and correct. See
-[`reproducibility/differential_dispatcher.md`](reproducibility/differential_dispatcher.md)
-and `tests/test_differential_dispatcher.py`.
-
-### Property-based testing of full module ASTs, with shrinking
-Differential testing generates source strings; property-based testing generates a
-structured, compositional algebra of modules and, crucially, *shrinks* any failure
-to a minimal counterexample. `corpus_extended/module_ast.py` defines a typed
-module-AST DSL (Linear, Conv2d, ReLU and Flatten nodes across a two-dimensional
-vector regime and a four-dimensional image regime) together with a Hypothesis
-strategy that builds whole module ASTs rather than individual operators. The
-property under test is the same soundness contract as everywhere else: against the
-live eager-PyTorch oracle, the sound verifier must never prove a module SAFE that
-torch rejects, and never reject a module torch accepts. A seeded sweep of eight
-hundred structured ASTs reproduces this exactly, with perfect agreement on every
-decided verdict and zero abstentions. The DSL also ships a deterministic
-delta-debugging shrinker: starting from a deliberately large buggy module it
-drops layers and shrinks dimensions until no single reduction preserves the
-failure, collapsing a seven-layer module to a one-layer minimal counterexample
-that the real verifier still flags UNSAFE. See
-[`reproducibility/hypothesis_module_ast.md`](reproducibility/hypothesis_module_ast.md)
-and `tests/test_hypothesis_module_ast.py`.
-
-### Evidence dashboard (static site)
-The campaign produces dozens of committed, byte-deterministic JSON artifacts; a
-reviewer should be able to take them in at a glance. `reproducibility/build_dashboard.py`
-reads a curated set of those artifacts and regenerates a single self-contained
-static site at [`docs/dashboard/index.html`](docs/dashboard/index.html) (plus its
-`docs/dashboard/data.json` data bundle) with no server, no network and no external
-dependencies: open the file and the headline numbers, per-artifact metrics and raw
-values are all there, with client-side category tabs and a live text filter. The
-site is built purely from the committed artifacts, so it is itself
-byte-deterministic and is verified by the reproduction harness. See
-`tests/test_build_dashboard.py`.
-
-### Time-to-detect: static verification vs the first failing forward
-A dynamic test only surfaces a shape or channel bug once execution actually
-reaches the offending operation, which requires constructing a concrete input and
-successfully running every preceding op; a static verifier reports the same bug
-before any execution, with no input at all. `reproducibility/time_to_detect.py`
-quantifies that gap on four hundred buggy modules with a hardware-independent
-proxy measured in operations rather than wall-clock: the static detect depth is
-zero for every bug (and TensorGuard reports all four hundred UNSAFE), whereas the
-dynamic baseline must execute a median of one operation, and as many as seven,
-before the bug manifests, with well over half of the bugs surfacing only after at
-least one successful operation. See
-[`reproducibility/time_to_detect.md`](reproducibility/time_to_detect.md) and
-`tests/test_time_to_detect.py`.
-
-### Per-domain ablation: how much each abstract domain contributes
-TensorGuard's reduced product is built from five abstract domains — shape, dtype,
-device, phase and gradient — and a natural reviewer question is whether each one
-actually earns its place. `reproducibility/domain_ablation.py` answers this with a
-leave-one-domain-out study over three hundred labeled modules, each carrying
-exactly one injected bug of a known domain. With every domain enabled, recall on
-each of the four verification domains is perfect, sixty out of sixty. Removing a
-single domain — `device` and `gradient` through their genuine runtime toggles,
-`shape` and `dtype` through report-level attribution on the always-on base view —
-drops recall on that domain's own bugs all the way to zero while leaving recall on
-the other domains untouched, so the marginal contribution of every verification
-domain is exactly one and the domains are fully orthogonal. To keep the ablation
-method honest, the harness cross-checks the two device-and-gradient ablation paths
-against each other and finds they agree on all six hundred comparisons. Phase is
-reported truthfully as diagnostic-only: it records phase structure but refutes
-nothing, so its recall is zero by design. The same labeled corpus also surfaced
-and fixed a real soundness gap — a boolean tensor fed into a float-parameter layer
-such as `nn.Linear` or `nn.Conv2d` was previously accepted as SAFE even though
-eager PyTorch rejects it — now caught in sound mode without false-alarming clean
-float inputs. See
-[`reproducibility/domain_ablation.md`](reproducibility/domain_ablation.md),
-`tests/test_domain_ablation.py` and `tests/test_bool_dtype_soundness.py`.
-
-### Reduced product vs independent domains: the precision the reduction buys
-TensorGuard's Python-level analysis is a *reduced* product of three abstract
-domains — interval, type-tag and nullity — that exchange information through
-inter-domain reductions. `reproducibility/reduced_product_ablation.py` measures
-exactly what that exchange is worth by running the real `ProductInterpreter`
-twice over the same labeled programs — once with the production reduction engine
-and once with the reductions switched off (the independent direct product) — and
-cross-checking every verdict against a CPython execution oracle. On a battery of
-guarded programs where an `isinstance` check makes the value provably non-null,
-the independent product raises seven spurious null-dereference warnings because
-its nullity domain never hears about the type guard; the reduced product, whose
-type-tag-to-nullity reduction propagates that fact, raises none, and executing
-the corresponding functions under CPython confirms all seven warnings were
-unreachable false alarms. Crucially the reduction never hides a real bug: on
-every program where CPython genuinely dereferences `None`, the reduced product
-still reports it, and on every program the reduced abstract value is `leq` the
-independent one, so `γ(reduced) ⊆ γ(independent)` — the reduction is a sound,
-monotone refinement, more precise but never unsound. See
-[`reproducibility/reduced_product_ablation.md`](reproducibility/reduced_product_ablation.md)
-and `tests/test_reduced_product_ablation.py`.
-
-### CEGAR refinement depth: what extra refinement buys, and what it costs
-The shape-CEGAR loop discovers a module's implicit input contracts by
-accumulating shape predicates from counterexamples, and its iteration budget is a
-knob a reviewer will want characterised. `reproducibility/cegar_depth_ablation.py`
-sweeps that budget from zero upward over a corpus of infeasible-contract bugs and
-clean controls — every case validated against real PyTorch, every buggy module
-one that no input width can make run — and separates three effects. Detection is
-depth-invariant: the direct shape check already refutes every infeasible contract
-at depth zero, so recall stays full and, just as importantly, clean controls
-never false-alarm at any depth — CEGAR depth is a diagnosis knob, not a soundness
-knob. What the refinement actually buys is *contract-level* diagnostic precision:
-the precise "x cannot be both width A and width B" root cause is absent at depth
-zero and reaches every bug at the refinement knee of depth one, then plateaus.
-And the cost is bounded by the convergence theorem — total refinement work climbs
-only until the monotone predicate accumulation converges (depth two on this
-corpus) and is exactly flat thereafter, so any budget past the knee is free but
-useless. A deterministic wall-clock companion records the same curve in seconds.
-See [`reproducibility/cegar_depth_ablation.md`](reproducibility/cegar_depth_ablation.md)
-and `tests/test_cegar_depth_ablation.py`.
-
-### Stage-wise ablation: the whole verifier stack, not just one knob
-`reproducibility/stagewise_ablation.py` stitches the ablation story together on
-live code paths: AST graph extraction catches a seeded shape bug; each
-verification domain loses its own detection when ablated while phase remains
-diagnostic-only; every registered cross-domain reduction (including truthiness)
-has a concrete refining witness; CEGAR reaches full refined-contract diagnostics
-at depth one; a third-party `FancyBlock` stub turns an opaque clean model into a
-SAFE `STUB` model while still catching bad contracts; and sound mode separates a
-Lean-backed `torch.relu` transfer from a heuristic `torch.unique` abstention. See
-[`reproducibility/stagewise_ablation.md`](reproducibility/stagewise_ablation.md)
-and `tests/test_stagewise_ablation.py`.
-
-### PR-history survival study: before-merge catchability, without overclaiming
-`reproducibility/pr_history_survival.py` asks whether the current verifier would
-have rejected the runtime-signature category behind a fix-linked GitHub PR or
-issue before the fix merged. Because the corpus does not redistribute historical
-pre-fix source, the answer is explicitly category-level: real GitHub fix links
-provide the multiplicities, while repo-authored reproducers and trusted source
-witnesses provide the live PyTorch/TensorGuard replay. The artifact also reports
-structural detection-depth and CI-cost proxies, not wall-clock theater. See
-[`reproducibility/pr_history_survival.md`](reproducibility/pr_history_survival.md)
-and `tests/test_pr_history_survival.py`.
-
-### Statistical power: every headline number is sample-size-justified
-A confidence interval says how precise an estimate is; a power analysis says
-whether the sample was ever large enough to *earn* the claim.
-`reproducibility/statistical_power.py` runs an exact, SciPy-free binomial power
-analysis over every headline claim, reading the observed counts straight out of
-the committed artifacts so the arithmetic tracks the real evidence. For each
-zero-false-alarm claim it reports the exact one-sided rule-of-three upper bound,
-the power the achieved sample had to expose a one-, two- or five-percent true
-rate, and the sample size that would be required to certify each — then flags
-honestly which corpora clear that bar and which lean on the pooled evidence,
-where over fourteen hundred clean models with zero observed false alarms pin the
-aggregate false-alarm rate under a quarter of one percent. Perfect-recall claims
-get the symmetric lower-bound and recall-floor treatment, and each paired
-McNemar comparison is printed next to the minimum discordant count significance
-demands, making the sample-size justification explicit rather than implied. See
-[`reproducibility/statistical_power.md`](reproducibility/statistical_power.md)
-and `tests/test_statistical_power.py`.
-
-### Effect sizes and dual correction: not just significant, but how much
-Significance answers *whether* TensorGuard beats a baseline; a reviewer also
-wants *by how much*, and they want the comparisons corrected under whichever
-multiple-comparison notion they favour. `reproducibility/effect_sizes.py`
-consumes the same per-item correctness vectors and attaches to **every**
-comparison a battery of paired effect sizes — Cohen's g with its conventional
-magnitude band, a Haldane-Anscombe continuity-corrected odds ratio that stays
-finite even when a baseline never wins a discordant pair, and the risk
-difference with its number-needed-to-evaluate — then corrects the whole family
-*twice*, once for the family-wise error rate (Holm-Bonferroni) and once for the
-false-discovery rate (Benjamini-Hochberg), reporting both adjusted verdicts side
-by side. The strongest contrast lands as a large effect that survives both
-corrections, and the two corrections agree on the count. See
-[`reproducibility/effect_sizes.md`](reproducibility/effect_sizes.md)
-and `tests/test_effect_sizes.py`.
-
-### Cross-corpus meta-analysis: no synthetic/real pooling trick
-`reproducibility/statistical_meta_analysis.py` turns every major evidence source
-into a suite-level estimate, then reports distribution-stratified robust
-bootstrap intervals. Real minimized bugs, runtime-silent semantic bugs,
-negative controls where runtime value checks beat TensorGuard, mutations,
-fuzzing, clean stress tests, natural clean models, and false-UNKNOWN checks stay
-separate; raw case-weighted rates are diagnostic-only, never a global headline.
-See
-[`reproducibility/statistical_meta_analysis.md`](reproducibility/statistical_meta_analysis.md)
-and `tests/test_statistical_meta_analysis.py`.
-
-### Negative controls: honest losses to runtime value checks
-`evaluation/negative_controls.py` freezes value-dependent PyTorch failures
-(NaN/Inf outputs and value assertions) that are outside TensorGuard's
-shape/device/dtype/phase/gradient contract. TensorGuard catches 0/6 by design,
-plain runtime smoke tests catch only the assertion cases, and an explicit
-finite-output runtime check catches 6/6 on crafted inputs. This is boundary
-evidence, not a defect; see `evaluation/negative_controls.md` and
-`tests/test_negative_controls.py`.
-
-### One-command reproducibility capsule
-Everything above is only as credible as it is reproducible, so the whole
-evidence base ships as a capsule: a pinned wheel lock
-(`capsule/requirements.lock.txt`, exact versions of torch, z3, numpy, hypothesis
-and pytest), a `capsule/Dockerfile.reproduce`, and a single entrypoint
-`capsule/reproduce.sh`. One command —
-
-```bash
-docker run --rm tensorguard-capsule        # or: bash capsule/reproduce.sh
-```
-
-— first checks that the live interpreter satisfies every pin, then regenerates
-every deterministic artifact from source and fails the build unless each is
-byte-identical to the committed tree, then re-audits every numeric claim in this
-README. `reproducibility/capsule_manifest.py` is the capsule's checkable
-self-description (pins, file hashes, and the artifact count it regenerates) and
-its environment gate, validated against the real installed packages. See
-[`reproducibility/capsule_manifest.md`](reproducibility/capsule_manifest.md)
-and `tests/test_capsule_manifest.py`. The same capsule underwrites the
-artifact-evaluation badges (ACM Available / Functional / Reusable / Results
-Reproduced): `reproducibility/artifact_badges.py` maps every badge criterion to
-in-tree evidence and fails if any cited path is missing — all four badges have
-complete, existence-checked evidence
-([`reproducibility/artifact_badges.md`](reproducibility/artifact_badges.md)).
-The accompanying threats-to-validity analysis is itself generated from the
-abstention and false-positive artifacts —
-`reproducibility/threats_to_validity.py` instantiates a threat for each of the
-four classical validity categories and *computes* each residual-risk level from
-the real figures, so the honesty section stays in lock-step with the data
-([`reproducibility/threats_to_validity.md`](reproducibility/threats_to_validity.md)).
-A single `make paper-evidence` target regenerates every table and figure and
-rebuilds one catalogue —
-[`reproducibility/paper_evidence_index.md`](reproducibility/paper_evidence_index.md) —
-listing each regenerable artifact and the script that produces it, so the
-write-up and the evidence base can never silently diverge. `make camera-ready-paper`
-adds the final paper gate: the root `tool_paper.tex` contains a generated claim
-ledger from that evidence index, and CI fails if any cited number drifts.
-
-### Sound-mode false-positive hunt
-For a tool meant to ship inside PyTorch a single false alarm destroys trust,
-so `evaluation/sound_mode_fp.py` hunts aggressively for one. It generates a
-large, diverse corpus of clean PyTorch modules — every model is validated to
-execute without error in eager PyTorch before admission — spanning MLP,
-residual-MLP, CNN, LayerNorm, attention and GroupNorm templates, then runs
-TensorGuard in the strict `sound` soundness mode on each:
-
-```bash
-PYTHONPATH=. python3 evaluation/sound_mode_fp.py     # or: make sound-fp
-```
-
-The hard requirement is **zero Refuted (false-positive) verdicts** on clean,
-executing code. Across eighty clean models (the eight hand-written clean
-benchmarks plus seventy-two seeded-generated models) TensorGuard raises zero
-false alarms and verifies every one SAFE in sound mode — a result that is not
-achieved by trivially abstaining, since SAFE coverage is total. The committed
-artifacts live in `evaluation/sound_mode_fp.json` and
-`evaluation/sound_mode_fp.md` and are pinned by
-`tests/test_sound_mode_fp.py`.
-
-### Latent-bug recall vs the strongest dynamic baseline
-
-On the small balanced corpus TensorGuard already ties the strongest dynamic
-baseline (`runtime_backward` — one seeded `train()` forward+backward, then a
-grad-presence check) at perfect recall, because every bug there is exercised by
-that single pass. The interesting question for a *static* verifier is the class
-of **latent** bugs no single concrete execution can observe.
-`evaluation/hard_recall.py` builds such a corpus — phase-dependent faults that
-only manifest in `eval()`, path-dependent faults on an untaken branch, and
-silent gradient-freeze faults — where every model is *proven genuine* (the
-latent fault really fails when exercised) and *proven silent* under the
-strongest dynamic baseline (the seeded pass runs clean):
-
-```bash
-PYTHONPATH=. python3 evaluation/hard_recall.py     # or: make hard-recall
-```
-
-The strongest dynamic baseline catches none of these latent bugs, while
-TensorGuard's static analysis catches the phase-dependent and path-dependent
-families in full — a recall advantage of three quarters on bugs that are
-invisible to dynamic testing by construction. The two residual misses (silent
-`requires_grad = False` freezes) are not hidden: each carries a root-cause tag
-in the committed artifact, documenting exactly which static-analysis gap is
-responsible. Artifacts live in `evaluation/hard_recall.json` and
-`evaluation/hard_recall.md` and are pinned by `tests/test_hard_recall.py`.
-
-### False-UNKNOWN rate in sound mode
-
-Soundness is only useful if it does not become blanket abstention.
-`evaluation/false_unknowns.py` measures strict `sound` mode on executable,
-ground-truthed cases TensorGuard should decide: the real clean benchmarks, the
-seeded validated-clean generator corpus, and the phase/path latent bugs whose
-faults are confirmed by the hard-recall validators.
-
-```bash
-PYTHONPATH=. python3 evaluation/false_unknowns.py     # or: make false-unknowns
-```
-
-Across eighty-six eligible models TensorGuard decides every case with **zero
-false UNKNOWNs** and zero misclassifications. The artifacts live in
-`evaluation/false_unknowns.json` and `evaluation/false_unknowns.md` and are
-pinned by `tests/test_false_unknowns.py`.
-
-### Differential fuzzing for false positives
-
-`evaluation/diff_fuzz.py` is a *random-architecture* false-positive hunt. A
-fuzzer grows valid `nn.Module`s by threading the running tensor shape through a
-random chain of layers — Linear, Conv2d, BatchNorm, LayerNorm, pooling, flatten
-and activations, entering at either rank-two (vector) or rank-four (image)
-inputs — so each network is dimensionally valid by construction, and is then
-**validated to execute without error** in eager PyTorch before admission. Every
-admitted model is checked differentially: runtime says "ran clean", so
-TensorGuard in strict `sound` mode must never Refute it.
-
-```bash
-PYTHONPATH=. python3 evaluation/diff_fuzz.py     # or: make diff-fuzz
-```
-
-Across two hundred random seeds every admitted model executed cleanly,
-TensorGuard raised **zero false positives**, and — crucially — verified every
-one SAFE (total coverage, no abstentions), so the zero-false-positive result is
-not a vacuous "always abstain". The verdicts stay non-vacuous: feeding a
-mismatched input dimension to the same fuzzed model makes TensorGuard Refute it.
-The committed artifacts live in `evaluation/diff_fuzz.json` and
-`evaluation/diff_fuzz.md` and are pinned by `tests/test_diff_fuzz.py`.
-
-### Negative fuzzing (false-negative hunting)
-
-`evaluation/neg_fuzz.py` is the dual hunt: instead of checking that TensorGuard
-stays silent on clean code, it **injects a fault** into a valid random
-`nn.Module` and asserts TensorGuard catches it. Faults are drawn from a
-catalogue — corrupting a `Linear`'s input or output width, a `Conv2d`'s input
-channels, or splicing an incompatible `reshape` — and every injected fault is
-**proven genuine** by observing a real eager-PyTorch `RuntimeError`; a mutation
-that happens to still execute is not admitted.
-
-```bash
-PYTHONPATH=. python3 evaluation/neg_fuzz.py     # or: make neg-fuzz
-```
-
-Across the genuine injected faults TensorGuard's recall is perfect — it catches
-every one, with **zero false negatives** — and the result is broken out
-per injector family. Any fault it missed would be tagged with a root cause in
-the artifact rather than hidden. The committed artifacts live in
-`evaluation/neg_fuzz.json` and `evaluation/neg_fuzz.md` and are pinned by
-`tests/test_neg_fuzz.py`.
-
-### Minimal-reproducer shrinker
-
-`evaluation/minimize.py` is a delta-debugging minimizer for `nn.Module`s,
-generic over a predicate that captures the TensorGuard/runtime relation:
-`false_positive` (TG refutes but the model runs clean), `false_negative` (TG
-accepts but the model raises), or `agreement_bug` (both flag the bug). It
-ddmin-removes layers and then coordinate-shrinks every integer dimension while
-preserving the predicate, yielding a minimal reproducing module.
-
-```bash
-PYTHONPATH=. python3 evaluation/minimize.py     # or: make minimize
-```
-
-Because earlier steps found no real false positives or false negatives, there
-is no natural disagreement corpus yet, so the live demo shrinks an
-`agreement_bug` — a genuine caught shape fault — from a twelve-layer chain down
-to a single faulted `Linear` on a one-feature input, removing every inessential
-layer while TensorGuard still refutes and the model still raises. The
-`false_positive`/`false_negative` paths are covered by unit tests with a
-synthetic oracle. The minimizer preserves the predicate's truth, not its
-mechanism, and is locally minimal under op removal and coordinate-wise dim
-shrinking. Committed artifacts live in `evaluation/minimize_demo.json` and
-`evaluation/minimize_demo.md` and are pinned by `tests/test_minimize.py`.
-
-### Disagreement triage + frozen regression suite
-
-`evaluation/triage.py` triages the false-positive / false-negative hunts and
-turns their signal into a frozen regression suite. The combined fuzzing
-population — the random clean models of Step 15 plus the injected faults of
-Step 16, over four hundred models in total — produced no TensorGuard/runtime
-disagreements, so there is nothing to fix. Instead the harness freezes **fifty
-minimal bug reproducers** spanning a catalogue of distinct fault mechanisms
-(Linear in/out width, Conv channel/kernel, invalid view/reshape, matmul
-inner-dim, broadcast add, cat non-cat-dim, flatten→Linear), each paired with a
-minimal **clean sibling**.
-
-```bash
-PYTHONPATH=. python3 evaluation/triage.py     # or: make triage
-```
-
-Every buggy entry is verified to raise at runtime *and* be refuted by
-TensorGuard; every clean sibling is verified to run clean *and* be accepted. The
-frozen entries are replayed as parametrized regression tests by
-`tests/test_triage.py`, so any future regression — a missed bug or a false
-alarm on a clean sibling — fails CI. Committed artifacts live in
-`evaluation/triage_regressions.json` and `evaluation/triage_regressions.md`.
-
-### Shape-algebra property tests (Hypothesis)
-
-`tests/test_shape_algebra_properties.py` exercises the concrete and abstract
-shape transfer functions in `src/denotational_semantics.py` with property-based
-testing. Hypothesis generates thousands of random shapes (bounded rank and
-dimensions) per run and checks the algebraic laws of the shape algebra —
-transpose involution, reshape and flatten element-count preservation with
-reverse round-trips, squeeze/unsqueeze inversion, global-squeeze size-one
-removal, cat dimension summation, matmul output shape with inner-dim-mismatch
-rejection, add-broadcast commutativity, and identity. Most importantly it pins
-the per-node soundness theorem `α(⟦op⟧(σ)) ⊑ ⟦op⟧♯(α(σ))` for every operator,
-asserting the abstract transfer over-approximates the concrete one over a large
-random input space rather than a handful of examples. This complements the
-example-based `tests/test_denotational_semantics.py`.
-
-```bash
-PYTHONPATH=. python3 -m pytest tests/test_shape_algebra_properties.py -q   # or: make shape-props
-```
-
-### Precision/recall regression dashboard (merge gate)
-
-`evaluation/dashboard.py` aggregates the headline metrics from every committed
-evaluation artifact (the confusion matrices, sound-mode false-positive hunt,
-differential and negative fuzzing, latent-bug recall, and the frozen triage
-suite) into a single dashboard and gates them against a frozen baseline,
-`evaluation/dashboard_baseline.json`. Quality metrics (precision, recall, F1,
-false positives, false negatives, coverage) are gated by direction; corpus-size
-("integrity") metrics must never shrink. Integer counts are compared exactly;
-non-finite or missing values are treated as failures.
-
-```bash
-PYTHONPATH=. python3 evaluation/dashboard.py            # regenerate dashboard.md
-PYTHONPATH=. python3 evaluation/dashboard.py --check    # gate; non-zero on regression
-PYTHONPATH=. python3 evaluation/dashboard.py --update-baseline   # accept an intentional change
-```
-
-In `--check` mode (`make dashboard-check`) the dashboard exits non-zero on any
-regression or metric drift, so it can block a merge. The baseline is a
-**reviewed regression ratchet**, not a tamper-proof boundary: any intentional
-metric change must appear as a reviewable diff to the baseline file. Because the
-dashboard reads committed artifacts, CI runs each harness in `--check` mode
-(byte-identical regeneration) **before** the dashboard gate so a source
-regression that left stale artifacts behind is still caught — see the
-`dashboard-gate` job in `.github/workflows/tensorguard-ci.yml` and the
-`make dashboard-gate` target. Committed artifacts: `evaluation/dashboard.md` and
-`evaluation/dashboard_baseline.json`.
-
-### Operator surface coverage matrix
-
-`evaluation/operator_coverage.py` introspects the *live* public operator surface
-of `torch`, `torch.nn`, and `torch.nn.functional` and cross-references it against
-every operator TensorGuard recognises — the universal transfer-function registry,
-the `nn.Module` layer map, the functional/torch/method dispatch tables, and the
-denotational transfer functions. It reports, per namespace, the public operator
-count, the covered count, the coverage ratio, and the full sorted covered and
-uncovered name lists, so the Phase 3 operator long-tail can be prioritised
-against a real census. The `nn.Module` surface is the most complete (coverage
-ratio above four tenths); the broad `torch` free-function surface includes many
-non-tensor utilities and is the lowest.
-
-```bash
-PYTHONPATH=. python3 evaluation/operator_coverage.py            # regenerate matrix
-PYTHONPATH=. python3 evaluation/operator_coverage.py --check    # version-gated freshness
-```
-
-Because the public surface depends on the installed PyTorch version, the
-artifact records `torch_version`; `--check` enforces a byte-identical match only
-when the local torch version equals the committed one, otherwise it reports a
-QUALIFIED skip. Committed artifacts: `evaluation/operator_coverage.json` and
-`evaluation/operator_coverage.md`.
-
-### Operator frequency census (real model corpora)
-
-Where the coverage matrix counts the *static* operator surface, this harness
-measures which operators actually **occur**, and how often, in real models.
-`evaluation/operator_frequency.py` symbolically traces a fixed corpus of
-thirteen torchvision models with `torch.fx` and counts every `call_function`,
-`call_method`, and `call_module` target, then cross-references each against the
-operators TensorGuard reasons about to produce a list ranked by **frequency**.
-This turns the Phase 3 long-tail into a priority queue: implement what models
-actually use most. The frequency-weighted coverage is high — the engine reasons
-about over nine tenths of all operator occurrences in the corpus.
-
-Step 22 used this census to find and close the highest-impact gaps: `permute`
-(the single most frequent previously-uncovered shape operator), `expand`, and
-`repeat` now have soundness-backed denotational transfer functions in
-`src/denotational_semantics.py`, differential-tested against `torch` and proven
-to satisfy the per-node soundness theorem
-(`tests/test_denotational_permute_expand_repeat.py`).
-
-```bash
-PYTHONPATH=. python3 evaluation/operator_frequency.py            # regenerate census
-PYTHONPATH=. python3 evaluation/operator_frequency.py --check    # version-gated freshness
-```
-
-Because fx traces depend on the torch/torchvision versions, the artifact records
-both; `--check` enforces a byte-identical match only when both versions equal the
-committed ones, otherwise it reports a QUALIFIED skip. Committed artifacts:
-`evaluation/operator_frequency.json` and `evaluation/operator_frequency.md`.
-
-### Precise einsum shape inference
-
-`torch.einsum` is handled by a torch-equivalent equation parser
-(`src/smt/einsum_theory.py`) rather than a heuristic. It infers explicit and
-implicit outputs, repeated-label diagonals (`i...i->...i`), ASCII output-order
-corner cases, and ellipsis broadcasting (`...qd,...kd->...qk`) — placing the
-broadcast ellipsis block exactly where `...` appears in the output and reducing
-it away when omitted. The inferred shape matches real `torch.einsum` across a
-randomized diagonal/ellipsis differential battery, and the checker emits a
-violation for genuine bugs (mismatched concrete labels, wrong operand rank, or
-malformed equations) while never flagging symbolic dimensions.
-
-The parser is wired into the verification engine (`src/model_checker.py`) and
-the fx extractor (which captures the equation string), so a buggy einsum is
-reported end-to-end via `verify_module`. See
-`tests/test_einsum_precise.py`.
-
-### Precise reshape / view / flatten checking
-
-`reshape`, `view` and `flatten` are now checked soundly on the `torch.fx` path.
-The fx extractor captures the **full** shape spec under `params["dims"]`
-(previously it emitted only an int-only `target_shape`, which no handler read —
-so reshape was silently unchecked), handling the varargs form `reshape(2, 3)`,
-the tuple/list form `reshape((2, 3))`, and `torch.reshape(x, shape)`. Dynamic
-arguments such as `x.shape[0]` become unique placeholders so the output rank is
-preserved instead of dropped.
-
-Compatibility is decided by a sound Z3 element-count oracle
-(`src/smt/reshape_theory.py`): each symbolic dimension is an integer `>= 1`,
-each `-1` is an existentially-inferred dimension `>= 1`, and a reshape is
-flagged **only** when `prod(input) == prod(output)` is unsatisfiable for every
-valid assignment — so `(B, 5) -> (B, 3)` is reported as a bug while
-`(B, 10) -> (-1, 3)` (valid for `B = 3`) is not. When Z3 cannot decide it
-abstains, preserving the sound-mode false-positive-free invariant; opaque
-placeholder dims are never coupled across operations, so the channel-shuffle
-reshape in ShuffleNet stays safe. `flatten` now honours `end_dim`, collapsing
-only the `[start_dim, end_dim]` span (e.g. `(B, 3, 4, 5).flatten(1, 2)` yields
-`(B, 12, 5)`).
-
-The oracle is differential-tested against real `torch.reshape`/`torch.flatten`
-over many random valid and invalid shapes, and `verify_module` reports
-incompatible reshapes end-to-end while leaving valid and dynamic reshapes — and
-9 real torchvision models — safe. See `tests/test_reshape_precise.py`.
-
-### Precise broadcasting / expand / broadcast_to checking
-
-`Tensor.expand`, `Tensor.expand_as`, `torch.broadcast_to`, and implicit
-elementwise broadcasting are now checked with exact PyTorch semantics. Before
-this, `expand` was silently unchecked: the operative method map dropped it, so
-`x.expand(...)` traced as a no-op. The extractor now routes the whole
-expand family through the method/function maps and captures the dim spec.
-
-`compute_expand_shape` models torch's rule precisely: the target rank is at
-least the input rank; extra leading dims are new (a concrete size, with `-1`
-illegal there); each right-aligned dim accepts `-1` (keep input), an equal
-size, or a singleton input dim, and anything else is flagged
-`shape_incompatible`. A symbolic input or target dim abstains. The oracle is
-differential-tested against `torch.expand` over 4000 random cases with zero
-mismatches. `broadcast_to` forbids `-1` (unlike `expand`), and that distinction
-is enforced. A whole-shape expand such as `x.expand(y.shape)` abstains rather
-than inventing a rank-1 spec, avoiding a false positive. Implicit op
-broadcasting (e.g. `x + y`) emits a violation on a concrete mismatch like
-`(3, 4)` against `(5, 4)` and stays safe on a compatible pair like `(3, 4)`
-against `(1, 4)`.
-
-`verify_module` flags bad expand/broadcast_to end-to-end while leaving good
-expand/expand_as/broadcast_to and whole-shape expands safe; seven real
-torchvision models stay free of new false positives. See
-`tests/test_broadcast_expand_precise.py`.
-
-### Precise indexing / gather / scatter / masked ops
-
-Tensor indexing and gather-family ops now have exact shape effects on the
-`torch.fx` path instead of being dropped as no-ops. `gather`, `index_select`,
-`scatter`/`scatter_add`, `masked_select`, `masked_fill`, `nonzero`,
-single-argument `where`, boolean-mask indexing, `narrow`, `select` and `take`
-are routed through the method/function maps, their scalar parameters captured
-and their index/mask/src operands collected as inputs, and a shared
-`_apply_indexing` handler propagates the result shape on both engine paths.
-
-The shape rules follow PyTorch exactly: `gather` returns the index shape (equal
-rank, no broadcast); `index_select` replaces the indexed dimension with the
-1-D index length; `scatter` returns the input shape; `masked_select` returns a
-rank-1 tensor of data-dependent (fresh symbolic) length; `nonzero` and
-`where(mask)` surface explicit `UNKNOWN` reasons for value-dependent index
-counts; boolean masks preserve trailing dimensions while the selected length is
-unknown; `masked_fill` returns the input shape with the mask broadcast; `narrow`
-replaces the dimension with `length`; `select` removes the dimension; `take`
-returns the index shape. A violation is raised only when the relevant dimensions
-are concrete and the error is provable — a `gather` rank mismatch, a two-
-dimensional `index_select` index, a `scatter` rank mismatch, a provably-
-impossible mask broadcast, a boolean-mask prefix mismatch, a `narrow` overrun, or
-an out-of-range `dim`. Negative dimensions are normalised, and symbolic or
-value-dependent dimensions abstain.
-
-Because the result shapes are exact, downstream layers are checked against the
-post-index shape (for example a `gather` or `narrow` result feeding a `Linear`).
-Real torchvision models stay free of new false positives. See
-`tests/test_indexing_gather_precise.py` and `tests/test_boolean_mask_unknowns.py`.
-
-### Precise attention / scaled_dot_product_attention
-
-The modern functional core of attention, `F.scaled_dot_product_attention`, is
-now modelled with exact shape semantics instead of being dropped as a no-op
-and `nn.MultiheadAttention` now has an exact packed/unpacked q/k/v contract:
-`kdim`, `vdim`, `batch_first`, 2-D/3-D attention masks, key-padding masks,
-`need_weights`, and nested-tensor abstention are modeled against real PyTorch.
-For `query` of shape `(*batch, L, E)`, `key` of
-`(*batch, S, E)` and `value` of `(*batch, S, Ev)`, the output is `(*batch, L,
-Ev)` — the query shape with its last dimension replaced by the value's last
-dimension.
-
-`compute_sdpa_shape` and `verify_sdpa` are differential-tested against
-`torch.scaled_dot_product_attention`. A violation is raised only on a provable
-concrete mismatch: query/key embed dimension, ordinary leading-dimension
-broadcast, attention-mask broadcast against `(..., L_q, L_k)`, or explicit
-`enable_gqa=True` head divisibility on the `-3` axis. Because the output shape is
-exact — including GQA's query-head count and value embedding dimension —
-downstream projections are checked against the post-attention shape.
-
-This is proven end-to-end on a from-scratch multi-head attention block (linear
-projections, head reshape/transpose, SDPA, output projection), real
-`nn.MultiheadAttention` modules and functional calls, and on a real timm Vision
-Transformer whose traced graph contains a dozen SDPA nodes. See
-`tests/test_attention_sdpa_precise.py` and `tests/test_mha_verify.py`.
-
-### Convolution family precision
-
-The full convolution family — `Conv1d/2d/3d`, `ConvTranspose1d/2d/3d`,
-including `stride`, `padding`, `dilation`, `groups`, and `output_padding` — is
-modelled with exact output-shape arithmetic. The transposed-conv output size
-follows the torch definition
-`(in - 1) * stride - 2 * padding + dilation * (kernel_size - 1) + output_padding + 1`,
-which previously omitted the dilation term and was therefore wrong for any
-dilated transposed convolution. `dilation` and `groups` are now captured for the
-whole family in both the live-module (FX) path and the source (AST) path,
-including positional arguments. `groups` divisibility against the in and out
-channel counts is validated for the transposed convolutions and for `Conv3d`,
-matching the existing `Conv1d/2d` behaviour.
-
-Output-shape arithmetic is differential-tested against real `torch` modules
-across thousands of randomized configurations of dimensionality (1d/2d/3d),
-forward versus transposed, and random stride/padding/dilation/groups/
-output_padding, with zero mismatches. It is proven end-to-end on the originally
-mis-computed dilated transposed convolution (a downstream `Linear` sized to the
-correct output width verifies safe while the previously-computed width is
-flagged) and on a DCGAN-style generator built entirely from stacked transposed
-convolutions. Source-level analysis catches invalid `groups` configurations that
-cannot even be constructed because torch asserts at module init. See
-`tests/test_conv_family_precise.py`.
-
-### Normalization phase / statistics semantics
-
-PyTorch normalization layers raise *runtime* errors that depend on the phase
-(train/eval) and on `track_running_stats`. `BatchNorm{1,2,3}d` raises
-`Expected more than 1 value per channel when training` when the per-channel
-element count (batch times spatial) is one and the layer is using batch
-statistics; `InstanceNorm{1,2,3}d` raises `Expected more than 1 spatial element
-when training` when the spatial element count is one and it is using input
-statistics. A layer uses batch or input statistics when `training or not
-track_running_stats`, so `BatchNorm` (default `track_running_stats=True`) errors
-in train by default while `InstanceNorm` (default `track_running_stats=False`)
-errors in eval as well. `GroupNorm` and `LayerNorm` have no such restriction and
-are exempt.
-
-TensorGuard emits a phase violation only when the relevant element count is
-*provably* one (every contributing dimension is concrete) and the layer is known
-to use batch or input statistics; it abstains on any symbolic dimension, on
-non-canonical ranks, and on `SyncBatchNorm` (whose global per-channel count
-under distributed training can exceed one). The verifier checks the model under
-the requested phase (train by default, selectable with `default_phase`), so an
-eval-only model is checked by passing `default_phase=Phase.EVAL`.
-
-This is proven by a differential sweep in which the verifier's verdict must
-agree exactly with whether real `torch` modules raise, across thousands of
-randomized normalization configurations spanning layer family, rank,
-`track_running_stats`, and phase, with zero disagreements, plus targeted
-end-to-end cases for both phases and both statistics settings and torchvision
-regression showing no new false positives. See
-`tests/test_norm_phase_precise.py`.
-
-### Element dtype inference and promotion
-
-Some PyTorch operations raise a `RuntimeError` purely because of an element-type
-mismatch, independently of shape. TensorGuard tracks an element dtype for every
-tensor as a second algebra alongside shape, device, phase, and gradient status.
-`Linear` and the convolution family perform a matmul or convolution against a
-stored parameter and require the input dtype to exactly equal the parameter
-dtype, otherwise torch raises `mat1 and mat2 must have the same dtype` or
-`Input type and bias type should be the same`; `matmul`, `mm`, and `bmm` require
-their operands to share a dtype; and `Embedding` requires an integer index
-tensor. Element-wise `add` and `cat` are deliberately left unflagged because
-torch type-promotes them.
-
-The dtype algebra reasons only about dtypes it actually knows: an explicit input
-dtype annotation, a layer's real parameter dtype (read from the live module, so a
-`.half()` or `.to(dtype=...)` cast is captured), or an explicit
-`.half()`/`.float()`/`.double()`/`.bfloat16()` cast in the forward. Any unknown
-dtype makes the relevant check abstain, and the whole pass abstains under
-autocast, so the analysis never raises a false positive: every reported dtype
-error corresponds to a real torch runtime error under the recorded dtypes.
-
-This is proven by differential sweeps in which the verifier's verdict must agree
-exactly with whether real `torch` raises, across the full cast grid of input and
-parameter dtypes for `Linear` and `Conv2d`, with zero disagreements, plus
-end-to-end cases covering input-independent mixed-precision models, whole-model
-half precision with matching and mismatching inputs, floating embedding indices,
-mixed-dtype addition, unknown-dtype abstention, and torchvision regression
-showing no new false positives. See `tests/test_dtype_precise.py`.
-
-### Device propagation across `.to()` / `.cuda()` / `.cpu()` / `.pin_memory()`
-
-TensorGuard tracks the device each tensor lives on and flags operations that
-combine tensors on different devices, which is the `Expected all tensors to be
-on the same device` runtime error in PyTorch. Device moves are followed through
-`.to('cuda')`, `.to(device=...)`, `.cuda()` (with an optional index), `.cpu()`,
-`.to('cpu')`, and the combined `.to(device, dtype)` form, while `.pin_memory()`
-is treated as device-preserving because it returns a pinned CPU tensor. A move
-is recorded only when the target device is a statically known spelling such as
-`'cpu'`, `'cuda'`, or `torch.device(...)`; a device taken from another tensor
-(for example `x.to(y.device)`) is left unknown and the result inherits the input
-device, so the analysis never invents a mismatch.
-
-This closes a gap in the `torch.fx` frontend, where device transfers in traced
-models were previously dropped and never reached the device theory. It is proven
-by a regression suite that checks the frontend now captures each device target,
-that genuine cross-device combinations are flagged, and that device-consistent
-programs (including round trips, `.pin_memory()`, dtype-only `.to(...)`, and a
-torchvision regression) produce no false positives. See
-`tests/test_device_propagation_precise.py`.
-
-### Seed-independent shape reasoning for stochastic and factory ops
-
-A stochastic operation draws random values but produces a shape that is fully
-determined by its arguments and independent of the RNG seed: `torch.rand(2, 4)`
-always yields a tensor of shape `(2, 4)`. TensorGuard therefore tracks these
-shapes rather than abstaining, so a wrong downstream consumer (for example a
-`Linear` whose `in_features` does not match) is still caught instead of being
-silently missed. This covers `rand`, `randn`, `zeros`, `ones`, `empty`, `full`,
-`randint`, and `randperm` written directly inside `forward`, in both the source
-and `torch.fx` frontends; in the latter the constant tensor that tracing folds
-such a call into now carries its shape. Shape-preserving stochastics such as
-`*_like`, `bernoulli`, and `dropout` continue to flow the input shape. A fresh
-factory tensor defaults to the CPU device and the factory's natural dtype, which
-lets genuine cross-device bugs surface while leaving normal models untouched.
-Soundness is preserved by abstaining whenever a factory size is data dependent,
-such as `torch.randn(x.shape[0], 4)`. See `tests/test_rng_shape_precise.py`.
-
-### Conformance oracle: transfer functions cross-checked against real PyTorch
-
-Every shape transfer function is only as trustworthy as its agreement with the
-framework it models. The conformance oracle closes that gap with differential
-validation: for a battery of single-operator modules it samples concrete input
-shapes, runs the genuine `torch` forward pass to obtain the ground-truth output
-shape, and compares it against the shape TensorGuard predicts. Each comparison
-is classified as conformant, abstained, or — the outcome a sound verifier must
-never produce — a disagreement, where TensorGuard confidently predicts a
-concrete shape that PyTorch contradicts. The headline guarantee enforced in CI
-is zero disagreements across the battery, with the great majority of core
-operators resolving to a concrete, correct shape rather than abstaining.
-
-Building this oracle paid for itself immediately: it caught the `torch.fx`
-frontend modelling `x.mean(dim=...)` and `x.sum(dim=...)` as shape-preserving,
-the matrix product `x @ w` as a plain activation, and functional `embedding` as
-shape-preserving — each one a confidently-wrong shape that could have masked a
-real downstream mismatch. All were fixed and are now regression-guarded. See
-`reproducibility/conformance_oracle.py` and `tests/test_conformance_oracle.py`.
-
-### Unsupported-op diagnostics: abstain, never guess
-
-A sound verifier must never silently assume it understands an operator it does
-not. Previously the `torch.fx` frontend mapped any unrecognised function or
-method to a shape-preserving activation — a confidently-wrong assumption for the
-many ops that reshape their input, and exactly the kind of guess that lets a real
-bug slip through. TensorGuard now classifies such ops as a distinct
-`UNSUPPORTED` kind that abstains soundly: the output is modelled as fully opaque
-(fresh symbolic dimensions), opacity propagates to every downstream consumer, and
-the shape encoder is barred from fabricating a violation from those free
-dimensions. The result is no false positives on graphs containing unknown ops,
-while genuine, allow-listed elementwise operators (activations and unary math)
-still propagate their shapes exactly, and tensor factories are modelled as
-freshly-allocated tensors of known shape rather than being lumped in as unknown.
-
-Each abstention is surfaced precisely. Every `VerificationResult` now carries an
-`UnsupportedOpTracker` naming the unrecognised operators (for example
-`Tensor.unfold`) alongside the supported ones, so coverage gaps are reported as
-actionable diagnostics instead of being papered over. See
-`tests/test_unsupported_op_diagnostics.py`.
-
-### Published operator coverage with a release gate
-
-Coverage is reported honestly and defended automatically. The matrix in
-`evaluation/operator_coverage.json` enumerates the live public surface of
-`torch`, `torch.nn` and `torch.nn.functional` and cross-references it against
-every operator TensorGuard reasons about, currently covering 199 of 1031 public
-operators (overall ratio 0.193). That figure is published rather than buried,
-and a committed floor in `evaluation/operator_coverage_floor.json` turns it into
-a one-way ratchet: `make operator-coverage-gate` recomputes live coverage and
-fails the build if any namespace — or the overall figure — regresses below the
-released floor (beyond a small version-jitter tolerance), while skipping as
-QUALIFIED when the local PyTorch version differs from the floor's. The floor is
-only ever raised, via `make operator-coverage-floor`, so coverage can grow but
-never silently shrink. See `tests/test_operator_coverage_gate.py`.
-
-### Frontend trace-success over real model zoos
-
-A verifier is only useful if its frontend ingests the models people actually
-write. The harness in `evaluation/fx_trace_success.py` runs the `torch.fx`
-frontend end to end — symbolic trace plus lowering into TensorGuard's
-computation graph — over a fixed corpus of real `torchvision` architectures
-spanning classic CNNs, mobile nets, modern conv nets, vision transformers, and
-multi-branch / auxiliary-head networks (GoogLeNet, Inception). Every one of the
-21 models traces and lowers without crashing, a result published as a
-reproducible artifact and defended by `make fx-trace-success-gate`, which fails
-the build if the success rate regresses below the floor (and QUALIFIED-skips on
-a torch/torchvision version mismatch). The same artifact reports, per model, how
-many graph steps are reasoned about precisely versus soundly abstracted as
-unsupported, turning frontend coverage into an honest, tracked number. Hardening
-this path also restored precision for the functional forms `torch.permute`,
-`torch.transpose` and `torch.swapaxes`, which had been needlessly abstracted.
-See `tests/test_fx_trace_success.py`.
-
-### Two frontends, one verdict: torch.export reconciled with torch.fx
-
-TensorGuard now ingests models through two entirely independent capture paths:
-the `torch.fx` symbolic tracer and PyTorch's ahead-of-time `torch.export` (ATen
-IR with lifted parameters), the latter lowered by `src/export_extractor.py`. The
-export frontend recovers each layer's static parameters by mapping the lifted
-weight inputs back to the originating `nn.Module` via the export graph signature,
-reuses the same layer machinery, models pooling functionals precisely, and
-abstains soundly (Step 34) on unknown ATen ops — then hands the graph to the very
-same Z3 verification engine. Because both frontends are two views of one program,
-a sound verifier must reach the same safe/unsafe verdict through either. The
-reconciliation harness in `evaluation/frontend_reconciliation.py` runs a corpus
-of real modules through both and enforces, via `make frontend-reconciliation-gate`,
-the headline invariant of zero divergences, while also checking every captured
-verdict against ground truth. Where `torch.export` validates shapes eagerly and
-declines to capture a shape-buggy model, that is recorded as a capture gap rather
-than a disagreement: both frontends still conclude the model is unsafe, merely at
-different stages. See `tests/test_export_frontend.py`.
-
-### Inheritance, `super().forward()`, and mixins
-
-Models that build behaviour through class inheritance are now handled uniformly
-rather than mis-analysed. Layers defined in a base class's `__init__` are merged
-into the child (the child wins on any name collision), so an inherited `self.fc`
-is visible wherever it is used. A `super().forward(x)` call is inlined: the base
-class's forward computation is spliced into the graph with fresh internal names,
-its input bound to the actual argument and its output to the call site — so the
-inherited steps are genuinely verified instead of silently skipped (which was an
-unsound false negative). This works across multi-level chains (`C(B)`, `B(A)`,
-`A(nn.Module)`) where each level calls `super().forward`, across cooperative
-mixins, and when a child inherits `forward` wholesale without overriding it.
-Submodule composition is unchanged. See `tests/test_inheritance.py`.
-
-### First-class symbolic batch & sequence dimensions
-
-Shape names supplied as strings — `input_shapes={"x": ("B", "S", 8)}` — are
-verified parametrically as genuine symbols rather than concretized to a guessed
-integer. The emitted `SafetyCertificate` records the symbols it proved over in
-`symbolic_bindings` (e.g. `{"B": "B", "S": "S"}`), so a green certificate means
-the model is safe for *every* batch and sequence length, not merely one sampled
-size. Through the public API, `verify_architecture(..., produce_certificates=True)`
-now returns that top-level certificate plus a replay status for the embedded
-proof-certificate DAG, and `sign_safety_certificate` emits a compact
-HMAC-SHA256 artifact that CI can authenticate and structurally replay without
-re-running Z3. Symbol identity is enforced across inputs: two tensors
-annotated with the same name `B` are reasoned about as equal (an element-wise
-combination is proven safe), whereas distinct symbols `B` and `C` cannot be
-assumed equal, so an operation requiring them to match is soundly rejected.
-Symbol-independent
-bugs (a wrong `Linear` in-features, a residual reshape that breaks the sequence
-axis) are still caught under symbolic dimensions, and every case is anchored to
-eager torch across several concrete instantiations. See
-`tests/test_symbolic_dims.py`.
-
-### Path-sensitive dynamic control flow (loops over `ModuleList`, data-dependent branches)
-
-Real `forward` methods are not straight-line code. TensorGuard's AST frontend now
-unrolls `for layer in self.blocks:` and the `for i, layer in enumerate(self.blocks):`
-form over an `nn.ModuleList`/`nn.Sequential`, binding the loop variable to each
-concrete sublayer so that the shape engine checks every consecutive element. This
-closes a real soundness gap: a stack such as `nn.ModuleList([nn.Linear(8, 16),
-nn.Linear(99, 4)])` iterated in a loop previously passed silently, but is now
-flagged with a precise counterexample pointing at the offending sublayer
-(`Linear expects last dim=99, got 16`) — matching the `RuntimeError` eager PyTorch
-raises. Data-dependent branches (`if x.sum() > 0: ... else: ...`) remain handled
-path-sensitively: both arms are verified and their states merged, so an
-incompatible layer on either reachable path is rejected. Every model in the
-regression suite is differentially anchored to eager torch (safe ones run, buggy
-ones raise). See `tests/test_dynamic_control_flow.py`.
-
-### Pluggable shape stubs for third-party layers
-
-Real models lean on third-party building blocks — HuggingFace `Conv1D`, timm
-`Mlp`/`DropPath`, and bespoke imported modules — whose source TensorGuard never
-sees. Without help these become opaque (sound but fully symbolic), so the
-surrounding model cannot be proven safe. The shape-stub registry
-(`src/shape_stub_registry.py`) closes the gap: a third-party class is matched **by
-name** (no import required) to a transfer function that returns a precise output
-shape, an explicit violation on an incompatible input, or a sound abstention.
-
-Built-in stubs ship for the common cases and are differentially validated against
-the real forward semantics: GPT-2 `Conv1D(nf, nx)` maps the last dim `nx` to `nf`
-(so `Conv1D(32, 8)` on `(2, 5, 8)` yields `(2, 5, 32)`, confirmed against an eager
-reimplementation), timm `Mlp` preserves the feature dim when `out_features` is
-unset, and `DropPath`/`StochasticDepth`/`LayerScale` are shape-preserving. Users
-register their own in one line — `register_last_dim_linear("FancyBlock",
-in_arg="in_features", out_arg="out_features", arg_names=(...))` or
-`register_shape_preserving("MyNorm")`. Stubs own their soundness contract, so a
-mismatch downstream of a stub is still flagged with a counterexample, even under
-symbolic batch and sequence dims, and locally-defined classes always take
-precedence over a same-named stub. See `tests/test_shape_stub_registry.py`.
-
-### Automatic input-spec inference (zero annotations)
-
-TensorGuard usually needs an explicit `input_shapes` map (the `-s` burden). But
-the shapes a model expects are almost always already documented in the source,
-so `verify_model` now recovers them statically — no code execution, no
-third-party imports — from four conventional places:
-
-- **Shape-typed annotations** on `forward` parameters: `jaxtyping`
-  (`Float[Tensor, "batch 3 224 224"]`), `torchtyping`
-  (`TensorType["batch", 3, 8]`), including jaxtyping modifiers like `*batch`.
-- **Docstrings**: Google / NumPy `Args:` blocks such as `x: shape (batch, 8)`
-  or `x (Tensor): of size [B, 3, 224, 224]`.
-- **Example inputs**: a class attribute or method (`example_inputs`,
-  `example_input_array` — the PyTorch-Lightning convention) or a module-level
-  assignment built from `torch.randn`/`zeros`/`ones`/`rand`/`full`.
-- **Config dicts**: a literal with an `input_shape`/`input_size` key.
-
-Inference is deliberately conservative: when a source is ambiguous it abstains
-for that parameter rather than guess, so it can only fill in otherwise
-unconstrained inputs — never override an explicit spec or introduce an unsound
-shape. Annotations take priority over example tensors, scalar parameters
-(`flag: bool`) are skipped, and the whole pass is wrapped so it can never break
-verification. Pass `infer_inputs=False` to opt out. See
-`tests/test_input_spec_inference.py`.
-
-### Graceful degradation for unanalyzable regions
-
-Real-world `forward` methods occasionally contain a construct the frontend
-cannot model, or trip an internal extraction edge case. Rather than abandon the
-whole module, TensorGuard now isolates the offending statement and keeps going:
-the failed statement is recorded in `result.isolated_regions` (with its line,
-reason, and source), its target is rebound to a sound fully-symbolic tensor (an
-abstaining `UNSUPPORTED` step), and the remaining statements are still verified.
-The isolated value is treated conservatively downstream — never a source of a
-false positive — yet genuine bugs on independent, analyzable paths are still
-caught. A fully-analyzable model reports an empty `isolated_regions`, so the
-field doubles as a precise coverage signal. See
-`tests/test_graceful_degradation.py`.
-
-### Interprocedural analysis (helper methods)
-
-Models routinely factor `forward` into sibling helper methods —
-`def _block(self, t): return self.up(t)` called as `self._block(x)`. Previously
-such a call abstained as an opaque `UNKNOWN` layer, blocking precise downstream
-reasoning. TensorGuard now inlines sibling tensor-transform methods: the
-helper's body is extracted once, cached as a sound call summary, and spliced in
-at every call site with parameters bound to the actual arguments and all
-internal names freshened so distinct call sites never alias. Nested helper
-chains (`_outer` → `_inner`) are followed, the cache makes repeated calls free,
-and (mutual) recursion is guarded with a sound fallback to abstention. The
-result is precise: a mismatch *inside* a helper or *downstream* of one is now
-caught, including under symbolic dims. See `tests/test_interprocedural.py`.
-
-### Frontend parse-success SLA (real-world corpus)
-
-A static verifier is only useful if its frontend can ingest the architectures
-people actually write. Complementing the `torch.fx` trace-success harness
-(Step 36), `evaluation/frontend_parse_sla.py` stress-tests the **source/AST
-frontend** (`extract_computation_graph`) — the path `verify_model` uses directly
-from Python source — across a curated corpus of 35 self-contained, real-world
-model idioms (CNN/ResNet/bottleneck blocks, transformer encoders, q/k/v
-attention, MLP-mixers, U-Net encoders, RNNs, multi-branch concat, depthwise-
-separable convs, ViT patch embeds, helper-method and inheritance models,
-dynamic control flow, annotated forwards, and more). The frontend never imports
-torch, so the published artifact is byte-reproducible across machines and torch
-versions. The release gate (`make frontend-parse-sla-gate`) fails on any
-parse-success regression below the floor (currently total success: 35 of 35
-sources lower to a non-empty graph). See `tests/test_frontend_parse_sla.py`.
-
-### End-to-end latency budgets
-
-A verifier that cannot keep up with CI is shelfware. `evaluation/latency_budgets.py`
-profiles the full `verify_model` pipeline (source parse, graph extraction,
-bounded model checking, Z3) across three size tiers — small classifiers/CNNs, a
-dozen-block transformer-style stack, and a deep 40-block stack (~120 computation
-steps) — and enforces a per-model wall-clock budget (3 s / 12 s / 30 s). The
-committed manifest is deterministic (budgets and extracted step counts only, so
-it is byte-reproducible across machines and torch versions); the latency itself
-is measured live by `make latency-budgets-gate`, which fails on any budget
-breach. On reference hardware the small tier verifies in tens of milliseconds,
-the medium tier in about one second, and the large tier in roughly ten seconds —
-comfortably inside budget, establishing the baseline that the performance work
-in the following steps tightens. Deployment release gates extend this to
-pre/post export and compile checks with live memory budgets and per-backend
-Pareto curves (`make deployment-budgets-gate`). See
-`tests/test_latency_budgets.py`, `tests/test_pareto_curves.py`, and
-`tests/test_deployment_budgets.py`.
-
-### Solver-call avoidance (syntactic short-circuit)
-
-A single Z3 context (and its theory propagators) is reused across every step of
-the bounded model check, and per-step safety obligations are batched per domain.
-On top of this, each safety check first attempts a **fast syntactic
-short-circuit**: if the conjunction of safety constraints is valid on its own
-(Z3's cheap simplifier rewrites it to literal True), its negation is
-unsatisfiable in any context, so the obligation is discharged without invoking
-`solver.check()` at all. This is sound — a property valid independent of the
-accumulated context is a fortiori valid under it — and is reported through a new
-`syntactic_skips` statistic. On a deep forty-block stack hundreds of per-step
-obligations are discharged this way without touching the SMT solver, while every
-verdict is provably unchanged (the path is disabled under certificate
-extraction so the proof-replay machinery is preserved exactly). The two pure
-safety encoders (shape, gradient) are additionally memoized per step so the
-combined checks reuse them instead of rebuilding the constraints. See
-`tests/test_solver_short_circuit.py`.
-
-### Incremental re-verification
-
-`src/incremental.py` productionises diff-driven verification: it caches verdicts
-keyed by a **dependency-aware structural fingerprint** of the root model. The
-fingerprint hashes the root `nn.Module` class together with every user-defined
-class reachable from it (base classes and instantiated submodules, transitively,
-matching how the engine inlines them), plus a hash of the verification options
-(input shapes, the `check_*` flags). Editing an unrelated sibling class leaves
-the fingerprint unchanged, so the cached verdict is soundly reused; editing the
-root or any class it transitively depends on changes the fingerprint and forces
-a re-verification. The cache is plain JSON and persists across processes, and
-`changed_models(old, new)` answers whether a source diff requires
-re-verification at all. See `tests/test_incremental.py`.
-
-### Pre-solve constraint simplification
-
-Transition constraints are run through a constant-folding pre-pass before they
-reach Z3: each conjunct is rewritten by the simplifier, and conjuncts that fold
-to literal True are vacuous and dropped (a literal False is kept verbatim so an
-infeasible model stays unsat). This is a meaning-preserving rewrite that shrinks
-the accumulated assertion set the solver must re-process on every subsequent
-check. On a deep forty-block stack tens of thousands of vacuous dimension
-equalities (concrete dims equal to themselves) are folded away, reported through
-a `folded_constraints` statistic, with every verdict provably unchanged. See
-`tests/test_constraint_simplification.py`.
-
-### Deterministic parallel verification
-
-`src/parallel.py` verifies many `nn.Module` sources (a package, a model zoo, a
-CI batch) across CPU cores while guaranteeing **bit-for-bit deterministic
-output**: `verify_parallel(jobs)` returns verdicts in the caller's input order
-and identical to a sequential run for any worker count. Determinism follows from
-`verify_model` being a pure function of (source, input shapes, options),
-reassembly by input index rather than completion order, and a fixed
-multiprocessing start method. Workers return a small picklable `ParallelVerdict`
-summary (safe flag, violation count, sorted violation kinds) rather than the
-heavyweight Z3-derived result, so verdicts cross the process boundary cheaply.
-See `tests/test_parallel.py`.
-
-### Memoized shape-transfer
-
-Each layer shape-transfer `propagator(input_shape, layer)` is a pure function of
-the (immutable-during-a-run) layer object and the input `TensorShape`, yet the
-bounded model checker re-applies the same layer to identically-shaped inputs
-many times — across BMC unrollings, branch exploration, and submodule re-entry.
-`ConstraintVerifier` therefore memoizes transfer results on `(id(layer), input
-shape)`: the first application records the result and every later one is served
-from the cache. Keying on the layer identity (not its content) is deliberate —
-propagators derive symbolic output-dim names from the layer's attribute name, so
-two distinct layers with identical hyper-parameters never share a cached
-symbolic dimension. The cache is instance-local, so a recycled object id from a
-prior run can never alias. `transfer_cache_stats()` exposes hits, misses, and
-live entries; the memo is proven sound (cached value bit-for-bit equal to a
-fresh propagator call across nine layer kinds) in `tests/test_transfer_memoization.py`.
-
-### Anytime (budgeted) verification
-
-`verify_model(..., time_budget_ms=...)` runs the bounded model checker under a
-wall-clock budget and returns a **sound partial result** rather than hanging on
-a pathological model. The base-case loop stops at the first step boundary past
-the deadline; the inductive and backward whole-graph passes are skipped. Both
-soundness directions hold: any violation found before the deadline is genuine
-and is still reported as a real counterexample, and if the budget expires with
-no violation found the result is flagged `completed=False` / `timed_out=True`
-with LOW confidence and **no certificate** — the absence of a violation is never
-read as a proof. The new `completed`, `timed_out`, `steps_checked`, and
-`steps_total` fields let a CI gate distinguish "proven within budget" from
-"inconclusive": gate on `completed`, never on `safe` alone. See
-`tests/test_anytime_budget.py`.
-
-### Import / analysis cost (torch-free)
-
-TensorGuard verifies a model from its *source* — AST plus Z3 — and never
-imports the deep-learning runtime to do so. `evaluation/cost_benchmarks.py`
-measures, in fresh subprocesses, the time to import `verify_model` and to run a
-full verification on a small and a medium model, and asserts the load-bearing
-invariant that none of it imports `torch` (which alone costs on the order of a
-second). On the dev machine importing the analysis API takes about 0.15 s and
-stays torch-free; a small model verifies in about 0.03 s and a medium one in
-about 0.9 s, still without ever importing torch. The committed manifest records
-the torch-free invariants and generous ceilings; `make cost-benchmarks-gate`
-enforces them live and fails the build if importing the API drags in torch or a
-ceiling is breached. See `tests/test_cost_benchmarks.py`.
-
-### Latency regression benchmark (Criterion-style)
-
-Budgets catch absolute blow-ups; `evaluation/regression_bench.py` catches
-*relative* regressions the way Criterion or Google Benchmark do. Each
-benchmark's verification time is normalized by a calibration workload — the
-anchor model's median time — measured in the same run, so the committed
-baseline stores machine-independent ratios: a slower machine slows the
-calibration equally and the ratio is unchanged, so only an algorithmic slowdown
-moves it. `make regression-bench-gate` re-measures and fails CI when any case
-regresses past the committed tolerance of ten percent; `make
-regression-bench-check` validates the baseline (cases, step counts, markdown
-sync) with no live timing. The comparison is a pure, unit-tested function. See
-`tests/test_regression_bench.py`.
-
-### Reshape constraints without the nonlinear blow-up
-
-The reshape compatibility check asks whether `prod(inputs)` can equal
-`prod(targets)` with every dimension at least one. As products of symbolic
-dimensions this is nonlinear integer arithmetic, which is exactly what makes Z3
-blow up on high-rank reshapes. TensorGuard factors the equation before solving:
-concrete dimensions fold into one integer per side, shared symbolic names cancel
-exactly (each is the same variable and at least one, hence nonzero), and opaque
-dynamic dimensions stay independent so no spurious incompatibility is reported.
-When nothing symbolic remains the verdict is read off directly -- equal literals
-are compatible, and a single inferred dimension is compatible exactly when it
-divides the input count. Only a genuinely under-determined symbolic remainder
-reaches the solver, and on a strictly smaller formula. In practice the common
-cases cost zero solver calls: two hundred concrete high-rank checks resolve
-analytically, single inferred-dimension divisibility resolves analytically, and
-a fully cancelling symbolic reshape such as the identity over named axes
-resolves analytically. The reduction never changes a verdict -- a reported
-incompatibility still means no assignment of dimensions of at least one preserves
-the element count. See `tests/test_reshape_divisibility_opt.py`.
-
-### Zero-flag verification (`tensorguard verify model.py`)
-
-The common case needs no shape annotation at all. When you do not pass `-s`,
-TensorGuard recovers the forward inputs from the source: shape-typed
-annotations, docstring `Args` blocks, example-input attributes, and config
-dicts. When the source documents nothing, a structural fallback pins the input
-rank and channel count from the first rank-determining layer that consumes each
-input -- a `Conv2d` can only accept a four-dimensional batch of images, a
-`Conv1d` a three-dimensional batch of sequences, and so on -- with the layer's
-channel count as the channel axis and fresh symbolic names elsewhere. This is
-sound: that rank is the only one the layer would accept at runtime, so the
-inference never introduces a false alarm, it only sharpens an otherwise
-fully-symbolic input so that downstream shape bugs become decidable. Layers
-whose input rank is genuinely ambiguous (`Linear`, `Embedding`, `LayerNorm`,
-one-dimensional batch norm) are left unconstrained, preserving the abstain-on-
-ambiguity contract. The shapes that were assumed, and where each came from, are
-printed in both the text and JSON output; `--no-infer` restores the explicit
-fully-symbolic behavior. In practice this turns a missed bug into a caught one:
-a convolutional classifier whose final `Linear` has the wrong in-features
-verifies as safe when the input is rank-unknown, and is correctly refuted once
-the rank is inferred. See `tests/test_input_inference_structural.py`.
-
-### World-class diagnostics
-
-A reported shape bug renders as a compiler-quality diagnostic rather than a raw
-constraint dump. Each issue names the offending layer or op, states the inferred
-input shape next to the expected one, shows the source line with a caret under
-the offending column, adds a related note pointing at where the layer was
-defined, and proposes a concrete fix. On a terminal the output is colored; pass
-`--no-color` for plain text, or `--format json` for machine-readable
-diagnostics. When several internal violations land on the same source location
-they collapse to the single richest diagnostic, so the issue count reflects what
-a developer would actually fix. For example, a model whose final `Linear`
-expects a different number of features than the upstream layer produces "Layer
-fc2 expects input dimension 30, but receives (batch, 20)" with a snippet, a
-caret, a note at the layer definition, and a suggested fix. See
-`tests/test_diagnostics_cli.py`.
-
-### The "why" explainer (`--explain`)
-
-Pass `--explain` to see the inference chain behind a reported bug: the
-step-by-step shape propagation from the forward inputs down to the failing
-operation. The chain is reconstructed from the verifier's own counterexample
-trace, so each link shows the op or layer, its input shapes, and the shape it
-produced, with the failing step highlighted. This pinpoints exactly where a
-tensor first acquired the shape that made the final op illegal. For a model
-whose first layer maps ten features to twenty and whose second layer mistakenly
-expects thirty, the chain shows the twenty-wide tensor being produced and then
-rejected one line later. The explainer is also available as structured JSON via
-`--format json --explain`, and as a self-contained HTML report via
-`tensorguard explain model.py -o explain.html`, adding an SVG chain graph,
-counterexample witness, proof-footprint badges, and mechanical fixes. See
-`tests/test_inference_chain_explain.py` and `tests/test_explain_html.py`.
-
-### Mechanical autofixes (`--fix`)
-
-Some shape bugs have a single, unambiguous repair: a `nn.Linear` whose
-`in_features` does not match the dimension actually flowing into it, or a
-`nn.Conv*d` whose `in_channels` does not match the channel count it receives.
-Because the verifier already knows the concrete dimension the layer is fed, the
-fix is simply to set that constructor argument to the observed value. Pass
-`--fix` to print these suggestions as a red and green diff, or `--fix --write`
-to apply them in place. Suggestions are emitted only when the repair is
-unambiguous: the layer must be defined on a single source line, the offending
-dimension must be concrete rather than symbolic, and the original value must
-appear where expected in the constructor call. Anything uncertain yields no
-suggestion rather than a wrong one, and applying a stale suggestion leaves the
-file untouched. In practice a layer that wrongly expects thirty input features
-while receiving twenty is rewritten to expect twenty, after which the model
-verifies clean and runs under eager torch. See `tests/test_autofix.py`.
-
-### Watch mode (`--watch`)
-
-`tensorguard verify --watch FILE` re-verifies a model every time it (or a
-sibling `.py` file in the same directory) changes, giving instant feedback while
-you edit. It prints a one-line green or red headline per pass whose issue count
-matches a normal run, and it survives mistakes typed mid-edit: a transient
-syntax error is reported as a failed pass rather than crashing the watcher. The
-change-detection and single-pass logic are pure functions, so they are unit
-tested without a real filesystem watcher; an end-to-end check starts the watcher
-on a buggy model, rewrites the offending layer on disk, and observes the verdict
-flip to verified safe within one polling interval. See
-`tests/test_watch_mode.py`.
-
-### Editor integration: one language server, multiple clients
-
-`python -m src.lsp_server` is a real Language Server (JSON-RPC over stdio) that
-analyses the **unsaved editor buffer** on every keystroke: inline squiggles for
-shape/device/dtype/phase/gradient bugs, hover shapes (the inferred tensor and
-its shape), and quick-fixes whose workspace edit reproduces the mechanical
-autofix — clearing the moment the code becomes correct. The bundled VS Code
-extension, Neovim Lua client, and structurally validated JetBrains LSP plugin
-template are thin transports over it, not re-implementations. `tensorguard
-verify --lsp FILE` also emits the same payloads as one-shot JSON. See
-the generated demo `docs/launch/editor_lsp_demo.gif`, `src/lsp_server.py`,
-`src/lsp_provider.py`, `editors/`, and
-`tests/test_lsp_server.py` / `tests/test_editor_lsp_clients.py`.
-
-### Jupyter / notebook integration
-
-Run `%load_ext src.jupyter_integration` in a notebook and TensorGuard checks
-every cell that defines an `nn.Module` the moment it runs, printing a green or
-red verdict inline. For models whose input rank cannot be inferred, the
-`%%tensorguard x=batch,10` cell magic supplies shapes explicitly, verifies, and
-then still executes the cell so the class is defined as usual. The detection,
-verification and rendering are pure functions, so the behavior is unit tested
-without a kernel, while an end-to-end test drives a real IPython shell: a buggy
-model cell prints its diagnostic and the class is still defined in the user
-namespace. Non-model and safe cells stay silent. See
-`tests/test_jupyter_integration.py`.
-
-### Definition-time enforcement (`@tensorguard.checked`)
-
-Decorate an `nn.Module` subclass with `@tensorguard.checked` to verify it the
-moment the class is defined, catching a shape bug at import before the model is
-ever instantiated or trained. The decorator returns the class unchanged, so
-decorated modules behave normally; on a detected bug it raises
-`TensorGuardCheckError` with the full source-mapped diagnostic, or, for gradual
-adoption, `@tensorguard.checked(on_fail="warn")` downgrades that to a warning.
-Convolutional models are checked even with no annotations; for ambiguous-rank
-models pass `input_shapes`. If a class's source cannot be recovered the
-decorator abstains silently rather than blocking the import. See
-`tests/test_runtime_check.py`.
-
-### Per-repo configuration (`tensorguard.toml`)
-
-Drop a `tensorguard.toml` at your repo root (or a `[tool.tensorguard]` table in
-`pyproject.toml`) to set project-wide defaults for `tensorguard verify`. The
-config is discovered by walking up from the file under analysis, so one root
-file governs the whole tree:
-
-```toml
-[tensorguard]
-soundness_mode   = "sound"             # sound | balanced | heuristic
-infer_inputs     = true
-high_confidence  = false
-cegar_iterations = 12
-ignore           = ["experiments/**", "legacy/old.py"]
-ignore_rules     = ["cegar-real-bug"]  # suppress bugs by [KIND] tag
-
-[tensorguard.checks]
-devices   = true
-phases    = false
-gradients = true
-```
-
-Command-line flags always win over the config, which in turn wins over the
-built-in defaults. Files matching an `ignore` glob are skipped and reported as
-ignored; bugs whose `[KIND]` tag is listed in `ignore_rules` are dropped along
-with their aligned diagnostics. Pass `--config PATH` to point at an explicit
-file or `--no-config` to ignore configuration entirely. See
-`tests/test_tg_config.py`.
-
-### GitHub Action (PR diff annotations)
-
-A production composite action (`action.yml`) runs TensorGuard on a pull request
-and renders each shape, device, dtype, phase, or gradient bug as a native
-annotation on the exact offending line of the diff:
-
-```yaml
-- uses: thehalleyyoung/tensorguard@v1
+- uses: ./   # tensorguard action
   with:
-    paths: src
+    paths: "src/"
     soundness-mode: sound
-    fail-on: any            # fail the check on any issue (or "never" to annotate only)
-    input-shapes: "x=batch,3,32,32"   # optional, for ambiguous-rank models
+    fail-on: error
+    sarif-output: tensorguard.sarif
 ```
 
-It emits `issues`, `files-with-issues`, and `files-checked` outputs and writes a
-job summary. The annotation rendering (GitHub workflow-command escaping,
-diagnostics-first mapping, de-duplication) and the gate are pure and tested in
-`tests/test_github_action.py`; the repo dogfoods the action in
-`.github/workflows/tensorguard-pr.yml`.
-
-### SARIF 2.1.0 for Code Scanning
-
-`src/sarif_codescan.py` turns verification results into a GitHub Code
-Scanning-ready SARIF 2.1.0 log: a named driver with one synthesized rule per bug
-kind, results with valid levels and 1-based physical locations, and
-`partialFingerprints` so alerts are tracked across commits even when line
-numbers shift. The action writes and uploads it when `sarif-output` is set:
+**Pre-commit:**
 
 ```yaml
-- uses: thehalleyyoung/tensorguard@v1
-  with:
-    paths: src
-    sarif-output: tensorguard.sarif   # written and uploaded to Code Scanning
+# .pre-commit-config.yaml
+- repo: local
+  hooks:
+    - id: tensorguard
+      name: tensorguard
+      entry: tensorguard-precommit
+      language: system
+      types: [python]
 ```
 
-The output is validated against the bundled SARIF validator and an explicit
-encoding of GitHub's ingestion requirements in
-`tests/test_sarif_codescan.py`.
-
-### pre-commit, nox/tox, and a pytest gate
-
-TensorGuard plugs into the standard Python quality toolchain:
-
-```yaml
-# .pre-commit-config.yaml in your repo
-repos:
-  - repo: https://github.com/thehalleyyoung/tensorguard
-    rev: v0.1.0
-    hooks:
-      - id: tensorguard
-```
-
-The hook verifies the staged modules and blocks the commit on a real bug. The
-`pytest` plugin turns a test session into a verification gate that checks the
-**modules the suite actually imports** (the code under test), not a blind tree
-walk:
+**Editor / LSP** — real-time squiggles in VS Code, Neovim, and JetBrains
+(`editors/`), or run the server directly:
 
 ```bash
-pytest --tensorguard            # verifies the modules your tests exercise
+tensorguard server         # stdio JSON-RPC LSP
 ```
 
-and `noxfile.py` / `tox.ini` expose `tensorguard` sessions that self-verify the
-examples. The GitHub Action adds a `changed-only: true` mode that verifies just
-the models touched by a pull request (`git diff base...head`). See
-`tests/test_precommit.py`, `tests/test_pytest_modules_under_test.py`, and
-`tests/test_action_changed_files.py`.
-
-### Install from GitHub and build reproducible local wheels
-
-TensorGuard ships as a standard build: `python -m build` produces both an sdist
-and a pure-Python wheel, and `twine check` passes on both. The `z3-solver`
-dependency is pinned to a range with an upper bound (`>=4.12,<5`) so a future
-major release of the solver cannot silently change a release's behaviour.
-
-The wheels are bit-for-bit reproducible: building twice under a fixed
-`SOURCE_DATE_EPOCH` yields byte-identical artifacts (verified by comparing the
-wheel sha256). The gitignored development roadmap never leaks into a release —
-the `MANIFEST.in` excludes it while still shipping the README, the getting
-started tutorial, the limitations map, and the MIT `LICENSE`.
-
-```bash
-# install from the source repository
-python -m pip install "git+https://github.com/thehalleyyoung/tensorguard.git"
-
-# reproducible local build
-SOURCE_DATE_EPOCH=1700000000 python -m build
-twine check dist/*
-```
-
-See `tests/test_packaging.py` for the metadata contract that guards this.
-
-A `conda-recipe/meta.yaml` provides a `noarch: python` conda-forge recipe that
-mirrors the same metadata (version, the pinned z3 range, the Python floor, the
-entry points, and the MIT license); `tests/test_conda_recipe.py` renders the
-template and asserts it never drifts from `pyproject.toml`.
-
-A multi-stage `Dockerfile` builds a wheel and installs only that wheel into a
-slim, non-root runtime whose entrypoint is the `tensorguard` console script, so
-`docker run --rm -v "$PWD:/work" tensorguard verify model.py` matches a local
-install; `tests/test_docker_image.py` checks that contract and runs the real
-entrypoint command.
-
-For paper review, `reproducibility/artifact_package.py` now packages the same
-artifact three ways — Docker, conda, and source — with fresh-machine commands,
-hidden-state barriers, and a real `examples/shape_bug.py` smoke check; see
-`docs/artifact/PACKAGING.md`.
-
-### Incremental adoption (baseline & suppression)
-
-Legacy repositories can adopt TensorGuard without a wall of failures. A
-`.tensorguard-baseline.json` snapshot records the findings that exist today, so
-later runs suppress anything already baselined and only *new* findings fail the
-gate. The fingerprint is line-independent, so a known finding that merely moves
-within a file stays baselined. For one-off cases, a `# tensorguard: ignore`
-comment on a finding's line silences it (`# tensorguard: ignore[shape,broadcast]`
-silences only the listed rule tags). Both work everywhere the shared verify core
-runs — the GitHub Action (`baseline:` input), the pre-commit hook, and the pytest
-plugin. See `src/baseline.py` and `tests/test_baseline.py`.
-
-### Reporters (JSON, JUnit-XML, GitHub, SARIF)
-
-Alongside Code Scanning SARIF, TensorGuard emits the same findings as structured
-JSON (a stable `tensorguard-report` schema for dashboards and bots), JUnit-XML
-(one `<testcase>` per analysed file, a `<failure>` per finding) so any JUnit
-consumer renders results, and GitHub workflow-command annotations. All four
-formats derive from one canonical finding stream, so no report can drift from
-another. See `src/reporters.py` and `tests/test_reporters.py`.
-
-### torch.compile / torch.export pre-pass
-
-Verification can run as an optional pre-pass in the compile pipeline, catching a
-shape, device, or phase bug *before* a model reaches `torch.compile` (where the
-same bug surfaces as an opaque guard failure or a deep inductor traceback).
-`guarded_compile(model, input_shapes=…)` verifies a live `nn.Module`, raises a
-`TensorGuardViolation` (or warns) on a real bug, then returns
-`torch.compile(model)`; `make_tensorguard_backend(model)` is a `torch.compile`
-backend that gates verification inside the pipeline; `verify_compile_guard_interactions`
-compares TensorGuard rank/dim/layer constraints with Dynamo `ExplainOutput.out_guards`
-and reports missing runtime guards; `verify_exported_program` and
-`guarded_aot_package` do the same before `torch.export.export` and AOTInductor
-packaging; `guarded_onnx_export` adds ONNX opset availability and
-`onnx.checker` gates. See `src/torch_integration.py` and
-`src/compile_guard_analysis.py`.
-
-### Framework hooks (Lightning, HF Trainer, Accelerate, Keras Core, Ray)
-
-Framework users get a one-line pre-flight check that runs before the first
-training step. `TensorGuardCallback` is a `pytorch_lightning.Callback` that
-verifies the `LightningModule` in `on_fit_start`; `TensorGuardTrainerCallback`
-is a Hugging Face `TrainerCallback` that verifies the model in `on_train_begin`;
-`guarded_from_pretrained` verifies a returned `PreTrainedModel` before the loader
-hands it back. `src.integrations.production_adapters` also wraps the production
-choke points for Lightning `fit`, HF `train`, Accelerate `prepare`, Keras Core
-`fit`, and Ray Train `fit`/train-loop execution. A real shape/device/phase bug
-raises `TensorGuardViolation` before wrapping or training starts, and every
-adapter is import-safe when its framework is absent.
-
-### License & redistribution
-
-TensorGuard is MIT-licensed, which is compatible with PyTorch's BSD-3-Clause.
-The published package contains only the original `src/` code plus docs and the
-`LICENSE`; large development-time third-party references (the vendored PyTea
-benchmark checkout and its `node_modules`) are pruned from every distribution
-artifact. See `THIRD_PARTY_NOTICES.md`, enforced by
-`tests/test_distribution_hygiene.py`.
-
-### Versioning & stability
-
-TensorGuard follows Semantic Versioning, with the public API, the Phase-7
-integration modules, and the CLI subcommands covered by a stability guarantee:
-nothing is removed without a `DeprecationWarning` shipped for at least one minor
-release. See `DEPRECATION_POLICY.md`, the `src.deprecation` helpers, and the
-pinning tests `tests/test_api_stability.py` / `tests/test_deprecation.py`.
-
-### Analyzing untrusted model files is safe by construction
-
-TensorGuard is designed to analyze model files that may be untrusted — from a
-pull request, a third-party repo, or a model zoo. Its central security property
-is that **analyzing a file never executes that file's code**: source-level entry
-points (`verify_architecture`, `analyze`, `analyze_file`, `quick_check`, and the
-explicit `src.safe_loader.verify_file_safely`) read the file as text and reason
-over the Python AST plus refinement types and Z3. The file is never imported,
-`exec`-uted, or `eval`-uated, so module-level side effects (file writes,
-`os.system`, network calls) do not run during analysis. This is enforced by
-`tests/test_security.py`, which feeds the verifier a source whose top-level code
-would create a sentinel file if executed and asserts the sentinel is never
-created while the real shape bug is still reported. See `SECURITY.md` for the
-full threat model and trust boundaries.
-
-### Typed public API (PEP 561)
-
-TensorGuard ships a `py.typed` marker, so type-checkers (mypy, pyright) consume
-its inline annotations directly — downstream code gets concrete types such as
-`AnalysisResult`, not `Any`. The documented, stability-guaranteed surface is
-re-exported from the top-level package:
+**Jupyter** — analyze a cell as you write it:
 
 ```python
-from tensorguard import (
-    analyze, analyze_file, analyze_directory, quick_check,
-    verify_architecture, verify_file_safely,   # source-level / untrusted-safe
-    AnalysisResult, Bug, BugCategory, SourceLocation,
-    checked,
+%load_ext src.symexec.notebook
+%%tensorguard --mode heuristic
+# ... model code in this cell is analyzed (and the findings shown) before it runs ...
+```
+
+**SARIF / CI everywhere** — `tensorguard analyze --format sarif`, plus a `ci-check`
+subcommand with proper exit codes, baselines, and PR-comment output.
+
+---
+
+## Why you can trust it
+
+- **Refutation soundness, proved in Lean.** The engine's core guarantees are backed by
+  **82 machine-checked Lean proof files** (`lean/`) — including the abstract-domain
+  transfer functions, the CEGAR refinement bound, and the mode-dependent soundness
+  fragment. See [`SOUNDNESS_CONTRACT.md`](SOUNDNESS_CONTRACT.md).
+- **Torch-free trust path.** TensorGuard never imports or executes your model. It can't
+  trigger side effects, download weights, or run arbitrary code — it only reads source.
+- **Proof-carrying findings.** A reported bug can ship with a replayable certificate and
+  a concrete counterexample, so you (or a reviewer) can independently confirm it.
+- **CEGAR predicate discovery.** A counterexample-guided refinement loop discovers shape
+  predicates automatically — no manual specification — with a Lean-checked termination bound.
+
+---
+
+## Command reference
+
+```
+tensorguard verify <file>          # verify an nn.Module architecture
+tensorguard analyze <path>         # scan files/dirs for bugs (text/json/sarif)
+tensorguard analyze-package <dir>  # whole-package analysis with summary
+tensorguard symexec <file>         # run the symbolic-execution engine directly
+tensorguard explain <file>         # HTML inference-chain report
+tensorguard watch <path>           # re-analyze incrementally on change
+tensorguard ci-check <path>        # CI mode with exit codes
+tensorguard server                 # start the LSP server
+tensorguard adoption-recipes       # ready-made CI/pre-commit/editor configs
+```
+
+Run `tensorguard <command> --help` for full flags. Common ones: `--soundness-mode
+{sound,balanced,heuristic}`, `--format {text,json,sarif}`, `--input-shape/-s
+name=d1,d2,...`, `--fix [--write]`, `--explain`, `--no-phase-check`,
+`--cegar-iterations N`.
+
+---
+
+## Python API at a glance
+
+```python
+import tensorguard as tg
+
+tg.analyze(source)                       # analyze a source string
+tg.analyze_file(path)                    # analyze one file
+tg.analyze_directory(path)               # analyze a tree
+tg.verify_architecture(source, input_shapes=...)  # full architecture verification
+tg.verify_module(path, input_shapes=...)          # verify a module file
+tg.quick_check(source)                   # bool: any high-confidence bugs?
+```
+
+```python
+from src.symexec import (
+    analyze_source, analyze_package,      # the symbolic engine
+    SymConfig,                            # mode selection
+    derive_model_contract,                # weights/state_dict contract
+    certify_weights_against_model,        # certify a checkpoint vs a model
+    to_sarif, to_lsp_diagnostics, to_github_annotations,  # output adapters
 )
 ```
 
-`tests/test_typing.py` builds a real wheel and asserts `src/py.typed` is
-packaged, and runs mypy over a consumer snippet to confirm the revealed type is
-the concrete `AnalysisResult`.
+The full verifier surface (`verify_einops`, `verify_multihead_attention`,
+`verify_checkpoint_state_dict`, `verify_lora_adapter_compatibility`,
+`verify_optimizer_state`, `verify_quantization`, `verify_sparse_*`, `verify_linalg_*`,
+`verify_func_*`, and many more) is exported from the top-level `tensorguard` package.
 
-### Coverage gate (supported surface)
+---
 
-`src/` includes research and experimental code paths, so a single whole-tree
-coverage number would be misleading. Instead, TensorGuard enforces a coverage
-gate of **at least ninety percent line-and-branch coverage on the supported
-surface** — the public API and
-the Phase 7 and Phase 8 integration modules (`safe_loader`, `reporters`, `baseline`,
-`deprecation`, `torch_integration`, `framework_hooks`). Run it locally with:
+## Learn more
 
-```bash
-python reproducibility/coverage_gate.py   # exits non-zero below the threshold
-```
+- [`GETTING_STARTED.md`](GETTING_STARTED.md) — first-run walkthrough
+- [`docs/symexec/engine.md`](docs/symexec/engine.md) — the symbolic engine, modes, and bug taxonomy
+- [`SOUNDNESS_CONTRACT.md`](SOUNDNESS_CONTRACT.md) — exactly what is and isn't guaranteed
+- [`LIMITATIONS.md`](LIMITATIONS.md) — where TensorGuard abstains and why
+- [`API.md`](API.md) / [`README_REFERENCE.md`](README_REFERENCE.md) — the complete, exhaustive reference
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — add an operator, write a Lean proof, ship a stub
 
-The gated set currently sits at about ninety-four percent. The gate is wired
-into CI (`.github/workflows/coverage.yml`), its configuration is pinned in
-`pyproject.toml` `[tool.coverage]`, and `tests/test_coverage_gate.py` asserts the
-module list cannot drift from that config and runs the gate end to end.
+## License
 
-### Tested across OSes, Pythons, and PyTorch versions
-
-A compatibility matrix (`.github/workflows/matrix.yml`) runs the supported-surface
-test suite on Linux, macOS, and Windows across Python 3.9 through 3.13, each
-paired with a compatible pinned PyTorch (2.2, 2.4, and 2.6 lines). A separate
-non-blocking job runs against `torch` nightly as an early-warning signal for
-upstream breakage. `tests/test_ci_matrix.py` parses the workflow and asserts the
-matrix is internally consistent — every Python/PyTorch pairing is valid, all
-three OSes and the full Python range are covered, and every referenced test file
-exists — so an impossible combination can never silently merge.
-
-### Contributing & governance
-
-Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup
-and the (deliberately high) bar for analysis changes: prove it against a real
-`nn.Module`, add a regression test, keep the coverage gate green, and never
-weaken the soundness or security boundary. The project follows the
-[Contributor Covenant](CODE_OF_CONDUCT.md); decision-making, releases, and the
-lead-maintainer rotation are documented in [`GOVERNANCE.md`](GOVERNANCE.md) and
-[`MAINTAINERS.md`](MAINTAINERS.md). Issue and pull-request templates (including a
-dedicated high-severity "unsound result" report) live under `.github/`. A draft
-proposal to incubate TensorGuard as a PyTorch companion tool — with its
-governance and maintenance plan — is in
-[`docs/RFC_pytorch_companion.md`](docs/RFC_pytorch_companion.md).
-
-### Formalization (reconciled with the code)
-
-The refinement type system and the abstract-domain core are written up formally
-in [`docs/formalization/type_system.md`](docs/formalization/type_system.md): the
-tensor refinement type `Tensor⟨shape; device; dtype; phase; grad⟩` and its five
-orthogonal theories, the symbolic-dimension term grammar, the SMT-discharged
-typing judgements (with the abstain rule that keeps `SAFE` sound), the
-interval-by-type-tag-by-nullity reduced product, threshold widening, and the
-`SAFE`-soundness theorem. Crucially the spec is *reconciled with the
-implementation*: `tests/test_formalization.py` proves the bounded-lattice laws,
-widening termination, and the reduced-product soundness law hold for the real
-`src/domains/` code, and discharges a representative shape verification condition
-end to end on a real `nn.Module`.
-
-### Lean build (sorry-free)
-
-The Lean proof corpus is built per-module to keep the harness
-happy:
-
-```bash
-cd lean
-for m in TensorGuard.Soundness TensorGuard.AssumeGuarantee \
-         TensorGuard.AssumeGuaranteeExtended TensorGuard.Extended \
-         TensorGuard.Parity TensorGuard.V5OperatorRules TensorGuard.Einops \
-         TensorGuard.SDPA; do
-  lake build "$m"
-done
-lake build parity_runner
-```
-
-Captured log: `experiments_v5/v8/lean_build_v8.log` (and the
-identical `lean_build_v9.log`).  The log contains zero
-`declaration uses 'sorry'` warnings; the only `sorry` substrings
-in `lean/TensorGuard/` live inside docstring comments.
-
-The "sorry-free" claim is enforced by an axiom audit rather than
-just a log grep: `lean/TensorGuard/AxiomAudit.lean` runs
-`#print axioms` on every core transfer-function soundness theorem
-(`applyOp_sound_linear`, `applyOp_sound_view`,
-`applyOpExt_sound_matmul`, `applyOp_sound_cross_entropy`,
-`applyOp_sound_argmax`, the composition witnesses, …) and
-`tests/test_lean_soundness.py` asserts each depends only on the
-trusted kernel axioms `propext`, `Classical.choice`, `Quot.sound`
-and never on `sorryAx`.  `tests/test_lean_whole_pipeline_audit.py`
-makes this **total and drift-proof**: it auto-discovers and audits
-*all public theorems* in the library, so any new theorem hiding
-a `sorry` or an exotic axiom is caught with no list to maintain.
-
-The same kernel-checked guarantee now reaches the **reduced-product
-abstract domain** itself: `lean/TensorGuard/ReducedProduct.lean`
-models the Tag×Nullity product that `src/domains/product.py`
-implements and proves each reduction *reductive* and the product meet
-a component-wise lower bound, sorry-free; `AxiomAudit.lean` audits
-those theorems too and `tests/test_lean_reduced_product.py` gates them.
-The reductions are also proved *monotone* (the meet unconditionally,
-and `reduce` on the canonical sublattice — the property that makes the
-reduced-product fixpoint iteration sound). A concretization γ into the
-concrete domain `{none, obj}` is defined and proved monotone, exact on
-meets, and **preserved by every reduction** (γ(reduce p)=γ(p)). Those
-executable definitions are *extracted* into a reference checker and
-differentially run against the real `src/domains/product.py` reduction
-(`reproducibility/verified_reduction_diff.py`): the Python rule matches
-the verified model on every reachable abstract value and is a sound
-over-approximation on all of them — the audit honestly flags that it
-diverges only on contradictory, unreachable states (forgoing a proof of
-unreachability there, never soundness).
-
-### Other artefacts
-
-| Artefact                                                       | Script                                                  |
-|----------------------------------------------------------------|---------------------------------------------------------|
-| 488-block + 60-bug headline triple                             | `experiments_v5/run_v5_benchmark.py`                    |
-| Precision/recall confusion matrices vs PyTea/runtime/no-op     | `evaluation/precision_recall.py`                        |
-| Paired significance tests (McNemar + Holm + bootstrap)         | `evaluation/significance.py`                            |
-| Sound-mode false-positive hunt (clean executing models)        | `evaluation/sound_mode_fp.py`                           |
-| Latent-bug recall vs the strongest dynamic baseline            | `evaluation/hard_recall.py`                             |
-| False-UNKNOWN rate in sound mode                               | `evaluation/false_unknowns.py`                          |
-| Differential fuzz false-positive hunt (random valid models)    | `evaluation/diff_fuzz.py`                               |
-| Negative-fuzz false-negative hunt (injected faults)            | `evaluation/neg_fuzz.py`                                |
-| Minimal-reproducer shrinker (delta-debug disagreements)        | `evaluation/minimize.py`                                |
-| Disagreement triage + 50-case regression suite                 | `evaluation/triage.py`                                  |
-| Shape-algebra property tests (Hypothesis)                      | `tests/test_shape_algebra_properties.py`                |
-| Precision/recall regression dashboard (merge gate)             | `evaluation/dashboard.py`                               |
-| Operator surface coverage matrix (torch/nn/functional)         | `evaluation/operator_coverage.py`                       |
-| 60-bug headline RP reproducer (single command)                 | `reproducibility/reproduce_headline_60bug.py`           |
-| Verdict reclassification (RP / CV / LW)                        | `experiments_v5/run_verdict_reclassification.py`        |
-| 10-bug real-public corpus                                      | `experiments_v5/v8/verify_real_bugs.py`                 |
-| Real-public corpus selection protocol                          | `experiments_v5/v8/REAL_BUG_SELECTION_PROTOCOL.md`      |
-| Real-public corpus freeze invariant                            | `experiments_v5/v8/verify_corpus_freeze.py`             |
-| User-visible (no-synthesised-assume) RP report                 | `experiments_v5/v8/build_user_visible_rp.py`            |
-| Backward verifier on 10 real importable models                 | `experiments_v5/v8/backward_real/run_backward_real.py`  |
-| Lean operator-rule audit (28 rules)                            | `lean/TensorGuard/V5OperatorRules.lean`                 |
-| Lean assume/guarantee composition (Theorem 3, weak form)       | `lean/TensorGuard/AssumeGuarantee.lean`                 |
-| Lean non-shape transfer functions (device/dtype/phase/grad)    | `lean/TensorGuard/DeviceDtype.lean`                     |
-| CEGAR / phase-encoder dead-code TCB confirmation               | `reproducibility/cegar_phase_deletion_tcb.py`           |
-| Grad-lattice runtime holdout (round-5 rewrite, 10 self-contained subjects) | `reproducibility/grad_lattice_runtime_holdout.py` |
-| 60-bug ablation: rule-driven only (parser-marker excluded)     | `reproducibility/bug_corpus_no_parser_marker.py`        |
-| Post-freeze N=15 power analysis (Fisher exact, 80% power)      | `reproducibility/postfreeze_power_analysis.py`          |
-| Cross-family static analysis: Llama 2/3 (6 modules)            | `reproducibility/hf_extra_model_family.py`              |
-| Cross-family static analysis: Qwen2 (5 modules)                | `reproducibility/hf_extra_family_round_comet1.py`       |
-| Cross-family static analysis: Mistral / Gemma / Phi-3 (15 modules) | `reproducibility/hf_extra_families_round11.py`      |
-| Naturally-occurring cross-family bugs (7 upstream PRs/issues, Llama/Qwen2/Mistral/Phi-3) | `reproducibility/cross_family_natural_bugs.py` |
-| 488-block headline-triple regime reconciliation (HCO=True vs HCO=False) | `reproducibility/block_corpus_488_reconciliation.py` |
-
-Round-by-round reviewer responses live under `.comet_neurips/` and
-the latest is `review_response.md` at the repo root.
+MIT — see [`LICENSE`](LICENSE).

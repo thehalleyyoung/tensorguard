@@ -23,6 +23,26 @@ The supported, stability-guaranteed surface is:
   `ci-check`, `init`, `report`, `export`, `diff`, `server`, `version`, `config`,
   `operator-confidence`.
 
+The **symbolic-execution engine** (`src.symexec`, the torch-free abstract
+interpreter) has a deliberately small stability-guaranteed surface:
+
+* High-level entry points: `analyze_source`, `analyze_file`, `analyze_package`.
+* Result/finding types and their documented fields: `SymResult`, `SymBug`,
+  `SymBugKind` (its members are additive — new kinds may be appended, existing
+  members are not renamed/removed without a deprecation cycle), `PackageResult`.
+* Configuration: `SymConfig`, `DEFAULT_CONFIG`, and the `MODES`
+  (`"sound"`, `"balanced"`, `"heuristic"`) — `"balanced"` remains the default.
+
+Everything else exported from `src.symexec` (the `Interpreter`, abstract-value
+and `State` types, lattice operators `alpha`/`gamma`, the AST/domain internals,
+and the various tooling helpers — telemetry, mutation, fuzzing, coverage,
+benchmarking, incremental/parallel drivers, editor/export integrations,
+proof-carrying certificates (`certify`/`BugCertificate`), the certificate
+replay checker (`replay`), runnable reproducers (`generate_repro`/`confirm`) and
+verified auto-repair (`repair`)) is
+**preview** surface: useful and tested, but it may change between MINOR releases
+without a deprecation cycle.
+
 Anything under `src/_experimental/`, `src/v5/`, or names prefixed with `_` is
 **not** part of the public API and may change without notice.
 
@@ -48,4 +68,24 @@ Before any public symbol or CLI flag is removed:
 
 `tests/test_api_stability.py` pins the public surface so an accidental break
 fails CI, and `tests/test_deprecation.py` proves the deprecation helpers emit the
-correct warnings.
+correct warnings. `tests/test_symexec_stability.py` pins the symbolic-execution
+engine's guaranteed surface (entry points, result types, `SymBugKind` members,
+and the `MODES`).
+
+## Proof fingerprints are not a compatibility surface
+
+The symbolic-execution engine emits stable **proof fingerprints** (e.g.
+`SymResult`/`SymBug` fingerprints and the certificate/footprint hashes) so that a
+given analysis is reproducible *within a release*. These hashes are **not** part
+of the SemVer-guaranteed surface: a sound **modeling extension** (teaching the
+engine a new operator, a tighter transfer function, or a new bug class) may
+change a fingerprint without a MAJOR bump, because the binding guarantee is
+soundness, not bit-stability of the proof artifact. Such changes are noted in the
+changelog. By contrast, a **diagnostic-only** change (telemetry, formatting,
+explanations) must never alter a fingerprint, and the symexec corpus tests pin
+representative fingerprints to enforce that.
+
+The engine's overriding contract remains the one in `SOUNDNESS_CONTRACT.md`: it
+abstains (reports nothing) outside its modeled fragment and never emits a false
+positive. Any change that could break that contract is governed by the
+"Soundness is non-negotiable" rule in `GOVERNANCE.md`, not merely by SemVer.

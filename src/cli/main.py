@@ -4106,6 +4106,325 @@ class ProveDecodingFeasibilityCommand:
         return 1 if (getattr(args, "fail_on_infeasible", False) and infeasible) else 0
 
 
+class SymexecCommand:
+    """Run the Python symbolic-execution engine over files/directories.
+
+    ``tensorguard symexec <path> [--engine symexec|fx|both]`` surfaces the
+    symexec findings (tuple-unpacking arity, rank-indexing, broadcast/reshape/
+    matmul shape faults, …) on their own, with on-demand ``--explain`` provenance
+    derivations, the abstain-coverage profile, and the deterministic proof
+    fingerprint.  ``--engine fx`` runs only the FX/SMT shape path, ``both`` runs
+    both and labels each section."""
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "paths", nargs="*", default=["."],
+            help="Python files or directories to analyze (default: .)",
+        )
+        parser.add_argument(
+            "--engine", choices=["symexec", "fx", "both"], default="symexec",
+            help="Which engine(s) to run (default: symexec).",
+        )
+        parser.add_argument(
+            "--format", choices=["text", "json", "sarif", "github", "lsp"],
+            default="text", dest="fmt",
+            help="Output format (default: text). 'sarif' emits a SARIF 2.1.0 log; "
+                 "'github' emits GitHub Actions annotations; 'lsp' emits LSP "
+                 "diagnostics JSON (all symexec engine only).",
+        )
+        parser.add_argument(
+            "--explain", action="store_true",
+            help="Render the full provenance derivation for each symexec bug.",
+        )
+        parser.add_argument(
+            "--fingerprint", action="store_true",
+            help="Print the deterministic proof fingerprint + abstain coverage.",
+        )
+        parser.add_argument(
+            "--coverage", action="store_true",
+            help="Print the statement-coverage profile (fraction of statements "
+                 "the engine interpreted with a non-Top value).",
+        )
+        parser.add_argument(
+            "--benchmark", action="store_true",
+            help="Benchmark per-file analysis latency and print a profile "
+                 "(mean/p95/max wall-time + iteration caps) instead of findings.",
+        )
+        parser.add_argument(
+            "--budget-ms", type=float, default=None,
+            help="Coarse per-file wall-clock budget in ms; analysis abstains on "
+                 "remaining units once exceeded (sound, off by default).",
+        )
+        parser.add_argument("-o", "--output", help="Write output to this file (default: stdout).")
+
+    @staticmethod
+    def _collect_files(paths: Sequence[str]) -> List[pathlib.Path]:
+        files: List[pathlib.Path] = []
+        seen: set = set()
+        for raw in paths:
+            p = pathlib.Path(raw)
+            if p.is_dir():
+                found = sorted(p.rglob("*.py"))
+            elif p.is_file():
+                found = [p]
+            else:
+                found = []
+            for f in found:
+                key = str(f.resolve())
+                if key not in seen:
+                    seen.add(key)
+                    files.append(f)
+        return files
+
+    def execute(self, args: argparse.Namespace) -> int:
+        from src.symexec import analyze_source as symexec_analyze
+
+        paths = getattr(args, "paths", None) or ["."]
+        engine = getattr(args, "engine", "symexec")
+        fmt = getattr(args, "fmt", "text")
+        files = self._collect_files(paths)
+        if not files:
+            sys.stderr.write("tensorguard symexec: no Python files found\n")
+            return 1
+
+        if getattr(args, "benchmark", False):
+            return self._run_benchmark(files, getattr(args, "budget_ms", None),
+                                       fmt, getattr(args, "output", None))
+
+        budget_ms = getattr(args, "budget_ms", None)
+        records: List[dict] = []
+        sarif_items: List[tuple] = []
+        total_bugs = 0
+        for f in files:
+            try:
+                source = f.read_text(encoding="utf-8")
+            except Exception as exc:
+                sys.stderr.write(f"tensorguard symexec: cannot read {f}: {exc}\n")
+                continue
+            fname = str(f)
+            rec: dict = {"file": fname, "engines": {}}
+
+            if engine in ("symexec", "both"):
+                sr = symexec_analyze(source, filename=fname, budget_ms=budget_ms)
+                sarif_items.append((fname, sr))
+                rec["engines"]["symexec"] = {
+                    "bugs": [b.to_dict() for b in sr.bugs],
+                    "fingerprint": sr.fingerprint(),
+                    "abstain_coverage": {
+                        c.value: n for c, n in sr.abstentions.coverage().items()
+                    },
+                    "abstain_total": sr.abstentions.total,
+                    "coverage": sr.coverage.to_dict(),
+                    "explain": sr.explain(filename=fname) if getattr(args, "explain", False) else None,
+                }
+                total_bugs += len(sr.bugs)
+
+            if engine in ("fx", "both"):
+                fx_bugs = self._run_fx(source, fname)
+                rec["engines"]["fx"] = {"bugs": fx_bugs}
+                total_bugs += len(fx_bugs)
+
+            records.append(rec)
+
+        symexec_only = {"sarif", "github", "lsp"}
+        if fmt in symexec_only and engine == "fx":
+            sys.stderr.write(
+                f"tensorguard symexec: --format {fmt} covers the symexec engine "
+                "only; ignoring --engine fx.\n"
+            )
+        if fmt == "sarif":
+            out = self._render_sarif(sarif_items)
+        elif fmt == "github":
+            out = self._render_github(sarif_items)
+        elif fmt == "lsp":
+            out = self._render_lsp(sarif_items)
+        elif fmt == "json":
+            out = self._render_json(records)
+        else:
+            out = self._render_text(records, engine, getattr(args, "fingerprint", False),
+                                    getattr(args, "coverage", False))
+        self._write(out, getattr(args, "output", None))
+        # Linter convention: non-zero exit when any bug is found.
+        return 1 if total_bugs else 0
+
+    @staticmethod
+    def _run_benchmark(files, budget_ms, fmt, output) -> int:
+        """Benchmark per-file analysis latency and emit a profile (Step 78)."""
+        from src.symexec import benchmark_paths, summarise
+
+        records = benchmark_paths(
+            [str(f) for f in files], repeats=3, budget_ms=budget_ms
+        )
+        profile = summarise(records)
+        if fmt == "json":
+            out = json.dumps(
+                {"summary": profile, "files": [r.to_dict() for r in records]},
+                indent=2,
+                sort_keys=True,
+            ) + "\n"
+        else:
+            lines = ["symexec performance benchmark", ""]
+            lines.append(f"  files          : {profile['files']}")
+            lines.append(f"  mean latency   : {profile['mean_ms']:.3f} ms")
+            lines.append(f"  p95 latency    : {profile['p95_ms']:.3f} ms")
+            lines.append(f"  max latency    : {profile['max_ms']:.3f} ms")
+            lines.append(f"  slowest file   : {profile['slowest_file']}")
+            if profile["errors"]:
+                lines.append(f"  errors         : {profile['errors']}")
+            if profile["budget_exceeded"]:
+                lines.append(f"  budget tripped : {profile['budget_exceeded']}")
+            caps = ", ".join(f"{k}={v}" for k, v in sorted(profile["iteration_caps"].items()))
+            lines.append(f"  iteration caps : {caps}")
+            out = "\n".join(lines) + "\n"
+        SymexecCommand._write(out, output)
+        return 0
+
+    @staticmethod
+    def _run_fx(source: str, filename: str) -> List[dict]:
+        """Run only the FX/SMT shape path (no symexec) and return bug dicts."""
+        try:
+            from src.api import analyze as api_analyze
+
+            res = api_analyze(source, filename=filename, use_symexec=False)
+            out = []
+            for b in res.bugs:
+                loc = getattr(b, "location", None)
+                out.append(
+                    {
+                        "category": getattr(getattr(b, "category", None), "value", str(getattr(b, "category", ""))),
+                        "message": getattr(b, "message", ""),
+                        "line": getattr(loc, "line", 0) if loc else 0,
+                        "col": getattr(loc, "column", 0) if loc else 0,
+                        "severity": getattr(b, "severity", "error"),
+                    }
+                )
+            return out
+        except Exception as exc:  # FX path may require torch; degrade gracefully.
+            sys.stderr.write(f"tensorguard symexec: FX engine unavailable: {exc}\n")
+            return []
+
+    @staticmethod
+    def _render_json(records: List[dict]) -> str:
+        return json.dumps({"results": records}, indent=2, sort_keys=True) + "\n"
+
+    @staticmethod
+    def _render_sarif(items: List[tuple]) -> str:
+        """Render the symexec results as a SARIF 2.1.0 log (Step 68)."""
+        from src.symexec import to_sarif
+
+        return json.dumps(to_sarif(items), indent=2, sort_keys=True) + "\n"
+
+    @staticmethod
+    def _render_github(items: List[tuple]) -> str:
+        """Render GitHub Actions annotation commands for the symexec results
+        (Step 69)."""
+        from src.symexec import render_github_annotations
+
+        lines = [
+            render_github_annotations(sr, filename=fname)
+            for fname, sr in items
+            if sr.bugs
+        ]
+        return ("\n".join(l for l in lines if l) + "\n") if lines else ""
+
+    @staticmethod
+    def _render_lsp(items: List[tuple]) -> str:
+        """Render LSP diagnostics JSON (one entry per file) for the symexec
+        results (Step 69)."""
+        from src.symexec import to_lsp_diagnostics
+
+        payload = [
+            {"uri": fname, "diagnostics": to_lsp_diagnostics(sr, uri=fname)}
+            for fname, sr in items
+        ]
+        return json.dumps(payload, indent=2, sort_keys=True) + "\n"
+
+    @staticmethod
+    def _render_text(records: List[dict], engine: str, show_fingerprint: bool,
+                     show_coverage: bool = False) -> str:
+        lines: List[str] = []
+        total = 0
+        for rec in records:
+            sym = rec["engines"].get("symexec")
+            fx = rec["engines"].get("fx")
+            header_written = False
+
+            def _header():
+                nonlocal header_written
+                if not header_written:
+                    lines.append(f"== {rec['file']} ==")
+                    header_written = True
+
+            if sym is not None:
+                if sym["bugs"] or sym["abstain_total"] or show_fingerprint or show_coverage:
+                    _header()
+                if engine == "both":
+                    lines.append("  [symexec]")
+                for b in sym["bugs"]:
+                    total += 1
+                    lines.append(
+                        f"  {b['kind']} at {b['line']}:{b['col']} "
+                        f"(conf {b['confidence']:.2f}) — {b['message']}"
+                    )
+                if sym.get("explain"):
+                    lines.append(_indent(sym["explain"], "  "))
+                if show_coverage and sym.get("coverage"):
+                    cov = sym["coverage"]
+                    lines.append(
+                        f"  coverage: {cov['non_top_statements']}/{cov['total_statements']} "
+                        f"statements non-Top ({cov['coverage']:.0%}); "
+                        f"value {cov['non_top_bindings']}/{cov['binding_statements']} "
+                        f"({cov['value_coverage']:.0%})"
+                    )
+                    if cov.get("unmodeled_kinds"):
+                        gaps = ", ".join(
+                            f"{k}={v}" for k, v in sorted(cov["unmodeled_kinds"].items())
+                        )
+                        lines.append(f"  unmodeled statements: {gaps}")
+                if show_fingerprint:
+                    lines.append(f"  fingerprint: {sym['fingerprint']}")
+                    if sym["abstain_total"]:
+                        cov = ", ".join(
+                            f"{k}={v}" for k, v in sorted(sym["abstain_coverage"].items())
+                        )
+                        lines.append(f"  abstain: {sym['abstain_total']} ({cov})")
+
+            if fx is not None:
+                if fx["bugs"]:
+                    _header()
+                if engine == "both":
+                    lines.append("  [fx]")
+                for b in fx["bugs"]:
+                    total += 1
+                    lines.append(
+                        f"  {b['category']} at {b['line']}:{b['col']} — {b['message']}"
+                    )
+
+        bug_count = sum(
+            len(rec["engines"].get("symexec", {}).get("bugs", []))
+            + len(rec["engines"].get("fx", {}).get("bugs", []))
+            for rec in records
+        )
+        lines.append("")
+        lines.append(
+            f"analyzed {len(records)} file(s); "
+            f"{bug_count} bug(s) found."
+        )
+        return "\n".join(lines) + "\n"
+
+    @staticmethod
+    def _write(text: str, output: Optional[str]) -> None:
+        if output:
+            with open(output, "w", encoding="utf-8") as fh:
+                fh.write(text)
+        else:
+            sys.stdout.write(text)
+
+
+def _indent(text: str, prefix: str) -> str:
+    return "\n".join(prefix + line for line in text.splitlines())
+
+
 class ReftypeCliApp:
     """Main CLI application class that wires subcommands to argparse."""
 
@@ -4113,6 +4432,7 @@ class ReftypeCliApp:
         "analyze": lambda: AnalyzeCommand(),
         "analyze-package": lambda: PackageAnalyzeCommand(),
         "verify": lambda: VerifyCommand(),
+        "symexec": lambda: SymexecCommand(),
         "explain": lambda: ExplainCommand(),
         "watch": lambda: WatchCommand(),
         "ci-check": lambda: CiCheckCommand(),
@@ -4179,6 +4499,7 @@ class ReftypeCliApp:
             "analyze": "Analyse files/directories for refinement type bugs",
             "analyze-package": "Analyse an entire Python package/directory with summary",
             "verify": "Verify nn.Module architecture via constraint-based verification",
+            "symexec": "Run the Python symbolic-execution engine (--engine symexec|fx|both, --explain, --fingerprint)",
             "explain": "Generate an HTML inference-chain explanation report",
             "watch": "Watch files for changes and re-analyse incrementally",
             "ci-check": "Run analysis in CI mode with exit codes",

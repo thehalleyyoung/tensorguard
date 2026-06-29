@@ -17,3 +17,21 @@
   language: python
   types: [python]
   require_serial: true
+
+# Step 69 — torch-free symbolic-execution hook.
+#
+# Runs the symexec engine (no torch required) over the staged Python files and
+# blocks the commit on a forced shape/rank/broadcast/reshape/matmul/unpack bug.
+# Usable in environments where the FX path's torch dependency is unavailable:
+#
+#   - repo: https://github.com/thehalleyyoung/tensorguard
+#     rev: v0.1.0
+#     hooks:
+#       - id: tensorguard-symexec
+- id: tensorguard-symexec
+  name: TensorGuard symbolic execution (torch-free)
+  description: Symbolically verify Python tensor code shapes; no torch required.
+  entry: tensorguard symexec
+  language: python
+  types: [python]
+  require_serial: true

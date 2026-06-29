@@ -45,3 +45,6 @@ import TensorGuard.Distributions
 import TensorGuard.SparseLayouts
 import TensorGuard.RecurrentRule
 import TensorGuard.SubjectReduction
+import TensorGuard.Symexec
+
+import TensorGuard.WeightsSound

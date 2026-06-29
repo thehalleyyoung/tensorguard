@@ -1,0 +1,248 @@
+{
+  "_doc": "Golden-certificate regression suite for the weights-layer certifier (roadmap step 5). Each checkpoint's canonical JSON certificate is frozen and must reproduce byte-identically. Certificate filename fields are basenames for portability.",
+  "entries": [
+    {
+      "cert": "certs/good_scalar.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "good_scalar.safetensors",
+      "good": true,
+      "name": "good_scalar",
+      "partial": false
+    },
+    {
+      "cert": "certs/good_multi.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "good_multi.safetensors",
+      "good": true,
+      "name": "good_multi",
+      "partial": false
+    },
+    {
+      "cert": "certs/good_empty.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "good_empty.safetensors",
+      "good": true,
+      "name": "good_empty",
+      "partial": false
+    },
+    {
+      "cert": "certs/good_contract_full.json",
+      "check_finite": true,
+      "expected": {
+        "a": [
+          "U8",
+          [
+            4
+          ]
+        ],
+        "b": [
+          "F32",
+          [
+            2
+          ]
+        ]
+      },
+      "file": "good_contract_full.safetensors",
+      "good": true,
+      "name": "good_contract_full",
+      "partial": false
+    },
+    {
+      "cert": "certs/good_contract_partial.json",
+      "check_finite": true,
+      "expected": {
+        "w": [
+          "F32",
+          [
+            2
+          ]
+        ]
+      },
+      "file": "good_contract_partial.safetensors",
+      "good": true,
+      "name": "good_contract_partial",
+      "partial": true
+    },
+    {
+      "cert": "certs/good_skip_finite.json",
+      "check_finite": false,
+      "expected": null,
+      "file": "good_skip_finite.safetensors",
+      "good": true,
+      "name": "good_skip_finite",
+      "partial": false
+    },
+    {
+      "cert": "certs/malformed_frame.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "malformed_frame.safetensors",
+      "good": false,
+      "name": "malformed_frame",
+      "partial": false
+    },
+    {
+      "cert": "certs/malformed_entry.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "malformed_entry.safetensors",
+      "good": false,
+      "name": "malformed_entry",
+      "partial": false
+    },
+    {
+      "cert": "certs/unknown_dtype.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "unknown_dtype.safetensors",
+      "good": false,
+      "name": "unknown_dtype",
+      "partial": false
+    },
+    {
+      "cert": "certs/malformed_shape.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "malformed_shape.safetensors",
+      "good": false,
+      "name": "malformed_shape",
+      "partial": false
+    },
+    {
+      "cert": "certs/malformed_offsets.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "malformed_offsets.safetensors",
+      "good": false,
+      "name": "malformed_offsets",
+      "partial": false
+    },
+    {
+      "cert": "certs/byte_length_mismatch.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "byte_length_mismatch.safetensors",
+      "good": false,
+      "name": "byte_length_mismatch",
+      "partial": false
+    },
+    {
+      "cert": "certs/storage_out_of_bounds.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "storage_out_of_bounds.safetensors",
+      "good": false,
+      "name": "storage_out_of_bounds",
+      "partial": false
+    },
+    {
+      "cert": "certs/storage_gap.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "storage_gap.safetensors",
+      "good": false,
+      "name": "storage_gap",
+      "partial": false
+    },
+    {
+      "cert": "certs/storage_overlap.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "storage_overlap.safetensors",
+      "good": false,
+      "name": "storage_overlap",
+      "partial": false
+    },
+    {
+      "cert": "certs/storage_undercovered.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "storage_undercovered.safetensors",
+      "good": false,
+      "name": "storage_undercovered",
+      "partial": false
+    },
+    {
+      "cert": "certs/non_finite_values.json",
+      "check_finite": true,
+      "expected": null,
+      "file": "non_finite_values.safetensors",
+      "good": false,
+      "name": "non_finite_values",
+      "partial": false
+    },
+    {
+      "cert": "certs/contract_missing_key.json",
+      "check_finite": true,
+      "expected": {
+        "absent": [
+          null,
+          [
+            3
+          ]
+        ],
+        "w": [
+          "F32",
+          [
+            2
+          ]
+        ]
+      },
+      "file": "contract_missing_key.safetensors",
+      "good": false,
+      "name": "contract_missing_key",
+      "partial": false
+    },
+    {
+      "cert": "certs/contract_unexpected_key.json",
+      "check_finite": true,
+      "expected": {
+        "w": [
+          null,
+          [
+            2
+          ]
+        ]
+      },
+      "file": "contract_unexpected_key.safetensors",
+      "good": false,
+      "name": "contract_unexpected_key",
+      "partial": false
+    },
+    {
+      "cert": "certs/contract_shape_mismatch.json",
+      "check_finite": true,
+      "expected": {
+        "w": [
+          null,
+          [
+            5
+          ]
+        ]
+      },
+      "file": "contract_shape_mismatch.safetensors",
+      "good": false,
+      "name": "contract_shape_mismatch",
+      "partial": false
+    },
+    {
+      "cert": "certs/contract_dtype_mismatch.json",
+      "check_finite": true,
+      "expected": {
+        "w": [
+          "F16",
+          [
+            2
+          ]
+        ]
+      },
+      "file": "contract_dtype_mismatch.safetensors",
+      "good": false,
+      "name": "contract_dtype_mismatch",
+      "partial": false
+    }
+  ]
+}

@@ -670,3 +670,72 @@ import TensorGuard
 #print axioms TensorGuard.Distributions.transformed_reshape_reinterprets_batch
 #print axioms TensorGuard.Distributions.transformed_composed_reshape_identity
 #print axioms TensorGuard.Distributions.transformed_wrong_domain_rejected
+
+-- Symbolic-execution engine soundness (SYMEXEC_100_STEPS Steps 91-93).
+-- Galois connection (Step 93):
+#print axioms TensorGuard.Symexec.Dim.galois
+#print axioms TensorGuard.Symexec.Dim.gamma_alpha_extensive
+#print axioms TensorGuard.Symexec.Dim.alpha_best
+-- Core refutation lemmas (no false positive + certified witness):
+#print axioms TensorGuard.Symexec.Core.disagree_sound
+#print axioms TensorGuard.Symexec.Core.disagree_witness
+#print axioms TensorGuard.Symexec.Core.geBound_sound
+#print axioms TensorGuard.Symexec.Core.zero_sound
+-- Per-detector refutation soundness:
+#print axioms TensorGuard.Symexec.Matmul.matmul_refute
+#print axioms TensorGuard.Symexec.Broadcast.broadcast_refute
+#print axioms TensorGuard.Symexec.Reshape.refute
+#print axioms TensorGuard.Symexec.CatStack.refute
+#print axioms TensorGuard.Symexec.Linear.refute
+#print axioms TensorGuard.Symexec.UnpackArity.refute
+#print axioms TensorGuard.Symexec.Einsum.refute
+#print axioms TensorGuard.Symexec.AxisOOB.refute
+#print axioms TensorGuard.Symexec.IndexOOB.refute
+#print axioms TensorGuard.Symexec.DivZero.refute
+#print axioms TensorGuard.Symexec.NegativeDim.refute
+#print axioms TensorGuard.Symexec.ItemNonScalar.refute
+#print axioms TensorGuard.Symexec.BoolNonScalar.refute
+#print axioms TensorGuard.Symexec.NumpyOnGrad.refute
+#print axioms TensorGuard.Symexec.RequiresGradNonFloat.refute
+#print axioms TensorGuard.Symexec.BackwardNonScalar.refute
+#print axioms TensorGuard.Symexec.RepeatDimsTooFew.refute
+#print axioms TensorGuard.Symexec.ExpandShapeMismatch.refute
+#print axioms TensorGuard.Symexec.EinopsRankMismatch.refute
+#print axioms TensorGuard.Symexec.NoneDeref.refute
+-- Symbolic-dimension (affine relational) layer soundness:
+#print axioms TensorGuard.Symexec.Affine.eval_add
+#print axioms TensorGuard.Symexec.Affine.eval_smul
+#print axioms TensorGuard.Symexec.Affine.definitely_eq_sound
+#print axioms TensorGuard.Symexec.Affine.definitely_divisible_sound
+-- Relational / SMT-feasibility layer soundness:
+#print axioms TensorGuard.Symexec.Relational.relNeg_sound
+#print axioms TensorGuard.Symexec.Relational.negate_sound
+#print axioms TensorGuard.Symexec.Relational.negate_negate
+#print axioms TensorGuard.Symexec.Relational.meet_sound
+#print axioms TensorGuard.Symexec.Relational.entails_of_unsat
+#print axioms TensorGuard.Symexec.Relational.unsat_of_entails
+#print axioms TensorGuard.Symexec.Relational.join_sound_left
+#print axioms TensorGuard.Symexec.Relational.join_sound_right
+#print axioms TensorGuard.Symexec.Relational.widen_sound
+#print axioms TensorGuard.Symexec.Relational.extend_only_shrinks
+-- Store merge/widening soundness:
+#print axioms TensorGuard.Symexec.storeModels_join_left
+#print axioms TensorGuard.Symexec.storeModels_widen_left
+-- Whole-program refutation soundness (Step 92):
+#print axioms TensorGuard.Symexec.Soundness.report_sound
+#print axioms TensorGuard.Symexec.Soundness.report_no_false_positive
+#print axioms TensorGuard.Symexec.Soundness.matmul_report_has_witness
+
+-- Weights-layer certifier soundness (quantum-leap; roadmap step 2):
+-- storage tiling ⇒ no aliasing / perfect coverage; IEEE bit-class finiteness scan
+-- is a decision procedure; contract satisfaction ⇒ no missing-key / size-mismatch,
+-- and a partial contract only ever flags required keys.
+#print axioms TensorGuard.Weights.Storage.tiled_no_alias
+#print axioms TensorGuard.Weights.Storage.tiled_total
+#print axioms TensorGuard.Weights.Finite.scan_sound
+#print axioms TensorGuard.Weights.Finite.scan_refute
+#print axioms TensorGuard.Weights.Finite.all_finite_no_fire
+#print axioms TensorGuard.Weights.Contract.satisfied_no_missing
+#print axioms TensorGuard.Weights.Contract.satisfied_no_mismatch
+#print axioms TensorGuard.Weights.Contract.missing_in_req
+#print axioms TensorGuard.Weights.Contract.mismatch_in_req

@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "description": "Curated trimmed-repro corpus for the symbolic-execution engine. 'wild' holds minimal reproductions of real-world (and representative) defects, each expected to fire exactly one named bug kind; 'correct' holds correct models that must produce zero reports (no false positives).",
+  "wild": {
+    "titans_pytorch_60_return_arity.py": {
+      "expect": "kind", "kind": "return_arity_contract", "line": 15,
+      "origin": "titans-pytorch#60",
+      "note": "single-tensor forward return unpacked into (out, cache)"
+    },
+    "openstrawberry_113_rank_index.py": {
+      "expect": "kind", "kind": "rank_index_error", "line": 5,
+      "origin": "OpenStrawberry#113",
+      "note": "2-D tensor indexed with three index dimensions"
+    },
+    "vector_quantize_248_syntax_error.py": {
+      "expect": "parse_error", "line": 5,
+      "origin": "vector-quantize-pytorch#248",
+      "note": "file does not parse"
+    },
+    "broadcast_mismatch.py": {
+      "expect": "kind", "kind": "broadcast_mismatch", "line": 6,
+      "origin": "elementwise-add class",
+      "note": "incompatible non-broadcastable shapes (3,4) + (5,6)"
+    },
+    "matmul_dim_mismatch.py": {
+      "expect": "kind", "kind": "matmul_dim_mismatch", "line": 6,
+      "origin": "matmul class",
+      "note": "inner dims 3 vs 4 mismatch"
+    },
+    "reshape_size_mismatch.py": {
+      "expect": "kind", "kind": "reshape_size_mismatch", "line": 5,
+      "origin": "reshape class",
+      "note": "numel 12 cannot reshape to 5x5=25"
+    },
+    "linear_dim_mismatch.py": {
+      "expect": "kind", "kind": "layer_dim_mismatch", "line": 9,
+      "origin": "nn.Linear class",
+      "note": "Linear(10,5) fed a last dim of 8"
+    },
+    "cat_shape_mismatch.py": {
+      "expect": "kind", "kind": "cat_shape_mismatch", "line": 6,
+      "origin": "torch.cat class",
+      "note": "non-concat dim differs (3 vs 4) for dim=0 cat"
+    },
+    "einsum_dim_mismatch.py": {
+      "expect": "kind", "kind": "einsum_dim_mismatch", "line": 6,
+      "origin": "torch.einsum class",
+      "note": "contracted index j is 3 in a but 4 in b"
+    }
+  },
+  "correct": {
+    "transpose_block.py": {"expect": "clean", "note": "transpose/unsqueeze/squeeze round-trip"},
+    "index_3d_safe.py": {"expect": "clean", "note": "3-D tensor indexed with three dims"},
+    "ellipsis_index_safe.py": {"expect": "clean", "note": "ellipsis index never over-indexes"},
+    "good_matmul.py": {"expect": "clean", "note": "matching inner dims 3==3"},
+    "good_broadcast.py": {"expect": "clean", "note": "broadcastable (3,1)+(1,4)"},
+    "good_linear.py": {"expect": "clean", "note": "Linear(8,5) fed last dim 8"},
+    "good_reshape.py": {"expect": "clean", "note": "numel 12 reshapes to 2x6"},
+    "good_cat.py": {"expect": "clean", "note": "identical non-concat dims"},
+    "unknown_rank_abstain.py": {"expect": "clean", "note": "unknown-rank receiver: engine abstains"},
+    "safe_conditional_unpack.py": {"expect": "clean", "note": "kwarg passed so forward returns a 2-tuple"}
+  }
+}

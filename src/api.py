@@ -17,7 +17,7 @@ flow-sensitive mode is still available for backward compatibility.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 from enum import Enum
 import ast
 import time
@@ -389,7 +389,7 @@ def _run_shape_analysis(source: str, filename: str) -> List[Bug]:
 # ── Public API ─────────────────────────────────────────────────────────
 
 def analyze(source: str, filename: str = "<string>",
-            use_liquid: bool = False) -> AnalysisResult:
+            use_liquid: bool = False, use_symexec: bool = True) -> AnalysisResult:
     """Analyze Python source code for bugs. Zero annotations required.
 
     Harvests existing guards (isinstance, is not None, comparisons) as
@@ -401,12 +401,20 @@ def analyze(source: str, filename: str = "<string>",
         filename: Optional filename for error reporting.
         use_liquid: If True and Z3 is available, use liquid type inference
             for higher precision (Z3-backed subtyping + CEGAR).
+        use_symexec: If True (default), additionally run the Python
+            symbolic-execution engine (``src.symexec``) that catches
+            Python-semantics bugs the FX/SMT shape path is blind to —
+            tuple-unpacking arity, rank-dependent indexing, etc.
 
     Returns:
         AnalysisResult with all detected bugs and analysis metadata.
     """
     if use_liquid and _HAS_LIQUID:
-        return liquid_analyze(source, filename)
+        result = liquid_analyze(source, filename)
+        if use_symexec:
+            result.bugs.extend(_run_symexec_analysis(source, filename))
+            result.bugs = _dedup_cross_engine(result.bugs)
+        return result
 
     from .real_analyzer import analyze_source
     fr = analyze_source(source, filename=filename, use_cegar=True)
@@ -419,7 +427,66 @@ def analyze(source: str, filename: str = "<string>",
     shape_bugs = _run_shape_analysis(source, filename)
     result.bugs.extend(shape_bugs)
 
+    # Run the Python symbolic-execution engine and merge its bugs.
+    if use_symexec:
+        result.bugs.extend(_run_symexec_analysis(source, filename))
+        # Step 70 — collapse cross-engine duplicates (the FX/SMT shape path and
+        # the symexec engine independently flagging the *same* site).
+        result.bugs = _dedup_cross_engine(result.bugs)
+
     return result
+
+
+def _dedup_cross_engine(bugs: List[Bug]) -> List[Bug]:
+    """Merge duplicate findings when more than one engine flags the same site
+    (Step 70).
+
+    The FX/SMT shape path and the symbolic-execution engine reach overlapping
+    defects by independent routes, so a single broadcast/matmul/reshape fault can
+    surface twice with two differently-worded messages.  Two reports are treated
+    as the *same finding* only when they agree on ``(file, line, column,
+    category)`` — a deliberately conservative key, so two genuinely distinct
+    defects (different category, or a different column on the same line) are
+    never collapsed and no real bug is dropped.
+
+    The **first** occurrence is kept (the engines are merged FX-before-symexec,
+    so the kept report is the one the rich source-mapped ``diagnostics`` list is
+    keyed to), enriched in place with the duplicate's higher confidence and any
+    fix suggestion / guard evidence it had and the kept one lacked.  Ordering of
+    the surviving reports is otherwise preserved.
+    """
+    seen: Dict[Tuple[str, int, int, BugCategory], int] = {}
+    out: List[Bug] = []
+    for b in bugs:
+        loc = b.location
+        key = (loc.file, loc.line, loc.column, b.category)
+        idx = seen.get(key)
+        if idx is not None:
+            kept = out[idx]
+            if b.confidence > kept.confidence:
+                kept.confidence = b.confidence
+            if not kept.fix_suggestion and b.fix_suggestion:
+                kept.fix_suggestion = b.fix_suggestion
+            if not kept.guard_evidence and b.guard_evidence:
+                kept.guard_evidence = b.guard_evidence
+            continue
+        seen[key] = len(out)
+        out.append(b)
+    return out
+
+
+def _run_symexec_analysis(source: str, filename: str) -> List[Bug]:
+    """Run the symbolic-execution engine and convert its findings to ``Bug``s.
+
+    Defensive: any failure inside the engine yields zero bugs rather than
+    crashing the overall analysis (the engine is an additive safety net).
+    """
+    try:
+        from .symexec import analyze_source as symexec_analyze
+        sr = symexec_analyze(source, filename=filename)
+        return [b.to_api_bug(filename) for b in sr.bugs]
+    except Exception:
+        return []
 
 
 def analyze_file(path: str) -> AnalysisResult:

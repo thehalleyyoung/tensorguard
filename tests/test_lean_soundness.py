@@ -45,6 +45,60 @@ _AUDITED_THEOREMS = [
     "TensorGuard.V5.applyOp_sound_argmax",
     "TensorGuard.MatmulSound.matmul_contraction_sound",
     "TensorGuard.BroadcastAddSound.broadcast_add_total",
+    # Symbolic-execution engine soundness (SYMEXEC_100_STEPS Steps 91-93).
+    "TensorGuard.Symexec.Dim.galois",
+    "TensorGuard.Symexec.Core.disagree_sound",
+    "TensorGuard.Symexec.Core.disagree_witness",
+    "TensorGuard.Symexec.Core.geBound_sound",
+    "TensorGuard.Symexec.Core.zero_sound",
+    "TensorGuard.Symexec.Matmul.matmul_refute",
+    "TensorGuard.Symexec.Broadcast.broadcast_refute",
+    "TensorGuard.Symexec.Reshape.refute",
+    "TensorGuard.Symexec.CatStack.refute",
+    "TensorGuard.Symexec.Linear.refute",
+    "TensorGuard.Symexec.UnpackArity.refute",
+    "TensorGuard.Symexec.Einsum.refute",
+    "TensorGuard.Symexec.AxisOOB.refute",
+    "TensorGuard.Symexec.IndexOOB.refute",
+    "TensorGuard.Symexec.DivZero.refute",
+    "TensorGuard.Symexec.NegativeDim.refute",
+    "TensorGuard.Symexec.ItemNonScalar.refute",
+    "TensorGuard.Symexec.BoolNonScalar.refute",
+    "TensorGuard.Symexec.NumpyOnGrad.refute",
+    "TensorGuard.Symexec.RequiresGradNonFloat.refute",
+    "TensorGuard.Symexec.BackwardNonScalar.refute",
+    "TensorGuard.Symexec.RepeatDimsTooFew.refute",
+    "TensorGuard.Symexec.ExpandShapeMismatch.refute",
+    "TensorGuard.Symexec.EinopsRankMismatch.refute",
+    "TensorGuard.Symexec.NoneDeref.refute",
+    # Symbolic-dimension (affine relational) layer soundness — #12 frontier.
+    "TensorGuard.Symexec.Affine.eval_add",
+    "TensorGuard.Symexec.Affine.eval_smul",
+    "TensorGuard.Symexec.Affine.definitely_eq_sound",
+    "TensorGuard.Symexec.Affine.definitely_divisible_sound",
+    # Relational / SMT-feasibility layer soundness — #12 frontier (in depth).
+    "TensorGuard.Symexec.Relational.relNeg_sound",
+    "TensorGuard.Symexec.Relational.negate_sound",
+    "TensorGuard.Symexec.Relational.negate_negate",
+    "TensorGuard.Symexec.Relational.meet_sound",
+    "TensorGuard.Symexec.Relational.entails_of_unsat",
+    "TensorGuard.Symexec.Relational.unsat_of_entails",
+    "TensorGuard.Symexec.Relational.join_sound_left",
+    "TensorGuard.Symexec.Relational.join_sound_right",
+    "TensorGuard.Symexec.Relational.widen_sound",
+    "TensorGuard.Symexec.Relational.extend_only_shrinks",
+    "TensorGuard.Symexec.Soundness.report_sound",
+    "TensorGuard.Symexec.Soundness.matmul_report_has_witness",
+    # Weights-layer certifier soundness (quantum-leap; roadmap step 2).
+    "TensorGuard.Weights.Storage.tiled_no_alias",
+    "TensorGuard.Weights.Storage.tiled_total",
+    "TensorGuard.Weights.Finite.scan_sound",
+    "TensorGuard.Weights.Finite.scan_refute",
+    "TensorGuard.Weights.Finite.all_finite_no_fire",
+    "TensorGuard.Weights.Contract.satisfied_no_missing",
+    "TensorGuard.Weights.Contract.satisfied_no_mismatch",
+    "TensorGuard.Weights.Contract.missing_in_req",
+    "TensorGuard.Weights.Contract.mismatch_in_req",
 ]
 
 
@@ -69,7 +123,7 @@ def test_root_imports_all_soundness_modules():
     names = {os.path.basename(p) for p in _imported_lean_files()}
     for required in ("Soundness.lean", "MatmulSound.lean",
                      "BroadcastAddSound.lean", "SoundnessV5.lean",
-                     "AssumeGuaranteeExtended.lean"):
+                     "AssumeGuaranteeExtended.lean", "Symexec.lean"):
         assert required in names, f"{required} not imported by TensorGuard root"
 
 

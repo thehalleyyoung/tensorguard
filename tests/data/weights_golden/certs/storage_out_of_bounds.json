@@ -1,0 +1,35 @@
+{
+  "checked_finite": true,
+  "contract_checked": false,
+  "file_sha256": "6eeceaa073c908e52e18c3810c2245138a95b7db237f3e7a6fae56fe0661cab1",
+  "filename": "storage_out_of_bounds.safetensors",
+  "findings": [
+    {
+      "detail": "end offset 100 exceeds the 4-byte data buffer",
+      "kind": "storage_out_of_bounds",
+      "name": "w"
+    },
+    {
+      "detail": "tensors cover 100 bytes but the data buffer is 4",
+      "kind": "storage_undercovered",
+      "name": null
+    }
+  ],
+  "format": "safetensors",
+  "num_tensors": 1,
+  "proven_safe": false,
+  "structural_fingerprint": "aa4eb68b833bd8f1b36d66a1466671cbc619b1fa85aaa55f40667a9e9d73c911",
+  "tensors": [
+    {
+      "begin": 0,
+      "dtype": "U8",
+      "end": 100,
+      "name": "w",
+      "shape": [
+        100
+      ]
+    }
+  ],
+  "total_tensor_bytes": 100,
+  "version": 1
+}
