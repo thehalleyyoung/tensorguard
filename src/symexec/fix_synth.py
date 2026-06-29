@@ -36,6 +36,7 @@ __all__ = [
     "synth_reshape_fix",
     "synth_matmul_fix",
     "synth_repeat_fix",
+    "synth_expand_fix",
 ]
 
 
@@ -340,4 +341,67 @@ def synth_repeat_fix(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
         "repeat-left-pad",
         f"prepend {pad} leading `1`(s) so `.repeat(...)` has one size per tensor "
         "dimension (torch aligns repeat dims to the trailing axes)",
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Phase 1 R5b — expand: left-pad the size list to the rank with `-1` (keep).   #
+# `.expand(*sizes)` aligns to the *trailing* axes; the "too few sizes" failure #
+# leaves leading *existing* dims unspecified.  Prepending `-1` (expand's       #
+# keep-this-dimension placeholder, legal for existing dims) restores rank      #
+# without changing any size the user wrote.  We fire ONLY on the too-few-sizes #
+# message; the other expand failures (non-singleton mismatch, leading `-1`)    #
+# have no unique intent-preserving fix and are left to abstain.                #
+# --------------------------------------------------------------------------- #
+_EXPAND_FEW_MSG = re.compile(
+    r"\.expand\(\) got\s+(?P<ndims>\d+)\s+size\(s\) but the tensor has"
+    r"\s+rank\s+(?P<rank>\d+)"
+)
+
+
+def synth_expand_fix(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
+    """Synthesizer for ``expand_shape_mismatch`` (too-few-sizes case only):
+    left-pad the ``.expand(...)`` size list with ``-1`` until it has one entry
+    per tensor dimension.  Abstains on the other expand failure modes and when
+    the call cannot be located unambiguously."""
+    i = bug.line - 1
+    if not (0 <= i < len(lines)):
+        return None
+    line = lines[i]
+    m = _EXPAND_FEW_MSG.search(getattr(bug, "message", "") or "")
+    if m is None:
+        return None
+    ndims, rank = int(m.group("ndims")), int(m.group("rank"))
+    pad = rank - ndims
+    if pad <= 0:
+        return None
+    marker = ".expand("
+    if line.count(marker) != 1:
+        return None
+    open_idx = line.index(marker) + len(marker) - 1
+    found = _find_call_args(line, open_idx)
+    if found is None:
+        return None
+    _, close_idx, inner = found
+    stripped = inner.strip()
+    if not stripped:
+        return None
+    keeps = "-1, " * pad
+    if (stripped[0], stripped[-1]) in (("(", ")"), ("[", "]")):
+        body = stripped[1:-1].strip()
+        if not body:
+            return None
+        new_inner = stripped[0] + keeps + body + stripped[-1]
+    else:
+        new_inner = keeps + stripped
+    new_line = line[: open_idx + 1] + new_inner + line[close_idx:]
+    if new_line == line:
+        return None
+    patched = lines[:]
+    patched[i] = new_line
+    return (
+        "\n".join(patched),
+        "expand-left-pad",
+        f"prepend {pad} leading `-1`(s) so `.expand(...)` keeps the leading "
+        "dimension(s) and has one size per tensor dimension",
     )

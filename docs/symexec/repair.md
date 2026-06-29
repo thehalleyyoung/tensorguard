@@ -167,6 +167,25 @@ Both call forms are handled (`x.repeat(2)` and `x.repeat((2,))`); the
 synthesizer abstains when the receiver is not uniquely locatable (e.g. two
 `.repeat(` calls on one line) or the arguments are not a simple literal list.
 
+### 4d. Expand — *left-pad with `-1` (keep)* (`R5b`)
+
+`tensor.expand(*sizes)` likewise aligns to the trailing axes and needs one size
+per dimension. The "too few sizes" failure leaves leading *existing* dimensions
+unspecified. The intent-preserving fix prepends `-1` — expand's
+"keep-this-dimension" placeholder, which is legal for existing dims — restoring
+the rank without changing any size the user wrote:
+
+```
+x:(3,4)
+x.expand(4)        # only 1 size  → RuntimeError
+x.expand(-1, 4)    # ✓ verified — keep dim 0, user's 4 stays on the last axis
+```
+
+The synthesizer fires *only* on the too-few-sizes case. The other expand
+failures (a target that mismatches a known non-singleton dim, a `-1` on a new
+leading dim) have no unique intent-preserving fix, so it abstains and emits
+nothing.
+
 ---
 
 ## 5. Applying fixes (`tensorguard fix`)

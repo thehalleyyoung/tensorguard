@@ -266,10 +266,17 @@ def _fix_repeat(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
     return synth_repeat_fix(lines, bug)
 
 
+def _fix_expand(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
+    from .fix_synth import synth_expand_fix
+
+    return synth_expand_fix(lines, bug)
+
+
 _STRATEGIES: Dict[str, Callable[[List[str], object], Optional[Tuple[str, str, str]]]] = {
     "reshape_size_mismatch": _fix_reshape,
     "matmul_dim_mismatch": _fix_matmul,
     "repeat_dims_too_few": _fix_repeat,
+    "expand_shape_mismatch": _fix_expand,
     "negative_dimension": _fix_negdim,
     "missing_super_init": _fix_missing_super_init,
     "direct_forward_call": _fix_direct_forward_call,

@@ -186,3 +186,36 @@ def test_repair_repeat_ambiguous_two_calls_on_one_line_abstains():
 def test_repeat_fix_is_deterministic():
     out = {repair(_REPEAT_INTS, filename="m.py")[0].patched_source for _ in range(5)}
     assert len(out) == 1
+
+
+# --------------------------------------------------------------------------- #
+# R5b — expand: left-pad with `-1` (keep) to the tensor rank.                  #
+# --------------------------------------------------------------------------- #
+_EXPAND_FEW = (
+    "import torch\n"
+    "def f():\n"
+    "    x = torch.zeros(3, 4)\n"
+    "    return x.expand(4)\n"
+)
+
+
+def test_repair_expand_left_pads_with_keep():
+    fixes = repair(_EXPAND_FEW, filename="m.py")
+    f = next(x for x in fixes if x.kind == "expand_shape_mismatch")
+    assert f.verified
+    assert f.strategy == "expand-left-pad"
+    # rank 2, one size given -> one leading -1 (keep existing dim 0).
+    assert "x.expand(-1, 4)" in f.patched_source
+
+
+def test_repair_expand_non_singleton_mismatch_abstains():
+    # expand(5, 4) on (3, 4): dim 0 is a known non-singleton 3 != 5 -> no unique
+    # intent-preserving fix, so the synthesizer abstains.
+    src = (
+        "import torch\n"
+        "def f():\n"
+        "    x = torch.zeros(3, 4)\n"
+        "    return x.expand(5, 4)\n"
+    )
+    fixes = repair(src, filename="m.py")
+    assert all(f.kind != "expand_shape_mismatch" for f in fixes)
