@@ -250,7 +250,7 @@ def test_repair_layer_dim_mismatch_verified():
     fixes = repair(LAYER_DIM, filename="m.py")
     f = next(x for x in fixes if x.kind == "layer_dim_mismatch")
     assert f.verified
-    assert f.strategy == "linear-in-features"
+    assert f.strategy == "layer-in-size"
     # in_features rewritten 30 -> 20 (the dim actually flowing in).
     assert "nn.Linear(20, 5)" in f.patched_source
 
@@ -277,6 +277,57 @@ def test_layer_dim_mismatch_ambiguous_definition_abstains():
     )
     fixes = repair(ambiguous, filename="m.py")
     assert all(f.kind != "layer_dim_mismatch" for f in fixes)
+
+
+CONV_DIM = (
+    "import torch\n"
+    "import torch.nn as nn\n"
+    "class Net(nn.Module):\n"
+    "    def __init__(self):\n"
+    "        super().__init__()\n"
+    "        self.c = nn.Conv2d(3, 8, 3)\n"
+    "    def forward(self, x):\n"
+    "        return self.c(x)\n"
+    "def main():\n"
+    "    m = Net()\n"
+    "    m(torch.randn(1, 1, 16, 16))\n"
+    "if __name__ == '__main__':\n"
+    "    main()\n"
+)
+
+BN_DIM = (
+    "import torch\n"
+    "import torch.nn as nn\n"
+    "class Net(nn.Module):\n"
+    "    def __init__(self):\n"
+    "        super().__init__()\n"
+    "        self.b = nn.BatchNorm2d(16)\n"
+    "    def forward(self, x):\n"
+    "        return self.b(x)\n"
+    "def main():\n"
+    "    m = Net()\n"
+    "    m(torch.randn(2, 8, 4, 4))\n"
+    "if __name__ == '__main__':\n"
+    "    main()\n"
+)
+
+
+def test_repair_conv_in_channels_verified():
+    # R3: the layer fixer generalizes beyond Linear to Conv in_channels.
+    fixes = repair(CONV_DIM, filename="m.py")
+    f = next(x for x in fixes if x.kind == "layer_dim_mismatch")
+    assert f.verified
+    assert f.strategy == "layer-in-size"
+    assert "nn.Conv2d(1, 8, 3)" in f.patched_source
+
+
+def test_repair_batchnorm_num_features_verified():
+    # R3: also BatchNorm's num_features (first constructor argument).
+    fixes = repair(BN_DIM, filename="m.py")
+    f = next(x for x in fixes if x.kind == "layer_dim_mismatch")
+    assert f.verified
+    assert f.strategy == "layer-in-size"
+    assert "nn.BatchNorm2d(8)" in f.patched_source
 
 
 def test_propose_preserves_trailing_newline():

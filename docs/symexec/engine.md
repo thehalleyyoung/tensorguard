@@ -315,6 +315,17 @@ result.to_github_annotations("demo.py")        # CI ::error:: annotations
 
 ---
 
+## From finding to fixing
+
+TensorGuard doesn't stop at reporting — it can **repair** many of these bugs and
+*re-verify* the patch before showing it. `tensorguard fix <path>` proposes
+verified unified diffs (`--write` applies them); the proposal channel includes
+**SMT-synthesized** fixes that read the correct shape off a satisfying model.
+See [`repair.md`](repair.md) for the full design, the per-bug strategies, and the
+re-verification soundness argument.
+
+---
+
 ## Proof-carrying bug certificates & replay
 
 Every forced-failure report is *refutation sound* — it fires only when a runtime

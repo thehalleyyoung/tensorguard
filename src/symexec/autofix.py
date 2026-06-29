@@ -71,13 +71,43 @@ _NEG_INT = re.compile(r"-(\d+)")
 _FORWARD_CALL = re.compile(r"\.forward\(")
 _DOT_DATA = re.compile(r"\.data\b")
 _DEF_INIT = re.compile(r"^(\s*)def\s+__init__\s*\(")
-_LAYER_DIM_MSG = re.compile(
-    r"expects? last input dim\s+(\d+)\s+but received\s+(\d+)", re.IGNORECASE
+# R3: generalized layer-definition repair beyond Linear.  Every modeled layer
+# whose first constructor argument is the in-feature / in-channel / num-feature
+# size (Linear, Conv{1,2,3}d, BatchNorm{1,2,3}d, …) is repaired the same way:
+# rewrite that unique first argument to the size actually flowing in.  We read
+# (class, declared, received) from the fingerprinted message's three forms.
+_LAYER_MSG_VARIANTS = (
+    # Linear: "nn.Linear expects last input dim 30 but received 20"
+    re.compile(r"nn\.(?P<cls>\w+) expects? last input dim\s+(?P<declared>\d+)"
+               r"\s+but received\s+(?P<received>\d+)"),
+    # Conv: "nn.Conv2d expects 3 input channels but received 1 (channel dim 1)"
+    re.compile(r"nn\.(?P<cls>\w+) expects?\s+(?P<declared>\d+)\s+input channels"
+               r"\s+but received\s+(?P<received>\d+)"),
+    # Norm: "nn.BatchNorm2d expects 16 channels (num_features) but received 8 at dim 1"
+    re.compile(r"nn\.(?P<cls>\w+) expects?\s+(?P<declared>\d+)\s+channels"
+               r"\s+\(num_features\)\s+but received\s+(?P<received>\d+)"),
 )
-_LINEAR_DEF = re.compile(r"nn\.Linear\(\s*(\d+)\b")
+
+
+def _parse_layer_msg(msg: str):
+    """Return ``(cls, declared, received)`` parsed from a ``layer_dim_mismatch``
+    message, or ``None`` if it matches none of the modeled layer families."""
+    for rx in _LAYER_MSG_VARIANTS:
+        m = rx.search(msg)
+        if m:
+            return m.group("cls"), int(m.group("declared")), int(m.group("received"))
+    return None
 
 
 def _fix_reshape(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
+    # Prefer the solver-synthesized minimal target (keeps the user's intended
+    # factors, infers only the wrong one with -1). Fall back to a blunt flatten
+    # when the smart repair is ambiguous.
+    from .fix_synth import synth_reshape_fix
+
+    synthesized = synth_reshape_fix(lines, bug)
+    if synthesized is not None:
+        return synthesized
     i = bug.line - 1
     if not (0 <= i < len(lines)):
         return None
@@ -188,42 +218,51 @@ def _fix_tensor_data_access(lines: List[str], bug) -> Optional[Tuple[str, str, s
 
 
 def _fix_layer_dim_mismatch(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
-    """Repair an ``nn.Linear`` whose ``in_features`` does not match the feature
-    dim it is fed. The message records the expected (declared) and received
-    (actual) sizes; we rewrite the *unique* matching layer definition's first
-    constructor argument to the received size."""
-    msg = getattr(bug, "message", "") or ""
-    m = _LAYER_DIM_MSG.search(msg)
-    if not m:
+    """Repair a layer whose declared first constructor size (in_features /
+    in_channels / num_features) does not match the size actually flowing in.
+    Covers ``nn.Linear``, ``nn.Conv{1,2,3}d``, ``nn.BatchNorm{1,2,3}d`` and any
+    other layer reported via the same message families. We rewrite the *unique*
+    matching ``nn.<Cls>(<declared>, …)`` definition's first argument to the
+    received size, abstaining when zero or several definitions match."""
+    parsed = _parse_layer_msg(getattr(bug, "message", "") or "")
+    if parsed is None:
         return None
-    declared, received = int(m.group(1)), int(m.group(2))
+    cls, declared, received = parsed
     if declared == received:
         return None
-    # Find the unique `nn.Linear(<declared>, ...)` definition line.
+    # Find the unique `nn.<cls>(<declared>, ...)` definition.
+    def_rx = re.compile(r"nn\.%s\(\s*(\d+)\b" % re.escape(cls))
     hits = [
         j
         for j, ln in enumerate(lines)
-        if (mm := _LINEAR_DEF.search(ln)) and int(mm.group(1)) == declared
+        if (mm := def_rx.search(ln)) and int(mm.group(1)) == declared
     ]
     if len(hits) != 1:
         return None
     j = hits[0]
     line = lines[j]
-    new_line = _LINEAR_DEF.sub(f"nn.Linear({received}", line, count=1)
+    new_line = def_rx.sub(f"nn.{cls}({received}", line, count=1)
     if new_line == line:
         return None
     patched = lines[:]
     patched[j] = new_line
     return (
         "\n".join(patched),
-        "linear-in-features",
-        f"set `nn.Linear` in_features {declared} -> {received} to match the "
-        "feature dimension actually flowing in",
+        "layer-in-size",
+        f"set `nn.{cls}` first argument {declared} -> {received} to match the "
+        "size actually flowing in",
     )
+
+
+def _fix_matmul(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
+    from .fix_synth import synth_matmul_fix
+
+    return synth_matmul_fix(lines, bug)
 
 
 _STRATEGIES: Dict[str, Callable[[List[str], object], Optional[Tuple[str, str, str]]]] = {
     "reshape_size_mismatch": _fix_reshape,
+    "matmul_dim_mismatch": _fix_matmul,
     "negative_dimension": _fix_negdim,
     "missing_super_init": _fix_missing_super_init,
     "direct_forward_call": _fix_direct_forward_call,
