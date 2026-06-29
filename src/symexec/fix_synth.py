@@ -35,6 +35,7 @@ __all__ = [
     "synth_reshape_target",
     "synth_reshape_fix",
     "synth_matmul_fix",
+    "synth_repeat_fix",
 ]
 
 
@@ -258,4 +259,85 @@ def synth_matmul_fix(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
         "matmul-transpose",
         f"the right operand `{rhs}` is stored transposed; `@ {rhs}.transpose"
         "(-1, -2)` aligns the contracted dimension",
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Phase 1 R5a — repeat: left-pad the repeat-dim list to the tensor rank.       #
+# torch aligns `.repeat(*sizes)` to the *trailing* axes (broadcasting-style),  #
+# so the unique, intent-preserving fix for "too few repeat dims" is to prepend #
+# `1`s (no-op repeats on the new leading axes), keeping every size the user    #
+# already specified on the trailing axes.                                      #
+# --------------------------------------------------------------------------- #
+_REPEAT_MSG = re.compile(
+    r"\.repeat\(\) got\s+(?P<ndims>\d+)\s+repeat dim\(s\) but the tensor has"
+    r"\s+rank\s+(?P<rank>\d+)"
+)
+
+
+def _find_call_args(line: str, start: int) -> Optional[Tuple[int, int, str]]:
+    """Given ``line`` and the index ``start`` of the ``(`` opening a call, return
+    ``(open_idx, close_idx, inner_text)`` for the balanced argument list, or
+    ``None`` if the parentheses are unbalanced on this single line."""
+    depth = 0
+    for j in range(start, len(line)):
+        c = line[j]
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0:
+                return start, j, line[start + 1 : j]
+    return None
+
+
+def synth_repeat_fix(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
+    """Synthesizer for ``repeat_dims_too_few``: left-pad the ``.repeat(...)``
+    size list with ``1``s until it has one entry per tensor dimension.  Handles
+    both the separate-ints form (``x.repeat(2)``) and the single tuple/list form
+    (``x.repeat((2,))``).  Abstains when the call cannot be located unambiguously
+    or its arguments are not a simple literal list (no false edits)."""
+    i = bug.line - 1
+    if not (0 <= i < len(lines)):
+        return None
+    line = lines[i]
+    msg = getattr(bug, "message", "") or ""
+    m = _REPEAT_MSG.search(msg)
+    if m is None:
+        return None
+    ndims, rank = int(m.group("ndims")), int(m.group("rank"))
+    pad = rank - ndims
+    if pad <= 0:
+        return None
+    marker = ".repeat("
+    if line.count(marker) != 1:
+        return None  # ambiguous receiver
+    open_idx = line.index(marker) + len(marker) - 1
+    found = _find_call_args(line, open_idx)
+    if found is None:
+        return None
+    _, close_idx, inner = found
+    stripped = inner.strip()
+    if not stripped:
+        return None
+    ones = "1, " * pad
+    # Single tuple/list literal argument: insert the padding ones *inside*.
+    if (stripped[0], stripped[-1]) in (("(", ")"), ("[", "]")):
+        body = stripped[1:-1].strip()
+        if not body:
+            return None
+        new_inner = stripped[0] + ones + body + stripped[-1]
+    else:
+        # Separate positional ints: prepend the padding ones to the arg list.
+        new_inner = ones + stripped
+    new_line = line[: open_idx + 1] + new_inner + line[close_idx:]
+    if new_line == line:
+        return None
+    patched = lines[:]
+    patched[i] = new_line
+    return (
+        "\n".join(patched),
+        "repeat-left-pad",
+        f"prepend {pad} leading `1`(s) so `.repeat(...)` has one size per tensor "
+        "dimension (torch aligns repeat dims to the trailing axes)",
     )

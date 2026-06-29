@@ -149,6 +149,24 @@ When the transpose does **not** restore compatibility (`a:(2,3) @ b:(4,5)`), the
 synthesizer abstains rather than emit a wrong rewrite. It also requires the line
 to contain a single, simply-named `@` so the operand is locatable unambiguously.
 
+### 4c. Repeat — *left-pad the size list to the rank* (`R5a`)
+
+`tensor.repeat(*sizes)` requires **at least one size per tensor dimension**;
+`repeat_dims_too_few` fires when fewer are given. Torch aligns the provided sizes
+to the **trailing** axes (broadcasting-style), so the unique, intent-preserving
+fix is to **prepend `1`s** — no-op repeats on the new leading axes — until the
+list has one entry per dimension:
+
+```
+x:(2,3,4)                 # rank 3
+x.repeat(2)               # only 1 size  → RuntimeError
+x.repeat(1, 1, 2)         # ✓ verified — user's 2 stays on the last axis
+```
+
+Both call forms are handled (`x.repeat(2)` and `x.repeat((2,))`); the
+synthesizer abstains when the receiver is not uniquely locatable (e.g. two
+`.repeat(` calls on one line) or the arguments are not a simple literal list.
+
 ---
 
 ## 5. Applying fixes (`tensorguard fix`)

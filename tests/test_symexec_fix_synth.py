@@ -134,3 +134,55 @@ def test_synth_fixes_are_deterministic():
     assert len(out) == 1
     out2 = {repair(_MATMUL_T, filename="m.py")[0].patched_source for _ in range(5)}
     assert len(out2) == 1
+
+
+# --------------------------------------------------------------------------- #
+# R5a — repeat: left-pad the repeat-dim list to the tensor rank.               #
+# --------------------------------------------------------------------------- #
+_REPEAT_INTS = (
+    "import torch\n"
+    "def f():\n"
+    "    x = torch.zeros(2, 3, 4)\n"
+    "    return x.repeat(2)\n"
+)
+
+_REPEAT_TUPLE = (
+    "import torch\n"
+    "def f():\n"
+    "    x = torch.zeros(2, 3, 4)\n"
+    "    return x.repeat((2,))\n"
+)
+
+
+def test_repair_repeat_left_pads_positional_ints():
+    fixes = repair(_REPEAT_INTS, filename="m.py")
+    f = next(x for x in fixes if x.kind == "repeat_dims_too_few")
+    assert f.verified
+    assert f.strategy == "repeat-left-pad"
+    # rank 3, one dim given -> two leading 1s, user's 2 kept on the trailing axis.
+    assert "x.repeat(1, 1, 2)" in f.patched_source
+
+
+def test_repair_repeat_left_pads_tuple_literal():
+    fixes = repair(_REPEAT_TUPLE, filename="m.py")
+    f = next(x for x in fixes if x.kind == "repeat_dims_too_few")
+    assert f.verified
+    assert f.strategy == "repeat-left-pad"
+    assert "1, 1, 2" in f.patched_source.splitlines()[-1]
+
+
+def test_repair_repeat_ambiguous_two_calls_on_one_line_abstains():
+    # Two `.repeat(` on the same line -> the receiver is not uniquely locatable.
+    src = (
+        "import torch\n"
+        "def f():\n"
+        "    x = torch.zeros(2, 3, 4)\n"
+        "    return x.repeat(2), x.repeat(3)\n"
+    )
+    fixes = repair(src, filename="m.py")
+    assert all(f.kind != "repeat_dims_too_few" for f in fixes)
+
+
+def test_repeat_fix_is_deterministic():
+    out = {repair(_REPEAT_INTS, filename="m.py")[0].patched_source for _ in range(5)}
+    assert len(out) == 1
