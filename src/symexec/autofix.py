@@ -68,6 +68,13 @@ class VerifiedFix:
 # --------------------------------------------------------------------------- #
 _RESHAPE_CALL = re.compile(r"\.(reshape|view)\(([^()]*)\)")
 _NEG_INT = re.compile(r"-(\d+)")
+_FORWARD_CALL = re.compile(r"\.forward\(")
+_DOT_DATA = re.compile(r"\.data\b")
+_DEF_INIT = re.compile(r"^(\s*)def\s+__init__\s*\(")
+_LAYER_DIM_MSG = re.compile(
+    r"expects? last input dim\s+(\d+)\s+but received\s+(\d+)", re.IGNORECASE
+)
+_LINEAR_DEF = re.compile(r"nn\.Linear\(\s*(\d+)\b")
 
 
 def _fix_reshape(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
@@ -113,9 +120,115 @@ def _fix_negdim(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
     )
 
 
+def _fix_missing_super_init(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
+    """Insert ``super().__init__()`` as the first statement of an ``__init__``
+    that forgot to call it. The bug is reported on the ``def __init__`` line."""
+    i = bug.line - 1
+    if not (0 <= i < len(lines)):
+        return None
+    m = _DEF_INIT.match(lines[i])
+    if not m:
+        return None
+    def_indent = m.group(1)
+    body_indent = def_indent + "    "
+    # Don't duplicate an existing call already present in the body.
+    for probe in lines[i + 1 : i + 6]:
+        if "super().__init__(" in probe.replace(" ", ""):
+            return None
+    patched = lines[:]
+    patched.insert(i + 1, f"{body_indent}super().__init__()")
+    return (
+        "\n".join(patched),
+        "insert-super-init",
+        "insert `super().__init__()` as the first statement of `__init__` so "
+        "submodules/params register correctly",
+    )
+
+
+def _fix_direct_forward_call(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
+    """Rewrite ``module.forward(x)`` to the canonical ``module(x)`` so hooks and
+    ``__call__`` machinery run."""
+    i = bug.line - 1
+    if not (0 <= i < len(lines)):
+        return None
+    line = lines[i]
+    if not _FORWARD_CALL.search(line):
+        return None
+    new_line = _FORWARD_CALL.sub("(", line, count=1)
+    if new_line == line:
+        return None
+    patched = lines[:]
+    patched[i] = new_line
+    return (
+        "\n".join(patched),
+        "forward-to-call",
+        "call the module directly (`module(x)`) instead of `module.forward(x)` "
+        "so registered hooks run",
+    )
+
+
+def _fix_tensor_data_access(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
+    """Rewrite the unsafe ``.data`` attribute access to ``.detach()``."""
+    i = bug.line - 1
+    if not (0 <= i < len(lines)):
+        return None
+    line = lines[i]
+    if not _DOT_DATA.search(line):
+        return None
+    new_line = _DOT_DATA.sub(".detach()", line, count=1)
+    if new_line == line:
+        return None
+    patched = lines[:]
+    patched[i] = new_line
+    return (
+        "\n".join(patched),
+        "data-to-detach",
+        "replace the autograd-unsafe `.data` access with `.detach()`",
+    )
+
+
+def _fix_layer_dim_mismatch(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
+    """Repair an ``nn.Linear`` whose ``in_features`` does not match the feature
+    dim it is fed. The message records the expected (declared) and received
+    (actual) sizes; we rewrite the *unique* matching layer definition's first
+    constructor argument to the received size."""
+    msg = getattr(bug, "message", "") or ""
+    m = _LAYER_DIM_MSG.search(msg)
+    if not m:
+        return None
+    declared, received = int(m.group(1)), int(m.group(2))
+    if declared == received:
+        return None
+    # Find the unique `nn.Linear(<declared>, ...)` definition line.
+    hits = [
+        j
+        for j, ln in enumerate(lines)
+        if (mm := _LINEAR_DEF.search(ln)) and int(mm.group(1)) == declared
+    ]
+    if len(hits) != 1:
+        return None
+    j = hits[0]
+    line = lines[j]
+    new_line = _LINEAR_DEF.sub(f"nn.Linear({received}", line, count=1)
+    if new_line == line:
+        return None
+    patched = lines[:]
+    patched[j] = new_line
+    return (
+        "\n".join(patched),
+        "linear-in-features",
+        f"set `nn.Linear` in_features {declared} -> {received} to match the "
+        "feature dimension actually flowing in",
+    )
+
+
 _STRATEGIES: Dict[str, Callable[[List[str], object], Optional[Tuple[str, str, str]]]] = {
     "reshape_size_mismatch": _fix_reshape,
     "negative_dimension": _fix_negdim,
+    "missing_super_init": _fix_missing_super_init,
+    "direct_forward_call": _fix_direct_forward_call,
+    "tensor_data_access": _fix_tensor_data_access,
+    "layer_dim_mismatch": _fix_layer_dim_mismatch,
 }
 
 
@@ -134,6 +247,10 @@ def propose_fix(bug, source: str) -> Optional[FixCandidate]:
     if produced is None:
         return None
     patched, name, desc = produced
+    # Preserve the source's trailing newline so unified diffs stay minimal
+    # (strategies build the body with "\n".join, which drops a final newline).
+    if source.endswith("\n") and not patched.endswith("\n"):
+        patched += "\n"
     return FixCandidate(
         kind=kind,
         line=int(getattr(bug, "line", 0)),

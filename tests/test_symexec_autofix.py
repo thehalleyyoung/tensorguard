@@ -150,3 +150,140 @@ def test_repair_unverified_only_flag_surfaces_rejections():
     fixes_verified = repair(RESHAPE, verified_only=True)
     assert [f.verified for f in fixes_verified] == [True]
     assert len(fixes_all) >= len(fixes_verified)
+
+
+# --------------------------------------------------------------------------- #
+# Expanded strategies: intent + layer repairs, each machine re-verified.       #
+# --------------------------------------------------------------------------- #
+from src.symexec import SymConfig  # noqa: E402
+
+_H = SymConfig.heuristic()
+
+MISSING_SUPER = (
+    "import torch.nn as nn\n"
+    "class Net(nn.Module):\n"
+    "    def __init__(self):\n"
+    "        self.fc = nn.Linear(3, 4)\n"
+    "    def forward(self, x):\n"
+    "        return self.fc(x)\n"
+)
+FORWARD_CALL = (
+    "import torch.nn as nn\n"
+    "class Net(nn.Module):\n"
+    "    def __init__(self):\n"
+    "        super().__init__()\n"
+    "        self.fc = nn.Linear(3, 4)\n"
+    "    def forward(self, x):\n"
+    "        return self.fc.forward(x)\n"
+)
+DATA_ACCESS = (
+    "import torch\n"
+    "def f():\n"
+    "    x = torch.randn(3, 4)\n"
+    "    return x.data\n"
+)
+LAYER_DIM = (
+    "import torch\n"
+    "import torch.nn as nn\n"
+    "class Net(nn.Module):\n"
+    "    def __init__(self):\n"
+    "        super().__init__()\n"
+    "        self.a = nn.Linear(10, 20)\n"
+    "        self.b = nn.Linear(30, 5)\n"
+    "    def forward(self, x):\n"
+    "        return self.b(self.a(x))\n"
+    "def main():\n"
+    "    m = Net()\n"
+    "    m(torch.randn(2, 10))\n"
+    "if __name__ == '__main__':\n"
+    "    main()\n"
+)
+
+
+def test_repair_missing_super_init_verified():
+    fixes = repair(MISSING_SUPER, filename="m.py", config=_H)
+    assert [f.kind for f in fixes] == ["missing_super_init"]
+    f = fixes[0]
+    assert f.verified
+    assert f.strategy == "insert-super-init"
+    assert "super().__init__()" in f.patched_source
+    # The patched source no longer triggers the bug under the same config.
+    assert not any(
+        b.kind.value == "missing_super_init"
+        for b in analyze_source(f.patched_source, config=_H).bugs
+    )
+
+
+def test_repair_missing_super_init_not_duplicated():
+    # Already-correct __init__ must not get a second super() call.
+    good = (
+        "import torch.nn as nn\n"
+        "class Net(nn.Module):\n"
+        "    def __init__(self):\n"
+        "        super().__init__()\n"
+        "        self.fc = nn.Linear(3, 4)\n"
+        "    def forward(self, x):\n"
+        "        return self.fc(x)\n"
+    )
+    assert repair(good, filename="m.py", config=_H) == []
+
+
+def test_repair_direct_forward_call_verified():
+    fixes = repair(FORWARD_CALL, filename="m.py", config=_H)
+    f = next(x for x in fixes if x.kind == "direct_forward_call")
+    assert f.verified
+    assert f.strategy == "forward-to-call"
+    assert "self.fc(x)" in f.patched_source
+    assert ".forward(" not in f.patched_source
+
+
+def test_repair_tensor_data_access_verified():
+    fixes = repair(DATA_ACCESS, filename="m.py", config=_H)
+    f = next(x for x in fixes if x.kind == "tensor_data_access")
+    assert f.verified
+    assert f.strategy == "data-to-detach"
+    assert ".detach()" in f.patched_source
+    assert ".data" not in f.patched_source
+
+
+def test_repair_layer_dim_mismatch_verified():
+    fixes = repair(LAYER_DIM, filename="m.py")
+    f = next(x for x in fixes if x.kind == "layer_dim_mismatch")
+    assert f.verified
+    assert f.strategy == "linear-in-features"
+    # in_features rewritten 30 -> 20 (the dim actually flowing in).
+    assert "nn.Linear(20, 5)" in f.patched_source
+
+
+def test_layer_dim_mismatch_ambiguous_definition_abstains():
+    # Two layers declared with the same in_features 30 -> the rewrite target is
+    # ambiguous, so the strategy yields nothing rather than a risky edit.
+    ambiguous = (
+        "import torch\n"
+        "import torch.nn as nn\n"
+        "class Net(nn.Module):\n"
+        "    def __init__(self):\n"
+        "        super().__init__()\n"
+        "        self.a = nn.Linear(10, 20)\n"
+        "        self.b = nn.Linear(30, 5)\n"
+        "        self.c = nn.Linear(30, 7)\n"
+        "    def forward(self, x):\n"
+        "        return self.b(self.a(x))\n"
+        "def main():\n"
+        "    m = Net()\n"
+        "    m(torch.randn(2, 10))\n"
+        "if __name__ == '__main__':\n"
+        "    main()\n"
+    )
+    fixes = repair(ambiguous, filename="m.py")
+    assert all(f.kind != "layer_dim_mismatch" for f in fixes)
+
+
+def test_propose_preserves_trailing_newline():
+    cand = propose_fix(
+        next(b for b in analyze_source(LAYER_DIM).bugs
+             if b.kind.value == "layer_dim_mismatch"),
+        LAYER_DIM,
+    )
+    assert cand is not None
+    assert cand.patched_source.endswith("\n")

@@ -4425,6 +4425,174 @@ def _indent(text: str, prefix: str) -> str:
     return "\n".join(prefix + line for line in text.splitlines())
 
 
+class FixCommand:
+    """Apply machine-verified source repairs for the bugs the symexec engine finds.
+
+    ``tensorguard fix <path>`` proposes a minimal, canonical edit for each
+    repairable bug, **re-runs the analyzer on the patched source**, and only
+    surfaces a fix when the targeted bug is gone *and* no new bug kind appears —
+    so every fix is verified, not guessed. By default it prints the unified
+    diffs; ``--write`` applies them in place. ``--soundness-mode heuristic``
+    (the default for ``fix``) also repairs intent bugs such as a missing
+    ``super().__init__()`` or a ``module.forward(x)`` call.
+    """
+
+    def register(self, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "paths", nargs="*", default=["."],
+            help="Python files or directories to repair (default: .)",
+        )
+        parser.add_argument(
+            "--soundness-mode", choices=["sound", "balanced", "heuristic"],
+            default="heuristic", dest="soundness_mode",
+            help="Which findings to attempt to repair (default: heuristic, which "
+                 "includes intent bugs like missing super().__init__()).",
+        )
+        parser.add_argument(
+            "--write", "-w", action="store_true",
+            help="Apply the verified fixes in place instead of only printing diffs.",
+        )
+        parser.add_argument(
+            "--unverified", action="store_true",
+            help="Also show candidate fixes that failed re-verification (with the "
+                 "reason), for diagnostics. Never written to disk.",
+        )
+        parser.add_argument(
+            "--format", choices=["text", "json"], default="text", dest="fmt",
+            help="Output format (default: text).",
+        )
+        parser.add_argument("-o", "--output", help="Write output to this file (default: stdout).")
+
+    @staticmethod
+    def _collect_files(paths: Sequence[str]) -> List[pathlib.Path]:
+        return SymexecCommand._collect_files(paths)
+
+    def execute(self, args: argparse.Namespace) -> int:
+        from src.symexec import SymConfig, repair
+
+        paths = getattr(args, "paths", None) or ["."]
+        mode = getattr(args, "soundness_mode", "heuristic")
+        config = SymConfig.for_mode(mode)
+        write = bool(getattr(args, "write", False))
+        show_unverified = bool(getattr(args, "unverified", False))
+        fmt = getattr(args, "fmt", "text")
+
+        files = self._collect_files(paths)
+        if not files:
+            sys.stderr.write("tensorguard fix: no Python files found\n")
+            return 1
+
+        records: List[dict] = []
+        text_chunks: List[str] = []
+        total_verified = 0
+        total_written = 0
+
+        for f in files:
+            try:
+                source = f.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                sys.stderr.write(f"tensorguard fix: cannot read {f}: {exc}\n")
+                continue
+
+            fixes = repair(
+                source, filename=str(f), config=config,
+                verified_only=not show_unverified,
+            )
+            verified = [x for x in fixes if x.verified]
+            if not fixes:
+                continue
+            total_verified += len(verified)
+
+            # Apply verified fixes in place, one at a time, re-deriving the diff
+            # against the evolving file so multiple fixes compose deterministically.
+            wrote_this_file = False
+            if write and verified:
+                patched = source
+                applied = 0
+                from src.symexec import repair as _repair
+                # Re-run repair against the (possibly already-edited) buffer so
+                # line numbers stay consistent after each applied edit.
+                while True:
+                    step = _repair(patched, filename=str(f), config=config)
+                    if not step:
+                        break
+                    patched = step[0].patched_source
+                    applied += 1
+                    if applied > 1000:  # pathological guard
+                        break
+                if patched != source:
+                    f.write_text(patched, encoding="utf-8")
+                    wrote_this_file = True
+                    total_written += applied
+
+            records.append({
+                "file": str(f),
+                "written": wrote_this_file,
+                "fixes": [
+                    {
+                        "kind": x.kind,
+                        "line": x.line,
+                        "strategy": x.strategy,
+                        "description": x.description,
+                        "verified": x.verified,
+                        "detail": x.detail,
+                        "diff": x.diff,
+                    }
+                    for x in fixes
+                ],
+            })
+
+            if fmt == "text":
+                text_chunks.append(self._render_file(f, fixes, wrote_this_file))
+
+        if fmt == "json":
+            out = json.dumps({
+                "files": records,
+                "verified_fixes": total_verified,
+                "applied": total_written,
+            }, indent=2) + "\n"
+        else:
+            if not text_chunks:
+                out = "tensorguard fix: no repairable bugs found.\n"
+            else:
+                summary = (
+                    f"\n{total_verified} verified fix(es) across "
+                    f"{len(records)} file(s)"
+                )
+                if write:
+                    summary += f"; {total_written} applied"
+                else:
+                    summary += "; re-run with --write to apply"
+                out = "\n".join(text_chunks) + summary + ".\n"
+
+        self._write(out, getattr(args, "output", None))
+        return 0
+
+    @staticmethod
+    def _render_file(path: pathlib.Path, fixes, written: bool) -> str:
+        lines = [f"=== {path} ==="]
+        for x in fixes:
+            mark = "✓ verified" if x.verified else "✗ rejected"
+            lines.append(f"  [{mark}] {x.kind} (line {x.line}) — {x.strategy}")
+            lines.append(f"    {x.description}")
+            if not x.verified:
+                lines.append(f"    reason: {x.detail}")
+            if x.diff:
+                for d in x.diff.splitlines():
+                    lines.append(f"    {d}")
+        if written:
+            lines.append("  → applied in place.")
+        return "\n".join(lines)
+
+    @staticmethod
+    def _write(text: str, output: Optional[str]) -> None:
+        if output:
+            with open(output, "w", encoding="utf-8") as fh:
+                fh.write(text)
+        else:
+            sys.stdout.write(text)
+
+
 class ReftypeCliApp:
     """Main CLI application class that wires subcommands to argparse."""
 
@@ -4433,6 +4601,7 @@ class ReftypeCliApp:
         "analyze-package": lambda: PackageAnalyzeCommand(),
         "verify": lambda: VerifyCommand(),
         "symexec": lambda: SymexecCommand(),
+        "fix": lambda: FixCommand(),
         "explain": lambda: ExplainCommand(),
         "watch": lambda: WatchCommand(),
         "ci-check": lambda: CiCheckCommand(),
@@ -4500,6 +4669,7 @@ class ReftypeCliApp:
             "analyze-package": "Analyse an entire Python package/directory with summary",
             "verify": "Verify nn.Module architecture via constraint-based verification",
             "symexec": "Run the Python symbolic-execution engine (--engine symexec|fx|both, --explain, --fingerprint)",
+            "fix": "Apply machine-verified source repairs for symexec findings (--write to apply, --soundness-mode, --unverified)",
             "explain": "Generate an HTML inference-chain explanation report",
             "watch": "Watch files for changes and re-analyse incrementally",
             "ci-check": "Run analysis in CI mode with exit codes",

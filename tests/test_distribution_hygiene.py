@@ -24,8 +24,11 @@ def _pyproject():
 
 
 def test_packaging_restricted_to_src():
+    # The shipped distribution contains the MIT-licensed implementation package
+    # (`src`) plus the thin public import package (`tensorguard`) added in Step
+    # 161 so `pip install ...` then `import tensorguard` works. No other trees.
     find = _pyproject()["tool"]["setuptools"]["packages"]["find"]
-    assert find["include"] == ["src*"]
+    assert find["include"] == ["src*", "tensorguard*"]
 
 
 def test_license_is_mit_bsd_compatible():

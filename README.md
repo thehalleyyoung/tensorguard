@@ -83,14 +83,46 @@ tensorguard verify model.py -s x=1,784 --fix --write
 #   + self.fc2 = nn.Linear(256, 10)
 ```
 
-### 2. Scan a whole project
+### 2. Let it fix the code — *and re-verify its own fix*
+
+Most "auto-fix" tools emit a suggestion and hope. TensorGuard does something
+stronger: for every repairable finding it proposes a minimal, canonical edit,
+**re-runs the analyzer on the patched source**, and only surfaces the fix when
+the targeted bug is gone *and* no new bug was introduced. So every fix is
+*machine-verified*, not guessed.
+
+```bash
+tensorguard fix model.py            # show verified unified diffs
+tensorguard fix model.py --write    # apply them in place
+tensorguard fix src/ --format json  # machine-readable, for CI bots
+```
+
+```diff
+=== model.py ===
+  [✓ verified] missing_super_init (line 5) — insert-super-init
+     class Net(nn.Module):
+         def __init__(self):
++            super().__init__()
+             self.fc = nn.Linear(3, 4)
+  [✓ verified] direct_forward_call (line 9) — forward-to-call
+-        return self.fc.forward(x)
++        return self.fc(x)
+```
+
+Current repair strategies: insert a missing `super().__init__()`, rewrite
+`module.forward(x)` → `module(x)`, `.data` → `.detach()`, an `nn.Linear`'s
+`in_features` to the dim actually flowing in, reshape→`-1` flatten, and
+non-negative dimensions. When a fix can't be made *unambiguously*, TensorGuard
+abstains rather than risk a wrong edit.
+
+### 3. Scan a whole project
 
 ```bash
 tensorguard analyze src/ --format sarif -o results.sarif   # GitHub code-scanning ready
 tensorguard analyze-package my_project/                    # directory summary
 ```
 
-### 3. Use it from Python
+### 4. Use it from Python
 
 ```python
 import tensorguard as tg
@@ -309,6 +341,7 @@ tensorguard verify <file>          # verify an nn.Module architecture
 tensorguard analyze <path>         # scan files/dirs for bugs (text/json/sarif)
 tensorguard analyze-package <dir>  # whole-package analysis with summary
 tensorguard symexec <file>         # run the symbolic-execution engine directly
+tensorguard fix <file>             # apply machine-verified repairs (--write to apply)
 tensorguard explain <file>         # HTML inference-chain report
 tensorguard watch <path>           # re-analyze incrementally on change
 tensorguard ci-check <path>        # CI mode with exit codes
