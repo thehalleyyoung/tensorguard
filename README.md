@@ -43,11 +43,16 @@ never had PyTorch installed.
 ## Install
 
 ```bash
-pip install tensorguard
+pip install tensorguard-verify   # import name stays `tensorguard`
 ```
 
 That's it — the only hard dependency is the Z3 SMT solver (pulled in automatically).
 PyTorch is **not** required to run TensorGuard.
+
+```python
+import tensorguard
+from tensorguard import verify_architecture, analyze
+```
 
 ```bash
 # from source

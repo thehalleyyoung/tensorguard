@@ -10,6 +10,12 @@ enforced by `tests/test_api_stability.py`.
 ## [Unreleased]
 
 ### Added
+- **PyPI packaging.** TensorGuard is now publishable to PyPI as the
+  `tensorguard-verify` distribution (the bare `tensorguard` name is held by an
+  unrelated project). The import name is unchanged — `pip install
+  tensorguard-verify` then `import tensorguard`. A trusted-publishing GitHub
+  Actions workflow (`.github/workflows/publish.yml`) builds and uploads on
+  release/tag via OIDC, so no API token is stored in the repo.
 - **Data plane (merged from DataRefine).** TensorGuard now analyzes the
   deep-learning *data* layer — *which numbers reach the model and what they mean*
   — alongside its native model-plane (shape/dtype) verification. New self-contained

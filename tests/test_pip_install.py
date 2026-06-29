@@ -1,6 +1,7 @@
 """Step 161 — `pip install tensorguard` ships a real, importable public package.
 
-The distribution is named ``tensorguard``; a user expects ``import tensorguard``
+The distribution is named ``tensorguard-verify`` (the bare ``tensorguard`` name
+is held on PyPI by an unrelated project); a user expects ``import tensorguard``
 (not ``import src``) to give the stability-guaranteed API. These tests prove that
 contract against a *real built wheel*:
 
@@ -64,7 +65,7 @@ def _build_wheel(outdir: str) -> str:
         timeout=600,
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
-    wheels = glob.glob(os.path.join(outdir, "tensorguard-*.whl"))
+    wheels = glob.glob(os.path.join(outdir, "tensorguard*.whl"))
     assert wheels, f"no wheel built: {proc.stdout}\n{proc.stderr}"
     return wheels[0]
 
