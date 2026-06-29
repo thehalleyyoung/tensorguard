@@ -43,7 +43,8 @@ never had PyTorch installed.
 ## Install
 
 ```bash
-git clone <repo> && cd tensorguard && pip install -e .
+git clone https://github.com/thehalleyyoung/tensorguard
+cd tensorguard && pip install -e .
 ```
 
 That's it — the only hard dependency is the Z3 SMT solver (pulled in automatically).
