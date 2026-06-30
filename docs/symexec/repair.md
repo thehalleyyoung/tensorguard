@@ -188,6 +188,27 @@ failures (a target that mismatches a known non-singleton dim, a `-1` on a new
 leading dim) have no unique intent-preserving fix, so it abstains and emits
 nothing.
 
+### 4e. Concatenate — *choose the join axis* (`R7`)
+
+`torch.cat` permits its inputs to differ on exactly one axis — the concat axis —
+and requires them to agree on every other. A `cat_shape_mismatch` means the
+inputs disagree on a *non-*concat axis. If they disagree on exactly **one** axis,
+that axis *is* the join the user meant, so the fix is to set `dim` to it:
+
+```
+a:(2,3)  b:(2,5)
+torch.cat([a, b], dim=0)   # disagree on dim 1  → RuntimeError
+torch.cat([a, b], dim=1)   # ✓ verified — join on the differing axis → (2, 8)
+```
+
+This is where the **re-verification gate earns its keep**. The synthesizer simply
+proposes `dim = <the reported axis>` (editing an existing `dim=` kwarg or
+appending one). It does *not* itself check whether that is the *only* mismatch —
+the gate does: if the inputs disagree on two axes, re-pointing `dim` to one
+leaves the other broken, the `cat_shape_mismatch` re-fires, and the proposal is
+rejected. So a genuinely ambiguous case abstains automatically, with no
+shape-bookkeeping in the synthesizer at all.
+
 ---
 
 ## 5. Applying fixes (`tensorguard fix`)

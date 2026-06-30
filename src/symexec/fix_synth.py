@@ -37,6 +37,7 @@ __all__ = [
     "synth_matmul_fix",
     "synth_repeat_fix",
     "synth_expand_fix",
+    "synth_cat_dim_fix",
 ]
 
 
@@ -404,4 +405,72 @@ def synth_expand_fix(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
         "expand-left-pad",
         f"prepend {pad} leading `-1`(s) so `.expand(...)` keeps the leading "
         "dimension(s) and has one size per tensor dimension",
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Phase 2 R7 — cat: choose the concat dim.                                     #
+# When `torch.cat(...)` inputs disagree on exactly one axis, that axis MUST be #
+# the intended concat dim (cat permits a mismatch only on the concat axis).    #
+# We propose `dim=<reported axis>`; the re-verification gate accepts it iff it #
+# actually clears the mismatch with no new bug — so a multi-axis disagreement  #
+# (where re-pointing dim leaves another axis broken) is rejected automatically.#
+# --------------------------------------------------------------------------- #
+_CAT_MSG = re.compile(
+    r"torch\.(?P<op>cat|concat|concatenate) inputs disagree on dim\s+(?P<axis>\d+)"
+)
+_DIM_KWARG = re.compile(r"\bdim\s*=\s*-?\d+")
+
+
+def _has_top_level_comma(args: str) -> bool:
+    depth = 0
+    for c in args:
+        if c in "([{":
+            depth += 1
+        elif c in ")]}":
+            depth -= 1
+        elif c == "," and depth == 0:
+            return True
+    return False
+
+
+def synth_cat_dim_fix(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
+    """Synthesizer for ``cat_shape_mismatch``: set the concat ``dim`` to the
+    axis the inputs disagree on (the only axis ``cat`` allows to differ).  Edits
+    an existing ``dim=<int>`` kwarg, or appends ``dim=<axis>`` when the call
+    passes only the tensor sequence.  Abstains on a positional dim argument or a
+    non-``cat`` op; the re-verification gate rejects the edit unless it provably
+    clears the mismatch."""
+    m = _CAT_MSG.search(getattr(bug, "message", "") or "")
+    if m is None:
+        return None
+    op, axis = m.group("op"), int(m.group("axis"))
+    i = bug.line - 1
+    if not (0 <= i < len(lines)):
+        return None
+    line = lines[i]
+    marker = f".{op}("
+    if line.count(marker) != 1:
+        return None
+    open_idx = line.index(marker) + len(marker) - 1
+    found = _find_call_args(line, open_idx)
+    if found is None:
+        return None
+    _, close_idx, inner = found
+    if _DIM_KWARG.search(inner):
+        new_inner = _DIM_KWARG.sub(f"dim={axis}", inner, count=1)
+    elif not _has_top_level_comma(inner):
+        new_inner = inner.rstrip() + f", dim={axis}"
+    else:
+        return None  # positional dim arg: not safely locatable
+    new_line = line[: open_idx + 1] + new_inner + line[close_idx:]
+    if new_line == line:
+        return None
+    patched = lines[:]
+    patched[i] = new_line
+    return (
+        "\n".join(patched),
+        "cat-concat-dim",
+        f"concatenate along dim {axis} (the only axis the inputs disagree on, so "
+        "the one `cat` is meant to join)",
     )

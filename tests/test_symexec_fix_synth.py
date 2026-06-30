@@ -219,3 +219,52 @@ def test_repair_expand_non_singleton_mismatch_abstains():
     )
     fixes = repair(src, filename="m.py")
     assert all(f.kind != "expand_shape_mismatch" for f in fixes)
+
+
+# --------------------------------------------------------------------------- #
+# R7 — cat: choose the concat dim (sound via the re-verification gate).        #
+# --------------------------------------------------------------------------- #
+_CAT_KW_DIM = (
+    "import torch\n"
+    "def f():\n"
+    "    a = torch.zeros(2, 3)\n"
+    "    b = torch.zeros(2, 5)\n"
+    "    return torch.cat([a, b], dim=0)\n"
+)
+
+_CAT_NO_DIM = (
+    "import torch\n"
+    "def f():\n"
+    "    a = torch.zeros(2, 3)\n"
+    "    b = torch.zeros(2, 5)\n"
+    "    return torch.cat([a, b])\n"
+)
+
+
+def test_repair_cat_retargets_dim_kwarg():
+    fixes = repair(_CAT_KW_DIM, filename="m.py")
+    f = next(x for x in fixes if x.kind == "cat_shape_mismatch")
+    assert f.verified
+    assert f.strategy == "cat-concat-dim"
+    assert "dim=1" in f.patched_source
+
+
+def test_repair_cat_appends_dim_when_absent():
+    fixes = repair(_CAT_NO_DIM, filename="m.py")
+    f = next(x for x in fixes if x.kind == "cat_shape_mismatch")
+    assert f.verified
+    assert "torch.cat([a, b], dim=1)" in f.patched_source
+
+
+def test_repair_cat_multi_axis_disagreement_abstains():
+    # Inputs disagree on BOTH axes: re-pointing dim to one leaves the other
+    # broken, so the re-verification gate rejects the edit (abstains).
+    src = (
+        "import torch\n"
+        "def f():\n"
+        "    a = torch.zeros(2, 3)\n"
+        "    b = torch.zeros(4, 5)\n"
+        "    return torch.cat([a, b], dim=0)\n"
+    )
+    fixes = repair(src, filename="m.py")
+    assert all(f.kind != "cat_shape_mismatch" for f in fixes)
