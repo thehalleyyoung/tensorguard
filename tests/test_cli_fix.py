@@ -134,3 +134,67 @@ def test_fix_sarif_insertion_is_zero_width_region(tmp_path):
     # Pure insertion: zero-width deleted region, inserted super() call.
     assert rep["deletedRegion"]["startColumn"] == rep["deletedRegion"]["endColumn"]
     assert "super().__init__()" in rep["insertedContent"]["text"]
+
+
+def test_fix_patch_format_is_git_applyable(tmp_path):
+    import subprocess
+
+    # A real git repo so we can validate the patch with `git apply --check`.
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    src = (
+        "import torch\n"
+        "def g():\n"
+        "    x = torch.zeros(2, 3, 4)\n"
+        "    a = torch.zeros(2, 3)\n"
+        "    b = torch.zeros(2, 5)\n"
+        "    y = x.reshape(6, 5)\n"
+        "    z = torch.cat([a, b], dim=0)\n"
+        "    return y, z\n"
+    )
+    (tmp_path / "model.py").write_text(src, encoding="utf-8")
+    subprocess.run(["git", "add", "model.py"], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "init"],
+        cwd=tmp_path, check=True,
+    )
+
+    # Run with a repo-relative path so the patch carries `a/model.py`.
+    app = ReftypeCliApp()
+    buf = io.StringIO()
+    import os
+    cwd = os.getcwd()
+    try:
+        os.chdir(tmp_path)
+        with redirect_stdout(buf):
+            code = app.run(["fix", "model.py", "--format", "patch"])
+    finally:
+        os.chdir(cwd)
+    out = buf.getvalue()
+    assert code == 0
+
+    # One coherent patch composing BOTH verified fixes.
+    assert out.startswith("diff --git a/model.py b/model.py\n")
+    assert "--- a/model.py" in out
+    assert "+++ b/model.py" in out
+    assert "@@" in out
+    assert "reshape(6, -1)" in out
+    assert "dim=1" in out
+
+    # patch mode must not touch the file.
+    assert "reshape(6, 5)" in (tmp_path / "model.py").read_text(encoding="utf-8")
+
+    # And `git apply` accepts it.
+    (tmp_path / "fix.patch").write_text(out, encoding="utf-8")
+    chk = subprocess.run(
+        ["git", "apply", "--check", "-p1", "fix.patch"], cwd=tmp_path,
+        capture_output=True, text=True,
+    )
+    assert chk.returncode == 0, chk.stderr
+
+
+def test_fix_patch_format_empty_when_clean(tmp_path):
+    f = tmp_path / "model.py"
+    f.write_text("import torch\ndef g():\n    return torch.zeros(2, 3)\n", encoding="utf-8")
+    code, out = _run(["fix", str(f), "--format", "patch"])
+    assert code == 0
+    assert out == ""

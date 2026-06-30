@@ -218,6 +218,7 @@ tensorguard fix model.py            # show verified unified diffs
 tensorguard fix model.py --write    # apply them in place
 tensorguard fix src/ --format json  # machine-readable (for CI bots)
 tensorguard fix model.py --format sarif   # SARIF 2.1.0 with "Apply suggested fix"
+tensorguard fix src/ --format patch # one `git apply`-able patch per file
 tensorguard fix model.py --unverified   # also show rejected candidates + reason
 ```
 
@@ -225,6 +226,19 @@ tensorguard fix model.py --unverified   # also show rejected candidates + reason
 the evolving buffer, so multiple fixes compose deterministically and line numbers
 stay consistent. A second `fix` run on an already-repaired file reports nothing
 and leaves the file byte-identical (idempotence is covered by the test suite).
+
+### Unified-patch output (CI bots)
+
+`--format patch` emits a single `git apply`-able unified patch per file,
+representing the cumulative `original → fully-repaired` transformation. It reuses
+the same iterative loop as `--write` (re-run `repair()` on the evolving buffer
+until no fix remains), then diffs once against the original and prepends a
+`diff --git a/<path> b/<path>` header. This matters because each `VerifiedFix.diff`
+is computed independently against the *original* source, so per-fix diffs for the
+same file overlap and cannot simply be concatenated; the cumulative diff is the
+one coherent, conflict-free patch. Run on repo-relative paths so the patch carries
+`a/<path>` and applies with `git apply -p1` — a CI bot can post it directly as a
+suggested change.
 
 ### SARIF suggested fixes (GitHub Code Scanning)
 

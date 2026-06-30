@@ -4458,9 +4458,11 @@ class FixCommand:
                  "reason), for diagnostics. Never written to disk.",
         )
         parser.add_argument(
-            "--format", choices=["text", "json", "sarif"], default="text", dest="fmt",
+            "--format", choices=["text", "json", "sarif", "patch"], default="text",
+            dest="fmt",
             help="Output format (default: text). 'sarif' emits SARIF 2.1.0 with "
-                 "an 'Apply suggested fix' for each verified repair.",
+                 "an 'Apply suggested fix' for each verified repair; 'patch' emits "
+                 "a `git apply`-able unified patch of all verified fixes.",
         )
         parser.add_argument("-o", "--output", help="Write output to this file (default: stdout).")
 
@@ -4486,6 +4488,7 @@ class FixCommand:
         records: List[dict] = []
         text_chunks: List[str] = []
         sarif_runs: List[dict] = []
+        patch_chunks: List[str] = []
         total_verified = 0
         total_written = 0
 
@@ -4550,6 +4553,10 @@ class FixCommand:
                 run = self._sarif_run_for_file(str(f), source, verified, config)
                 if run is not None:
                     sarif_runs.append(run)
+            elif fmt == "patch" and verified:
+                patch = self._cumulative_patch(str(f), source, config)
+                if patch:
+                    patch_chunks.append(patch)
 
         if fmt == "json":
             out = json.dumps({
@@ -4564,6 +4571,8 @@ class FixCommand:
                 "$schema": SARIF_SCHEMA,
                 "runs": sarif_runs,
             }, indent=2) + "\n"
+        elif fmt == "patch":
+            out = "".join(patch_chunks)
         else:
             if not text_chunks:
                 out = "tensorguard fix: no repairable bugs found.\n"
@@ -4580,6 +4589,37 @@ class FixCommand:
 
         self._write(out, getattr(args, "output", None))
         return 0
+
+    @staticmethod
+    def _cumulative_patch(filename: str, source: str, config) -> str:
+        """Apply every verified fix iteratively (without touching disk) and emit a
+        single ``git apply``-able unified patch of original → fully-repaired, or
+        an empty string when nothing changed."""
+        from src.symexec import repair as _repair
+
+        patched = source
+        applied = 0
+        while True:
+            step = _repair(patched, filename=filename, config=config)
+            if not step:
+                break
+            patched = step[0].patched_source
+            applied += 1
+            if applied > 1000:  # pathological guard
+                break
+        if patched == source:
+            return ""
+        import difflib
+        a = source.splitlines(keepends=True)
+        b = patched.splitlines(keepends=True)
+        body = "".join(
+            difflib.unified_diff(
+                a, b, fromfile=f"a/{filename}", tofile=f"b/{filename}"
+            )
+        )
+        if body and not body.endswith("\n"):
+            body += "\n"
+        return f"diff --git a/{filename} b/{filename}\n{body}"
 
     @staticmethod
     def _sarif_run_for_file(filename: str, source: str, verified, config) -> Optional[dict]:

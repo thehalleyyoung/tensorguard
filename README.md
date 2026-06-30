@@ -95,6 +95,7 @@ the targeted bug is gone *and* no new bug was introduced. So every fix is
 tensorguard fix model.py            # show verified unified diffs
 tensorguard fix model.py --write    # apply them in place
 tensorguard fix src/ --format json  # machine-readable, for CI bots
+tensorguard fix src/ --format patch # one `git apply`-able patch per file
 tensorguard fix model.py --format sarif   # SARIF "Apply suggested fix" for code-scanning
 ```
 
