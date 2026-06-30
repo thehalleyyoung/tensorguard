@@ -4464,6 +4464,12 @@ class FixCommand:
                  "an 'Apply suggested fix' for each verified repair; 'patch' emits "
                  "a `git apply`-able unified patch of all verified fixes.",
         )
+        parser.add_argument(
+            "--explain", action="store_true",
+            help="For text output, show the provenance of each verified repair: "
+                 "the originating finding (the constraint that justified the "
+                 "synthesized value) and the re-verification proof.",
+        )
         parser.add_argument("-o", "--output", help="Write output to this file (default: stdout).")
 
     @staticmethod
@@ -4548,7 +4554,10 @@ class FixCommand:
             })
 
             if fmt == "text":
-                text_chunks.append(self._render_file(f, fixes, wrote_this_file))
+                text_chunks.append(
+                    self._render_file(f, fixes, wrote_this_file,
+                                      explain=getattr(args, "explain", False))
+                )
             elif fmt == "sarif":
                 run = self._sarif_run_for_file(str(f), source, verified, config)
                 if run is not None:
@@ -4643,7 +4652,8 @@ class FixCommand:
         return result_to_sarif_run(result, filename, fixes_by_loc=fixes_by_loc)
 
     @staticmethod
-    def _render_file(path: pathlib.Path, fixes, written: bool) -> str:
+    def _render_file(path: pathlib.Path, fixes, written: bool,
+                     explain: bool = False) -> str:
         lines = [f"=== {path} ==="]
         for x in fixes:
             mark = "✓ verified" if x.verified else "✗ rejected"
@@ -4651,6 +4661,13 @@ class FixCommand:
             lines.append(f"    {x.description}")
             if not x.verified:
                 lines.append(f"    reason: {x.detail}")
+            elif explain:
+                # R11 provenance: tie the synthesized value back to the
+                # constraint that justified it, plus the re-verification proof.
+                prov = getattr(x, "provenance", "")
+                if prov:
+                    lines.append(f"    finding: {prov}")
+                lines.append(f"    proof: {x.detail}")
             if x.diff:
                 for d in x.diff.splitlines():
                     lines.append(f"    {d}")

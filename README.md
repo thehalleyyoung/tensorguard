@@ -97,6 +97,7 @@ tensorguard fix model.py --write    # apply them in place
 tensorguard fix src/ --format json  # machine-readable, for CI bots
 tensorguard fix src/ --format patch # one `git apply`-able patch per file
 tensorguard fix model.py --format sarif   # SARIF "Apply suggested fix" for code-scanning
+tensorguard fix model.py --explain  # show each fix's originating finding + re-verification proof
 ```
 
 ```diff

@@ -198,3 +198,37 @@ def test_fix_patch_format_empty_when_clean(tmp_path):
     code, out = _run(["fix", str(f), "--format", "patch"])
     assert code == 0
     assert out == ""
+
+
+def test_fix_explain_shows_provenance_and_proof(tmp_path):
+    f = tmp_path / "model.py"
+    f.write_text(
+        "import torch\n"
+        "def g():\n"
+        "    x = torch.zeros(2, 3, 4)\n"
+        "    return x.reshape(6, 5)\n",
+        encoding="utf-8",
+    )
+    code, out = _run(["fix", str(f), "--explain"])
+    assert code == 0
+    # The originating finding (the constraint that justified the value)...
+    assert "finding: reshape target (6, 5) is incompatible" in out
+    # ...and the re-verification proof.
+    assert "proof: re-verified: targeted bug gone, no new bug introduced" in out
+    # explain must not modify the file.
+    assert "reshape(6, 5)" in f.read_text(encoding="utf-8")
+
+
+def test_fix_without_explain_omits_provenance(tmp_path):
+    f = tmp_path / "model.py"
+    f.write_text(
+        "import torch\n"
+        "def g():\n"
+        "    x = torch.zeros(2, 3, 4)\n"
+        "    return x.reshape(6, 5)\n",
+        encoding="utf-8",
+    )
+    code, out = _run(["fix", str(f)])
+    assert code == 0
+    assert "finding:" not in out
+    assert "proof:" not in out

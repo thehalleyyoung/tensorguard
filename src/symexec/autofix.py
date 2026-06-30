@@ -58,6 +58,7 @@ class VerifiedFix:
     diff: str
     verified: bool
     detail: str
+    provenance: str = ""
 
 
 # --------------------------------------------------------------------------- #
@@ -475,6 +476,7 @@ def repair(source: str, *, filename: str = "<unknown>", config=None,
             diff=_unified_diff(source, candidate.patched_source, filename),
             verified=vf.verified,
             detail=vf.detail,
+            provenance=bug.message,
         )
         if vf.verified or not verified_only:
             fixes.append(vf)

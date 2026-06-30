@@ -220,6 +220,7 @@ tensorguard fix src/ --format json  # machine-readable (for CI bots)
 tensorguard fix model.py --format sarif   # SARIF 2.1.0 with "Apply suggested fix"
 tensorguard fix src/ --format patch # one `git apply`-able patch per file
 tensorguard fix model.py --unverified   # also show rejected candidates + reason
+tensorguard fix model.py --explain  # show each fix's originating finding + proof
 ```
 
 `--write` applies fixes **iteratively**: after each edit it re-runs `repair()` on
@@ -251,6 +252,24 @@ region for a pure insertion (e.g. an added `super().__init__()`). GitHub Code
 Scanning renders these as a one-click **"Apply suggested fix"** — the verified
 diff, surfaced exactly where the bug was reported, alongside the run's proof
 fingerprint.
+
+### Provenance (`--explain`)
+
+`tensorguard fix --explain` prints, under each verified repair, two extra lines
+that make the fix auditable rather than opaque:
+
+- **`finding:`** — the originating report message (carried on
+  `VerifiedFix.provenance`, populated from `bug.message` in `repair()`). This is
+  the *constraint that justified the synthesized value*: e.g. `reshape target
+  (6, 5) is incompatible with a tensor of 24 elements`, which is exactly why the
+  solver chose `(6, -1)`.
+- **`proof:`** — the re-verification verdict (`re-verified: targeted bug gone, no
+  new bug introduced`), i.e. the evidence that the patched program actually
+  clears the bug without introducing a new kind.
+
+Together they answer "*why is this edit correct?*" by linking the value back to
+the finding that constrained it and forward to the re-check that proved it.
+
 
 ---
 
