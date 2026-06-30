@@ -97,3 +97,40 @@ def test_fix_clean_file_reports_nothing(tmp_path):
     code, out = _run(["fix", str(f)])
     assert code == 0
     assert "no repairable bugs found" in out
+
+def test_fix_sarif_format_attaches_suggested_fix(tmp_path):
+    f = tmp_path / "model.py"
+    f.write_text(
+        "import torch\n"
+        "def g():\n"
+        "    x = torch.zeros(2, 3, 4)\n"
+        "    return x.reshape(6, 5)\n",
+        encoding="utf-8",
+    )
+    code, out = _run(["fix", str(f), "--format", "sarif"])
+    assert code == 0
+    log = json.loads(out)
+    assert log["version"] == "2.1.0"
+    results = log["runs"][0]["results"]
+    res = next(r for r in results if r["ruleId"] == "reshape_size_mismatch")
+    # The verified repair is surfaced as a SARIF "Apply suggested fix".
+    fix = res["fixes"][0]
+    rep = fix["artifactChanges"][0]["replacements"][0]
+    assert rep["deletedRegion"]["startLine"] == 4
+    assert "reshape(6, -1)" in rep["insertedContent"]["text"]
+    # SARIF mode must never modify the source file.
+    assert "reshape(6, 5)" in f.read_text(encoding="utf-8")
+
+
+def test_fix_sarif_insertion_is_zero_width_region(tmp_path):
+    f = tmp_path / "model.py"
+    f.write_text(BUGGY, encoding="utf-8")
+    code, out = _run(["fix", str(f), "--format", "sarif"])
+    assert code == 0
+    log = json.loads(out)
+    results = log["runs"][0]["results"]
+    res = next(r for r in results if r["ruleId"] == "missing_super_init")
+    rep = res["fixes"][0]["artifactChanges"][0]["replacements"][0]
+    # Pure insertion: zero-width deleted region, inserted super() call.
+    assert rep["deletedRegion"]["startColumn"] == rep["deletedRegion"]["endColumn"]
+    assert "super().__init__()" in rep["insertedContent"]["text"]

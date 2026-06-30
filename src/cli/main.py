@@ -4458,8 +4458,9 @@ class FixCommand:
                  "reason), for diagnostics. Never written to disk.",
         )
         parser.add_argument(
-            "--format", choices=["text", "json"], default="text", dest="fmt",
-            help="Output format (default: text).",
+            "--format", choices=["text", "json", "sarif"], default="text", dest="fmt",
+            help="Output format (default: text). 'sarif' emits SARIF 2.1.0 with "
+                 "an 'Apply suggested fix' for each verified repair.",
         )
         parser.add_argument("-o", "--output", help="Write output to this file (default: stdout).")
 
@@ -4484,6 +4485,7 @@ class FixCommand:
 
         records: List[dict] = []
         text_chunks: List[str] = []
+        sarif_runs: List[dict] = []
         total_verified = 0
         total_written = 0
 
@@ -4544,12 +4546,23 @@ class FixCommand:
 
             if fmt == "text":
                 text_chunks.append(self._render_file(f, fixes, wrote_this_file))
+            elif fmt == "sarif":
+                run = self._sarif_run_for_file(str(f), source, verified, config)
+                if run is not None:
+                    sarif_runs.append(run)
 
         if fmt == "json":
             out = json.dumps({
                 "files": records,
                 "verified_fixes": total_verified,
                 "applied": total_written,
+            }, indent=2) + "\n"
+        elif fmt == "sarif":
+            from src.symexec.export import SARIF_VERSION, SARIF_SCHEMA
+            out = json.dumps({
+                "version": SARIF_VERSION,
+                "$schema": SARIF_SCHEMA,
+                "runs": sarif_runs,
             }, indent=2) + "\n"
         else:
             if not text_chunks:
@@ -4567,6 +4580,27 @@ class FixCommand:
 
         self._write(out, getattr(args, "output", None))
         return 0
+
+    @staticmethod
+    def _sarif_run_for_file(filename: str, source: str, verified, config) -> Optional[dict]:
+        """Build a SARIF ``run`` for one file: re-analyze for the findings, then
+        attach an 'Apply suggested fix' to each finding that has a verified
+        repair (matched by ``(kind, line)``). Returns ``None`` on analysis
+        failure."""
+        from src.symexec import analyze_source
+        from src.symexec.export import result_to_sarif_run, sarif_replacement
+
+        try:
+            result = analyze_source(source, filename=filename, config=config)
+        except Exception:
+            return None
+        fixes_by_loc: Dict[tuple, tuple] = {}
+        for x in verified:
+            replacement = sarif_replacement(source, x.patched_source)
+            if replacement is None:
+                continue
+            fixes_by_loc[(x.kind, int(x.line))] = (x.description, replacement)
+        return result_to_sarif_run(result, filename, fixes_by_loc=fixes_by_loc)
 
     @staticmethod
     def _render_file(path: pathlib.Path, fixes, written: bool) -> str:

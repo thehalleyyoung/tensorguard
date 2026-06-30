@@ -194,6 +194,7 @@ nothing.
 tensorguard fix model.py            # show verified unified diffs
 tensorguard fix model.py --write    # apply them in place
 tensorguard fix src/ --format json  # machine-readable (for CI bots)
+tensorguard fix model.py --format sarif   # SARIF 2.1.0 with "Apply suggested fix"
 tensorguard fix model.py --unverified   # also show rejected candidates + reason
 ```
 
@@ -201,6 +202,18 @@ tensorguard fix model.py --unverified   # also show rejected candidates + reason
 the evolving buffer, so multiple fixes compose deterministically and line numbers
 stay consistent. A second `fix` run on an already-repaired file reports nothing
 and leaves the file byte-identical (idempotence is covered by the test suite).
+
+### SARIF suggested fixes (GitHub Code Scanning)
+
+`--format sarif` emits a SARIF 2.1.0 log in which each finding that has a
+verified repair carries a `fixes[]` entry with `artifactChanges` →
+`replacements`. `export.sarif_replacement` diffs the original against the patched
+source at line granularity and emits the single contiguous changed region: a
+full-line `startLine..endLine` deletion for a line rewrite, or a zero-width
+region for a pure insertion (e.g. an added `super().__init__()`). GitHub Code
+Scanning renders these as a one-click **"Apply suggested fix"** — the verified
+diff, surfaced exactly where the bug was reported, alongside the run's proof
+fingerprint.
 
 ---
 

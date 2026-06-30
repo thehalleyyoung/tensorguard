@@ -23,6 +23,7 @@ The module is torch-free and pure: it only reads already-computed result data.
 
 from __future__ import annotations
 
+import difflib
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from .explain import explain_bug
@@ -34,6 +35,7 @@ __all__ = [
     "result_to_dict",
     "result_to_sarif_run",
     "to_sarif",
+    "sarif_replacement",
 ]
 
 #: Bump when the *shape* of :func:`result_to_dict` / SARIF properties changes.
@@ -134,7 +136,48 @@ def _rules_for(result) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
     return rules, index
 
 
-def _result_object(bug, filename: str, rule_index: Dict[str, int]) -> Dict[str, Any]:
+def sarif_replacement(
+    original_source: str, patched_source: str
+) -> Optional[Dict[str, Any]]:
+    """Compute the minimal SARIF ``artifactChanges`` *replacement* turning
+    ``original_source`` into ``patched_source``, or ``None`` if they are equal.
+
+    We diff at line granularity and emit one replacement covering the single
+    contiguous bounding region of all changed lines.  A pure insertion (no
+    original line deleted) becomes a zero-width ``deletedRegion`` at the start of
+    the insertion line; a line-block change becomes a full-line
+    ``startLine..endLine`` deletion with the patched lines as ``insertedContent``.
+    The result is a precise, GitHub-renderable "Apply suggested fix" edit.
+    """
+    a = original_source.splitlines()
+    b = patched_source.splitlines()
+    sm = difflib.SequenceMatcher(a=a, b=b, autojunk=False)
+    ops = [op for op in sm.get_opcodes() if op[0] != "equal"]
+    if not ops:
+        return None
+    i1 = min(o[1] for o in ops)
+    i2 = max(o[2] for o in ops)
+    j1 = min(o[3] for o in ops)
+    j2 = max(o[4] for o in ops)
+    inserted = "\n".join(b[j1:j2])
+    if i2 > i1:  # full-line block replacement (covers replace / delete)
+        deleted_region: Dict[str, Any] = {"startLine": i1 + 1, "endLine": i2}
+        inserted_text = inserted
+    else:  # pure insertion before line i1+1
+        deleted_region = {"startLine": i1 + 1, "startColumn": 1, "endColumn": 1}
+        inserted_text = inserted + "\n"
+    return {
+        "deletedRegion": deleted_region,
+        "insertedContent": {"text": inserted_text},
+    }
+
+
+def _result_object(
+    bug,
+    filename: str,
+    rule_index: Dict[str, int],
+    fix: Optional[Tuple[str, Dict[str, Any]]] = None,
+) -> Dict[str, Any]:
     rid = bug.kind.value
     region = {"startLine": max(int(bug.line), 1), "startColumn": int(bug.col) + 1}
     props: Dict[str, Any] = {
@@ -165,17 +208,44 @@ def _result_object(bug, filename: str, rule_index: Dict[str, int]) -> Dict[str, 
     }
     if rid in rule_index:
         obj["ruleIndex"] = rule_index[rid]
+    if fix is not None:
+        description, replacement = fix
+        obj["fixes"] = [
+            {
+                "description": {"text": description},
+                "artifactChanges": [
+                    {
+                        "artifactLocation": {"uri": filename},
+                        "replacements": [replacement],
+                    }
+                ],
+            }
+        ]
     return obj
 
 
-def result_to_sarif_run(result, filename: str = "<unknown>") -> Dict[str, Any]:
+def result_to_sarif_run(
+    result,
+    filename: str = "<unknown>",
+    fixes_by_loc: Optional[Dict[Tuple[str, int], Tuple[str, Dict[str, Any]]]] = None,
+) -> Dict[str, Any]:
     """A single SARIF ``run`` object for one analyzed file.
 
     The proof fingerprint and abstain-coverage profile live in the run's
     ``properties`` so a consumer gets the reproducibility receipt alongside the
-    findings."""
+    findings.  When ``fixes_by_loc`` maps a ``(kind, line)`` to a
+    ``(description, replacement)`` (see :func:`sarif_replacement`), the matching
+    result object gains a SARIF ``fixes[]`` entry — a GitHub-renderable
+    "Apply suggested fix"."""
     rules, rule_index = _rules_for(result)
-    results = [_result_object(b, filename, rule_index) for b in result.bugs]
+    fixes_by_loc = fixes_by_loc or {}
+    results = [
+        _result_object(
+            b, filename, rule_index,
+            fix=fixes_by_loc.get((b.kind.value, int(b.line))),
+        )
+        for b in result.bugs
+    ]
     coverage = {c.value: n for c, n in result.abstentions.coverage().items()}
     return {
         "tool": {
