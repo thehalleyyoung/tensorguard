@@ -63,6 +63,8 @@ Direct, canonical rewrites for bugs whose repair is syntactically unambiguous:
 | `missing_super_init` | insert `super().__init__()` as the first statement of `__init__` |
 | `direct_forward_call` | `module.forward(x)` → `module(x)` (so hooks/`__call__` run) |
 | `tensor_data_access` | `.data` → `.detach()` (autograd-safe) |
+| `numpy_on_grad` | `t.numpy()` → `t.detach().numpy()` (detach clears `requires_grad`) |
+| `tensor_copy_construct` | `torch.tensor(src)` → `src.clone().detach()` (no silent-detach warning) |
 | `negative_dimension` | drop the sign on a negative dimension literal |
 | `layer_dim_mismatch` | set the unique layer's first ctor arg (`nn.Linear`/`nn.Conv{1,2,3}d`/`nn.BatchNorm{1,2,3}d`) to the size flowing in |
 

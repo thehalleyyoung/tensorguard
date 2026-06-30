@@ -70,6 +70,11 @@ _RESHAPE_CALL = re.compile(r"\.(reshape|view)\(([^()]*)\)")
 _NEG_INT = re.compile(r"-(\d+)")
 _FORWARD_CALL = re.compile(r"\.forward\(")
 _DOT_DATA = re.compile(r"\.data\b")
+_DOT_NUMPY = re.compile(r"\.numpy\(")
+_TORCH_TENSOR_CALL = re.compile(r"torch\.tensor\(")
+# A simple operand we can safely append ``.clone().detach()`` to without needing
+# to parenthesize: a (possibly dotted / subscripted) name, no operators.
+_SIMPLE_OPERAND = re.compile(r"^[A-Za-z_][\w.]*(?:\[[^\[\]]*\])?$")
 _DEF_INIT = re.compile(r"^(\s*)def\s+__init__\s*\(")
 # R3: generalized layer-definition repair beyond Linear.  Every modeled layer
 # whose first constructor argument is the in-feature / in-channel / num-feature
@@ -217,6 +222,72 @@ def _fix_tensor_data_access(lines: List[str], bug) -> Optional[Tuple[str, str, s
     )
 
 
+def _fix_numpy_on_grad(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
+    """Rewrite ``tensor.numpy()`` on a grad-requiring tensor to
+    ``tensor.detach().numpy()`` (detach clears ``requires_grad``)."""
+    i = bug.line - 1
+    if not (0 <= i < len(lines)):
+        return None
+    line = lines[i]
+    if line.count(".numpy(") != 1 or ".detach().numpy(" in line:
+        return None
+    new_line = _DOT_NUMPY.sub(".detach().numpy(", line, count=1)
+    if new_line == line:
+        return None
+    patched = lines[:]
+    patched[i] = new_line
+    return (
+        "\n".join(patched),
+        "numpy-detach",
+        "call `.detach()` before `.numpy()` so the grad-requiring tensor can "
+        "cross into NumPy",
+    )
+
+
+def _fix_tensor_copy_construct(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
+    """Rewrite ``torch.tensor(src)`` (copy-constructing from an existing tensor)
+    to the canonical ``src.clone().detach()``. Abstains unless there is exactly
+    one ``torch.tensor(`` on the line and its single argument is a simple operand
+    (a name / attribute / subscript) we can safely method-chain onto."""
+    i = bug.line - 1
+    if not (0 <= i < len(lines)):
+        return None
+    line = lines[i]
+    if line.count("torch.tensor(") != 1:
+        return None
+    m = _TORCH_TENSOR_CALL.search(line)
+    if m is None:
+        return None
+    open_idx = m.end() - 1  # index of the '('
+    depth = 0
+    close_idx = -1
+    for j in range(open_idx, len(line)):
+        c = line[j]
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0:
+                close_idx = j
+                break
+    if close_idx < 0:
+        return None
+    arg = line[open_idx + 1 : close_idx].strip()
+    if not arg or not _SIMPLE_OPERAND.match(arg):
+        return None
+    new_line = line[: m.start()] + f"{arg}.clone().detach()" + line[close_idx + 1 :]
+    if new_line == line:
+        return None
+    patched = lines[:]
+    patched[i] = new_line
+    return (
+        "\n".join(patched),
+        "tensor-copy-to-clone",
+        f"replace `torch.tensor({arg})` with `{arg}.clone().detach()` to copy an "
+        "existing tensor without the silent-detach UserWarning",
+    )
+
+
 def _fix_layer_dim_mismatch(lines: List[str], bug) -> Optional[Tuple[str, str, str]]:
     """Repair a layer whose declared first constructor size (in_features /
     in_channels / num_features) does not match the size actually flowing in.
@@ -281,6 +352,8 @@ _STRATEGIES: Dict[str, Callable[[List[str], object], Optional[Tuple[str, str, st
     "missing_super_init": _fix_missing_super_init,
     "direct_forward_call": _fix_direct_forward_call,
     "tensor_data_access": _fix_tensor_data_access,
+    "numpy_on_grad": _fix_numpy_on_grad,
+    "tensor_copy_construct": _fix_tensor_copy_construct,
     "layer_dim_mismatch": _fix_layer_dim_mismatch,
 }
 

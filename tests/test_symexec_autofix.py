@@ -338,3 +338,51 @@ def test_propose_preserves_trailing_newline():
     )
     assert cand is not None
     assert cand.patched_source.endswith("\n")
+
+
+# Autograd-correctness repairs: numpy-on-grad and tensor copy-construct.        #
+NUMPY_GRAD = (
+    "import torch\n"
+    "def f():\n"
+    "    x = torch.randn(3, requires_grad=True)\n"
+    "    return x.numpy()\n"
+)
+
+COPY_CONSTRUCT = (
+    "import torch\n"
+    "def f():\n"
+    "    a = torch.randn(3)\n"
+    "    b = torch.tensor(a)\n"
+    "    return b\n"
+)
+
+
+def test_repair_numpy_on_grad_inserts_detach():
+    fixes = repair(NUMPY_GRAD, filename="m.py")
+    f = next(x for x in fixes if x.kind == "numpy_on_grad")
+    assert f.verified
+    assert f.strategy == "numpy-detach"
+    assert "x.detach().numpy()" in f.patched_source
+
+
+def test_repair_tensor_copy_construct_to_clone_detach():
+    fixes = repair(COPY_CONSTRUCT, filename="m.py", config=_H)
+    f = next(x for x in fixes if x.kind == "tensor_copy_construct")
+    assert f.verified
+    assert f.strategy == "tensor-copy-to-clone"
+    assert "a.clone().detach()" in f.patched_source
+    assert "torch.tensor(" not in f.patched_source.splitlines()[3]
+
+
+def test_repair_tensor_copy_construct_complex_arg_abstains():
+    # A non-simple argument (an expression) is not safely method-chainable, so
+    # the strategy abstains rather than emit `(a + a).clone()...` without parens.
+    src = (
+        "import torch\n"
+        "def f():\n"
+        "    a = torch.randn(3)\n"
+        "    b = torch.tensor(a + a)\n"
+        "    return b\n"
+    )
+    fixes = repair(src, filename="m.py", config=_H)
+    assert all(f.kind != "tensor_copy_construct" for f in fixes)
